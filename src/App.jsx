@@ -1939,6 +1939,7 @@ export default function BaederApp() {
         setQuizCategory(null);
         setCurrentQuestion(null);
         setPlayerTurn(currentGame.currentTurn);
+        setAnswered(false);
       } else {
         await finishGame();
       }
@@ -2018,6 +2019,7 @@ export default function BaederApp() {
         setQuizCategory(null);
         setCurrentQuestion(null);
         setPlayerTurn(currentGame.currentTurn);
+        setAnswered(false);
       } else {
         await finishGame();
       }
