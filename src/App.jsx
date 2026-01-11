@@ -372,7 +372,11 @@ const DEMO_ACCOUNTS = {};
 export default function BaederApp() {
   const [currentView, setCurrentView] = useState('home');
   const [authView, setAuthView] = useState('login'); // login, register
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    // Load user from localStorage on initial render
+    const savedUser = localStorage.getItem('baeder_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [registerData, setRegisterData] = useState({
@@ -1188,6 +1192,7 @@ export default function BaederApp() {
         };
 
         setUser(userSession);
+        localStorage.setItem('baeder_user', JSON.stringify(userSession));
         setDailyWisdom(DAILY_WISDOM[Math.floor(Math.random() * DAILY_WISDOM.length)]);
         setLoginEmail('');
         setLoginPassword('');
@@ -1252,6 +1257,7 @@ export default function BaederApp() {
       };
 
       setUser(userSession);
+      localStorage.setItem('baeder_user', JSON.stringify(userSession));
       setDailyWisdom(DAILY_WISDOM[Math.floor(Math.random() * DAILY_WISDOM.length)]);
 
       // Initialize stats in Supabase if not exists
@@ -2910,7 +2916,10 @@ export default function BaederApp() {
             </div>
             
             <button
-              onClick={() => setUser(null)}
+              onClick={() => {
+                setUser(null);
+                localStorage.removeItem('baeder_user');
+              }}
               className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors backdrop-blur-sm"
             >
               Abmelden
