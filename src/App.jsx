@@ -2685,18 +2685,17 @@ export default function BaederApp() {
           )}
 
                         <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="text-xs text-gray-600 space-y-2">
-              <p className="flex items-center">
+            <div className="text-xs text-gray-600 text-center">
+              <a
+                href="https://smartbaden.de/baeder-azubi-app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center text-cyan-600 hover:text-cyan-700 transition-colors"
+              >
                 <Shield className="inline mr-2" size={14} />
-                <strong>Datenschutz:</strong>
-              </p>
-              <ul className="ml-6 space-y-1">
-                <li>• Azubi-Daten werden nach Ausbildungsende gelöscht</li>
-                <li>• Ausbilder-Daten nach 6 Monaten Inaktivität</li>
-                <li>• DSGVO-konforme Datenhaltung</li>
-              </ul>
+                Datenschutzerklärung
+              </a>
             </div>
-            
           </div>
         </div>
       </div>
