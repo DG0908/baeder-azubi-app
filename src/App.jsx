@@ -481,6 +481,14 @@ export default function BaederApp() {
   
   // Badges State
   const [userBadges, setUserBadges] = useState([]);
+
+  // Kontrollkarte Berufsschule State
+  const [schoolAttendance, setSchoolAttendance] = useState([]);
+  const [newAttendanceDate, setNewAttendanceDate] = useState('');
+  const [newAttendanceStart, setNewAttendanceStart] = useState('');
+  const [newAttendanceEnd, setNewAttendanceEnd] = useState('');
+  const [newAttendanceTeacherSig, setNewAttendanceTeacherSig] = useState(false);
+  const [newAttendanceTrainerSig, setNewAttendanceTrainerSig] = useState(false);
   
   // Calculator State
   const [calculatorType, setCalculatorType] = useState('ph');
@@ -581,10 +589,15 @@ export default function BaederApp() {
   // Check for users to delete on load
   useEffect(() => {
     checkDataRetention();
-    
+
     // Request notification permission
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
+    }
+
+    // Load school attendance when view changes
+    if (currentView === 'school-card' && user) {
+      loadSchoolAttendance();
     }
     
     // Developer Mode Shortcut: Ctrl+D
@@ -598,7 +611,7 @@ export default function BaederApp() {
     
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [showDevConsole]);
+  }, [showDevConsole, currentView, user]);
 
   // Storage Stats Component - using Supabase
   const StorageStats = () => {
@@ -2230,6 +2243,87 @@ export default function BaederApp() {
 
   const resetExam = () => { setExamSimulator(null); setExamCurrentQuestion(null); setExamQuestionIndex(0); setExamAnswered(false); setUserExamProgress(null); };
 
+  // Kontrollkarte Berufsschule Funktionen
+  const loadSchoolAttendance = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('school_attendance')
+        .select('*')
+        .eq('user_name', user.name)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      setSchoolAttendance(data || []);
+    } catch (err) {
+      console.error('Fehler beim Laden der Kontrollkarte:', err);
+    }
+  };
+
+  const addSchoolAttendance = async () => {
+    if (!newAttendanceDate || !newAttendanceStart || !newAttendanceEnd) {
+      alert('Bitte alle Felder ausfüllen');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('school_attendance')
+        .insert({
+          user_name: user.name,
+          date: newAttendanceDate,
+          start_time: newAttendanceStart,
+          end_time: newAttendanceEnd,
+          teacher_signature: newAttendanceTeacherSig,
+          trainer_signature: newAttendanceTrainerSig
+        });
+
+      if (error) throw error;
+
+      // Reset form
+      setNewAttendanceDate('');
+      setNewAttendanceStart('');
+      setNewAttendanceEnd('');
+      setNewAttendanceTeacherSig(false);
+      setNewAttendanceTrainerSig(false);
+
+      // Reload data
+      loadSchoolAttendance();
+    } catch (err) {
+      console.error('Fehler beim Speichern:', err);
+      alert('Fehler beim Speichern');
+    }
+  };
+
+  const updateAttendanceSignature = async (id, field, value) => {
+    try {
+      const { error } = await supabase
+        .from('school_attendance')
+        .update({ [field]: value })
+        .eq('id', id);
+
+      if (error) throw error;
+      loadSchoolAttendance();
+    } catch (err) {
+      console.error('Fehler beim Aktualisieren:', err);
+    }
+  };
+
+  const deleteSchoolAttendance = async (id) => {
+    if (!confirm('Eintrag wirklich löschen?')) return;
+    try {
+      const { error } = await supabase
+        .from('school_attendance')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      loadSchoolAttendance();
+    } catch (err) {
+      console.error('Fehler beim Löschen:', err);
+    }
+  };
+
   const loadFlashcards = () => {
     const hardcodedCards = FLASHCARD_CONTENT[newQuestionCategory] || [];
     const userCards = userFlashcards.filter(fc => fc.category === newQuestionCategory);
@@ -2949,6 +3043,7 @@ export default function BaederApp() {
             { id: 'news', icon: '📢', label: 'News', show: true },
             { id: 'exams', icon: '📋', label: 'Klasuren', show: true },
             { id: 'questions', icon: '💡', label: 'Fragen', show: true },
+            { id: 'school-card', icon: '🎓', label: 'Kontrollkarte', show: true },
             { id: 'admin', icon: '⚙️', label: 'Verwaltung', show: user.permissions.canManageUsers }
           ].filter(item => item.show).map(item => (
             <button
@@ -5359,6 +5454,169 @@ export default function BaederApp() {
                   <p className="text-gray-500 text-center py-8">Noch keine Fragen eingereicht</p>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Kontrollkarte Berufsschule View */}
+        {currentView === 'school-card' && (
+          <div className="space-y-6">
+            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
+              <h2 className={`text-2xl font-bold mb-6 flex items-center ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                🎓 Kontrollkarte Berufsschule
+              </h2>
+
+              {/* Neuer Eintrag Form */}
+              <div className={`${darkMode ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-50 to-blue-50'} rounded-xl p-6 mb-6`}>
+                <h3 className={`font-bold mb-4 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Neuen Eintrag hinzufügen</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Datum</label>
+                    <input
+                      type="date"
+                      value={newAttendanceDate}
+                      onChange={(e) => setNewAttendanceDate(e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Beginn</label>
+                    <input
+                      type="time"
+                      value={newAttendanceStart}
+                      onChange={(e) => setNewAttendanceStart(e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ende</label>
+                    <input
+                      type="time"
+                      value={newAttendanceEnd}
+                      onChange={(e) => setNewAttendanceEnd(e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <label className={`flex items-center cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <input
+                        type="checkbox"
+                        checked={newAttendanceTeacherSig}
+                        onChange={(e) => setNewAttendanceTeacherSig(e.target.checked)}
+                        className="mr-2 w-5 h-5"
+                      />
+                      <span className="text-sm">Lehrer ✍️</span>
+                    </label>
+                  </div>
+                  <div className="flex items-end">
+                    <label className={`flex items-center cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <input
+                        type="checkbox"
+                        checked={newAttendanceTrainerSig}
+                        onChange={(e) => setNewAttendanceTrainerSig(e.target.checked)}
+                        className="mr-2 w-5 h-5"
+                      />
+                      <span className="text-sm">Ausbilder ✍️</span>
+                    </label>
+                  </div>
+                </div>
+                <button
+                  onClick={addSchoolAttendance}
+                  className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-all"
+                >
+                  <Plus className="inline mr-2" size={18} />
+                  Eintrag hinzufügen
+                </button>
+              </div>
+
+              {/* Tabelle mit Einträgen */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
+                      <th className={`px-4 py-3 text-left font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Datum</th>
+                      <th className={`px-4 py-3 text-left font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Beginn</th>
+                      <th className={`px-4 py-3 text-left font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ende</th>
+                      <th className={`px-4 py-3 text-center font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Lehrer ✍️</th>
+                      <th className={`px-4 py-3 text-center font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ausbilder ✍️</th>
+                      <th className={`px-4 py-3 text-center font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Aktion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {schoolAttendance.map((entry, idx) => (
+                      <tr key={entry.id} className={`border-b ${darkMode ? 'border-slate-600' : 'border-gray-200'} ${idx % 2 === 0 ? (darkMode ? 'bg-slate-800' : 'bg-white') : (darkMode ? 'bg-slate-750' : 'bg-gray-50')}`}>
+                        <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                          {new Date(entry.date).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        </td>
+                        <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{entry.start_time}</td>
+                        <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{entry.end_time}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => updateAttendanceSignature(entry.id, 'teacher_signature', !entry.teacher_signature)}
+                            className={`w-10 h-10 rounded-full transition-all ${entry.teacher_signature ? 'bg-green-500 text-white' : (darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-400')}`}
+                          >
+                            {entry.teacher_signature ? <Check className="mx-auto" size={20} /> : <X className="mx-auto" size={20} />}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => updateAttendanceSignature(entry.id, 'trainer_signature', !entry.trainer_signature)}
+                            className={`w-10 h-10 rounded-full transition-all ${entry.trainer_signature ? 'bg-green-500 text-white' : (darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-400')}`}
+                          >
+                            {entry.trainer_signature ? <Check className="mx-auto" size={20} /> : <X className="mx-auto" size={20} />}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => deleteSchoolAttendance(entry.id)}
+                            className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-100 transition-all"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {schoolAttendance.length === 0 && (
+                  <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <div className="text-6xl mb-4">📋</div>
+                    <p className="text-lg">Noch keine Einträge vorhanden</p>
+                    <p className="text-sm mt-2">Füge deinen ersten Berufsschultag hinzu!</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Zusammenfassung */}
+              {schoolAttendance.length > 0 && (
+                <div className={`mt-6 p-4 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                      <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>{schoolAttendance.length}</div>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Einträge gesamt</div>
+                    </div>
+                    <div>
+                      <div className={`text-2xl font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                        {schoolAttendance.filter(e => e.teacher_signature).length}
+                      </div>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Lehrer unterschrieben</div>
+                    </div>
+                    <div>
+                      <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                        {schoolAttendance.filter(e => e.trainer_signature).length}
+                      </div>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Ausbilder unterschrieben</div>
+                    </div>
+                    <div>
+                      <div className={`text-2xl font-bold ${darkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                        {schoolAttendance.filter(e => !e.teacher_signature || !e.trainer_signature).length}
+                      </div>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Offen</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
