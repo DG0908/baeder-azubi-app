@@ -412,13 +412,16 @@ export default function BaederApp() {
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState('profi');
   const [currentGame, setCurrentGame] = useState(null);
-  const [quizRound, setQuizRound] = useState(0);
+  const [categoryRound, setCategoryRound] = useState(0); // 0-3 (4 Kategorien)
+  const [questionInCategory, setQuestionInCategory] = useState(0); // 0-4 (5 Fragen pro Kategorie)
   const [quizCategory, setQuizCategory] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [currentCategoryQuestions, setCurrentCategoryQuestions] = useState([]); // 5 Fragen für aktuelle Kategorie
   const [answered, setAnswered] = useState(false);
   const [playerTurn, setPlayerTurn] = useState(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
+  const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
   
   const DIFFICULTY_SETTINGS = {
     anfaenger: { time: 45, label: 'Anfänger', icon: '🟢', color: 'bg-green-500' },
@@ -1363,10 +1366,11 @@ export default function BaederApp() {
           player1Score: g.player1_score,
           player2Score: g.player2_score,
           currentTurn: g.current_turn,
-          round: g.round,
+          categoryRound: g.round || 0,
           status: g.status,
           difficulty: g.difficulty,
-          rounds: g.rounds_data || []
+          categoryRounds: g.rounds_data || [],
+          questionHistory: []
         }));
         setActiveGames(games.filter(g => g.status !== 'finished'));
         updateLeaderboard(games, allUsers);
@@ -1749,11 +1753,12 @@ export default function BaederApp() {
         player2: data.player2,
         difficulty: data.difficulty,
         status: data.status,
-        round: data.round,
+        categoryRound: 0, // 0-3 (4 Kategorien)
         player1Score: data.player1_score,
         player2Score: data.player2_score,
         currentTurn: data.current_turn,
-        rounds: data.rounds_data || []
+        categoryRounds: [], // Speichert alle Kategorie-Runden mit Fragen
+        questionHistory: []
       };
 
       setActiveGames([...activeGames, game]);
@@ -1777,8 +1782,11 @@ export default function BaederApp() {
       if (error) throw error;
 
       game.status = 'active';
+      game.categoryRound = 0;
+      game.categoryRounds = [];
       setCurrentGame(game);
-      setQuizRound(0);
+      setCategoryRound(0);
+      setQuestionInCategory(0);
       setPlayerTurn(game.currentTurn);
       setCurrentView('quiz');
     } catch (error) {
@@ -1791,8 +1799,25 @@ export default function BaederApp() {
     if (!game) return;
 
     setCurrentGame(game);
-    setQuizRound(game.round);
+    setCategoryRound(game.categoryRound || 0);
+    setQuestionInCategory(0);
     setPlayerTurn(game.currentTurn);
+
+    // Prüfe ob der Spieler die gespeicherten Fragen spielen muss
+    if (game.categoryRounds && game.categoryRounds.length > 0) {
+      const currentCatRound = game.categoryRounds[game.categoryRound || 0];
+      if (currentCatRound) {
+        const isPlayer1 = user.name === game.player1;
+        const myAnswers = isPlayer1 ? currentCatRound.player1Answers : currentCatRound.player2Answers;
+
+        // Wenn ich noch keine Antworten habe aber Fragen existieren, muss ich die gleichen Fragen spielen
+        if (myAnswers.length === 0 && currentCatRound.questions.length > 0) {
+          setQuizCategory(currentCatRound.categoryId);
+          setCurrentCategoryQuestions(currentCatRound.questions);
+        }
+      }
+    }
+
     setCurrentView('quiz');
   };
 
@@ -1805,9 +1830,9 @@ export default function BaederApp() {
           player1_score: game.player1Score,
           player2_score: game.player2Score,
           current_turn: game.currentTurn,
-          round: game.round,
+          round: game.categoryRound || 0,
           status: game.status,
-          rounds_data: game.rounds || game.questionHistory || [],
+          rounds_data: game.categoryRounds || [],
           updated_at: new Date().toISOString()
         })
         .eq('id', game.id);
@@ -1901,21 +1926,52 @@ export default function BaederApp() {
     }
   };
 
+  // Fisher-Yates Shuffle für zufällige Fragenreihenfolge
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Spieler wählt Kategorie → 5 zufällige Fragen werden für BEIDE Spieler gespeichert
   const selectCategory = async (catId) => {
     if (!currentGame || currentGame.currentTurn !== user.name) return;
 
     setQuizCategory(catId);
-    const questions = SAMPLE_QUESTIONS[catId];
-    const randomQ = questions[Math.floor(Math.random() * questions.length)];
-    setCurrentQuestion(randomQ);
+
+    // Hole alle Fragen dieser Kategorie und mische sie
+    const allQuestions = SAMPLE_QUESTIONS[catId] || [];
+    const shuffledQuestions = shuffleArray(allQuestions);
+
+    // Nimm 5 Fragen (oder weniger falls nicht genug vorhanden)
+    const selectedQuestions = shuffledQuestions.slice(0, Math.min(5, shuffledQuestions.length));
+
+    // Mische auch die Antworten jeder Frage
+    const questionsWithShuffledAnswers = selectedQuestions.map(q => shuffleAnswers(q));
+
+    // Speichere die Fragen im Game für beide Spieler
+    if (!currentGame.categoryRounds) currentGame.categoryRounds = [];
+    currentGame.categoryRounds.push({
+      categoryId: catId,
+      categoryName: CATEGORIES.find(c => c.id === catId)?.name || catId,
+      questions: questionsWithShuffledAnswers,
+      player1Answers: [], // Antworten von Spieler 1
+      player2Answers: [], // Antworten von Spieler 2
+      chooser: user.name  // Wer hat die Kategorie gewählt
+    });
+
+    setCurrentCategoryQuestions(questionsWithShuffledAnswers);
+    setQuestionInCategory(0);
+    setCurrentQuestion(questionsWithShuffledAnswers[0]);
     setAnswered(false);
-    
+
     const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
     setTimeLeft(timeLimit);
     setTimerActive(true);
 
-    if (!currentGame.categoryHistory) currentGame.categoryHistory = [];
-    currentGame.categoryHistory.push(catId);
     await saveGameToSupabase(currentGame);
   };
 
@@ -1923,64 +1979,48 @@ export default function BaederApp() {
     if (answered || !currentGame) return;
     setAnswered(true);
     setTimerActive(false);
-    
-    const isPlayer1 = user.name === currentGame.player1;
-    if (isPlayer1) {
-      currentGame.player2Score++;
-    } else {
-      currentGame.player1Score++;
-    }
 
-    const stats = userStats || {
-      wins: 0,
-      losses: 0,
-      draws: 0,
-      categoryStats: {},
-      opponents: {}
-    };
-
-    if (!stats.categoryStats[quizCategory]) {
-      stats.categoryStats[quizCategory] = { correct: 0, incorrect: 0, total: 0 };
-    }
-
-    stats.categoryStats[quizCategory].incorrect++;
-    stats.categoryStats[quizCategory].total++;
-
-    currentGame.questionHistory.push({
-      round: quizRound,
-      player: user.name,
-      category: quizCategory,
-      correct: false,
-      timeout: true
-    });
-
-    await saveUserStatsToSupabase(user.name, stats);
-    setUserStats(stats);
-    // Nicht automatisch weitergehen - User muss "Weiter" klicken
+    // Speichere falsche Antwort (Timeout)
+    await savePlayerAnswer(false, true);
   };
 
   const answerQuestion = async (answerIndex) => {
     if (answered || !currentGame) return;
     setAnswered(true);
     setTimerActive(false);
-    
-    const isCorrect = answerIndex === currentQuestion.correct;
-    const isPlayer1 = user.name === currentGame.player1;
 
+    const isCorrect = answerIndex === currentQuestion.correct;
+    await savePlayerAnswer(isCorrect, false);
+  };
+
+  // Speichert die Antwort des aktuellen Spielers
+  const savePlayerAnswer = async (isCorrect, isTimeout) => {
+    const isPlayer1 = user.name === currentGame.player1;
+    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
+
+    // Punkte vergeben
     if (isCorrect) {
       if (isPlayer1) {
         currentGame.player1Score++;
       } else {
         currentGame.player2Score++;
       }
-    } else {
-      if (isPlayer1) {
-        currentGame.player2Score++;
-      } else {
-        currentGame.player1Score++;
-      }
     }
 
+    // Antwort speichern
+    const answer = {
+      questionIndex: questionInCategory,
+      correct: isCorrect,
+      timeout: isTimeout
+    };
+
+    if (isPlayer1) {
+      currentCategoryRound.player1Answers.push(answer);
+    } else {
+      currentCategoryRound.player2Answers.push(answer);
+    }
+
+    // Stats aktualisieren
     const stats = userStats || {
       wins: 0,
       losses: 0,
@@ -2000,45 +2040,130 @@ export default function BaederApp() {
     }
     stats.categoryStats[quizCategory].total++;
 
-    currentGame.questionHistory.push({
-      round: quizRound,
-      player: user.name,
-      category: quizCategory,
-      correct: isCorrect
-    });
-
     await saveUserStatsToSupabase(user.name, stats);
     setUserStats(stats);
-    // Nicht automatisch weitergehen - User muss "Weiter" klicken
+    await saveGameToSupabase(currentGame);
   };
 
-  // Funktion zum Weitergehen zur nächsten Runde (wird vom "Weiter"-Button aufgerufen)
+  // Funktion zum Weitergehen zur nächsten Frage/Runde
   const proceedToNextRound = async () => {
-    if (currentGame.round < 5) {
-      currentGame.currentTurn = currentGame.currentTurn === currentGame.player1
-        ? currentGame.player2
-        : currentGame.player1;
-      currentGame.round++;
+    const isPlayer1 = user.name === currentGame.player1;
+    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
+    const questionsInCurrentCategory = currentCategoryRound.questions.length;
+
+    // Nächste Frage in der aktuellen Kategorie?
+    if (questionInCategory < questionsInCurrentCategory - 1) {
+      // Noch mehr Fragen in dieser Kategorie
+      const nextQuestionIndex = questionInCategory + 1;
+      setQuestionInCategory(nextQuestionIndex);
+      setCurrentQuestion(currentCategoryQuestions[nextQuestionIndex]);
+      setAnswered(false);
+
+      const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
+      setTimeLeft(timeLimit);
+      setTimerActive(true);
+      return;
+    }
+
+    // Alle 5 Fragen dieser Kategorie beantwortet
+    // Prüfe ob der andere Spieler auch schon dran war
+    const player1Done = currentCategoryRound.player1Answers.length >= questionsInCurrentCategory;
+    const player2Done = currentCategoryRound.player2Answers.length >= questionsInCurrentCategory;
+
+    if (isPlayer1 && !player2Done) {
+      // Spieler 1 fertig, Spieler 2 muss noch die gleichen Fragen beantworten
+      currentGame.currentTurn = currentGame.player2;
+      setWaitingForOpponent(true);
+      setQuizCategory(null);
+      setCurrentQuestion(null);
+      setPlayerTurn(currentGame.player2);
 
       await saveGameToSupabase(currentGame);
 
-      // Send notification to next player
-      const nextPlayer = currentGame.currentTurn;
+      // Benachrichtigung an Spieler 2
       await sendNotification(
-        nextPlayer,
+        currentGame.player2,
         '⚡ Du bist dran!',
-        `${user.name} hat gespielt. Jetzt bist du im Quizduell an der Reihe!`,
+        `${user.name} hat die Kategorie "${currentCategoryRound.categoryName}" gespielt. Jetzt bist du dran mit den gleichen Fragen!`,
         'info'
       );
+      return;
+    }
 
-      setQuizRound(currentGame.round);
+    if (!isPlayer1 && !player1Done) {
+      // Spieler 2 fertig (hat Kategorie gewählt), Spieler 1 muss noch
+      currentGame.currentTurn = currentGame.player1;
+      setWaitingForOpponent(true);
       setQuizCategory(null);
       setCurrentQuestion(null);
-      setPlayerTurn(currentGame.currentTurn);
+      setPlayerTurn(currentGame.player1);
+
+      await saveGameToSupabase(currentGame);
+
+      await sendNotification(
+        currentGame.player1,
+        '⚡ Du bist dran!',
+        `${user.name} hat die Kategorie "${currentCategoryRound.categoryName}" gespielt. Jetzt bist du dran mit den gleichen Fragen!`,
+        'info'
+      );
+      return;
+    }
+
+    // Beide Spieler haben diese Kategorie abgeschlossen
+    // Nächste Kategorie oder Spielende?
+    if (currentGame.categoryRound < 3) {
+      // Nächste Kategorie-Runde (insgesamt 4)
+      currentGame.categoryRound++;
+
+      // Der Spieler der NICHT die letzte Kategorie gewählt hat, wählt jetzt
+      const nextChooser = currentCategoryRound.chooser === currentGame.player1
+        ? currentGame.player2
+        : currentGame.player1;
+
+      currentGame.currentTurn = nextChooser;
+
+      setCategoryRound(currentGame.categoryRound);
+      setQuestionInCategory(0);
+      setQuizCategory(null);
+      setCurrentQuestion(null);
+      setCurrentCategoryQuestions([]);
+      setPlayerTurn(nextChooser);
+      setWaitingForOpponent(false);
       setAnswered(false);
+
+      await saveGameToSupabase(currentGame);
+
+      if (nextChooser !== user.name) {
+        await sendNotification(
+          nextChooser,
+          '🎯 Wähle eine Kategorie!',
+          `Runde ${currentGame.categoryRound + 1}/4 - Du darfst die nächste Kategorie wählen!`,
+          'info'
+        );
+      }
     } else {
+      // Spiel beendet (4 Kategorien gespielt)
       await finishGame();
     }
+  };
+
+  // Wenn Spieler 2 die gespeicherten Fragen spielen muss
+  const startCategoryAsSecondPlayer = () => {
+    if (!currentGame || !currentGame.categoryRounds) return;
+
+    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
+    if (!currentCategoryRound) return;
+
+    setQuizCategory(currentCategoryRound.categoryId);
+    setCurrentCategoryQuestions(currentCategoryRound.questions);
+    setQuestionInCategory(0);
+    setCurrentQuestion(currentCategoryRound.questions[0]);
+    setAnswered(false);
+    setWaitingForOpponent(false);
+
+    const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
+    setTimeLeft(timeLimit);
+    setTimerActive(true);
   };
 
   const finishGame = async () => {
@@ -3830,7 +3955,12 @@ export default function BaederApp() {
                   <p className="text-3xl font-bold text-blue-600">{currentGame.player1Score}</p>
                 </div>
                 <div className="text-center flex-1">
-                  <p className="text-2xl font-bold text-gray-400">Runde {quizRound + 1}/6</p>
+                  <p className="text-2xl font-bold text-gray-400">Kategorie {(currentGame.categoryRound || 0) + 1}/4</p>
+                  {quizCategory && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Frage {questionInCategory + 1}/5
+                    </p>
+                  )}
                   <p className="text-sm text-gray-600 mt-2">
                     {playerTurn === user.name ? '⚡ Du bist dran!' : `${playerTurn} ist dran...`}
                   </p>
@@ -3840,11 +3970,32 @@ export default function BaederApp() {
                   <p className="text-3xl font-bold text-red-600">{currentGame.player2Score}</p>
                 </div>
               </div>
-              {!quizCategory && playerTurn === user.name && (
+
+              {/* Kategorie-Übersicht */}
+              {currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && !currentQuestion && (
+                <div className="mb-4 flex justify-center gap-2 flex-wrap">
+                  {currentGame.categoryRounds.map((cr, idx) => {
+                    const cat = CATEGORIES.find(c => c.id === cr.categoryId);
+                    return (
+                      <span key={idx} className={`${cat?.color || 'bg-gray-500'} text-white px-3 py-1 rounded-full text-sm`}>
+                        {cat?.icon} {cat?.name}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Kategorie wählen - nur wenn ich dran bin UND noch keine Kategorie gewählt wurde */}
+              {!quizCategory && playerTurn === user.name && !waitingForOpponent && (
                 <div>
                   <h3 className="text-xl font-bold text-center mb-4">Wähle eine Kategorie:</h3>
+                  <p className="text-center text-gray-500 mb-4">Du wählst 5 Fragen - danach spielt {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} die gleichen Fragen!</p>
                   <div className="grid grid-cols-2 gap-3">
-                    {CATEGORIES.map(cat => (
+                    {CATEGORIES.filter(cat => {
+                      // Bereits gespielte Kategorien ausblenden
+                      const played = currentGame.categoryRounds?.map(cr => cr.categoryId) || [];
+                      return !played.includes(cat.id);
+                    }).map(cat => (
                       <button
                         key={cat.id}
                         onClick={() => selectCategory(cat.id)}
@@ -3857,17 +4008,57 @@ export default function BaederApp() {
                   </div>
                 </div>
               )}
+
+              {/* Spieler 2 muss die gleichen Fragen spielen */}
+              {!currentQuestion && playerTurn === user.name && currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && (() => {
+                const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
+                if (!currentCatRound) return false;
+                const isPlayer1 = user.name === currentGame.player1;
+                const myAnswers = isPlayer1 ? currentCatRound.player1Answers : currentCatRound.player2Answers;
+                return myAnswers.length === 0 && currentCatRound.questions.length > 0;
+              })() && (
+                <div className="text-center py-8">
+                  <div className="text-6xl mb-4">🎯</div>
+                  <p className="text-xl font-bold mb-2">
+                    {(() => {
+                      const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
+                      return currentCatRound?.categoryName || 'Kategorie';
+                    })()}
+                  </p>
+                  <p className="text-gray-600 mb-4">
+                    {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} hat diese Kategorie gespielt. Jetzt bist du dran mit den gleichen 5 Fragen!
+                  </p>
+                  <button
+                    onClick={startCategoryAsSecondPlayer}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
+                  >
+                    Los geht's! 🚀
+                  </button>
+                </div>
+              )}
+
+              {/* Warte auf anderen Spieler */}
               {!quizCategory && playerTurn !== user.name && (
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">⏳</div>
                   <p className="text-xl text-gray-600">Warte auf {playerTurn}...</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    {waitingForOpponent ? 'Dein Gegner spielt jetzt die gleichen Fragen' : 'Dein Gegner wählt eine Kategorie'}
+                  </p>
                 </div>
               )}
+
+              {/* Frage anzeigen */}
               {currentQuestion && playerTurn === user.name && (
                 <div className="space-y-4">
                   <div className="mb-4">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-gray-600">Zeit:</span>
+                      <span className="text-sm font-medium text-gray-600">
+                        {(() => {
+                          const cat = CATEGORIES.find(c => c.id === quizCategory);
+                          return cat ? `${cat.icon} ${cat.name}` : 'Frage';
+                        })()}
+                      </span>
                       <span className={`text-2xl font-bold ${
                         timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-blue-600'
                       }`}>
@@ -3875,7 +4066,7 @@ export default function BaederApp() {
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                      <div 
+                      <div
                         className={`h-3 rounded-full transition-all duration-1000 ${
                           timeLeft <= 10 ? 'bg-red-500' : 'bg-blue-500'
                         }`}
