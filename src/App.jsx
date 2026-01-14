@@ -369,6 +369,23 @@ const PERMISSIONS = {
 // Demo-Accounts entfernt - alle Logins laufen über Supabase
 const DEMO_ACCOUNTS = {};
 
+// Hilfsfunktion: Mischt Antworten und gibt neue Antwort-Array + korrekten Index zurück
+const shuffleAnswers = (question) => {
+  const answers = [...question.a];
+  const correctAnswer = answers[question.correct];
+
+  // Fisher-Yates shuffle
+  for (let i = answers.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [answers[i], answers[j]] = [answers[j], answers[i]];
+  }
+
+  // Finde den neuen Index der korrekten Antwort
+  const newCorrectIndex = answers.indexOf(correctAnswer);
+
+  return { ...question, a: answers, correct: newCorrectIndex };
+};
+
 export default function BaederApp() {
   const [currentView, setCurrentView] = useState('home');
   const [authView, setAuthView] = useState('login'); // login, register
@@ -1925,25 +1942,7 @@ export default function BaederApp() {
 
     await saveUserStatsToSupabase(user.name, stats);
     setUserStats(stats);
-
-    setTimeout(async () => {
-      if (currentGame.round < 5) {
-        currentGame.currentTurn = currentGame.currentTurn === currentGame.player1
-          ? currentGame.player2
-          : currentGame.player1;
-        currentGame.round++;
-
-        await saveGameToSupabase(currentGame);
-
-        setQuizRound(currentGame.round);
-        setQuizCategory(null);
-        setCurrentQuestion(null);
-        setPlayerTurn(currentGame.currentTurn);
-        setAnswered(false);
-      } else {
-        await finishGame();
-      }
-    }, 2000);
+    // Nicht automatisch weitergehen - User muss "Weiter" klicken
   };
 
   const answerQuestion = async (answerIndex) => {
@@ -1996,34 +1995,36 @@ export default function BaederApp() {
 
     await saveUserStatsToSupabase(user.name, stats);
     setUserStats(stats);
+    // Nicht automatisch weitergehen - User muss "Weiter" klicken
+  };
 
-    setTimeout(async () => {
-      if (currentGame.round < 5) {
-        currentGame.currentTurn = currentGame.currentTurn === currentGame.player1
-          ? currentGame.player2
-          : currentGame.player1;
-        currentGame.round++;
+  // Funktion zum Weitergehen zur nächsten Runde (wird vom "Weiter"-Button aufgerufen)
+  const proceedToNextRound = async () => {
+    if (currentGame.round < 5) {
+      currentGame.currentTurn = currentGame.currentTurn === currentGame.player1
+        ? currentGame.player2
+        : currentGame.player1;
+      currentGame.round++;
 
-        await saveGameToSupabase(currentGame);
+      await saveGameToSupabase(currentGame);
 
-        // Send notification to next player
-        const nextPlayer = currentGame.currentTurn;
-        await sendNotification(
-          nextPlayer,
-          '⚡ Du bist dran!',
-          `${user.name} hat gespielt. Jetzt bist du im Quizduell an der Reihe!`,
-          'info'
-        );
+      // Send notification to next player
+      const nextPlayer = currentGame.currentTurn;
+      await sendNotification(
+        nextPlayer,
+        '⚡ Du bist dran!',
+        `${user.name} hat gespielt. Jetzt bist du im Quizduell an der Reihe!`,
+        'info'
+      );
 
-        setQuizRound(currentGame.round);
-        setQuizCategory(null);
-        setCurrentQuestion(null);
-        setPlayerTurn(currentGame.currentTurn);
-        setAnswered(false);
-      } else {
-        await finishGame();
-      }
-    }, 2000);
+      setQuizRound(currentGame.round);
+      setQuizCategory(null);
+      setCurrentQuestion(null);
+      setPlayerTurn(currentGame.currentTurn);
+      setAnswered(false);
+    } else {
+      await finishGame();
+    }
   };
 
   const finishGame = async () => {
@@ -2196,7 +2197,8 @@ export default function BaederApp() {
       questions.forEach(q => { allQuestions.push({ ...q, category: catId }); });
     });
     const shuffled = allQuestions.sort(() => Math.random() - 0.5);
-    const examQuestions = shuffled.slice(0, Math.min(30, shuffled.length));
+    // Mische die Antworten jeder Frage, damit die richtige Antwort nicht immer an der gleichen Stelle ist
+    const examQuestions = shuffled.slice(0, Math.min(30, shuffled.length)).map(q => shuffleAnswers(q));
     setExamSimulator({ questions: examQuestions, answers: [], startTime: Date.now() });
     setExamQuestionIndex(0);
     setExamCurrentQuestion(examQuestions[0]);
@@ -3810,6 +3812,14 @@ export default function BaederApp() {
                     <div className="bg-red-100 border-2 border-red-500 rounded-xl p-4 text-center">
                       <p className="text-red-700 font-bold">⏰ Zeit abgelaufen!</p>
                     </div>
+                  )}
+                  {answered && (
+                    <button
+                      onClick={proceedToNextRound}
+                      className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg"
+                    >
+                      Weiter →
+                    </button>
                   )}
                 </div>
               )}
