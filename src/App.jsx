@@ -487,8 +487,9 @@ export default function BaederApp() {
   const [newAttendanceDate, setNewAttendanceDate] = useState('');
   const [newAttendanceStart, setNewAttendanceStart] = useState('');
   const [newAttendanceEnd, setNewAttendanceEnd] = useState('');
-  const [newAttendanceTeacherSig, setNewAttendanceTeacherSig] = useState(false);
-  const [newAttendanceTrainerSig, setNewAttendanceTrainerSig] = useState(false);
+  const [newAttendanceTeacherSig, setNewAttendanceTeacherSig] = useState('');
+  const [newAttendanceTrainerSig, setNewAttendanceTrainerSig] = useState('');
+  const [editingSignature, setEditingSignature] = useState(null); // { id, field, value }
   
   // Calculator State
   const [calculatorType, setCalculatorType] = useState('ph');
@@ -2284,8 +2285,8 @@ export default function BaederApp() {
       setNewAttendanceDate('');
       setNewAttendanceStart('');
       setNewAttendanceEnd('');
-      setNewAttendanceTeacherSig(false);
-      setNewAttendanceTrainerSig(false);
+      setNewAttendanceTeacherSig('');
+      setNewAttendanceTrainerSig('');
 
       // Reload data
       loadSchoolAttendance();
@@ -5497,27 +5498,27 @@ export default function BaederApp() {
                       className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
                     />
                   </div>
-                  <div className="flex items-end">
-                    <label className={`flex items-center cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      <input
-                        type="checkbox"
-                        checked={newAttendanceTeacherSig}
-                        onChange={(e) => setNewAttendanceTeacherSig(e.target.checked)}
-                        className="mr-2 w-5 h-5"
-                      />
-                      <span className="text-sm">Lehrer ✍️</span>
-                    </label>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Unterschrift Lehrer ✍️</label>
+                    <input
+                      type="text"
+                      value={newAttendanceTeacherSig}
+                      onChange={(e) => setNewAttendanceTeacherSig(e.target.value)}
+                      placeholder="Name des Lehrers"
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                    />
                   </div>
-                  <div className="flex items-end">
-                    <label className={`flex items-center cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      <input
-                        type="checkbox"
-                        checked={newAttendanceTrainerSig}
-                        onChange={(e) => setNewAttendanceTrainerSig(e.target.checked)}
-                        className="mr-2 w-5 h-5"
-                      />
-                      <span className="text-sm">Ausbilder ✍️</span>
-                    </label>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Unterschrift Ausbilder ✍️</label>
+                    <input
+                      type="text"
+                      value={newAttendanceTrainerSig}
+                      onChange={(e) => setNewAttendanceTrainerSig(e.target.value)}
+                      placeholder="Name des Ausbilders"
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                    />
                   </div>
                 </div>
                 <button
@@ -5550,21 +5551,69 @@ export default function BaederApp() {
                         </td>
                         <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{entry.start_time}</td>
                         <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{entry.end_time}</td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => updateAttendanceSignature(entry.id, 'teacher_signature', !entry.teacher_signature)}
-                            className={`w-10 h-10 rounded-full transition-all ${entry.teacher_signature ? 'bg-green-500 text-white' : (darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-400')}`}
-                          >
-                            {entry.teacher_signature ? <Check className="mx-auto" size={20} /> : <X className="mx-auto" size={20} />}
-                          </button>
+                        <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                          {editingSignature?.id === entry.id && editingSignature?.field === 'teacher_signature' ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={editingSignature.value}
+                                onChange={(e) => setEditingSignature({ ...editingSignature, value: e.target.value })}
+                                className={`px-2 py-1 border rounded text-sm w-32 ${darkMode ? 'bg-slate-600 border-slate-500' : 'bg-white border-gray-300'}`}
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => { updateAttendanceSignature(entry.id, 'teacher_signature', editingSignature.value); setEditingSignature(null); }}
+                                className="text-green-500 hover:text-green-700"
+                              >
+                                <Check size={18} />
+                              </button>
+                              <button
+                                onClick={() => setEditingSignature(null)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <X size={18} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div
+                              onClick={() => setEditingSignature({ id: entry.id, field: 'teacher_signature', value: entry.teacher_signature || '' })}
+                              className={`cursor-pointer px-2 py-1 rounded min-h-[32px] ${entry.teacher_signature ? (darkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-700') : (darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-100 text-gray-400')} hover:opacity-80 transition-all`}
+                            >
+                              {entry.teacher_signature || <span className="italic text-xs">Klicken zum Unterschreiben</span>}
+                            </div>
+                          )}
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => updateAttendanceSignature(entry.id, 'trainer_signature', !entry.trainer_signature)}
-                            className={`w-10 h-10 rounded-full transition-all ${entry.trainer_signature ? 'bg-green-500 text-white' : (darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-400')}`}
-                          >
-                            {entry.trainer_signature ? <Check className="mx-auto" size={20} /> : <X className="mx-auto" size={20} />}
-                          </button>
+                        <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                          {editingSignature?.id === entry.id && editingSignature?.field === 'trainer_signature' ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={editingSignature.value}
+                                onChange={(e) => setEditingSignature({ ...editingSignature, value: e.target.value })}
+                                className={`px-2 py-1 border rounded text-sm w-32 ${darkMode ? 'bg-slate-600 border-slate-500' : 'bg-white border-gray-300'}`}
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => { updateAttendanceSignature(entry.id, 'trainer_signature', editingSignature.value); setEditingSignature(null); }}
+                                className="text-green-500 hover:text-green-700"
+                              >
+                                <Check size={18} />
+                              </button>
+                              <button
+                                onClick={() => setEditingSignature(null)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <X size={18} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div
+                              onClick={() => setEditingSignature({ id: entry.id, field: 'trainer_signature', value: entry.trainer_signature || '' })}
+                              className={`cursor-pointer px-2 py-1 rounded min-h-[32px] ${entry.trainer_signature ? (darkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700') : (darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-100 text-gray-400')} hover:opacity-80 transition-all`}
+                            >
+                              {entry.trainer_signature || <span className="italic text-xs">Klicken zum Unterschreiben</span>}
+                            </div>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <button
@@ -5598,19 +5647,19 @@ export default function BaederApp() {
                     </div>
                     <div>
                       <div className={`text-2xl font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                        {schoolAttendance.filter(e => e.teacher_signature).length}
+                        {schoolAttendance.filter(e => e.teacher_signature && e.teacher_signature.trim() !== '').length}
                       </div>
                       <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Lehrer unterschrieben</div>
                     </div>
                     <div>
                       <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                        {schoolAttendance.filter(e => e.trainer_signature).length}
+                        {schoolAttendance.filter(e => e.trainer_signature && e.trainer_signature.trim() !== '').length}
                       </div>
                       <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Ausbilder unterschrieben</div>
                     </div>
                     <div>
                       <div className={`text-2xl font-bold ${darkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                        {schoolAttendance.filter(e => !e.teacher_signature || !e.trainer_signature).length}
+                        {schoolAttendance.filter(e => !e.teacher_signature?.trim() || !e.trainer_signature?.trim()).length}
                       </div>
                       <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Offen</div>
                     </div>
