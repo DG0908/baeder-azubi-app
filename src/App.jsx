@@ -293,37 +293,233 @@ const WORK_SAFETY_TOPICS = [
   }
 ];
 
+// Fragen-Format:
+// - correct: number = Single-Choice (Index der richtigen Antwort)
+// - correct: number[] = Multi-Select (Array der richtigen Indizes) - multi: true muss gesetzt sein
 const SAMPLE_QUESTIONS = {
+  // ===== BÄDERORGANISATION (Badebetrieb) =====
   org: [
     { q: 'Was ist ein Hausrecht?', a: ['Recht des Badbetreibers, Hausordnung durchzusetzen', 'Recht auf ein Haus', 'Baurecht', 'Mietrecht'], correct: 0 },
     { q: 'Wie lange muss eine Aufsichtsperson im Bad sein?', a: ['Während der Öffnungszeiten', 'Nur morgens', 'Nur abends', 'Keine Pflicht'], correct: 0 },
-    { q: 'Was regelt die Badeordnung?', a: ['Verhalten der Badegäste', 'Wassertemperatur', 'Eintrittspreise', 'Öffnungszeiten'], correct: 0 }
+    { q: 'Was regelt die Badeordnung?', a: ['Verhalten der Badegäste', 'Wassertemperatur', 'Eintrittspreise', 'Öffnungszeiten'], correct: 0 },
+    // Dienstplanerstellung
+    { q: 'Welcher Aspekt muss bei der Erstellung von Dienstplänen berücksichtigt werden?', a: ['Urlaubszeiten der Mitarbeiter', 'Lieblingsfarbe der Gäste', 'Wetter der nächsten Woche', 'Aktienkurse'], correct: 0 },
+    { q: 'Was gehört NICHT zu den Umständen bei der Dienstplanerstellung? (Mehrere richtig)', a: ['Qualifikation der Mitarbeiter', 'Besucherzahlen/Stoßzeiten', 'Private Hobbys der Gäste', 'Gesetzliche Ruhezeiten'], correct: 2 },
+    { q: 'Welche 5 Aspekte müssen bei der Dienstplanerstellung berücksichtigt werden? (Mehrere richtig)', a: ['Qualifikation/Rettungsfähigkeit', 'Gesetzliche Arbeitszeiten', 'Urlaubsansprüche', 'Stoßzeiten/Besucherzahlen'], correct: [0, 1, 2, 3], multi: true },
+    // Schulschwimmen
+    { q: 'Welche Auswirkung hat die Schließung eines Schwimmbads auf das Schulschwimmen?', a: ['Längere Anfahrtswege für Schulen', 'Mehr Parkplätze', 'Günstigere Eintrittspreise', 'Weniger Hausaufgaben'], correct: 0 },
+    { q: 'Nach welchem Kriterium werden Schwimmzeiten für Schulen verteilt?', a: ['Entfernung zum Bad und Schülerzahl', 'Alphabetische Reihenfolge', 'Wer zuerst kommt', 'Losverfahren'], correct: 0 },
+    // Standortwahl Schwimmbad
+    { q: 'Welches Kriterium ist bei der Standortwahl für ein neues Schwimmbad wichtig?', a: ['Gute Verkehrsanbindung', 'Nähe zu Flughäfen', 'Hohe Kriminalitätsrate', 'Viele Industriegebiete'], correct: 0 },
+    { q: 'Welche Kriterien sind für die Standortwahl eines Schwimmbads relevant? (Mehrere richtig)', a: ['Einzugsgebiet/Bevölkerungsdichte', 'ÖPNV-Anbindung', 'Parkplatzsituation', 'Anzahl der Bäckereien'], correct: [0, 1, 2], multi: true },
+    // Wasseraufsicht DGfdB R 94.05
+    { q: 'Welche Anforderung gilt für Personen der Wasseraufsicht nach DGfdB R 94.05?', a: ['Rettungsfähigkeit nachgewiesen', 'Mindestens 2m groß', 'Unter 25 Jahre alt', 'Schwimmabzeichen Seepferdchen'], correct: 0 },
+    { q: 'Welche Anforderungen gelten für die Wasseraufsicht? (Mehrere richtig)', a: ['Gültiger Rettungsschwimmnachweis', 'Erste-Hilfe-Ausbildung', 'Regelmäßige Fortbildung', 'Führerschein Klasse B'], correct: [0, 1, 2], multi: true },
+    // Großrutschen Sicherheit
+    { q: 'Welche Sicherheitsmaßnahme gilt beim Betrieb von Großrutschen?', a: ['Ampelanlage zur Startfreigabe', 'Keine Aufsicht nötig', 'Unbegrenzte Personenzahl', 'Rutschen ohne Wasser'], correct: 0 },
+    { q: 'Welche Sicherheitsmaßnahmen gelten bei Großrutschen? (Mehrere richtig)', a: ['Startfreigabe-System (Ampel)', 'Auslaufbecken mit Aufsicht', 'Mindestabstand zwischen Nutzern', 'Altersfreigabe ab 3 Jahren'], correct: [0, 1, 2], multi: true },
+    // Sprunganlagen Kontrollen
+    { q: 'Was muss regelmäßig an Sprunganlagen kontrolliert werden?', a: ['Trittsicherheit der Oberflächen', 'Farbe der Bretter', 'Anzahl der Zuschauer', 'Wassertemperatur im Becken'], correct: 0 },
+    { q: 'Welche Kontrollen sind an Sprunganlagen durchzuführen? (Mehrere richtig)', a: ['Standfestigkeit/Verankerung', 'Rutschfestigkeit der Beläge', 'Wassertiefe im Sprungbereich', 'Geländer und Handläufe'], correct: [0, 1, 2, 3], multi: true },
+    // Wellenbecken Sicherheit
+    { q: 'Welche Sicherheitsmaßnahme ist beim Wellenbecken wichtig?', a: ['Durchsage vor Wellenbetrieb', 'Wellen ohne Vorwarnung', 'Keine Aufsicht im Tiefbereich', 'Schwimmhilfen verboten'], correct: 0 },
+    // Betriebstagebuch
+    { q: 'Was wird im Betriebstagebuch zur Wasseraufbereitung eingetragen?', a: ['Chlorwerte und pH-Wert', 'Namen der Badegäste', 'Wettervorhersage', 'Fernsehprogramm'], correct: 0 },
+    { q: 'Welche Einträge gehören ins Betriebstagebuch? (Mehrere richtig)', a: ['Hygiene-Hilfsparameter (Chlor, pH, Redox)', 'Filterspülungen', 'Chemikalienverbrauch', 'Störungen/Reparaturen'], correct: [0, 1, 2, 3], multi: true },
+    // Angebote & Zielgruppen
+    { q: 'Welches Angebot passt zur Zielgruppe "Senioren"?', a: ['Wassergymnastik', 'Techno-Schwimmparty', 'Wildwasser-Rafting', 'Turmspringen'], correct: 0 },
+    { q: 'Ordne Angebote zu Zielgruppen: Welche passen zusammen? (Mehrere richtig)', a: ['Babyschwimmen - Eltern mit Kleinkindern', 'Aqua-Fitness - Erwachsene', 'Schwimmkurse - Anfänger', 'Nachtbaden - Familien mit Babys'], correct: [0, 1, 2], multi: true },
+    // Animationsplanung
+    { q: 'Was muss bei der Planung eines Animationsangebots berücksichtigt werden?', a: ['Zielgruppe und Teilnehmerzahl', 'Aktienkurse', 'Mondphasen', 'Politische Lage'], correct: 0 },
+    // Marketing-Regelkreis
+    { q: 'Was gehört zum Marketing-Regelkreis?', a: ['Analyse - Planung - Durchführung - Kontrolle', 'Kochen - Essen - Schlafen - Aufwachen', 'Einkaufen - Verkaufen - Sparen - Ausgeben', 'Laufen - Springen - Schwimmen - Fliegen'], correct: 0 },
+    // Marketing-Mix
+    { q: 'Was beschreibt der Marketing-Mix?', a: ['Kombination der 4 Ps: Product, Price, Place, Promotion', 'Mischung verschiedener Getränke', 'Musikprogramm im Bad', 'Zusammenstellung des Personals'], correct: 0 },
+    // Einwintern
+    { q: 'Was versteht man unter "Einwintern" eines Freibads?', a: ['Maßnahmen zum Schutz vor Frostschäden', 'Öffnung im Winter', 'Heizen des Beckens', 'Winterbaden anbieten'], correct: 0 },
+    { q: 'Welche Maßnahmen gehören zur Einwinterung eines Freibad-Sportbeckens? (Mehrere richtig)', a: ['Wasserstand absenken', 'Leitungen entleeren', 'Abdeckung anbringen', 'Wasser auf 40°C heizen'], correct: [0, 1, 2], multi: true },
+    // Kassensystem
+    { q: 'Was spricht für ein Computer-Kassensystem?', a: ['Automatische Umsatzerfassung', 'Mehr Personalaufwand', 'Langsamere Abfertigung', 'Höhere Fehlerquote'], correct: 0 },
+    // Kassentagesabrechnung
+    { q: 'Was muss auf einer Kassentagesabrechnung stehen?', a: ['Datum und Gesamtumsatz', 'Lieblingsspeise des Kassierers', 'Wetterbericht', 'Fernsehprogramm'], correct: 0 },
+    // Public Relations
+    { q: 'Was fällt unter "Public Relations"?', a: ['Zeitungsartikel über das Schwimmbad', 'Gutscheine verkaufen', 'Eintrittspreise erhöhen', 'Personal entlassen'], correct: 0 },
+    // Preisdifferenzierung
+    { q: 'Was ist eine "Happy Hour" im Schwimmbad?', a: ['Zeitliche Preisdifferenzierung', 'Örtliche Preisdifferenzierung', 'Preisdifferenzierung nach Zielgruppen', 'Quantitative Preisdifferenzierung'], correct: 0 }
   ],
+
+  // ===== BÄDERTECHNIK =====
   tech: [
     { q: 'Was ist der pH-Wert von neutralem Wasser?', a: ['7', '5', '9', '11'], correct: 0 },
     { q: 'Welche Temperatur hat ein Sportbecken normalerweise?', a: ['26-28°C', '20-22°C', '30-32°C', '35-37°C'], correct: 0 },
-    { q: 'Was macht eine Umwälzpumpe?', a: ['Pumpt Wasser durch Filter', 'Heizt das Wasser', 'Misst den pH-Wert', 'Chloriert das Wasser'], correct: 0 }
+    { q: 'Was macht eine Umwälzpumpe?', a: ['Pumpt Wasser durch Filter', 'Heizt das Wasser', 'Misst den pH-Wert', 'Chloriert das Wasser'], correct: 0 },
+    // Chlor/Desinfektion
+    { q: 'Welchen Einfluss hat freies Chlor auf die Desinfektion?', a: ['Tötet Keime ab', 'Färbt das Wasser blau', 'Erhöht die Temperatur', 'Senkt den Wasserstand'], correct: 0 },
+    { q: 'Was bedeutet ein zu niedriger freier Chlorwert (0,1 mg/L)?', a: ['Unzureichende Desinfektion', 'Optimale Wasserqualität', 'Zu viel Chlor', 'Perfekter Zustand'], correct: 0 },
+    { q: 'Was bedeutet ein hoher gebundener Chlorwert (0,5 mg/L)?', a: ['Zu viele Verunreinigungen, die mit Chlor reagiert haben', 'Gute Wasserqualität', 'Zu wenig Badegäste', 'Optimale Desinfektion'], correct: 0 },
+    { q: 'Was bedeutet ein zu niedriger pH-Wert (6,2)?', a: ['Wasser ist zu sauer, Chlorwirkung eingeschränkt', 'Wasser ist zu basisch', 'Optimaler Wert', 'Perfekt für Schwimmer'], correct: 0 },
+    // Messfehler
+    { q: 'Was kann zu Messfehlern beim photometrischen Verfahren führen?', a: ['Verschmutzte Küvetten', 'Zu sauberes Wasser', 'Zu viele Badegäste', 'Sonnenschein'], correct: 0 },
+    { q: 'Welche Fehler können beim photometrischen Verfahren auftreten? (Mehrere richtig)', a: ['Verschmutzte Küvetten', 'Falsche Reagenzien', 'Abgelaufene Reagenzien', 'Zu kaltes Wasser'], correct: [0, 1, 2], multi: true },
+    { q: 'Was kann zu Fehlern an der Messzelle führen?', a: ['Verschmutzte Elektroden', 'Zu viel Sonnenlicht', 'Zu viele Schwimmer', 'Falsche Beckengröße'], correct: 0 },
+    // Ursachen Abweichung
+    { q: 'Was kann eine Ursache für abweichende Wasserwerte sein (ohne Messfehler)?', a: ['Hohe Besucherzahlen', 'Zu wenig Personal', 'Falsche Kassenabrechnung', 'Schlechtes Wetter'], correct: 0 },
+    { q: 'Welche Ursachen können zu abweichenden Wasserwerten führen? (Mehrere richtig)', a: ['Hohe Besucherzahl', 'Defekte Dosieranlage', 'Filterproblem', 'Zu wenig Umwälzung'], correct: [0, 1, 2, 3], multi: true },
+    // Sorptionsfilter
+    { q: 'Welche Aufgabe hat der Sorptionsfilter?', a: ['Entfernung von Ozonresten und organischen Stoffen', 'Wasser erwärmen', 'Chlor hinzufügen', 'pH-Wert erhöhen'], correct: 0 },
+    { q: 'Welche Aufgaben hat der Sorptionsfilter? (Mehrere richtig)', a: ['Ozonabbau', 'Adsorption organischer Stoffe', 'Biologischer Abbau von Verunreinigungen', 'Wasser aufheizen'], correct: [0, 1, 2], multi: true },
+    // Pumpen-Kenngrößen
+    { q: 'Wofür steht U = 400 V bei einer Pumpe?', a: ['Spannung (Volt)', 'Umdrehungen', 'Umwälzrate', 'Uhrzeit'], correct: 0 },
+    { q: 'Wofür steht Pzu bei einer Pumpe?', a: ['Zugeführte Leistung (kW)', 'Pumpenanzahl', 'Personenzahl', 'Prüfungszeit'], correct: 0 },
+    { q: 'Wofür steht Q bei einer Pumpe?', a: ['Volumenstrom (m³/h)', 'Qualität', 'Quadratmeter', 'Querschnitt'], correct: 0 },
+    { q: 'Was bedeutet η (Eta) bei einer Pumpe?', a: ['Wirkungsgrad (Verhältnis Nutz-/Aufwandleistung)', 'Wasserhärte', 'Temperatur', 'Chlorgehalt'], correct: 0 },
+    // Flockung
+    { q: 'Was ist eine Voraussetzung für funktionierende Flockung?', a: ['Richtige Dosierung des Flockungsmittels', 'Hohe Wassertemperatur', 'Viele Badegäste', 'Starke Beleuchtung'], correct: 0 },
+    { q: 'Welche Voraussetzungen braucht eine funktionierende Flockung? (Mehrere richtig)', a: ['Richtige Flockungsmittel-Dosierung', 'Geeigneter pH-Wert', 'Ausreichende Reaktionszeit', 'Turbulente Vermischung'], correct: [0, 1, 2, 3], multi: true },
+    // Teilchengrößen
+    { q: 'Welche Kategorie von Teilchengrößen gibt es bei Wasserverschmutzung?', a: ['Gelöste Stoffe', 'Gefrorene Stoffe', 'Verdampfte Stoffe', 'Magnetische Stoffe'], correct: 0 },
+    { q: 'Welche 3 Kategorien von Teilchengrößen gibt es? (Mehrere richtig)', a: ['Gelöste Stoffe', 'Kolloidale Stoffe', 'Suspendierte Stoffe', 'Radioaktive Stoffe'], correct: [0, 1, 2], multi: true },
+    // Filtersysteme
+    { q: 'Was ist ein Vorteil des Schnell-Schüttfilters?', a: ['Hohe Filterleistung bei großen Wassermengen', 'Sehr klein', 'Kein Strom nötig', 'Funktioniert ohne Wasser'], correct: 0 },
+    { q: 'Was ist ein Vorteil des Anschwemmfilters?', a: ['Sehr feine Filtration möglich', 'Keine Wartung nötig', 'Extrem billig', 'Funktioniert mit Luft'], correct: 0 },
+    { q: 'Was ist ein Vorteil des Ultrafilters?', a: ['Entfernt auch Bakterien und Viren', 'Keine Energie nötig', 'Wartungsfrei', 'Funktioniert bei Frost'], correct: 0 },
+    // Klappenstellungen
+    { q: 'Wie ist die Rohwasser-Klappe im Filterbetrieb?', a: ['Offen', 'Geschlossen', 'Halb offen', 'Gibt es nicht'], correct: 0 },
+    { q: 'Wie ist die Spülwasser-Klappe im Filterbetrieb?', a: ['Geschlossen', 'Offen', 'Halb offen', 'Gibt es nicht'], correct: 0 },
+    // Filter-Berechnungen
+    { q: 'Was ist das Freibord bei einem Filter?', a: ['Abstand zwischen Filterbett-Oberkante und Behälter-Oberkante', 'Wassertiefe', 'Filterdicke', 'Rohrdurchmesser'], correct: 0 },
+    { q: 'Was beschreibt die Filtergeschwindigkeit?', a: ['Wie schnell Wasser durch den Filter fließt (m/h)', 'Wie schnell der Filter rotiert', 'Wie schnell man den Filter wechselt', 'Umdrehungen pro Minute'], correct: 0 },
+    // Ankreuzfragen Technik
+    { q: 'Was versteht man unter "Fluidisierung" bei Filtern?', a: ['Auflockern des Filterbetts bei der Spülung', 'Ablassen des Wassers vor der Spülung', 'Besiedelung durch Algen', 'Verfestigung des Sandes'], correct: 0 },
+    { q: 'Welche Aufgabe haben Phosphate in alkalischen Reinigern?', a: ['Binden von Kalk', 'Senken der Oberflächenspannung', 'Lösen von Fetten', 'Färben des Reinigers'], correct: 0 },
+    { q: 'Welche Aufgabe haben Emulgatoren in Reinigern?', a: ['Bessere Löslichkeit von Fetten in Wasser', 'Senken der Oberflächenspannung', 'Binden von Kalk', 'Desinfizieren'], correct: 0 },
+    { q: 'Welcher Reiniger sollte gegen Mineralablagerungen eingesetzt werden?', a: ['Saurer Reiniger', 'Alkalischer Reiniger', 'Neutraler Reiniger', 'Gar kein Reiniger'], correct: 0 },
+    // Flockungsmittel-Berechnung
+    { q: 'Ein Bad hat 180 m³/h Volumenstrom und 6,5 kg Flockungsmittelverbrauch in 48h. Wie hoch ist die Konzentration?', a: ['Ca. 0,75 g/m³', 'Ca. 7,5 g/m³', 'Ca. 75 g/m³', 'Ca. 0,075 g/m³'], correct: 0 }
   ],
+
+  // ===== SCHWIMM- & RETTUNGSLEHRE =====
   swim: [
-    { q: 'Was ist der Rautek-Griff?', a: ['Rettungsgriff', 'Schwimmtechnik', 'Sprungfigur', 'Tauchübung'], correct: 0 },
-    { q: 'Welches Abzeichen benötigt man für Rettungsschwimmer?', a: ['DLRG Bronze/Silber/Gold', 'Seepferdchen', 'Freischwimmer', 'Hai'], correct: 0 },
-    { q: 'Was ist ein Anlandbringen?', a: ['Retten einer Person ans Ufer', 'Sprungübung', 'Tauchgang', 'Schwimmstil'], correct: 0 }
+    { q: 'Was ist der Rautek-Griff?', a: ['Rettungsgriff zum Transport von Personen', 'Schwimmtechnik', 'Sprungfigur', 'Tauchübung'], correct: 0 },
+    { q: 'Welches Abzeichen benötigt man für Rettungsschwimmer?', a: ['DLRG Bronze/Silber/Gold', 'Seepferdchen', 'Freischwimmer', 'Totenkopf'], correct: 0 },
+    { q: 'Was ist ein Anlandbringen?', a: ['Retten einer Person ans Ufer', 'Sprungübung', 'Tauchgang', 'Schwimmstil'], correct: 0 },
+    // Ertrinken
+    { q: 'Was ist "trockenes Ertrinken"?', a: ['Stimmritzenkrampf verhindert Wassereintritt in die Lunge', 'Ertrinken ohne Wasser', 'Ertrinken in der Wüste', 'Ertrinken mit Schwimmweste'], correct: 0 },
+    { q: 'Was passiert beim "nassen Ertrinken in Süßwasser"?', a: ['Wasser dringt in die Lunge, verdünnt das Blut (Hämolyse)', 'Wasser verdunstet sofort', 'Lunge bleibt trocken', 'Blut wird dicker'], correct: 0 },
+    { q: 'Was ist "Beinahe-Ertrinken"?', a: ['Person überlebt mindestens 24 Stunden nach Submersion', 'Ertrinken in flachem Wasser', 'Fast ertrunken aber nie unter Wasser', 'Ertrinken im Traum'], correct: 0 },
+    { q: 'Was ist der "Badetod"?', a: ['Plötzlicher Herztod im Wasser (z.B. durch Kälteschock)', 'Tod durch zu langes Baden', 'Tod durch Chlorallergie', 'Tod durch Sonnenbrand'], correct: 0 },
+    // Wettkampf
+    { q: 'Was muss in einer Wettkampf-Werbeanzeige stehen?', a: ['Datum, Ort und Veranstalter', 'Nur der Preis', 'Nur das Logo', 'Lieblingsspeise des Veranstalters'], correct: 0 },
+    { q: 'Welche Informationen müssen in einer Wettkampf-Werbeanzeige stehen? (Mehrere richtig)', a: ['Datum und Uhrzeit', 'Veranstaltungsort', 'Veranstalter/Kontakt', 'Disziplinen/Altersklassen'], correct: [0, 1, 2, 3], multi: true },
+    { q: 'Was ist ein Erkennungsmerkmal eines Wettkampfbeckens?', a: ['50m Länge und Wendewände', 'Nur 10m lang', 'Keine Bahnen', 'Wellenanlage'], correct: 0 },
+    { q: 'Welche Merkmale hat ein Wettkampfbecken? (Mehrere richtig)', a: ['Normierte Länge (25m/50m)', 'Startblöcke', 'Wendewände', 'Zeitmessanlage'], correct: [0, 1, 2, 3], multi: true },
+    { q: 'Was gehört zu den Aufgaben des Wettkampfgerichts?', a: ['Regelüberwachung und Disqualifikation', 'Getränke verkaufen', 'Becken reinigen', 'Tickets kontrollieren'], correct: 0 },
+    { q: 'Was sind Aufgaben des Wettkampfgerichts? (Mehrere richtig)', a: ['Startüberwachung', 'Wende-Kontrolle', 'Zieleinlauf bewerten', 'Disqualifikationen aussprechen'], correct: [0, 1, 2, 3], multi: true },
+    { q: 'Was ist eine organisatorische Aufgabe am Wettkampftag?', a: ['Zeitmessanlage aufbauen', 'Neue Fliesen verlegen', 'Wasser ablassen', 'Becken neu streichen'], correct: 0 },
+    { q: 'Welche organisatorischen Aufgaben fallen am Wettkampftag an? (Mehrere richtig)', a: ['Startlisten erstellen', 'Zeitmessanlage prüfen', 'Sanitätsbereich einrichten', 'Siegerehrung vorbereiten'], correct: [0, 1, 2, 3], multi: true },
+    // Disqualifikation Brustschwimmen
+    { q: 'Was führt zur Disqualifikation beim Brustschwimmen?', a: ['Delfinbeinschlag (außer nach Start/Wende)', 'Zu schnelles Schwimmen', 'Zu langsames Schwimmen', 'Blaue Badekappe'], correct: 0 },
+    { q: 'Welche Fehler führen zur Disqualifikation beim Brustschwimmen? (Mehrere richtig)', a: ['Delfinbeinschlag', 'Wechselschlag', 'Einarmiger Anschlag', 'Nicht gleichzeitiger Anschlag'], correct: [0, 1, 2, 3], multi: true },
+    // Training
+    { q: 'Was bedeutet "anaerob-laktazid"?', a: ['Energiegewinnung ohne Sauerstoff mit Laktatbildung', 'Mit Sauerstoff', 'Ohne Energie', 'Nur mit Fetten'], correct: 0 },
+    { q: 'Was ist die Wiederholungsmethode im Training?', a: ['Intensive Belastung mit vollständiger Erholung', 'Dauerhaftes Schwimmen ohne Pause', 'Nur Dehnen', 'Kein Training'], correct: 0 },
+    { q: 'Was ist die Intervallmethode?', a: ['Wechsel von Belastung und unvollständiger Erholung', 'Nur Pausen', 'Dauerlauf ohne Ende', 'Einmaliges Schwimmen'], correct: 0 },
+    // Trainingsprinzipien
+    { q: 'Was ist ein Trainingsprinzip?', a: ['Progressive Belastungssteigerung', 'Immer gleich trainieren', 'Nie trainieren', 'Nur am Wochenende'], correct: 0 },
+    { q: 'Welche Trainingsprinzipien gibt es? (Mehrere richtig)', a: ['Progressive Belastungssteigerung', 'Regelmäßigkeit', 'Individualisierung', 'Variation'], correct: [0, 1, 2, 3], multi: true },
+    // Methodische Hilfsmittel
+    { q: 'Was ist ein methodisches Hilfsmittel im Schwimmunterricht?', a: ['Schwimmbrett', 'Handtuch', 'Sonnencreme', 'Badelatschen'], correct: 0 },
+    { q: 'Welche methodischen Hilfsmittel gibt es? (Mehrere richtig)', a: ['Schwimmbrett', 'Pull-Buoy', 'Flossen', 'Paddles'], correct: [0, 1, 2, 3], multi: true }
   ],
+
+  // ===== ERSTE HILFE =====
   first: [
-    { q: 'Was ist die stabile Seitenlage?', a: ['Lagerung bewusstloser Personen', 'Schwimmposition', 'Erste-Hilfe-Tasche', 'Rettungsgriff'], correct: 0 },
+    { q: 'Was ist die stabile Seitenlage?', a: ['Lagerung bewusstloser, atmender Personen', 'Schwimmposition', 'Erste-Hilfe-Tasche', 'Rettungsgriff'], correct: 0 },
     { q: 'Wie oft drückt man bei einer Herzdruckmassage pro Minute?', a: ['100-120 mal', '60 mal', '200 mal', '30 mal'], correct: 0 },
-    { q: 'Was ist ein Defibrillator?', a: ['Gerät zur Herzrhythmus-Wiederherstellung', 'Beatmungsgerät', 'Blutdruckmesser', 'Thermometer'], correct: 0 }
+    { q: 'Was ist ein Defibrillator?', a: ['Gerät zur Herzrhythmus-Wiederherstellung', 'Beatmungsgerät', 'Blutdruckmesser', 'Thermometer'], correct: 0 },
+    // Lagerungsarten
+    { q: 'Wie wird eine Person mit Sonnenstich gelagert?', a: ['Oberkörper erhöht, Kopf kühlen', 'Flach auf dem Bauch', 'Kopfüber', 'In der Sonne'], correct: 0 },
+    { q: 'Wie wird eine Person mit Herzinfarkt gelagert?', a: ['Oberkörper erhöht (Herz entlasten)', 'Kopfüber', 'Flach auf dem Bauch', 'Stehend'], correct: 0 },
+    { q: 'Wie wird eine Person mit Hitzeerschöpfung gelagert?', a: ['Flach lagern, Beine hoch, kühlen', 'Oberkörper hoch', 'In der Sonne', 'Kopfüber'], correct: 0 },
+    { q: 'Wie wird eine Person mit Volumenmangelschock gelagert?', a: ['Schocklage: Beine hoch', 'Oberkörper hoch', 'Sitzend', 'Kopfüber'], correct: 0 },
+    { q: 'Wie wird eine Person mit Hitzschlag gelagert?', a: ['Flach lagern, schnell kühlen, Notruf!', 'In der Sonne lassen', 'Warm einpacken', 'Heißen Tee geben'], correct: 0 },
+    { q: 'Wie wird eine Person mit Schlaganfall gelagert?', a: ['Oberkörper erhöht (30°), beengende Kleidung öffnen', 'Flach auf dem Bauch', 'Kopfüber', 'Stehend'], correct: 0 },
+    // Verbandsbuch
+    { q: 'Was muss im Verbandsbuch eingetragen werden?', a: ['Name des Verletzten und Art der Verletzung', 'Lieblingsspeise', 'Schuhgröße', 'Haarfarbe'], correct: 0 },
+    { q: 'Welche Einträge gehören ins Verbandsbuch? (Mehrere richtig)', a: ['Datum und Uhrzeit', 'Name des Verletzten', 'Art der Verletzung', 'Durchgeführte Maßnahmen'], correct: [0, 1, 2, 3], multi: true },
+    // Neuner-Regel
+    { q: 'Was beschreibt die Neuner-Regel?', a: ['Einschätzung der verbrannten Körperoberfläche in %', 'Anzahl der Rettungsschwimmer', 'Chlor-Dosierung', 'Anzahl der Bahnen'], correct: 0 },
+    { q: 'Wie viel % der Körperoberfläche macht ein Arm nach der Neuner-Regel aus?', a: ['9%', '18%', '27%', '36%'], correct: 0 },
+    { q: 'Wie viel % der Körperoberfläche macht ein Bein nach der Neuner-Regel aus?', a: ['18%', '9%', '27%', '36%'], correct: 0 },
+    // Reanimation Ankreuzfragen
+    { q: 'Was ist die Funktion der Koronararterien?', a: ['Herzmuskelzellen mit sauerstoffreichem Blut versorgen', 'Herzmuskelzellen mit venösem Blut versorgen', 'Blut aus dem Herzen pumpen', 'Herzklappen steuern'], correct: 0 },
+    { q: 'Was ist bei der Reanimation von Säuglingen FALSCH?', a: ['Kopf stark überstrecken', 'Harte Unterlage verwenden', '5 Initialbeatmungen', 'Puls an der Arminnenseite tasten'], correct: 0 },
+    { q: 'Wie tief drückt man bei der Reanimation von Säuglingen?', a: ['Ca. 1/3 des Brustkorbs (4 cm)', '4-5 cm wie bei Erwachsenen', '0,5 cm', 'So tief wie möglich'], correct: 0 }
   ],
+
+  // ===== HYGIENE =====
   hygiene: [
-    { q: 'Warum muss vor dem Schwimmen geduscht werden?', a: ['Hygiene und Wasserqualität', 'Nur zur Gewohnheit', 'Gesetzliche Pflicht', 'Für warmes Wasser'], correct: 0 },
-    { q: 'Was ist eine Legionellenprüfung?', a: ['Kontrolle auf Bakterien im Wasser', 'Sicherheitscheck', 'Temperaturmessung', 'pH-Test'], correct: 0 },
-    { q: 'Wie oft muss ein Schwimmbecken gereinigt werden?', a: ['Täglich', 'Wöchentlich', 'Monatlich', 'Jährlich'], correct: 0 }
+    { q: 'Warum muss vor dem Schwimmen geduscht werden?', a: ['Hygiene und Wasserqualität', 'Nur zur Gewohnheit', 'Weil es Spaß macht', 'Um warm zu werden'], correct: 0 },
+    { q: 'Was ist eine Legionellenprüfung?', a: ['Kontrolle auf Bakterien im Wasser', 'Sicherheitscheck der Rutschen', 'Temperaturmessung', 'pH-Test'], correct: 0 },
+    { q: 'Wie oft muss ein Schwimmbecken gereinigt werden?', a: ['Täglich', 'Wöchentlich', 'Monatlich', 'Jährlich'], correct: 0 },
+    // Pseudomonas
+    { q: 'Was ist richtig über Pseudomonas aeruginosa?', a: ['Bakterien, die Otitis externa (Ohrenentzündung) verursachen können', 'Viren im Beckenwasser', 'Harmlose Algen', 'Ein Reinigungsmittel'], correct: 0 },
+    // Hautschichten
+    { q: 'Welche Reihenfolge der Hautschichten von außen nach innen ist korrekt?', a: ['Oberhaut, Lederhaut, Unterhaut', 'Unterhaut, Aderhaut, Oberhaut', 'Unterhaut, Aderhaut, Hornhaut', 'Lederhaut, Oberhaut, Unterhaut'], correct: 0 }
   ],
+
+  // ===== POLITIK & WIRTSCHAFT =====
   pol: [
     { q: 'Was regelt das Arbeitsrecht?', a: ['Beziehung Arbeitgeber-Arbeitnehmer', 'Nur Gehälter', 'Nur Urlaub', 'Nur Kündigung'], correct: 0 },
-    { q: 'Was ist eine Berufsgenossenschaft?', a: ['Unfallversicherung', 'Gewerkschaft', 'Arbeitgeberverband', 'Prüfungsamt'], correct: 0 },
-    { q: 'Was bedeutet Tarifvertrag?', a: ['Vereinbarung über Arbeitsbedingungen', 'Mietvertrag', 'Kaufvertrag', 'Versicherungsvertrag'], correct: 0 }
+    { q: 'Was ist eine Berufsgenossenschaft?', a: ['Unfallversicherungsträger der gewerblichen Wirtschaft', 'Gewerkschaft', 'Arbeitgeberverband', 'Prüfungsamt'], correct: 0 },
+    { q: 'Was bedeutet Tarifvertrag?', a: ['Vereinbarung über Arbeitsbedingungen zwischen Gewerkschaft und Arbeitgeber', 'Mietvertrag', 'Kaufvertrag', 'Versicherungsvertrag'], correct: 0 },
+    // Grundgesetz Art. 1
+    { q: 'Was besagt Artikel 1 des Grundgesetzes?', a: ['Die Würde des Menschen ist unantastbar', 'Jeder darf alles', 'Steuern müssen bezahlt werden', 'Autos haben Vorfahrt'], correct: 0 },
+    // Bundestag/Bundesrat
+    { q: 'Was ist eine wichtige Aufgabe des Bundestags?', a: ['Gesetze beschließen', 'Straßen bauen', 'Schulen leiten', 'Müll abholen'], correct: 0 },
+    { q: 'Welche Aufgaben hat der Bundestag? (Mehrere richtig)', a: ['Gesetze beschließen', 'Bundeskanzler wählen', 'Regierung kontrollieren', 'Haushalt beschließen'], correct: [0, 1, 2, 3], multi: true },
+    { q: 'Was ist eine wichtige Aufgabe des Bundesrats?', a: ['Mitwirkung bei der Gesetzgebung (Länderkammer)', 'Bundeskanzler wählen', 'Bundespräsident sein', 'Olympische Spiele organisieren'], correct: 0 },
+    { q: 'Welche Aufgaben hat der Bundesrat? (Mehrere richtig)', a: ['Mitwirkung bei Bundesgesetzen', 'Vertretung der Länderinteressen', 'Zustimmung bei Verfassungsänderungen', 'Bundeskanzler wählen'], correct: [0, 1, 2], multi: true },
+    // Bundespräsident
+    { q: 'Wer ist (war) Bundespräsident? (Stand 2024)', a: ['Frank-Walter Steinmeier', 'Olaf Scholz', 'Angela Merkel', 'Robert Habeck'], correct: 0 },
+    { q: 'Was ist eine Aufgabe des Bundespräsidenten?', a: ['Gesetze unterzeichnen und verkünden', 'Gesetze beschließen', 'Steuern erheben', 'Polizei leiten'], correct: 0 },
+    // Bundesversammlung
+    { q: 'Was ist die Aufgabe der Bundesversammlung?', a: ['Wahl des Bundespräsidenten', 'Wahl des Bundeskanzlers', 'Gesetze beschließen', 'Verträge unterschreiben'], correct: 0 },
+    // Minister (Kabinett Scholz)
+    { q: 'Wer war Finanzminister im Kabinett Scholz?', a: ['Christian Lindner (FDP)', 'Robert Habeck (Grüne)', 'Nancy Faeser (SPD)', 'Karl Lauterbach (SPD)'], correct: 0 },
+    { q: 'Wer war Wirtschaftsminister im Kabinett Scholz?', a: ['Robert Habeck (Grüne)', 'Christian Lindner (FDP)', 'Nancy Faeser (SPD)', 'Annalena Baerbock (Grüne)'], correct: 0 },
+    { q: 'Wer war Innenministerin im Kabinett Scholz?', a: ['Nancy Faeser (SPD)', 'Annalena Baerbock (Grüne)', 'Christian Lindner (FDP)', 'Robert Habeck (Grüne)'], correct: 0 },
+    { q: 'Wer war Außenministerin im Kabinett Scholz?', a: ['Annalena Baerbock (Grüne)', 'Nancy Faeser (SPD)', 'Robert Habeck (Grüne)', 'Christine Lambrecht (SPD)'], correct: 0 },
+    { q: 'Wer war Gesundheitsminister im Kabinett Scholz?', a: ['Karl Lauterbach (SPD)', 'Robert Habeck (Grüne)', 'Christian Lindner (FDP)', 'Nancy Faeser (SPD)'], correct: 0 },
+    // Tarifvertragsarten
+    { q: 'Was ist eine Tarifvertragsart?', a: ['Manteltarifvertrag (regelt allgemeine Arbeitsbedingungen)', 'Mietvertrag', 'Kaufvertrag', 'Handyvertrag'], correct: 0 },
+    { q: 'Welche Tarifvertragsarten gibt es? (Mehrere richtig)', a: ['Manteltarifvertrag', 'Entgelttarifvertrag', 'Rahmentarifvertrag', 'Mietvertrag'], correct: [0, 1, 2], multi: true },
+    // Tarifbegriffe
+    { q: 'Was bedeutet Tarifautonomie?', a: ['Recht von Gewerkschaften und Arbeitgebern, Tarife selbst auszuhandeln', 'Automatische Lohnerhöhung', 'Staatliche Lohnfestsetzung', 'Verbot von Gewerkschaften'], correct: 0 },
+    { q: 'Was bedeutet Unabdingbarkeit beim Tarifvertrag?', a: ['Tarifvertrag darf nicht zum Nachteil des Arbeitnehmers unterschritten werden', 'Kündigung ist unmöglich', 'Vertrag kann jederzeit geändert werden', 'Vertrag hat kein Ende'], correct: 0 },
+    { q: 'Was bedeutet Allgemeinverbindlichkeit?', a: ['Tarifvertrag gilt für alle Arbeitnehmer einer Branche (auch Nicht-Gewerkschaftsmitglieder)', 'Gilt nur für Gewerkschaftsmitglieder', 'Gilt nur in Bayern', 'Gilt nur für Beamte'], correct: 0 },
+    { q: 'Was bedeutet Friedenspflicht?', a: ['Während der Tariflaufzeit keine Streiks über tarifliche Themen', 'Kein Krieg in Deutschland', 'Friedliche Verhandlungen', 'Verbot von Demonstrationen'], correct: 0 },
+    // Demokratische Wahlen
+    { q: 'Was ist ein Grundsatz demokratischer Wahlen?', a: ['Geheim (niemand sieht, was man wählt)', 'Öffentlich (jeder sieht, was man wählt)', 'Nur für Männer', 'Nur für Reiche'], correct: 0 },
+    { q: 'Welche 5 Grundsätze demokratischer Wahlen gibt es? (Mehrere richtig)', a: ['Allgemein', 'Unmittelbar', 'Frei', 'Gleich'], correct: [0, 1, 2, 3], multi: true },
+    // Gesellschaftsformen
+    { q: 'Welche Gesellschaftsform ist im Handelsregister eingetragen?', a: ['Gesellschaft mit beschränkter Haftung (GmbH)', 'Einzelunternehmen ohne Kaufmannseigenschaft', 'Verein', 'Stiftung'], correct: 0 },
+    { q: 'Welche Gesellschaftsformen gibt es? (Mehrere richtig)', a: ['Gesellschaft mit beschränkter Haftung', 'Aktiengesellschaft', 'Offene Handelsgesellschaft', 'Kommanditgesellschaft'], correct: [0, 1, 2, 3], multi: true },
+    // Sozialversicherungen
+    { q: 'Welche Sozialversicherung gibt es?', a: ['Krankenversicherung', 'Autoversicherung', 'Handyversicherung', 'Reiseversicherung'], correct: 0 },
+    { q: 'Welche 5 Sozialversicherungen gibt es? (Mehrere richtig)', a: ['Krankenversicherung', 'Rentenversicherung', 'Arbeitslosenversicherung', 'Pflegeversicherung'], correct: [0, 1, 2, 3], multi: true },
+    // Geschäftsfähigkeit
+    { q: 'Wer ist geschäftsunfähig?', a: ['Kinder unter 7 Jahren', 'Kinder unter 18 Jahren', 'Alle Minderjährigen', 'Niemand'], correct: 0 },
+    { q: 'Wer ist beschränkt geschäftsfähig?', a: ['Minderjährige von 7-17 Jahren', 'Alle unter 21', 'Nur Kinder unter 7', 'Alle Erwachsenen'], correct: 0 },
+    { q: 'Ab wann ist man voll geschäftsfähig?', a: ['Ab 18 Jahren', 'Ab 16 Jahren', 'Ab 21 Jahren', 'Ab 14 Jahren'], correct: 0 },
+    // Umweltschutz
+    { q: 'Was ist eine Umweltschutzmaßnahme im Schwimmbad?', a: ['Solaranlage für Warmwasser', 'Mehr Chlor verwenden', 'Längere Öffnungszeiten', 'Mehr Parkplätze bauen'], correct: 0 },
+    { q: 'Welche Umweltschutzmaßnahmen gibt es im Schwimmbad? (Mehrere richtig)', a: ['Solarenergie nutzen', 'Wärmerückgewinnung', 'Regenwassernutzung', 'LED-Beleuchtung'], correct: [0, 1, 2, 3], multi: true },
+    // Mutterschutz
+    { q: 'Wie viele Wochen gilt das Beschäftigungsverbot nach der Entbindung?', a: ['8 Wochen', '2 Wochen', '6 Wochen', '10 Wochen'], correct: 0 }
   ],
+
+  // ===== GESUNDHEITSLEHRE =====
   health: [
     { q: 'Wie viele Knochen hat der erwachsene Mensch?', a: ['206', '150', '300', '100'], correct: 0 },
     { q: 'Was ist das größte Organ des Menschen?', a: ['Die Haut', 'Die Leber', 'Das Herz', 'Die Lunge'], correct: 0 },
@@ -332,7 +528,21 @@ const SAMPLE_QUESTIONS = {
     { q: 'Welches Organ filtert das Blut?', a: ['Die Nieren', 'Die Leber', 'Die Milz', 'Das Herz'], correct: 0 },
     { q: 'Wie viele Herzkammern hat das menschliche Herz?', a: ['4', '2', '3', '6'], correct: 0 },
     { q: 'Was ist die Funktion der Lunge?', a: ['Gasaustausch (O2/CO2)', 'Blutreinigung', 'Hormonproduktion', 'Verdauung'], correct: 0 },
-    { q: 'Wo findet die Verdauung hauptsächlich statt?', a: ['Im Dünndarm', 'Im Magen', 'Im Dickdarm', 'In der Speiseröhre'], correct: 0 }
+    { q: 'Wo findet die Verdauung hauptsächlich statt?', a: ['Im Dünndarm', 'Im Magen', 'Im Dickdarm', 'In der Speiseröhre'], correct: 0 },
+    // Verdauungssystem
+    { q: 'Wo werden Eiweiße bei der Verdauung gespalten?', a: ['Im Magen und Dünndarm', 'Nur im Mund', 'Nur im Dickdarm', 'In der Lunge'], correct: 0 },
+    { q: 'Wo werden Kohlenhydrate gespalten?', a: ['Im Mund (Speichel) und Dünndarm', 'Nur im Magen', 'Nur im Dickdarm', 'In der Leber'], correct: 0 },
+    { q: 'Wo werden Verdauungssäfte hinzugefügt?', a: ['Magen, Bauchspeicheldrüse, Gallenblase', 'Nur im Mund', 'Nur im Dickdarm', 'Nur in der Lunge'], correct: 0 },
+    { q: 'Wo wird bei der Verdauung Wasser entzogen?', a: ['Im Dickdarm', 'Im Magen', 'Im Mund', 'In der Speiseröhre'], correct: 0 },
+    { q: 'Was gehört zum Verdauungssystem? (Mehrere richtig)', a: ['Speiseröhre', 'Magen', 'Dünndarm', 'Bauchspeicheldrüse'], correct: [0, 1, 2, 3], multi: true },
+    // Blutkreislauf
+    { q: 'Was folgt im Blutkreislauf auf den rechten Vorhof?', a: ['Rechte Herzkammer', 'Linke Herzkammer', 'Aorta', 'Lunge'], correct: 0 },
+    { q: 'Wohin pumpt die rechte Herzkammer das Blut?', a: ['In die Lungenarterie zur Lunge', 'In den Körper', 'Ins Gehirn', 'In den Magen'], correct: 0 },
+    { q: 'Welche Reihenfolge ist im Blutkreislauf korrekt?', a: ['Rechter Vorhof → Rechte Kammer → Lunge → Linker Vorhof', 'Linker Vorhof → Lunge → Rechter Vorhof', 'Aorta → Lunge → Herz', 'Lunge → Magen → Herz'], correct: 0 },
+    // Herz-Reiz-Leitungssystem
+    { q: 'Was ist die Funktion des Herz-Reiz-Leitungssystems?', a: ['Koordinierte elektrische Erregung für rhythmischen Herzschlag', 'Blut transportieren', 'Sauerstoff speichern', 'Hormone produzieren'], correct: 0 },
+    { q: 'Wo beginnt die Erregung im Herz-Reiz-Leitungssystem?', a: ['Sinusknoten', 'AV-Knoten', 'His-Bündel', 'Purkinje-Fasern'], correct: 0 },
+    { q: 'Wie ist die Reihenfolge im Herz-Reiz-Leitungssystem?', a: ['Sinusknoten → AV-Knoten → His-Bündel → Purkinje-Fasern', 'AV-Knoten → Sinusknoten → Purkinje-Fasern', 'His-Bündel → Sinusknoten → AV-Knoten', 'Purkinje-Fasern → His-Bündel → Sinusknoten'], correct: 0 }
   ]
 };
 
@@ -369,9 +579,27 @@ const PERMISSIONS = {
 // Demo-Accounts entfernt - alle Logins laufen über Supabase
 const DEMO_ACCOUNTS = {};
 
-// Hilfsfunktion: Mischt Antworten und gibt neue Antwort-Array + korrekten Index zurück
+// Hilfsfunktion: Mischt Antworten und gibt neue Antwort-Array + korrekten Index/Indizes zurück
 const shuffleAnswers = (question) => {
   const answers = [...question.a];
+
+  // Multi-Select: correct ist ein Array von Indizes
+  if (question.multi && Array.isArray(question.correct)) {
+    const correctAnswers = question.correct.map(idx => answers[idx]);
+
+    // Fisher-Yates shuffle
+    for (let i = answers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [answers[i], answers[j]] = [answers[j], answers[i]];
+    }
+
+    // Finde die neuen Indizes der korrekten Antworten
+    const newCorrectIndices = correctAnswers.map(ans => answers.indexOf(ans));
+
+    return { ...question, a: answers, correct: newCorrectIndices, multi: true };
+  }
+
+  // Single-Choice: correct ist ein einzelner Index
   const correctAnswer = answers[question.correct];
 
   // Fisher-Yates shuffle
@@ -422,6 +650,7 @@ export default function BaederApp() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
+  const [selectedAnswers, setSelectedAnswers] = useState([]); // Für Multi-Select Fragen
   
   const DIFFICULTY_SETTINGS = {
     anfaenger: { time: 45, label: 'Anfänger', icon: '🟢', color: 'bg-green-500' },
@@ -1967,6 +2196,7 @@ export default function BaederApp() {
     setQuestionInCategory(0);
     setCurrentQuestion(questionsWithShuffledAnswers[0]);
     setAnswered(false);
+    setSelectedAnswers([]); // Reset für Multi-Select
 
     const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
     setTimeLeft(timeLimit);
@@ -1984,8 +2214,44 @@ export default function BaederApp() {
     await savePlayerAnswer(false, true);
   };
 
+  // Toggle Antwort für Multi-Select Fragen
+  const toggleAnswer = (answerIndex) => {
+    if (answered || !currentGame) return;
+
+    setSelectedAnswers(prev => {
+      if (prev.includes(answerIndex)) {
+        return prev.filter(i => i !== answerIndex);
+      } else {
+        return [...prev, answerIndex];
+      }
+    });
+  };
+
+  // Bestätigen der Multi-Select Antwort
+  const confirmMultiSelectAnswer = async () => {
+    if (answered || !currentGame || !currentQuestion.multi) return;
+    setAnswered(true);
+    setTimerActive(false);
+
+    // Prüfe ob alle richtigen Antworten ausgewählt wurden (und keine falschen)
+    const correctAnswers = currentQuestion.correct;
+    const isCorrect =
+      selectedAnswers.length === correctAnswers.length &&
+      selectedAnswers.every(idx => correctAnswers.includes(idx));
+
+    await savePlayerAnswer(isCorrect, false);
+  };
+
   const answerQuestion = async (answerIndex) => {
     if (answered || !currentGame) return;
+
+    // Multi-Select: Nur togglen, nicht direkt antworten
+    if (currentQuestion.multi) {
+      toggleAnswer(answerIndex);
+      return;
+    }
+
+    // Single-Choice: Direkt antworten
     setAnswered(true);
     setTimerActive(false);
 
@@ -2058,6 +2324,7 @@ export default function BaederApp() {
       setQuestionInCategory(nextQuestionIndex);
       setCurrentQuestion(currentCategoryQuestions[nextQuestionIndex]);
       setAnswered(false);
+      setSelectedAnswers([]); // Reset für Multi-Select
 
       const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
       setTimeLeft(timeLimit);
@@ -2159,6 +2426,7 @@ export default function BaederApp() {
     setQuestionInCategory(0);
     setCurrentQuestion(currentCategoryRound.questions[0]);
     setAnswered(false);
+    setSelectedAnswers([]); // Reset für Multi-Select
     setWaitingForOpponent(false);
 
     const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
@@ -4076,25 +4344,62 @@ export default function BaederApp() {
                   </div>
                   <div className="bg-gray-100 rounded-xl p-6">
                     <p className="text-xl font-bold text-center">{currentQuestion.q}</p>
+                    {currentQuestion.multi && !answered && (
+                      <p className="text-center text-sm text-orange-600 mt-2 font-medium">
+                        ⚠️ Mehrere Antworten sind richtig - wähle alle richtigen aus!
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-3">
-                    {currentQuestion.a.map((answer, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => answerQuestion(idx)}
-                        disabled={answered}
-                        className={`p-4 rounded-xl font-medium transition-all ${
-                          answered
-                            ? idx === currentQuestion.correct
-                              ? 'bg-green-500 text-white'
-                              : 'bg-gray-200 text-gray-500'
-                            : 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500'
-                        }`}
-                      >
-                        {answer}
-                      </button>
-                    ))}
+                    {currentQuestion.a.map((answer, idx) => {
+                      // Multi-Select Logik
+                      const isMulti = currentQuestion.multi;
+                      const isSelected = selectedAnswers.includes(idx);
+                      const isCorrectAnswer = isMulti
+                        ? currentQuestion.correct.includes(idx)
+                        : idx === currentQuestion.correct;
+
+                      let buttonClass = '';
+                      if (answered) {
+                        if (isCorrectAnswer) {
+                          buttonClass = 'bg-green-500 text-white';
+                        } else if (isMulti && isSelected && !isCorrectAnswer) {
+                          buttonClass = 'bg-red-500 text-white'; // Falsch ausgewählt
+                        } else {
+                          buttonClass = 'bg-gray-200 text-gray-500';
+                        }
+                      } else {
+                        if (isMulti && isSelected) {
+                          buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
+                        } else {
+                          buttonClass = 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
+                        }
+                      }
+
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => answerQuestion(idx)}
+                          disabled={answered}
+                          className={`p-4 rounded-xl font-medium transition-all ${buttonClass}`}
+                        >
+                          {isMulti && !answered && (
+                            <span className="mr-2">{isSelected ? '☑️' : '⬜'}</span>
+                          )}
+                          {answer}
+                        </button>
+                      );
+                    })}
                   </div>
+                  {/* Multi-Select Bestätigen Button */}
+                  {currentQuestion.multi && !answered && selectedAnswers.length > 0 && (
+                    <button
+                      onClick={confirmMultiSelectAnswer}
+                      className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
+                    >
+                      ✓ Antwort bestätigen ({selectedAnswers.length} ausgewählt)
+                    </button>
+                  )}
                   {answered && timeLeft === 0 && (
                     <div className="bg-red-100 border-2 border-red-500 rounded-xl p-4 text-center">
                       <p className="text-red-700 font-bold">⏰ Zeit abgelaufen!</p>
