@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle } from 'lucide-react';
 import { supabase } from './supabase';
 
@@ -126,6 +126,260 @@ const PERIODIC_TABLE = [
   { symbol: 'Ts', name: 'Tenness', number: 117, mass: '294', group: 17, period: 7, category: 'halogen' },
   { symbol: 'Og', name: 'Oganesson', number: 118, mass: '294', group: 18, period: 7, category: 'noble-gas' }
 ];
+
+// Ausbildungsrahmenplan gemäß §4 - Fachangestellte für Bäderbetriebe
+// Zeitliche Richtwerte in Wochen pro Ausbildungsjahr
+const AUSBILDUNGSRAHMENPLAN = [
+  {
+    nr: 1,
+    bereich: 'Berufsbildung',
+    paragraph: '§3 Nr. 1',
+    icon: '📚',
+    color: 'bg-blue-500',
+    wochen: { jahr1: 0, jahr2: 0, jahr3: 0 }, // während der gesamten Ausbildung
+    gesamtWochen: 0, // wird laufend vermittelt
+    inhalte: [
+      'Bedeutung des Ausbildungsvertrages, insbesondere Abschluss, Dauer und Beendigung, erklären',
+      'Gegenseitige Rechte und Pflichten aus dem Ausbildungsvertrag nennen',
+      'Möglichkeiten der beruflichen Fortbildung nennen'
+    ]
+  },
+  {
+    nr: 2,
+    bereich: 'Aufbau und Organisation des Ausbildungsbetriebes',
+    paragraph: '§3 Nr. 2',
+    icon: '🏢',
+    color: 'bg-indigo-500',
+    wochen: { jahr1: 0, jahr2: 0, jahr3: 0 },
+    gesamtWochen: 0,
+    inhalte: [
+      'Struktur und Aufgaben von Freizeit- und Badebetrieben beschreiben',
+      'Rechtsform, Aufbau und Ablauforganisation des ausbildenden Betriebes erläutern',
+      'Beziehungen des ausbildenden Betriebes zu Wirtschaftsorganisationen, Fachverbänden, Berufsvertretungen, Gewerkschaften und Verwaltungen nennen',
+      'Grundlagen, Aufgaben und Arbeitsweise der betriebsverfassungs- oder personalvertretungsrechtlichen Organe beschreiben'
+    ]
+  },
+  {
+    nr: 3,
+    bereich: 'Arbeits- und Tarifrecht, Arbeitsschutz',
+    paragraph: '§3 Nr. 3',
+    icon: '⚖️',
+    color: 'bg-green-500',
+    wochen: { jahr1: 0, jahr2: 0, jahr3: 0 },
+    gesamtWochen: 0,
+    inhalte: [
+      'Über Bedeutung und Inhalt von Arbeitsverträgen Auskunft geben',
+      'Bestimmungen der für den ausbildenden Betrieb geltenden Tarifverträge nennen',
+      'Aufgaben des betrieblichen Arbeitsschutzes, der zuständigen Unfallversicherung und der Gewerbeaufsicht erläutern',
+      'Bestimmungen der für den ausbildenden Betrieb geltenden Arbeitsschutzgesetze anwenden',
+      'Bestandteile der Sozialversicherung sowie Träger und Beitragssysteme aufzeigen'
+    ]
+  },
+  {
+    nr: 4,
+    bereich: 'Arbeitssicherheit, Umweltschutz und rationelle Energieverwendung',
+    paragraph: '§3 Nr. 4',
+    icon: '🛡️',
+    color: 'bg-yellow-500',
+    wochen: { jahr1: 0, jahr2: 0, jahr3: 0 },
+    gesamtWochen: 0,
+    inhalte: [
+      'Berufsbezogene Vorschriften der Träger der gesetzlichen Unfallversicherung beachten',
+      'Arbeitssicherheitsvorschriften bei den Arbeitsabläufen anwenden',
+      'Geeignete Maßnahmen zur Verhütung von Unfällen im eigenen Arbeitsbereich ergreifen',
+      'Verhaltensregeln für den Brandfall nennen und Maßnahmen zur Brandbekämpfung ergreifen',
+      'Gefahren, die von Giften, Gasen, Dämpfen, leicht entzündlichen Stoffen sowie vom elektrischen Strom ausgehen, beachten',
+      'Berufsspezifische Bestimmungen zu Gefahrstoffen und -gütern anwenden',
+      'Vorschriften zum Schutz der Gesundheit am Arbeitsplatz anwenden',
+      'Zur Vermeidung betriebsbedingter Umweltbelastungen nach ökologischen Gesichtspunkten beitragen',
+      'Maßnahmen zur Entsorgung von Abfällen unter Beachtung betrieblicher Sicherheitsbestimmungen ergreifen',
+      'Zur rationellen Energie- und Materialverwendung im beruflichen Beobachtungs- und Einwirkungsbereich beitragen'
+    ]
+  },
+  {
+    nr: 5,
+    bereich: 'Aufrechterhaltung der Betriebssicherheit',
+    paragraph: '§3 Nr. 5',
+    icon: '🔧',
+    color: 'bg-purple-500',
+    wochen: { jahr1: 12, jahr2: 6, jahr3: 6 },
+    gesamtWochen: 24,
+    inhalte: [
+      'Rechtsvorschriften und betriebliche Bestimmungen, die für den Betrieb des Bades gelten, anwenden',
+      'Rechtsvorschriften und betriebliche Grundsätze der Hygiene anwenden',
+      'Mittel, Geräte und Verfahren zur Reinigung und Desinfektion anwenden und deren Auswahl begründen',
+      'Bei der Organisation von Betriebsabläufen des Badebetriebes mitwirken',
+      'Bei der Kontrolle und Beaufsichtigung im Rahmen der Verkehrssicherungspflicht mitwirken'
+    ]
+  },
+  {
+    nr: 6,
+    bereich: 'Beaufsichtigung des Badebetriebes',
+    paragraph: '§3 Nr. 6',
+    icon: '👀',
+    color: 'bg-cyan-500',
+    wochen: { jahr1: 4, jahr2: 6, jahr3: 8 },
+    gesamtWochen: 18,
+    inhalte: [
+      'Gefahren des Badebetriebes in und an Naturgewässern erläutern',
+      'Rechtsnormen, Verwaltungsvorschriften, Betriebs- und Dienstanweisungen zur Aufsicht im Badebetrieb sowie die Badeordnung anwenden',
+      'Beaufsichtigung im Badebetrieb, insbesondere im Beckenbereich, durchführen',
+      'Bei der Planung und Organisation des Aufsichtsdienstes mitwirken',
+      'Bedrohliche Situationen im Badebetrieb feststellen und Sofortmaßnahmen einleiten'
+    ]
+  },
+  {
+    nr: 7,
+    bereich: 'Betreuen von Besuchern',
+    paragraph: '§3 Nr. 7',
+    icon: '🤝',
+    color: 'bg-pink-500',
+    wochen: { jahr1: 4, jahr2: 6, jahr3: 4 },
+    gesamtWochen: 14,
+    inhalte: [
+      'Besucher empfangen und informieren',
+      'Konfliktfelder beschreiben und Möglichkeiten zur Konfliktregelung anwenden',
+      'Über notwendige Hygienemaßnahmen beraten',
+      'Besucherwünsche ermitteln und entsprechende Spiel- und Sportarrangements anbieten',
+      'Besucher betreuen',
+      'Kommunikationsregeln in verschiedenen beruflichen Situationen anwenden und zur Vermeidung von Kommunikationsstörungen beitragen'
+    ]
+  },
+  {
+    nr: 8,
+    bereich: 'Schwimmen',
+    paragraph: '§3 Nr. 8',
+    icon: '🏊',
+    color: 'bg-blue-600',
+    wochen: { jahr1: 7, jahr2: 7, jahr3: 6 },
+    gesamtWochen: 20,
+    inhalte: [
+      'Wettkampftechniken einschließlich Start- und Wendetechniken anwenden',
+      'Techniken des Strecken- und Tieftauchens anwenden',
+      'Einfachsprünge ausführen',
+      'Theoretischen und praktischen Schwimmunterricht für Anfänger durchführen',
+      'Schwimmunterricht für Fortgeschrittene durchführen',
+      'Spring- und Tauchunterricht für Anfänger durchführen'
+    ]
+  },
+  {
+    nr: 9,
+    bereich: 'Einleitung und Ausüben von Wasserrettungsmaßnahmen',
+    paragraph: '§3 Nr. 9',
+    icon: '🚨',
+    color: 'bg-red-500',
+    wochen: { jahr1: 6, jahr2: 7, jahr3: 7 },
+    gesamtWochen: 20,
+    inhalte: [
+      'Rettungsmaßnahmen, insbesondere unter Anwendung der Methoden des Rettungsschwimmens, durchführen',
+      'Rettungssituationen erläutern und entsprechende Rettungsmaßnahmen ableiten',
+      'Rettungsgeräte für Wasserrettungsmaßnahmen warten und einsetzen'
+    ]
+  },
+  {
+    nr: 10,
+    bereich: 'Durchführen von Erster Hilfe und Wiederbelebungsmaßnahmen',
+    paragraph: '§3 Nr. 10',
+    icon: '🚑',
+    color: 'bg-red-600',
+    wochen: { jahr1: 4, jahr2: 2, jahr3: 2 },
+    gesamtWochen: 8,
+    inhalte: [
+      'Aufgaben eines Ersthelfers nach den Unfallverhütungsvorschriften des Trägers der gesetzlichen Unfallversicherung ausüben',
+      'Herz-Lungen-Wiederbelebungsmaßnahmen an Personen unterschiedlicher Altersgruppen durchführen',
+      'Unfallbeteiligte betreuen',
+      'Herz-Lungen-Wiederbelebung mit einfachem Gerät, insbesondere Beutel- und Balgbeatmer, durchführen',
+      'Verletzten mit und ohne Gerät transportieren'
+    ]
+  },
+  {
+    nr: 11,
+    bereich: 'Messen physikalischer und chemischer Größen sowie Bestimmen von Stoffkonstanten',
+    paragraph: '§3 Nr. 11',
+    icon: '🔬',
+    color: 'bg-purple-600',
+    wochen: { jahr1: 2, jahr2: 0, jahr3: 3 },
+    gesamtWochen: 5,
+    inhalte: [
+      'Länge, Masse, Volumen, Temperatur und Druck messen',
+      'Die Bedeutung von Schmelzpunkt, Siedepunkt und Dichte erläutern',
+      'pH-Wert und Hygienehilfsparameter bestimmen',
+      'Proben unter betrieblichen Bedingungen entnehmen',
+      'Messgeräte zur Überwachung der Wasserqualität handhaben und pflegen'
+    ]
+  },
+  {
+    nr: 12,
+    bereich: 'Kontrollieren und Sichern des technischen Betriebsablaufs',
+    paragraph: '§3 Nr. 12',
+    icon: '⚙️',
+    color: 'bg-gray-600',
+    wochen: { jahr1: 7, jahr2: 8, jahr3: 9 },
+    gesamtWochen: 24,
+    inhalte: [
+      'Betriebsabläufe durch regelmäßige Kontrolle der bädertechnischen Anlagen und der Betriebszustände sichern',
+      'Arbeits- und Bäderhygiene kontrollieren und sichern',
+      'Betriebsdaten von Steuer-, Regel- und Sicherheitseinrichtungen prüfen und dokumentieren',
+      'Notfallpläne zur Bewältigung häufiger Störungen anwenden',
+      'Prozessabläufe technischer Anlagen, insbesondere zur Schwimm- und Badebeckenwasseraufbereitung, steuern'
+    ]
+  },
+  {
+    nr: 13,
+    bereich: 'Pflegen und Warten bäder- und freizeittechnischer Einrichtungen',
+    paragraph: '§3 Nr. 13',
+    icon: '🔩',
+    color: 'bg-orange-500',
+    wochen: { jahr1: 4, jahr2: 4, jahr3: 4 },
+    gesamtWochen: 12,
+    inhalte: [
+      'Werkstoffe nach Eigenschaften und Einsatzmöglichkeiten beurteilen',
+      'Arbeitsgerät, Werkzeuge und Werkstücke einsetzen',
+      'Einfache Schlauch- und Rohrverbindungen zusammenfügen und lösen',
+      'Aufbau, Einsatz und Wirkungsweise von Armaturen, Filtern und Aggregaten beschreiben',
+      'Dichtungen erneuern und Filtereinsätze auswechseln',
+      'Technische Anlagen, Geräte und Werkzeuge pflegen und warten',
+      'Innen- und Außenanlagen pflegen und warten'
+    ]
+  },
+  {
+    nr: 14,
+    bereich: 'Durchführung von Verwaltungsarbeiten im Bad',
+    paragraph: '§3 Nr. 14',
+    icon: '📝',
+    color: 'bg-teal-500',
+    wochen: { jahr1: 0, jahr2: 4, jahr3: 2 },
+    gesamtWochen: 6,
+    inhalte: [
+      'Ablauforganisation der Verwaltungsarbeiten im Bad beschreiben',
+      'Kassensysteme unterscheiden und Kassenabrechnungen erstellen',
+      'Einfache Buchungen durchführen',
+      'Schriftverkehr erledigen',
+      'Vorschriften zum Datenschutz anwenden',
+      'Informations- und Kommunikationssysteme aufgabenorientiert einsetzen',
+      'Ausgewählte Vorschriften des Vertrags- und Haftungsrechts anwenden',
+      'Zahlungsverkehr abwickeln'
+    ]
+  },
+  {
+    nr: 15,
+    bereich: 'Öffentlichkeitsarbeit',
+    paragraph: '§3 Nr. 15',
+    icon: '📢',
+    color: 'bg-rose-500',
+    wochen: { jahr1: 2, jahr2: 2, jahr3: 2 },
+    gesamtWochen: 6,
+    inhalte: [
+      'Inhalte und Zielstellung öffentlichkeitswirksamer Maßnahmen darstellen',
+      'Einfache Texte und Werbeträger gestalten',
+      'Bei Planung und Organisation von Werbemaßnahmen mitwirken',
+      'Werbemaßnahmen durchführen'
+    ]
+  }
+];
+
+// Gesamtzahl der Ausbildungswochen pro Jahr (ca. 52 Wochen - Urlaub - Berufsschule ≈ 40 Wochen betrieblich)
+const WOCHEN_PRO_JAHR = 40;
 
 const DID_YOU_KNOW_FACTS = [
   "💧 Ein Schwimmbecken verliert täglich ca. 3-5 mm Wasser durch Verdunstung.",
@@ -614,6 +868,127 @@ const shuffleAnswers = (question) => {
   return { ...question, a: answers, correct: newCorrectIndex };
 };
 
+// Digitale Unterschrift Canvas Komponente
+const SignatureCanvas = ({ value, onChange, darkMode, label }) => {
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    // Canvas leeren und Hintergrund setzen
+    ctx.fillStyle = darkMode ? '#1e293b' : '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Wenn ein Wert vorhanden ist, lade das Bild
+    if (value) {
+      const img = new Image();
+      img.onload = () => {
+        ctx.fillStyle = darkMode ? '#1e293b' : '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = value;
+    }
+  }, [value, darkMode]);
+
+  const getCoordinates = useCallback((e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    if (e.touches) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
+    }
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  }, []);
+
+  const startDrawing = useCallback((e) => {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const { x, y } = getCoordinates(e);
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+  }, [getCoordinates]);
+
+  const draw = useCallback((e) => {
+    if (!isDrawing) return;
+    e.preventDefault();
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const { x, y } = getCoordinates(e);
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = darkMode ? '#22d3ee' : '#0891b2';
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }, [isDrawing, getCoordinates, darkMode]);
+
+  const stopDrawing = useCallback(() => {
+    if (isDrawing) {
+      setIsDrawing(false);
+      const canvas = canvasRef.current;
+      onChange(canvas.toDataURL());
+    }
+  }, [isDrawing, onChange]);
+
+  const clearSignature = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = darkMode ? '#1e293b' : '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    onChange('');
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {label} ✍️
+      </label>
+      <div className={`relative border-2 border-dashed rounded-lg ${darkMode ? 'border-slate-500 bg-slate-800' : 'border-gray-300 bg-white'}`}>
+        <canvas
+          ref={canvasRef}
+          width={300}
+          height={100}
+          className="w-full h-24 rounded-lg cursor-crosshair touch-none"
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+        />
+        {!value && (
+          <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            <span className="text-sm">Hier unterschreiben...</span>
+          </div>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={clearSignature}
+        className={`text-xs px-3 py-1 rounded ${darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+      >
+        Löschen
+      </button>
+    </div>
+  );
+};
+
 export default function BaederApp() {
   const [currentView, setCurrentView] = useState('home');
   const [authView, setAuthView] = useState('login'); // login, register
@@ -651,6 +1026,7 @@ export default function BaederApp() {
   const [timerActive, setTimerActive] = useState(false);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
   const [selectedAnswers, setSelectedAnswers] = useState([]); // Für Multi-Select Fragen
+  const [lastSelectedAnswer, setLastSelectedAnswer] = useState(null); // Für Single-Choice Feedback
   
   const DIFFICULTY_SETTINGS = {
     anfaenger: { time: 45, label: 'Anfänger', icon: '🟢', color: 'bg-green-500' },
@@ -693,6 +1069,8 @@ export default function BaederApp() {
   const [examQuestionIndex, setExamQuestionIndex] = useState(0);
   const [examAnswered, setExamAnswered] = useState(false);
   const [userExamProgress, setUserExamProgress] = useState(null);
+  const [examSelectedAnswers, setExamSelectedAnswers] = useState([]); // Für Multi-Select im Prüfungssimulator
+  const [examSelectedAnswer, setExamSelectedAnswer] = useState(null); // Für Single-Choice Feedback
   
   // UI State
   const [darkMode, setDarkMode] = useState(false);
@@ -714,6 +1092,29 @@ export default function BaederApp() {
   // Badges State
   const [userBadges, setUserBadges] = useState([]);
 
+  // Spaced Repetition State
+  const [spacedRepetitionData, setSpacedRepetitionData] = useState(() => {
+    const saved = localStorage.getItem('spaced_repetition_data');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [spacedRepetitionMode, setSpacedRepetitionMode] = useState(false);
+  const [dueCards, setDueCards] = useState([]);
+
+  // Daily Challenges State
+  const [dailyChallenges, setDailyChallenges] = useState([]);
+  const [dailyChallengeProgress, setDailyChallengeProgress] = useState(() => {
+    const saved = localStorage.getItem('daily_challenge_progress');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Check if it's from today
+      const today = new Date().toDateString();
+      if (parsed.date === today) {
+        return parsed;
+      }
+    }
+    return { date: new Date().toDateString(), completed: [], stats: {} };
+  });
+
   // Kontrollkarte Berufsschule State
   const [schoolAttendance, setSchoolAttendance] = useState([]);
   const [newAttendanceDate, setNewAttendanceDate] = useState('');
@@ -722,7 +1123,50 @@ export default function BaederApp() {
   const [newAttendanceTeacherSig, setNewAttendanceTeacherSig] = useState('');
   const [newAttendanceTrainerSig, setNewAttendanceTrainerSig] = useState('');
   const [editingSignature, setEditingSignature] = useState(null); // { id, field, value }
-  
+
+  // Berichtsheft (Ausbildungsnachweis) State
+  const [berichtsheftEntries, setBerichtsheftEntries] = useState([]);
+  const [berichtsheftWeek, setBerichtsheftWeek] = useState(() => {
+    // Aktuelle Woche als Default
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Montag
+    return startOfWeek.toISOString().split('T')[0];
+  });
+  const [berichtsheftYear, setBerichtsheftYear] = useState(1); // Ausbildungsjahr 1-3
+  const [berichtsheftNr, setBerichtsheftNr] = useState(1); // Nachweis-Nummer
+  const [currentWeekEntries, setCurrentWeekEntries] = useState({
+    Mo: [{ taetigkeit: '', stunden: '', bereich: '' }],
+    Di: [{ taetigkeit: '', stunden: '', bereich: '' }],
+    Mi: [{ taetigkeit: '', stunden: '', bereich: '' }],
+    Do: [{ taetigkeit: '', stunden: '', bereich: '' }],
+    Fr: [{ taetigkeit: '', stunden: '', bereich: '' }],
+    Sa: [{ taetigkeit: '', stunden: '', bereich: '' }],
+    So: [{ taetigkeit: '', stunden: '', bereich: '' }]
+  });
+  const [berichtsheftBemerkungAzubi, setBerichtsheftBemerkungAzubi] = useState('');
+  const [berichtsheftBemerkungAusbilder, setBerichtsheftBemerkungAusbilder] = useState('');
+  const [berichtsheftSignaturAzubi, setBerichtsheftSignaturAzubi] = useState('');
+  const [berichtsheftSignaturAusbilder, setBerichtsheftSignaturAusbilder] = useState('');
+  const [berichtsheftDatumAzubi, setBerichtsheftDatumAzubi] = useState('');
+  const [berichtsheftDatumAusbilder, setBerichtsheftDatumAusbilder] = useState('');
+  const [selectedBerichtsheft, setSelectedBerichtsheft] = useState(null); // Für Bearbeitung
+  const [berichtsheftViewMode, setBerichtsheftViewMode] = useState('edit'); // 'edit', 'list', 'progress', 'profile'
+
+  // Azubi-Profildaten für Berichtsheft
+  const [azubiProfile, setAzubiProfile] = useState(() => {
+    const saved = localStorage.getItem('azubi_profile');
+    return saved ? JSON.parse(saved) : {
+      vorname: '',
+      nachname: '',
+      ausbildungsbetrieb: '',
+      ausbildungsberuf: 'Fachangestellte/r für Bäderbetriebe',
+      ausbilder: '',
+      ausbildungsbeginn: '',
+      ausbildungsende: ''
+    };
+  });
+
   // Calculator State
   const [calculatorType, setCalculatorType] = useState('ph');
   const [calculatorInputs, setCalculatorInputs] = useState({});
@@ -793,7 +1237,14 @@ export default function BaederApp() {
     { id: 'quiz_winner_10', name: 'Quiz-Champion', icon: '👑', description: '10 Quizduell-Siege', requirement: 'quiz_wins', value: 10 },
     { id: 'perfectionist', name: 'Perfektionist', icon: '⭐', description: 'Alle Fragen gemeistert', requirement: 'all_mastered', value: 1 },
     { id: 'early_bird', name: 'Frühaufsteher', icon: '🌅', description: 'Vor 7 Uhr morgens gelernt', requirement: 'early', value: 1 },
-    { id: 'night_owl', name: 'Nachteule', icon: '🦉', description: 'Nach 22 Uhr gelernt', requirement: 'night', value: 1 }
+    { id: 'night_owl', name: 'Nachteule', icon: '🦉', description: 'Nach 22 Uhr gelernt', requirement: 'night', value: 1 },
+    // Win Streak Badges - Ungeschlagenen-Serie
+    { id: 'win_streak_3', name: 'Aufsteiger', icon: '🥉', description: '3 Siege in Folge', requirement: 'win_streak', value: 3 },
+    { id: 'win_streak_5', name: 'Durchstarter', icon: '🥈', description: '5 Siege in Folge', requirement: 'win_streak', value: 5 },
+    { id: 'win_streak_10', name: 'Unaufhaltsam', icon: '🥇', description: '10 Siege in Folge', requirement: 'win_streak', value: 10 },
+    { id: 'win_streak_15', name: 'Dominanz', icon: '🏅', description: '15 Siege in Folge', requirement: 'win_streak', value: 15 },
+    { id: 'win_streak_25', name: 'Legende', icon: '🏆', description: '25 Siege in Folge', requirement: 'win_streak', value: 25 },
+    { id: 'win_streak_50', name: 'Unbesiegbar', icon: '💎', description: '50 Siege in Folge', requirement: 'win_streak', value: 50 }
   ];
 
   useEffect(() => {
@@ -832,7 +1283,12 @@ export default function BaederApp() {
     if (currentView === 'school-card' && user) {
       loadSchoolAttendance();
     }
-    
+
+    // Load Berichtsheft when view changes
+    if (currentView === 'berichtsheft' && user) {
+      loadBerichtsheftEntries();
+    }
+
     // Developer Mode Shortcut: Ctrl+D
     const handleKeyPress = (e) => {
       if (e.ctrlKey && e.key === 'd') {
@@ -2254,6 +2710,7 @@ export default function BaederApp() {
     // Single-Choice: Direkt antworten
     setAnswered(true);
     setTimerActive(false);
+    setLastSelectedAnswer(answerIndex); // Speichere gewählte Antwort für Feedback
 
     const isCorrect = answerIndex === currentQuestion.correct;
     await savePlayerAnswer(isCorrect, false);
@@ -2263,6 +2720,16 @@ export default function BaederApp() {
   const savePlayerAnswer = async (isCorrect, isTimeout) => {
     const isPlayer1 = user.name === currentGame.player1;
     const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
+
+    // Daily Challenge Progress
+    updateChallengeProgress('answer_questions', 1);
+    if (isCorrect) {
+      updateChallengeProgress('correct_answers', 1);
+    }
+    if (quizCategory) {
+      updateChallengeProgress('category_master', 1, quizCategory);
+    }
+    updateChallengeProgress('quiz_play', 1);
 
     // Punkte vergeben
     if (isCorrect) {
@@ -2325,6 +2792,7 @@ export default function BaederApp() {
       setCurrentQuestion(currentCategoryQuestions[nextQuestionIndex]);
       setAnswered(false);
       setSelectedAnswers([]); // Reset für Multi-Select
+      setLastSelectedAnswer(null); // Reset für Single-Choice
 
       const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
       setTimeLeft(timeLimit);
@@ -2457,8 +2925,14 @@ export default function BaederApp() {
             losses: 0,
             draws: 0,
             categoryStats: {},
-            opponents: {}
+            opponents: {},
+            winStreak: 0,
+            bestWinStreak: 0
           };
+
+          // Ensure winStreak fields exist
+          if (stats.winStreak === undefined) stats.winStreak = 0;
+          if (stats.bestWinStreak === undefined) stats.bestWinStreak = 0;
 
           const opponent = playerName === currentGame.player1 ? currentGame.player2 : currentGame.player1;
 
@@ -2469,12 +2943,20 @@ export default function BaederApp() {
           if (winner === playerName) {
             stats.wins++;
             stats.opponents[opponent].wins++;
+            // Win Streak erhöhen
+            stats.winStreak++;
+            if (stats.winStreak > stats.bestWinStreak) {
+              stats.bestWinStreak = stats.winStreak;
+            }
           } else if (winner === null) {
             stats.draws++;
             stats.opponents[opponent].draws++;
+            // Unentschieden beendet die Serie NICHT
           } else {
             stats.losses++;
             stats.opponents[opponent].losses++;
+            // Niederlage beendet die Win Streak
+            stats.winStreak = 0;
           }
 
           await saveUserStatsToSupabase(playerName, stats);
@@ -2613,29 +3095,106 @@ export default function BaederApp() {
     setUserExamProgress(null);
   };
 
+  // Toggle für Multi-Select im Prüfungssimulator
+  const toggleExamAnswer = (answerIndex) => {
+    if (examAnswered || !examSimulator) return;
+    setExamSelectedAnswers(prev => {
+      if (prev.includes(answerIndex)) {
+        return prev.filter(i => i !== answerIndex);
+      } else {
+        return [...prev, answerIndex];
+      }
+    });
+  };
+
+  // Bestätigen der Multi-Select Antwort im Prüfungssimulator
+  const confirmExamMultiSelectAnswer = () => {
+    if (examAnswered || !examSimulator || !examCurrentQuestion.multi) return;
+    setExamAnswered(true);
+
+    const correctAnswers = examCurrentQuestion.correct;
+    const isCorrect =
+      examSelectedAnswers.length === correctAnswers.length &&
+      examSelectedAnswers.every(idx => correctAnswers.includes(idx));
+
+    if (isCorrect) { playSound('correct'); } else { playSound('wrong'); }
+
+    // Daily Challenge Progress
+    updateChallengeProgress('answer_questions', 1);
+    if (isCorrect) {
+      updateChallengeProgress('correct_answers', 1);
+    }
+    if (examCurrentQuestion.category) {
+      updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
+    }
+
+    const newAnswers = [...examSimulator.answers, {
+      question: examCurrentQuestion,
+      selectedAnswers: examSelectedAnswers,
+      correct: isCorrect
+    }];
+    setExamSimulator({ ...examSimulator, answers: newAnswers });
+
+    setTimeout(() => {
+      proceedToNextExamQuestion(newAnswers);
+    }, 2000);
+  };
+
   const answerExamQuestion = (answerIndex) => {
     if (examAnswered || !examSimulator) return;
+
+    // Multi-Select: Nur togglen, nicht direkt antworten
+    if (examCurrentQuestion.multi) {
+      toggleExamAnswer(answerIndex);
+      return;
+    }
+
+    // Single-Choice: Direkt antworten
     setExamAnswered(true);
+    setExamSelectedAnswer(answerIndex);
     const isCorrect = answerIndex === examCurrentQuestion.correct;
     if (isCorrect) { playSound('correct'); } else { playSound('wrong'); }
+
+    // Daily Challenge Progress
+    updateChallengeProgress('answer_questions', 1);
+    if (isCorrect) {
+      updateChallengeProgress('correct_answers', 1);
+    }
+    if (examCurrentQuestion.category) {
+      updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
+    }
     const newAnswers = [...examSimulator.answers, { question: examCurrentQuestion, selectedAnswer: answerIndex, correct: isCorrect }];
     setExamSimulator({ ...examSimulator, answers: newAnswers });
     setTimeout(() => {
-      if (examQuestionIndex < examSimulator.questions.length - 1) {
-        const nextIdx = examQuestionIndex + 1;
-        setExamQuestionIndex(nextIdx);
-        setExamCurrentQuestion(examSimulator.questions[nextIdx]);
-        setExamAnswered(false);
-      } else {
-        const correctAnswers = newAnswers.filter(a => a.correct).length;
-        const percentage = Math.round((correctAnswers / newAnswers.length) * 100);
-        setUserExamProgress({ correct: correctAnswers, total: newAnswers.length, percentage, passed: percentage >= 50, timeMs: Date.now() - examSimulator.startTime });
-        if (percentage >= 50) playSound('whistle');
-      }
-    }, 1500);
+      proceedToNextExamQuestion(newAnswers);
+    }, 2000);
   };
 
-  const resetExam = () => { setExamSimulator(null); setExamCurrentQuestion(null); setExamQuestionIndex(0); setExamAnswered(false); setUserExamProgress(null); };
+  const proceedToNextExamQuestion = (newAnswers) => {
+    if (examQuestionIndex < examSimulator.questions.length - 1) {
+      const nextIdx = examQuestionIndex + 1;
+      setExamQuestionIndex(nextIdx);
+      setExamCurrentQuestion(examSimulator.questions[nextIdx]);
+      setExamAnswered(false);
+      setExamSelectedAnswers([]);
+      setExamSelectedAnswer(null);
+    } else {
+      const correctAnswers = newAnswers.filter(a => a.correct).length;
+      const percentage = Math.round((correctAnswers / newAnswers.length) * 100);
+      setUserExamProgress({ correct: correctAnswers, total: newAnswers.length, percentage, passed: percentage >= 50, timeMs: Date.now() - examSimulator.startTime });
+      if (percentage >= 50) playSound('whistle');
+    }
+  };
+
+  const resetExam = () => {
+    setExamSimulator(null);
+    setExamCurrentQuestion(null);
+    setExamQuestionIndex(0);
+    setExamAnswered(false);
+    setUserExamProgress(null);
+    setExamSelectedAnswers([]);
+    setExamSelectedAnswer(null);
+  };
 
   // Kontrollkarte Berufsschule Funktionen
   const loadSchoolAttendance = async () => {
@@ -2718,12 +3277,591 @@ export default function BaederApp() {
     }
   };
 
+  // ==================== BERICHTSHEFT FUNKTIONEN ====================
+
+  const loadBerichtsheftEntries = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('berichtsheft')
+        .select('*')
+        .eq('user_name', user.name)
+        .order('week_start', { ascending: false });
+
+      if (error) throw error;
+      setBerichtsheftEntries(data || []);
+
+      // Setze die Nachweis-Nr auf nächste freie Nummer
+      if (data && data.length > 0) {
+        const maxNr = Math.max(...data.map(e => e.nachweis_nr || 0));
+        setBerichtsheftNr(maxNr + 1);
+      }
+    } catch (err) {
+      console.error('Fehler beim Laden des Berichtshefts:', err);
+    }
+  };
+
+  const getWeekEndDate = (startDate) => {
+    const start = new Date(startDate);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6); // Sonntag
+    return end.toISOString().split('T')[0];
+  };
+
+  // Azubi-Profil speichern
+  const saveAzubiProfile = (newProfile) => {
+    setAzubiProfile(newProfile);
+    localStorage.setItem('azubi_profile', JSON.stringify(newProfile));
+  };
+
+  const resetBerichtsheftForm = () => {
+    setCurrentWeekEntries({
+      Mo: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Di: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Mi: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Do: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Fr: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Sa: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      So: [{ taetigkeit: '', stunden: '', bereich: '' }]
+    });
+    setBerichtsheftBemerkungAzubi('');
+    setBerichtsheftBemerkungAusbilder('');
+    setBerichtsheftSignaturAzubi('');
+    setBerichtsheftSignaturAusbilder('');
+    setBerichtsheftDatumAzubi('');
+    setBerichtsheftDatumAusbilder('');
+    setSelectedBerichtsheft(null);
+  };
+
+  const addWeekEntry = (day) => {
+    setCurrentWeekEntries(prev => ({
+      ...prev,
+      [day]: [...prev[day], { taetigkeit: '', stunden: '', bereich: '' }]
+    }));
+  };
+
+  const updateWeekEntry = (day, index, field, value) => {
+    setCurrentWeekEntries(prev => ({
+      ...prev,
+      [day]: prev[day].map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry
+      )
+    }));
+  };
+
+  const removeWeekEntry = (day, index) => {
+    if (currentWeekEntries[day].length <= 1) return; // Mindestens eine Zeile
+    setCurrentWeekEntries(prev => ({
+      ...prev,
+      [day]: prev[day].filter((_, i) => i !== index)
+    }));
+  };
+
+  const calculateDayHours = (day) => {
+    return currentWeekEntries[day].reduce((sum, entry) => {
+      const hours = parseFloat(entry.stunden) || 0;
+      return sum + hours;
+    }, 0);
+  };
+
+  const calculateTotalHours = () => {
+    return Object.keys(currentWeekEntries).reduce((sum, day) => {
+      return sum + calculateDayHours(day);
+    }, 0);
+  };
+
+  const saveBerichtsheft = async () => {
+    // Validierung
+    const hasContent = Object.values(currentWeekEntries).some(day =>
+      day.some(entry => entry.taetigkeit.trim() !== '')
+    );
+
+    if (!hasContent) {
+      alert('Bitte mindestens eine Tätigkeit eintragen');
+      return;
+    }
+
+    try {
+      const berichtsheftData = {
+        user_name: user.name,
+        week_start: berichtsheftWeek,
+        week_end: getWeekEndDate(berichtsheftWeek),
+        ausbildungsjahr: berichtsheftYear,
+        nachweis_nr: berichtsheftNr,
+        entries: currentWeekEntries,
+        bemerkung_azubi: berichtsheftBemerkungAzubi,
+        bemerkung_ausbilder: berichtsheftBemerkungAusbilder,
+        signatur_azubi: berichtsheftSignaturAzubi,
+        signatur_ausbilder: berichtsheftSignaturAusbilder,
+        datum_azubi: berichtsheftDatumAzubi || null,
+        datum_ausbilder: berichtsheftDatumAusbilder || null,
+        total_hours: calculateTotalHours()
+      };
+
+      if (selectedBerichtsheft) {
+        // Update
+        const { error } = await supabase
+          .from('berichtsheft')
+          .update(berichtsheftData)
+          .eq('id', selectedBerichtsheft.id);
+
+        if (error) throw error;
+        alert('Berichtsheft aktualisiert!');
+      } else {
+        // Insert
+        const { error } = await supabase
+          .from('berichtsheft')
+          .insert(berichtsheftData);
+
+        if (error) throw error;
+        alert('Berichtsheft gespeichert!');
+        setBerichtsheftNr(prev => prev + 1);
+      }
+
+      resetBerichtsheftForm();
+      loadBerichtsheftEntries();
+      setBerichtsheftViewMode('list');
+    } catch (err) {
+      console.error('Fehler beim Speichern:', err);
+      alert('Fehler beim Speichern des Berichtshefts');
+    }
+  };
+
+  const loadBerichtsheftForEdit = (entry) => {
+    setSelectedBerichtsheft(entry);
+    setBerichtsheftWeek(entry.week_start);
+    setBerichtsheftYear(entry.ausbildungsjahr);
+    setBerichtsheftNr(entry.nachweis_nr);
+    setCurrentWeekEntries(entry.entries || {
+      Mo: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Di: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Mi: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Do: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Fr: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      Sa: [{ taetigkeit: '', stunden: '', bereich: '' }],
+      So: [{ taetigkeit: '', stunden: '', bereich: '' }]
+    });
+    setBerichtsheftBemerkungAzubi(entry.bemerkung_azubi || '');
+    setBerichtsheftBemerkungAusbilder(entry.bemerkung_ausbilder || '');
+    setBerichtsheftSignaturAzubi(entry.signatur_azubi || '');
+    setBerichtsheftSignaturAusbilder(entry.signatur_ausbilder || '');
+    setBerichtsheftDatumAzubi(entry.datum_azubi || '');
+    setBerichtsheftDatumAusbilder(entry.datum_ausbilder || '');
+    setBerichtsheftViewMode('edit');
+  };
+
+  const deleteBerichtsheft = async (id) => {
+    if (!confirm('Berichtsheft wirklich löschen?')) return;
+    try {
+      const { error } = await supabase
+        .from('berichtsheft')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      loadBerichtsheftEntries();
+    } catch (err) {
+      console.error('Fehler beim Löschen:', err);
+    }
+  };
+
+  const calculateBereichProgress = () => {
+    // Berechnet wie viele Stunden pro Ausbildungsbereich bereits erfasst wurden
+    const progress = {};
+    AUSBILDUNGSRAHMENPLAN.forEach(bereich => {
+      progress[bereich.nr] = {
+        name: bereich.bereich,
+        icon: bereich.icon,
+        color: bereich.color,
+        sollWochen: bereich.gesamtWochen,
+        istStunden: 0
+      };
+    });
+
+    berichtsheftEntries.forEach(entry => {
+      if (entry.entries) {
+        Object.values(entry.entries).forEach(day => {
+          day.forEach(item => {
+            if (item.bereich && item.stunden) {
+              const bereichNr = parseInt(item.bereich);
+              if (progress[bereichNr]) {
+                progress[bereichNr].istStunden += parseFloat(item.stunden) || 0;
+              }
+            }
+          });
+        });
+      }
+    });
+
+    return progress;
+  };
+
+  const generateBerichtsheftPDF = (entry) => {
+    // Erstellt eine druckbare HTML-Version
+    const weekStart = new Date(entry.week_start);
+    const weekEnd = new Date(entry.week_end);
+
+    const formatDate = (date) => {
+      return new Date(date).toLocaleDateString('de-DE', { day: '2-digit', month: 'long' });
+    };
+
+    const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    const dayNames = { Mo: 'Montag', Di: 'Dienstag', Mi: 'Mittwoch', Do: 'Donnerstag', Fr: 'Freitag', Sa: 'Samstag' };
+
+    let tableRows = '';
+    days.forEach(day => {
+      const dayEntries = entry.entries?.[day] || [];
+      const dayDate = new Date(weekStart);
+      dayDate.setDate(weekStart.getDate() + days.indexOf(day));
+
+      let dayHours = 0;
+      let dayContent = '';
+
+      dayEntries.forEach(e => {
+        if (e.taetigkeit) {
+          const bereich = AUSBILDUNGSRAHMENPLAN.find(b => b.nr === parseInt(e.bereich));
+          dayContent += `<div style="margin-bottom: 4px;">${e.taetigkeit}${bereich ? ` <small style="color: #666;">(${bereich.bereich})</small>` : ''}</div>`;
+          dayHours += parseFloat(e.stunden) || 0;
+        }
+      });
+
+      tableRows += `
+        <tr>
+          <td style="border: 1px solid #333; padding: 8px; font-weight: bold; width: 50px; vertical-align: top;">${day}</td>
+          <td style="border: 1px solid #333; padding: 8px; min-height: 60px;">${dayContent || '-'}</td>
+          <td style="border: 1px solid #333; padding: 8px; text-align: center; width: 80px;">${dayHours > 0 ? dayHours : '-'}</td>
+          <td style="border: 1px solid #333; padding: 8px; text-align: center; width: 80px;">${dayHours > 0 ? dayHours : '-'}</td>
+          <td style="border: 1px solid #333; padding: 8px; width: 150px;"></td>
+        </tr>
+      `;
+    });
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Ausbildungsnachweis Nr. ${entry.nachweis_nr}</title>
+        <style>
+          @media print {
+            body { margin: 0; padding: 20px; }
+            .no-print { display: none; }
+          }
+          body { font-family: Arial, sans-serif; font-size: 12px; }
+          h1 { text-align: center; font-size: 18px; margin-bottom: 20px; }
+          .header-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+          .header-info div { flex: 1; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          th { background: #f0f0f0; border: 1px solid #333; padding: 8px; text-align: left; }
+          .signature-section { display: flex; gap: 40px; margin-top: 30px; }
+          .signature-box { flex: 1; border: 1px solid #333; padding: 15px; }
+          .signature-line { border-top: 1px solid #333; margin-top: 40px; padding-top: 5px; }
+        </style>
+      </head>
+      <body>
+        <h1>Ausbildungsnachweis</h1>
+
+        <div class="header-info">
+          <div><strong>Ausbildungsnachweis Nr.:</strong> ${entry.nachweis_nr}</div>
+          <div><strong>Name:</strong> ${user?.name || ''}</div>
+        </div>
+
+        <div class="header-info">
+          <div><strong>Woche vom:</strong> ${formatDate(entry.week_start)} bis ${formatDate(entry.week_end)} ${weekEnd.getFullYear()}</div>
+          <div><strong>Ausbildungsjahr:</strong> ${entry.ausbildungsjahr}</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Tag</th>
+              <th>Ausgeführte Arbeiten, Unterricht usw.</th>
+              <th>Einzel-stunden</th>
+              <th>Gesamt-stunden</th>
+              <th>Ausbildungs-Abteilung</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+            <tr>
+              <td colspan="3" style="border: 1px solid #333; padding: 8px; text-align: right; font-weight: bold;">Gesamtstunden:</td>
+              <td style="border: 1px solid #333; padding: 8px; text-align: center; font-weight: bold;">${entry.total_hours || 0}</td>
+              <td style="border: 1px solid #333; padding: 8px;"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-bottom: 20px;">
+          <strong>Besondere Bemerkungen</strong>
+          <div style="display: flex; gap: 20px; margin-top: 10px;">
+            <div style="flex: 1; border: 1px solid #333; padding: 10px; min-height: 60px;">
+              <small>Auszubildender:</small><br>
+              ${entry.bemerkung_azubi || ''}
+            </div>
+            <div style="flex: 1; border: 1px solid #333; padding: 10px; min-height: 60px;">
+              <small>Ausbildender bzw. Ausbilder:</small><br>
+              ${entry.bemerkung_ausbilder || ''}
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+          <strong>Für die Richtigkeit</strong>
+          <div style="display: flex; gap: 40px; margin-top: 15px;">
+            <div style="flex: 1;">
+              <div style="margin-bottom: 5px;">Datum: ${entry.datum_azubi || '________________'}</div>
+              <div style="border-top: 1px solid #333; padding-top: 5px; margin-top: 30px;">
+                Unterschrift des Auszubildenden<br>
+                <strong>${entry.signatur_azubi || ''}</strong>
+              </div>
+            </div>
+            <div style="flex: 1;">
+              <div style="margin-bottom: 5px;">Datum: ${entry.datum_ausbilder || '________________'}</div>
+              <div style="border-top: 1px solid #333; padding-top: 5px; margin-top: 30px;">
+                Unterschrift des Ausbildenden bzw. Ausbilders<br>
+                <strong>${entry.signatur_ausbilder || ''}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-print" style="margin-top: 30px; text-align: center;">
+          <button onclick="window.print()" style="padding: 10px 30px; font-size: 16px; cursor: pointer;">
+            Drucken / Als PDF speichern
+          </button>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  };
+
+  // ==================== ENDE BERICHTSHEFT FUNKTIONEN ====================
+
   const loadFlashcards = () => {
     const hardcodedCards = FLASHCARD_CONTENT[newQuestionCategory] || [];
     const userCards = userFlashcards.filter(fc => fc.category === newQuestionCategory);
     const allCards = [...hardcodedCards, ...userCards];
     setFlashcards(allCards); setFlashcardIndex(0); setCurrentFlashcard(allCards[0] || null); setShowFlashcardAnswer(false);
   };
+
+  // ==================== SPACED REPETITION SYSTEM ====================
+
+  // Intervalle in Tagen basierend auf Level (SM-2 ähnlich)
+  const SPACED_INTERVALS = {
+    1: 1,    // Level 1: 1 Tag
+    2: 3,    // Level 2: 3 Tage
+    3: 7,    // Level 3: 1 Woche
+    4: 14,   // Level 4: 2 Wochen
+    5: 30,   // Level 5: 1 Monat
+    6: 60    // Level 6: 2 Monate (gemeistert)
+  };
+
+  const getCardKey = (card, category) => {
+    return `${category}_${card.front.substring(0, 30)}`;
+  };
+
+  const getCardSpacedData = (card, category) => {
+    const key = getCardKey(card, category);
+    return spacedRepetitionData[key] || { level: 1, nextReview: Date.now(), reviewCount: 0 };
+  };
+
+  const updateCardSpacedData = (card, category, correct) => {
+    const key = getCardKey(card, category);
+    const current = getCardSpacedData(card, category);
+
+    let newLevel;
+    if (correct) {
+      newLevel = Math.min(current.level + 1, 6);
+    } else {
+      newLevel = Math.max(current.level - 1, 1);
+    }
+
+    const intervalDays = SPACED_INTERVALS[newLevel];
+    const nextReview = Date.now() + (intervalDays * 24 * 60 * 60 * 1000);
+
+    const newData = {
+      ...spacedRepetitionData,
+      [key]: {
+        level: newLevel,
+        nextReview: nextReview,
+        reviewCount: current.reviewCount + 1,
+        lastReview: Date.now()
+      }
+    };
+
+    setSpacedRepetitionData(newData);
+    localStorage.setItem('spaced_repetition_data', JSON.stringify(newData));
+
+    // Update daily challenge progress
+    updateChallengeProgress('flashcards_reviewed', 1);
+    if (correct) {
+      updateChallengeProgress('correct_answers', 1);
+    }
+
+    return newLevel;
+  };
+
+  const loadDueCards = (category) => {
+    const hardcodedCards = FLASHCARD_CONTENT[category] || [];
+    const userCards = userFlashcards.filter(fc => fc.category === category);
+    const allCards = [...hardcodedCards, ...userCards];
+
+    const now = Date.now();
+    const due = allCards
+      .map(card => ({
+        ...card,
+        spacedData: getCardSpacedData(card, category)
+      }))
+      .filter(card => card.spacedData.nextReview <= now)
+      .sort((a, b) => a.spacedData.level - b.spacedData.level); // Niedrigste Level zuerst
+
+    setDueCards(due);
+    return due;
+  };
+
+  const getDueCardCount = (category) => {
+    const hardcodedCards = FLASHCARD_CONTENT[category] || [];
+    const userCards = userFlashcards.filter(fc => fc.category === category);
+    const allCards = [...hardcodedCards, ...userCards];
+
+    const now = Date.now();
+    return allCards.filter(card => getCardSpacedData(card, category).nextReview <= now).length;
+  };
+
+  const getTotalDueCards = () => {
+    return CATEGORIES.reduce((sum, cat) => sum + getDueCardCount(cat.id), 0);
+  };
+
+  const getLevelColor = (level) => {
+    const colors = {
+      1: 'bg-red-500',
+      2: 'bg-orange-500',
+      3: 'bg-yellow-500',
+      4: 'bg-lime-500',
+      5: 'bg-green-500',
+      6: 'bg-emerald-500'
+    };
+    return colors[level] || 'bg-gray-500';
+  };
+
+  const getLevelLabel = (level) => {
+    const labels = {
+      1: 'Neu',
+      2: 'Lernend',
+      3: 'Bekannt',
+      4: 'Gefestigt',
+      5: 'Sicher',
+      6: 'Gemeistert'
+    };
+    return labels[level] || 'Unbekannt';
+  };
+
+  // ==================== DAILY CHALLENGES SYSTEM ====================
+
+  const CHALLENGE_TYPES = [
+    { id: 'answer_questions', name: 'Fragen beantworten', icon: '❓', unit: 'Fragen', baseTarget: 10 },
+    { id: 'correct_answers', name: 'Richtige Antworten', icon: '✅', unit: 'richtige', baseTarget: 7 },
+    { id: 'flashcards_reviewed', name: 'Lernkarten wiederholen', icon: '🎴', unit: 'Karten', baseTarget: 15 },
+    { id: 'category_master', name: 'Kategorie üben', icon: '📚', unit: 'Fragen aus', baseTarget: 5, hasCategory: true },
+    { id: 'quiz_play', name: 'Quiz spielen', icon: '🎮', unit: 'Runde', baseTarget: 1 },
+    { id: 'streak_keep', name: 'Lernstreak halten', icon: '🔥', unit: 'Tag', baseTarget: 1 }
+  ];
+
+  const generateDailyChallenges = () => {
+    const today = new Date();
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+
+    // Pseudo-random basierend auf Datum (gleiche Challenges für alle Nutzer am selben Tag)
+    const seededRandom = (index) => {
+      const x = Math.sin(seed + index) * 10000;
+      return x - Math.floor(x);
+    };
+
+    // Wähle 3 Challenges für heute
+    const shuffled = [...CHALLENGE_TYPES].sort((a, b) => seededRandom(CHALLENGE_TYPES.indexOf(a)) - seededRandom(CHALLENGE_TYPES.indexOf(b)));
+    const selectedChallenges = shuffled.slice(0, 3);
+
+    return selectedChallenges.map((challenge, idx) => {
+      const difficulty = 1 + seededRandom(idx + 100) * 0.5; // 1.0 - 1.5x
+      const target = Math.round(challenge.baseTarget * difficulty);
+
+      let category = null;
+      if (challenge.hasCategory) {
+        const catIndex = Math.floor(seededRandom(idx + 200) * CATEGORIES.length);
+        category = CATEGORIES[catIndex];
+      }
+
+      return {
+        ...challenge,
+        target,
+        category,
+        xpReward: target * 10
+      };
+    });
+  };
+
+  const updateChallengeProgress = (challengeType, amount = 1, categoryId = null) => {
+    setDailyChallengeProgress(prev => {
+      const today = new Date().toDateString();
+
+      // Reset if it's a new day
+      if (prev.date !== today) {
+        const newProgress = {
+          date: today,
+          completed: [],
+          stats: { [challengeType]: amount }
+        };
+        if (categoryId) {
+          newProgress.stats[`category_${categoryId}`] = amount;
+        }
+        localStorage.setItem('daily_challenge_progress', JSON.stringify(newProgress));
+        return newProgress;
+      }
+
+      const newStats = { ...prev.stats };
+      newStats[challengeType] = (newStats[challengeType] || 0) + amount;
+      if (categoryId) {
+        newStats[`category_${categoryId}`] = (newStats[`category_${categoryId}`] || 0) + amount;
+      }
+
+      const newProgress = { ...prev, stats: newStats };
+      localStorage.setItem('daily_challenge_progress', JSON.stringify(newProgress));
+      return newProgress;
+    });
+  };
+
+  const getChallengeProgress = (challenge) => {
+    const stats = dailyChallengeProgress.stats || {};
+
+    if (challenge.hasCategory && challenge.category) {
+      return stats[`category_${challenge.category.id}`] || 0;
+    }
+
+    return stats[challenge.id] || 0;
+  };
+
+  const isChallengeCompleted = (challenge) => {
+    return getChallengeProgress(challenge) >= challenge.target;
+  };
+
+  const getCompletedChallengesCount = () => {
+    return dailyChallenges.filter(c => isChallengeCompleted(c)).length;
+  };
+
+  const getTotalXPEarned = () => {
+    return dailyChallenges
+      .filter(c => isChallengeCompleted(c))
+      .reduce((sum, c) => sum + c.xpReward, 0);
+  };
+
+  // Initialize daily challenges
+  useEffect(() => {
+    const challenges = generateDailyChallenges();
+    setDailyChallenges(challenges);
+  }, []);
 
   const approveFlashcard = async (fcId) => {
     try {
@@ -2793,6 +3931,25 @@ export default function BaederApp() {
       const badge = { id: 'night_owl', earnedAt: Date.now() };
       earnedBadges.push(badge);
       newBadges.push(badge);
+    }
+
+    // Win Streak Badges - basierend auf bestWinStreak (höchste erreichte Serie)
+    const bestStreak = userStats.bestWinStreak || 0;
+    const winStreakMilestones = [
+      { id: 'win_streak_3', value: 3 },
+      { id: 'win_streak_5', value: 5 },
+      { id: 'win_streak_10', value: 10 },
+      { id: 'win_streak_15', value: 15 },
+      { id: 'win_streak_25', value: 25 },
+      { id: 'win_streak_50', value: 50 }
+    ];
+
+    for (const milestone of winStreakMilestones) {
+      if (bestStreak >= milestone.value && !earnedBadges.find(b => b.id === milestone.id)) {
+        const badge = { id: milestone.id, earnedAt: Date.now() };
+        earnedBadges.push(badge);
+        newBadges.push(badge);
+      }
     }
 
     if (newBadges.length > 0) {
@@ -3438,6 +4595,7 @@ export default function BaederApp() {
             { id: 'exams', icon: '📋', label: 'Klasuren', show: true },
             { id: 'questions', icon: '💡', label: 'Fragen', show: true },
             { id: 'school-card', icon: '🎓', label: 'Kontrollkarte', show: true },
+            { id: 'berichtsheft', icon: '📖', label: 'Berichtsheft', show: true },
             { id: 'admin', icon: '⚙️', label: 'Verwaltung', show: user.permissions.canManageUsers }
           ].filter(item => item.show).map(item => (
             <button
@@ -3888,6 +5046,145 @@ export default function BaederApp() {
               )}
             </div>
 
+            {/* Daily Challenges Section */}
+            {dailyChallenges.length > 0 && (
+              <div className={`${darkMode ? 'bg-gradient-to-r from-orange-900/80 via-amber-900/80 to-orange-900/80' : 'bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50'} backdrop-blur-sm border-2 ${darkMode ? 'border-orange-700' : 'border-orange-300'} rounded-xl p-6 shadow-lg`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-orange-300' : 'text-orange-800'}`}>
+                    <Target className="mr-2" />
+                    🎯 Tägliche Challenges
+                  </h3>
+                  <div className={`flex items-center gap-2 ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
+                    <span className="text-sm font-medium">{getCompletedChallengesCount()}/3 erledigt</span>
+                    {getCompletedChallengesCount() === 3 && <span className="text-xl">🏆</span>}
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {dailyChallenges.map((challenge, idx) => {
+                    const progress = getChallengeProgress(challenge);
+                    const completed = isChallengeCompleted(challenge);
+                    const percentage = Math.min((progress / challenge.target) * 100, 100);
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-md transition-all ${
+                          completed ? 'ring-2 ring-green-500' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-2xl">{challenge.icon}</span>
+                          {completed && <span className="text-green-500 text-xl">✓</span>}
+                        </div>
+                        <h4 className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                          {challenge.name}
+                        </h4>
+                        <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {challenge.target} {challenge.unit}
+                          {challenge.category && ` ${challenge.category.name}`}
+                        </p>
+                        <div className={`w-full ${darkMode ? 'bg-slate-700' : 'bg-gray-200'} rounded-full h-3 mb-2`}>
+                          <div
+                            className={`h-3 rounded-full transition-all duration-500 ${
+                              completed ? 'bg-green-500' : 'bg-orange-500'
+                            }`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {progress}/{challenge.target}
+                          </span>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            completed
+                              ? 'bg-green-100 text-green-700'
+                              : darkMode ? 'bg-orange-900 text-orange-300' : 'bg-orange-100 text-orange-700'
+                          }`}>
+                            +{challenge.xpReward} XP
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {getCompletedChallengesCount() === 3 && (
+                  <div className={`mt-4 text-center p-3 rounded-lg ${darkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
+                    <p className={`font-bold ${darkMode ? 'text-green-300' : 'text-green-700'}`}>
+                      🎉 Alle Challenges geschafft! Du hast heute {getTotalXPEarned()} XP verdient!
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Win Streak Banner */}
+            {userStats && userStats.winStreak >= 3 && (
+              <div className={`${
+                userStats.winStreak >= 10
+                  ? darkMode ? 'bg-gradient-to-r from-orange-900/80 via-red-900/80 to-orange-900/80 border-orange-500' : 'bg-gradient-to-r from-orange-100 via-red-100 to-orange-100 border-orange-400'
+                  : darkMode ? 'bg-gradient-to-r from-yellow-900/80 via-amber-900/80 to-yellow-900/80 border-yellow-600' : 'bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50 border-yellow-400'
+              } backdrop-blur-sm border-2 rounded-xl p-4 shadow-lg`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl animate-pulse">
+                      {userStats.winStreak >= 25 ? '💎' : userStats.winStreak >= 15 ? '🏆' : userStats.winStreak >= 10 ? '🔥' : userStats.winStreak >= 5 ? '⚡' : '💪'}
+                    </span>
+                    <div>
+                      <p className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {userStats.winStreak} Siege in Folge!
+                      </p>
+                      <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        {userStats.winStreak >= 25 ? 'Legendäre Serie!' :
+                         userStats.winStreak >= 15 ? 'Dominanz pur!' :
+                         userStats.winStreak >= 10 ? 'Unaufhaltsam!' :
+                         userStats.winStreak >= 5 ? 'Durchstarter!' : 'Weiter so!'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`text-right ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <p className="text-sm">Nächster Meilenstein</p>
+                    <p className="font-bold">
+                      {(() => {
+                        const milestones = [3, 5, 10, 15, 25, 50];
+                        const next = milestones.find(m => m > userStats.winStreak);
+                        return next ? `${next - userStats.winStreak} bis ${next}` : 'Maximum erreicht!';
+                      })()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Spaced Repetition Reminder */}
+            {getTotalDueCards() > 0 && (
+              <div className={`${darkMode ? 'bg-purple-900/80' : 'bg-purple-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-purple-700' : 'border-purple-300'} rounded-xl p-6 shadow-lg`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Brain className={`mr-3 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} size={32} />
+                    <div>
+                      <h3 className={`text-lg font-bold ${darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
+                        🧠 Lernkarten zur Wiederholung
+                      </h3>
+                      <p className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                        {getTotalDueCards()} Karten sind heute fällig
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSpacedRepetitionMode(true);
+                      setCurrentView('flashcards');
+                      playSound('splash');
+                    }}
+                    className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-bold shadow-md flex items-center gap-2"
+                  >
+                    <Zap size={18} />
+                    Jetzt wiederholen
+                  </button>
+                </div>
+              </div>
+            )}
+
             {activeGames.filter(g => g.player2 === user.name && g.status === 'waiting').length > 0 && (
               <div className={`${darkMode ? 'bg-yellow-900/80' : 'bg-yellow-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-yellow-700' : 'border-yellow-400'} rounded-xl p-6 shadow-lg`}>
                 <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>
@@ -4139,6 +5436,39 @@ export default function BaederApp() {
                 <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-pink-400' : 'text-pink-700'}`}>Team-Chat</h3>
                 <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{messages.length} Nachrichten</p>
               </div>
+
+              {/* Berichtsheft */}
+              <div className={`${darkMode ? 'bg-slate-800/95 border-teal-600' : 'bg-white/95 border-teal-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-teal-400`}
+                   onClick={() => {
+                     setCurrentView('berichtsheft');
+                     playSound('splash');
+                   }}>
+                <div className="text-5xl mb-3 text-center">📖</div>
+                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>Berichtsheft</h3>
+                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Ausbildungsnachweis</p>
+              </div>
+
+              {/* Kontrollkarte Berufsschule */}
+              <div className={`${darkMode ? 'bg-slate-800/95 border-orange-600' : 'bg-white/95 border-orange-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-orange-400`}
+                   onClick={() => {
+                     setCurrentView('school-card');
+                     playSound('splash');
+                   }}>
+                <div className="text-5xl mb-3 text-center">🎓</div>
+                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-orange-400' : 'text-orange-700'}`}>Kontrollkarte</h3>
+                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Berufsschule</p>
+              </div>
+
+              {/* Fragen einreichen */}
+              <div className={`${darkMode ? 'bg-slate-800/95 border-amber-600' : 'bg-white/95 border-amber-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-amber-400`}
+                   onClick={() => {
+                     setCurrentView('questions');
+                     playSound('splash');
+                   }}>
+                <div className="text-5xl mb-3 text-center">💡</div>
+                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>Fragen</h3>
+                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Einreichen & lernen</p>
+              </div>
             </div>
           </div>
         )}
@@ -4354,7 +5684,8 @@ export default function BaederApp() {
                     {currentQuestion.a.map((answer, idx) => {
                       // Multi-Select Logik
                       const isMulti = currentQuestion.multi;
-                      const isSelected = selectedAnswers.includes(idx);
+                      const isSelectedMulti = selectedAnswers.includes(idx);
+                      const isSelectedSingle = lastSelectedAnswer === idx;
                       const isCorrectAnswer = isMulti
                         ? currentQuestion.correct.includes(idx)
                         : idx === currentQuestion.correct;
@@ -4362,14 +5693,14 @@ export default function BaederApp() {
                       let buttonClass = '';
                       if (answered) {
                         if (isCorrectAnswer) {
-                          buttonClass = 'bg-green-500 text-white';
-                        } else if (isMulti && isSelected && !isCorrectAnswer) {
-                          buttonClass = 'bg-red-500 text-white'; // Falsch ausgewählt
+                          buttonClass = 'bg-green-500 text-white'; // Richtige Antwort grün
+                        } else if ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle)) {
+                          buttonClass = 'bg-red-500 text-white'; // Falsch ausgewählt rot
                         } else {
                           buttonClass = 'bg-gray-200 text-gray-500';
                         }
                       } else {
-                        if (isMulti && isSelected) {
+                        if (isMulti && isSelectedMulti) {
                           buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
                         } else {
                           buttonClass = 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
@@ -4384,7 +5715,7 @@ export default function BaederApp() {
                           className={`p-4 rounded-xl font-medium transition-all ${buttonClass}`}
                         >
                           {isMulti && !answered && (
-                            <span className="mr-2">{isSelected ? '☑️' : '⬜'}</span>
+                            <span className="mr-2">{isSelectedMulti ? '☑️' : '⬜'}</span>
                           )}
                           {answer}
                         </button>
@@ -4425,20 +5756,84 @@ export default function BaederApp() {
             <div className={`${darkMode ? 'bg-gradient-to-r from-purple-900 to-pink-900' : 'bg-gradient-to-r from-purple-500 to-pink-500'} text-white rounded-xl p-8`}>
               <h2 className="text-3xl font-bold mb-4">📊 Deine Statistiken</h2>
               {userStats && (
-                <div className="grid grid-cols-3 gap-4">
-                  <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} rounded-lg p-4 text-center`}>
-                    <div className="text-3xl font-bold">{userStats.wins}</div>
-                    <div className="text-sm">Siege</div>
+                <>
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} rounded-lg p-4 text-center`}>
+                      <div className="text-3xl font-bold">{userStats.wins}</div>
+                      <div className="text-sm">Siege</div>
+                    </div>
+                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} rounded-lg p-4 text-center`}>
+                      <div className="text-3xl font-bold">{userStats.losses}</div>
+                      <div className="text-sm">Niederlagen</div>
+                    </div>
+                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} rounded-lg p-4 text-center`}>
+                      <div className="text-3xl font-bold">{userStats.draws}</div>
+                      <div className="text-sm">Unentschieden</div>
+                    </div>
                   </div>
-                  <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} rounded-lg p-4 text-center`}>
-                    <div className="text-3xl font-bold">{userStats.losses}</div>
-                    <div className="text-sm">Niederlagen</div>
+
+                  {/* Win Streak Anzeige */}
+                  <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} rounded-xl p-4`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-4xl">{userStats.winStreak >= 10 ? '🔥' : userStats.winStreak >= 5 ? '⚡' : userStats.winStreak >= 3 ? '💪' : '🎯'}</span>
+                        <div>
+                          <div className="text-2xl font-bold">
+                            {userStats.winStreak || 0} Siege in Folge
+                          </div>
+                          <div className="text-sm opacity-80">
+                            Rekord: {userStats.bestWinStreak || 0} Siege
+                          </div>
+                        </div>
+                      </div>
+                      {/* Nächster Meilenstein */}
+                      {(() => {
+                        const current = userStats.winStreak || 0;
+                        const milestones = [3, 5, 10, 15, 25, 50];
+                        const nextMilestone = milestones.find(m => m > current);
+                        if (nextMilestone) {
+                          const remaining = nextMilestone - current;
+                          return (
+                            <div className="text-right">
+                              <div className="text-sm opacity-80">Nächster Meilenstein</div>
+                              <div className="font-bold">
+                                Noch {remaining} {remaining === 1 ? 'Sieg' : 'Siege'} bis {nextMilestone}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="text-right">
+                            <div className="text-2xl">💎</div>
+                            <div className="text-sm font-bold">Unbesiegbar!</div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    {/* Streak Progress Bar */}
+                    {(() => {
+                      const current = userStats.winStreak || 0;
+                      const milestones = [3, 5, 10, 15, 25, 50];
+                      const nextMilestone = milestones.find(m => m > current) || 50;
+                      const prevMilestone = [...milestones].reverse().find(m => m <= current) || 0;
+                      const progress = ((current - prevMilestone) / (nextMilestone - prevMilestone)) * 100;
+                      return (
+                        <div className="mt-3">
+                          <div className="flex justify-between text-xs mb-1 opacity-70">
+                            <span>{prevMilestone}</span>
+                            <span>{nextMilestone}</span>
+                          </div>
+                          <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-500"
+                              style={{ width: `${Math.min(progress, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
-                  <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} rounded-lg p-4 text-center`}>
-                    <div className="text-3xl font-bold">{userStats.draws}</div>
-                    <div className="text-sm">Unentschieden</div>
-                  </div>
-                </div>
+                </>
               )}
             </div>
 
@@ -5046,28 +6441,65 @@ export default function BaederApp() {
                   <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                     {examCurrentQuestion.q}
                   </p>
+                  {examCurrentQuestion.multi && !examAnswered && (
+                    <p className="text-center text-sm text-orange-600 mt-2 font-medium">
+                      ⚠️ Mehrere Antworten sind richtig - wähle alle richtigen aus!
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid gap-3">
-                  {examCurrentQuestion.a.map((answer, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => answerExamQuestion(idx)}
-                      disabled={examAnswered}
-                      className={`p-4 rounded-xl font-medium transition-all text-left ${
-                        examAnswered
-                          ? idx === examCurrentQuestion.correct
-                            ? 'bg-green-500 text-white'
-                            : 'bg-gray-200 text-gray-500'
-                          : darkMode
-                            ? 'bg-slate-700 hover:bg-slate-600 border-2 border-slate-600 hover:border-cyan-500 text-white'
-                            : 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500'
-                      }`}
-                    >
-                      {answer}
-                    </button>
-                  ))}
+                  {examCurrentQuestion.a.map((answer, idx) => {
+                    const isMulti = examCurrentQuestion.multi;
+                    const isSelected = isMulti ? examSelectedAnswers.includes(idx) : examSelectedAnswer === idx;
+                    const isCorrectAnswer = isMulti
+                      ? examCurrentQuestion.correct.includes(idx)
+                      : idx === examCurrentQuestion.correct;
+
+                    let buttonClass = '';
+                    if (examAnswered) {
+                      if (isCorrectAnswer) {
+                        buttonClass = 'bg-green-500 text-white'; // Richtige Antwort grün
+                      } else if (isSelected && !isCorrectAnswer) {
+                        buttonClass = 'bg-red-500 text-white'; // Falsch ausgewählt rot
+                      } else {
+                        buttonClass = darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-500';
+                      }
+                    } else {
+                      if (isMulti && isSelected) {
+                        buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
+                      } else {
+                        buttonClass = darkMode
+                          ? 'bg-slate-700 hover:bg-slate-600 border-2 border-slate-600 hover:border-cyan-500 text-white'
+                          : 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => answerExamQuestion(idx)}
+                        disabled={examAnswered}
+                        className={`p-4 rounded-xl font-medium transition-all text-left ${buttonClass}`}
+                      >
+                        {isMulti && !examAnswered && (
+                          <span className="mr-2">{isSelected ? '☑️' : '⬜'}</span>
+                        )}
+                        {answer}
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {/* Multi-Select Bestätigen Button */}
+                {examCurrentQuestion.multi && !examAnswered && examSelectedAnswers.length > 0 && (
+                  <button
+                    onClick={confirmExamMultiSelectAnswer}
+                    className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
+                  >
+                    ✓ Antwort bestätigen ({examSelectedAnswers.length} ausgewählt)
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -5244,37 +6676,180 @@ export default function BaederApp() {
                   {FLASHCARD_CONTENT[newQuestionCategory]?.length || 0} Standard + {userFlashcards.filter(fc => fc.category === newQuestionCategory).length} Custom
                 </div>
               </div>
-              
-              <select
-                value={newQuestionCategory}
-                onChange={(e) => {
-                  setNewQuestionCategory(e.target.value);
-                  const hardcodedCards = FLASHCARD_CONTENT[e.target.value] || [];
-                  const userCards = userFlashcards.filter(fc => fc.category === e.target.value);
-                  const allCards = [...hardcodedCards, ...userCards];
-                  setFlashcards(allCards);
-                  setFlashcardIndex(0);
-                  setCurrentFlashcard(allCards[0]);
-                  setShowFlashcardAnswer(false);
-                }}
-                className={`w-full px-4 py-3 border rounded-lg mb-6 ${
-                  darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white'
-                }`}
-              >
-                {CATEGORIES.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
-                ))}
-              </select>
+
+              {/* Lernmodus Umschalter */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => {
+                    setSpacedRepetitionMode(false);
+                    loadFlashcards();
+                  }}
+                  className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all ${
+                    !spacedRepetitionMode
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                      : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  📚 Alle Karten
+                </button>
+                <button
+                  onClick={() => {
+                    setSpacedRepetitionMode(true);
+                    const due = loadDueCards(newQuestionCategory);
+                    if (due.length > 0) {
+                      setFlashcards(due);
+                      setFlashcardIndex(0);
+                      setCurrentFlashcard(due[0]);
+                      setShowFlashcardAnswer(false);
+                    }
+                  }}
+                  className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
+                    spacedRepetitionMode
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                      : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  🧠 Spaced Repetition
+                  {getDueCardCount(newQuestionCategory) > 0 && (
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                      {getDueCardCount(newQuestionCategory)}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Spaced Repetition Info */}
+              {spacedRepetitionMode && (
+                <div className={`${darkMode ? 'bg-purple-900/50' : 'bg-purple-100'} rounded-lg p-4 mb-4`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className={`font-bold ${darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
+                      🧠 Spaced Repetition Modus
+                    </h4>
+                    <span className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                      {dueCards.length} Karten fällig
+                    </span>
+                  </div>
+                  <p className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-700'}`}>
+                    Beantworte mit "Gewusst" oder "Nicht gewusst". Karten die du nicht wusstest kommen früher wieder.
+                  </p>
+                  <div className="flex gap-2 mt-3 flex-wrap">
+                    {[1, 2, 3, 4, 5, 6].map(level => (
+                      <div key={level} className="flex items-center gap-1">
+                        <div className={`w-3 h-3 rounded-full ${getLevelColor(level)}`}></div>
+                        <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {getLevelLabel(level)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Kategorien mit fälligen Karten Übersicht */}
+              {spacedRepetitionMode && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                  {CATEGORIES.map(cat => {
+                    const dueCount = getDueCardCount(cat.id);
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => {
+                          setNewQuestionCategory(cat.id);
+                          const due = loadDueCards(cat.id);
+                          if (due.length > 0) {
+                            setFlashcards(due);
+                            setFlashcardIndex(0);
+                            setCurrentFlashcard(due[0]);
+                            setShowFlashcardAnswer(false);
+                          } else {
+                            setFlashcards([]);
+                            setCurrentFlashcard(null);
+                          }
+                        }}
+                        className={`p-3 rounded-lg text-left transition-all ${
+                          newQuestionCategory === cat.id
+                            ? `${cat.color} text-white`
+                            : darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span>{cat.icon}</span>
+                          {dueCount > 0 && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              newQuestionCategory === cat.id
+                                ? 'bg-white/30 text-white'
+                                : 'bg-red-500 text-white'
+                            }`}>
+                              {dueCount}
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-xs mt-1 truncate ${
+                          newQuestionCategory === cat.id
+                            ? 'text-white/80'
+                            : darkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
+                          {cat.name}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {!spacedRepetitionMode && (
+                <select
+                  value={newQuestionCategory}
+                  onChange={(e) => {
+                    setNewQuestionCategory(e.target.value);
+                    const hardcodedCards = FLASHCARD_CONTENT[e.target.value] || [];
+                    const userCards = userFlashcards.filter(fc => fc.category === e.target.value);
+                    const allCards = [...hardcodedCards, ...userCards];
+                    setFlashcards(allCards);
+                    setFlashcardIndex(0);
+                    setCurrentFlashcard(allCards[0]);
+                    setShowFlashcardAnswer(false);
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg mb-6 ${
+                    darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white'
+                  }`}
+                >
+                  {CATEGORIES.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             {currentFlashcard && flashcards.length > 0 && (
               <div className="perspective-1000">
-                <div 
+                {/* Spaced Repetition Level Badge */}
+                {spacedRepetitionMode && currentFlashcard.spacedData && (
+                  <div className="flex justify-center mb-4">
+                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
+                      darkMode ? 'bg-slate-700' : 'bg-gray-100'
+                    }`}>
+                      <div className={`w-4 h-4 rounded-full ${getLevelColor(currentFlashcard.spacedData.level)}`}></div>
+                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {getLevelLabel(currentFlashcard.spacedData.level)}
+                      </span>
+                      <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        • {currentFlashcard.spacedData.reviewCount || 0}x wiederholt
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div
                   onClick={() => {
                     setShowFlashcardAnswer(!showFlashcardAnswer);
                     playSound('bubble');
                   }}
-                  className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 shadow-2xl cursor-pointer transform transition-all hover:scale-105 min-h-[300px] flex items-center justify-center`}
+                  className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 shadow-2xl cursor-pointer transform transition-all hover:scale-105 min-h-[300px] flex items-center justify-center ${
+                    spacedRepetitionMode && currentFlashcard.spacedData
+                      ? `border-4 ${getLevelColor(currentFlashcard.spacedData.level).replace('bg-', 'border-')}`
+                      : ''
+                  }`}
                 >
                   <div className="text-center">
                     <div className={`text-sm font-bold mb-4 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
@@ -5289,58 +6864,141 @@ export default function BaederApp() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center mt-6">
-                  <button
-                    onClick={() => {
-                      if (flashcardIndex > 0) {
-                        const prevIdx = flashcardIndex - 1;
-                        setFlashcardIndex(prevIdx);
-                        setCurrentFlashcard(flashcards[prevIdx]);
-                        setShowFlashcardAnswer(false);
-                        playSound('splash');
-                      }
-                    }}
-                    disabled={flashcardIndex === 0}
-                    className={`px-6 py-3 rounded-lg font-bold ${
-                      flashcardIndex === 0
-                        ? darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400'
-                        : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
-                    }`}
-                  >
-                    ← Zurück
-                  </button>
-                  <div className={darkMode ? 'text-white' : 'text-gray-800'}>
-                    <span className="font-bold">{flashcardIndex + 1}</span> / {flashcards.length}
+                {/* Spaced Repetition Buttons */}
+                {spacedRepetitionMode && showFlashcardAnswer && (
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      onClick={() => {
+                        const newLevel = updateCardSpacedData(currentFlashcard, newQuestionCategory, false);
+                        playSound('wrong');
+
+                        // Nächste Karte oder fertig
+                        if (flashcardIndex < flashcards.length - 1) {
+                          const nextIdx = flashcardIndex + 1;
+                          setFlashcardIndex(nextIdx);
+                          setCurrentFlashcard(flashcards[nextIdx]);
+                          setShowFlashcardAnswer(false);
+                        } else {
+                          // Alle Karten durchgearbeitet
+                          const remaining = loadDueCards(newQuestionCategory);
+                          if (remaining.length > 0) {
+                            setFlashcards(remaining);
+                            setFlashcardIndex(0);
+                            setCurrentFlashcard(remaining[0]);
+                            setShowFlashcardAnswer(false);
+                          } else {
+                            setCurrentFlashcard(null);
+                            setFlashcards([]);
+                          }
+                        }
+                      }}
+                      className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg text-lg"
+                    >
+                      ❌ Nicht gewusst
+                    </button>
+                    <button
+                      onClick={() => {
+                        const newLevel = updateCardSpacedData(currentFlashcard, newQuestionCategory, true);
+                        playSound('correct');
+
+                        // Nächste Karte oder fertig
+                        if (flashcardIndex < flashcards.length - 1) {
+                          const nextIdx = flashcardIndex + 1;
+                          setFlashcardIndex(nextIdx);
+                          setCurrentFlashcard(flashcards[nextIdx]);
+                          setShowFlashcardAnswer(false);
+                        } else {
+                          // Alle Karten durchgearbeitet
+                          const remaining = loadDueCards(newQuestionCategory);
+                          if (remaining.length > 0) {
+                            setFlashcards(remaining);
+                            setFlashcardIndex(0);
+                            setCurrentFlashcard(remaining[0]);
+                            setShowFlashcardAnswer(false);
+                          } else {
+                            setCurrentFlashcard(null);
+                            setFlashcards([]);
+                          }
+                        }
+                      }}
+                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg text-lg"
+                    >
+                      ✅ Gewusst
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      if (flashcardIndex < flashcards.length - 1) {
-                        const nextIdx = flashcardIndex + 1;
-                        setFlashcardIndex(nextIdx);
-                        setCurrentFlashcard(flashcards[nextIdx]);
-                        setShowFlashcardAnswer(false);
-                        playSound('splash');
-                      }
-                    }}
-                    disabled={flashcardIndex === flashcards.length - 1}
-                    className={`px-6 py-3 rounded-lg font-bold ${
-                      flashcardIndex === flashcards.length - 1
-                        ? darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400'
-                        : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
-                    }`}
-                  >
-                    Weiter →
-                  </button>
-                </div>
+                )}
+
+                {/* Standard Navigation (nicht im Spaced Repetition Modus oder Antwort noch nicht gezeigt) */}
+                {(!spacedRepetitionMode || !showFlashcardAnswer) && (
+                  <div className="flex justify-between items-center mt-6">
+                    <button
+                      onClick={() => {
+                        if (flashcardIndex > 0) {
+                          const prevIdx = flashcardIndex - 1;
+                          setFlashcardIndex(prevIdx);
+                          setCurrentFlashcard(flashcards[prevIdx]);
+                          setShowFlashcardAnswer(false);
+                          playSound('splash');
+                        }
+                      }}
+                      disabled={flashcardIndex === 0}
+                      className={`px-6 py-3 rounded-lg font-bold ${
+                        flashcardIndex === 0
+                          ? darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400'
+                          : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
+                      }`}
+                    >
+                      ← Zurück
+                    </button>
+                    <div className={darkMode ? 'text-white' : 'text-gray-800'}>
+                      <span className="font-bold">{flashcardIndex + 1}</span> / {flashcards.length}
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (flashcardIndex < flashcards.length - 1) {
+                          const nextIdx = flashcardIndex + 1;
+                          setFlashcardIndex(nextIdx);
+                          setCurrentFlashcard(flashcards[nextIdx]);
+                          setShowFlashcardAnswer(false);
+                          playSound('splash');
+                        }
+                      }}
+                      disabled={flashcardIndex === flashcards.length - 1}
+                      className={`px-6 py-3 rounded-lg font-bold ${
+                        flashcardIndex === flashcards.length - 1
+                          ? darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400'
+                          : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
+                      }`}
+                    >
+                      Weiter →
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
             {(!currentFlashcard || flashcards.length === 0) && (
               <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 text-center`}>
-                <div className="text-6xl mb-4">🎴</div>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                  Noch keine Karteikarten in dieser Kategorie. Erstelle die erste!
+                <div className="text-6xl mb-4">{spacedRepetitionMode ? '🎉' : '🎴'}</div>
+                <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  {spacedRepetitionMode ? 'Alle Karten wiederholt!' : 'Keine Karteikarten'}
                 </p>
+                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                  {spacedRepetitionMode
+                    ? 'Super! Du hast alle fälligen Karten in dieser Kategorie durchgearbeitet. Komm später wieder!'
+                    : 'Noch keine Karteikarten in dieser Kategorie. Erstelle die erste!'}
+                </p>
+                {spacedRepetitionMode && (
+                  <button
+                    onClick={() => {
+                      setSpacedRepetitionMode(false);
+                      loadFlashcards();
+                    }}
+                    className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold"
+                  >
+                    📚 Alle Karten anzeigen
+                  </button>
+                )}
               </div>
             )}
 
@@ -6159,6 +7817,617 @@ export default function BaederApp() {
                       </div>
                       <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Offen</div>
                     </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ==================== BERICHTSHEFT VIEW ==================== */}
+        {currentView === 'berichtsheft' && (
+          <div className="space-y-6">
+            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                <h2 className={`text-2xl font-bold flex items-center ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  📖 Digitales Berichtsheft
+                </h2>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => { resetBerichtsheftForm(); setBerichtsheftViewMode('edit'); }}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${berichtsheftViewMode === 'edit' ? 'bg-cyan-500 text-white' : (darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-200 text-gray-700')}`}
+                  >
+                    ✏️ Neu
+                  </button>
+                  <button
+                    onClick={() => setBerichtsheftViewMode('list')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${berichtsheftViewMode === 'list' ? 'bg-cyan-500 text-white' : (darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-200 text-gray-700')}`}
+                  >
+                    📋 Übersicht
+                  </button>
+                  <button
+                    onClick={() => setBerichtsheftViewMode('progress')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${berichtsheftViewMode === 'progress' ? 'bg-cyan-500 text-white' : (darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-200 text-gray-700')}`}
+                  >
+                    📊 Fortschritt
+                  </button>
+                  <button
+                    onClick={() => setBerichtsheftViewMode('profile')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${berichtsheftViewMode === 'profile' ? 'bg-cyan-500 text-white' : (darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-200 text-gray-700')}`}
+                  >
+                    👤 Profil
+                  </button>
+                </div>
+              </div>
+
+              {/* Profil-Hinweis wenn nicht ausgefüllt */}
+              {berichtsheftViewMode !== 'profile' && (!azubiProfile.vorname || !azubiProfile.nachname || !azubiProfile.ausbildungsbetrieb) && (
+                <div className={`mb-4 p-4 rounded-lg border-2 ${darkMode ? 'bg-yellow-900/30 border-yellow-600' : 'bg-yellow-50 border-yellow-400'}`}>
+                  <p className={`text-sm ${darkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
+                    ⚠️ Bitte fülle zuerst dein <button onClick={() => setBerichtsheftViewMode('profile')} className="underline font-bold">Azubi-Profil</button> aus, damit deine Daten automatisch in den Berichten erscheinen.
+                  </p>
+                </div>
+              )}
+
+              {/* PROFILE VIEW - Azubi-Profil bearbeiten */}
+              {berichtsheftViewMode === 'profile' && (
+                <div className="space-y-6">
+                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-50 to-blue-50'} rounded-xl p-6`}>
+                    <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      👤 Azubi-Profil für Berichtsheft
+                    </h3>
+                    <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Diese Daten werden automatisch in deine Berichtshefte übernommen.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Vorname *</label>
+                        <input
+                          type="text"
+                          value={azubiProfile.vorname}
+                          onChange={(e) => saveAzubiProfile({ ...azubiProfile, vorname: e.target.value })}
+                          placeholder="Max"
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Nachname *</label>
+                        <input
+                          type="text"
+                          value={azubiProfile.nachname}
+                          onChange={(e) => saveAzubiProfile({ ...azubiProfile, nachname: e.target.value })}
+                          placeholder="Mustermann"
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ausbildungsbetrieb *</label>
+                        <input
+                          type="text"
+                          value={azubiProfile.ausbildungsbetrieb}
+                          onChange={(e) => saveAzubiProfile({ ...azubiProfile, ausbildungsbetrieb: e.target.value })}
+                          placeholder="Stadtwerke Musterstadt GmbH"
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ausbildungsberuf</label>
+                        <input
+                          type="text"
+                          value={azubiProfile.ausbildungsberuf}
+                          onChange={(e) => saveAzubiProfile({ ...azubiProfile, ausbildungsberuf: e.target.value })}
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Name Ausbilder/in</label>
+                        <input
+                          type="text"
+                          value={azubiProfile.ausbilder}
+                          onChange={(e) => saveAzubiProfile({ ...azubiProfile, ausbilder: e.target.value })}
+                          placeholder="Frau/Herr Ausbilder"
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ausbildungsbeginn</label>
+                        <input
+                          type="date"
+                          value={azubiProfile.ausbildungsbeginn}
+                          onChange={(e) => saveAzubiProfile({ ...azubiProfile, ausbildungsbeginn: e.target.value })}
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Vorschau */}
+                  {azubiProfile.vorname && azubiProfile.nachname && (
+                    <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-xl p-6`}>
+                      <h4 className={`font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Vorschau Kopfzeile:</h4>
+                      <div className={`p-4 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-200'}`}>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div><span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Name:</span> <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>{azubiProfile.vorname} {azubiProfile.nachname}</span></div>
+                          <div><span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Betrieb:</span> <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>{azubiProfile.ausbildungsbetrieb || '-'}</span></div>
+                          <div><span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Beruf:</span> <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>{azubiProfile.ausbildungsberuf}</span></div>
+                          <div><span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Ausbilder:</span> <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>{azubiProfile.ausbilder || '-'}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => setBerichtsheftViewMode('edit')}
+                    className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold text-lg transition-all shadow-lg"
+                  >
+                    <Check className="inline mr-2" size={20} />
+                    Profil gespeichert - Zum Berichtsheft
+                  </button>
+                </div>
+              )}
+
+              {/* EDIT VIEW - Neuer Wochenbericht */}
+              {berichtsheftViewMode === 'edit' && (
+                <div className="space-y-6">
+                  {/* Azubi-Kopfzeile */}
+                  {(azubiProfile.vorname || azubiProfile.nachname || azubiProfile.ausbildungsbetrieb) && (
+                    <div className={`${darkMode ? 'bg-slate-700/50' : 'bg-gray-50'} rounded-lg p-3 border ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}>
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+                        <div><span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Azubi:</span> <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>{azubiProfile.vorname} {azubiProfile.nachname}</span></div>
+                        {azubiProfile.ausbildungsbetrieb && <div><span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Betrieb:</span> <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>{azubiProfile.ausbildungsbetrieb}</span></div>}
+                        {azubiProfile.ausbilder && <div><span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Ausbilder:</span> <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>{azubiProfile.ausbilder}</span></div>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Header-Infos */}
+                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-50 to-blue-50'} rounded-xl p-6`}>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Nachweis Nr.</label>
+                        <input
+                          type="number"
+                          value={berichtsheftNr}
+                          onChange={(e) => setBerichtsheftNr(parseInt(e.target.value) || 1)}
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Woche vom (Montag)</label>
+                        <input
+                          type="date"
+                          value={berichtsheftWeek}
+                          onChange={(e) => setBerichtsheftWeek(e.target.value)}
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>bis (Sonntag)</label>
+                        <input
+                          type="text"
+                          value={getWeekEndDate(berichtsheftWeek)}
+                          readOnly
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-gray-400' : 'bg-gray-100 border-gray-300 text-gray-500'}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ausbildungsjahr</label>
+                        <select
+                          value={berichtsheftYear}
+                          onChange={(e) => setBerichtsheftYear(parseInt(e.target.value))}
+                          className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                        >
+                          <option value={1}>1. Ausbildungsjahr</option>
+                          <option value={2}>2. Ausbildungsjahr</option>
+                          <option value={3}>3. Ausbildungsjahr</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tageseinträge */}
+                  <div className="space-y-4">
+                    {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((day, dayIndex) => {
+                      const dayNames = { Mo: 'Montag', Di: 'Dienstag', Mi: 'Mittwoch', Do: 'Donnerstag', Fr: 'Freitag', Sa: 'Samstag', So: 'Sonntag' };
+                      const dayDate = new Date(berichtsheftWeek);
+                      dayDate.setDate(dayDate.getDate() + dayIndex);
+
+                      return (
+                        <div key={day} className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-xl p-4`}>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <span className={`text-lg font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>{day}</span>
+                              <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {dayNames[day]} - {dayDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
+                              </span>
+                            </div>
+                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                              {calculateDayHours(day)} Std.
+                            </div>
+                          </div>
+
+                          {currentWeekEntries[day].map((entry, entryIndex) => (
+                            <div key={entryIndex} className="flex gap-2 mb-2">
+                              <div className="flex-grow">
+                                <input
+                                  type="text"
+                                  value={entry.taetigkeit}
+                                  onChange={(e) => updateWeekEntry(day, entryIndex, 'taetigkeit', e.target.value)}
+                                  placeholder="Ausgeführte Tätigkeit..."
+                                  className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                                />
+                              </div>
+                              <div className="w-20">
+                                <input
+                                  type="number"
+                                  value={entry.stunden}
+                                  onChange={(e) => updateWeekEntry(day, entryIndex, 'stunden', e.target.value)}
+                                  placeholder="Std."
+                                  step="0.5"
+                                  min="0"
+                                  max="12"
+                                  className={`w-full px-2 py-2 border rounded-lg text-sm text-center ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                                />
+                              </div>
+                              <div className="w-48">
+                                <select
+                                  value={entry.bereich}
+                                  onChange={(e) => updateWeekEntry(day, entryIndex, 'bereich', e.target.value)}
+                                  className={`w-full px-2 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                                >
+                                  <option value="">-- Bereich --</option>
+                                  {AUSBILDUNGSRAHMENPLAN.map(b => (
+                                    <option key={b.nr} value={b.nr}>{b.icon} {b.nr}. {b.bereich.substring(0, 25)}{b.bereich.length > 25 ? '...' : ''}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <button
+                                onClick={() => removeWeekEntry(day, entryIndex)}
+                                disabled={currentWeekEntries[day].length <= 1}
+                                className={`px-2 py-2 rounded-lg transition-all ${currentWeekEntries[day].length <= 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:bg-red-100'}`}
+                              >
+                                <X size={18} />
+                              </button>
+                            </div>
+                          ))}
+                          <button
+                            onClick={() => addWeekEntry(day)}
+                            className={`mt-2 text-sm flex items-center gap-1 ${darkMode ? 'text-cyan-400 hover:text-cyan-300' : 'text-cyan-600 hover:text-cyan-700'}`}
+                          >
+                            <Plus size={16} /> Weitere Tätigkeit
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Gesamtstunden */}
+                  <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 to-blue-900' : 'bg-gradient-to-r from-cyan-500 to-blue-500'} rounded-xl p-4 text-white`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold">Gesamtstunden diese Woche:</span>
+                      <span className="text-3xl font-bold">{calculateTotalHours()} Std.</span>
+                    </div>
+                  </div>
+
+                  {/* Bemerkungen */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Bemerkungen Auszubildender
+                      </label>
+                      <textarea
+                        value={berichtsheftBemerkungAzubi}
+                        onChange={(e) => setBerichtsheftBemerkungAzubi(e.target.value)}
+                        rows={3}
+                        placeholder="Besondere Vorkommnisse, Lernerfolge..."
+                        className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Bemerkungen Ausbilder
+                      </label>
+                      <textarea
+                        value={berichtsheftBemerkungAusbilder}
+                        onChange={(e) => setBerichtsheftBemerkungAusbilder(e.target.value)}
+                        rows={3}
+                        placeholder="Feedback, Anmerkungen..."
+                        className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Unterschriften */}
+                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-xl p-6`}>
+                    <h3 className={`font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Für die Richtigkeit</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Datum Azubi</label>
+                          <input
+                            type="date"
+                            value={berichtsheftDatumAzubi}
+                            onChange={(e) => setBerichtsheftDatumAzubi(e.target.value)}
+                            className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                          />
+                        </div>
+                        <SignatureCanvas
+                          value={berichtsheftSignaturAzubi}
+                          onChange={setBerichtsheftSignaturAzubi}
+                          darkMode={darkMode}
+                          label="Unterschrift Auszubildender"
+                        />
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Datum Ausbilder</label>
+                          <input
+                            type="date"
+                            value={berichtsheftDatumAusbilder}
+                            onChange={(e) => setBerichtsheftDatumAusbilder(e.target.value)}
+                            className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                          />
+                        </div>
+                        <SignatureCanvas
+                          value={berichtsheftSignaturAusbilder}
+                          onChange={setBerichtsheftSignaturAusbilder}
+                          darkMode={darkMode}
+                          label="Unterschrift Ausbilder"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Speichern Button */}
+                  <div className="flex gap-4">
+                    <button
+                      onClick={saveBerichtsheft}
+                      className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold text-lg transition-all shadow-lg"
+                    >
+                      <Check className="inline mr-2" size={20} />
+                      {selectedBerichtsheft ? 'Aktualisieren' : 'Speichern'}
+                    </button>
+                    {selectedBerichtsheft && (
+                      <button
+                        onClick={resetBerichtsheftForm}
+                        className={`px-6 py-3 rounded-xl font-medium ${darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                      >
+                        Abbrechen
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* LIST VIEW - Übersicht aller Berichte */}
+              {berichtsheftViewMode === 'list' && (
+                <div className="space-y-4">
+                  {berichtsheftEntries.length === 0 ? (
+                    <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <div className="text-6xl mb-4">📖</div>
+                      <p className="text-lg">Noch keine Berichtshefte vorhanden</p>
+                      <p className="text-sm mt-2">Erstelle deinen ersten Wochenbericht!</p>
+                      <button
+                        onClick={() => setBerichtsheftViewMode('edit')}
+                        className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-lg font-medium"
+                      >
+                        <Plus className="inline mr-2" size={18} />
+                        Neuer Bericht
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className={`grid gap-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {berichtsheftEntries.map(entry => (
+                          <div key={entry.id} className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4`}>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className={`text-lg font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                                  Nr. {entry.nachweis_nr}
+                                </span>
+                                <span className={`px-2 py-1 rounded text-xs ${entry.signatur_azubi && entry.signatur_ausbilder ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-600'}`}>
+                                  {entry.signatur_azubi && entry.signatur_ausbilder ? '✓ Unterschrieben' : '⏳ Offen'}
+                                </span>
+                              </div>
+                              <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                KW {new Date(entry.week_start).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })} - {new Date(entry.week_end).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                <span className="mx-2">|</span>
+                                {entry.ausbildungsjahr}. Ausbildungsjahr
+                                <span className="mx-2">|</span>
+                                <span className="font-medium">{entry.total_hours || 0} Stunden</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => generateBerichtsheftPDF(entry)}
+                                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all flex items-center gap-2"
+                              >
+                                <Download size={16} /> PDF
+                              </button>
+                              <button
+                                onClick={() => loadBerichtsheftForEdit(entry)}
+                                className={`px-4 py-2 rounded-lg font-medium transition-all ${darkMode ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+                              >
+                                ✏️ Bearbeiten
+                              </button>
+                              <button
+                                onClick={() => deleteBerichtsheft(entry.id)}
+                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Statistik */}
+                      <div className={`mt-6 p-4 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                          <div>
+                            <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>{berichtsheftEntries.length}</div>
+                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Wochen erfasst</div>
+                          </div>
+                          <div>
+                            <div className={`text-2xl font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                              {berichtsheftEntries.filter(e => e.signatur_azubi && e.signatur_ausbilder).length}
+                            </div>
+                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Unterschrieben</div>
+                          </div>
+                          <div>
+                            <div className={`text-2xl font-bold ${darkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                              {berichtsheftEntries.filter(e => !e.signatur_azubi || !e.signatur_ausbilder).length}
+                            </div>
+                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Offen</div>
+                          </div>
+                          <div>
+                            <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                              {berichtsheftEntries.reduce((sum, e) => sum + (e.total_hours || 0), 0)}
+                            </div>
+                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Stunden gesamt</div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* PROGRESS VIEW - Fortschritt nach Ausbildungsrahmenplan */}
+              {berichtsheftViewMode === 'progress' && (
+                <div className="space-y-6">
+                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-50 to-blue-50'} rounded-xl p-4`}>
+                    <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Hier siehst du deinen Fortschritt in den verschiedenen Ausbildungsbereichen gemäß Ausbildungsrahmenplan (§4).
+                      Die Soll-Wochen basieren auf den zeitlichen Richtwerten der Verordnung.
+                    </p>
+                  </div>
+
+                  {(() => {
+                    const progress = calculateBereichProgress();
+                    const stundenProWoche = 40; // Annahme: 40 Stunden = 1 Woche
+
+                    return (
+                      <div className="space-y-4">
+                        {Object.entries(progress).map(([nr, data]) => {
+                          const istWochen = data.istStunden / stundenProWoche;
+                          const prozent = data.sollWochen > 0 ? Math.min(100, (istWochen / data.sollWochen) * 100) : (data.istStunden > 0 ? 100 : 0);
+
+                          return (
+                            <div key={nr} className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-xl p-4`}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xl">{data.icon}</span>
+                                  <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                    {nr}. {data.name}
+                                  </span>
+                                </div>
+                                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                  {istWochen.toFixed(1)} / {data.sollWochen > 0 ? data.sollWochen : '∞'} Wochen
+                                  <span className="ml-2 font-bold">({data.istStunden.toFixed(0)} Std.)</span>
+                                </div>
+                              </div>
+                              <div className={`h-4 rounded-full overflow-hidden ${darkMode ? 'bg-slate-600' : 'bg-gray-200'}`}>
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${data.color}`}
+                                  style={{ width: `${prozent}%` }}
+                                />
+                              </div>
+                              <div className="flex justify-between mt-1">
+                                <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                  {prozent.toFixed(0)}% erreicht
+                                </span>
+                                {prozent >= 100 && (
+                                  <span className="text-xs text-green-500 font-medium">✓ Abgeschlossen</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Gesamt-Übersicht */}
+                  <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 to-blue-900' : 'bg-gradient-to-r from-cyan-500 to-blue-500'} rounded-xl p-6 text-white`}>
+                    <h3 className="font-bold text-lg mb-4">Gesamtfortschritt</h3>
+                    {(() => {
+                      const progress = calculateBereichProgress();
+                      const totalIstStunden = Object.values(progress).reduce((sum, d) => sum + d.istStunden, 0);
+                      const totalSollWochen = AUSBILDUNGSRAHMENPLAN.reduce((sum, b) => sum + b.gesamtWochen, 0);
+                      const totalSollStunden = totalSollWochen * 40;
+                      const gesamtProzent = totalSollStunden > 0 ? (totalIstStunden / totalSollStunden) * 100 : 0;
+
+                      return (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                          <div>
+                            <div className="text-3xl font-bold">{totalIstStunden.toFixed(0)}</div>
+                            <div className="text-sm opacity-80">Stunden erfasst</div>
+                          </div>
+                          <div>
+                            <div className="text-3xl font-bold">{(totalIstStunden / 40).toFixed(1)}</div>
+                            <div className="text-sm opacity-80">Wochen erfasst</div>
+                          </div>
+                          <div>
+                            <div className="text-3xl font-bold">{totalSollWochen}</div>
+                            <div className="text-sm opacity-80">Soll-Wochen (gesamt)</div>
+                          </div>
+                          <div>
+                            <div className="text-3xl font-bold">{gesamtProzent.toFixed(0)}%</div>
+                            <div className="text-sm opacity-80">Gesamtfortschritt</div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Ausbildungsrahmenplan Übersicht */}
+                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-xl p-6`}>
+                    <h3 className={`font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      📋 Ausbildungsrahmenplan - Übersicht
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className={`${darkMode ? 'bg-slate-600' : 'bg-gray-200'}`}>
+                            <th className={`px-3 py-2 text-left ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Nr.</th>
+                            <th className={`px-3 py-2 text-left ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Bereich</th>
+                            <th className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>1. Jahr</th>
+                            <th className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>2. Jahr</th>
+                            <th className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>3. Jahr</th>
+                            <th className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Gesamt</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {AUSBILDUNGSRAHMENPLAN.map((bereich, idx) => (
+                            <tr key={bereich.nr} className={`border-b ${darkMode ? 'border-slate-600' : 'border-gray-200'} ${idx % 2 === 0 ? '' : (darkMode ? 'bg-slate-750' : 'bg-gray-100')}`}>
+                              <td className={`px-3 py-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                <span className="mr-1">{bereich.icon}</span> {bereich.nr}
+                              </td>
+                              <td className={`px-3 py-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                {bereich.bereich}
+                                <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{bereich.paragraph}</div>
+                              </td>
+                              <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                {bereich.wochen.jahr1 || '-'}
+                              </td>
+                              <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                {bereich.wochen.jahr2 || '-'}
+                              </td>
+                              <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                {bereich.wochen.jahr3 || '-'}
+                              </td>
+                              <td className={`px-3 py-2 text-center font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                                {bereich.gesamtWochen || 'lfd.'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className={`mt-4 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                      * "lfd." = wird während der gesamten Ausbildung laufend vermittelt
+                    </p>
                   </div>
                 </div>
               )}
