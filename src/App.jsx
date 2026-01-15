@@ -1356,67 +1356,6 @@ export default function BaederApp() {
     );
   };
 
-  const createTestUsers = async () => {
-    if (!confirm('5 Test-Accounts erstellen?\n\n- 1 Admin (admin@test.de / admin123)\n- 2 Trainer (trainer1@test.de, trainer2@test.de / test123)\n- 2 Azubis (azubi1@test.de, azubi2@test.de / test123)')) {
-      return;
-    }
-
-    const testAccounts = [
-      { name: 'Admin Test', email: 'admin@test.de', password: 'admin123', role: 'admin' },
-      { name: 'Trainer Schmidt', email: 'trainer1@test.de', password: 'test123', role: 'trainer' },
-      { name: 'Trainer Müller', email: 'trainer2@test.de', password: 'test123', role: 'trainer' },
-      { name: 'Max Mustermann', email: 'azubi1@test.de', password: 'test123', role: 'azubi', trainingEnd: '2026-06-30' },
-      { name: 'Lisa Musterfrau', email: 'azubi2@test.de', password: 'test123', role: 'azubi', trainingEnd: '2026-06-30' }
-    ];
-
-    try {
-      for (const acc of testAccounts) {
-        // Insert user into Supabase
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .insert([{
-            name: acc.name,
-            email: acc.email,
-            password: acc.password,
-            role: acc.role,
-            training_end: acc.trainingEnd || null,
-            approved: true
-          }])
-          .select()
-          .single();
-
-        if (userError) {
-          console.log(`User ${acc.email} exists or error:`, userError.message);
-          continue;
-        }
-
-        // Initialize stats
-        const initialStats = {
-          wins: Math.floor(Math.random() * 10),
-          losses: Math.floor(Math.random() * 10),
-          draws: Math.floor(Math.random() * 3)
-        };
-
-        await supabase
-          .from('user_stats')
-          .insert([{
-            user_id: userData.id,
-            wins: initialStats.wins,
-            losses: initialStats.losses,
-            draws: initialStats.draws,
-            category_stats: {},
-            opponents: {}
-          }]);
-      }
-
-      alert('✅ Test-Accounts wurden erstellt!\n\nDu kannst dich jetzt abmelden und mit einem Test-Account anmelden.');
-      loadData();
-    } catch (error) {
-      console.error('Create test users error:', error);
-      alert('Fehler beim Erstellen der Test-Accounts!');
-    }
-  };
-
   // Sound Effects
   const playSound = (type) => {
     if (!soundEnabled) return;
@@ -4658,13 +4597,7 @@ export default function BaederApp() {
               {/* Quick Actions */}
               <div className="mb-6">
                 <h3 className="text-lg font-bold text-cyan-300 mb-3">⚡ Quick Actions</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={createTestUsers}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-all"
-                  >
-                    👥 Test-Nutzer erstellen
-                  </button>
+                <div className="grid grid-cols-1 gap-3">
                   <button
                     onClick={clearAllData}
                     className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-all"
