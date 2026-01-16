@@ -4072,6 +4072,25 @@ export default function BaederApp() {
     }
   };
 
+  const deleteNews = async (newsId) => {
+    if (!user?.permissions.canPostNews) return;
+    if (!confirm('Diese Ankündigung wirklich löschen?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('news')
+        .delete()
+        .eq('id', newsId);
+
+      if (error) throw error;
+
+      setNews(news.filter(n => n.id !== newsId));
+    } catch (error) {
+      console.error('Delete news error:', error);
+      alert('Fehler beim Löschen der Ankündigung');
+    }
+  };
+
   const addExam = async () => {
     if (!examTitle.trim() || !user) return;
 
@@ -6240,7 +6259,18 @@ export default function BaederApp() {
               <div className="space-y-4">
                 {news.map(item => (
                   <div key={item.id} className="border-l-4 border-red-500 bg-gray-50 rounded-r-lg p-4">
-                    <h3 className="text-lg font-bold mb-2">{item.title}</h3>
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-lg font-bold mb-2">{item.title}</h3>
+                      {user?.permissions.canPostNews && (
+                        <button
+                          onClick={() => deleteNews(item.id)}
+                          className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-100 transition-all"
+                          title="Löschen"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </div>
                     <p className="text-gray-700 mb-2">{item.content}</p>
                     <p className="text-sm text-gray-500">
                       Von {item.author} • {new Date(item.time).toLocaleDateString()}
