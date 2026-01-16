@@ -1260,6 +1260,7 @@ export default function BaederApp() {
     }
   }, [user]);
 
+  
   useEffect(() => {
     if (timerActive && timeLeft > 0 && !answered) {
       const timer = setTimeout(() => {
@@ -8030,8 +8031,8 @@ export default function BaederApp() {
                           </div>
 
                           {currentWeekEntries[day].map((entry, entryIndex) => (
-                            <div key={entryIndex} className="flex gap-2 mb-2">
-                              <div className="flex-grow">
+                            <div key={entryIndex} className="flex flex-wrap lg:flex-nowrap gap-2 mb-2 items-start">
+                              <div className="flex-grow min-w-[200px]">
                                 <input
                                   type="text"
                                   value={entry.taetigkeit}
@@ -8040,7 +8041,7 @@ export default function BaederApp() {
                                   className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
                                 />
                               </div>
-                              <div className="w-20">
+                              <div className="w-20 flex-shrink-0">
                                 <input
                                   type="number"
                                   value={entry.stunden}
@@ -8052,15 +8053,15 @@ export default function BaederApp() {
                                   className={`w-full px-2 py-2 border rounded-lg text-sm text-center ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
                                 />
                               </div>
-                              <div className="w-48">
+                              <div className="w-full sm:w-auto">
                                 <select
                                   value={entry.bereich}
                                   onChange={(e) => updateWeekEntry(day, entryIndex, 'bereich', e.target.value)}
-                                  className={`w-full px-2 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                                  className={`w-full min-w-[500px] px-2 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
                                 >
                                   <option value="">-- Bereich --</option>
                                   {AUSBILDUNGSRAHMENPLAN.map(b => (
-                                    <option key={b.nr} value={b.nr}>{b.icon} {b.nr}. {b.bereich.substring(0, 25)}{b.bereich.length > 25 ? '...' : ''}</option>
+                                    <option key={b.nr} value={b.nr}>{b.icon} {b.nr}. {b.bereich}</option>
                                   ))}
                                 </select>
                               </div>
