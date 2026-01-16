@@ -4,7 +4,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git fetch:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git -C \"c:\\\\Users\\\\User\\\\baeder-azubi-app\" log --oneline -20)"
     ]
   }
 }
