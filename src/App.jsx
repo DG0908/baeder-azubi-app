@@ -4735,9 +4735,10 @@ export default function BaederApp() {
         {/* Admin Panel */}
         {currentView === 'admin' && user.permissions.canManageUsers && (
           <div className="space-y-6">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-8 text-center">
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-8 text-center relative">
               <h2 className="text-3xl font-bold mb-2">👑 Admin-Bereich</h2>
               <p className="opacity-90">Nutzerverwaltung & Datenschutz</p>
+              <div className="absolute bottom-2 right-3 text-xs opacity-60">v1.0.1</div>
             </div>
 
             {/* Admin Statistics Dashboard */}
