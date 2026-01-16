@@ -1122,7 +1122,8 @@ export default function BaederApp() {
   const [newAttendanceEnd, setNewAttendanceEnd] = useState('');
   const [newAttendanceTeacherSig, setNewAttendanceTeacherSig] = useState('');
   const [newAttendanceTrainerSig, setNewAttendanceTrainerSig] = useState('');
-  const [editingSignature, setEditingSignature] = useState(null); // { id, field, value }
+  const [signatureModal, setSignatureModal] = useState(null); // { id, field, currentValue }
+  const [tempSignature, setTempSignature] = useState(null); // Temporäre Unterschrift im Modal
 
   // Berichtsheft (Ausbildungsnachweis) State
   const [berichtsheftEntries, setBerichtsheftEntries] = useState([]);
@@ -7639,68 +7640,28 @@ export default function BaederApp() {
                         <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{entry.start_time}</td>
                         <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{entry.end_time}</td>
                         <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                          {editingSignature?.id === entry.id && editingSignature?.field === 'teacher_signature' ? (
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={editingSignature.value}
-                                onChange={(e) => setEditingSignature({ ...editingSignature, value: e.target.value })}
-                                className={`px-2 py-1 border rounded text-sm w-32 ${darkMode ? 'bg-slate-600 border-slate-500' : 'bg-white border-gray-300'}`}
-                                autoFocus
-                              />
-                              <button
-                                onClick={() => { updateAttendanceSignature(entry.id, 'teacher_signature', editingSignature.value); setEditingSignature(null); }}
-                                className="text-green-500 hover:text-green-700"
-                              >
-                                <Check size={18} />
-                              </button>
-                              <button
-                                onClick={() => setEditingSignature(null)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <X size={18} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div
-                              onClick={() => setEditingSignature({ id: entry.id, field: 'teacher_signature', value: entry.teacher_signature || '' })}
-                              className={`cursor-pointer px-2 py-1 rounded min-h-[32px] ${entry.teacher_signature ? (darkMode ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-700') : (darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-100 text-gray-400')} hover:opacity-80 transition-all`}
-                            >
-                              {entry.teacher_signature || <span className="italic text-xs">Klicken zum Unterschreiben</span>}
-                            </div>
-                          )}
+                          <div
+                            onClick={() => setSignatureModal({ id: entry.id, field: 'teacher_signature', currentValue: entry.teacher_signature })}
+                            className={`cursor-pointer rounded min-h-[50px] flex items-center justify-center ${entry.teacher_signature && entry.teacher_signature.startsWith('data:image') ? '' : (darkMode ? 'bg-slate-700' : 'bg-gray-100')} hover:opacity-80 transition-all border-2 border-dashed ${darkMode ? 'border-slate-600 hover:border-green-500' : 'border-gray-300 hover:border-green-500'}`}
+                          >
+                            {entry.teacher_signature && entry.teacher_signature.startsWith('data:image') ? (
+                              <img src={entry.teacher_signature} alt="Unterschrift Lehrer" className="h-12 max-w-[120px] object-contain" />
+                            ) : (
+                              <span className={`italic text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>✍️ Unterschreiben</span>
+                            )}
+                          </div>
                         </td>
                         <td className={`px-4 py-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                          {editingSignature?.id === entry.id && editingSignature?.field === 'trainer_signature' ? (
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={editingSignature.value}
-                                onChange={(e) => setEditingSignature({ ...editingSignature, value: e.target.value })}
-                                className={`px-2 py-1 border rounded text-sm w-32 ${darkMode ? 'bg-slate-600 border-slate-500' : 'bg-white border-gray-300'}`}
-                                autoFocus
-                              />
-                              <button
-                                onClick={() => { updateAttendanceSignature(entry.id, 'trainer_signature', editingSignature.value); setEditingSignature(null); }}
-                                className="text-green-500 hover:text-green-700"
-                              >
-                                <Check size={18} />
-                              </button>
-                              <button
-                                onClick={() => setEditingSignature(null)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <X size={18} />
-                              </button>
-                            </div>
-                          ) : (
-                            <div
-                              onClick={() => setEditingSignature({ id: entry.id, field: 'trainer_signature', value: entry.trainer_signature || '' })}
-                              className={`cursor-pointer px-2 py-1 rounded min-h-[32px] ${entry.trainer_signature ? (darkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700') : (darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-100 text-gray-400')} hover:opacity-80 transition-all`}
-                            >
-                              {entry.trainer_signature || <span className="italic text-xs">Klicken zum Unterschreiben</span>}
-                            </div>
-                          )}
+                          <div
+                            onClick={() => setSignatureModal({ id: entry.id, field: 'trainer_signature', currentValue: entry.trainer_signature })}
+                            className={`cursor-pointer rounded min-h-[50px] flex items-center justify-center ${entry.trainer_signature && entry.trainer_signature.startsWith('data:image') ? '' : (darkMode ? 'bg-slate-700' : 'bg-gray-100')} hover:opacity-80 transition-all border-2 border-dashed ${darkMode ? 'border-slate-600 hover:border-blue-500' : 'border-gray-300 hover:border-blue-500'}`}
+                          >
+                            {entry.trainer_signature && entry.trainer_signature.startsWith('data:image') ? (
+                              <img src={entry.trainer_signature} alt="Unterschrift Ausbilder" className="h-12 max-w-[120px] object-contain" />
+                            ) : (
+                              <span className={`italic text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>✍️ Unterschreiben</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <button
@@ -7754,6 +7715,65 @@ export default function BaederApp() {
                 </div>
               )}
             </div>
+
+            {/* Unterschrift Modal */}
+            {signatureModal && (
+              <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 max-w-md w-full shadow-2xl`}>
+                  <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    ✍️ {signatureModal.field === 'teacher_signature' ? 'Unterschrift Lehrer' : 'Unterschrift Ausbilder'}
+                  </h3>
+                  <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Bitte unterschreiben Sie im Feld unten mit dem Finger oder Stift.
+                  </p>
+                  <div className="mb-4">
+                    <SignatureCanvas
+                      value={tempSignature || signatureModal.currentValue}
+                      onChange={(sig) => setTempSignature(sig)}
+                      darkMode={darkMode}
+                      label={signatureModal.field === 'teacher_signature' ? 'Lehrer' : 'Ausbilder'}
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        if (tempSignature) {
+                          updateAttendanceSignature(signatureModal.id, signatureModal.field, tempSignature);
+                        }
+                        setSignatureModal(null);
+                        setTempSignature(null);
+                      }}
+                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-4 py-3 rounded-lg font-bold transition-all"
+                    >
+                      <Check className="inline mr-2" size={18} />
+                      Speichern
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSignatureModal(null);
+                        setTempSignature(null);
+                      }}
+                      className={`flex-1 ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-200 hover:bg-gray-300'} px-4 py-3 rounded-lg font-bold transition-all ${darkMode ? 'text-white' : 'text-gray-700'}`}
+                    >
+                      <X className="inline mr-2" size={18} />
+                      Abbrechen
+                    </button>
+                  </div>
+                  {signatureModal.currentValue && signatureModal.currentValue.startsWith('data:image') && (
+                    <button
+                      onClick={() => {
+                        updateAttendanceSignature(signatureModal.id, signatureModal.field, null);
+                        setSignatureModal(null);
+                        setTempSignature(null);
+                      }}
+                      className="w-full mt-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-all"
+                    >
+                      🗑️ Unterschrift löschen
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
