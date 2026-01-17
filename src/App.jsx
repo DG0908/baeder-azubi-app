@@ -989,6 +989,84 @@ const SignatureCanvas = ({ value, onChange, darkMode, label }) => {
   );
 };
 
+// ==================== SCHWIMMCHALLENGE SYSTEM ====================
+
+const SWIM_STYLES = [
+  { id: 'kraul', name: 'Kraul/Freistil', icon: '🏊' },
+  { id: 'brust', name: 'Brustschwimmen', icon: '🏊‍♂️' },
+  { id: 'ruecken', name: 'Rückenschwimmen', icon: '🔙' },
+  { id: 'schmetterling', name: 'Schmetterling', icon: '🦋' },
+  { id: 'lagen', name: 'Lagenschwimmen', icon: '🔄' },
+];
+
+const SWIM_CHALLENGES = [
+  // Distanz-Challenges
+  { id: 'kanal', name: 'Ärmelkanal', description: '34 km schwimmen - wie der echte Ärmelkanal!', type: 'distance', target: 34000, unit: 'm', icon: '🌊', points: 500, category: 'distanz' },
+  { id: 'bodensee', name: 'Bodensee-Querung', description: '14 km Gesamtdistanz', type: 'distance', target: 14000, unit: 'm', icon: '🏔️', points: 250, category: 'distanz' },
+  { id: '10k_club', name: '10km Club', description: '10 km Gesamtdistanz schwimmen', type: 'distance', target: 10000, unit: 'm', icon: '🎯', points: 150, category: 'distanz' },
+  { id: 'marathon', name: 'Schwimm-Marathon', description: '42.195 m - die Marathon-Distanz im Wasser', type: 'distance', target: 42195, unit: 'm', icon: '🏅', points: 600, category: 'distanz' },
+
+  // Sprint-Challenges
+  { id: 'sprint_50', name: '50m Sprint', description: '50m unter 35 Sekunden', type: 'time', target: 35, distance: 50, unit: 's', icon: '⚡', points: 100, category: 'sprint' },
+  { id: 'sprint_100', name: '100m Blitz', description: '100m unter 1:30 Minuten', type: 'time', target: 90, distance: 100, unit: 's', icon: '💨', points: 150, category: 'sprint' },
+  { id: 'sprint_200', name: '200m Power', description: '200m unter 3:30 Minuten', type: 'time', target: 210, distance: 200, unit: 's', icon: '🔥', points: 200, category: 'sprint' },
+
+  // Ausdauer-Challenges
+  { id: 'nonstop_1000', name: '1000m Non-Stop', description: '1000m am Stück ohne Pause', type: 'single_distance', target: 1000, unit: 'm', icon: '💪', points: 120, category: 'ausdauer' },
+  { id: 'nonstop_2000', name: '2000m Ausdauer', description: '2000m am Stück durchschwimmen', type: 'single_distance', target: 2000, unit: 'm', icon: '🦾', points: 200, category: 'ausdauer' },
+  { id: '30min', name: '30 Minuten Non-Stop', description: '30 Minuten durchgehend schwimmen', type: 'duration', target: 30, unit: 'min', icon: '⏱️', points: 100, category: 'ausdauer' },
+  { id: '60min', name: 'Stunden-Schwimmer', description: '60 Minuten am Stück schwimmen', type: 'duration', target: 60, unit: 'min', icon: '🕐', points: 180, category: 'ausdauer' },
+
+  // Regelmäßigkeits-Challenges
+  { id: 'streak_7', name: '7-Tage-Streak', description: '7 Tage hintereinander schwimmen', type: 'streak', target: 7, unit: 'Tage', icon: '📆', points: 100, category: 'regelmaessigkeit' },
+  { id: 'streak_30', name: 'Monats-Streak', description: '30 Tage hintereinander schwimmen', type: 'streak', target: 30, unit: 'Tage', icon: '📅', points: 400, category: 'regelmaessigkeit' },
+  { id: 'sessions_12', name: 'Fleißiger Schwimmer', description: '12 Trainingseinheiten im Monat', type: 'sessions', target: 12, unit: 'Einheiten', icon: '🗓️', points: 150, category: 'regelmaessigkeit' },
+
+  // Technik-Challenges
+  { id: 'alle_stile', name: 'Allrounder', description: 'Alle 4 Schwimmstile in einer Einheit', type: 'styles_single', target: 4, unit: 'Stile', icon: '🌟', points: 80, category: 'technik' },
+  { id: 'lagen_400', name: 'Lagen-Meister', description: '400m Lagenschwimmen (100m pro Stil)', type: 'single_distance', target: 400, style: 'lagen', unit: 'm', icon: '🏆', points: 150, category: 'technik' },
+];
+
+const SWIM_LEVELS = [
+  { level: 1, name: 'Bronze-Schwimmer', minPoints: 0, icon: '🥉', color: 'from-amber-600 to-amber-700' },
+  { level: 2, name: 'Silber-Schwimmer', minPoints: 500, icon: '🥈', color: 'from-gray-400 to-gray-500' },
+  { level: 3, name: 'Gold-Schwimmer', minPoints: 1500, icon: '🥇', color: 'from-yellow-400 to-yellow-500' },
+  { level: 4, name: 'Platin-Schwimmer', minPoints: 3500, icon: '💎', color: 'from-cyan-400 to-blue-500' },
+  { level: 5, name: 'Diamant-Schwimmer', minPoints: 7000, icon: '💠', color: 'from-purple-400 to-pink-500' },
+  { level: 6, name: 'Legende', minPoints: 15000, icon: '👑', color: 'from-amber-400 to-red-500' },
+];
+
+const SWIM_BADGES = [
+  { id: 'first_km', name: 'Erster Kilometer', description: '1 km Gesamtdistanz erreicht', icon: '🎉', requirement: { type: 'total_distance', value: 1000 } },
+  { id: 'five_km', name: '5km Meilenstein', description: '5 km Gesamtdistanz erreicht', icon: '🏃', requirement: { type: 'total_distance', value: 5000 } },
+  { id: 'sprint_king', name: 'Sprint-König', description: '3 Sprint-Challenges abgeschlossen', icon: '👑', requirement: { type: 'challenges_category', category: 'sprint', value: 3 } },
+  { id: 'endurance_monster', name: 'Ausdauer-Monster', description: '3 Ausdauer-Challenges abgeschlossen', icon: '🦍', requirement: { type: 'challenges_category', category: 'ausdauer', value: 3 } },
+  { id: 'early_bird', name: 'Frühschwimmer', description: '5 Einheiten vor 8 Uhr morgens', icon: '🌅', requirement: { type: 'early_sessions', value: 5 } },
+  { id: 'team_player', name: 'Team-Player', description: 'An 3 Team-Battles teilgenommen', icon: '🤝', requirement: { type: 'team_battles', value: 3 } },
+  { id: 'challenger', name: 'Herausforderer', description: '5 verschiedene Challenges abgeschlossen', icon: '🎯', requirement: { type: 'unique_challenges', value: 5 } },
+  { id: 'master', name: 'Challenge-Meister', description: '10 Challenges abgeschlossen', icon: '🏅', requirement: { type: 'total_challenges', value: 10 } },
+];
+
+// Alters-Handicap System (basierend auf sportwissenschaftlichen Daten)
+const getAgeHandicap = (birthDate) => {
+  if (!birthDate) return 0;
+  const today = new Date();
+  const birth = new Date(birthDate);
+  const age = Math.floor((today - birth) / (365.25 * 24 * 60 * 60 * 1000));
+
+  if (age < 40) return 0;
+  if (age < 50) return 0.05; // 5% Zeitbonus
+  if (age < 60) return 0.10; // 10% Zeitbonus
+  if (age < 70) return 0.15; // 15% Zeitbonus
+  return 0.20; // 20% Zeitbonus
+};
+
+// Berechnet die gewertete Zeit mit Handicap
+const calculateHandicappedTime = (actualTime, birthDate) => {
+  const handicap = getAgeHandicap(birthDate);
+  return actualTime * (1 - handicap);
+};
+
 export default function BaederApp() {
   const [currentView, setCurrentView] = useState('home');
   const [authView, setAuthView] = useState('login'); // login, register
@@ -1153,6 +1231,20 @@ export default function BaederApp() {
   const [berichtsheftDatumAusbilder, setBerichtsheftDatumAusbilder] = useState('');
   const [selectedBerichtsheft, setSelectedBerichtsheft] = useState(null); // Für Bearbeitung
   const [berichtsheftViewMode, setBerichtsheftViewMode] = useState('edit'); // 'edit', 'list', 'progress', 'profile'
+
+  // Schwimmchallenge State
+  const [swimChallengeView, setSwimChallengeView] = useState('overview'); // 'overview', 'challenges', 'add', 'leaderboard', 'battle'
+  const [swimSessions, setSwimSessions] = useState([]); // Alle Trainingseinheiten
+  const [activeSwimChallenges, setActiveSwimChallenges] = useState([]); // Aktive Challenges des Users
+  const [swimSessionForm, setSwimSessionForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    distance: '',
+    time: '',
+    style: 'kraul',
+    notes: '',
+    challengeId: ''
+  });
+  const [pendingSwimConfirmations, setPendingSwimConfirmations] = useState([]); // Für Trainer: Zu bestätigende Einheiten
 
   // Azubi-Profildaten für Berichtsheft
   const [azubiProfile, setAzubiProfile] = useState(() => {
@@ -4545,7 +4637,8 @@ export default function BaederApp() {
             { id: 'exam-simulator', icon: '📝', label: 'Prüfungssimulator', show: true },
             { id: 'flashcards', icon: '🎴', label: 'Karteikarten', show: true },
             { id: 'calculator', icon: '🧮', label: 'Rechner', show: true },
-            { id: 'quiz', icon: '🏊', label: 'Quizduell', show: true },
+            { id: 'quiz', icon: '🎮', label: 'Quizduell', show: true },
+            { id: 'swim-challenge', icon: '🏊', label: 'Schwimm-Challenge', show: true },
             { id: 'stats', icon: '🏅', label: 'Statistiken', show: true },
             { id: 'trainer-dashboard', icon: '👨‍🏫', label: 'Azubi-Übersicht', show: user.permissions.canViewAllStats },
             { id: 'chat', icon: '💬', label: 'Chat', show: true },
@@ -4738,7 +4831,7 @@ export default function BaederApp() {
             <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-8 text-center relative">
               <h2 className="text-3xl font-bold mb-2">👑 Admin-Bereich</h2>
               <p className="opacity-90">Nutzerverwaltung & Datenschutz</p>
-              <div className="absolute bottom-2 right-3 text-xs opacity-60">v1.0.1</div>
+              <div className="absolute bottom-2 right-3 text-xs opacity-60">v1.1.0</div>
             </div>
 
             {/* Admin Statistics Dashboard */}
@@ -5330,14 +5423,24 @@ export default function BaederApp() {
                 <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Mit Lösungsweg</p>
               </div>
 
-              <div className={`${darkMode ? 'bg-slate-800/95 border-cyan-600' : 'bg-white/95 border-cyan-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-cyan-400`}
+              <div className={`${darkMode ? 'bg-slate-800/95 border-green-600' : 'bg-white/95 border-green-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-green-400`}
                    onClick={() => {
                      setCurrentView('quiz');
                      playSound('splash');
                    }}>
-                <div className="text-5xl mb-3 text-center">🏊</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Quizduell</h3>
+                <div className="text-5xl mb-3 text-center">🎮</div>
+                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>Quizduell</h3>
                 <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Fordere andere heraus!</p>
+              </div>
+
+              <div className={`${darkMode ? 'bg-slate-800/95 border-cyan-600' : 'bg-white/95 border-cyan-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-cyan-400`}
+                   onClick={() => {
+                     setCurrentView('swim-challenge');
+                     playSound('splash');
+                   }}>
+                <div className="text-5xl mb-3 text-center">🏊</div>
+                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Schwimm-Challenge</h3>
+                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Azubis vs. Trainer!</p>
               </div>
 
               <div className={`${darkMode ? 'bg-slate-800/95 border-yellow-600' : 'bg-white/95 border-yellow-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-yellow-400`}
@@ -7803,6 +7906,412 @@ export default function BaederApp() {
                       🗑️ Unterschrift löschen
                     </button>
                   )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ==================== SCHWIMMCHALLENGE VIEW ==================== */}
+        {currentView === 'swim-challenge' && (
+          <div className="space-y-6">
+            {/* Header mit Team-Battle */}
+            <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 to-blue-900' : 'bg-gradient-to-r from-cyan-500 to-blue-600'} text-white rounded-xl p-6 shadow-lg`}>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    🏊 Schwimm-Challenge
+                  </h2>
+                  <p className="opacity-90 mt-1">Trainiere, sammle Punkte und miss dich mit anderen!</p>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {['overview', 'challenges', 'add', 'leaderboard', 'battle'].map(view => (
+                    <button
+                      key={view}
+                      onClick={() => setSwimChallengeView(view)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${swimChallengeView === view ? 'bg-white text-cyan-600' : 'bg-white/20 hover:bg-white/30'}`}
+                    >
+                      {view === 'overview' && '📊 Übersicht'}
+                      {view === 'challenges' && '🎯 Challenges'}
+                      {view === 'add' && '➕ Einheit'}
+                      {view === 'leaderboard' && '🏆 Bestenliste'}
+                      {view === 'battle' && '⚔️ Team-Battle'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Team-Battle Banner */}
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+              <div className="text-center mb-4">
+                <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  ⚔️ TEAM-BATTLE: JANUAR 2026
+                </h3>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <div className="text-center flex-1">
+                  <div className="text-3xl mb-1">👨‍🎓</div>
+                  <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Team Azubis</div>
+                  <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0 Pkt</div>
+                </div>
+                <div className="text-4xl font-bold text-gray-400">VS</div>
+                <div className="text-center flex-1">
+                  <div className="text-3xl mb-1">👨‍🏫</div>
+                  <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Team Trainer</div>
+                  <div className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>0 Pkt</div>
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="flex h-4 rounded-full overflow-hidden bg-gray-200">
+                  <div className="bg-cyan-500 transition-all" style={{ width: '50%' }}></div>
+                  <div className="bg-orange-500 transition-all" style={{ width: '50%' }}></div>
+                </div>
+                <div className="flex justify-between mt-1 text-sm">
+                  <span className={darkMode ? 'text-cyan-400' : 'text-cyan-600'}>50%</span>
+                  <span className={darkMode ? 'text-orange-400' : 'text-orange-600'}>50%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Übersicht */}
+            {swimChallengeView === 'overview' && (
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-3xl">🏊</span>
+                    <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0 m</span>
+                  </div>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Gesamtdistanz</p>
+                </div>
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-3xl">⏱️</span>
+                    <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0 h</span>
+                  </div>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Trainingszeit</p>
+                </div>
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-3xl">🎯</span>
+                    <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0</span>
+                  </div>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Challenges abgeschlossen</p>
+                </div>
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-3xl">⭐</span>
+                    <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0</span>
+                  </div>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Punkte</p>
+                </div>
+              </div>
+            )}
+
+            {/* Level-Anzeige */}
+            {swimChallengeView === 'overview' && (
+              <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                <h3 className={`font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Dein Level</h3>
+                <div className="flex items-center gap-4">
+                  <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${SWIM_LEVELS[0].color} flex items-center justify-center text-3xl`}>
+                    {SWIM_LEVELS[0].icon}
+                  </div>
+                  <div className="flex-1">
+                    <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      {SWIM_LEVELS[0].name}
+                    </div>
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      0 / {SWIM_LEVELS[1].minPoints} Punkte bis {SWIM_LEVELS[1].name}
+                    </div>
+                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className={`h-full bg-gradient-to-r ${SWIM_LEVELS[0].color}`} style={{ width: '0%' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Challenges Liste */}
+            {swimChallengeView === 'challenges' && (
+              <div className="space-y-4">
+                <div className="flex gap-2 flex-wrap mb-4">
+                  {['alle', 'distanz', 'sprint', 'ausdauer', 'regelmaessigkeit', 'technik'].map(cat => (
+                    <button
+                      key={cat}
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                    >
+                      {cat === 'alle' && '🎯 Alle'}
+                      {cat === 'distanz' && '🌊 Distanz'}
+                      {cat === 'sprint' && '⚡ Sprint'}
+                      {cat === 'ausdauer' && '💪 Ausdauer'}
+                      {cat === 'regelmaessigkeit' && '📅 Regelmäßigkeit'}
+                      {cat === 'technik' && '🏊 Technik'}
+                    </button>
+                  ))}
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {SWIM_CHALLENGES.map(challenge => (
+                    <div key={challenge.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-5 shadow-lg`}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-3xl">{challenge.icon}</span>
+                          <div>
+                            <h4 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{challenge.name}</h4>
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{challenge.description}</p>
+                          </div>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${darkMode ? 'bg-cyan-900 text-cyan-300' : 'bg-cyan-100 text-cyan-700'}`}>
+                          +{challenge.points} Pkt
+                        </span>
+                      </div>
+                      <div className="mt-4">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Fortschritt</span>
+                          <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>0 / {challenge.target} {challenge.unit}</span>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-cyan-500" style={{ width: '0%' }}></div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setActiveSwimChallenges(prev => [...prev, challenge.id]);
+                        }}
+                        disabled={activeSwimChallenges.includes(challenge.id)}
+                        className={`mt-4 w-full py-2 rounded-lg font-medium transition-all ${
+                          activeSwimChallenges.includes(challenge.id)
+                            ? (darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700')
+                            : (darkMode ? 'bg-cyan-600 hover:bg-cyan-500 text-white' : 'bg-cyan-500 hover:bg-cyan-600 text-white')
+                        }`}
+                      >
+                        {activeSwimChallenges.includes(challenge.id) ? '✓ Aktiv' : 'Challenge starten'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Trainingseinheit eintragen */}
+            {swimChallengeView === 'add' && (
+              <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  ➕ Neue Trainingseinheit eintragen
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Datum</label>
+                    <input
+                      type="date"
+                      value={swimSessionForm.date}
+                      onChange={(e) => setSwimSessionForm({...swimSessionForm, date: e.target.value})}
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Schwimmstil</label>
+                    <select
+                      value={swimSessionForm.style}
+                      onChange={(e) => setSwimSessionForm({...swimSessionForm, style: e.target.value})}
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
+                    >
+                      {SWIM_STYLES.map(style => (
+                        <option key={style.id} value={style.id}>{style.icon} {style.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Distanz (Meter)</label>
+                    <input
+                      type="number"
+                      value={swimSessionForm.distance}
+                      onChange={(e) => setSwimSessionForm({...swimSessionForm, distance: e.target.value})}
+                      placeholder="z.B. 1000"
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Zeit (Minuten)</label>
+                    <input
+                      type="number"
+                      value={swimSessionForm.time}
+                      onChange={(e) => setSwimSessionForm({...swimSessionForm, time: e.target.value})}
+                      placeholder="z.B. 25"
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Für Challenge (optional)</label>
+                    <select
+                      value={swimSessionForm.challengeId}
+                      onChange={(e) => setSwimSessionForm({...swimSessionForm, challengeId: e.target.value})}
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
+                    >
+                      <option value="">-- Keine Challenge --</option>
+                      {activeSwimChallenges.map(id => {
+                        const ch = SWIM_CHALLENGES.find(c => c.id === id);
+                        return ch ? <option key={id} value={id}>{ch.icon} {ch.name}</option> : null;
+                      })}
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Notizen</label>
+                    <textarea
+                      value={swimSessionForm.notes}
+                      onChange={(e) => setSwimSessionForm({...swimSessionForm, notes: e.target.value})}
+                      placeholder="Wie lief das Training?"
+                      rows={2}
+                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                    />
+                  </div>
+                </div>
+                <div className={`mt-4 p-4 rounded-lg ${darkMode ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-300'}`}>
+                  <p className={`text-sm ${darkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
+                    ⚠️ Die Einheit muss von einem Trainer/Ausbilder bestätigt werden, bevor die Punkte gutgeschrieben werden.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (swimSessionForm.distance && swimSessionForm.time) {
+                      const newSession = {
+                        ...swimSessionForm,
+                        id: Date.now(),
+                        oderId: user.id,
+                        userName: user.name,
+                        userRole: user.role,
+                        confirmed: false,
+                        createdAt: new Date().toISOString()
+                      };
+                      setSwimSessions(prev => [...prev, newSession]);
+                      setPendingSwimConfirmations(prev => [...prev, newSession]);
+                      setSwimSessionForm({
+                        date: new Date().toISOString().split('T')[0],
+                        distance: '',
+                        time: '',
+                        style: 'kraul',
+                        notes: '',
+                        challengeId: ''
+                      });
+                      alert('Trainingseinheit eingereicht! Warte auf Bestätigung durch einen Trainer.');
+                    }
+                  }}
+                  disabled={!swimSessionForm.distance || !swimSessionForm.time}
+                  className={`mt-4 w-full py-3 rounded-lg font-bold transition-all ${
+                    swimSessionForm.distance && swimSessionForm.time
+                      ? 'bg-cyan-500 hover:bg-cyan-600 text-white'
+                      : (darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400')
+                  }`}
+                >
+                  📤 Einheit zur Bestätigung einreichen
+                </button>
+              </div>
+            )}
+
+            {/* Bestenliste */}
+            {swimChallengeView === 'leaderboard' && (
+              <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  🏆 Bestenliste
+                </h3>
+                <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <span className="text-5xl mb-4 block">🏊</span>
+                  <p>Noch keine Einträge vorhanden.</p>
+                  <p className="text-sm mt-2">Trage deine erste Trainingseinheit ein!</p>
+                </div>
+              </div>
+            )}
+
+            {/* Team-Battle Detail */}
+            {swimChallengeView === 'battle' && (
+              <div className="space-y-4">
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                  <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    ⚔️ Team-Battle Details
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className={`p-4 rounded-lg ${darkMode ? 'bg-cyan-900/30 border border-cyan-700' : 'bg-cyan-50 border border-cyan-200'}`}>
+                      <h4 className={`font-bold mb-3 flex items-center gap-2 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                        👨‍🎓 Team Azubis
+                      </h4>
+                      <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <p>Noch keine Teilnehmer</p>
+                      </div>
+                    </div>
+                    <div className={`p-4 rounded-lg ${darkMode ? 'bg-orange-900/30 border border-orange-700' : 'bg-orange-50 border border-orange-200'}`}>
+                      <h4 className={`font-bold mb-3 flex items-center gap-2 ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
+                        👨‍🏫 Team Trainer
+                      </h4>
+                      <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <p>Noch keine Teilnehmer</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                  <h4 className={`font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    📊 Alters-Handicap System
+                  </h4>
+                  <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Für faire Wettkämpfe zwischen verschiedenen Altersgruppen wird ein Handicap-System angewendet:
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                    {[
+                      { age: '< 40', bonus: '0%' },
+                      { age: '40-49', bonus: '-5%' },
+                      { age: '50-59', bonus: '-10%' },
+                      { age: '60-69', bonus: '-15%' },
+                      { age: '70+', bonus: '-20%' },
+                    ].map(h => (
+                      <div key={h.age} className={`p-3 rounded-lg text-center ${darkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
+                        <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{h.age}</div>
+                        <div className={`text-sm ${darkMode ? 'text-green-400' : 'text-green-600'}`}>{h.bonus} Zeit</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Trainer: Bestätigungen */}
+            {(user.role === 'trainer' || user.role === 'ausbilder' || user.permissions.canViewAllStats) && pendingSwimConfirmations.length > 0 && (
+              <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                <h3 className={`font-bold text-lg mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  ✅ Zu bestätigende Einheiten
+                  <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{pendingSwimConfirmations.length}</span>
+                </h3>
+                <div className="space-y-3">
+                  {pendingSwimConfirmations.map(session => (
+                    <div key={session.id} className={`p-4 rounded-lg flex items-center justify-between ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                      <div>
+                        <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                          {session.userName} - {session.distance}m in {session.time} Min
+                        </div>
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {SWIM_STYLES.find(s => s.id === session.style)?.name} • {session.date}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSwimSessions(prev => prev.map(s => s.id === session.id ? {...s, confirmed: true} : s));
+                            setPendingSwimConfirmations(prev => prev.filter(s => s.id !== session.id));
+                          }}
+                          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium"
+                        >
+                          ✓ Bestätigen
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSwimSessions(prev => prev.filter(s => s.id !== session.id));
+                            setPendingSwimConfirmations(prev => prev.filter(s => s.id !== session.id));
+                          }}
+                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
+                        >
+                          ✗ Ablehnen
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
