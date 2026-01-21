@@ -1234,8 +1234,12 @@ export default function BaederApp() {
 
   // Schwimmchallenge State
   const [swimChallengeView, setSwimChallengeView] = useState('overview'); // 'overview', 'challenges', 'add', 'leaderboard', 'battle'
-  const [swimSessions, setSwimSessions] = useState([]); // Alle Trainingseinheiten
-  const [activeSwimChallenges, setActiveSwimChallenges] = useState([]); // Aktive Challenges des Users
+  const [swimSessions, setSwimSessions] = useState([]); // Alle Trainingseinheiten (aus Supabase)
+  const [activeSwimChallenges, setActiveSwimChallenges] = useState(() => {
+    // Lade aktive Challenges aus localStorage
+    const saved = localStorage.getItem('active_swim_challenges');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [swimSessionForm, setSwimSessionForm] = useState({
     date: new Date().toISOString().split('T')[0],
     distance: '',
@@ -3351,6 +3355,126 @@ export default function BaederApp() {
     setAzubiProfile(newProfile);
     localStorage.setItem('azubi_profile', JSON.stringify(newProfile));
   };
+
+  // ==================== SCHWIMMCHALLENGE FUNKTIONEN ====================
+
+  // Aktive Challenges speichern (localStorage)
+  const saveActiveSwimChallenges = (challenges) => {
+    setActiveSwimChallenges(challenges);
+    localStorage.setItem('active_swim_challenges', JSON.stringify(challenges));
+  };
+
+  // Trainingseinheiten aus Supabase laden
+  const loadSwimSessions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('swim_sessions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSwimSessions(data || []);
+
+      // Filtere unbestätigte Einheiten für Trainer
+      if (user?.permissions?.canViewAllStats) {
+        const pending = (data || []).filter(s => !s.confirmed);
+        setPendingSwimConfirmations(pending);
+      }
+    } catch (err) {
+      console.error('Fehler beim Laden der Schwimm-Einheiten:', err);
+    }
+  };
+
+  // Trainingseinheit speichern
+  const saveSwimSession = async (sessionData) => {
+    try {
+      const newSession = {
+        user_id: user.id,
+        user_name: user.name,
+        user_role: user.role,
+        date: sessionData.date,
+        distance: parseInt(sessionData.distance) || 0,
+        time_minutes: parseInt(sessionData.time) || 0,
+        style: sessionData.style,
+        notes: sessionData.notes,
+        challenge_id: sessionData.challengeId || null,
+        confirmed: false,
+        confirmed_by: null,
+        confirmed_at: null,
+        created_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('swim_sessions')
+        .insert([newSession])
+        .select();
+
+      if (error) throw error;
+
+      // Aktualisiere lokale Liste
+      setSwimSessions(prev => [data[0], ...prev]);
+      setPendingSwimConfirmations(prev => [data[0], ...prev]);
+
+      return { success: true, data: data[0] };
+    } catch (err) {
+      console.error('Fehler beim Speichern der Schwimm-Einheit:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // Trainingseinheit bestätigen (Trainer)
+  const confirmSwimSession = async (sessionId) => {
+    try {
+      const { error } = await supabase
+        .from('swim_sessions')
+        .update({
+          confirmed: true,
+          confirmed_by: user.name,
+          confirmed_at: new Date().toISOString()
+        })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      // Aktualisiere lokale Listen
+      setSwimSessions(prev => prev.map(s =>
+        s.id === sessionId ? { ...s, confirmed: true, confirmed_by: user.name } : s
+      ));
+      setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
+
+      return { success: true };
+    } catch (err) {
+      console.error('Fehler beim Bestätigen:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // Trainingseinheit ablehnen (Trainer)
+  const rejectSwimSession = async (sessionId) => {
+    try {
+      const { error } = await supabase
+        .from('swim_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      setSwimSessions(prev => prev.filter(s => s.id !== sessionId));
+      setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
+
+      return { success: true };
+    } catch (err) {
+      console.error('Fehler beim Ablehnen:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // Lade Schwimmdaten beim Start
+  useEffect(() => {
+    if (user) {
+      loadSwimSessions();
+    }
+  }, [user]);
 
   const resetBerichtsheftForm = () => {
     setCurrentWeekEntries({
@@ -8063,7 +8187,7 @@ export default function BaederApp() {
                       </div>
                       <button
                         onClick={() => {
-                          setActiveSwimChallenges(prev => [...prev, challenge.id]);
+                          saveActiveSwimChallenges([...activeSwimChallenges, challenge.id]);
                         }}
                         disabled={activeSwimChallenges.includes(challenge.id)}
                         className={`mt-4 w-full py-2 rounded-lg font-medium transition-all ${
@@ -8159,28 +8283,22 @@ export default function BaederApp() {
                   </p>
                 </div>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (swimSessionForm.distance && swimSessionForm.time) {
-                      const newSession = {
-                        ...swimSessionForm,
-                        id: Date.now(),
-                        oderId: user.id,
-                        userName: user.name,
-                        userRole: user.role,
-                        confirmed: false,
-                        createdAt: new Date().toISOString()
-                      };
-                      setSwimSessions(prev => [...prev, newSession]);
-                      setPendingSwimConfirmations(prev => [...prev, newSession]);
-                      setSwimSessionForm({
-                        date: new Date().toISOString().split('T')[0],
-                        distance: '',
-                        time: '',
-                        style: 'kraul',
-                        notes: '',
-                        challengeId: ''
-                      });
-                      alert('Trainingseinheit eingereicht! Warte auf Bestätigung durch einen Trainer.');
+                      const result = await saveSwimSession(swimSessionForm);
+                      if (result.success) {
+                        setSwimSessionForm({
+                          date: new Date().toISOString().split('T')[0],
+                          distance: '',
+                          time: '',
+                          style: 'kraul',
+                          notes: '',
+                          challengeId: ''
+                        });
+                        alert('Trainingseinheit eingereicht! Warte auf Bestätigung durch einen Trainer.');
+                      } else {
+                        alert('Fehler beim Speichern: ' + result.error);
+                      }
                     }
                   }}
                   disabled={!swimSessionForm.distance || !swimSessionForm.time}
@@ -8269,30 +8387,25 @@ export default function BaederApp() {
                 </h3>
                 <div className="space-y-3">
                   {pendingSwimConfirmations.map(session => (
-                    <div key={session.id} className={`p-4 rounded-lg flex items-center justify-between ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                    <div key={session.id} className={`p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
                       <div>
                         <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                          {session.userName} - {session.distance}m in {session.time} Min
+                          {session.user_name} - {session.distance}m in {session.time_minutes} Min
                         </div>
                         <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                           {SWIM_STYLES.find(s => s.id === session.style)?.name} • {session.date}
+                          {session.notes && <span className="ml-2 italic">"{session.notes}"</span>}
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <button
-                          onClick={() => {
-                            setSwimSessions(prev => prev.map(s => s.id === session.id ? {...s, confirmed: true} : s));
-                            setPendingSwimConfirmations(prev => prev.filter(s => s.id !== session.id));
-                          }}
+                          onClick={() => confirmSwimSession(session.id)}
                           className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium"
                         >
                           ✓ Bestätigen
                         </button>
                         <button
-                          onClick={() => {
-                            setSwimSessions(prev => prev.filter(s => s.id !== session.id));
-                            setPendingSwimConfirmations(prev => prev.filter(s => s.id !== session.id));
-                          }}
+                          onClick={() => rejectSwimSession(session.id)}
                           className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
                         >
                           ✗ Ablehnen
