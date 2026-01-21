@@ -7722,28 +7722,6 @@ export default function BaederApp() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Unterschrift Lehrer ✍️</label>
-                    <input
-                      type="text"
-                      value={newAttendanceTeacherSig}
-                      onChange={(e) => setNewAttendanceTeacherSig(e.target.value)}
-                      placeholder="Name des Lehrers"
-                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Unterschrift Ausbilder ✍️</label>
-                    <input
-                      type="text"
-                      value={newAttendanceTrainerSig}
-                      onChange={(e) => setNewAttendanceTrainerSig(e.target.value)}
-                      placeholder="Name des Ausbilders"
-                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
-                    />
-                  </div>
-                </div>
                 <button
                   onClick={addSchoolAttendance}
                   className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-all"
