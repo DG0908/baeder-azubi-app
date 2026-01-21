@@ -2686,6 +2686,7 @@ export default function BaederApp() {
     setCurrentQuestion(questionsWithShuffledAnswers[0]);
     setAnswered(false);
     setSelectedAnswers([]); // Reset für Multi-Select
+    setLastSelectedAnswer(null); // Reset für Single-Choice
 
     const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
     setTimeLeft(timeLimit);
@@ -2928,6 +2929,7 @@ export default function BaederApp() {
     setCurrentQuestion(currentCategoryRound.questions[0]);
     setAnswered(false);
     setSelectedAnswers([]); // Reset für Multi-Select
+    setLastSelectedAnswer(null); // Reset für Single-Choice
     setWaitingForOpponent(false);
 
     const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
@@ -3125,6 +3127,8 @@ export default function BaederApp() {
     setExamQuestionIndex(0);
     setExamCurrentQuestion(examQuestions[0]);
     setExamAnswered(false);
+    setExamSelectedAnswers([]); // Reset Multi-Select
+    setExamSelectedAnswer(null); // Reset Single-Choice
     setUserExamProgress(null);
   };
 
