@@ -1245,6 +1245,7 @@ export default function BaederApp() {
     challengeId: ''
   });
   const [pendingSwimConfirmations, setPendingSwimConfirmations] = useState([]); // Für Trainer: Zu bestätigende Einheiten
+  const [swimChallengeFilter, setSwimChallengeFilter] = useState('alle'); // Filter für Challenge-Kategorien
 
   // Azubi-Profildaten für Berichtsheft
   const [azubiProfile, setAzubiProfile] = useState(() => {
@@ -8020,7 +8021,12 @@ export default function BaederApp() {
                   {['alle', 'distanz', 'sprint', 'ausdauer', 'regelmaessigkeit', 'technik'].map(cat => (
                     <button
                       key={cat}
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                      onClick={() => setSwimChallengeFilter(cat)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                        swimChallengeFilter === cat
+                          ? 'bg-cyan-500 text-white'
+                          : (darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                      }`}
                     >
                       {cat === 'alle' && '🎯 Alle'}
                       {cat === 'distanz' && '🌊 Distanz'}
@@ -8032,7 +8038,7 @@ export default function BaederApp() {
                   ))}
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  {SWIM_CHALLENGES.map(challenge => (
+                  {SWIM_CHALLENGES.filter(c => swimChallengeFilter === 'alle' || c.category === swimChallengeFilter).map(challenge => (
                     <div key={challenge.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-5 shadow-lg`}>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
