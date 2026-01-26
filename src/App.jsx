@@ -4848,6 +4848,91 @@ export default function BaederApp() {
     }
   };
 
+  // Impressum vor Login
+  if (!user && authView === 'impressum') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
+      }}>
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <button
+            onClick={() => setAuthView('login')}
+            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
+          >
+            ← Zurück zum Login
+          </button>
+
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">📜 Impressum</h2>
+
+          <div className="space-y-4 text-gray-700 text-sm">
+            <section>
+              <h3 className="font-bold text-gray-800">Angaben gemäß § 5 TMG</h3>
+              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">Kontakt</h3>
+              <p>E-Mail: denniegulbinski@gmail.com</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">Verantwortlich für den Inhalt</h3>
+              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Datenschutz vor Login
+  if (!user && authView === 'datenschutz') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
+      }}>
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <button
+            onClick={() => setAuthView('login')}
+            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
+          >
+            ← Zurück zum Login
+          </button>
+
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">🔒 Datenschutzerklärung</h2>
+
+          <div className="space-y-4 text-gray-700 text-sm">
+            <section>
+              <h3 className="font-bold text-gray-800">1. Verantwortlicher</h3>
+              <p>Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg<br/>E-Mail: denniegulbinski@gmail.com</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">2. Erhobene Daten</h3>
+              <p>Name, E-Mail, optionales Geburtsdatum, Quiz-Statistiken, Schwimm-Einheiten, Berufsschul-Kontrollkarten, Berichtsheft-Einträge, Chat-Nachrichten.</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">3. Zweck</h3>
+              <p>Die Daten werden ausschließlich zur Bereitstellung der App-Funktionen verwendet.</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">4. Speicherdauer</h3>
+              <p>Azubis: Löschung am Ausbildungsende. Ausbilder: 6 Monate nach Inaktivität. Admins: Keine automatische Löschung.</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">5. Ihre Rechte</h3>
+              <p>Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch (Art. 15-21 DSGVO).</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">6. Cookies</h3>
+              <p>Nur Local Storage für Anmeldedaten und Einstellungen. Keine Tracking-Cookies.</p>
+            </section>
+            <section className="pt-2 border-t border-gray-200 text-xs text-gray-500">
+              Stand: Januar 2025
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Login/Register Screen
   if (!user) {
     return (
@@ -5036,91 +5121,6 @@ export default function BaederApp() {
                 Datenschutz
               </button>
             </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Impressum vor Login
-  if (!user && authView === 'impressum') {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{
-        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
-      }}>
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <button
-            onClick={() => setAuthView('login')}
-            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
-          >
-            ← Zurück zum Login
-          </button>
-
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">📜 Impressum</h2>
-
-          <div className="space-y-4 text-gray-700 text-sm">
-            <section>
-              <h3 className="font-bold text-gray-800">Angaben gemäß § 5 TMG</h3>
-              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">Kontakt</h3>
-              <p>E-Mail: denniegulbinski@gmail.com</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">Verantwortlich für den Inhalt</h3>
-              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg</p>
-            </section>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Datenschutz vor Login
-  if (!user && authView === 'datenschutz') {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{
-        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
-      }}>
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <button
-            onClick={() => setAuthView('login')}
-            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
-          >
-            ← Zurück zum Login
-          </button>
-
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">🔒 Datenschutzerklärung</h2>
-
-          <div className="space-y-4 text-gray-700 text-sm">
-            <section>
-              <h3 className="font-bold text-gray-800">1. Verantwortlicher</h3>
-              <p>Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg<br/>E-Mail: denniegulbinski@gmail.com</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">2. Erhobene Daten</h3>
-              <p>Name, E-Mail, optionales Geburtsdatum, Quiz-Statistiken, Schwimm-Einheiten, Berufsschul-Kontrollkarten, Berichtsheft-Einträge, Chat-Nachrichten.</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">3. Zweck</h3>
-              <p>Die Daten werden ausschließlich zur Bereitstellung der App-Funktionen verwendet.</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">4. Speicherdauer</h3>
-              <p>Azubis: Löschung am Ausbildungsende. Ausbilder: 6 Monate nach Inaktivität. Admins: Keine automatische Löschung.</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">5. Ihre Rechte</h3>
-              <p>Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch (Art. 15-21 DSGVO).</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">6. Cookies</h3>
-              <p>Nur Local Storage für Anmeldedaten und Einstellungen. Keine Tracking-Cookies.</p>
-            </section>
-            <section className="pt-2 border-t border-gray-200 text-xs text-gray-500">
-              Stand: Januar 2025
-            </section>
           </div>
         </div>
       </div>
