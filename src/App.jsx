@@ -1590,6 +1590,7 @@ export default function BaederApp() {
             company: profile.company || null,
             birthDate: profile.birth_date || null,
             canViewSchoolCards: profile.can_view_school_cards || false,
+            canSignReports: profile.can_sign_reports || false,
             permissions: PERMISSIONS[profile.role]
           };
           setUser(userSession);
@@ -2161,6 +2162,7 @@ export default function BaederApp() {
         company: profile.company || null,
         birthDate: profile.birth_date || null,
         canViewSchoolCards: profile.can_view_school_cards || false,
+        canSignReports: profile.can_sign_reports || false,
         permissions: PERMISSIONS[profile.role]
       };
 
@@ -2613,6 +2615,29 @@ export default function BaederApp() {
       );
     } catch (error) {
       console.error('Error toggling school card permission:', error);
+      showToast('Fehler beim Ändern der Berechtigung', 'error');
+    }
+  };
+
+  // Berichtsheft-Unterschrift-Berechtigung für Trainer ändern
+  const toggleSignReportsPermission = async (userId, currentValue) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ can_sign_reports: !currentValue })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      loadData();
+      showToast(
+        !currentValue
+          ? 'Berichtsheft-Unterschrift-Berechtigung erteilt'
+          : 'Berichtsheft-Unterschrift-Berechtigung entzogen',
+        'success'
+      );
+    } catch (error) {
+      console.error('Error toggling sign reports permission:', error);
       showToast('Fehler beim Ändern der Berechtigung', 'error');
     }
   };
@@ -5685,17 +5710,30 @@ export default function BaederApp() {
                             </button>
                           )}
                           {acc.role === 'trainer' && (
-                            <button
-                              onClick={() => toggleSchoolCardPermission(acc.id, acc.can_view_school_cards)}
-                              className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                                acc.can_view_school_cards
-                                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
-                              title={acc.can_view_school_cards ? 'Kontrollkarten-Zugriff entziehen' : 'Kontrollkarten-Zugriff erteilen'}
-                            >
-                              🎓 {acc.can_view_school_cards ? '✓' : '○'}
-                            </button>
+                            <>
+                              <button
+                                onClick={() => toggleSchoolCardPermission(acc.id, acc.can_view_school_cards)}
+                                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                                  acc.can_view_school_cards
+                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                                title={acc.can_view_school_cards ? 'Kontrollkarten-Zugriff entziehen' : 'Kontrollkarten-Zugriff erteilen'}
+                              >
+                                🎓 {acc.can_view_school_cards ? '✓' : '○'}
+                              </button>
+                              <button
+                                onClick={() => toggleSignReportsPermission(acc.id, acc.can_sign_reports)}
+                                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                                  acc.can_sign_reports
+                                    ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                                title={acc.can_sign_reports ? 'Berichtsheft-Unterschrift entziehen' : 'Berichtsheft-Unterschrift erteilen'}
+                              >
+                                📝 {acc.can_sign_reports ? '✓' : '○'}
+                              </button>
+                            </>
                           )}
                           {acc.role === 'admin' && (
                             <div className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg text-xs font-bold flex items-center">
