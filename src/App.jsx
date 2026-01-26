@@ -4898,34 +4898,91 @@ export default function BaederApp() {
           </button>
 
           <h2 className="text-2xl font-bold mb-6 text-gray-800">🔒 Datenschutzerklärung</h2>
+          <p className="text-xs text-gray-500 mb-4">Stand: Januar 2025 | Diese Datenschutzerklärung gilt für die Nutzung der Bäder-Azubi App.</p>
 
           <div className="space-y-4 text-gray-700 text-sm">
             <section>
               <h3 className="font-bold text-gray-800">1. Verantwortlicher</h3>
-              <p>Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg<br/>E-Mail: denniegulbinski@gmail.com</p>
+              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg<br/>E-Mail: denniegulbinski@gmail.com</p>
             </section>
             <section>
-              <h3 className="font-bold text-gray-800">2. Erhobene Daten</h3>
-              <p>Name, E-Mail, optionales Geburtsdatum, Quiz-Statistiken, Schwimm-Einheiten, Berufsschul-Kontrollkarten, Berichtsheft-Einträge, Chat-Nachrichten.</p>
+              <h3 className="font-bold text-gray-800">2. Zwecke der Datenverarbeitung</h3>
+              <p>Die Verarbeitung personenbezogener Daten erfolgt ausschließlich zur:</p>
+              <ul className="list-disc list-inside mt-1 ml-2">
+                <li>Bereitstellung der App-Funktionen</li>
+                <li>Unterstützung von Ausbildungsprozessen (Berichtsheft, Lernfortschritt, Kommunikation)</li>
+              </ul>
             </section>
             <section>
-              <h3 className="font-bold text-gray-800">3. Zweck</h3>
-              <p>Die Daten werden ausschließlich zur Bereitstellung der App-Funktionen verwendet.</p>
+              <h3 className="font-bold text-gray-800">3. Verarbeitete Datenarten</h3>
+              <ul className="list-disc list-inside mt-1 ml-2">
+                <li><strong>Stammdaten:</strong> Name, E-Mail-Adresse, optional Geburtsdatum</li>
+                <li><strong>Nutzungsdaten:</strong> Login-Zeitpunkte, aktive Module</li>
+                <li><strong>Lern- & Ausbildungsdaten:</strong> Quiz-Ergebnisse, Berichtshefteinträge, Schwimmeinheiten, Schulungsfortschritte</li>
+                <li><strong>Kommunikationsdaten:</strong> Chatnachrichten innerhalb der App</li>
+                <li><strong>Ausbilderdaten:</strong> Kontrollkarten, Kommentare, Freigaben</li>
+              </ul>
             </section>
             <section>
-              <h3 className="font-bold text-gray-800">4. Speicherdauer</h3>
-              <p>Azubis: Löschung am Ausbildungsende. Ausbilder: 6 Monate nach Inaktivität. Admins: Keine automatische Löschung.</p>
+              <h3 className="font-bold text-gray-800">4. Rechtsgrundlagen der Verarbeitung</h3>
+              <ul className="list-disc list-inside mt-1 ml-2">
+                <li>Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung/Ausbildungsverhältnis)</li>
+                <li>Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse: z. B. Systembetrieb, Support)</li>
+                <li>Art. 6 Abs. 1 lit. a DSGVO (Einwilligung, z. B. für Chatfunktion)</li>
+              </ul>
             </section>
             <section>
-              <h3 className="font-bold text-gray-800">5. Ihre Rechte</h3>
-              <p>Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch (Art. 15-21 DSGVO).</p>
+              <h3 className="font-bold text-gray-800">5. Empfänger der Daten</h3>
+              <ul className="list-disc list-inside mt-1 ml-2">
+                <li>IT-Dienstleister (z. B. Hosting, Wartung)</li>
+                <li>Keine Weitergabe an Dritte zu Werbezwecken</li>
+                <li>Datenverarbeitung erfolgt ausschließlich innerhalb der EU</li>
+              </ul>
             </section>
             <section>
-              <h3 className="font-bold text-gray-800">6. Cookies</h3>
-              <p>Nur Local Storage für Anmeldedaten und Einstellungen. Keine Tracking-Cookies.</p>
+              <h3 className="font-bold text-gray-800">6. Speicherdauer</h3>
+              <ul className="list-disc list-inside mt-1 ml-2">
+                <li><strong>Azubis:</strong> Löschung 3 Monate nach Ausbildungsende</li>
+                <li><strong>Ausbilder:innen:</strong> Löschung 6 Monate nach Inaktivität</li>
+                <li><strong>Admins:</strong> regelmäßige Löschprüfung jährlich</li>
+                <li><strong>Chatnachrichten:</strong> max. 12 Monate, dann automatische Löschung</li>
+                <li><strong>Berichtshefte:</strong> Löschung spätestens 1 Jahr nach Ausbildungsende</li>
+              </ul>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">7. Betroffenenrechte</h3>
+              <p>Du hast das Recht auf:</p>
+              <ul className="list-disc list-inside mt-1 ml-2">
+                <li>Auskunft (Art. 15 DSGVO)</li>
+                <li>Berichtigung (Art. 16 DSGVO)</li>
+                <li>Löschung (Art. 17 DSGVO)</li>
+                <li>Einschränkung (Art. 18 DSGVO)</li>
+                <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
+                <li>Widerspruch (Art. 21 DSGVO)</li>
+                <li>Widerruf einer Einwilligung (Art. 7 Abs. 3 DSGVO)</li>
+              </ul>
+              <p className="mt-2">Anfragen bitte per E-Mail an: denniegulbinski@gmail.com</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">8. Cookies und lokale Speicherung</h3>
+              <ul className="list-disc list-inside mt-1 ml-2">
+                <li>Die App nutzt kein Tracking</li>
+                <li>Es wird ausschließlich Local Storage verwendet (z. B. für Einstellungen und Anmeldedaten)</li>
+                <li>Es erfolgt keine Analyse oder Weitergabe dieser Daten</li>
+              </ul>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">9. Sicherheit der Verarbeitung</h3>
+              <p>Zum Schutz deiner Daten setzen wir technische und organisatorische Maßnahmen ein:</p>
+              <ul className="list-disc list-inside mt-1 ml-2">
+                <li>Verschlüsselte Übertragung (TLS)</li>
+                <li>Zugriffsrechte nach Rolle</li>
+                <li>Datensicherung</li>
+                <li>Regelmäßige Updates</li>
+              </ul>
             </section>
             <section className="pt-2 border-t border-gray-200 text-xs text-gray-500">
-              Stand: Januar 2025
+              <p>Diese Datenschutzerklärung wird regelmäßig aktualisiert. Letzte Aktualisierung: Januar 2025</p>
             </section>
           </div>
         </div>
@@ -10426,109 +10483,106 @@ export default function BaederApp() {
                 ← Zurück zum Profil
               </button>
 
-              <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              <h2 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                 🔒 Datenschutzerklärung
               </h2>
+              <p className={`text-xs mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Stand: Januar 2025 | Diese Datenschutzerklärung gilt für die Nutzung der Bäder-Azubi App.
+              </p>
 
               <div className={`space-y-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 <section>
                   <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>1. Verantwortlicher</h3>
-                  <p>Dennie Gulbinski</p>
-                  <p>Zeitstraße 108, 53721 Siegburg</p>
-                  <p>E-Mail: denniegulbinski@gmail.com</p>
+                  <p className="text-sm">Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg<br/>E-Mail: denniegulbinski@gmail.com</p>
                 </section>
 
                 <section>
-                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>2. Erhebung und Speicherung personenbezogener Daten</h3>
-                  <p className="text-sm leading-relaxed mb-2">
-                    Bei der Nutzung dieser App werden folgende Daten erhoben und gespeichert:
-                  </p>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>2. Zwecke der Datenverarbeitung</h3>
+                  <p className="text-sm leading-relaxed mb-2">Die Verarbeitung personenbezogener Daten erfolgt ausschließlich zur:</p>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-2">
-                    <li>Name und E-Mail-Adresse (bei der Registrierung)</li>
-                    <li>Optionales Geburtsdatum (für Handicap-Berechnung)</li>
-                    <li>Optionaler Betriebsname</li>
-                    <li>Quiz-Statistiken und Spielstände</li>
-                    <li>Schwimm-Trainingseinheiten und Challenges</li>
-                    <li>Berufsschul-Kontrollkarten-Einträge</li>
-                    <li>Berichtsheft-Einträge</li>
-                    <li>Chat-Nachrichten</li>
+                    <li>Bereitstellung der App-Funktionen</li>
+                    <li>Unterstützung von Ausbildungsprozessen (Berichtsheft, Lernfortschritt, Kommunikation)</li>
                   </ul>
                 </section>
 
                 <section>
-                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>3. Zweck der Datenverarbeitung</h3>
-                  <p className="text-sm leading-relaxed">
-                    Die Daten werden ausschließlich zur Bereitstellung der App-Funktionen verwendet:
-                    Lernfortschritt tracken, Wettkämpfe ermöglichen, Ausbildungsnachweis führen und
-                    Kommunikation zwischen Azubis und Ausbildern ermöglichen.
-                  </p>
-                </section>
-
-                <section>
-                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>4. Rechtsgrundlage</h3>
-                  <p className="text-sm leading-relaxed">
-                    Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO (Einwilligung)
-                    sowie Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
-                  </p>
-                </section>
-
-                <section>
-                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>5. Datenweitergabe</h3>
-                  <p className="text-sm leading-relaxed">
-                    Eine Weitergabe der Daten an Dritte erfolgt nicht, außer wenn dies zur Vertragserfüllung
-                    erforderlich ist oder eine gesetzliche Verpflichtung besteht. Die Daten werden bei
-                    Supabase (Hosting-Provider) gespeichert, der DSGVO-konform arbeitet.
-                  </p>
-                </section>
-
-                <section>
-                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>6. Speicherdauer und automatische Löschung</h3>
-                  <p className="text-sm leading-relaxed">
-                    Die Daten werden wie folgt gelöscht:
-                  </p>
-                  <ul className="list-disc list-inside text-sm space-y-1 ml-2 mt-2">
-                    <li><strong>Azubis:</strong> Automatische Löschung am Ende der Ausbildung (angegebenes Datum)</li>
-                    <li><strong>Ausbilder:</strong> Automatische Löschung nach 6 Monaten Inaktivität</li>
-                    <li><strong>Administratoren:</strong> Keine automatische Löschung</li>
-                  </ul>
-                </section>
-
-                <section>
-                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>7. Ihre Rechte</h3>
-                  <p className="text-sm leading-relaxed mb-2">
-                    Sie haben folgende Rechte bezüglich Ihrer personenbezogenen Daten:
-                  </p>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>3. Verarbeitete Datenarten</h3>
                   <ul className="list-disc list-inside text-sm space-y-1 ml-2">
-                    <li>Recht auf Auskunft (Art. 15 DSGVO)</li>
-                    <li>Recht auf Berichtigung (Art. 16 DSGVO)</li>
-                    <li>Recht auf Löschung (Art. 17 DSGVO)</li>
-                    <li>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
-                    <li>Recht auf Datenübertragbarkeit (Art. 20 DSGVO)</li>
-                    <li>Widerspruchsrecht (Art. 21 DSGVO)</li>
+                    <li><strong>Stammdaten:</strong> Name, E-Mail-Adresse, optional Geburtsdatum</li>
+                    <li><strong>Nutzungsdaten:</strong> Login-Zeitpunkte, aktive Module</li>
+                    <li><strong>Lern- & Ausbildungsdaten:</strong> Quiz-Ergebnisse, Berichtshefteinträge, Schwimmeinheiten, Schulungsfortschritte</li>
+                    <li><strong>Kommunikationsdaten:</strong> Chatnachrichten innerhalb der App</li>
+                    <li><strong>Ausbilderdaten:</strong> Kontrollkarten, Kommentare, Freigaben</li>
                   </ul>
-                  <p className="text-sm leading-relaxed mt-2">
-                    Die App bietet eine Export-Funktion im Admin-Bereich, um Ihre Daten als JSON-Datei herunterzuladen.
-                  </p>
                 </section>
 
                 <section>
-                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>8. Cookies und Local Storage</h3>
-                  <p className="text-sm leading-relaxed">
-                    Diese App verwendet Local Storage im Browser, um Ihre Anmeldedaten und Einstellungen
-                    (z.B. Dark Mode) zu speichern. Es werden keine Tracking-Cookies verwendet.
-                  </p>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>4. Rechtsgrundlagen der Verarbeitung</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                    <li>Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung/Ausbildungsverhältnis)</li>
+                    <li>Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse: z. B. Systembetrieb, Support)</li>
+                    <li>Art. 6 Abs. 1 lit. a DSGVO (Einwilligung, z. B. für Chatfunktion)</li>
+                  </ul>
                 </section>
 
                 <section>
-                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>9. Kontakt bei Datenschutzfragen</h3>
-                  <p className="text-sm leading-relaxed">
-                    Bei Fragen zum Datenschutz wenden Sie sich bitte an: denniegulbinski@gmail.com
-                  </p>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>5. Empfänger der Daten</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                    <li>IT-Dienstleister (z. B. Supabase für Hosting)</li>
+                    <li>Keine Weitergabe an Dritte zu Werbezwecken</li>
+                    <li>Datenverarbeitung erfolgt ausschließlich innerhalb der EU</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>6. Speicherdauer</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                    <li><strong>Azubis:</strong> Löschung 3 Monate nach Ausbildungsende</li>
+                    <li><strong>Ausbilder:innen:</strong> Löschung 6 Monate nach Inaktivität</li>
+                    <li><strong>Admins:</strong> regelmäßige Löschprüfung jährlich</li>
+                    <li><strong>Chatnachrichten:</strong> max. 12 Monate, dann automatische Löschung</li>
+                    <li><strong>Berichtshefte:</strong> Löschung spätestens 1 Jahr nach Ausbildungsende</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>7. Betroffenenrechte</h3>
+                  <p className="text-sm leading-relaxed mb-2">Du hast das Recht auf:</p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                    <li>Auskunft (Art. 15 DSGVO)</li>
+                    <li>Berichtigung (Art. 16 DSGVO)</li>
+                    <li>Löschung (Art. 17 DSGVO)</li>
+                    <li>Einschränkung (Art. 18 DSGVO)</li>
+                    <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
+                    <li>Widerspruch (Art. 21 DSGVO)</li>
+                    <li>Widerruf einer Einwilligung (Art. 7 Abs. 3 DSGVO)</li>
+                  </ul>
+                  <p className="text-sm leading-relaxed mt-2">Anfragen bitte per E-Mail an: denniegulbinski@gmail.com</p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>8. Cookies und lokale Speicherung</h3>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                    <li>Die App nutzt kein Tracking</li>
+                    <li>Es wird ausschließlich Local Storage verwendet (z. B. für Einstellungen und Anmeldedaten)</li>
+                    <li>Es erfolgt keine Analyse oder Weitergabe dieser Daten</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>9. Sicherheit der Verarbeitung</h3>
+                  <p className="text-sm leading-relaxed mb-2">Zum Schutz deiner Daten setzen wir technische und organisatorische Maßnahmen ein:</p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                    <li>Verschlüsselte Übertragung (TLS)</li>
+                    <li>Zugriffsrechte nach Rolle</li>
+                    <li>Datensicherung</li>
+                    <li>Regelmäßige Updates</li>
+                  </ul>
                 </section>
 
                 <section className={`pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
                   <p className="text-xs text-gray-500">
-                    Stand: Januar 2025
+                    Diese Datenschutzerklärung wird regelmäßig aktualisiert. Letzte Aktualisierung: Januar 2025
                   </p>
                 </section>
               </div>
