@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle } from 'lucide-react';
+import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { supabase } from './supabase';
 
 const CATEGORIES = [
@@ -833,6 +833,39 @@ const PERMISSIONS = {
 // Demo-Accounts entfernt - alle Logins laufen über Supabase
 const DEMO_ACCOUNTS = {};
 
+// Avatar-Auswahl für Profil
+const AVATARS = [
+  // Schwimmen & Wassersport
+  { id: 'swimmer', emoji: '🏊', label: 'Schwimmer' },
+  { id: 'swimmer_m', emoji: '🏊‍♂️', label: 'Schwimmer' },
+  { id: 'swimmer_f', emoji: '🏊‍♀️', label: 'Schwimmerin' },
+  { id: 'waterpolo', emoji: '🤽', label: 'Wasserball' },
+  { id: 'diver', emoji: '🤿', label: 'Taucher' },
+  { id: 'surfer', emoji: '🏄', label: 'Surfer' },
+  // Meeresbewohner
+  { id: 'dolphin', emoji: '🐬', label: 'Delfin' },
+  { id: 'whale', emoji: '🐳', label: 'Wal' },
+  { id: 'shark', emoji: '🦈', label: 'Hai' },
+  { id: 'octopus', emoji: '🐙', label: 'Oktopus' },
+  { id: 'turtle', emoji: '🐢', label: 'Schildkröte' },
+  { id: 'fish', emoji: '🐠', label: 'Tropenfisch' },
+  { id: 'blowfish', emoji: '🐡', label: 'Kugelfisch' },
+  { id: 'seal', emoji: '🦭', label: 'Robbe' },
+  { id: 'crab', emoji: '🦀', label: 'Krabbe' },
+  { id: 'lobster', emoji: '🦞', label: 'Hummer' },
+  { id: 'shrimp', emoji: '🦐', label: 'Garnele' },
+  { id: 'squid', emoji: '🦑', label: 'Tintenfisch' },
+  { id: 'shell', emoji: '🐚', label: 'Muschel' },
+  { id: 'coral', emoji: '🪸', label: 'Koralle' },
+  // Strand & Wasser
+  { id: 'wave', emoji: '🌊', label: 'Welle' },
+  { id: 'beach', emoji: '🏖️', label: 'Strand' },
+  { id: 'umbrella', emoji: '⛱️', label: 'Sonnenschirm' },
+  { id: 'goggles', emoji: '🥽', label: 'Schwimmbrille' },
+  { id: 'flamingo', emoji: '🦩', label: 'Flamingo' },
+  { id: 'lifeguard', emoji: '🛟', label: 'Rettungsring' },
+];
+
 // Hilfsfunktion: Mischt Antworten und gibt neue Antwort-Array + korrekten Index/Indizes zurück
 const shuffleAnswers = (question) => {
   const answers = [...question.a];
@@ -1037,14 +1070,20 @@ const SWIM_LEVELS = [
 ];
 
 const SWIM_BADGES = [
-  { id: 'first_km', name: 'Erster Kilometer', description: '1 km Gesamtdistanz erreicht', icon: '🎉', requirement: { type: 'total_distance', value: 1000 } },
-  { id: 'five_km', name: '5km Meilenstein', description: '5 km Gesamtdistanz erreicht', icon: '🏃', requirement: { type: 'total_distance', value: 5000 } },
-  { id: 'sprint_king', name: 'Sprint-König', description: '3 Sprint-Challenges abgeschlossen', icon: '👑', requirement: { type: 'challenges_category', category: 'sprint', value: 3 } },
-  { id: 'endurance_monster', name: 'Ausdauer-Monster', description: '3 Ausdauer-Challenges abgeschlossen', icon: '🦍', requirement: { type: 'challenges_category', category: 'ausdauer', value: 3 } },
-  { id: 'early_bird', name: 'Frühschwimmer', description: '5 Einheiten vor 8 Uhr morgens', icon: '🌅', requirement: { type: 'early_sessions', value: 5 } },
-  { id: 'team_player', name: 'Team-Player', description: 'An 3 Team-Battles teilgenommen', icon: '🤝', requirement: { type: 'team_battles', value: 3 } },
-  { id: 'challenger', name: 'Herausforderer', description: '5 verschiedene Challenges abgeschlossen', icon: '🎯', requirement: { type: 'unique_challenges', value: 5 } },
-  { id: 'master', name: 'Challenge-Meister', description: '10 Challenges abgeschlossen', icon: '🏅', requirement: { type: 'total_challenges', value: 10 } },
+  { id: 'swim_first_km', name: 'Erster Kilometer', description: '1 km Gesamtdistanz erreicht', icon: '🏊', category: 'swim', requirement: { type: 'total_distance', value: 1000 } },
+  { id: 'swim_five_km', name: '5km Meilenstein', description: '5 km Gesamtdistanz erreicht', icon: '🌊', category: 'swim', requirement: { type: 'total_distance', value: 5000 } },
+  { id: 'swim_ten_km', name: '10km Club', description: '10 km Gesamtdistanz erreicht', icon: '🎯', category: 'swim', requirement: { type: 'total_distance', value: 10000 } },
+  { id: 'swim_marathon', name: 'Marathon-Schwimmer', description: '42.195 km Gesamtdistanz', icon: '🏅', category: 'swim', requirement: { type: 'total_distance', value: 42195 } },
+  { id: 'swim_first_session', name: 'Erste Bahnen', description: 'Erste Trainingseinheit abgeschlossen', icon: '🎉', category: 'swim', requirement: { type: 'sessions', value: 1 } },
+  { id: 'swim_10_sessions', name: 'Regelmäßig dabei', description: '10 Trainingseinheiten absolviert', icon: '📅', category: 'swim', requirement: { type: 'sessions', value: 10 } },
+  { id: 'swim_25_sessions', name: 'Ausdauernd', description: '25 Trainingseinheiten absolviert', icon: '💪', category: 'swim', requirement: { type: 'sessions', value: 25 } },
+  { id: 'swim_50_sessions', name: 'Schwimm-Veteran', description: '50 Trainingseinheiten absolviert', icon: '🦈', category: 'swim', requirement: { type: 'sessions', value: 50 } },
+  { id: 'swim_1h_training', name: 'Stunden-Schwimmer', description: '1 Stunde Gesamttrainingszeit', icon: '⏱️', category: 'swim', requirement: { type: 'total_time', value: 60 } },
+  { id: 'swim_10h_training', name: 'Zehn-Stunden-Held', description: '10 Stunden Gesamttrainingszeit', icon: '⌛', category: 'swim', requirement: { type: 'total_time', value: 600 } },
+  { id: 'swim_challenge_first', name: 'Herausforderer', description: 'Erste Challenge abgeschlossen', icon: '🎯', category: 'swim', requirement: { type: 'challenges_completed', value: 1 } },
+  { id: 'swim_challenge_5', name: 'Challenge-Jäger', description: '5 Challenges abgeschlossen', icon: '🏆', category: 'swim', requirement: { type: 'challenges_completed', value: 5 } },
+  { id: 'swim_challenge_master', name: 'Challenge-Meister', description: '10 Challenges abgeschlossen', icon: '👑', category: 'swim', requirement: { type: 'challenges_completed', value: 10 } },
+  { id: 'swim_team_battle', name: 'Team-Kämpfer', description: 'Am Team-Battle teilgenommen', icon: '⚔️', category: 'swim', requirement: { type: 'team_battle_participation', value: 1 } },
 ];
 
 // Alters-Handicap System (basierend auf sportwissenschaftlichen Daten)
@@ -1067,9 +1106,159 @@ const calculateHandicappedTime = (actualTime, birthDate) => {
   return actualTime * (1 - handicap);
 };
 
+// Punkte-Berechnung für Schwimm-Sessions
+const calculateSwimPoints = (sessions, completedChallenges = []) => {
+  // Nur bestätigte Sessions zählen
+  const confirmedSessions = sessions.filter(s => s.confirmed);
+
+  // Basis-Punkte: 1 Punkt pro 100m geschwommen
+  const distancePoints = confirmedSessions.reduce((sum, s) => sum + Math.floor((s.distance || 0) / 100), 0);
+
+  // Bonus-Punkte: 0.5 Punkte pro Minute Trainingszeit
+  const timePoints = confirmedSessions.reduce((sum, s) => sum + Math.floor((s.time_minutes || 0) * 0.5), 0);
+
+  // Challenge-Punkte
+  const challengePoints = completedChallenges.reduce((sum, challengeId) => {
+    const challenge = SWIM_CHALLENGES.find(c => c.id === challengeId);
+    return sum + (challenge?.points || 0);
+  }, 0);
+
+  return {
+    distancePoints,
+    timePoints,
+    challengePoints,
+    total: distancePoints + timePoints + challengePoints
+  };
+};
+
+// Berechnet den Challenge-Fortschritt basierend auf Sessions
+const calculateChallengeProgress = (challenge, sessions, userId) => {
+  const confirmedSessions = sessions.filter(s => s.confirmed && s.user_id === userId);
+
+  switch (challenge.type) {
+    case 'distance': {
+      // Gesamtdistanz über alle Sessions
+      const totalDistance = confirmedSessions.reduce((sum, s) => sum + (s.distance || 0), 0);
+      return { current: totalDistance, target: challenge.target, percent: Math.min(100, (totalDistance / challenge.target) * 100) };
+    }
+    case 'single_distance': {
+      // Einzelne Session mit Mindestdistanz
+      const qualifying = confirmedSessions.filter(s =>
+        (s.distance || 0) >= challenge.target &&
+        (!challenge.style || s.style === challenge.style)
+      );
+      return { current: qualifying.length > 0 ? challenge.target : 0, target: challenge.target, percent: qualifying.length > 0 ? 100 : 0 };
+    }
+    case 'duration': {
+      // Einzelne Session mit Mindestdauer
+      const qualifying = confirmedSessions.filter(s => (s.time_minutes || 0) >= challenge.target);
+      return { current: qualifying.length > 0 ? challenge.target : 0, target: challenge.target, percent: qualifying.length > 0 ? 100 : 0 };
+    }
+    case 'sessions': {
+      // Anzahl Sessions im aktuellen Monat
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      const monthSessions = confirmedSessions.filter(s => {
+        const d = new Date(s.date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      });
+      return { current: monthSessions.length, target: challenge.target, percent: Math.min(100, (monthSessions.length / challenge.target) * 100) };
+    }
+    case 'streak': {
+      // Berechne längste Streak
+      const dates = [...new Set(confirmedSessions.map(s => s.date))].sort();
+      let maxStreak = 0, currentStreak = 1;
+      for (let i = 1; i < dates.length; i++) {
+        const prev = new Date(dates[i - 1]);
+        const curr = new Date(dates[i]);
+        const diffDays = Math.round((curr - prev) / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          currentStreak++;
+          maxStreak = Math.max(maxStreak, currentStreak);
+        } else {
+          currentStreak = 1;
+        }
+      }
+      maxStreak = Math.max(maxStreak, currentStreak, dates.length > 0 ? 1 : 0);
+      return { current: maxStreak, target: challenge.target, percent: Math.min(100, (maxStreak / challenge.target) * 100) };
+    }
+    default:
+      return { current: 0, target: challenge.target, percent: 0 };
+  }
+};
+
+// Ermittelt das aktuelle Schwimm-Level basierend auf Punkten
+const getSwimLevel = (points) => {
+  for (let i = SWIM_LEVELS.length - 1; i >= 0; i--) {
+    if (points >= SWIM_LEVELS[i].minPoints) {
+      return {
+        ...SWIM_LEVELS[i],
+        nextLevel: SWIM_LEVELS[i + 1] || null,
+        pointsToNext: SWIM_LEVELS[i + 1] ? SWIM_LEVELS[i + 1].minPoints - points : 0
+      };
+    }
+  }
+  return { ...SWIM_LEVELS[0], nextLevel: SWIM_LEVELS[1], pointsToNext: SWIM_LEVELS[1].minPoints };
+};
+
+// Berechnet Team-Battle Statistiken (Azubis vs Trainer/Ausbilder)
+const calculateTeamBattleStats = (sessions) => {
+  const confirmedSessions = sessions.filter(s => s.confirmed);
+
+  // Gruppiere nach Team und User
+  const teams = {
+    azubis: { points: 0, distance: 0, time: 0, members: {} },
+    trainer: { points: 0, distance: 0, time: 0, members: {} }
+  };
+
+  confirmedSessions.forEach(session => {
+    const isAzubi = session.user_role === 'azubi';
+    const team = isAzubi ? teams.azubis : teams.trainer;
+    const oderId = session.user_id;
+
+    // Initialisiere Member wenn nötig
+    if (!team.members[oderId]) {
+      team.members[oderId] = {
+        user_id: session.user_id,
+        user_name: session.user_name,
+        distance: 0,
+        time: 0,
+        sessions: 0,
+        points: 0
+      };
+    }
+
+    const distance = session.distance || 0;
+    const time = session.time_minutes || 0;
+
+    // Punkte: 1 pro 100m + 0.5 pro Minute
+    const sessionPoints = Math.floor(distance / 100) + Math.floor(time * 0.5);
+
+    team.members[oderId].distance += distance;
+    team.members[oderId].time += time;
+    team.members[oderId].sessions += 1;
+    team.members[oderId].points += sessionPoints;
+
+    team.distance += distance;
+    team.time += time;
+    team.points += sessionPoints;
+  });
+
+  // Konvertiere members zu Arrays und sortiere nach Punkten
+  teams.azubis.memberList = Object.values(teams.azubis.members).sort((a, b) => b.points - a.points);
+  teams.trainer.memberList = Object.values(teams.trainer.members).sort((a, b) => b.points - a.points);
+
+  // Berechne Prozentsätze
+  const totalPoints = teams.azubis.points + teams.trainer.points;
+  teams.azubis.percent = totalPoints > 0 ? (teams.azubis.points / totalPoints) * 100 : 50;
+  teams.trainer.percent = totalPoints > 0 ? (teams.trainer.points / totalPoints) * 100 : 50;
+
+  return teams;
+};
+
 export default function BaederApp() {
   const [currentView, setCurrentView] = useState('home');
-  const [authView, setAuthView] = useState('login'); // login, register
+  const [authView, setAuthView] = useState('login'); // login, register, impressum, datenschutz
   const [user, setUser] = useState(() => {
     // Load user from localStorage on initial render
     const savedUser = localStorage.getItem('baeder_user');
@@ -1154,7 +1343,6 @@ export default function BaederApp() {
   const [darkMode, setDarkMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [devMode, setDevMode] = useState(false);
-  const [showDevConsole, setShowDevConsole] = useState(false);
   
   // Flashcards State
   const [flashcards, setFlashcards] = useState([]);
@@ -1202,6 +1390,8 @@ export default function BaederApp() {
   const [newAttendanceTrainerSig, setNewAttendanceTrainerSig] = useState('');
   const [signatureModal, setSignatureModal] = useState(null); // { id, field, currentValue }
   const [tempSignature, setTempSignature] = useState(null); // Temporäre Unterschrift im Modal
+  const [selectedSchoolCardUser, setSelectedSchoolCardUser] = useState(null); // Ausgewählter Azubi für Kontrollkarten-Ansicht
+  const [allAzubisForSchoolCard, setAllAzubisForSchoolCard] = useState([]); // Liste aller Azubis für Auswahl
 
   // Berichtsheft (Ausbildungsnachweis) State
   const [berichtsheftEntries, setBerichtsheftEntries] = useState([]);
@@ -1272,6 +1462,34 @@ export default function BaederApp() {
   const [selectedChemical, setSelectedChemical] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
 
+  // Profil-Bearbeitung State
+  const [profileEditName, setProfileEditName] = useState('');
+  const [profileEditPassword, setProfileEditPassword] = useState('');
+  const [profileEditPasswordConfirm, setProfileEditPasswordConfirm] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [profileEditCompany, setProfileEditCompany] = useState('');
+  const [profileEditBirthDate, setProfileEditBirthDate] = useState('');
+
+  // Toast-Benachrichtigungen
+  const [toasts, setToasts] = useState([]);
+
+  // Toast anzeigen
+  const showToast = (message, type = 'success', duration = 3000) => {
+    const id = Date.now();
+    const icons = {
+      success: '✅',
+      error: '❌',
+      warning: '⚠️',
+      info: 'ℹ️'
+    };
+    setToasts(prev => [...prev, { id, message, type, icon: icons[type] || icons.info }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, duration);
+  };
+
   // Content moderation
   const BANNED_WORDS = [
     // Explizite Inhalte
@@ -1328,22 +1546,86 @@ export default function BaederApp() {
   };
 
   const BADGES = [
-    { id: 'streak_7', name: '7 Tage Streak', icon: '🔥', description: '7 Tage hintereinander gelernt', requirement: 'streak', value: 7 },
-    { id: 'streak_30', name: '30 Tage Streak', icon: '🔥🔥', description: '30 Tage hintereinander gelernt', requirement: 'streak', value: 30 },
-    { id: 'questions_50', name: 'Lernmaschine', icon: '💯', description: '50 Fragen richtig beantwortet', requirement: 'questions', value: 50 },
-    { id: 'questions_100', name: 'Wissensmeister', icon: '🎓', description: '100 Fragen richtig beantwortet', requirement: 'questions', value: 100 },
-    { id: 'quiz_winner_10', name: 'Quiz-Champion', icon: '👑', description: '10 Quizduell-Siege', requirement: 'quiz_wins', value: 10 },
-    { id: 'perfectionist', name: 'Perfektionist', icon: '⭐', description: 'Alle Fragen gemeistert', requirement: 'all_mastered', value: 1 },
-    { id: 'early_bird', name: 'Frühaufsteher', icon: '🌅', description: 'Vor 7 Uhr morgens gelernt', requirement: 'early', value: 1 },
-    { id: 'night_owl', name: 'Nachteule', icon: '🦉', description: 'Nach 22 Uhr gelernt', requirement: 'night', value: 1 },
+    // Quiz/Lern-Badges
+    { id: 'streak_7', name: '7 Tage Streak', icon: '🔥', description: '7 Tage hintereinander gelernt', requirement: 'streak', value: 7, category: 'quiz' },
+    { id: 'streak_30', name: '30 Tage Streak', icon: '🔥🔥', description: '30 Tage hintereinander gelernt', requirement: 'streak', value: 30, category: 'quiz' },
+    { id: 'questions_50', name: 'Lernmaschine', icon: '💯', description: '50 Fragen richtig beantwortet', requirement: 'questions', value: 50, category: 'quiz' },
+    { id: 'questions_100', name: 'Wissensmeister', icon: '🎓', description: '100 Fragen richtig beantwortet', requirement: 'questions', value: 100, category: 'quiz' },
+    { id: 'quiz_winner_10', name: 'Quiz-Champion', icon: '👑', description: '10 Quizduell-Siege', requirement: 'quiz_wins', value: 10, category: 'quiz' },
+    { id: 'perfectionist', name: 'Perfektionist', icon: '⭐', description: 'Alle Fragen gemeistert', requirement: 'all_mastered', value: 1, category: 'quiz' },
+    { id: 'early_bird', name: 'Frühaufsteher', icon: '🌅', description: 'Vor 7 Uhr morgens gelernt', requirement: 'early', value: 1, category: 'quiz' },
+    { id: 'night_owl', name: 'Nachteule', icon: '🦉', description: 'Nach 22 Uhr gelernt', requirement: 'night', value: 1, category: 'quiz' },
     // Win Streak Badges - Ungeschlagenen-Serie
-    { id: 'win_streak_3', name: 'Aufsteiger', icon: '🥉', description: '3 Siege in Folge', requirement: 'win_streak', value: 3 },
-    { id: 'win_streak_5', name: 'Durchstarter', icon: '🥈', description: '5 Siege in Folge', requirement: 'win_streak', value: 5 },
-    { id: 'win_streak_10', name: 'Unaufhaltsam', icon: '🥇', description: '10 Siege in Folge', requirement: 'win_streak', value: 10 },
-    { id: 'win_streak_15', name: 'Dominanz', icon: '🏅', description: '15 Siege in Folge', requirement: 'win_streak', value: 15 },
-    { id: 'win_streak_25', name: 'Legende', icon: '🏆', description: '25 Siege in Folge', requirement: 'win_streak', value: 25 },
-    { id: 'win_streak_50', name: 'Unbesiegbar', icon: '💎', description: '50 Siege in Folge', requirement: 'win_streak', value: 50 }
+    { id: 'win_streak_3', name: 'Aufsteiger', icon: '🥉', description: '3 Siege in Folge', requirement: 'win_streak', value: 3, category: 'quiz' },
+    { id: 'win_streak_5', name: 'Durchstarter', icon: '🥈', description: '5 Siege in Folge', requirement: 'win_streak', value: 5, category: 'quiz' },
+    { id: 'win_streak_10', name: 'Unaufhaltsam', icon: '🥇', description: '10 Siege in Folge', requirement: 'win_streak', value: 10, category: 'quiz' },
+    { id: 'win_streak_15', name: 'Dominanz', icon: '🏅', description: '15 Siege in Folge', requirement: 'win_streak', value: 15, category: 'quiz' },
+    { id: 'win_streak_25', name: 'Legende', icon: '🏆', description: '25 Siege in Folge', requirement: 'win_streak', value: 25, category: 'quiz' },
+    { id: 'win_streak_50', name: 'Unbesiegbar', icon: '💎', description: '50 Siege in Folge', requirement: 'win_streak', value: 50, category: 'quiz' },
+    // Schwimm-Badges (aus SWIM_BADGES)
+    ...SWIM_BADGES.map(b => ({ ...b, requirement: b.requirement.type, value: b.requirement.value }))
   ];
+
+  // Supabase Auth Session Listener
+  useEffect(() => {
+    // Initiale Session prüfen
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        // User ist eingeloggt - Profil laden
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile && profile.approved) {
+          const userSession = {
+            id: session.user.id,
+            name: profile.name,
+            email: profile.email,
+            role: profile.role,
+            avatar: profile.avatar || null,
+            company: profile.company || null,
+            birthDate: profile.birth_date || null,
+            canViewSchoolCards: profile.can_view_school_cards || false,
+            permissions: PERMISSIONS[profile.role]
+          };
+          setUser(userSession);
+          localStorage.setItem('baeder_user', JSON.stringify(userSession));
+        } else if (profile && !profile.approved) {
+          // User nicht freigeschaltet
+          await supabase.auth.signOut();
+          setUser(null);
+          localStorage.removeItem('baeder_user');
+        }
+      } else {
+        // Keine aktive Session - localStorage löschen
+        const savedUser = localStorage.getItem('baeder_user');
+        if (savedUser) {
+          // Es gibt einen gespeicherten User aber keine Session
+          // Das kann passieren wenn die Session abgelaufen ist
+          setUser(null);
+          localStorage.removeItem('baeder_user');
+        }
+      }
+    };
+
+    checkSession();
+
+    // Auth State Change Listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
+
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        localStorage.removeItem('baeder_user');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -1381,6 +1663,9 @@ export default function BaederApp() {
     // Load school attendance when view changes
     if (currentView === 'school-card' && user) {
       loadSchoolAttendance();
+      if (canViewAllSchoolCards()) {
+        loadAzubisForSchoolCard();
+      }
     }
 
     // Load Berichtsheft when view changes
@@ -1388,72 +1673,7 @@ export default function BaederApp() {
       loadBerichtsheftEntries();
     }
 
-    // Developer Mode Shortcut: Ctrl+D
-    const handleKeyPress = (e) => {
-      if (e.ctrlKey && e.key === 'd') {
-        e.preventDefault();
-        setShowDevConsole(!showDevConsole);
-        playSound('splash');
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [showDevConsole, currentView, user]);
-
-  // Storage Stats Component - using Supabase
-  const StorageStats = () => {
-    const [stats, setStats] = useState(null);
-
-    useEffect(() => {
-      const getStorageStats = async () => {
-        try {
-          const [usersRes, gamesRes, messagesRes, questionsRes] = await Promise.all([
-            supabase.from('users').select('id', { count: 'exact', head: true }),
-            supabase.from('games').select('id', { count: 'exact', head: true }),
-            supabase.from('messages').select('id', { count: 'exact', head: true }),
-            supabase.from('custom_questions').select('id', { count: 'exact', head: true })
-          ]);
-
-          setStats({
-            accounts: usersRes.count || 0,
-            games: gamesRes.count || 0,
-            messages: messagesRes.count || 0,
-            questions: questionsRes.count || 0
-          });
-        } catch (error) {
-          console.error('Storage stats error:', error);
-        }
-      };
-
-      getStorageStats();
-    }, []);
-
-    if (!stats) {
-      return <div className="col-span-4 text-gray-400 text-center">Lädt...</div>;
-    }
-
-    return (
-      <>
-        <div className="bg-slate-800 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-blue-400">{stats.accounts}</div>
-          <div className="text-xs text-gray-400">Accounts</div>
-        </div>
-        <div className="bg-slate-800 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-green-400">{stats.games}</div>
-          <div className="text-xs text-gray-400">Spiele</div>
-        </div>
-        <div className="bg-slate-800 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-purple-400">{stats.messages}</div>
-          <div className="text-xs text-gray-400">Nachrichten</div>
-        </div>
-        <div className="bg-slate-800 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-yellow-400">{stats.questions}</div>
-          <div className="text-xs text-gray-400">Fragen</div>
-        </div>
-      </>
-    );
-  };
+  }, [currentView, user]);
 
   // Sound Effects
   const playSound = (type) => {
@@ -1505,45 +1725,6 @@ export default function BaederApp() {
         oscillator.stop(audioContext.currentTime + 0.1);
         break;
     }
-  };
-
-  const clearAllData = async () => {
-    if (!confirm('⚠️ ACHTUNG! Dies löscht ALLE Daten in Supabase unwiderruflich. Fortfahren?')) {
-      return;
-    }
-    if (!confirm('⚠️ BIST DU SICHER? Alle Benutzer, Spiele, Nachrichten werden gelöscht!')) {
-      return;
-    }
-
-    try {
-      // Delete all data from Supabase tables
-      await Promise.all([
-        supabase.from('messages').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('games').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('custom_questions').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('materials').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('resources').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('exams').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('user_badges').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('flashcards').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('user_stats').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
-        supabase.from('news').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-      ]);
-
-      // Delete users last (due to foreign keys)
-      await supabase.from('users').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-
-      alert('✅ Alle Daten wurden gelöscht. Bitte neu laden.');
-      window.location.reload();
-    } catch (error) {
-      console.error('Clear data error:', error);
-      alert('Fehler beim Löschen der Daten!');
-    }
-  };
-
-  const changeUserRoleDev = async (email, newRole) => {
-    await changeUserRole(email, newRole);
   };
 
   const calculatePH = (inputs) => {
@@ -1615,7 +1796,7 @@ export default function BaederApp() {
   const checkDataRetention = async () => {
     try {
       const { data: users, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*');
 
       if (error || !users) {
@@ -1667,7 +1848,7 @@ export default function BaederApp() {
       await supabase.from('notifications').delete().eq('user_name', userName);
 
       // Delete user
-      await supabase.from('users').delete().eq('id', userId);
+      await supabase.from('profiles').delete().eq('id', userId);
 
       console.log(`Alle Daten für ${email} gelöscht`);
     } catch (error) {
@@ -1686,7 +1867,7 @@ export default function BaederApp() {
 
       // Get account data from Supabase
       const { data: userData } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('email', email)
         .single();
@@ -1876,43 +2057,38 @@ export default function BaederApp() {
       return;
     }
 
-    try {
-      // Check if email exists in Supabase
-      const { data: existing } = await supabase
-        .from('users')
-        .select('email')
-        .eq('email', registerData.email)
-        .single();
-
-      if (existing) {
-        alert('Diese E-Mail ist bereits registriert!');
-        return;
-      }
-    } catch (e) {
-      // Email doesn't exist, continue (PGRST116 = not found)
-      if (e.code !== 'PGRST116') {
-        console.log('Email check error:', e);
-      }
+    if (registerData.password.length < 6) {
+      alert('Das Passwort muss mindestens 6 Zeichen lang sein!');
+      return;
     }
 
     try {
-      // Insert new user into Supabase
-      const { data, error } = await supabase
-        .from('users')
-        .insert([{
-          name: registerData.name,
-          email: registerData.email,
-          password: registerData.password,
-          role: registerData.role,
-          training_end: registerData.trainingEnd || null,
-          approved: false
-        }])
-        .select()
-        .single();
+      // Supabase Auth Registrierung
+      const { data, error } = await supabase.auth.signUp({
+        email: registerData.email,
+        password: registerData.password,
+        options: {
+          data: {
+            name: registerData.name,
+            role: registerData.role,
+            training_end: registerData.trainingEnd || null
+          }
+        }
+      });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('already registered')) {
+          alert('Diese E-Mail ist bereits registriert!');
+        } else {
+          throw error;
+        }
+        return;
+      }
 
-      console.log('User created:', data);
+      console.log('User created via Supabase Auth:', data);
+
+      // Direkt ausloggen - User muss erst freigeschaltet werden
+      await supabase.auth.signOut();
 
       alert('✅ Registrierung erfolgreich!\n\n⏳ Dein Account muss von einem Administrator freigeschaltet werden.\n\nDu erhältst eine Benachrichtigung, sobald dein Account aktiviert wurde.');
 
@@ -1931,86 +2107,61 @@ export default function BaederApp() {
     }
 
     try {
-      // ZUERST: Prüfe Demo-Accounts (funktionieren IMMER!)
-      if (DEMO_ACCOUNTS[loginEmail]) {
-        const account = DEMO_ACCOUNTS[loginEmail];
+      // Supabase Auth Login
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: loginEmail.trim(),
+        password: loginPassword
+      });
 
-        if (account.password !== loginPassword) {
-          alert('Falsches Passwort!');
-          return;
+      if (authError) {
+        if (authError.message.includes('Invalid login')) {
+          alert('E-Mail oder Passwort falsch!');
+        } else if (authError.message.includes('Email not confirmed')) {
+          alert('Bitte bestätige zuerst deine E-Mail-Adresse.');
+        } else {
+          alert('Fehler beim Login: ' + authError.message);
         }
-
-        // Create user session
-        const userSession = {
-          name: account.name,
-          email: account.email,
-          role: account.role,
-          permissions: PERMISSIONS[account.role]
-        };
-
-        setUser(userSession);
-        localStorage.setItem('baeder_user', JSON.stringify(userSession));
-        setDailyWisdom(DAILY_WISDOM[Math.floor(Math.random() * DAILY_WISDOM.length)]);
-        setLoginEmail('');
-        setLoginPassword('');
-        playSound('whistle');
         return;
       }
 
-      // DANACH: Versuche Supabase (E-Mail ODER Name)
-      let account = null;
-      const loginInput = loginEmail.trim();
-
-      // Erst nach E-Mail suchen (case-insensitive)
-      const { data: byEmail } = await supabase
-        .from('users')
+      // Profil aus profiles Tabelle laden
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
         .select('*')
-        .ilike('email', loginInput)
+        .eq('id', authData.user.id)
         .single();
 
-      if (byEmail) {
-        account = byEmail;
-      } else {
-        // Falls nicht gefunden, nach Name suchen (case-insensitive)
-        const { data: byName } = await supabase
-          .from('users')
-          .select('*')
-          .ilike('name', loginInput)
-          .single();
-
-        if (byName) {
-          account = byName;
-        }
-      }
-
-      if (!account) {
-        alert('Kein Account gefunden!\n\nBitte registriere dich zuerst.');
+      if (profileError || !profile) {
+        console.error('Profil nicht gefunden:', profileError);
+        await supabase.auth.signOut();
+        alert('Profil nicht gefunden. Bitte kontaktiere den Administrator.');
         return;
       }
 
-      if (account.password !== loginPassword) {
-        alert('Falsches Passwort!');
-        return;
-      }
-
-      if (!account.approved) {
+      // Prüfe ob Account freigeschaltet ist
+      if (!profile.approved) {
+        await supabase.auth.signOut();
         alert('Dein Account wurde noch nicht freigeschaltet. Bitte warte auf die Freigabe durch einen Administrator.');
         return;
       }
 
-      // Update last login in Supabase
+      // Update last login
       await supabase
-        .from('users')
+        .from('profiles')
         .update({ last_login: new Date().toISOString() })
-        .eq('email', loginEmail);
+        .eq('id', authData.user.id);
 
-      // Create user session
+      // User Session erstellen
       const userSession = {
-        id: account.id,
-        name: account.name,
-        email: account.email,
-        role: account.role,
-        permissions: PERMISSIONS[account.role]
+        id: authData.user.id,
+        name: profile.name,
+        email: profile.email,
+        role: profile.role,
+        avatar: profile.avatar || null,
+        company: profile.company || null,
+        birthDate: profile.birth_date || null,
+        canViewSchoolCards: profile.can_view_school_cards || false,
+        permissions: PERMISSIONS[profile.role]
       };
 
       setUser(userSession);
@@ -2021,14 +2172,14 @@ export default function BaederApp() {
       const { data: existingStats } = await supabase
         .from('user_stats')
         .select('*')
-        .eq('user_id', account.id)
+        .eq('user_id', authData.user.id)
         .single();
 
       if (!existingStats) {
         await supabase
           .from('user_stats')
           .insert([{
-            user_id: account.id,
+            user_id: authData.user.id,
             wins: 0,
             losses: 0,
             draws: 0,
@@ -2039,8 +2190,8 @@ export default function BaederApp() {
 
       setLoginEmail('');
       setLoginPassword('');
-
       playSound('whistle');
+
     } catch (error) {
       alert('Fehler beim Login: ' + error.message);
       console.error('Login error:', error);
@@ -2053,7 +2204,7 @@ export default function BaederApp() {
       if (user && user.permissions.canManageUsers) {
         // Admin sees all users
         const { data: allUsersData } = await supabase
-          .from('users')
+          .from('profiles')
           .select('*')
           .order('created_at', { ascending: false });
 
@@ -2066,7 +2217,7 @@ export default function BaederApp() {
       } else {
         // Normal users see only approved users
         const { data: approvedUsers } = await supabase
-          .from('users')
+          .from('profiles')
           .select('*')
           .eq('approved', true);
 
@@ -2150,7 +2301,8 @@ export default function BaederApp() {
           user: m.user_name,
           text: m.content,
           time: new Date(m.created_at).getTime(),
-          isTrainer: false // Will be updated when we have role info
+          isTrainer: false, // Will be updated when we have role info
+          avatar: m.user_avatar || null
         }));
         setMessages(msgs);
       }
@@ -2279,11 +2431,24 @@ export default function BaederApp() {
       }
 
       // Load user badges from Supabase
-      if (user?.name) {
-        const { data: badgesData } = await supabase
+      if (user?.id) {
+        // Versuche zuerst nach user_id zu suchen, dann nach user_name (Abwärtskompatibilität)
+        let badgesData = null;
+        const { data: byId } = await supabase
           .from('user_badges')
           .select('*')
-          .eq('user_name', user.name);
+          .eq('user_id', user.id);
+
+        if (byId && byId.length > 0) {
+          badgesData = byId;
+        } else if (user.name) {
+          // Fallback für alte Einträge ohne user_id
+          const { data: byName } = await supabase
+            .from('user_badges')
+            .select('*')
+            .eq('user_name', user.name);
+          badgesData = byName;
+        }
 
         if (badgesData) {
           const badges = badgesData.map(b => ({
@@ -2332,7 +2497,7 @@ export default function BaederApp() {
     try {
       // Update user in Supabase
       const { data: account, error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ approved: true })
         .eq('email', email)
         .select()
@@ -2362,10 +2527,10 @@ export default function BaederApp() {
 
       loadData();
       playSound('whistle');
-      alert(`✅ ${account.name} wurde freigeschaltet!`);
+      showToast(`${account.name} wurde freigeschaltet!`, 'success');
     } catch (error) {
       console.error('Error approving user:', error);
-      alert('Fehler beim Freischalten: ' + error.message);
+      showToast('Fehler beim Freischalten', 'error');
     }
   };
 
@@ -2373,19 +2538,19 @@ export default function BaederApp() {
     try {
       // Get user from Supabase
       const { data: account, error: fetchError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('email', email)
         .single();
 
       if (fetchError || !account) {
-        alert('User nicht gefunden');
+        showToast('User nicht gefunden', 'error');
         return;
       }
 
       // NEVER allow deletion of admin accounts
       if (account.role === 'admin') {
-        alert('❌ Administratoren können nicht gelöscht werden!\n\nAdmin-Accounts sind permanent und können nur ihre Rolle ändern.');
+        showToast('Administratoren können nicht gelöscht werden!', 'error');
         return;
       }
 
@@ -2393,35 +2558,207 @@ export default function BaederApp() {
         return;
       }
 
-      // Delete user from Supabase (cascades to user_stats due to foreign key)
+      // Delete profile from Supabase
+      // HINWEIS: Der Supabase Auth User bleibt erhalten und muss über
+      // eine Edge Function oder manuell im Dashboard gelöscht werden.
+      // Für vollständige Löschung: supabase.auth.admin.deleteUser(userId)
       const { error: deleteError } = await supabase
-        .from('users')
+        .from('profiles')
         .delete()
         .eq('email', email);
 
       if (deleteError) throw deleteError;
 
       loadData();
-      alert('Nutzer und alle Daten wurden gelöscht.');
+      showToast('Nutzerprofil und Daten wurden gelöscht', 'success');
     } catch (error) {
       console.error('Delete user error:', error);
-      alert('Fehler beim Löschen: ' + error.message);
+      showToast('Fehler beim Löschen', 'error');
     }
   };
 
   const changeUserRole = async (email, newRole) => {
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ role: newRole })
         .eq('email', email);
 
       if (error) throw error;
 
       loadData();
-      alert(`Rolle geändert zu: ${PERMISSIONS[newRole].label}`);
+      showToast(`Rolle geändert zu: ${PERMISSIONS[newRole].label}`, 'success');
     } catch (error) {
       console.error('Error changing role:', error);
+      showToast('Fehler beim Ändern der Rolle', 'error');
+    }
+  };
+
+  // Kontrollkarten-Berechtigung für Trainer ändern
+  const toggleSchoolCardPermission = async (userId, currentValue) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ can_view_school_cards: !currentValue })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      loadData();
+      showToast(
+        !currentValue
+          ? 'Kontrollkarten-Berechtigung erteilt'
+          : 'Kontrollkarten-Berechtigung entzogen',
+        'success'
+      );
+    } catch (error) {
+      console.error('Error toggling school card permission:', error);
+      showToast('Fehler beim Ändern der Berechtigung', 'error');
+    }
+  };
+
+  // Profil-Bearbeitung: Name ändern
+  const updateProfileName = async () => {
+    if (!profileEditName.trim()) {
+      showToast('Bitte gib einen Namen ein.', 'warning');
+      return;
+    }
+
+    setProfileSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ name: profileEditName.trim() })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Lokalen User-State aktualisieren
+      const updatedUser = { ...user, name: profileEditName.trim() };
+      setUser(updatedUser);
+      localStorage.setItem('baeder_user', JSON.stringify(updatedUser));
+
+      showToast('Name erfolgreich geändert!', 'success');
+      setProfileEditName('');
+    } catch (error) {
+      console.error('Error updating name:', error);
+      showToast('Fehler beim Ändern des Namens', 'error');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  // Profil-Bearbeitung: Passwort ändern
+  const updateProfilePassword = async () => {
+    if (!profileEditPassword || !profileEditPasswordConfirm) {
+      showToast('Bitte beide Passwort-Felder ausfüllen.', 'warning');
+      return;
+    }
+
+    if (profileEditPassword !== profileEditPasswordConfirm) {
+      showToast('Die Passwörter stimmen nicht überein!', 'error');
+      return;
+    }
+
+    if (profileEditPassword.length < 6) {
+      showToast('Das Passwort muss mindestens 6 Zeichen haben.', 'warning');
+      return;
+    }
+
+    setProfileSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: profileEditPassword
+      });
+
+      if (error) throw error;
+
+      showToast('Passwort erfolgreich geändert!', 'success');
+      setProfileEditPassword('');
+      setProfileEditPasswordConfirm('');
+    } catch (error) {
+      console.error('Error updating password:', error);
+      showToast('Fehler beim Ändern des Passworts', 'error');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  // Profil-Bearbeitung: Avatar ändern
+  const updateProfileAvatar = async (avatarId) => {
+    setProfileSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar: avatarId })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Lokalen User-State aktualisieren
+      const updatedUser = { ...user, avatar: avatarId };
+      setUser(updatedUser);
+      localStorage.setItem('baeder_user', JSON.stringify(updatedUser));
+      showToast(avatarId ? 'Avatar geändert!' : 'Avatar entfernt', 'success');
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+      showToast('Fehler beim Ändern des Avatars', 'error');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  // Profil-Bearbeitung: Betrieb ändern
+  const updateProfileCompany = async () => {
+    setProfileSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ company: profileEditCompany.trim() || null })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Lokalen User-State aktualisieren
+      const updatedUser = { ...user, company: profileEditCompany.trim() || null };
+      setUser(updatedUser);
+      localStorage.setItem('baeder_user', JSON.stringify(updatedUser));
+      showToast('Betrieb gespeichert!', 'success');
+      setProfileEditCompany('');
+    } catch (error) {
+      console.error('Error updating company:', error);
+      showToast('Fehler beim Speichern des Betriebs', 'error');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  // Profil-Bearbeitung: Geburtsdatum ändern
+  const updateProfileBirthDate = async () => {
+    if (!profileEditBirthDate) {
+      showToast('Bitte gib dein Geburtsdatum ein', 'warning');
+      return;
+    }
+    setProfileSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ birth_date: profileEditBirthDate })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Lokalen User-State aktualisieren
+      const updatedUser = { ...user, birthDate: profileEditBirthDate };
+      setUser(updatedUser);
+      localStorage.setItem('baeder_user', JSON.stringify(updatedUser));
+      showToast('Geburtsdatum gespeichert!', 'success');
+      setProfileEditBirthDate('');
+    } catch (error) {
+      console.error('Error updating birth date:', error);
+      showToast('Fehler beim Speichern des Geburtsdatums', 'error');
+    } finally {
+      setProfileSaving(false);
     }
   };
 
@@ -2486,9 +2823,10 @@ export default function BaederApp() {
 
       setActiveGames([...activeGames, game]);
       setSelectedOpponent(null);
-      alert(`Herausforderung an ${opponent} gesendet! 🎯`);
+      showToast(`Herausforderung an ${opponent} gesendet!`, 'success');
     } catch (error) {
       console.error('Challenge error:', error);
+      showToast('Fehler beim Senden der Herausforderung', 'error');
     }
   };
 
@@ -2571,7 +2909,7 @@ export default function BaederApp() {
     try {
       // First get user id
       const { data: userData, error: userError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id')
         .ilike('name', userName)
         .single();
@@ -2621,7 +2959,7 @@ export default function BaederApp() {
   const getUserStatsFromSupabase = async (userName) => {
     try {
       const { data: userData, error: userError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id')
         .ilike('name', userName)
         .single();
@@ -3030,7 +3368,8 @@ export default function BaederApp() {
         .from('messages')
         .insert([{
           user_name: user.name,
-          content: newMessage.trim()
+          content: newMessage.trim(),
+          user_avatar: user.avatar || null
         }])
         .select()
         .single();
@@ -3043,7 +3382,8 @@ export default function BaederApp() {
         user: data.user_name,
         text: data.content,
         time: new Date(data.created_at).getTime(),
-        isTrainer: user.role === 'trainer' || user.role === 'admin'
+        isTrainer: user.role === 'trainer' || user.role === 'admin',
+        avatar: data.user_avatar
       };
 
       setMessages([...messages, msg]);
@@ -3097,9 +3437,10 @@ export default function BaederApp() {
       setSubmittedQuestions([...submittedQuestions, q]);
       setNewQuestionText('');
       setNewQuestionAnswers(['', '', '', '']);
-      alert('Frage eingereicht! 🎯');
+      showToast('Frage eingereicht!', 'success');
     } catch (error) {
       console.error('Question error:', error);
+      showToast('Fehler beim Einreichen der Frage', 'error');
     }
   };
 
@@ -3239,13 +3580,37 @@ export default function BaederApp() {
   };
 
   // Kontrollkarte Berufsschule Funktionen
-  const loadSchoolAttendance = async () => {
+  const canViewAllSchoolCards = () => {
+    return user?.role === 'admin' || user?.canViewSchoolCards;
+  };
+
+  const loadAzubisForSchoolCard = async () => {
+    if (!canViewAllSchoolCards()) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .eq('role', 'azubi')
+        .eq('approved', true)
+        .order('name');
+
+      if (error) throw error;
+      setAllAzubisForSchoolCard(data || []);
+    } catch (err) {
+      console.error('Fehler beim Laden der Azubis:', err);
+    }
+  };
+
+  const loadSchoolAttendance = async (targetUserId = null) => {
     if (!user) return;
     try {
+      // Bestimme welche User-ID geladen werden soll
+      const userIdToLoad = targetUserId || selectedSchoolCardUser?.id || user.id;
+
       const { data, error } = await supabase
         .from('school_attendance')
         .select('*')
-        .eq('user_name', user.name)
+        .eq('user_id', userIdToLoad)
         .order('date', { ascending: false });
 
       if (error) throw error;
@@ -3265,6 +3630,7 @@ export default function BaederApp() {
       const { error } = await supabase
         .from('school_attendance')
         .insert({
+          user_id: user.id,
           user_name: user.name,
           date: newAttendanceDate,
           start_time: newAttendanceStart,
@@ -3275,12 +3641,34 @@ export default function BaederApp() {
 
       if (error) throw error;
 
+      // Benachrichtigung an berechtigte Trainer/Admins senden
+      const { data: authorizedUsers } = await supabase
+        .from('profiles')
+        .select('id')
+        .or('role.eq.admin,can_view_school_cards.eq.true');
+
+      if (authorizedUsers) {
+        for (const authUser of authorizedUsers) {
+          if (authUser.id !== user.id) {
+            await supabase.from('notifications').insert({
+              user_id: authUser.id,
+              type: 'school_card',
+              title: '📝 Neuer Kontrollkarten-Eintrag',
+              message: `${user.name} hat einen neuen Berufsschul-Eintrag vom ${new Date(newAttendanceDate).toLocaleDateString('de-DE')} hinzugefügt.`,
+              data: { azubi_id: user.id, azubi_name: user.name, date: newAttendanceDate }
+            });
+          }
+        }
+      }
+
       // Reset form
       setNewAttendanceDate('');
       setNewAttendanceStart('');
       setNewAttendanceEnd('');
       setNewAttendanceTeacherSig('');
       setNewAttendanceTrainerSig('');
+
+      showToast('Eintrag gespeichert!', 'success');
 
       // Reload data
       loadSchoolAttendance();
@@ -3372,7 +3760,17 @@ export default function BaederApp() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // Tabelle existiert nicht - kein Fehler anzeigen, nur leere Liste
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          console.warn('swim_sessions Tabelle existiert nicht in Supabase');
+          setSwimSessions([]);
+          return;
+        }
+        throw error;
+      }
+
+      console.log('Schwimm-Sessions geladen:', data?.length || 0);
       setSwimSessions(data || []);
 
       // Filtere unbestätigte Einheiten für Trainer
@@ -3382,12 +3780,19 @@ export default function BaederApp() {
       }
     } catch (err) {
       console.error('Fehler beim Laden der Schwimm-Einheiten:', err);
+      setSwimSessions([]);
     }
   };
 
   // Trainingseinheit speichern
   const saveSwimSession = async (sessionData) => {
     try {
+      // Prüfe ob User eingeloggt ist und eine ID hat
+      if (!user || !user.id) {
+        console.error('Kein User oder User-ID vorhanden:', user);
+        return { success: false, error: 'Bitte melde dich erneut an.' };
+      }
+
       const newSession = {
         user_id: user.id,
         user_name: user.name,
@@ -3396,20 +3801,30 @@ export default function BaederApp() {
         distance: parseInt(sessionData.distance) || 0,
         time_minutes: parseInt(sessionData.time) || 0,
         style: sessionData.style,
-        notes: sessionData.notes,
+        notes: sessionData.notes || '',
         challenge_id: sessionData.challengeId || null,
         confirmed: false,
         confirmed_by: null,
-        confirmed_at: null,
-        created_at: new Date().toISOString()
+        confirmed_at: null
       };
+
+      console.log('Speichere Schwimm-Session:', newSession);
 
       const { data, error } = await supabase
         .from('swim_sessions')
         .insert([newSession])
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Fehler:', error);
+        // Prüfe ob Tabelle nicht existiert
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          return { success: false, error: 'Die Tabelle swim_sessions existiert nicht in Supabase. Bitte erstellen!' };
+        }
+        throw error;
+      }
+
+      console.log('Session gespeichert:', data);
 
       // Aktualisiere lokale Liste
       setSwimSessions(prev => [data[0], ...prev]);
@@ -3418,7 +3833,7 @@ export default function BaederApp() {
       return { success: true, data: data[0] };
     } catch (err) {
       console.error('Fehler beim Speichern der Schwimm-Einheit:', err);
-      return { success: false, error: err.message };
+      return { success: false, error: err.message || 'Unbekannter Fehler' };
     }
   };
 
@@ -3475,6 +3890,13 @@ export default function BaederApp() {
       loadSwimSessions();
     }
   }, [user]);
+
+  // Prüfe Schwimm-Badges wenn sich Sessions ändern
+  useEffect(() => {
+    if (user && swimSessions.length > 0) {
+      checkBadges();
+    }
+  }, [swimSessions]);
 
   const resetBerichtsheftForm = () => {
     setCurrentWeekEntries({
@@ -3568,7 +3990,7 @@ export default function BaederApp() {
           .eq('id', selectedBerichtsheft.id);
 
         if (error) throw error;
-        alert('Berichtsheft aktualisiert!');
+        showToast('Berichtsheft aktualisiert!', 'success');
       } else {
         // Insert
         const { error } = await supabase
@@ -3576,7 +3998,7 @@ export default function BaederApp() {
           .insert(berichtsheftData);
 
         if (error) throw error;
-        alert('Berichtsheft gespeichert!');
+        showToast('Berichtsheft gespeichert!', 'success');
         setBerichtsheftNr(prev => prev + 1);
       }
 
@@ -3585,7 +4007,7 @@ export default function BaederApp() {
       setBerichtsheftViewMode('list');
     } catch (err) {
       console.error('Fehler beim Speichern:', err);
-      alert('Fehler beim Speichern des Berichtshefts');
+      showToast('Fehler beim Speichern des Berichtshefts', 'error');
     }
   };
 
@@ -4067,6 +4489,7 @@ export default function BaederApp() {
     const earnedBadges = [...userBadges];
     const newBadges = [];
 
+    // === QUIZ-BADGES ===
     if (userStats.wins >= 10 && !earnedBadges.find(b => b.id === 'quiz_winner_10')) {
       const badge = { id: 'quiz_winner_10', earnedAt: Date.now() };
       earnedBadges.push(badge);
@@ -4114,6 +4537,80 @@ export default function BaederApp() {
       }
     }
 
+    // === SCHWIMM-BADGES ===
+    const mySwimSessions = swimSessions.filter(s => s.user_id === user.id && s.confirmed);
+    const totalDistance = mySwimSessions.reduce((sum, s) => sum + (s.distance || 0), 0);
+    const totalTime = mySwimSessions.reduce((sum, s) => sum + (s.time_minutes || 0), 0);
+    const sessionCount = mySwimSessions.length;
+
+    // Distanz-Badges
+    const distanceMilestones = [
+      { id: 'swim_first_km', value: 1000 },
+      { id: 'swim_five_km', value: 5000 },
+      { id: 'swim_ten_km', value: 10000 },
+      { id: 'swim_marathon', value: 42195 }
+    ];
+    for (const milestone of distanceMilestones) {
+      if (totalDistance >= milestone.value && !earnedBadges.find(b => b.id === milestone.id)) {
+        const badge = { id: milestone.id, earnedAt: Date.now() };
+        earnedBadges.push(badge);
+        newBadges.push(badge);
+      }
+    }
+
+    // Session-Badges
+    const sessionMilestones = [
+      { id: 'swim_first_session', value: 1 },
+      { id: 'swim_10_sessions', value: 10 },
+      { id: 'swim_25_sessions', value: 25 },
+      { id: 'swim_50_sessions', value: 50 }
+    ];
+    for (const milestone of sessionMilestones) {
+      if (sessionCount >= milestone.value && !earnedBadges.find(b => b.id === milestone.id)) {
+        const badge = { id: milestone.id, earnedAt: Date.now() };
+        earnedBadges.push(badge);
+        newBadges.push(badge);
+      }
+    }
+
+    // Zeit-Badges (in Minuten)
+    const timeMilestones = [
+      { id: 'swim_1h_training', value: 60 },
+      { id: 'swim_10h_training', value: 600 }
+    ];
+    for (const milestone of timeMilestones) {
+      if (totalTime >= milestone.value && !earnedBadges.find(b => b.id === milestone.id)) {
+        const badge = { id: milestone.id, earnedAt: Date.now() };
+        earnedBadges.push(badge);
+        newBadges.push(badge);
+      }
+    }
+
+    // Challenge-Badges
+    const completedChallenges = SWIM_CHALLENGES.filter(ch => {
+      const progress = calculateChallengeProgress(ch, swimSessions, user.id);
+      return progress.percent >= 100;
+    });
+    const challengeMilestones = [
+      { id: 'swim_challenge_first', value: 1 },
+      { id: 'swim_challenge_5', value: 5 },
+      { id: 'swim_challenge_master', value: 10 }
+    ];
+    for (const milestone of challengeMilestones) {
+      if (completedChallenges.length >= milestone.value && !earnedBadges.find(b => b.id === milestone.id)) {
+        const badge = { id: milestone.id, earnedAt: Date.now() };
+        earnedBadges.push(badge);
+        newBadges.push(badge);
+      }
+    }
+
+    // Team-Battle Badge (mindestens 1 Session = Teilnahme)
+    if (sessionCount >= 1 && !earnedBadges.find(b => b.id === 'swim_team_battle')) {
+      const badge = { id: 'swim_team_battle', earnedAt: Date.now() };
+      earnedBadges.push(badge);
+      newBadges.push(badge);
+    }
+
     if (newBadges.length > 0) {
       setUserBadges(earnedBadges);
       try {
@@ -4121,6 +4618,7 @@ export default function BaederApp() {
           await supabase
             .from('user_badges')
             .insert([{
+              user_id: user.id,
               user_name: user.name,
               badge_id: badge.id
             }]);
@@ -4158,18 +4656,19 @@ export default function BaederApp() {
 
       setMaterials([...materials, mat]);
       setMaterialTitle('');
-      alert('Material hinzugefügt! 📚');
+      showToast('Material hinzugefügt!', 'success');
     } catch (error) {
       console.error('Material error:', error);
+      showToast('Fehler beim Hinzufügen', 'error');
     }
   };
 
   const addResource = async () => {
     if (!resourceTitle.trim() || !resourceUrl.trim()) return;
-    
+
     // Only admins can add resources
     if (user.role !== 'admin') {
-      alert('⚠️ Nur Administratoren können Ressourcen hinzufügen.\n\nDies dient der Sicherheit und Qualität der geteilten Inhalte.');
+      showToast('Nur Administratoren können Ressourcen hinzufügen', 'warning');
       return;
     }
 
@@ -4190,7 +4689,7 @@ export default function BaederApp() {
     try {
       new URL(resourceUrl);
     } catch (e) {
-      alert('⚠️ Bitte gib eine gültige URL ein (mit https://)');
+      showToast('Bitte gib eine gültige URL ein (mit https://)', 'warning');
       return;
     }
 
@@ -4224,16 +4723,17 @@ export default function BaederApp() {
       setResourceUrl('');
       setResourceDescription('');
       playSound('splash');
-      alert('Ressource hinzugefügt! 🔗');
+      showToast('Ressource hinzugefügt!', 'success');
     } catch (error) {
       console.error('Resource error:', error);
+      showToast('Fehler beim Hinzufügen', 'error');
     }
   };
 
   const deleteResource = async (resourceId) => {
     // Only admins can delete resources
     if (user.role !== 'admin') {
-      alert('⚠️ Nur Administratoren können Ressourcen löschen.');
+      showToast('Nur Administratoren können Ressourcen löschen', 'warning');
       return;
     }
 
@@ -4520,18 +5020,107 @@ export default function BaederApp() {
             </div>
           )}
 
-                        <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="text-xs text-gray-600 text-center">
-              <a
-                href="https://smartbaden.de/baeder-azubi-app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center text-cyan-600 hover:text-cyan-700 transition-colors"
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex justify-center gap-4 text-xs text-gray-600">
+              <button
+                onClick={() => setAuthView('impressum')}
+                className="text-cyan-600 hover:text-cyan-700 transition-colors"
               >
-                <Shield className="inline mr-2" size={14} />
-                Datenschutzerklärung
-              </a>
+                Impressum
+              </button>
+              <span>|</span>
+              <button
+                onClick={() => setAuthView('datenschutz')}
+                className="text-cyan-600 hover:text-cyan-700 transition-colors"
+              >
+                Datenschutz
+              </button>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Impressum vor Login
+  if (!user && authView === 'impressum') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
+      }}>
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <button
+            onClick={() => setAuthView('login')}
+            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
+          >
+            ← Zurück zum Login
+          </button>
+
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">📜 Impressum</h2>
+
+          <div className="space-y-4 text-gray-700 text-sm">
+            <section>
+              <h3 className="font-bold text-gray-800">Angaben gemäß § 5 TMG</h3>
+              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">Kontakt</h3>
+              <p>E-Mail: denniegulbinski@gmail.com</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">Verantwortlich für den Inhalt</h3>
+              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Datenschutz vor Login
+  if (!user && authView === 'datenschutz') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
+      }}>
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <button
+            onClick={() => setAuthView('login')}
+            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
+          >
+            ← Zurück zum Login
+          </button>
+
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">🔒 Datenschutzerklärung</h2>
+
+          <div className="space-y-4 text-gray-700 text-sm">
+            <section>
+              <h3 className="font-bold text-gray-800">1. Verantwortlicher</h3>
+              <p>Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg<br/>E-Mail: denniegulbinski@gmail.com</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">2. Erhobene Daten</h3>
+              <p>Name, E-Mail, optionales Geburtsdatum, Quiz-Statistiken, Schwimm-Einheiten, Berufsschul-Kontrollkarten, Berichtsheft-Einträge, Chat-Nachrichten.</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">3. Zweck</h3>
+              <p>Die Daten werden ausschließlich zur Bereitstellung der App-Funktionen verwendet.</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">4. Speicherdauer</h3>
+              <p>Azubis: Löschung am Ausbildungsende. Ausbilder: 6 Monate nach Inaktivität. Admins: Keine automatische Löschung.</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">5. Ihre Rechte</h3>
+              <p>Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch (Art. 15-21 DSGVO).</p>
+            </section>
+            <section>
+              <h3 className="font-bold text-gray-800">6. Cookies</h3>
+              <p>Nur Local Storage für Anmeldedaten und Einstellungen. Keine Tracking-Cookies.</p>
+            </section>
+            <section className="pt-2 border-t border-gray-200 text-xs text-gray-500">
+              Stand: Januar 2025
+            </section>
           </div>
         </div>
       </div>
@@ -4610,11 +5199,44 @@ export default function BaederApp() {
         }
       `}</style>
 
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {toasts.map(toast => (
+          <div
+            key={toast.id}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg backdrop-blur-sm animate-slide-in ${
+              toast.type === 'success' ? 'bg-green-500/90 text-white' :
+              toast.type === 'error' ? 'bg-red-500/90 text-white' :
+              toast.type === 'warning' ? 'bg-yellow-500/90 text-white' :
+              'bg-blue-500/90 text-white'
+            }`}
+            style={{ animation: 'slideIn 0.3s ease-out' }}
+          >
+            <span className="text-xl">{toast.icon}</span>
+            <span className="font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+              className="ml-2 opacity-70 hover:opacity-100"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+      <style>{`
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `}</style>
+
       {/* Header */}
       <div className={`${darkMode ? 'bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800' : 'bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-600'} text-white p-4 shadow-lg relative z-10`}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <div className="text-3xl">🏊‍♂️</div>
+            <div className="text-3xl bg-white/20 rounded-full w-12 h-12 flex items-center justify-center">
+              {user.avatar ? AVATARS.find(a => a.id === user.avatar)?.emoji || '🏊‍♂️' : '🏊‍♂️'}
+            </div>
             <div>
               <h1 className="text-2xl font-bold drop-shadow-lg">Bäder-Azubi App</h1>
               <p className="text-sm opacity-90">
@@ -4625,20 +5247,6 @@ export default function BaederApp() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* Dev Mode Toggle */}
-            {user && user.role === 'admin' && (
-              <button
-                onClick={() => {
-                  setShowDevConsole(!showDevConsole);
-                  playSound('splash');
-                }}
-                className={`${showDevConsole ? 'bg-cyan-500' : 'bg-white/20'} hover:bg-white/30 p-2 rounded-lg transition-colors backdrop-blur-sm`}
-                title="Developer Console (Strg+D)"
-              >
-                🛠️
-              </button>
-            )}
-
             {/* Dark Mode Toggle */}
             <button
               onClick={() => {
@@ -4746,7 +5354,8 @@ export default function BaederApp() {
             </div>
             
             <button
-              onClick={() => {
+              onClick={async () => {
+                await supabase.auth.signOut();
                 setUser(null);
                 localStorage.removeItem('baeder_user');
               }}
@@ -4778,6 +5387,7 @@ export default function BaederApp() {
             { id: 'questions', icon: '💡', label: 'Fragen', show: true },
             { id: 'school-card', icon: '🎓', label: 'Kontrollkarte', show: true },
             { id: 'berichtsheft', icon: '📖', label: 'Berichtsheft', show: true },
+            { id: 'profile', icon: '👤', label: 'Profil', show: true },
             { id: 'admin', icon: '⚙️', label: 'Verwaltung', show: user.permissions.canManageUsers }
           ].filter(item => item.show).map(item => (
             <button
@@ -4810,150 +5420,6 @@ export default function BaederApp() {
       </div>
 
       <div className="max-w-7xl mx-auto p-4 relative z-10">
-        {/* Developer Console */}
-        {showDevConsole && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className={`${darkMode ? 'bg-slate-900' : 'bg-gray-900'} rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto border-4 border-cyan-500 shadow-2xl`}>
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-cyan-400 flex items-center gap-2">
-                    🛠️ Developer Console
-                  </h2>
-                  <p className="text-sm text-gray-400 mt-1">Strg+D zum Schließen</p>
-                </div>
-                <button
-                  onClick={() => setShowDevConsole(false)}
-                  className="text-gray-400 hover:text-white text-2xl"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Storage Stats */}
-              <div className="mb-6">
-                <h3 className="text-lg font-bold text-cyan-300 mb-3">📊 Storage Übersicht</h3>
-                <div className="grid grid-cols-4 gap-3">
-                  <StorageStats />
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="mb-6">
-                <h3 className="text-lg font-bold text-cyan-300 mb-3">⚡ Quick Actions</h3>
-                <div className="grid grid-cols-1 gap-3">
-                  <button
-                    onClick={clearAllData}
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-all"
-                  >
-                    🗑️ Alle Daten löschen
-                  </button>
-                </div>
-              </div>
-
-              {/* Current Users */}
-              <div className="mb-6">
-                <h3 className="text-lg font-bold text-cyan-300 mb-3">👥 Registrierte Nutzer</h3>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {allUsers.map(u => (
-                    <div key={u.email} className="bg-slate-800 rounded-lg p-3 flex justify-between items-center">
-                      <div>
-                        <p className="text-white font-bold">{u.name}</p>
-                        <p className="text-sm text-gray-400">{u.email}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <span className={`px-3 py-1 rounded text-xs font-bold ${
-                          u.role === 'admin' ? 'bg-purple-500 text-white' :
-                          u.role === 'trainer' ? 'bg-blue-500 text-white' :
-                          'bg-green-500 text-white'
-                        }`}>
-                          {PERMISSIONS[u.role].label}
-                        </span>
-                        <select
-                          value={u.role}
-                          onChange={(e) => changeUserRoleDev(u.email, e.target.value)}
-                          className="bg-slate-700 text-white text-xs rounded px-2"
-                        >
-                          <option value="azubi">→ Azubi</option>
-                          <option value="trainer">→ Trainer</option>
-                          <option value="admin">→ Admin</option>
-                        </select>
-                      </div>
-                    </div>
-                  ))}
-                  {allUsers.length === 0 && (
-                    <p className="text-gray-400 text-center py-4">Keine Nutzer registriert</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Pending Approvals */}
-              {pendingUsers.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold text-yellow-400 mb-3">⏳ Warten auf Freischaltung</h3>
-                  <div className="space-y-2">
-                    {pendingUsers.map(u => (
-                      <div key={u.email} className="bg-yellow-900/30 border border-yellow-600 rounded-lg p-3 flex justify-between items-center">
-                        <div>
-                          <p className="text-white font-bold">{u.name}</p>
-                          <p className="text-sm text-gray-400">{u.email} • {PERMISSIONS[u.role].label}</p>
-                        </div>
-                        <button
-                          onClick={() => approveUser(u.email)}
-                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold"
-                        >
-                          ✓ Freischalten
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Info Box */}
-              <div className="bg-cyan-900/50 border border-cyan-600 rounded-lg p-4">
-                <h4 className="text-cyan-300 font-bold mb-2">🚀 Quick Start Guide</h4>
-                <div className="text-sm text-gray-300 space-y-2">
-                  <div className="bg-slate-800 rounded p-3">
-                    <p className="font-bold text-white mb-1">Option 1: Test-Nutzer erstellen</p>
-                    <ol className="list-decimal ml-4 space-y-1">
-                      <li>Klicke auf "Test-Nutzer erstellen"</li>
-                      <li>5 Accounts werden angelegt (inkl. Admin)</li>
-                      <li>Melde dich ab und mit einem Test-Account an</li>
-                      <li>Passwörter: test123 oder admin123</li>
-                    </ol>
-                  </div>
-                  
-                  <div className="bg-slate-800 rounded p-3">
-                    <p className="font-bold text-white mb-1">Option 2: Manuell registrieren</p>
-                    <ol className="list-decimal ml-4 space-y-1">
-                      <li>Gehe zurück zum Login-Screen</li>
-                      <li>Klicke auf "Registrieren"</li>
-                      <li>Wähle Rolle: <strong>Administrator</strong></li>
-                      <li>Account wird erstellt (keine Freischaltung nötig als Admin)</li>
-                    </ol>
-                  </div>
-
-                  <div className="bg-green-900/50 border border-green-600 rounded p-3 mt-3">
-                    <p className="font-bold text-green-300 mb-1">✅ Empfehlung:</p>
-                    <p>Erstelle Test-Nutzer für schnellen Start, dann weitere Azubis manuell registrieren lassen!</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-900/50 border border-blue-600 rounded-lg p-4 mt-4">
-                <h4 className="text-blue-300 font-bold mb-2">💡 Developer Tipps</h4>
-                <ul className="text-sm text-gray-300 space-y-1">
-                  <li>• <strong>Strg+D:</strong> Console jederzeit öffnen/schließen (auch ohne Login!)</li>
-                  <li>• <strong>Rollen ändern:</strong> Dropdown bei jedem Nutzer verwenden</li>
-                  <li>• <strong>Test-Daten:</strong> Werden mit echten Stats angelegt für Demo-Zwecke</li>
-                  <li>• <strong>Alle löschen:</strong> Setzt die komplette App zurück (Storage wird geleert)</li>
-                  <li>• <strong>🛠️ Button:</strong> Als Admin im Header sichtbar für schnellen Zugriff</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Admin Panel */}
         {currentView === 'admin' && user.permissions.canManageUsers && (
           <div className="space-y-6">
@@ -5075,7 +5541,7 @@ export default function BaederApp() {
                           <button
                             onClick={async () => {
                               if (confirm(`Account von ${acc.name} wirklich ablehnen und löschen?`)) {
-                                await supabase.from('users').delete().eq('email', acc.email);
+                                await supabase.from('profiles').delete().eq('email', acc.email);
                                 loadData();
                                 alert('Account abgelehnt und gelöscht.');
                               }
@@ -5161,6 +5627,19 @@ export default function BaederApp() {
                               <Trash2 size={18} />
                             </button>
                           )}
+                          {acc.role === 'trainer' && (
+                            <button
+                              onClick={() => toggleSchoolCardPermission(acc.id, acc.can_view_school_cards)}
+                              className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                                acc.can_view_school_cards
+                                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
+                              title={acc.can_view_school_cards ? 'Kontrollkarten-Zugriff entziehen' : 'Kontrollkarten-Zugriff erteilen'}
+                            >
+                              🎓 {acc.can_view_school_cards ? '✓' : '○'}
+                            </button>
+                          )}
                           {acc.role === 'admin' && (
                             <div className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg text-xs font-bold flex items-center">
                               <Shield size={14} className="mr-1" />
@@ -5221,6 +5700,14 @@ export default function BaederApp() {
                   </div>
                 </div>
               )}
+              {/* Profil-Button */}
+              <button
+                onClick={() => setCurrentView('profile')}
+                className={`mt-4 inline-flex items-center gap-2 px-6 py-3 ${darkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white/20 hover:bg-white/30'} backdrop-blur-sm rounded-lg border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} transition-all font-medium`}
+              >
+                <span className="text-xl">👤</span>
+                <span>Mein Profil</span>
+              </button>
             </div>
 
             {/* Daily Challenges Section */}
@@ -6026,11 +6513,22 @@ export default function BaederApp() {
 
             {/* Badges Section */}
             <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-              <h3 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                 🏆 Deine Badges
               </h3>
-              <div className="grid md:grid-cols-4 gap-4">
-                {BADGES.map(badge => {
+              <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                {userBadges.length} von {BADGES.length} Badges freigeschaltet
+              </p>
+
+              {/* Quiz-Badges */}
+              <h4 className={`text-lg font-bold mt-4 mb-3 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                📚 Quiz & Lernen
+                <span className={`text-xs font-normal px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-700 text-gray-400' : 'bg-gray-200 text-gray-600'}`}>
+                  {userBadges.filter(b => BADGES.find(badge => badge.id === b.id && badge.category === 'quiz')).length} / {BADGES.filter(b => b.category === 'quiz').length}
+                </span>
+              </h4>
+              <div className="grid md:grid-cols-4 gap-4 mb-6">
+                {BADGES.filter(b => b.category === 'quiz').map(badge => {
                   const earned = userBadges.find(b => b.id === badge.id);
                   return (
                     <div
@@ -6054,6 +6552,46 @@ export default function BaederApp() {
                       </p>
                       {earned && (
                         <p className={`text-xs mt-2 ${darkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                          ✓ Erhalten
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Schwimm-Badges */}
+              <h4 className={`text-lg font-bold mt-6 mb-3 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                🏊 Schwimm-Challenge
+                <span className={`text-xs font-normal px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-700 text-gray-400' : 'bg-gray-200 text-gray-600'}`}>
+                  {userBadges.filter(b => BADGES.find(badge => badge.id === b.id && badge.category === 'swim')).length} / {BADGES.filter(b => b.category === 'swim').length}
+                </span>
+              </h4>
+              <div className="grid md:grid-cols-4 gap-4">
+                {BADGES.filter(b => b.category === 'swim').map(badge => {
+                  const earned = userBadges.find(b => b.id === badge.id);
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`p-4 rounded-xl text-center transition-all ${
+                        earned
+                          ? darkMode
+                            ? 'bg-gradient-to-br from-cyan-900 to-blue-800 border-2 border-cyan-600'
+                            : 'bg-gradient-to-br from-cyan-100 to-blue-200 border-2 border-cyan-400'
+                          : darkMode
+                            ? 'bg-slate-700 opacity-40'
+                            : 'bg-gray-100 opacity-40'
+                      }`}
+                    >
+                      <div className="text-5xl mb-2">{badge.icon}</div>
+                      <p className={`font-bold mb-1 ${earned ? darkMode ? 'text-cyan-200' : 'text-cyan-800' : darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {badge.name}
+                      </p>
+                      <p className={`text-xs ${earned ? darkMode ? 'text-cyan-300' : 'text-cyan-700' : darkMode ? 'text-gray-600' : 'text-gray-500'}`}>
+                        {badge.description}
+                      </p>
+                      {earned && (
+                        <p className={`text-xs mt-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
                           ✓ Erhalten
                         </p>
                       )}
@@ -6143,7 +6681,12 @@ export default function BaederApp() {
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.user === user.name ? 'justify-end' : 'justify-start'}`}>
+                <div key={msg.id} className={`flex items-end gap-2 ${msg.user === user.name ? 'justify-end' : 'justify-start'}`}>
+                  {msg.user !== user.name && (
+                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-lg flex-shrink-0">
+                      {msg.avatar ? AVATARS.find(a => a.id === msg.avatar)?.emoji || msg.user.charAt(0).toUpperCase() : msg.user.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div className={`max-w-xs rounded-xl p-3 ${
                     msg.user === user.name
                       ? 'bg-blue-500 text-white'
@@ -6156,6 +6699,11 @@ export default function BaederApp() {
                     </p>
                     <p>{msg.text}</p>
                   </div>
+                  {msg.user === user.name && (
+                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-lg flex-shrink-0">
+                      {user.avatar ? AVATARS.find(a => a.id === user.avatar)?.emoji || user.name.charAt(0).toUpperCase() : user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -7817,48 +8365,109 @@ export default function BaederApp() {
             <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
               <h2 className={`text-2xl font-bold mb-6 flex items-center ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                 🎓 Kontrollkarte Berufsschule
+                {selectedSchoolCardUser && (
+                  <span className="ml-3 text-lg font-normal text-cyan-500">
+                    - {selectedSchoolCardUser.name}
+                  </span>
+                )}
               </h2>
 
-              {/* Neuer Eintrag Form */}
-              <div className={`${darkMode ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-50 to-blue-50'} rounded-xl p-6 mb-6`}>
-                <h3 className={`font-bold mb-4 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Neuen Eintrag hinzufügen</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Datum</label>
-                    <input
-                      type="date"
-                      value={newAttendanceDate}
-                      onChange={(e) => setNewAttendanceDate(e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
-                    />
+              {/* Azubi-Auswahl für berechtigte User */}
+              {canViewAllSchoolCards() && (
+                <div className={`${darkMode ? 'bg-slate-700' : 'bg-gradient-to-r from-purple-50 to-pink-50'} rounded-xl p-4 mb-6`}>
+                  <h3 className={`font-bold mb-3 ${darkMode ? 'text-purple-400' : 'text-purple-700'}`}>
+                    👀 Azubi-Kontrollkarten einsehen
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedSchoolCardUser(null);
+                        loadSchoolAttendance(user.id);
+                      }}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        !selectedSchoolCardUser
+                          ? 'bg-cyan-500 text-white'
+                          : (darkMode ? 'bg-slate-600 text-gray-300 hover:bg-slate-500' : 'bg-white text-gray-700 hover:bg-gray-100')
+                      }`}
+                    >
+                      📝 Meine Karte
+                    </button>
+                    {allAzubisForSchoolCard.map(azubi => (
+                      <button
+                        key={azubi.id}
+                        onClick={() => {
+                          setSelectedSchoolCardUser(azubi);
+                          loadSchoolAttendance(azubi.id);
+                        }}
+                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                          selectedSchoolCardUser?.id === azubi.id
+                            ? 'bg-purple-500 text-white'
+                            : (darkMode ? 'bg-slate-600 text-gray-300 hover:bg-slate-500' : 'bg-white text-gray-700 hover:bg-gray-100')
+                        }`}
+                      >
+                        👨‍🎓 {azubi.name}
+                      </button>
+                    ))}
                   </div>
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Beginn</label>
-                    <input
-                      type="time"
-                      value={newAttendanceStart}
-                      onChange={(e) => setNewAttendanceStart(e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
-                    />
-                  </div>
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ende</label>
-                    <input
-                      type="time"
-                      value={newAttendanceEnd}
-                      onChange={(e) => setNewAttendanceEnd(e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
-                    />
-                  </div>
+                  {allAzubisForSchoolCard.length === 0 && (
+                    <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      Keine Azubis vorhanden.
+                    </p>
+                  )}
                 </div>
-                <button
-                  onClick={addSchoolAttendance}
-                  className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-all"
-                >
-                  <Plus className="inline mr-2" size={18} />
-                  Eintrag hinzufügen
-                </button>
-              </div>
+              )}
+
+              {/* Neuer Eintrag Form - nur für eigene Karte */}
+              {!selectedSchoolCardUser && (
+                <div className={`${darkMode ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-50 to-blue-50'} rounded-xl p-6 mb-6`}>
+                  <h3 className={`font-bold mb-4 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Neuen Eintrag hinzufügen</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Datum</label>
+                      <input
+                        type="date"
+                        value={newAttendanceDate}
+                        onChange={(e) => setNewAttendanceDate(e.target.value)}
+                        className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Beginn</label>
+                      <input
+                        type="time"
+                        value={newAttendanceStart}
+                        onChange={(e) => setNewAttendanceStart(e.target.value)}
+                        className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ende</label>
+                      <input
+                        type="time"
+                        value={newAttendanceEnd}
+                        onChange={(e) => setNewAttendanceEnd(e.target.value)}
+                        className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={addSchoolAttendance}
+                    className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-all"
+                  >
+                    <Plus className="inline mr-2" size={18} />
+                    Eintrag hinzufügen
+                  </button>
+                </div>
+              )}
+
+              {/* Hinweis wenn fremde Karte angezeigt wird */}
+              {selectedSchoolCardUser && (
+                <div className={`${darkMode ? 'bg-purple-900/30' : 'bg-purple-50'} rounded-xl p-4 mb-6 border-2 ${darkMode ? 'border-purple-700' : 'border-purple-200'}`}>
+                  <p className={`text-sm ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>
+                    👀 Du siehst die Kontrollkarte von <strong>{selectedSchoolCardUser.name}</strong>. Nur der Azubi selbst kann Einträge hinzufügen.
+                  </p>
+                </div>
+              )}
 
               {/* Tabelle mit Einträgen */}
               <div className="overflow-x-auto">
@@ -8050,93 +8659,188 @@ export default function BaederApp() {
             </div>
 
             {/* Team-Battle Banner */}
-            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-              <div className="text-center mb-4">
-                <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  ⚔️ TEAM-BATTLE: JANUAR 2026
-                </h3>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <div className="text-center flex-1">
-                  <div className="text-3xl mb-1">👨‍🎓</div>
-                  <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Team Azubis</div>
-                  <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0 Pkt</div>
+            {(() => {
+              const battleStats = calculateTeamBattleStats(swimSessions);
+              const currentMonth = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }).toUpperCase();
+              const leading = battleStats.azubis.points > battleStats.trainer.points ? 'azubis' : battleStats.trainer.points > battleStats.azubis.points ? 'trainer' : 'tie';
+
+              return (
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                  <div className="text-center mb-4">
+                    <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      ⚔️ TEAM-BATTLE: {currentMonth}
+                    </h3>
+                    {leading !== 'tie' && (
+                      <p className={`text-sm mt-1 ${leading === 'azubis' ? (darkMode ? 'text-cyan-400' : 'text-cyan-600') : (darkMode ? 'text-orange-400' : 'text-orange-600')}`}>
+                        {leading === 'azubis' ? '👨‍🎓 Azubis führen!' : '👨‍🏫 Trainer führen!'}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="text-center flex-1">
+                      <div className="text-3xl mb-1">👨‍🎓</div>
+                      <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Team Azubis</div>
+                      <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>{battleStats.azubis.points} Pkt</div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {battleStats.azubis.memberList.length} Teilnehmer
+                      </div>
+                    </div>
+                    <div className="text-4xl font-bold text-gray-400">VS</div>
+                    <div className="text-center flex-1">
+                      <div className="text-3xl mb-1">👨‍🏫</div>
+                      <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Team Trainer</div>
+                      <div className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>{battleStats.trainer.points} Pkt</div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {battleStats.trainer.memberList.length} Teilnehmer
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="flex h-4 rounded-full overflow-hidden bg-gray-200">
+                      <div className="bg-cyan-500 transition-all" style={{ width: `${battleStats.azubis.percent}%` }}></div>
+                      <div className="bg-orange-500 transition-all" style={{ width: `${battleStats.trainer.percent}%` }}></div>
+                    </div>
+                    <div className="flex justify-between mt-1 text-sm">
+                      <span className={darkMode ? 'text-cyan-400' : 'text-cyan-600'}>{battleStats.azubis.percent.toFixed(0)}%</span>
+                      <span className={darkMode ? 'text-orange-400' : 'text-orange-600'}>{battleStats.trainer.percent.toFixed(0)}%</span>
+                    </div>
+                  </div>
+                  {/* Distanz-Vergleich */}
+                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} grid grid-cols-2 gap-4 text-center text-sm`}>
+                    <div>
+                      <div className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Gesamtdistanz</div>
+                      <div className={`font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>{(battleStats.azubis.distance / 1000).toFixed(1)} km</div>
+                    </div>
+                    <div>
+                      <div className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Gesamtdistanz</div>
+                      <div className={`font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>{(battleStats.trainer.distance / 1000).toFixed(1)} km</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-4xl font-bold text-gray-400">VS</div>
-                <div className="text-center flex-1">
-                  <div className="text-3xl mb-1">👨‍🏫</div>
-                  <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Team Trainer</div>
-                  <div className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>0 Pkt</div>
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="flex h-4 rounded-full overflow-hidden bg-gray-200">
-                  <div className="bg-cyan-500 transition-all" style={{ width: '50%' }}></div>
-                  <div className="bg-orange-500 transition-all" style={{ width: '50%' }}></div>
-                </div>
-                <div className="flex justify-between mt-1 text-sm">
-                  <span className={darkMode ? 'text-cyan-400' : 'text-cyan-600'}>50%</span>
-                  <span className={darkMode ? 'text-orange-400' : 'text-orange-600'}>50%</span>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Übersicht */}
-            {swimChallengeView === 'overview' && (
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-3xl">🏊</span>
-                    <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0 m</span>
+            {swimChallengeView === 'overview' && (() => {
+              const mySessions = swimSessions.filter(s => s.user_id === user?.id && s.confirmed);
+              const totalDistance = mySessions.reduce((sum, s) => sum + (s.distance || 0), 0);
+              const totalTime = mySessions.reduce((sum, s) => sum + (s.time_minutes || 0), 0);
+              const completedChallenges = SWIM_CHALLENGES.filter(ch => {
+                const progress = calculateChallengeProgress(ch, swimSessions, user?.id);
+                return progress.percent >= 100;
+              });
+              const points = calculateSwimPoints(mySessions, completedChallenges.map(c => c.id));
+
+              return (
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-3xl">🏊</span>
+                      <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                        {totalDistance >= 1000 ? `${(totalDistance / 1000).toFixed(1)} km` : `${totalDistance} m`}
+                      </span>
+                    </div>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Gesamtdistanz</p>
                   </div>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Gesamtdistanz</p>
-                </div>
-                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-3xl">⏱️</span>
-                    <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0 h</span>
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-3xl">⏱️</span>
+                      <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                        {totalTime >= 60 ? `${Math.floor(totalTime / 60)}h ${totalTime % 60}m` : `${totalTime} min`}
+                      </span>
+                    </div>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Trainingszeit</p>
                   </div>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Trainingszeit</p>
-                </div>
-                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-3xl">🎯</span>
-                    <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0</span>
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-3xl">🎯</span>
+                      <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>{completedChallenges.length}</span>
+                    </div>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Challenges abgeschlossen</p>
                   </div>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Challenges abgeschlossen</p>
-                </div>
-                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-3xl">⭐</span>
-                    <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>0</span>
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-3xl">⭐</span>
+                      <span className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>{points.total}</span>
+                    </div>
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Punkte</p>
                   </div>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Punkte</p>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Level-Anzeige */}
-            {swimChallengeView === 'overview' && (
-              <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-                <h3 className={`font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Dein Level</h3>
-                <div className="flex items-center gap-4">
-                  <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${SWIM_LEVELS[0].color} flex items-center justify-center text-3xl`}>
-                    {SWIM_LEVELS[0].icon}
-                  </div>
-                  <div className="flex-1">
-                    <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      {SWIM_LEVELS[0].name}
+            {swimChallengeView === 'overview' && (() => {
+              const mySessions = swimSessions.filter(s => s.user_id === user?.id && s.confirmed);
+              const completedChallenges = SWIM_CHALLENGES.filter(ch => {
+                const progress = calculateChallengeProgress(ch, swimSessions, user?.id);
+                return progress.percent >= 100;
+              });
+              const points = calculateSwimPoints(mySessions, completedChallenges.map(c => c.id));
+              const currentLevel = getSwimLevel(points.total);
+              const progressPercent = currentLevel.nextLevel
+                ? ((points.total - currentLevel.minPoints) / (currentLevel.nextLevel.minPoints - currentLevel.minPoints)) * 100
+                : 100;
+
+              return (
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                  <h3 className={`font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Dein Level</h3>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${currentLevel.color} flex items-center justify-center text-3xl`}>
+                      {currentLevel.icon}
                     </div>
+                    <div className="flex-1">
+                      <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {currentLevel.name}
+                      </div>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {currentLevel.nextLevel
+                          ? `${points.total} / ${currentLevel.nextLevel.minPoints} Punkte bis ${currentLevel.nextLevel.name}`
+                          : `${points.total} Punkte - Maximales Level erreicht! 🎉`
+                        }
+                      </div>
+                      <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className={`h-full bg-gradient-to-r ${currentLevel.color} transition-all`} style={{ width: `${Math.min(100, progressPercent)}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Punkte-Aufschlüsselung */}
+                  <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
                     <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      0 / {SWIM_LEVELS[1].minPoints} Punkte bis {SWIM_LEVELS[1].name}
-                    </div>
-                    <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className={`h-full bg-gradient-to-r ${SWIM_LEVELS[0].color}`} style={{ width: '0%' }}></div>
+                      <div className="flex justify-between">
+                        <span>Distanz-Punkte (1 Pkt/100m):</span>
+                        <span className="font-medium">{points.distancePoints}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Zeit-Punkte (0.5 Pkt/Min):</span>
+                        <span className="font-medium">{points.timePoints}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Challenge-Punkte:</span>
+                        <span className="font-medium">{points.challengePoints}</span>
+                      </div>
                     </div>
                   </div>
+                  {/* Handicap-Info */}
+                  {user?.birthDate && getAgeHandicap(user.birthDate) > 0 && (
+                    <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
+                      <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                        <span>🎂</span>
+                        <span>Alters-Handicap aktiv: <strong>{Math.round(getAgeHandicap(user.birthDate) * 100)}% Zeitbonus</strong> bei Sprint-Challenges</span>
+                      </div>
+                    </div>
+                  )}
+                  {!user?.birthDate && (
+                    <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
+                      <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        <span>💡</span>
+                        <span>Tipp: Trage dein <button onClick={() => setCurrentView('profile')} className="underline text-cyan-500 hover:text-cyan-400">Geburtsdatum im Profil</button> ein für Alters-Handicap bei Sprint-Challenges (ab 40 Jahren).</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Challenges Liste */}
             {swimChallengeView === 'challenges' && (
@@ -8162,44 +8866,68 @@ export default function BaederApp() {
                   ))}
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  {SWIM_CHALLENGES.filter(c => swimChallengeFilter === 'alle' || c.category === swimChallengeFilter).map(challenge => (
-                    <div key={challenge.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-5 shadow-lg`}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-3xl">{challenge.icon}</span>
-                          <div>
-                            <h4 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{challenge.name}</h4>
-                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{challenge.description}</p>
+                  {SWIM_CHALLENGES.filter(c => swimChallengeFilter === 'alle' || c.category === swimChallengeFilter).map(challenge => {
+                    const progress = calculateChallengeProgress(challenge, swimSessions, user?.id);
+                    const isCompleted = progress.percent >= 100;
+
+                    return (
+                      <div key={challenge.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-5 shadow-lg ${isCompleted ? 'ring-2 ring-green-500' : ''}`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-3xl">{challenge.icon}</span>
+                            <div>
+                              <h4 className={`font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                {challenge.name}
+                                {isCompleted && <span className="text-green-500">✓</span>}
+                              </h4>
+                              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{challenge.description}</p>
+                            </div>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                            isCompleted
+                              ? (darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700')
+                              : (darkMode ? 'bg-cyan-900 text-cyan-300' : 'bg-cyan-100 text-cyan-700')
+                          }`}>
+                            {isCompleted ? '✓ ' : '+'}{challenge.points} Pkt
+                          </span>
+                        </div>
+                        <div className="mt-4">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Fortschritt</span>
+                            <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                              {challenge.type === 'distance' || challenge.type === 'single_distance'
+                                ? `${(progress.current / 1000).toFixed(1)} / ${(challenge.target / 1000).toFixed(1)} km`
+                                : `${progress.current} / ${challenge.target} ${challenge.unit}`
+                              }
+                            </span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full transition-all ${isCompleted ? 'bg-green-500' : 'bg-cyan-500'}`}
+                              style={{ width: `${Math.min(100, progress.percent)}%` }}
+                            ></div>
                           </div>
                         </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${darkMode ? 'bg-cyan-900 text-cyan-300' : 'bg-cyan-100 text-cyan-700'}`}>
-                          +{challenge.points} Pkt
-                        </span>
+                        <button
+                          onClick={() => {
+                            if (!activeSwimChallenges.includes(challenge.id)) {
+                              saveActiveSwimChallenges([...activeSwimChallenges, challenge.id]);
+                            }
+                          }}
+                          disabled={activeSwimChallenges.includes(challenge.id) || isCompleted}
+                          className={`mt-4 w-full py-2 rounded-lg font-medium transition-all ${
+                            isCompleted
+                              ? (darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700')
+                              : activeSwimChallenges.includes(challenge.id)
+                                ? (darkMode ? 'bg-cyan-900 text-cyan-300' : 'bg-cyan-100 text-cyan-700')
+                                : (darkMode ? 'bg-cyan-600 hover:bg-cyan-500 text-white' : 'bg-cyan-500 hover:bg-cyan-600 text-white')
+                          }`}
+                        >
+                          {isCompleted ? '🏆 Abgeschlossen!' : activeSwimChallenges.includes(challenge.id) ? '✓ Aktiv' : 'Challenge starten'}
+                        </button>
                       </div>
-                      <div className="mt-4">
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Fortschritt</span>
-                          <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>0 / {challenge.target} {challenge.unit}</span>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div className="h-full bg-cyan-500" style={{ width: '0%' }}></div>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          saveActiveSwimChallenges([...activeSwimChallenges, challenge.id]);
-                        }}
-                        disabled={activeSwimChallenges.includes(challenge.id)}
-                        className={`mt-4 w-full py-2 rounded-lg font-medium transition-all ${
-                          activeSwimChallenges.includes(challenge.id)
-                            ? (darkMode ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700')
-                            : (darkMode ? 'bg-cyan-600 hover:bg-cyan-500 text-white' : 'bg-cyan-500 hover:bg-cyan-600 text-white')
-                        }`}
-                      >
-                        {activeSwimChallenges.includes(challenge.id) ? '✓ Aktiv' : 'Challenge starten'}
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -8314,69 +9042,343 @@ export default function BaederApp() {
             )}
 
             {/* Bestenliste */}
-            {swimChallengeView === 'leaderboard' && (
-              <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-                <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  🏆 Bestenliste
-                </h3>
-                <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  <span className="text-5xl mb-4 block">🏊</span>
-                  <p>Noch keine Einträge vorhanden.</p>
-                  <p className="text-sm mt-2">Trage deine erste Trainingseinheit ein!</p>
+            {swimChallengeView === 'leaderboard' && (() => {
+              // Aggregiere bestätigte Sessions pro Benutzer
+              const confirmedSessions = swimSessions.filter(s => s.confirmed);
+              const userStats = {};
+
+              confirmedSessions.forEach(session => {
+                const oderId = session.user_id;
+                if (!userStats[oderId]) {
+                  userStats[oderId] = {
+                    user_id: session.user_id,
+                    user_name: session.user_name,
+                    user_role: session.user_role,
+                    total_distance: 0,
+                    total_time: 0,
+                    session_count: 0,
+                    styles: new Set()
+                  };
+                }
+                userStats[oderId].total_distance += session.distance || 0;
+                userStats[oderId].total_time += session.time_minutes || 0;
+                userStats[oderId].session_count += 1;
+                userStats[oderId].styles.add(session.style);
+              });
+
+              // Sortiere nach Gesamtdistanz
+              const leaderboard = Object.values(userStats)
+                .sort((a, b) => b.total_distance - a.total_distance);
+
+              return (
+                <div className="space-y-4">
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      🏆 Bestenliste - Gesamtdistanz
+                    </h3>
+
+                    {leaderboard.length === 0 ? (
+                      <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <span className="text-5xl mb-4 block">🏊</span>
+                        <p>Noch keine bestätigten Einträge vorhanden.</p>
+                        <p className="text-sm mt-2">Trage deine erste Trainingseinheit ein!</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {leaderboard.map((entry, index) => {
+                          const medals = ['🥇', '🥈', '🥉'];
+                          const medal = medals[index] || `${index + 1}.`;
+                          const isCurrentUser = entry.user_id === user?.id;
+                          const avgPace = entry.total_time > 0
+                            ? ((entry.total_time / (entry.total_distance / 100))).toFixed(1)
+                            : 0;
+
+                          return (
+                            <div
+                              key={entry.user_id}
+                              className={`p-4 rounded-lg flex items-center gap-4 transition-all ${
+                                isCurrentUser
+                                  ? (darkMode ? 'bg-cyan-900/50 border-2 border-cyan-500' : 'bg-cyan-50 border-2 border-cyan-400')
+                                  : (darkMode ? 'bg-slate-700' : 'bg-gray-50')
+                              }`}
+                            >
+                              <div className="text-3xl w-12 text-center">
+                                {medal}
+                              </div>
+                              <div className="flex-1">
+                                <div className={`font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                  {entry.user_name}
+                                  {isCurrentUser && <span className="text-xs bg-cyan-500 text-white px-2 py-0.5 rounded-full">Du</span>}
+                                  <span className="text-sm font-normal opacity-70">
+                                    {entry.user_role === 'azubi' ? '👨‍🎓' : '👨‍🏫'}
+                                  </span>
+                                </div>
+                                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                  {entry.session_count} Einheiten • ⌀ {avgPace} Min/100m
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className={`text-xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                                  {(entry.total_distance / 1000).toFixed(1)} km
+                                </div>
+                                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                  {Math.floor(entry.total_time / 60)}h {entry.total_time % 60}min
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Top 3 Podium für > 3 Teilnehmer */}
+                  {leaderboard.length >= 3 && (
+                    <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                      <h3 className={`font-bold text-lg mb-6 text-center ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        🏅 Podium
+                      </h3>
+                      <div className="flex items-end justify-center gap-4">
+                        {/* Platz 2 */}
+                        <div className="text-center">
+                          <div className="text-4xl mb-2">🥈</div>
+                          <div className={`w-24 h-20 ${darkMode ? 'bg-gray-500' : 'bg-gray-300'} rounded-t-lg flex items-center justify-center`}>
+                            <span className={`font-bold ${darkMode ? 'text-white' : 'text-gray-700'}`}>
+                              {(leaderboard[1].total_distance / 1000).toFixed(1)} km
+                            </span>
+                          </div>
+                          <div className={`text-sm font-medium mt-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                            {leaderboard[1].user_name.split(' ')[0]}
+                          </div>
+                        </div>
+                        {/* Platz 1 */}
+                        <div className="text-center">
+                          <div className="text-5xl mb-2">🥇</div>
+                          <div className={`w-24 h-28 bg-gradient-to-b ${darkMode ? 'from-yellow-500 to-yellow-700' : 'from-yellow-400 to-yellow-500'} rounded-t-lg flex items-center justify-center`}>
+                            <span className="font-bold text-white">
+                              {(leaderboard[0].total_distance / 1000).toFixed(1)} km
+                            </span>
+                          </div>
+                          <div className={`text-sm font-medium mt-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                            {leaderboard[0].user_name.split(' ')[0]}
+                          </div>
+                        </div>
+                        {/* Platz 3 */}
+                        <div className="text-center">
+                          <div className="text-4xl mb-2">🥉</div>
+                          <div className={`w-24 h-16 ${darkMode ? 'bg-orange-700' : 'bg-orange-400'} rounded-t-lg flex items-center justify-center`}>
+                            <span className="font-bold text-white">
+                              {(leaderboard[2].total_distance / 1000).toFixed(1)} km
+                            </span>
+                          </div>
+                          <div className={`text-sm font-medium mt-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                            {leaderboard[2].user_name.split(' ')[0]}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Eigene Statistiken */}
+                  {(() => {
+                    const myStats = userStats[user?.id];
+                    if (!myStats) return null;
+                    const myRank = leaderboard.findIndex(e => e.user_id === user?.id) + 1;
+                    return (
+                      <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 to-blue-900' : 'bg-gradient-to-r from-cyan-500 to-blue-600'} text-white rounded-xl p-6 shadow-lg`}>
+                        <h3 className="font-bold text-lg mb-4">📊 Deine Statistiken</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="text-center">
+                            <div className="text-3xl font-bold">{myRank}.</div>
+                            <div className="text-sm opacity-80">Platzierung</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-3xl font-bold">{(myStats.total_distance / 1000).toFixed(1)}</div>
+                            <div className="text-sm opacity-80">Kilometer</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-3xl font-bold">{myStats.session_count}</div>
+                            <div className="text-sm opacity-80">Einheiten</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-3xl font-bold">{Math.floor(myStats.total_time / 60)}h</div>
+                            <div className="text-sm opacity-80">Trainingszeit</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Team-Battle Detail */}
-            {swimChallengeView === 'battle' && (
-              <div className="space-y-4">
-                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-                  <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    ⚔️ Team-Battle Details
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className={`p-4 rounded-lg ${darkMode ? 'bg-cyan-900/30 border border-cyan-700' : 'bg-cyan-50 border border-cyan-200'}`}>
-                      <h4 className={`font-bold mb-3 flex items-center gap-2 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
-                        👨‍🎓 Team Azubis
-                      </h4>
-                      <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <p>Noch keine Teilnehmer</p>
+            {swimChallengeView === 'battle' && (() => {
+              const battleStats = calculateTeamBattleStats(swimSessions);
+
+              const renderTeamMember = (member, index, color) => {
+                const medals = ['🥇', '🥈', '🥉'];
+                const medal = medals[index] || `${index + 1}.`;
+                const isCurrentUser = member.user_id === user?.id;
+
+                return (
+                  <div
+                    key={member.user_id}
+                    className={`flex items-center gap-3 p-2 rounded-lg ${
+                      isCurrentUser
+                        ? (darkMode ? `bg-${color}-900/50 border border-${color}-500` : `bg-${color}-100 border border-${color}-300`)
+                        : ''
+                    }`}
+                  >
+                    <span className="text-xl w-8">{medal}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-medium truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {member.user_name}
+                        {isCurrentUser && <span className="ml-1 text-xs opacity-70">(Du)</span>}
+                      </div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {member.sessions} Einheiten • {(member.distance / 1000).toFixed(1)} km
                       </div>
                     </div>
-                    <div className={`p-4 rounded-lg ${darkMode ? 'bg-orange-900/30 border border-orange-700' : 'bg-orange-50 border border-orange-200'}`}>
-                      <h4 className={`font-bold mb-3 flex items-center gap-2 ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-                        👨‍🏫 Team Trainer
-                      </h4>
-                      <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        <p>Noch keine Teilnehmer</p>
+                    <div className={`font-bold ${color === 'cyan' ? (darkMode ? 'text-cyan-400' : 'text-cyan-600') : (darkMode ? 'text-orange-400' : 'text-orange-600')}`}>
+                      {member.points} Pkt
+                    </div>
+                  </div>
+                );
+              };
+
+              return (
+                <div className="space-y-4">
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      ⚔️ Team-Battle Details
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Team Azubis */}
+                      <div className={`p-4 rounded-lg ${darkMode ? 'bg-cyan-900/30 border border-cyan-700' : 'bg-cyan-50 border border-cyan-200'}`}>
+                        <h4 className={`font-bold mb-3 flex items-center justify-between ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                          <span>👨‍🎓 Team Azubis</span>
+                          <span>{battleStats.azubis.points} Pkt</span>
+                        </h4>
+                        {battleStats.azubis.memberList.length === 0 ? (
+                          <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <p>Noch keine Teilnehmer</p>
+                            <p className="text-sm mt-1">Trage eine Trainingseinheit ein!</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {battleStats.azubis.memberList.map((member, idx) => renderTeamMember(member, idx, 'cyan'))}
+                          </div>
+                        )}
+                        <div className={`mt-4 pt-3 border-t ${darkMode ? 'border-cyan-800' : 'border-cyan-200'} text-sm`}>
+                          <div className="flex justify-between">
+                            <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Gesamt:</span>
+                            <span className={`font-medium ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                              {(battleStats.azubis.distance / 1000).toFixed(1)} km • {Math.floor(battleStats.azubis.time / 60)}h {battleStats.azubis.time % 60}m
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Team Trainer */}
+                      <div className={`p-4 rounded-lg ${darkMode ? 'bg-orange-900/30 border border-orange-700' : 'bg-orange-50 border border-orange-200'}`}>
+                        <h4 className={`font-bold mb-3 flex items-center justify-between ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
+                          <span>👨‍🏫 Team Trainer</span>
+                          <span>{battleStats.trainer.points} Pkt</span>
+                        </h4>
+                        {battleStats.trainer.memberList.length === 0 ? (
+                          <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <p>Noch keine Teilnehmer</p>
+                            <p className="text-sm mt-1">Trainer, zeigt was ihr könnt!</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {battleStats.trainer.memberList.map((member, idx) => renderTeamMember(member, idx, 'orange'))}
+                          </div>
+                        )}
+                        <div className={`mt-4 pt-3 border-t ${darkMode ? 'border-orange-800' : 'border-orange-200'} text-sm`}>
+                          <div className="flex justify-between">
+                            <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Gesamt:</span>
+                            <span className={`font-medium ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
+                              {(battleStats.trainer.distance / 1000).toFixed(1)} km • {Math.floor(battleStats.trainer.time / 60)}h {battleStats.trainer.time % 60}m
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-                  <h4 className={`font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    📊 Alters-Handicap System
-                  </h4>
-                  <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Für faire Wettkämpfe zwischen verschiedenen Altersgruppen wird ein Handicap-System angewendet:
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                    {[
-                      { age: '< 40', bonus: '0%' },
-                      { age: '40-49', bonus: '-5%' },
-                      { age: '50-59', bonus: '-10%' },
-                      { age: '60-69', bonus: '-15%' },
-                      { age: '70+', bonus: '-20%' },
-                    ].map(h => (
-                      <div key={h.age} className={`p-3 rounded-lg text-center ${darkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
-                        <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{h.age}</div>
-                        <div className={`text-sm ${darkMode ? 'text-green-400' : 'text-green-600'}`}>{h.bonus} Zeit</div>
+
+                  {/* Statistik-Vergleich */}
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <h4 className={`font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      📈 Statistik-Vergleich
+                    </h4>
+                    <div className="space-y-4">
+                      {/* Distanz-Vergleich */}
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className={darkMode ? 'text-cyan-400' : 'text-cyan-600'}>{(battleStats.azubis.distance / 1000).toFixed(1)} km</span>
+                          <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Gesamtdistanz</span>
+                          <span className={darkMode ? 'text-orange-400' : 'text-orange-600'}>{(battleStats.trainer.distance / 1000).toFixed(1)} km</span>
+                        </div>
+                        <div className="flex h-3 rounded-full overflow-hidden bg-gray-200">
+                          <div className="bg-cyan-500 transition-all" style={{ width: `${battleStats.azubis.distance + battleStats.trainer.distance > 0 ? (battleStats.azubis.distance / (battleStats.azubis.distance + battleStats.trainer.distance)) * 100 : 50}%` }}></div>
+                          <div className="bg-orange-500 transition-all" style={{ width: `${battleStats.azubis.distance + battleStats.trainer.distance > 0 ? (battleStats.trainer.distance / (battleStats.azubis.distance + battleStats.trainer.distance)) * 100 : 50}%` }}></div>
+                        </div>
                       </div>
-                    ))}
+                      {/* Zeit-Vergleich */}
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className={darkMode ? 'text-cyan-400' : 'text-cyan-600'}>{Math.floor(battleStats.azubis.time / 60)}h {battleStats.azubis.time % 60}m</span>
+                          <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Trainingszeit</span>
+                          <span className={darkMode ? 'text-orange-400' : 'text-orange-600'}>{Math.floor(battleStats.trainer.time / 60)}h {battleStats.trainer.time % 60}m</span>
+                        </div>
+                        <div className="flex h-3 rounded-full overflow-hidden bg-gray-200">
+                          <div className="bg-cyan-500 transition-all" style={{ width: `${battleStats.azubis.time + battleStats.trainer.time > 0 ? (battleStats.azubis.time / (battleStats.azubis.time + battleStats.trainer.time)) * 100 : 50}%` }}></div>
+                          <div className="bg-orange-500 transition-all" style={{ width: `${battleStats.azubis.time + battleStats.trainer.time > 0 ? (battleStats.trainer.time / (battleStats.azubis.time + battleStats.trainer.time)) * 100 : 50}%` }}></div>
+                        </div>
+                      </div>
+                      {/* Teilnehmer-Vergleich */}
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className={darkMode ? 'text-cyan-400' : 'text-cyan-600'}>{battleStats.azubis.memberList.length}</span>
+                          <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Teilnehmer</span>
+                          <span className={darkMode ? 'text-orange-400' : 'text-orange-600'}>{battleStats.trainer.memberList.length}</span>
+                        </div>
+                        <div className="flex h-3 rounded-full overflow-hidden bg-gray-200">
+                          <div className="bg-cyan-500 transition-all" style={{ width: `${battleStats.azubis.memberList.length + battleStats.trainer.memberList.length > 0 ? (battleStats.azubis.memberList.length / (battleStats.azubis.memberList.length + battleStats.trainer.memberList.length)) * 100 : 50}%` }}></div>
+                          <div className="bg-orange-500 transition-all" style={{ width: `${battleStats.azubis.memberList.length + battleStats.trainer.memberList.length > 0 ? (battleStats.trainer.memberList.length / (battleStats.azubis.memberList.length + battleStats.trainer.memberList.length)) * 100 : 50}%` }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Handicap-System */}
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <h4 className={`font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      📊 Alters-Handicap System
+                    </h4>
+                    <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Für faire Wettkämpfe zwischen verschiedenen Altersgruppen wird ein Handicap-System angewendet:
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                      {[
+                        { age: '< 40', bonus: '0%' },
+                        { age: '40-49', bonus: '-5%' },
+                        { age: '50-59', bonus: '-10%' },
+                        { age: '60-69', bonus: '-15%' },
+                        { age: '70+', bonus: '-20%' },
+                      ].map(h => (
+                        <div key={h.age} className={`p-3 rounded-lg text-center ${darkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
+                          <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{h.age}</div>
+                          <div className={`text-sm ${darkMode ? 'text-green-400' : 'text-green-600'}`}>{h.bonus} Zeit</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Trainer: Bestätigungen */}
             {(user.role === 'trainer' || user.role === 'ausbilder' || user.permissions.canViewAllStats) && pendingSwimConfirmations.length > 0 && (
@@ -9026,6 +10028,510 @@ export default function BaederApp() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ==================== PROFIL VIEW ==================== */}
+        {currentView === 'profile' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl p-8 text-center">
+              <div className="text-6xl mb-3">
+                {user.avatar ? AVATARS.find(a => a.id === user.avatar)?.emoji || '👤' : '👤'}
+              </div>
+              <h2 className="text-3xl font-bold mb-2">{user.name}</h2>
+              <p className="opacity-90">{PERMISSIONS[user.role]?.label || user.role}</p>
+            </div>
+
+            {/* Avatar auswählen */}
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Avatar auswählen
+              </h3>
+              <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Wähle einen Avatar für dein Profil
+              </p>
+              <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
+                {AVATARS.map((avatar) => (
+                  <button
+                    key={avatar.id}
+                    onClick={() => updateProfileAvatar(avatar.id)}
+                    disabled={profileSaving}
+                    title={avatar.label}
+                    className={`text-3xl p-2 rounded-xl transition-all hover:scale-110 ${
+                      user.avatar === avatar.id
+                        ? 'bg-cyan-500 ring-2 ring-cyan-400 ring-offset-2 ' + (darkMode ? 'ring-offset-slate-800' : 'ring-offset-white')
+                        : darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                  >
+                    {avatar.emoji}
+                  </button>
+                ))}
+              </div>
+              {user.avatar && (
+                <button
+                  onClick={() => updateProfileAvatar(null)}
+                  disabled={profileSaving}
+                  className={`mt-4 text-sm ${darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-500'} transition-colors`}
+                >
+                  Avatar entfernen
+                </button>
+              )}
+            </div>
+
+            {/* Aktivitäts-Statistik */}
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Meine Aktivitäten
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Quiz-Statistik */}
+                <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-green-900 to-emerald-900' : 'bg-gradient-to-br from-green-100 to-emerald-100'}`}>
+                  <div className="text-3xl mb-1">🏆</div>
+                  <div className={`text-2xl font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                    {userStats?.wins || 0}
+                  </div>
+                  <div className={`text-xs ${darkMode ? 'text-green-300' : 'text-green-700'}`}>Quiz-Siege</div>
+                </div>
+                <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-blue-900 to-cyan-900' : 'bg-gradient-to-br from-blue-100 to-cyan-100'}`}>
+                  <div className="text-3xl mb-1">🏊</div>
+                  <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                    {swimSessions.filter(s => s.user_id === user.id || s.user_name === user.name).reduce((sum, s) => sum + (s.distance || 0), 0).toLocaleString()}m
+                  </div>
+                  <div className={`text-xs ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Geschwommen</div>
+                </div>
+                <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-purple-900 to-pink-900' : 'bg-gradient-to-br from-purple-100 to-pink-100'}`}>
+                  <div className="text-3xl mb-1">🎖️</div>
+                  <div className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                    {userBadges.length}
+                  </div>
+                  <div className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>Badges</div>
+                </div>
+                <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-orange-900 to-amber-900' : 'bg-gradient-to-br from-orange-100 to-amber-100'}`}>
+                  <div className="text-3xl mb-1">✅</div>
+                  <div className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
+                    {Object.values(userStats?.categoryStats || {}).reduce((sum, cat) => sum + (cat.correct || 0), 0)}
+                  </div>
+                  <div className={`text-xs ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>Richtige Antworten</div>
+                </div>
+              </div>
+              {/* Erweiterte Stats */}
+              <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} grid grid-cols-3 gap-4 text-center`}>
+                <div>
+                  <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    {userStats?.losses || 0}
+                  </div>
+                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Niederlagen</div>
+                </div>
+                <div>
+                  <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    {userStats?.draws || 0}
+                  </div>
+                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Unentschieden</div>
+                </div>
+                <div>
+                  <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    {swimSessions.filter(s => s.user_id === user.id || s.user_name === user.name).length}
+                  </div>
+                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Schwimm-Einheiten</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Aktuelle Daten */}
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Aktuelle Kontodaten
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Name</p>
+                  <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{user.name}</p>
+                </div>
+                <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>E-Mail</p>
+                  <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{user.email}</p>
+                </div>
+                <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Rolle</p>
+                  <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    {PERMISSIONS[user.role]?.label || user.role}
+                  </p>
+                </div>
+                <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Betrieb</p>
+                  <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    {user.company || <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>Nicht angegeben</span>}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Betrieb ändern */}
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Betrieb angeben
+              </h3>
+              <div className="flex flex-col md:flex-row gap-4">
+                <input
+                  type="text"
+                  placeholder={user.company || "z.B. Stadtbad München, Hallenbad Köln..."}
+                  value={profileEditCompany}
+                  onChange={(e) => setProfileEditCompany(e.target.value)}
+                  className={`flex-1 px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+                />
+                <button
+                  onClick={updateProfileCompany}
+                  disabled={profileSaving}
+                  className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
+                >
+                  {profileSaving ? 'Speichern...' : 'Speichern'}
+                </button>
+              </div>
+              <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                In welchem Schwimmbad / Betrieb arbeitest du?
+              </p>
+            </div>
+
+            {/* Geburtsdatum für Handicap */}
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                🎂 Geburtsdatum
+              </h3>
+              <div className="flex flex-col md:flex-row gap-4">
+                <input
+                  type="date"
+                  value={profileEditBirthDate || user.birthDate || ''}
+                  onChange={(e) => setProfileEditBirthDate(e.target.value)}
+                  className={`flex-1 px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+                />
+                <button
+                  onClick={updateProfileBirthDate}
+                  disabled={profileSaving || !profileEditBirthDate}
+                  className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
+                >
+                  {profileSaving ? 'Speichern...' : 'Speichern'}
+                </button>
+              </div>
+              {user.birthDate && (
+                <p className={`mt-2 text-sm ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                  ✓ Gespeichert: {new Date(user.birthDate).toLocaleDateString('de-DE')}
+                  {getAgeHandicap(user.birthDate) > 0 && (
+                    <span className="ml-2 text-cyan-500">
+                      (Handicap: {Math.round(getAgeHandicap(user.birthDate) * 100)}% Zeitbonus)
+                    </span>
+                  )}
+                </p>
+              )}
+              <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Wird für das Alters-Handicap bei der Schwimm-Challenge verwendet (ab 40 Jahren).
+              </p>
+            </div>
+
+            {/* Name ändern */}
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Anzeigename ändern
+              </h3>
+              <div className="flex flex-col md:flex-row gap-4">
+                <input
+                  type="text"
+                  placeholder="Neuer Name"
+                  value={profileEditName}
+                  onChange={(e) => setProfileEditName(e.target.value)}
+                  className={`flex-1 px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+                />
+                <button
+                  onClick={updateProfileName}
+                  disabled={profileSaving || !profileEditName.trim()}
+                  className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
+                >
+                  {profileSaving ? 'Speichern...' : 'Name ändern'}
+                </button>
+              </div>
+              <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Dein Anzeigename wird in der App, im Chat und in der Bestenliste angezeigt.
+              </p>
+            </div>
+
+            {/* Passwort ändern */}
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Passwort ändern
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Neues Passwort
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Mindestens 6 Zeichen"
+                      value={profileEditPassword}
+                      onChange={(e) => setProfileEditPassword(e.target.value)}
+                      className={`w-full px-4 py-3 pr-12 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-colors`}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Passwort bestätigen
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPasswordConfirm ? 'text' : 'password'}
+                      placeholder="Passwort wiederholen"
+                      value={profileEditPasswordConfirm}
+                      onChange={(e) => setProfileEditPasswordConfirm(e.target.value)}
+                      className={`w-full px-4 py-3 pr-12 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'} transition-colors`}
+                    >
+                      {showPasswordConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={updateProfilePassword}
+                  disabled={profileSaving || !profileEditPassword || !profileEditPasswordConfirm}
+                  className="px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
+                >
+                  {profileSaving ? 'Speichern...' : 'Passwort ändern'}
+                </button>
+              </div>
+              <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Verwende ein sicheres Passwort mit mindestens 6 Zeichen.
+              </p>
+            </div>
+
+            {/* Abmelden */}
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Sitzung beenden
+              </h3>
+              <button
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  setUser(null);
+                  localStorage.removeItem('baeder_user');
+                }}
+                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition-all"
+              >
+                Abmelden
+              </button>
+              <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Du wirst aus der App abgemeldet und musst dich erneut anmelden.
+              </p>
+            </div>
+
+            {/* Rechtliches */}
+            <div className={`${darkMode ? 'bg-slate-800/50' : 'bg-gray-50'} rounded-xl p-6`}>
+              <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                📜 Rechtliches
+              </h3>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={() => setCurrentView('impressum')}
+                  className={`px-4 py-2 rounded-lg ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-300' : 'bg-white hover:bg-gray-100 text-gray-700'} transition-all`}
+                >
+                  Impressum
+                </button>
+                <button
+                  onClick={() => setCurrentView('datenschutz')}
+                  className={`px-4 py-2 rounded-lg ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-300' : 'bg-white hover:bg-gray-100 text-gray-700'} transition-all`}
+                >
+                  Datenschutzerklärung
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Impressum */}
+        {currentView === 'impressum' && (
+          <div className="space-y-6">
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-8 shadow-lg`}>
+              <button
+                onClick={() => setCurrentView('profile')}
+                className={`mb-6 flex items-center gap-2 ${darkMode ? 'text-cyan-400 hover:text-cyan-300' : 'text-cyan-600 hover:text-cyan-500'} transition-colors`}
+              >
+                ← Zurück zum Profil
+              </button>
+
+              <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                📜 Impressum
+              </h2>
+
+              <div className={`space-y-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Angaben gemäß § 5 TMG</h3>
+                  <p>Dennie Gulbinski</p>
+                  <p>Zeitstraße 108</p>
+                  <p>53721 Siegburg</p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Kontakt</h3>
+                  <p>E-Mail: denniegulbinski@gmail.com</p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h3>
+                  <p>Dennie Gulbinski</p>
+                  <p>Zeitstraße 108</p>
+                  <p>53721 Siegburg</p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Haftungsausschluss</h3>
+                  <p className="text-sm leading-relaxed">
+                    Die Inhalte dieser App wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und
+                    Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Als Diensteanbieter sind wir gemäß
+                    § 7 Abs.1 TMG für eigene Inhalte nach den allgemeinen Gesetzen verantwortlich.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Urheberrecht</h3>
+                  <p className="text-sm leading-relaxed">
+                    Die durch die Seitenbetreiber erstellten Inhalte und Werke unterliegen dem deutschen Urheberrecht.
+                    Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des
+                    Urheberrechtes bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.
+                  </p>
+                </section>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Datenschutzerklärung */}
+        {currentView === 'datenschutz' && (
+          <div className="space-y-6">
+            <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-8 shadow-lg`}>
+              <button
+                onClick={() => setCurrentView('profile')}
+                className={`mb-6 flex items-center gap-2 ${darkMode ? 'text-cyan-400 hover:text-cyan-300' : 'text-cyan-600 hover:text-cyan-500'} transition-colors`}
+              >
+                ← Zurück zum Profil
+              </button>
+
+              <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                🔒 Datenschutzerklärung
+              </h2>
+
+              <div className={`space-y-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>1. Verantwortlicher</h3>
+                  <p>Dennie Gulbinski</p>
+                  <p>Zeitstraße 108, 53721 Siegburg</p>
+                  <p>E-Mail: denniegulbinski@gmail.com</p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>2. Erhebung und Speicherung personenbezogener Daten</h3>
+                  <p className="text-sm leading-relaxed mb-2">
+                    Bei der Nutzung dieser App werden folgende Daten erhoben und gespeichert:
+                  </p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                    <li>Name und E-Mail-Adresse (bei der Registrierung)</li>
+                    <li>Optionales Geburtsdatum (für Handicap-Berechnung)</li>
+                    <li>Optionaler Betriebsname</li>
+                    <li>Quiz-Statistiken und Spielstände</li>
+                    <li>Schwimm-Trainingseinheiten und Challenges</li>
+                    <li>Berufsschul-Kontrollkarten-Einträge</li>
+                    <li>Berichtsheft-Einträge</li>
+                    <li>Chat-Nachrichten</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>3. Zweck der Datenverarbeitung</h3>
+                  <p className="text-sm leading-relaxed">
+                    Die Daten werden ausschließlich zur Bereitstellung der App-Funktionen verwendet:
+                    Lernfortschritt tracken, Wettkämpfe ermöglichen, Ausbildungsnachweis führen und
+                    Kommunikation zwischen Azubis und Ausbildern ermöglichen.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>4. Rechtsgrundlage</h3>
+                  <p className="text-sm leading-relaxed">
+                    Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO (Einwilligung)
+                    sowie Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>5. Datenweitergabe</h3>
+                  <p className="text-sm leading-relaxed">
+                    Eine Weitergabe der Daten an Dritte erfolgt nicht, außer wenn dies zur Vertragserfüllung
+                    erforderlich ist oder eine gesetzliche Verpflichtung besteht. Die Daten werden bei
+                    Supabase (Hosting-Provider) gespeichert, der DSGVO-konform arbeitet.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>6. Speicherdauer und automatische Löschung</h3>
+                  <p className="text-sm leading-relaxed">
+                    Die Daten werden wie folgt gelöscht:
+                  </p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2 mt-2">
+                    <li><strong>Azubis:</strong> Automatische Löschung am Ende der Ausbildung (angegebenes Datum)</li>
+                    <li><strong>Ausbilder:</strong> Automatische Löschung nach 6 Monaten Inaktivität</li>
+                    <li><strong>Administratoren:</strong> Keine automatische Löschung</li>
+                  </ul>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>7. Ihre Rechte</h3>
+                  <p className="text-sm leading-relaxed mb-2">
+                    Sie haben folgende Rechte bezüglich Ihrer personenbezogenen Daten:
+                  </p>
+                  <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                    <li>Recht auf Auskunft (Art. 15 DSGVO)</li>
+                    <li>Recht auf Berichtigung (Art. 16 DSGVO)</li>
+                    <li>Recht auf Löschung (Art. 17 DSGVO)</li>
+                    <li>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
+                    <li>Recht auf Datenübertragbarkeit (Art. 20 DSGVO)</li>
+                    <li>Widerspruchsrecht (Art. 21 DSGVO)</li>
+                  </ul>
+                  <p className="text-sm leading-relaxed mt-2">
+                    Die App bietet eine Export-Funktion im Admin-Bereich, um Ihre Daten als JSON-Datei herunterzuladen.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>8. Cookies und Local Storage</h3>
+                  <p className="text-sm leading-relaxed">
+                    Diese App verwendet Local Storage im Browser, um Ihre Anmeldedaten und Einstellungen
+                    (z.B. Dark Mode) zu speichern. Es werden keine Tracking-Cookies verwendet.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>9. Kontakt bei Datenschutzfragen</h3>
+                  <p className="text-sm leading-relaxed">
+                    Bei Fragen zum Datenschutz wenden Sie sich bitte an: denniegulbinski@gmail.com
+                  </p>
+                </section>
+
+                <section className={`pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
+                  <p className="text-xs text-gray-500">
+                    Stand: Januar 2025
+                  </p>
+                </section>
+              </div>
             </div>
           </div>
         )}
