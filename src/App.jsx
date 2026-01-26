@@ -5045,7 +5045,7 @@ export default function BaederApp() {
 
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative z-10">
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4">🏊‍♂️</div>
+            <img src="/icons/icon-192x192.png" alt="FAB Logo" className="w-24 h-24 mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-cyan-700 mb-2">Bäder-Azubi App</h1>
             <p className="text-cyan-600">Professionelle Lern-Plattform</p>
           </div>
