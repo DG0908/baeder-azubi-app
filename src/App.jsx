@@ -5748,24 +5748,6 @@ export default function BaederApp() {
                 })}
               </div>
             </div>
-
-            <div className="bg-blue-50 border-2 border-blue-500 rounded-xl p-6">
-              <h3 className="text-xl font-bold mb-3 flex items-center text-blue-800">
-                <Shield className="mr-2" />
-                Datenschutz & Löschfristen
-              </h3>
-              <div className="space-y-2 text-sm text-blue-900">
-                <p><strong>Administratoren:</strong> Werden NIEMALS automatisch gelöscht - permanente Accounts.</p>
-                <p><strong>Azubis:</strong> Alle Daten werden automatisch am Ende der Ausbildung (eingegebenes Datum) gelöscht.</p>
-                <p><strong>Ausbilder:</strong> Daten werden 6 Monate nach dem letzten Login automatisch gelöscht.</p>
-                <p><strong>Löschung umfasst:</strong> Account, Statistiken, Spielstände, eingegebene Klasuren.</p>
-                <p><strong>Nicht gelöscht:</strong> Lernmaterialien, News, Chat-Nachrichten (allgemeine Inhalte).</p>
-                <p className="pt-2 font-bold">📥 Datenexport: Vor dem Löschen wird automatisch angeboten, die Nutzerdaten als JSON zu exportieren.</p>
-                <p className="font-bold">🔔 Benachrichtigungen: Nutzer werden über wichtige Ereignisse (Freischaltung, etc.) informiert.</p>
-                <p className="pt-2 font-bold text-red-700">⚠️ Die App prüft bei jedem Start automatisch auf abgelaufene Accounts.</p>
-                <p className="pt-2 font-bold text-purple-700">👑 Admins sind geschützt und können nicht gelöscht werden!</p>
-              </div>
-            </div>
           </div>
         )}
 
