@@ -12,6 +12,37 @@ const CATEGORIES = [
   { id: 'health', name: 'Gesundheitslehre', color: 'bg-pink-500', icon: '🫀' }
 ];
 
+// Default Menu Items Configuration
+const DEFAULT_MENU_ITEMS = [
+  { id: 'home', icon: '🏠', label: 'Start', visible: true, order: 0, requiresPermission: null },
+  { id: 'exam-simulator', icon: '📝', label: 'Prüfungssimulator', visible: true, order: 1, requiresPermission: null },
+  { id: 'flashcards', icon: '🎴', label: 'Karteikarten', visible: true, order: 2, requiresPermission: null },
+  { id: 'calculator', icon: '🧮', label: 'Rechner', visible: true, order: 3, requiresPermission: null },
+  { id: 'quiz', icon: '🎮', label: 'Quizduell', visible: true, order: 4, requiresPermission: null },
+  { id: 'swim-challenge', icon: '🏊', label: 'Schwimm-Challenge', visible: true, order: 5, requiresPermission: null },
+  { id: 'stats', icon: '🏅', label: 'Statistiken', visible: true, order: 6, requiresPermission: null },
+  { id: 'trainer-dashboard', icon: '👨‍🏫', label: 'Azubi-Übersicht', visible: true, order: 7, requiresPermission: 'canViewAllStats' },
+  { id: 'chat', icon: '💬', label: 'Chat', visible: true, order: 8, requiresPermission: null },
+  { id: 'materials', icon: '📚', label: 'Lernen', visible: true, order: 9, requiresPermission: null },
+  { id: 'resources', icon: '🔗', label: 'Ressourcen', visible: true, order: 10, requiresPermission: null },
+  { id: 'news', icon: '📢', label: 'News', visible: true, order: 11, requiresPermission: null },
+  { id: 'exams', icon: '📋', label: 'Klausuren', visible: true, order: 12, requiresPermission: null },
+  { id: 'questions', icon: '💡', label: 'Fragen', visible: true, order: 13, requiresPermission: null },
+  { id: 'school-card', icon: '🎓', label: 'Kontrollkarte', visible: true, order: 14, requiresPermission: null },
+  { id: 'berichtsheft', icon: '📖', label: 'Berichtsheft', visible: true, order: 15, requiresPermission: null },
+  { id: 'profile', icon: '👤', label: 'Profil', visible: true, order: 16, requiresPermission: null },
+  { id: 'admin', icon: '⚙️', label: 'Verwaltung', visible: true, order: 17, requiresPermission: 'canManageUsers' }
+];
+
+// Default Theme Colors
+const DEFAULT_THEME_COLORS = {
+  primary: '#0ea5e9',
+  secondary: '#64748b',
+  success: '#22c55e',
+  danger: '#ef4444',
+  warning: '#eab308'
+};
+
 const POOL_CHEMICALS = [
   { name: 'Natriumhypochlorit', formula: 'NaClO', use: 'Flüssigchlor zur Desinfektion' },
   { name: 'Calciumhypochlorit', formula: 'Ca(ClO)₂', use: 'Schnelllösliches Chlorgranulat' },
@@ -1343,6 +1374,15 @@ export default function BaederApp() {
   const [darkMode, setDarkMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [devMode, setDevMode] = useState(false);
+
+  // App Config State (Admin UI Editor)
+  const [appConfig, setAppConfig] = useState({
+    menuItems: DEFAULT_MENU_ITEMS,
+    themeColors: DEFAULT_THEME_COLORS
+  });
+  const [editingMenuItems, setEditingMenuItems] = useState([]);
+  const [editingThemeColors, setEditingThemeColors] = useState({});
+  const [configLoaded, setConfigLoaded] = useState(false);
   
   // Flashcards State
   const [flashcards, setFlashcards] = useState([]);
@@ -2202,6 +2242,35 @@ export default function BaederApp() {
 
   const loadData = async () => {
     try {
+      // Load App Config from Supabase (for all users)
+      try {
+        const { data: configData, error: configError } = await supabase
+          .from('app_config')
+          .select('*')
+          .eq('id', 'main')
+          .single();
+
+        if (configError) {
+          console.log('No custom config found, using defaults');
+        } else if (configData) {
+          const loadedMenuItems = configData.menu_items && configData.menu_items.length > 0
+            ? configData.menu_items
+            : DEFAULT_MENU_ITEMS;
+          const loadedThemeColors = configData.theme_colors && Object.keys(configData.theme_colors).length > 0
+            ? configData.theme_colors
+            : DEFAULT_THEME_COLORS;
+
+          setAppConfig({
+            menuItems: loadedMenuItems,
+            themeColors: loadedThemeColors
+          });
+        }
+        setConfigLoaded(true);
+      } catch (err) {
+        console.error('Config load error:', err);
+        setConfigLoaded(true);
+      }
+
       // Load users from Supabase
       if (user && user.permissions.canManageUsers) {
         // Admin sees all users
@@ -4694,6 +4763,86 @@ export default function BaederApp() {
     }
   };
 
+  // Save App Config (Admin UI Editor)
+  const saveAppConfig = async () => {
+    if (user.role !== 'admin') {
+      showToast('Nur Administratoren können die Konfiguration ändern', 'warning');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('app_config')
+        .upsert({
+          id: 'main',
+          menu_items: editingMenuItems,
+          theme_colors: editingThemeColors,
+          updated_at: new Date().toISOString(),
+          updated_by: user.name
+        });
+
+      if (error) throw error;
+
+      setAppConfig({
+        menuItems: editingMenuItems,
+        themeColors: editingThemeColors
+      });
+
+      showToast('Konfiguration gespeichert! Alle Nutzer sehen jetzt die Änderungen.', 'success');
+      playSound('splash');
+    } catch (error) {
+      console.error('Config save error:', error);
+      showToast('Fehler beim Speichern der Konfiguration', 'error');
+    }
+  };
+
+  // Reset App Config to defaults
+  const resetAppConfig = () => {
+    setEditingMenuItems([...DEFAULT_MENU_ITEMS]);
+    setEditingThemeColors({...DEFAULT_THEME_COLORS});
+    showToast('Zurückgesetzt auf Standardwerte. Klicke Speichern um zu übernehmen.', 'info');
+  };
+
+  // Move menu item up/down
+  const moveMenuItem = (index, direction) => {
+    const newItems = [...editingMenuItems];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= newItems.length) return;
+
+    // Swap orders
+    const tempOrder = newItems[index].order;
+    newItems[index].order = newItems[newIndex].order;
+    newItems[newIndex].order = tempOrder;
+
+    setEditingMenuItems(newItems);
+  };
+
+  // Toggle menu item visibility
+  const toggleMenuItemVisibility = (index) => {
+    const newItems = [...editingMenuItems];
+    newItems[index] = { ...newItems[index], visible: !newItems[index].visible };
+    setEditingMenuItems(newItems);
+  };
+
+  // Update menu item label
+  const updateMenuItemLabel = (index, newLabel) => {
+    const newItems = [...editingMenuItems];
+    newItems[index] = { ...newItems[index], label: newLabel };
+    setEditingMenuItems(newItems);
+  };
+
+  // Update menu item icon
+  const updateMenuItemIcon = (index, newIcon) => {
+    const newItems = [...editingMenuItems];
+    newItems[index] = { ...newItems[index], icon: newIcon };
+    setEditingMenuItems(newItems);
+  };
+
+  // Update theme color
+  const updateThemeColor = (colorKey, newColor) => {
+    setEditingThemeColors(prev => ({ ...prev, [colorKey]: newColor }));
+  };
+
   const addResource = async () => {
     if (!resourceTitle.trim() || !resourceUrl.trim()) return;
 
@@ -5458,26 +5607,18 @@ export default function BaederApp() {
       {/* Navigation */}
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm shadow-md sticky top-0 z-10 relative`}>
         <div className="max-w-7xl mx-auto flex overflow-x-auto">
-          {[
-            { id: 'home', icon: '🏠', label: 'Start', show: true },
-            { id: 'exam-simulator', icon: '📝', label: 'Prüfungssimulator', show: true },
-            { id: 'flashcards', icon: '🎴', label: 'Karteikarten', show: true },
-            { id: 'calculator', icon: '🧮', label: 'Rechner', show: true },
-            { id: 'quiz', icon: '🎮', label: 'Quizduell', show: true },
-            { id: 'swim-challenge', icon: '🏊', label: 'Schwimm-Challenge', show: true },
-            { id: 'stats', icon: '🏅', label: 'Statistiken', show: true },
-            { id: 'trainer-dashboard', icon: '👨‍🏫', label: 'Azubi-Übersicht', show: user.permissions.canViewAllStats },
-            { id: 'chat', icon: '💬', label: 'Chat', show: true },
-            { id: 'materials', icon: '📚', label: 'Lernen', show: true },
-            { id: 'resources', icon: '🔗', label: 'Ressourcen', show: true },
-            { id: 'news', icon: '📢', label: 'News', show: true },
-            { id: 'exams', icon: '📋', label: 'Klasuren', show: true },
-            { id: 'questions', icon: '💡', label: 'Fragen', show: true },
-            { id: 'school-card', icon: '🎓', label: 'Kontrollkarte', show: true },
-            { id: 'berichtsheft', icon: '📖', label: 'Berichtsheft', show: true },
-            { id: 'profile', icon: '👤', label: 'Profil', show: true },
-            { id: 'admin', icon: '⚙️', label: 'Verwaltung', show: user.permissions.canManageUsers }
-          ].filter(item => item.show).map(item => (
+          {[...appConfig.menuItems]
+            .sort((a, b) => a.order - b.order)
+            .filter(item => {
+              // Check visibility
+              if (!item.visible) return false;
+              // Check permission requirements
+              if (item.requiresPermission) {
+                return user.permissions[item.requiresPermission];
+              }
+              return true;
+            })
+            .map(item => (
             <button
               key={item.id}
               onClick={() => {
@@ -5753,6 +5894,177 @@ export default function BaederApp() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* UI Editor Section */}
+            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
+              <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                <span className="text-2xl mr-2">🎨</span>
+                UI-Editor (App-Konfiguration)
+              </h3>
+              <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Hier kannst du die Navigation und Farben der App für alle Nutzer anpassen.
+              </p>
+
+              {/* Initialize editing state button */}
+              {editingMenuItems.length === 0 && (
+                <button
+                  onClick={() => {
+                    setEditingMenuItems([...appConfig.menuItems]);
+                    setEditingThemeColors({...appConfig.themeColors});
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold mb-4"
+                >
+                  🎨 Editor öffnen
+                </button>
+              )}
+
+              {editingMenuItems.length > 0 && (
+                <>
+                  {/* Menu Items Editor */}
+                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-4 mb-4`}>
+                    <h4 className={`font-bold mb-3 ${darkMode ? 'text-cyan-400' : 'text-gray-800'}`}>
+                      📋 Menü-Reihenfolge & Sichtbarkeit
+                    </h4>
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {[...editingMenuItems]
+                        .sort((a, b) => a.order - b.order)
+                        .map((item, index) => (
+                          <div
+                            key={item.id}
+                            className={`flex items-center gap-3 p-3 rounded-lg ${
+                              darkMode ? 'bg-slate-600' : 'bg-white'
+                            } ${!item.visible ? 'opacity-50' : ''}`}
+                          >
+                            {/* Order number */}
+                            <span className={`text-sm font-mono ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              {index + 1}.
+                            </span>
+
+                            {/* Move buttons */}
+                            <div className="flex flex-col gap-1">
+                              <button
+                                onClick={() => moveMenuItem(editingMenuItems.findIndex(i => i.id === item.id), 'up')}
+                                disabled={index === 0}
+                                className={`p-1 rounded ${index === 0 ? 'opacity-30' : 'hover:bg-gray-200 dark:hover:bg-slate-500'}`}
+                              >
+                                ⬆️
+                              </button>
+                              <button
+                                onClick={() => moveMenuItem(editingMenuItems.findIndex(i => i.id === item.id), 'down')}
+                                disabled={index === editingMenuItems.length - 1}
+                                className={`p-1 rounded ${index === editingMenuItems.length - 1 ? 'opacity-30' : 'hover:bg-gray-200 dark:hover:bg-slate-500'}`}
+                              >
+                                ⬇️
+                              </button>
+                            </div>
+
+                            {/* Icon */}
+                            <input
+                              type="text"
+                              value={item.icon}
+                              onChange={(e) => updateMenuItemIcon(editingMenuItems.findIndex(i => i.id === item.id), e.target.value)}
+                              className={`w-12 text-center text-xl p-1 rounded border ${darkMode ? 'bg-slate-700 border-slate-500' : 'border-gray-300'}`}
+                              maxLength={2}
+                            />
+
+                            {/* Label */}
+                            <input
+                              type="text"
+                              value={item.label}
+                              onChange={(e) => updateMenuItemLabel(editingMenuItems.findIndex(i => i.id === item.id), e.target.value)}
+                              className={`flex-1 px-3 py-1 rounded border ${darkMode ? 'bg-slate-700 border-slate-500 text-white' : 'border-gray-300'}`}
+                            />
+
+                            {/* Visibility toggle */}
+                            <button
+                              onClick={() => toggleMenuItemVisibility(editingMenuItems.findIndex(i => i.id === item.id))}
+                              className={`px-3 py-1 rounded-lg text-sm font-bold ${
+                                item.visible
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-gray-300 text-gray-600'
+                              }`}
+                            >
+                              {item.visible ? '👁️ Sichtbar' : '🚫 Versteckt'}
+                            </button>
+
+                            {/* Permission indicator */}
+                            {item.requiresPermission && (
+                              <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                                🔒 {item.requiresPermission}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Theme Colors Editor */}
+                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-4 mb-4`}>
+                    <h4 className={`font-bold mb-3 ${darkMode ? 'text-cyan-400' : 'text-gray-800'}`}>
+                      🎨 Theme-Farben
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      {Object.entries(editingThemeColors).map(([key, value]) => (
+                        <div key={key} className="flex flex-col items-center gap-2">
+                          <label className={`text-sm font-medium capitalize ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {key === 'primary' ? '🔵 Primär' :
+                             key === 'secondary' ? '⚪ Sekundär' :
+                             key === 'success' ? '🟢 Erfolg' :
+                             key === 'danger' ? '🔴 Gefahr' :
+                             key === 'warning' ? '🟡 Warnung' : key}
+                          </label>
+                          <input
+                            type="color"
+                            value={value}
+                            onChange={(e) => updateThemeColor(key, e.target.value)}
+                            className="w-16 h-10 rounded cursor-pointer border-2 border-gray-300"
+                          />
+                          <span className="text-xs font-mono">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 flex-wrap">
+                    <button
+                      onClick={saveAppConfig}
+                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 rounded-lg font-bold"
+                    >
+                      💾 Speichern (für alle Nutzer)
+                    </button>
+                    <button
+                      onClick={resetAppConfig}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold"
+                    >
+                      🔄 Zurücksetzen
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingMenuItems([]);
+                        setEditingThemeColors({});
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-bold"
+                    >
+                      ❌ Abbrechen
+                    </button>
+                  </div>
+
+                  {/* Info Box */}
+                  <div className={`mt-4 ${darkMode ? 'bg-blue-900/50 border-blue-600' : 'bg-blue-50 border-blue-300'} border-2 rounded-lg p-4`}>
+                    <h4 className={`font-bold mb-2 ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                      💡 Hinweise
+                    </h4>
+                    <ul className={`text-sm space-y-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <li>• Änderungen gelten für <strong>alle Nutzer</strong> nach dem Speichern</li>
+                      <li>• Menüpunkte mit 🔒 sind nur für bestimmte Rollen sichtbar</li>
+                      <li>• Versteckte Menüpunkte erscheinen nicht in der Navigation</li>
+                      <li>• Farben werden aktuell nur in der Vorschau angezeigt</li>
+                    </ul>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
