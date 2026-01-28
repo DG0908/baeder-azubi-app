@@ -1,4 +1,4 @@
-// Script zum Generieren von PNG-Icons aus SVG
+// Script zum Generieren von PNG-Icons aus dem 1024x1024 Quell-Icon
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
@@ -17,10 +17,9 @@ const sizes = [
   { size: 192, name: 'icon-192x192.png' },    // Android/PWA
   { size: 384, name: 'icon-384x384.png' },
   { size: 512, name: 'icon-512x512.png' },    // Android/PWA
-  { size: 1024, name: 'icon-1024x1024.png' }, // App Store
 ];
 
-const svgPath = path.join(__dirname, '..', 'public', 'icon.svg');
+const sourcePath = path.join(__dirname, '..', 'public', 'icons', 'icon-1024x1024.png');
 const outputDir = path.join(__dirname, '..', 'public', 'icons');
 
 // Erstelle Output-Verzeichnis
@@ -29,12 +28,17 @@ if (!fs.existsSync(outputDir)) {
 }
 
 async function generateIcons() {
-  console.log('Generiere PNG-Icons aus SVG...\n');
+  console.log('Generiere PNG-Icons aus icon-1024x1024.png...\n');
+
+  if (!fs.existsSync(sourcePath)) {
+    console.error('❌ Fehler: public/icons/icon-1024x1024.png nicht gefunden!');
+    process.exit(1);
+  }
 
   for (const { size, name } of sizes) {
     const outputPath = path.join(outputDir, name);
 
-    await sharp(svgPath)
+    await sharp(sourcePath)
       .resize(size, size)
       .png()
       .toFile(outputPath);
@@ -42,15 +46,15 @@ async function generateIcons() {
     console.log(`✓ ${name} (${size}x${size})`);
   }
 
-  // Kopiere auch als favicon
-  await sharp(svgPath)
-    .resize(32, 32)
+  // Kopiere auch als favicon (72x72 für bessere Qualität)
+  await sharp(sourcePath)
+    .resize(72, 72)
     .png()
     .toFile(path.join(__dirname, '..', 'public', 'favicon.png'));
-  console.log(`✓ favicon.png (32x32)`);
+  console.log(`✓ favicon.png (72x72)`);
 
   // Erstelle Apple Touch Icon
-  await sharp(svgPath)
+  await sharp(sourcePath)
     .resize(180, 180)
     .png()
     .toFile(path.join(__dirname, '..', 'public', 'apple-touch-icon.png'));
