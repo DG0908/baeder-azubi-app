@@ -2350,22 +2350,28 @@ export default function BaederApp() {
       }
 
       // Load resources from Supabase
-      const { data: resourcesData } = await supabase
-        .from('resources')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        const { data: resourcesData, error: resourcesError } = await supabase
+          .from('resources')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (resourcesData) {
-        const ress = resourcesData.map(r => ({
-          id: r.id,
-          title: r.title,
-          description: r.description,
-          url: r.url,
-          category: r.category,
-          createdBy: r.created_by,
-          time: new Date(r.created_at).getTime()
-        }));
-        setResources(ress);
+        if (resourcesError) {
+          console.error('Resources load error:', resourcesError);
+        } else if (resourcesData) {
+          const ress = resourcesData.map(r => ({
+            id: r.id,
+            title: r.title,
+            description: r.description,
+            url: r.url,
+            type: r.category,
+            addedBy: r.created_by,
+            time: new Date(r.created_at).getTime()
+          }));
+          setResources(ress);
+        }
+      } catch (err) {
+        console.error('Resources fetch failed:', err);
       }
 
       // Load news from Supabase
@@ -4737,9 +4743,9 @@ export default function BaederApp() {
         id: data.id,
         title: data.title,
         url: data.url,
-        category: data.category,
+        type: data.category,
         description: data.description,
-        createdBy: data.created_by,
+        addedBy: data.created_by,
         time: new Date(data.created_at).getTime()
       };
 
@@ -6972,8 +6978,8 @@ export default function BaederApp() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className={`${typeColors[resource.type]} text-white px-3 py-1 rounded-full text-xs font-bold`}>
-                              {typeIcons[resource.type]} {resource.type.charAt(0).toUpperCase() + resource.type.slice(1)}
+                            <span className={`${typeColors[resource.type] || 'bg-gray-500'} text-white px-3 py-1 rounded-full text-xs font-bold`}>
+                              {typeIcons[resource.type] || '🔗'} {resource.type ? resource.type.charAt(0).toUpperCase() + resource.type.slice(1) : 'Link'}
                             </span>
                           </div>
                           <h3 className={`text-lg font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
@@ -6993,7 +6999,7 @@ export default function BaederApp() {
                             {resource.url}
                           </a>
                           <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                            Von {resource.addedBy} • {new Date(resource.time).toLocaleDateString()}
+                            Von {resource.addedBy || 'Unbekannt'} • {resource.time ? new Date(resource.time).toLocaleDateString() : '-'}
                           </p>
                         </div>
                         <div className="flex gap-2 ml-4">
