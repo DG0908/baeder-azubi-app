@@ -10649,6 +10649,70 @@ export default function BaederApp() {
               </p>
             </div>
 
+            {/* Freunde einladen */}
+            <div className={`${darkMode ? 'bg-gradient-to-r from-pink-900/80 to-purple-900/80' : 'bg-gradient-to-r from-pink-100 to-purple-100'} rounded-xl p-6 shadow-lg border-2 ${darkMode ? 'border-pink-700' : 'border-pink-300'}`}>
+              <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                🎉 Freunde einladen
+              </h3>
+              <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                Teile die App mit deinen Azubi-Kollegen und lernt gemeinsam!
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={async () => {
+                    const shareData = {
+                      title: 'FAB COMPASS - Bäder-Azubi App',
+                      text: 'Hey! Schau dir diese Lern-App für Fachangestellte für Bäderbetriebe an. Quiz, Karteikarten, Schwimm-Challenge und mehr!',
+                      url: 'https://baeder-azubi-app.vercel.app'
+                    };
+
+                    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                      try {
+                        await navigator.share(shareData);
+                        showToast('Danke fürs Teilen!', 'success');
+                      } catch (err) {
+                        if (err.name !== 'AbortError') {
+                          console.error('Share error:', err);
+                        }
+                      }
+                    } else {
+                      // Fallback: Copy to clipboard
+                      try {
+                        await navigator.clipboard.writeText('https://baeder-azubi-app.vercel.app');
+                        showToast('Link kopiert! Teile ihn mit deinen Freunden.', 'success');
+                        playSound('splash');
+                      } catch (err) {
+                        showToast('Link: https://baeder-azubi-app.vercel.app', 'info');
+                      }
+                    }
+                  }}
+                  className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all"
+                >
+                  <span className="text-xl">📤</span>
+                  <span>App teilen</span>
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText('https://baeder-azubi-app.vercel.app');
+                      showToast('Link kopiert!', 'success');
+                      playSound('splash');
+                    } catch (err) {
+                      showToast('Link: https://baeder-azubi-app.vercel.app', 'info');
+                    }
+                  }}
+                  className={`px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${
+                    darkMode
+                      ? 'bg-slate-700 hover:bg-slate-600 text-white'
+                      : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-300'
+                  }`}
+                >
+                  <span className="text-xl">📋</span>
+                  <span>Link kopieren</span>
+                </button>
+              </div>
+            </div>
+
             {/* Passwort ändern */}
             <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
               <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
