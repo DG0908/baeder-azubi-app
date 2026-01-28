@@ -4804,37 +4804,47 @@ export default function BaederApp() {
   };
 
   // Move menu item up/down
-  const moveMenuItem = (index, direction) => {
-    const newItems = [...editingMenuItems];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= newItems.length) return;
+  const moveMenuItem = (itemId, direction) => {
+    // Sort items by order first
+    const sortedItems = [...editingMenuItems].sort((a, b) => a.order - b.order);
+    const currentIndex = sortedItems.findIndex(item => item.id === itemId);
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
-    // Swap orders
-    const tempOrder = newItems[index].order;
-    newItems[index].order = newItems[newIndex].order;
-    newItems[newIndex].order = tempOrder;
+    if (newIndex < 0 || newIndex >= sortedItems.length) return;
 
-    setEditingMenuItems(newItems);
+    // Swap the two items in the sorted array
+    [sortedItems[currentIndex], sortedItems[newIndex]] = [sortedItems[newIndex], sortedItems[currentIndex]];
+
+    // Reassign order values based on new positions
+    const reorderedItems = sortedItems.map((item, idx) => ({
+      ...item,
+      order: idx
+    }));
+
+    setEditingMenuItems(reorderedItems);
   };
 
   // Toggle menu item visibility
-  const toggleMenuItemVisibility = (index) => {
-    const newItems = [...editingMenuItems];
-    newItems[index] = { ...newItems[index], visible: !newItems[index].visible };
+  const toggleMenuItemVisibility = (itemId) => {
+    const newItems = editingMenuItems.map(item =>
+      item.id === itemId ? { ...item, visible: !item.visible } : item
+    );
     setEditingMenuItems(newItems);
   };
 
   // Update menu item label
-  const updateMenuItemLabel = (index, newLabel) => {
-    const newItems = [...editingMenuItems];
-    newItems[index] = { ...newItems[index], label: newLabel };
+  const updateMenuItemLabel = (itemId, newLabel) => {
+    const newItems = editingMenuItems.map(item =>
+      item.id === itemId ? { ...item, label: newLabel } : item
+    );
     setEditingMenuItems(newItems);
   };
 
   // Update menu item icon
-  const updateMenuItemIcon = (index, newIcon) => {
-    const newItems = [...editingMenuItems];
-    newItems[index] = { ...newItems[index], icon: newIcon };
+  const updateMenuItemIcon = (itemId, newIcon) => {
+    const newItems = editingMenuItems.map(item =>
+      item.id === itemId ? { ...item, icon: newIcon } : item
+    );
     setEditingMenuItems(newItems);
   };
 
@@ -5944,14 +5954,14 @@ export default function BaederApp() {
                             {/* Move buttons */}
                             <div className="flex flex-col gap-1">
                               <button
-                                onClick={() => moveMenuItem(editingMenuItems.findIndex(i => i.id === item.id), 'up')}
+                                onClick={() => moveMenuItem(item.id, 'up')}
                                 disabled={index === 0}
                                 className={`p-1 rounded ${index === 0 ? 'opacity-30' : 'hover:bg-gray-200 dark:hover:bg-slate-500'}`}
                               >
                                 ⬆️
                               </button>
                               <button
-                                onClick={() => moveMenuItem(editingMenuItems.findIndex(i => i.id === item.id), 'down')}
+                                onClick={() => moveMenuItem(item.id, 'down')}
                                 disabled={index === editingMenuItems.length - 1}
                                 className={`p-1 rounded ${index === editingMenuItems.length - 1 ? 'opacity-30' : 'hover:bg-gray-200 dark:hover:bg-slate-500'}`}
                               >
@@ -5963,7 +5973,7 @@ export default function BaederApp() {
                             <input
                               type="text"
                               value={item.icon}
-                              onChange={(e) => updateMenuItemIcon(editingMenuItems.findIndex(i => i.id === item.id), e.target.value)}
+                              onChange={(e) => updateMenuItemIcon(item.id, e.target.value)}
                               className={`w-12 text-center text-xl p-1 rounded border ${darkMode ? 'bg-slate-700 border-slate-500' : 'border-gray-300'}`}
                               maxLength={2}
                             />
@@ -5972,13 +5982,13 @@ export default function BaederApp() {
                             <input
                               type="text"
                               value={item.label}
-                              onChange={(e) => updateMenuItemLabel(editingMenuItems.findIndex(i => i.id === item.id), e.target.value)}
+                              onChange={(e) => updateMenuItemLabel(item.id, e.target.value)}
                               className={`flex-1 px-3 py-1 rounded border ${darkMode ? 'bg-slate-700 border-slate-500 text-white' : 'border-gray-300'}`}
                             />
 
                             {/* Visibility toggle */}
                             <button
-                              onClick={() => toggleMenuItemVisibility(editingMenuItems.findIndex(i => i.id === item.id))}
+                              onClick={() => toggleMenuItemVisibility(item.id)}
                               className={`px-3 py-1 rounded-lg text-sm font-bold ${
                                 item.visible
                                   ? 'bg-green-500 text-white'
