@@ -3270,6 +3270,30 @@ export default function BaederApp() {
 
       console.log('User created via Supabase Auth:', data);
 
+      // Fallback: Profil manuell erstellen falls DB-Trigger nicht existiert
+      if (data?.user) {
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
+              name: registerData.name,
+              email: registerData.email,
+              role: registerData.role,
+              training_end: registerData.trainingEnd || null,
+              approved: false
+            }, { onConflict: 'id' });
+
+          if (profileError) {
+            console.warn('Profil-Fallback Info:', profileError.message);
+          } else {
+            console.log('Profil erfolgreich erstellt/bestätigt');
+          }
+        } catch (e) {
+          console.warn('Profil-Fallback fehlgeschlagen:', e);
+        }
+      }
+
       // Direkt ausloggen - User muss erst freigeschaltet werden
       await supabase.auth.signOut();
 
