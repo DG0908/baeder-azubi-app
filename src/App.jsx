@@ -3470,25 +3470,34 @@ export default function BaederApp() {
         .order('created_at', { ascending: false });
 
       if (gamesData) {
-        const games = gamesData.map(g => ({
-          id: g.id,
-          player1: g.player1,
-          player2: g.player2,
-          player1Score: g.player1_score,
-          player2Score: g.player2_score,
-          currentTurn: g.current_turn,
-          categoryRound: g.round || 0,
-          status: g.status,
-          difficulty: g.difficulty,
-          categoryRounds: g.rounds_data || [],
-          questionHistory: []
-        }));
+        const games = gamesData.map(g => {
+          // Winner aus DB laden, oder aus Scores berechnen (Fallback)
+          let winner = g.winner || null;
+          if (!winner && g.status === 'finished') {
+            if (g.player1_score > g.player2_score) winner = g.player1;
+            else if (g.player2_score > g.player1_score) winner = g.player2;
+          }
+          return {
+            id: g.id,
+            player1: g.player1,
+            player2: g.player2,
+            player1Score: g.player1_score,
+            player2Score: g.player2_score,
+            currentTurn: g.current_turn,
+            categoryRound: g.round || 0,
+            status: g.status,
+            difficulty: g.difficulty,
+            categoryRounds: g.rounds_data || [],
+            winner: winner,
+            questionHistory: []
+          };
+        });
         setActiveGames(games.filter(g => g.status !== 'finished'));
         updateLeaderboard(games, allUsers);
       }
 
-      // Load user stats from Supabase
-      if (user && user.id) {
+      // Load user stats from Supabase und mit beendeten Spielen synchronisieren
+      if (user && user.id && gamesData) {
         try {
           const { data: statsData } = await supabase
             .from('user_stats')
@@ -3496,31 +3505,69 @@ export default function BaederApp() {
             .eq('user_id', user.id)
             .single();
 
-          if (statsData) {
-            setUserStats({
-              wins: statsData.wins || 0,
-              losses: statsData.losses || 0,
-              draws: statsData.draws || 0,
-              categoryStats: statsData.category_stats || {},
-              opponents: statsData.opponents || {}
+          let stats = statsData ? {
+            wins: statsData.wins || 0,
+            losses: statsData.losses || 0,
+            draws: statsData.draws || 0,
+            categoryStats: statsData.category_stats || {},
+            opponents: statsData.opponents || {},
+            winStreak: statsData.win_streak || 0,
+            bestWinStreak: statsData.best_win_streak || 0
+          } : {
+            wins: 0, losses: 0, draws: 0,
+            categoryStats: {}, opponents: {},
+            winStreak: 0, bestWinStreak: 0
+          };
+
+          // Stats aus beendeten Spielen neu berechnen (behebt RLS-Problem)
+          const finishedGames = gamesData.filter(g =>
+            g.status === 'finished' &&
+            (g.player1 === user.name || g.player2 === user.name)
+          );
+
+          if (finishedGames.length > 0) {
+            let syncedWins = 0, syncedLosses = 0, syncedDraws = 0;
+            const syncedOpponents = {};
+
+            finishedGames.forEach(g => {
+              let winner = g.winner || null;
+              if (!winner && g.player1_score > g.player2_score) winner = g.player1;
+              else if (!winner && g.player2_score > g.player1_score) winner = g.player2;
+
+              const opponent = g.player1 === user.name ? g.player2 : g.player1;
+              if (!syncedOpponents[opponent]) {
+                syncedOpponents[opponent] = { wins: 0, losses: 0, draws: 0 };
+              }
+
+              if (winner === user.name) {
+                syncedWins++;
+                syncedOpponents[opponent].wins++;
+              } else if (winner === null) {
+                syncedDraws++;
+                syncedOpponents[opponent].draws++;
+              } else {
+                syncedLosses++;
+                syncedOpponents[opponent].losses++;
+              }
             });
-          } else {
-            setUserStats({
-              wins: 0,
-              losses: 0,
-              draws: 0,
-              categoryStats: {},
-              opponents: {}
-            });
+
+            // Nur aktualisieren wenn Differenz erkannt wird
+            if (syncedWins !== stats.wins || syncedLosses !== stats.losses || syncedDraws !== stats.draws) {
+              stats.wins = syncedWins;
+              stats.losses = syncedLosses;
+              stats.draws = syncedDraws;
+              stats.opponents = { ...stats.opponents, ...syncedOpponents };
+              // Eigene Stats in DB korrigieren
+              await saveUserStatsToSupabase(user.name, stats);
+            }
           }
+
+          setUserStats(stats);
         } catch (e) {
           console.log('Stats load:', e);
           setUserStats({
-            wins: 0,
-            losses: 0,
-            draws: 0,
-            categoryStats: {},
-            opponents: {}
+            wins: 0, losses: 0, draws: 0,
+            categoryStats: {}, opponents: {}
           });
         }
       }
@@ -4151,17 +4198,24 @@ export default function BaederApp() {
   // Helper function to save game state to Supabase
   const saveGameToSupabase = async (game) => {
     try {
+      const updateData = {
+        player1_score: game.player1Score,
+        player2_score: game.player2Score,
+        current_turn: game.currentTurn,
+        round: game.categoryRound || 0,
+        status: game.status,
+        rounds_data: game.categoryRounds || [],
+        updated_at: new Date().toISOString()
+      };
+
+      // Winner-Feld nur setzen wenn Spiel beendet ist
+      if (game.status === 'finished') {
+        updateData.winner = game.winner || null;
+      }
+
       const { error } = await supabase
         .from('games')
-        .update({
-          player1_score: game.player1Score,
-          player2_score: game.player2Score,
-          current_turn: game.currentTurn,
-          round: game.categoryRound || 0,
-          status: game.status,
-          rounds_data: game.categoryRounds || [],
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', game.id);
 
       if (error) throw error;
@@ -4560,60 +4614,77 @@ export default function BaederApp() {
     try {
       await saveGameToSupabase(currentGame);
 
-      for (const playerName of [currentGame.player1, currentGame.player2]) {
-        try {
-          // Get existing stats from Supabase
-          const existingStats = await getUserStatsFromSupabase(playerName);
-          const stats = existingStats || {
-            wins: 0,
-            losses: 0,
-            draws: 0,
-            categoryStats: {},
-            opponents: {},
-            winStreak: 0,
-            bestWinStreak: 0
-          };
+      // Nur eigene Stats aktualisieren (RLS erlaubt nur eigene Stats)
+      try {
+        const existingStats = await getUserStatsFromSupabase(user.name);
+        const stats = existingStats || {
+          wins: 0,
+          losses: 0,
+          draws: 0,
+          categoryStats: {},
+          opponents: {},
+          winStreak: 0,
+          bestWinStreak: 0
+        };
 
-          // Ensure winStreak fields exist
-          if (stats.winStreak === undefined) stats.winStreak = 0;
-          if (stats.bestWinStreak === undefined) stats.bestWinStreak = 0;
+        if (stats.winStreak === undefined) stats.winStreak = 0;
+        if (stats.bestWinStreak === undefined) stats.bestWinStreak = 0;
 
-          const opponent = playerName === currentGame.player1 ? currentGame.player2 : currentGame.player1;
+        const opponent = user.name === currentGame.player1 ? currentGame.player2 : currentGame.player1;
 
-          if (!stats.opponents[opponent]) {
-            stats.opponents[opponent] = { wins: 0, losses: 0, draws: 0 };
-          }
-
-          if (winner === playerName) {
-            stats.wins++;
-            stats.opponents[opponent].wins++;
-            // Win Streak erhöhen
-            stats.winStreak++;
-            if (stats.winStreak > stats.bestWinStreak) {
-              stats.bestWinStreak = stats.winStreak;
-            }
-          } else if (winner === null) {
-            stats.draws++;
-            stats.opponents[opponent].draws++;
-            // Unentschieden beendet die Serie NICHT
-          } else {
-            stats.losses++;
-            stats.opponents[opponent].losses++;
-            // Niederlage beendet die Win Streak
-            stats.winStreak = 0;
-          }
-
-          await saveUserStatsToSupabase(playerName, stats);
-
-          if (playerName === user.name) {
-            setUserStats(stats);
-          }
-        } catch (error) {
-          console.error('Stats update error:', error);
+        if (!stats.opponents[opponent]) {
+          stats.opponents[opponent] = { wins: 0, losses: 0, draws: 0 };
         }
+
+        if (winner === user.name) {
+          stats.wins++;
+          stats.opponents[opponent].wins++;
+          stats.winStreak++;
+          if (stats.winStreak > stats.bestWinStreak) {
+            stats.bestWinStreak = stats.winStreak;
+          }
+        } else if (winner === null) {
+          stats.draws++;
+          stats.opponents[opponent].draws++;
+        } else {
+          stats.losses++;
+          stats.opponents[opponent].losses++;
+          stats.winStreak = 0;
+        }
+
+        await saveUserStatsToSupabase(user.name, stats);
+        setUserStats(stats);
+      } catch (error) {
+        console.error('Stats update error:', error);
       }
 
-      setCurrentView('stats');
+      // Spiel-State komplett zurücksetzen
+      setCurrentGame(null);
+      setQuizCategory(null);
+      setCurrentQuestion(null);
+      setCurrentCategoryQuestions([]);
+      setCategoryRound(0);
+      setQuestionInCategory(0);
+      setPlayerTurn(null);
+      setWaitingForOpponent(false);
+      setAnswered(false);
+      setSelectedAnswers([]);
+      setLastSelectedAnswer(null);
+      setTimerActive(false);
+
+      // Spieleliste neu laden damit beendetes Spiel verschwindet
+      loadData();
+
+      showToast(
+        winner === user.name
+          ? '🎉 Glückwunsch, du hast gewonnen!'
+          : winner === null
+            ? '🤝 Unentschieden!'
+            : '😔 Leider verloren!',
+        winner === user.name ? 'success' : 'info'
+      );
+
+      setCurrentView('quizduell');
       checkBadges();
     } catch (error) {
       console.error('Finish error:', error);
