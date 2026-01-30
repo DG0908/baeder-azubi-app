@@ -3520,10 +3520,19 @@ export default function BaederApp() {
           };
 
           // Stats aus beendeten Spielen neu berechnen (behebt RLS-Problem)
-          const finishedGames = gamesData.filter(g =>
-            g.status === 'finished' &&
-            (g.player1 === user.name || g.player2 === user.name)
-          );
+          // Nur vollständig gespielte Spiele zählen (mind. 4 Runden mit Antworten)
+          const finishedGames = gamesData.filter(g => {
+            if (g.status !== 'finished') return false;
+            if (g.player1 !== user.name && g.player2 !== user.name) return false;
+            // Nur Spiele zählen wo beide Spieler tatsächlich gespielt haben
+            const rounds = g.rounds_data || [];
+            if (rounds.length === 0) return false;
+            const bothPlayed = rounds.every(r =>
+              r.player1Answers && r.player1Answers.length > 0 &&
+              r.player2Answers && r.player2Answers.length > 0
+            );
+            return bothPlayed;
+          });
 
           if (finishedGames.length > 0) {
             let syncedWins = 0, syncedLosses = 0, syncedDraws = 0;
@@ -3551,13 +3560,19 @@ export default function BaederApp() {
               }
             });
 
-            // Nur aktualisieren wenn Differenz erkannt wird
-            if (syncedWins !== stats.wins || syncedLosses !== stats.losses || syncedDraws !== stats.draws) {
-              stats.wins = syncedWins;
-              stats.losses = syncedLosses;
-              stats.draws = syncedDraws;
-              stats.opponents = { ...stats.opponents, ...syncedOpponents };
-              // Eigene Stats in DB korrigieren
+            // Stats immer aus Spielen berechnen (Single Source of Truth)
+            stats.wins = syncedWins;
+            stats.losses = syncedLosses;
+            stats.draws = syncedDraws;
+            stats.opponents = syncedOpponents;
+            await saveUserStatsToSupabase(user.name, stats);
+          } else {
+            // Keine gültigen beendeten Spiele → Stats zurücksetzen falls nötig
+            if (stats.wins > 0 || stats.losses > 0 || stats.draws > 0) {
+              stats.wins = 0;
+              stats.losses = 0;
+              stats.draws = 0;
+              stats.opponents = {};
               await saveUserStatsToSupabase(user.name, stats);
             }
           }
@@ -3755,8 +3770,17 @@ export default function BaederApp() {
 
   const updateLeaderboard = (games, users) => {
     const stats = {};
-    
-    games.filter(g => g.status === 'finished').forEach(game => {
+
+    // Nur vollständig gespielte Spiele zählen
+    games.filter(g => {
+      if (g.status !== 'finished') return false;
+      const rounds = g.categoryRounds || [];
+      if (rounds.length === 0) return false;
+      return rounds.every(r =>
+        r.player1Answers && r.player1Answers.length > 0 &&
+        r.player2Answers && r.player2Answers.length > 0
+      );
+    }).forEach(game => {
       [game.player1, game.player2].forEach(player => {
         if (!stats[player]) {
           stats[player] = { name: player, wins: 0, losses: 0, draws: 0, points: 0 };
