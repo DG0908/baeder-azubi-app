@@ -4125,6 +4125,18 @@ export default function BaederApp() {
 
   // Quiz functions with Supabase
   const challengePlayer = async (opponent) => {
+    // Prüfe ob bereits ein laufendes Spiel gegen diesen Gegner existiert
+    const existingGame = activeGames.find(g =>
+      g.status !== 'finished' &&
+      ((g.player1 === user.name && g.player2 === opponent) ||
+       (g.player1 === opponent && g.player2 === user.name))
+    );
+
+    if (existingGame) {
+      showToast(`Du hast bereits ein laufendes Spiel gegen ${opponent}!`, 'error');
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('games')
@@ -7867,13 +7879,21 @@ export default function BaederApp() {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => challengePlayer(u.name)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold flex items-center space-x-2"
-                    >
-                      <Target size={20} />
-                      <span>Herausfordern</span>
-                    </button>
+                    {activeGames.some(g =>
+                      g.status !== 'finished' &&
+                      ((g.player1 === user.name && g.player2 === u.name) ||
+                       (g.player1 === u.name && g.player2 === user.name))
+                    ) ? (
+                      <span className="text-sm text-gray-500 italic px-4">Spiel läuft bereits</span>
+                    ) : (
+                      <button
+                        onClick={() => challengePlayer(u.name)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold flex items-center space-x-2"
+                      >
+                        <Target size={20} />
+                        <span>Herausfordern</span>
+                      </button>
+                    )}
                   </div>
                 ))}
                 {allUsers.filter(u => u.name !== user.name).length === 0 && (
