@@ -1404,18 +1404,18 @@ const SAMPLE_QUESTIONS = {
     { q: 'Welche Befreiungsgriffe gibt es?', a: ['Kopf-Nacken-Befreiung, Hals-Umklammerung-Lösen, Handgelenk-Befreiung', 'Keine Befreiungsgriffe', 'Nur Schlagen', 'Nur Wegtauchen'], correct: 0 },
     // Frage 81: Techniken Opfer an Land bringen
     { q: 'Welche Technik gibt es, um ein Opfer an Land zu bringen?', a: ['Rautek-Griff, Schultertragegriff, Seemannsgriff', 'Opfer selbst laufen lassen', 'Nur Ziehen', 'Nur Schieben'], correct: 0 },
-    // Frage 82: Opfertransport im Wasser
-    { q: 'Wie kann man ein Opfer im Wasser transportieren?', a: ['Kopfschleppgriff, Achselschleppgriff, Standard-Fesselschleppgriff', 'Opfer selbst schwimmen lassen', 'Unter Wasser ziehen', 'Auf dem Rücken des Retters'], correct: 0 },
-    // Frage 83: Abschleppgriffe
-    { q: 'Welche Abschleppgriffe gibt es?', a: ['Kopfschleppgriff, Achselschleppgriff, Fesselschleppgriff', 'Nur einen Griff', 'Keine standardisierten Griffe', 'Nur für Bewusstlose'], correct: 0 },
-    // Frage 84: Transport vs. Abschleppen
-    { q: 'Wann wird ein Opfer transportiert und wann abgeschleppt?', a: ['Transport: bewusstlos/verletzt; Abschleppen: bei Bewusstsein aber erschöpft', 'Kein Unterschied', 'Immer transportieren', 'Immer abschleppen'], correct: 0 },
-    // Frage 85a: Wann Transportgriff anwenden
-    { q: 'Wann wendet man einen Transportgriff an?', a: ['Bei bewusstlosen oder schwer verletzten Opfern', 'Bei erschöpften aber wachen Opfern', 'Immer', 'Nie'], correct: 0 },
-    // Frage 85b: Wann Schleppgriff anwenden
-    { q: 'Wann wendet man einen Schleppgriff an?', a: ['Bei erschöpften aber kooperativen Opfern', 'Bei Bewusstlosen', 'Bei Verletzten', 'Nie im Wasser'], correct: 0 },
-    // Frage 85c: Wann Fesselschleppgriff anwenden
-    { q: 'Wann wendet man den Fesselschleppgriff an?', a: ['Bei panischen oder nicht kooperativen Opfern', 'Bei bewusstlosen Opfern', 'Bei kooperativen Opfern', 'Nur an Land'], correct: 0 },
+    // Frage 82: Rettungstransport im Wasser
+    { q: 'Wie kann ein Retter ein Opfer im Wasser bewegen?', a: ['Schleppen (z.B. Kopfschleppgriff) oder Schieben/Ziehen', 'Opfer selbst schwimmen lassen', 'Unter Wasser ziehen', 'Auf dem Rücken des Retters'], correct: 0 },
+    // Frage 83: Schleppgriffe
+    { q: 'Welche Schleppgriffe gibt es?', a: ['Kopfschleppgriff, Achselschleppgriff, Standard-Fesselschleppgriff', 'Nur einen Griff', 'Keine standardisierten Griffe', 'Nur den Kopfschleppgriff'], correct: 0 },
+    // Frage 84: Schleppen vs. Schieben
+    { q: 'Was ist der Unterschied zwischen Schleppen und Schieben beim Rettungsschwimmen?', a: ['Schleppen: Retter zieht das Opfer; Schieben: Retter schiebt das Opfer vor sich her', 'Kein Unterschied', 'Schleppen ist nur an Land', 'Schieben ist nur im Flachwasser'], correct: 0 },
+    // Frage 85a: Wann Kopf-/Achselschleppgriff
+    { q: 'Wann wendet man den Kopf- oder Achselschleppgriff an?', a: ['Bei bewusstlosen oder nicht kooperativen Opfern', 'Nur bei erschöpften wachen Opfern', 'Immer', 'Nie'], correct: 0 },
+    // Frage 85b: Wann Standard-Fesselschleppgriff
+    { q: 'Wann wendet man den Standard-Fesselschleppgriff an?', a: ['Bei panischen oder sich wehrenden Opfern (Selbstschutz)', 'Nur bei Bewusstlosen', 'Nur bei kooperativen Opfern', 'Nur an Land'], correct: 0 },
+    // Frage 85c: Wichtigste Regel beim Rettungsschwimmen
+    { q: 'Was ist die wichtigste Regel beim Rettungsschwimmen?', a: ['Eigenschutz geht vor - nie selbst in Gefahr bringen', 'Möglichst schnell ins Wasser springen', 'Immer alleine retten', 'Opfer sofort untertauchen'], correct: 0 },
     // Frage 86: Bedeutung Kleiderschwimmen
     { q: 'Warum ist Kleiderschwimmen in der Rettungsschwimmausbildung wichtig?', a: ['Simulation realistischer Rettungssituationen, da man oft bekleidet retten muss', 'Nur für Wettkämpfe', 'Hat keine Bedeutung', 'Nur zur Unterhaltung'], correct: 0 },
     // Frage 87: Lagerung nach Wiederbelebung
@@ -1653,7 +1653,7 @@ const SAMPLE_QUESTIONS = {
     { q: 'Was bedeutet Friedenspflicht?', a: ['Während der Tariflaufzeit keine Streiks über tarifliche Themen', 'Kein Krieg in Deutschland', 'Friedliche Verhandlungen', 'Verbot von Demonstrationen'], correct: 0 },
     // Demokratische Wahlen
     { q: 'Was ist ein Grundsatz demokratischer Wahlen?', a: ['Geheim (niemand sieht, was man wählt)', 'Öffentlich (jeder sieht, was man wählt)', 'Nur für Männer', 'Nur für Reiche'], correct: 0 },
-    { q: 'Welche 5 Grundsätze demokratischer Wahlen gibt es? (Mehrere richtig)', a: ['Allgemein', 'Unmittelbar', 'Frei', 'Gleich'], correct: [0, 1, 2, 3], multi: true },
+    { q: 'Welche sind Grundsätze demokratischer Wahlen? (Mehrere richtig)', a: ['Allgemein', 'Geheim', 'Frei', 'Öffentlich'], correct: [0, 1, 2], multi: true },
     // Gesellschaftsformen
     { q: 'Welche Gesellschaftsform ist im Handelsregister eingetragen?', a: ['Gesellschaft mit beschränkter Haftung (GmbH)', 'Einzelunternehmen ohne Kaufmannseigenschaft', 'Verein', 'Stiftung'], correct: 0 },
     { q: 'Welche Gesellschaftsformen gibt es? (Mehrere richtig)', a: ['Gesellschaft mit beschränkter Haftung', 'Aktiengesellschaft', 'Offene Handelsgesellschaft', 'Kommanditgesellschaft'], correct: [0, 1, 2, 3], multi: true },
