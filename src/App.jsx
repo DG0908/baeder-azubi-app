@@ -11576,8 +11576,8 @@ export default function BaederApp() {
                     </div>
                   </div>
 
-                  {/* Speichern Button */}
-                  <div className="flex gap-4">
+                  {/* Speichern & PDF Buttons */}
+                  <div className="flex gap-4 flex-wrap">
                     <button
                       onClick={saveBerichtsheft}
                       className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold text-lg transition-all shadow-lg"
@@ -11585,6 +11585,15 @@ export default function BaederApp() {
                       <Check className="inline mr-2" size={20} />
                       {selectedBerichtsheft ? 'Aktualisieren' : 'Speichern'}
                     </button>
+                    {selectedBerichtsheft && (
+                      <button
+                        onClick={() => generateBerichtsheftPDF(selectedBerichtsheft)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-bold text-lg transition-all shadow-lg flex items-center gap-2"
+                      >
+                        <Download className="inline" size={20} />
+                        PDF / Drucken
+                      </button>
+                    )}
                     {selectedBerichtsheft && (
                       <button
                         onClick={resetBerichtsheftForm}
