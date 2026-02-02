@@ -7109,99 +7109,95 @@ export default function BaederApp() {
                   const daysLeft = getDaysUntilDeletion(acc);
                   return (
                     <div key={acc.email} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-bold">{acc.name}</p>
-                            <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
-                              acc.role === 'admin' ? 'bg-purple-500' :
-                              acc.role === 'trainer' ? 'bg-blue-500' : 'bg-green-500'
-                            }`}>
-                              {PERMISSIONS[acc.role].label}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600">{acc.email}</p>
-                          {acc.trainingEnd && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}
-                            </p>
-                          )}
-                          {acc.lastLogin && (
-                            <p className="text-xs text-gray-500">
-                              Letzter Login: {new Date(acc.lastLogin).toLocaleDateString()}
-                            </p>
-                          )}
-                          {daysLeft !== null && (
-                            <div className={`mt-2 flex items-center text-xs ${
-                              daysLeft < 30 ? 'text-red-600' : daysLeft < 90 ? 'text-yellow-600' : 'text-gray-600'
-                            }`}>
-                              <AlertTriangle size={14} className="mr-1" />
-                              {daysLeft > 0 
-                                ? `Automatische Löschung in ${daysLeft} Tagen`
-                                : 'Löschung steht bevor'}
-                            </div>
-                          )}
+                      <div className="flex items-start gap-2 mb-1 flex-wrap">
+                        <p className="font-bold">{acc.name}</p>
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
+                          acc.role === 'admin' ? 'bg-purple-500' :
+                          acc.role === 'trainer' ? 'bg-blue-500' : 'bg-green-500'
+                        }`}>
+                          {PERMISSIONS[acc.role].label}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-1">{acc.email}</p>
+                      {acc.trainingEnd && (
+                        <p className="text-xs text-gray-500">
+                          Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}
+                        </p>
+                      )}
+                      {acc.lastLogin && (
+                        <p className="text-xs text-gray-500">
+                          Letzter Login: {new Date(acc.lastLogin).toLocaleDateString()}
+                        </p>
+                      )}
+                      {daysLeft !== null && (
+                        <div className={`mt-1 flex items-center text-xs ${
+                          daysLeft < 30 ? 'text-red-600' : daysLeft < 90 ? 'text-yellow-600' : 'text-gray-600'
+                        }`}>
+                          <AlertTriangle size={14} className="mr-1" />
+                          {daysLeft > 0
+                            ? `Automatische Löschung in ${daysLeft} Tagen`
+                            : 'Löschung steht bevor'}
                         </div>
-                        <div className="flex gap-2">
-                          <select
-                            value={acc.role}
-                            onChange={(e) => changeUserRole(acc.email, e.target.value)}
-                            className="px-3 py-1 border rounded text-sm"
-                            disabled={acc.role === 'admin'}
-                          >
-                            <option value="azubi">Azubi</option>
-                            <option value="trainer">Ausbilder</option>
-                            <option value="admin">Admin</option>
-                          </select>
+                      )}
+                      <div className="flex gap-2 mt-3 flex-wrap">
+                        <select
+                          value={acc.role}
+                          onChange={(e) => changeUserRole(acc.email, e.target.value)}
+                          className="px-3 py-1.5 border rounded text-sm"
+                          disabled={acc.role === 'admin'}
+                        >
+                          <option value="azubi">Azubi</option>
+                          <option value="trainer">Ausbilder</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                        <button
+                          onClick={() => exportUserData(acc.email, acc.name)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg"
+                          title="Daten exportieren"
+                        >
+                          <Download size={18} />
+                        </button>
+                        {acc.role !== 'admin' && (
                           <button
-                            onClick={() => exportUserData(acc.email, acc.name)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg"
-                            title="Daten exportieren"
+                            onClick={() => deleteUser(acc.email)}
+                            className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg"
+                            title="Nutzer löschen"
                           >
-                            <Download size={18} />
+                            <Trash2 size={18} />
                           </button>
-                          {acc.role !== 'admin' && (
+                        )}
+                        {acc.role === 'trainer' && (
+                          <>
                             <button
-                              onClick={() => deleteUser(acc.email)}
-                              className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg"
-                              title="Nutzer löschen"
+                              onClick={() => toggleSchoolCardPermission(acc.id, acc.can_view_school_cards)}
+                              className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                                acc.can_view_school_cards
+                                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
+                              title={acc.can_view_school_cards ? 'Kontrollkarten-Zugriff entziehen' : 'Kontrollkarten-Zugriff erteilen'}
                             >
-                              <Trash2 size={18} />
+                              Kontrollkarten {acc.can_view_school_cards ? '✓' : '○'}
                             </button>
-                          )}
-                          {acc.role === 'trainer' && (
-                            <>
-                              <button
-                                onClick={() => toggleSchoolCardPermission(acc.id, acc.can_view_school_cards)}
-                                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                                  acc.can_view_school_cards
-                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                                title={acc.can_view_school_cards ? 'Kontrollkarten-Zugriff entziehen' : 'Kontrollkarten-Zugriff erteilen'}
-                              >
-                                🎓 {acc.can_view_school_cards ? '✓' : '○'}
-                              </button>
-                              <button
-                                onClick={() => toggleSignReportsPermission(acc.id, acc.can_sign_reports)}
-                                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                                  acc.can_sign_reports
-                                    ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                                title={acc.can_sign_reports ? 'Berichtsheft-Unterschrift entziehen' : 'Berichtsheft-Unterschrift erteilen'}
-                              >
-                                📝 {acc.can_sign_reports ? '✓' : '○'}
-                              </button>
-                            </>
-                          )}
-                          {acc.role === 'admin' && (
-                            <div className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg text-xs font-bold flex items-center">
-                              <Shield size={14} className="mr-1" />
-                              Geschützt
-                            </div>
-                          )}
-                        </div>
+                            <button
+                              onClick={() => toggleSignReportsPermission(acc.id, acc.can_sign_reports)}
+                              className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                                acc.can_sign_reports
+                                  ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
+                              title={acc.can_sign_reports ? 'Berichtsheft-Unterschrift entziehen' : 'Berichtsheft-Unterschrift erteilen'}
+                            >
+                              Berichte {acc.can_sign_reports ? '✓' : '○'}
+                            </button>
+                          </>
+                        )}
+                        {acc.role === 'admin' && (
+                          <div className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg text-xs font-bold flex items-center">
+                            <Shield size={14} className="mr-1" />
+                            Geschützt
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
