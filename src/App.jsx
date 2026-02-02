@@ -2636,6 +2636,7 @@ export default function BaederApp() {
       ausbildungsende: ''
     };
   });
+  const azubiProfileSaveTimerRef = useRef(null);
 
   // Calculator State
   const [calculatorType, setCalculatorType] = useState('ph');
@@ -2777,6 +2778,12 @@ export default function BaederApp() {
           };
           setUser(userSession);
           localStorage.setItem('baeder_user', JSON.stringify(userSession));
+
+          // Azubi-Profil aus Supabase laden (falls vorhanden)
+          if (profile.berichtsheft_profile) {
+            setAzubiProfile(profile.berichtsheft_profile);
+            localStorage.setItem('azubi_profile', JSON.stringify(profile.berichtsheft_profile));
+          }
         } else if (profile && !profile.approved) {
           // User nicht freigeschaltet
           await supabase.auth.signOut();
@@ -2854,6 +2861,25 @@ export default function BaederApp() {
     // Load Berichtsheft when view changes
     if (currentView === 'berichtsheft' && user) {
       loadBerichtsheftEntries();
+
+      // Azubi-Profil aus Supabase nachladen falls localStorage leer
+      if (user.id && (!azubiProfile.vorname || !azubiProfile.nachname)) {
+        (async () => {
+          try {
+            const { data } = await supabase
+              .from('profiles')
+              .select('berichtsheft_profile')
+              .eq('id', user.id)
+              .single();
+            if (data?.berichtsheft_profile) {
+              setAzubiProfile(data.berichtsheft_profile);
+              localStorage.setItem('azubi_profile', JSON.stringify(data.berichtsheft_profile));
+            }
+          } catch (err) {
+            console.warn('Azubi-Profil nachladen fehlgeschlagen:', err);
+          }
+        })();
+      }
     }
 
   }, [currentView, user]);
@@ -5131,10 +5157,30 @@ export default function BaederApp() {
     return end.toISOString().split('T')[0];
   };
 
-  // Azubi-Profil speichern
+  // Azubi-Profil speichern (localStorage sofort + Supabase debounced)
   const saveAzubiProfile = (newProfile) => {
     setAzubiProfile(newProfile);
     localStorage.setItem('azubi_profile', JSON.stringify(newProfile));
+
+    // Debounced Supabase-Speicherung (1 Sekunde nach letzter Änderung)
+    if (azubiProfileSaveTimerRef.current) {
+      clearTimeout(azubiProfileSaveTimerRef.current);
+    }
+    azubiProfileSaveTimerRef.current = setTimeout(async () => {
+      if (user?.id) {
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ berichtsheft_profile: newProfile })
+            .eq('id', user.id);
+          if (error) {
+            console.warn('Berichtsheft-Profil Supabase-Sync Fehler:', error.message);
+          }
+        } catch (err) {
+          console.warn('Berichtsheft-Profil Sync fehlgeschlagen:', err);
+        }
+      }
+    }, 1000);
   };
 
   // ==================== SCHWIMMCHALLENGE FUNKTIONEN ====================
@@ -5474,7 +5520,7 @@ export default function BaederApp() {
   };
 
   const generateBerichtsheftPDF = (entry) => {
-    // Erstellt eine druckbare HTML-Version
+    // Erstellt eine druckbare HTML-Version im A4-Format
     const weekStart = new Date(entry.week_start);
     const weekEnd = new Date(entry.week_end);
 
@@ -5482,10 +5528,11 @@ export default function BaederApp() {
       return new Date(date).toLocaleDateString('de-DE', { day: '2-digit', month: 'long' });
     };
 
-    const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-    const dayNames = { Mo: 'Montag', Di: 'Dienstag', Mi: 'Mittwoch', Do: 'Donnerstag', Fr: 'Freitag', Sa: 'Samstag' };
+    const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
     let tableRows = '';
+    let runningTotal = 0;
+
     days.forEach(day => {
       const dayEntries = entry.entries?.[day] || [];
       const dayDate = new Date(weekStart);
@@ -5497,21 +5544,27 @@ export default function BaederApp() {
       dayEntries.forEach(e => {
         if (e.taetigkeit) {
           const bereich = AUSBILDUNGSRAHMENPLAN.find(b => b.nr === parseInt(e.bereich));
-          dayContent += `<div style="margin-bottom: 4px;">${e.taetigkeit}${bereich ? ` <small style="color: #666;">(${bereich.bereich})</small>` : ''}</div>`;
+          dayContent += `<div style="margin-bottom: 3px;">${e.taetigkeit}${bereich ? ` <small style="color: #555;">(${bereich.bereich})</small>` : ''}</div>`;
           dayHours += parseFloat(e.stunden) || 0;
         }
       });
 
+      runningTotal += dayHours;
+
       tableRows += `
         <tr>
-          <td style="border: 1px solid #333; padding: 8px; font-weight: bold; width: 50px; vertical-align: top;">${day}</td>
-          <td style="border: 1px solid #333; padding: 8px; min-height: 60px;">${dayContent || '-'}</td>
-          <td style="border: 1px solid #333; padding: 8px; text-align: center; width: 80px;">${dayHours > 0 ? dayHours : '-'}</td>
-          <td style="border: 1px solid #333; padding: 8px; text-align: center; width: 80px;">${dayHours > 0 ? dayHours : '-'}</td>
-          <td style="border: 1px solid #333; padding: 8px; width: 150px;"></td>
+          <td style="font-weight: bold; width: 35px; text-align: center;">${day}</td>
+          <td style="min-height: 40px;">${dayContent || '-'}</td>
+          <td style="text-align: center; width: 65px;">${dayHours > 0 ? dayHours : '-'}</td>
+          <td style="text-align: center; width: 65px;">${dayHours > 0 ? runningTotal : ''}</td>
+          <td style="width: 120px;"></td>
         </tr>
       `;
     });
+
+    const profileName = azubiProfile.vorname && azubiProfile.nachname
+      ? `${azubiProfile.vorname} ${azubiProfile.nachname}`
+      : (user?.name || '');
 
     const printContent = `
       <!DOCTYPE html>
@@ -5519,32 +5572,69 @@ export default function BaederApp() {
       <head>
         <title>Ausbildungsnachweis Nr. ${entry.nachweis_nr}</title>
         <style>
+          @page { size: A4; margin: 15mm; }
           @media print {
-            body { margin: 0; padding: 20px; }
-            .no-print { display: none; }
+            body { margin: 0; padding: 0; }
+            .no-print { display: none !important; }
           }
-          body { font-family: Arial, sans-serif; font-size: 12px; }
-          h1 { text-align: center; font-size: 18px; margin-bottom: 20px; }
-          .header-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
-          .header-info div { flex: 1; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          th { background: #f0f0f0; border: 1px solid #333; padding: 8px; text-align: left; }
-          .signature-section { display: flex; gap: 40px; margin-top: 30px; }
-          .signature-box { flex: 1; border: 1px solid #333; padding: 15px; }
-          .signature-line { border-top: 1px solid #333; margin-top: 40px; padding-top: 5px; }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #000;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 15mm;
+          }
+          h1 {
+            text-align: center;
+            font-size: 16px;
+            margin: 0 0 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #333;
+          }
+          .header-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px 20px;
+            margin-bottom: 12px;
+            padding: 8px 10px;
+            border: 1px solid #999;
+            background: #fafafa;
+            font-size: 11px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+          }
+          th {
+            background: #e8e8e8;
+            border: 1px solid #333;
+            padding: 5px;
+            text-align: left;
+            font-size: 10px;
+          }
+          td {
+            border: 1px solid #333;
+            padding: 5px;
+            font-size: 11px;
+            vertical-align: top;
+          }
         </style>
       </head>
       <body>
         <h1>Ausbildungsnachweis</h1>
 
-        <div class="header-info">
-          <div><strong>Ausbildungsnachweis Nr.:</strong> ${entry.nachweis_nr}</div>
-          <div><strong>Name:</strong> ${user?.name || ''}</div>
-        </div>
-
-        <div class="header-info">
+        <div class="header-grid">
+          <div><strong>Name:</strong> ${profileName}</div>
+          <div><strong>Nachweis Nr.:</strong> ${entry.nachweis_nr}</div>
+          <div><strong>Ausbildungsbetrieb:</strong> ${azubiProfile.ausbildungsbetrieb || ''}</div>
+          <div><strong>Ausbildungsberuf:</strong> ${azubiProfile.ausbildungsberuf || 'Fachangestellte/r für Bäderbetriebe'}</div>
+          <div><strong>Ausbilder/in:</strong> ${azubiProfile.ausbilder || ''}</div>
+          <div><strong>Ausbildungsbeginn:</strong> ${azubiProfile.ausbildungsbeginn ? new Date(azubiProfile.ausbildungsbeginn).toLocaleDateString('de-DE') : ''}</div>
           <div><strong>Woche vom:</strong> ${formatDate(entry.week_start)} bis ${formatDate(entry.week_end)} ${weekEnd.getFullYear()}</div>
-          <div><strong>Ausbildungsjahr:</strong> ${entry.ausbildungsjahr}</div>
+          <div><strong>Ausbildungsjahr:</strong> ${entry.ausbildungsjahr}. Ausbildungsjahr</div>
         </div>
 
         <table>
@@ -5552,57 +5642,56 @@ export default function BaederApp() {
             <tr>
               <th>Tag</th>
               <th>Ausgeführte Arbeiten, Unterricht usw.</th>
-              <th>Einzel-stunden</th>
-              <th>Gesamt-stunden</th>
-              <th>Ausbildungs-Abteilung</th>
+              <th>Einzel-std.</th>
+              <th>Gesamt-std.</th>
+              <th>Abteilung</th>
             </tr>
           </thead>
           <tbody>
             ${tableRows}
             <tr>
-              <td colspan="3" style="border: 1px solid #333; padding: 8px; text-align: right; font-weight: bold;">Gesamtstunden:</td>
-              <td style="border: 1px solid #333; padding: 8px; text-align: center; font-weight: bold;">${entry.total_hours || 0}</td>
-              <td style="border: 1px solid #333; padding: 8px;"></td>
+              <td colspan="2" style="text-align: right; font-weight: bold;">Wochenstunden gesamt:</td>
+              <td style="text-align: center; font-weight: bold;">${entry.total_hours || 0}</td>
+              <td style="text-align: center; font-weight: bold;">${runningTotal}</td>
+              <td></td>
             </tr>
           </tbody>
         </table>
 
-        <div style="margin-bottom: 20px;">
+        <div style="margin-bottom: 15px;">
           <strong>Besondere Bemerkungen</strong>
-          <div style="display: flex; gap: 20px; margin-top: 10px;">
-            <div style="flex: 1; border: 1px solid #333; padding: 10px; min-height: 60px;">
-              <small>Auszubildender:</small><br>
+          <div style="display: flex; gap: 15px; margin-top: 8px;">
+            <div style="flex: 1; border: 1px solid #333; padding: 8px; min-height: 50px;">
+              <small style="color: #555;">Auszubildende/r:</small><br>
               ${entry.bemerkung_azubi || ''}
             </div>
-            <div style="flex: 1; border: 1px solid #333; padding: 10px; min-height: 60px;">
-              <small>Ausbildender bzw. Ausbilder:</small><br>
+            <div style="flex: 1; border: 1px solid #333; padding: 8px; min-height: 50px;">
+              <small style="color: #555;">Ausbilder/in:</small><br>
               ${entry.bemerkung_ausbilder || ''}
             </div>
           </div>
         </div>
 
-        <div style="margin-top: 30px;">
+        <div style="margin-top: 20px;">
           <strong>Für die Richtigkeit</strong>
-          <div style="display: flex; gap: 40px; margin-top: 15px;">
+          <div style="display: flex; gap: 40px; margin-top: 10px;">
             <div style="flex: 1;">
               <div style="margin-bottom: 5px;">Datum: ${entry.datum_azubi || '________________'}</div>
               <div style="border-top: 1px solid #333; padding-top: 5px; margin-top: 30px;">
-                Unterschrift des Auszubildenden<br>
-                <strong>${entry.signatur_azubi || ''}</strong>
+                Unterschrift Auszubildende/r
               </div>
             </div>
             <div style="flex: 1;">
               <div style="margin-bottom: 5px;">Datum: ${entry.datum_ausbilder || '________________'}</div>
               <div style="border-top: 1px solid #333; padding-top: 5px; margin-top: 30px;">
-                Unterschrift des Ausbildenden bzw. Ausbilders<br>
-                <strong>${entry.signatur_ausbilder || ''}</strong>
+                Unterschrift Ausbilder/in
               </div>
             </div>
           </div>
         </div>
 
         <div class="no-print" style="margin-top: 30px; text-align: center;">
-          <button onclick="window.print()" style="padding: 10px 30px; font-size: 16px; cursor: pointer;">
+          <button onclick="window.print()" style="padding: 10px 30px; font-size: 16px; cursor: pointer; background: #0ea5e9; color: white; border: none; border-radius: 8px;">
             Drucken / Als PDF speichern
           </button>
         </div>
