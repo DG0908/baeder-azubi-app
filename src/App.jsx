@@ -3270,34 +3270,54 @@ export default function BaederApp() {
 
       console.log('User created via Supabase Auth:', data);
 
-      // Fallback: Profil manuell erstellen falls DB-Trigger nicht existiert
+      // Profil erstellen - zuerst via RPC (umgeht RLS), dann Fallback via direktem Insert
       if (data?.user) {
         try {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: data.user.id,
-              name: registerData.name,
-              email: registerData.email,
-              role: registerData.role,
-              training_end: registerData.trainingEnd || null,
-              approved: false
-            }, { onConflict: 'id' });
+          // RPC-Funktion aufrufen (funktioniert auch ohne aktive Session)
+          const { error: rpcError } = await supabase.rpc('create_user_profile', {
+            user_id: data.user.id,
+            user_name: registerData.name,
+            user_email: registerData.email,
+            user_role: registerData.role,
+            user_training_end: registerData.trainingEnd || null
+          });
 
-          if (profileError) {
-            console.warn('Profil-Fallback Info:', profileError.message);
+          if (rpcError) {
+            console.warn('RPC Profil-Erstellung Info:', rpcError.message);
+            // Fallback: Direkter Insert (funktioniert nur mit aktiver Session)
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .upsert({
+                id: data.user.id,
+                name: registerData.name,
+                email: registerData.email,
+                role: registerData.role,
+                training_end: registerData.trainingEnd || null,
+                approved: false
+              }, { onConflict: 'id' });
+
+            if (profileError) {
+              console.warn('Profil-Fallback Info:', profileError.message);
+            }
           } else {
-            console.log('Profil erfolgreich erstellt/bestätigt');
+            console.log('Profil erfolgreich via RPC erstellt');
           }
         } catch (e) {
-          console.warn('Profil-Fallback fehlgeschlagen:', e);
+          console.warn('Profil-Erstellung fehlgeschlagen:', e);
         }
       }
 
       // Direkt ausloggen - User muss erst freigeschaltet werden
       await supabase.auth.signOut();
 
-      alert('✅ Registrierung erfolgreich!\n\n⏳ Dein Account muss von einem Administrator freigeschaltet werden.\n\nDu erhältst eine Benachrichtigung, sobald dein Account aktiviert wurde.');
+      // Prüfe ob Email-Bestätigung erforderlich ist
+      const emailConfirmRequired = data?.user && !data?.session;
+
+      if (emailConfirmRequired) {
+        alert('✅ Registrierung erfolgreich!\n\n📧 Bitte bestätige zuerst deine E-Mail-Adresse (prüfe auch den Spam-Ordner).\n\n⏳ Danach muss dein Account noch von einem Administrator freigeschaltet werden.');
+      } else {
+        alert('✅ Registrierung erfolgreich!\n\n⏳ Dein Account muss von einem Administrator freigeschaltet werden.\n\nDu erhältst eine Benachrichtigung, sobald dein Account aktiviert wurde.');
+      }
 
       setAuthView('login');
       setRegisterData({ name: '', email: '', password: '', role: 'azubi', trainingEnd: '' });
@@ -3324,7 +3344,7 @@ export default function BaederApp() {
         if (authError.message.includes('Invalid login')) {
           alert('E-Mail oder Passwort falsch!');
         } else if (authError.message.includes('Email not confirmed')) {
-          alert('Bitte bestätige zuerst deine E-Mail-Adresse.');
+          alert('Bitte bestätige zuerst deine E-Mail-Adresse.\n\nPrüfe dein E-Mail-Postfach (auch den Spam-Ordner) nach einer Bestätigungs-Mail von Supabase.\n\nFalls du keine E-Mail erhalten hast, wende dich an den Administrator.');
         } else {
           alert('Fehler beim Login: ' + authError.message);
         }
