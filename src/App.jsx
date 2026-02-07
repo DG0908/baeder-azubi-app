@@ -5157,22 +5157,22 @@ export default function BaederApp() {
               {soundEnabled ? '🔊' : '🔇'}
             </button>
 
-            {/* App Update / Hard Refresh */}
-            <button
-              onClick={() => { void applyPwaUpdate(); }}
-              disabled={updatingApp}
-              className={`px-3 py-2 rounded-lg transition-colors backdrop-blur-sm flex items-center gap-2 ${
-                updateAvailable
-                  ? 'bg-emerald-500/90 hover:bg-emerald-600/90'
-                  : 'bg-white/20 hover:bg-white/30'
-              } ${updatingApp ? 'opacity-70 cursor-not-allowed' : ''}`}
-              title={updateAvailable ? 'Neue Version installieren' : 'App aktualisieren / neu laden'}
-            >
-              <span>{updatingApp ? '⏳' : (updateAvailable ? '⬆️' : '🔄')}</span>
-              <span className="hidden sm:inline text-sm font-medium">
-                {updatingApp ? 'Update...' : (updateAvailable ? 'Update' : 'Neu laden')}
-              </span>
-            </button>
+            {/* App Update (nur wenn neue Version verfügbar) */}
+            {(updateAvailable || updatingApp) && (
+              <button
+                onClick={() => { void applyPwaUpdate(); }}
+                disabled={updatingApp}
+                className={`px-3 py-2 rounded-lg transition-colors backdrop-blur-sm flex items-center gap-2 bg-emerald-500/90 hover:bg-emerald-600/90 ${
+                  updatingApp ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
+                title="Neue Version installieren"
+              >
+                <span>{updatingApp ? '⏳' : '⬆️'}</span>
+                <span className="hidden sm:inline text-sm font-medium">
+                  {updatingApp ? 'Update...' : 'Update'}
+                </span>
+              </button>
+            )}
 
             {/* Request Notification Permission */}
             {'Notification' in window && Notification.permission === 'default' && (
