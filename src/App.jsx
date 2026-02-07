@@ -90,6 +90,7 @@ export default function BaederApp() {
     FLASHCARD_REVIEW: 1,
     FLASHCARD_CREATE: 15
   };
+  const GENERAL_KNOWLEDGE_STORAGE_KEY = 'general_knowledge_rotation_v1';
   const PRACTICAL_PASS_XP_BY_GRADE = {
     1: 40,
     2: 30,
@@ -725,6 +726,11 @@ export default function BaederApp() {
   }, [user]);
 
   useEffect(() => {
+    if (!user?.id) return;
+    applyGeneralKnowledge(false);
+  }, [user?.id]);
+
+  useEffect(() => {
     if (!user?.id) {
       setPracticalExamTargetUserId('');
       return;
@@ -1189,6 +1195,75 @@ export default function BaederApp() {
     return stats;
   };
 
+  const getTodayStamp = (input = Date.now()) => {
+    const date = new Date(input);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().slice(0, 10);
+  };
+
+  const getGeneralKnowledgePool = () => {
+    const merged = [...DAILY_WISDOM, ...DID_YOU_KNOW_FACTS];
+    const unique = [];
+    const seen = new Set();
+    merged.forEach((entry) => {
+      const text = String(entry || '').trim();
+      if (!text) return;
+      if (seen.has(text)) return;
+      seen.add(text);
+      unique.push(text);
+    });
+    return unique;
+  };
+
+  const pickRandomGeneralKnowledge = (excludeText = '') => {
+    const pool = getGeneralKnowledgePool();
+    if (pool.length === 0) return '';
+    const filtered = excludeText ? pool.filter(text => text !== excludeText) : pool;
+    const source = filtered.length > 0 ? filtered : pool;
+    return source[Math.floor(Math.random() * source.length)];
+  };
+
+  const applyGeneralKnowledge = (forceRotate = false) => {
+    const todayStamp = getTodayStamp();
+    let stored = null;
+
+    try {
+      stored = JSON.parse(localStorage.getItem(GENERAL_KNOWLEDGE_STORAGE_KEY) || 'null');
+    } catch {
+      stored = null;
+    }
+
+    const storedText = typeof stored?.text === 'string' ? stored.text.trim() : '';
+    const storedDay = typeof stored?.day === 'string' ? stored.day : '';
+
+    if (!forceRotate && storedDay === todayStamp && storedText) {
+      setDailyWisdom(storedText);
+      return storedText;
+    }
+
+    const nextText = pickRandomGeneralKnowledge(storedText) || storedText;
+    if (!nextText) return '';
+
+    setDailyWisdom(nextText);
+    try {
+      localStorage.setItem(GENERAL_KNOWLEDGE_STORAGE_KEY, JSON.stringify({
+        day: todayStamp,
+        text: nextText,
+        updatedAt: new Date().toISOString()
+      }));
+    } catch {
+      // localStorage write can fail in private mode; UI fallback still works.
+    }
+    return nextText;
+  };
+
+  const rotateGeneralKnowledge = () => {
+    const nextText = applyGeneralKnowledge(true);
+    if (nextText) {
+      showToast('Neue Allgemeinbildung geladen.', 'info', 1800);
+    }
+  };
+
   const handleRegister = async () => {
     if (!registerData.name || !registerData.email || !registerData.password) {
       alert('Bitte alle Felder ausfüllen!');
@@ -1349,7 +1424,7 @@ export default function BaederApp() {
 
       setUser(userSession);
       localStorage.setItem('baeder_user', JSON.stringify(userSession));
-      setDailyWisdom(DAILY_WISDOM[Math.floor(Math.random() * DAILY_WISDOM.length)]);
+      applyGeneralKnowledge(true);
 
       // Initialize stats in Supabase if not exists
       const { data: existingStats } = await supabase
@@ -6288,9 +6363,20 @@ export default function BaederApp() {
           <div className="space-y-6">
             <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 via-cyan-800 to-cyan-900' : 'bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-500'} text-white rounded-xl p-8 text-center shadow-xl backdrop-blur-sm`}>
               <h2 className="text-3xl font-bold mb-2 drop-shadow-lg">🌊 Willkommen zurück! 💦</h2>
-              {dailyWisdom && (
-                <p className="text-sm opacity-90 mb-4 italic">💡 {dailyWisdom}</p>
-              )}
+              <div className={`${darkMode ? 'bg-white/10 border-white/20' : 'bg-white/20 border-white/30'} border rounded-lg p-3 mb-4 max-w-3xl mx-auto`}>
+                <div className="flex items-center justify-between gap-3 mb-1">
+                  <span className="text-xs font-semibold uppercase tracking-wide opacity-90">🧠 Allgemeinbildung</span>
+                  <button
+                    onClick={rotateGeneralKnowledge}
+                    className={`${darkMode ? 'bg-white/15 hover:bg-white/25 border-white/20' : 'bg-white/25 hover:bg-white/35 border-white/30'} border px-2.5 py-1 rounded-md text-xs font-semibold transition-all`}
+                  >
+                    Neuer Satz
+                  </button>
+                </div>
+                <p className="text-sm opacity-95 italic">
+                  💡 {dailyWisdom || DAILY_WISDOM[0] || DID_YOU_KNOW_FACTS[0] || 'Wissen lädt...'}
+                </p>
+              </div>
               {userStats && (
                 <div className="mt-4 -mx-2 px-2 overflow-x-auto swipe-stats-scroll">
                   <div className="flex gap-4 md:justify-center snap-x snap-mandatory min-w-max md:min-w-0">
