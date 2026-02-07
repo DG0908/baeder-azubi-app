@@ -81,6 +81,151 @@ export default function BaederApp() {
     return normalized === 'finished' || normalized === 'completed' || normalized === 'done';
   };
 
+  const XP_REWARDS = {
+    QUIZ_WIN: 40,
+    EXAM_COMPLETION: 20,
+    EXAM_PASS_BONUS: 15,
+    EXAM_CORRECT_ANSWER: 1,
+    FLASHCARD_REVIEW: 1,
+    FLASHCARD_CREATE: 15
+  };
+
+  const SWIM_BATTLE_WIN_POINTS = 20;
+  const SWIM_ARENA_DISCIPLINES = [
+    { id: '25m', label: '25m Sprint' },
+    { id: '50m', label: '50m Sprint' },
+    { id: '100m', label: '100m Sprint' },
+    { id: '200m', label: '200m Mittelstrecke' },
+    { id: '400m', label: '400m Ausdauer' },
+  ];
+  const SEA_CREATURE_TIERS = [
+    { minWins: 0, emoji: '🐚', name: 'Muschel' },
+    { minWins: 2, emoji: '🪼', name: 'Qualle' },
+    { minWins: 4, emoji: '🐢', name: 'Meeresschildkröte' },
+    { minWins: 7, emoji: '🐬', name: 'Delfin' },
+    { minWins: 10, emoji: '🦑', name: 'Tintenfisch' },
+    { minWins: 14, emoji: '🦈', name: 'Hai' },
+    { minWins: 18, emoji: '🐋', name: 'Orca' },
+  ];
+  const ARENA_LOSER_CREATURE = { emoji: '🪼', name: 'Langsame Qualle' };
+
+  const XP_META_KEY = '__meta';
+  const XP_BREAKDOWN_DEFAULT = {
+    examSimulator: 0,
+    flashcardLearning: 0,
+    flashcardCreation: 0,
+    quizWins: 0
+  };
+
+  const createEmptyUserStats = () => ({
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    categoryStats: {},
+    opponents: {},
+    winStreak: 0,
+    bestWinStreak: 0
+  });
+
+  const toSafeInt = (value) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed)) : 0;
+  };
+
+  const getXpMetaFromCategoryStats = (categoryStats) => {
+    const safeCategoryStats = (categoryStats && typeof categoryStats === 'object') ? categoryStats : {};
+    const rawMeta = (safeCategoryStats[XP_META_KEY] && typeof safeCategoryStats[XP_META_KEY] === 'object')
+      ? safeCategoryStats[XP_META_KEY]
+      : {};
+    const rawBreakdown = (rawMeta.breakdown && typeof rawMeta.breakdown === 'object')
+      ? rawMeta.breakdown
+      : {};
+    const rawAwardedEvents = (rawMeta.awardedEvents && typeof rawMeta.awardedEvents === 'object')
+      ? rawMeta.awardedEvents
+      : {};
+
+    return {
+      totalXp: toSafeInt(rawMeta.totalXp),
+      breakdown: {
+        ...XP_BREAKDOWN_DEFAULT,
+        examSimulator: toSafeInt(rawBreakdown.examSimulator),
+        flashcardLearning: toSafeInt(rawBreakdown.flashcardLearning),
+        flashcardCreation: toSafeInt(rawBreakdown.flashcardCreation),
+        quizWins: toSafeInt(rawBreakdown.quizWins)
+      },
+      awardedEvents: rawAwardedEvents
+    };
+  };
+
+  const ensureUserStatsStructure = (statsInput) => {
+    const base = {
+      ...createEmptyUserStats(),
+      ...(statsInput || {})
+    };
+
+    const safeCategoryStats = (base.categoryStats && typeof base.categoryStats === 'object')
+      ? { ...base.categoryStats }
+      : {};
+    const safeOpponents = (base.opponents && typeof base.opponents === 'object')
+      ? { ...base.opponents }
+      : {};
+
+    const xpMeta = getXpMetaFromCategoryStats(safeCategoryStats);
+    safeCategoryStats[XP_META_KEY] = xpMeta;
+
+    return {
+      ...base,
+      wins: toSafeInt(base.wins),
+      losses: toSafeInt(base.losses),
+      draws: toSafeInt(base.draws),
+      categoryStats: safeCategoryStats,
+      opponents: safeOpponents,
+      winStreak: toSafeInt(base.winStreak),
+      bestWinStreak: toSafeInt(base.bestWinStreak)
+    };
+  };
+
+  const getTotalXpFromStats = (statsInput) => {
+    const safeStats = ensureUserStatsStructure(statsInput);
+    return getXpMetaFromCategoryStats(safeStats.categoryStats).totalXp;
+  };
+
+  const getXpBreakdownFromStats = (statsInput) => {
+    const safeStats = ensureUserStatsStructure(statsInput);
+    return getXpMetaFromCategoryStats(safeStats.categoryStats).breakdown;
+  };
+
+  const addXpToStats = (statsInput, sourceKey, amount, eventKey = null) => {
+    const xpToAdd = toSafeInt(amount);
+    const safeStats = ensureUserStatsStructure(statsInput);
+    if (xpToAdd <= 0) {
+      return { stats: safeStats, addedXp: 0 };
+    }
+
+    const safeCategoryStats = { ...(safeStats.categoryStats || {}) };
+    const xpMeta = getXpMetaFromCategoryStats(safeCategoryStats);
+
+    if (eventKey && xpMeta.awardedEvents[eventKey]) {
+      return { stats: safeStats, addedXp: 0 };
+    }
+
+    xpMeta.totalXp += xpToAdd;
+    xpMeta.breakdown[sourceKey] = toSafeInt(xpMeta.breakdown[sourceKey]) + xpToAdd;
+    if (eventKey) {
+      xpMeta.awardedEvents[eventKey] = Date.now();
+    }
+
+    safeCategoryStats[XP_META_KEY] = xpMeta;
+
+    return {
+      stats: {
+        ...safeStats,
+        categoryStats: safeCategoryStats
+      },
+      addedXp: xpToAdd
+    };
+  };
+
   // Other State
   const [userStats, setUserStats] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
@@ -229,6 +374,32 @@ export default function BaederApp() {
   });
   const [pendingSwimConfirmations, setPendingSwimConfirmations] = useState([]); // Für Trainer: Zu bestätigende Einheiten
   const [swimChallengeFilter, setSwimChallengeFilter] = useState('alle'); // Filter für Challenge-Kategorien
+  const [swimArenaMode, setSwimArenaMode] = useState('duel');
+  const [swimBattleHistory, setSwimBattleHistory] = useState(() => {
+    const saved = localStorage.getItem('swim_battle_history');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [swimBattleWinsByUserId, setSwimBattleWinsByUserId] = useState(() => {
+    const saved = localStorage.getItem('swim_battle_wins_by_user');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [swimBattleResult, setSwimBattleResult] = useState(null);
+  const [swimDuelForm, setSwimDuelForm] = useState({
+    discipline: '50m',
+    style: 'kraul',
+    challengerId: '',
+    opponentId: '',
+    challengerSeconds: '',
+    opponentSeconds: ''
+  });
+  const [swimBossForm, setSwimBossForm] = useState({
+    discipline: '100m',
+    style: 'brust',
+    trainerId: '',
+    azubiIds: [],
+    trainerSeconds: '',
+    azubiSeconds: ''
+  });
 
   // Azubi-Profildaten für Berichtsheft
   const [azubiProfile, setAzubiProfile] = useState(() => {
@@ -244,6 +415,7 @@ export default function BaederApp() {
     };
   });
   const azubiProfileSaveTimerRef = useRef(null);
+  const xpAwardQueueRef = useRef(Promise.resolve(0));
 
   // Calculator State
   const [calculatorType, setCalculatorType] = useState('ph');
@@ -1153,7 +1325,7 @@ export default function BaederApp() {
       // Load all user stats for trainer dashboard cards
       const { data: allStatsData, error: allStatsError } = await supabase
         .from('user_stats')
-        .select('user_id, wins, losses, draws');
+        .select('user_id, wins, losses, draws, category_stats');
 
       if (allStatsError) {
         console.log('All stats load error:', allStatsError.message);
@@ -1164,11 +1336,14 @@ export default function BaederApp() {
           const wins = row.wins || 0;
           const losses = row.losses || 0;
           const draws = row.draws || 0;
+          const xpMeta = getXpMetaFromCategoryStats(row.category_stats || {});
           nextStatsByUserId[row.user_id] = {
             wins,
             losses,
             draws,
-            total: wins + losses + draws
+            total: wins + losses + draws,
+            totalXp: xpMeta.totalXp,
+            xpBreakdown: xpMeta.breakdown
           };
         });
         setStatsByUserId(nextStatsByUserId);
@@ -1183,7 +1358,7 @@ export default function BaederApp() {
             .eq('user_id', user.id)
             .single();
 
-          let stats = statsData ? {
+          let stats = ensureUserStatsStructure(statsData ? {
             wins: statsData.wins || 0,
             losses: statsData.losses || 0,
             draws: statsData.draws || 0,
@@ -1191,11 +1366,7 @@ export default function BaederApp() {
             opponents: statsData.opponents || {},
             winStreak: statsData.win_streak || 0,
             bestWinStreak: statsData.best_win_streak || 0
-          } : {
-            wins: 0, losses: 0, draws: 0,
-            categoryStats: {}, opponents: {},
-            winStreak: 0, bestWinStreak: 0
-          };
+          } : createEmptyUserStats());
 
           // Stats aus beendeten Spielen neu berechnen (behebt inkonsistente lokale Stats)
           const currentUserName = normalizePlayerName(user.name);
@@ -1250,10 +1421,7 @@ export default function BaederApp() {
           setUserStats(stats);
         } catch (e) {
           console.log('Stats load:', e);
-          setUserStats({
-            wins: 0, losses: 0, draws: 0,
-            categoryStats: {}, opponents: {}
-          });
+          setUserStats(ensureUserStatsStructure(createEmptyUserStats()));
         }
       }
 
@@ -1933,6 +2101,8 @@ export default function BaederApp() {
   // Helper function to save user stats to Supabase
   const saveUserStatsToSupabase = async (userName, stats) => {
     try {
+      const safeStats = ensureUserStatsStructure(stats);
+
       // First get user id
       const { data: userData, error: userError } = await supabase
         .from('profiles')
@@ -1954,11 +2124,11 @@ export default function BaederApp() {
         const { error } = await supabase
           .from('user_stats')
           .update({
-            wins: stats.wins,
-            losses: stats.losses,
-            draws: stats.draws,
-            category_stats: stats.categoryStats || {},
-            opponents: stats.opponents || {}
+            wins: safeStats.wins,
+            losses: safeStats.losses,
+            draws: safeStats.draws,
+            category_stats: safeStats.categoryStats || {},
+            opponents: safeStats.opponents || {}
           })
           .eq('user_id', userData.id);
         if (error) throw error;
@@ -1968,11 +2138,11 @@ export default function BaederApp() {
           .from('user_stats')
           .insert([{
             user_id: userData.id,
-            wins: stats.wins,
-            losses: stats.losses,
-            draws: stats.draws,
-            category_stats: stats.categoryStats || {},
-            opponents: stats.opponents || {}
+            wins: safeStats.wins,
+            losses: safeStats.losses,
+            draws: safeStats.draws,
+            category_stats: safeStats.categoryStats || {},
+            opponents: safeStats.opponents || {}
           }]);
         if (error) throw error;
       }
@@ -2000,17 +2170,69 @@ export default function BaederApp() {
 
       if (error) return null;
 
-      return {
+      return ensureUserStatsStructure({
         wins: data.wins || 0,
         losses: data.losses || 0,
         draws: data.draws || 0,
         categoryStats: data.category_stats || {},
-        opponents: data.opponents || {}
-      };
+        opponents: data.opponents || {},
+        winStreak: data.win_streak || 0,
+        bestWinStreak: data.best_win_streak || 0
+      });
     } catch (error) {
       console.error('Get stats error:', error);
       return null;
     }
+  };
+
+  const queueXpAward = (sourceKey, amount, options = {}) => {
+    const xpAmount = toSafeInt(amount);
+    if (!user?.name || !user?.id || xpAmount <= 0) {
+      return Promise.resolve(0);
+    }
+
+    const { eventKey = null, reason = null, showXpToast = false } = options;
+
+    xpAwardQueueRef.current = xpAwardQueueRef.current
+      .then(async () => {
+        const currentStats = await getUserStatsFromSupabase(user.name);
+        const baseStats = ensureUserStatsStructure(currentStats || createEmptyUserStats());
+        const { stats: xpUpdatedStats, addedXp } = addXpToStats(baseStats, sourceKey, xpAmount, eventKey);
+        if (addedXp <= 0) {
+          return 0;
+        }
+
+        await saveUserStatsToSupabase(user.name, xpUpdatedStats);
+        setUserStats(xpUpdatedStats);
+        setStatsByUserId(prev => {
+          const wins = xpUpdatedStats.wins || 0;
+          const losses = xpUpdatedStats.losses || 0;
+          const draws = xpUpdatedStats.draws || 0;
+          return {
+            ...prev,
+            [user.id]: {
+              ...(prev[user.id] || {}),
+              wins,
+              losses,
+              draws,
+              total: wins + losses + draws,
+              totalXp: getTotalXpFromStats(xpUpdatedStats),
+              xpBreakdown: getXpBreakdownFromStats(xpUpdatedStats)
+            }
+          };
+        });
+
+        if (showXpToast) {
+          showToast(`+${addedXp} XP${reason ? ` • ${reason}` : ''}`, 'success', 2500);
+        }
+        return addedXp;
+      })
+      .catch(error => {
+        console.error('XP update error:', error);
+        return 0;
+      });
+
+    return xpAwardQueueRef.current;
   };
 
   // Fisher-Yates Shuffle für zufällige Fragenreihenfolge
@@ -2157,13 +2379,7 @@ export default function BaederApp() {
     }
 
     // Stats aktualisieren
-    const stats = userStats || {
-      wins: 0,
-      losses: 0,
-      draws: 0,
-      categoryStats: {},
-      opponents: {}
-    };
+    const stats = ensureUserStatsStructure(userStats || createEmptyUserStats());
 
     if (!stats.categoryStats[quizCategory]) {
       stats.categoryStats[quizCategory] = { correct: 0, incorrect: 0, total: 0 };
@@ -2323,18 +2539,7 @@ export default function BaederApp() {
       // Nur eigene Stats aktualisieren (RLS erlaubt nur eigene Stats)
       try {
         const existingStats = await getUserStatsFromSupabase(user.name);
-        const stats = existingStats || {
-          wins: 0,
-          losses: 0,
-          draws: 0,
-          categoryStats: {},
-          opponents: {},
-          winStreak: 0,
-          bestWinStreak: 0
-        };
-
-        if (stats.winStreak === undefined) stats.winStreak = 0;
-        if (stats.bestWinStreak === undefined) stats.bestWinStreak = 0;
+        let stats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
 
         const opponent = user.name === currentGame.player1 ? currentGame.player2 : currentGame.player1;
 
@@ -2349,6 +2554,18 @@ export default function BaederApp() {
           if (stats.winStreak > stats.bestWinStreak) {
             stats.bestWinStreak = stats.winStreak;
           }
+
+          const xpResult = addXpToStats(
+            stats,
+            'quizWins',
+            XP_REWARDS.QUIZ_WIN,
+            `quiz_win_${currentGame.id}_${user.id}`
+          );
+          stats = xpResult.stats;
+
+          if (xpResult.addedXp > 0) {
+            showToast(`+${xpResult.addedXp} XP • Quizduell-Sieg`, 'success', 2500);
+          }
         } else if (winner === null) {
           stats.draws++;
           stats.opponents[opponent].draws++;
@@ -2360,6 +2577,23 @@ export default function BaederApp() {
 
         await saveUserStatsToSupabase(user.name, stats);
         setUserStats(stats);
+        setStatsByUserId(prev => {
+          const wins = stats.wins || 0;
+          const losses = stats.losses || 0;
+          const draws = stats.draws || 0;
+          return {
+            ...prev,
+            [user.id]: {
+              ...(prev[user.id] || {}),
+              wins,
+              losses,
+              draws,
+              total: wins + losses + draws,
+              totalXp: getTotalXpFromStats(stats),
+              xpBreakdown: getXpBreakdownFromStats(stats)
+            }
+          };
+        });
       } catch (error) {
         console.error('Stats update error:', error);
       }
@@ -2609,6 +2843,16 @@ export default function BaederApp() {
       const percentage = Math.round((correctAnswers / newAnswers.length) * 100);
       setUserExamProgress({ correct: correctAnswers, total: newAnswers.length, percentage, passed: percentage >= 50, timeMs: Date.now() - examSimulator.startTime });
       if (percentage >= 50) playSound('whistle');
+
+      const earnedXp =
+        XP_REWARDS.EXAM_COMPLETION +
+        (correctAnswers * XP_REWARDS.EXAM_CORRECT_ANSWER) +
+        (percentage >= 50 ? XP_REWARDS.EXAM_PASS_BONUS : 0);
+      void queueXpAward('examSimulator', earnedXp, {
+        eventKey: `exam_run_${examSimulator.startTime}`,
+        reason: 'Prüfungssimulator',
+        showXpToast: true
+      });
     }
   };
 
@@ -2815,6 +3059,240 @@ export default function BaederApp() {
     localStorage.setItem('active_swim_challenges', JSON.stringify(challenges));
   };
 
+  const saveSwimBattleHistory = (entries) => {
+    const safeEntries = Array.isArray(entries) ? entries.slice(0, 30) : [];
+    setSwimBattleHistory(safeEntries);
+    localStorage.setItem('swim_battle_history', JSON.stringify(safeEntries));
+  };
+
+  const saveSwimBattleWins = (winsByUserId) => {
+    const safeWins = (winsByUserId && typeof winsByUserId === 'object') ? winsByUserId : {};
+    setSwimBattleWinsByUserId(safeWins);
+    localStorage.setItem('swim_battle_wins_by_user', JSON.stringify(safeWins));
+  };
+
+  const getSeaCreatureTier = (winsInput) => {
+    const wins = toSafeInt(winsInput);
+    for (let i = SEA_CREATURE_TIERS.length - 1; i >= 0; i--) {
+      if (wins >= SEA_CREATURE_TIERS[i].minWins) {
+        return SEA_CREATURE_TIERS[i];
+      }
+    }
+    return SEA_CREATURE_TIERS[0];
+  };
+
+  const getUserNameById = (userId) => {
+    if (!userId) return 'Unbekannt';
+    if (user?.id === userId) return user.name || 'Du';
+    const fromUsers = allUsers.find(u => u.id === userId);
+    return fromUsers?.name || 'Unbekannt';
+  };
+
+  const parseSwimSeconds = (value) => {
+    const raw = String(value ?? '').trim().replace(',', '.');
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed)) return null;
+    if (parsed <= 0) return null;
+    return parsed;
+  };
+
+  const registerSwimArenaResult = ({
+    mode,
+    discipline,
+    styleId,
+    winnerIds = [],
+    loserIds = [],
+    participants = [],
+    draw = false
+  }) => {
+    const styleName = SWIM_STYLES.find(s => s.id === styleId)?.name || styleId || 'Freistil';
+    const timestamp = new Date().toISOString();
+
+    let nextWinsByUserId = { ...swimBattleWinsByUserId };
+    if (!draw) {
+      winnerIds.forEach((winnerId) => {
+        if (!winnerId) return;
+        nextWinsByUserId[winnerId] = toSafeInt(nextWinsByUserId[winnerId]) + 1;
+      });
+      saveSwimBattleWins(nextWinsByUserId);
+    }
+
+    const entry = {
+      id: `arena-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      mode,
+      discipline,
+      styleId,
+      styleName,
+      draw: Boolean(draw),
+      winnerIds,
+      loserIds,
+      participants,
+      created_at: timestamp
+    };
+    saveSwimBattleHistory([entry, ...swimBattleHistory]);
+
+    const winnerResults = winnerIds.map((winnerId) => {
+      const wins = toSafeInt(nextWinsByUserId[winnerId]);
+      const creature = getSeaCreatureTier(wins);
+      return {
+        userId: winnerId,
+        name: getUserNameById(winnerId),
+        wins,
+        creature,
+        battleCreature: creature
+      };
+    });
+
+    const loserResults = loserIds.map((loserId) => {
+      const wins = toSafeInt(nextWinsByUserId[loserId]);
+      return {
+        userId: loserId,
+        name: getUserNameById(loserId),
+        wins,
+        creature: getSeaCreatureTier(wins),
+        battleCreature: ARENA_LOSER_CREATURE
+      };
+    });
+
+    setSwimBattleResult({
+      id: entry.id,
+      mode,
+      discipline,
+      styleName,
+      draw: Boolean(draw),
+      participants,
+      winners: winnerResults,
+      losers: loserResults
+    });
+  };
+
+  const handleSwimDuelSubmit = (event) => {
+    event.preventDefault();
+
+    const challengerId = swimDuelForm.challengerId;
+    const opponentId = swimDuelForm.opponentId;
+    if (!challengerId || !opponentId) {
+      showToast('Bitte zwei Teilnehmer auswählen.', 'warning');
+      return;
+    }
+    if (challengerId === opponentId) {
+      showToast('Ein Duell braucht zwei verschiedene Teilnehmer.', 'warning');
+      return;
+    }
+
+    const challengerSeconds = parseSwimSeconds(swimDuelForm.challengerSeconds);
+    const opponentSeconds = parseSwimSeconds(swimDuelForm.opponentSeconds);
+    if (!challengerSeconds || !opponentSeconds) {
+      showToast('Bitte gültige Zeiten in Sekunden eintragen.', 'warning');
+      return;
+    }
+
+    const participants = [
+      {
+        userId: challengerId,
+        name: getUserNameById(challengerId),
+        seconds: challengerSeconds
+      },
+      {
+        userId: opponentId,
+        name: getUserNameById(opponentId),
+        seconds: opponentSeconds
+      }
+    ];
+
+    if (challengerSeconds === opponentSeconds) {
+      registerSwimArenaResult({
+        mode: 'duel',
+        discipline: swimDuelForm.discipline,
+        styleId: swimDuelForm.style,
+        draw: true,
+        participants
+      });
+      showToast('Unentschieden! Beide waren gleich schnell.', 'info');
+      return;
+    }
+
+    const winnerId = challengerSeconds < opponentSeconds ? challengerId : opponentId;
+    const loserId = winnerId === challengerId ? opponentId : challengerId;
+
+    registerSwimArenaResult({
+      mode: 'duel',
+      discipline: swimDuelForm.discipline,
+      styleId: swimDuelForm.style,
+      winnerIds: [winnerId],
+      loserIds: [loserId],
+      participants
+    });
+
+    showToast(`Duell abgeschlossen: ${getUserNameById(winnerId)} gewinnt!`, 'success');
+  };
+
+  const handleSwimBossBattleSubmit = (event) => {
+    event.preventDefault();
+
+    const trainerId = swimBossForm.trainerId;
+    if (!trainerId) {
+      showToast('Bitte einen Ausbilder auswählen.', 'warning');
+      return;
+    }
+    if (!Array.isArray(swimBossForm.azubiIds) || swimBossForm.azubiIds.length === 0) {
+      showToast('Bitte mindestens einen Azubi auswählen.', 'warning');
+      return;
+    }
+
+    const trainerSeconds = parseSwimSeconds(swimBossForm.trainerSeconds);
+    const azubiSeconds = parseSwimSeconds(swimBossForm.azubiSeconds);
+    if (!trainerSeconds || !azubiSeconds) {
+      showToast('Bitte gültige Zeiten in Sekunden eintragen.', 'warning');
+      return;
+    }
+
+    const participants = [
+      {
+        userId: trainerId,
+        name: getUserNameById(trainerId),
+        seconds: trainerSeconds
+      },
+      ...swimBossForm.azubiIds.map((azubiId) => ({
+        userId: azubiId,
+        name: getUserNameById(azubiId),
+        seconds: azubiSeconds
+      }))
+    ];
+
+    if (trainerSeconds === azubiSeconds) {
+      registerSwimArenaResult({
+        mode: 'boss',
+        discipline: swimBossForm.discipline,
+        styleId: swimBossForm.style,
+        draw: true,
+        participants
+      });
+      showToast('Boss-Battle unentschieden.', 'info');
+      return;
+    }
+
+    const azubisWon = azubiSeconds < trainerSeconds;
+    const winnerIds = azubisWon ? swimBossForm.azubiIds : [trainerId];
+    const loserIds = azubisWon ? [trainerId] : swimBossForm.azubiIds;
+
+    registerSwimArenaResult({
+      mode: 'boss',
+      discipline: swimBossForm.discipline,
+      styleId: swimBossForm.style,
+      winnerIds,
+      loserIds,
+      participants
+    });
+
+    showToast(
+      azubisWon
+        ? 'Boss-Battle: Azubis haben den Ausbilder geschlagen!'
+        : 'Boss-Battle: Ausbilder verteidigt den Titel!',
+      'success'
+    );
+  };
+
   // Trainingseinheiten aus Supabase laden
   const loadSwimSessions = async () => {
     try {
@@ -2960,6 +3438,66 @@ export default function BaederApp() {
       checkBadges();
     }
   }, [swimSessions]);
+
+  useEffect(() => {
+    const trainerCandidates = allUsers.filter(u =>
+      u?.role === 'trainer'
+      || u?.role === 'ausbilder'
+      || u?.role === 'admin'
+      || Boolean(u?.permissions?.canViewAllStats)
+    );
+    const azubiCandidates = allUsers.filter(u => u?.role === 'azubi');
+
+    setSwimDuelForm((prev) => {
+      const knownUserIds = new Set(allUsers.map(u => u.id));
+      let challengerId = prev.challengerId;
+      if (!challengerId || !knownUserIds.has(challengerId)) {
+        if (user?.id && knownUserIds.has(user.id)) {
+          challengerId = user.id;
+        } else {
+          challengerId = azubiCandidates[0]?.id || trainerCandidates[0]?.id || '';
+        }
+      }
+
+      let opponentId = prev.opponentId;
+      if (!opponentId || !knownUserIds.has(opponentId) || opponentId === challengerId) {
+        opponentId = allUsers.find(u => u.id && u.id !== challengerId)?.id || '';
+      }
+
+      return {
+        ...prev,
+        challengerId,
+        opponentId
+      };
+    });
+
+    setSwimBossForm((prev) => {
+      let trainerId = prev.trainerId;
+      if (!trainerId || !trainerCandidates.some(t => t.id === trainerId)) {
+        if (user?.id && trainerCandidates.some(t => t.id === user.id)) {
+          trainerId = user.id;
+        } else {
+          trainerId = trainerCandidates[0]?.id || '';
+        }
+      }
+
+      let azubiIds = Array.isArray(prev.azubiIds)
+        ? prev.azubiIds.filter(id => azubiCandidates.some(a => a.id === id) && id !== trainerId)
+        : [];
+      if (azubiIds.length === 0) {
+        azubiIds = azubiCandidates
+          .map(a => a.id)
+          .filter(id => id !== trainerId)
+          .slice(0, 3);
+      }
+
+      return {
+        ...prev,
+        trainerId,
+        azubiIds
+      };
+    });
+  }, [allUsers, user?.id]);
 
   const resetBerichtsheftForm = () => {
     setCurrentWeekEntries({
@@ -3390,6 +3928,7 @@ export default function BaederApp() {
     if (correct) {
       updateChallengeProgress('correct_answers', 1);
     }
+    void queueXpAward('flashcardLearning', XP_REWARDS.FLASHCARD_REVIEW, { showXpToast: false });
 
     return newLevel;
   };
@@ -5115,6 +5654,10 @@ export default function BaederApp() {
                     <div className="text-2xl font-bold">🤝 {userStats.draws}</div>
                     <div className="text-sm">Unentschieden</div>
                   </div>
+                  <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'}`}>
+                    <div className="text-2xl font-bold">⭐ {getTotalXpFromStats(userStats)}</div>
+                    <div className="text-sm">XP Gesamt</div>
+                  </div>
                 </div>
               )}
               {/* Profil-Button */}
@@ -6054,12 +6597,18 @@ export default function BaederApp() {
                 ))}
               </div>
             </div>
-            {userStats && userStats.categoryStats && Object.keys(userStats.categoryStats).length > 0 && (
+            {userStats && userStats.categoryStats && Object.entries(userStats.categoryStats).some(([catId, stat]) => {
+              const hasCategory = CATEGORIES.some(c => c.id === catId);
+              return hasCategory && stat && typeof stat === 'object' && typeof stat.total === 'number';
+            }) && (
               <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
                 <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>📈 Performance nach Kategorie</h3>
                 <div className="space-y-3">
                   {Object.entries(userStats.categoryStats).map(([catId, stats]) => {
                     const cat = CATEGORIES.find(c => c.id === catId);
+                    if (!cat || !stats || typeof stats !== 'object' || typeof stats.total !== 'number') {
+                      return null;
+                    }
                     const percentage = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
                     return (
                       <div key={catId} className={`border rounded-lg p-4 ${darkMode ? 'border-slate-600' : ''}`}>
@@ -6814,6 +7363,12 @@ export default function BaederApp() {
                         setPendingFlashcards([...pendingFlashcards, flashcard]);
                         alert('Karteikarte eingereicht! Sie wird nach Prüfung freigeschaltet. ⏳');
                       }
+
+                      void queueXpAward('flashcardCreation', XP_REWARDS.FLASHCARD_CREATE, {
+                        eventKey: `flashcard_create_${data.id}`,
+                        reason: 'Karteikarte erstellt',
+                        showXpToast: true
+                      });
 
                       setNewFlashcardFront('');
                       setNewFlashcardBack('');
@@ -7611,7 +8166,6 @@ export default function BaederApp() {
             <div className="grid md:grid-cols-3 gap-4">
               {allUsers.filter(u => u.role === 'azubi').map(azubi => {
                 const rowStats = statsByUserId[azubi.id] || null;
-                const azubiName = normalizePlayerName(azubi.name);
                 const leaderboardEntry = leaderboard.find(
                   player => namesMatch(player.name, azubi.name)
                 );
@@ -8112,7 +8666,15 @@ export default function BaederApp() {
 
             {/* Team-Battle Banner */}
             {(() => {
-              const battleStats = calculateTeamBattleStats(swimSessions);
+              const xpByUserId = Object.fromEntries(
+                Object.entries(statsByUserId).map(([userId, stats]) => [userId, stats?.totalXp || 0])
+              );
+              Object.entries(swimBattleWinsByUserId || {}).forEach(([userId, wins]) => {
+                const bonusPoints = toSafeInt(wins) * SWIM_BATTLE_WIN_POINTS;
+                if (bonusPoints <= 0) return;
+                xpByUserId[userId] = (xpByUserId[userId] || 0) + bonusPoints;
+              });
+              const battleStats = calculateTeamBattleStats(swimSessions, xpByUserId, allUsers);
               const currentMonth = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }).toUpperCase();
               const leading = battleStats.azubis.points > battleStats.trainer.points ? 'azubis' : battleStats.trainer.points > battleStats.azubis.points ? 'trainer' : 'tie';
 
@@ -8134,6 +8696,9 @@ export default function BaederApp() {
                       <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Team Azubis</div>
                       <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>{battleStats.azubis.points} Pkt</div>
                       <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Swim {battleStats.azubis.swimPoints} + XP/Arena {battleStats.azubis.xpPoints}
+                      </div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         {battleStats.azubis.memberList.length} Teilnehmer
                       </div>
                     </div>
@@ -8142,6 +8707,9 @@ export default function BaederApp() {
                       <div className="text-3xl mb-1">👨‍🏫</div>
                       <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Team Trainer</div>
                       <div className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>{battleStats.trainer.points} Pkt</div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Swim {battleStats.trainer.swimPoints} + XP/Arena {battleStats.trainer.xpPoints}
+                      </div>
                       <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         {battleStats.trainer.memberList.length} Teilnehmer
                       </div>
@@ -8666,7 +9234,15 @@ export default function BaederApp() {
 
             {/* Team-Battle Detail */}
             {swimChallengeView === 'battle' && (() => {
-              const battleStats = calculateTeamBattleStats(swimSessions);
+              const xpByUserId = Object.fromEntries(
+                Object.entries(statsByUserId).map(([userId, stats]) => [userId, stats?.totalXp || 0])
+              );
+              Object.entries(swimBattleWinsByUserId || {}).forEach(([userId, wins]) => {
+                const bonusPoints = toSafeInt(wins) * SWIM_BATTLE_WIN_POINTS;
+                if (bonusPoints <= 0) return;
+                xpByUserId[userId] = (xpByUserId[userId] || 0) + bonusPoints;
+              });
+              const battleStats = calculateTeamBattleStats(swimSessions, xpByUserId, allUsers);
 
               const renderTeamMember = (member, index, color) => {
                 const medals = ['🥇', '🥈', '🥉'];
@@ -8689,7 +9265,7 @@ export default function BaederApp() {
                         {isCurrentUser && <span className="ml-1 text-xs opacity-70">(Du)</span>}
                       </div>
                       <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {member.sessions} Einheiten • {(member.distance / 1000).toFixed(1)} km
+                        {member.sessions} Einheiten • {(member.distance / 1000).toFixed(1)} km • Swim {member.swimPoints || 0} + XP/Arena {member.xp || 0}
                       </div>
                     </div>
                     <div className={`font-bold ${color === 'cyan' ? (darkMode ? 'text-cyan-400' : 'text-cyan-600') : (darkMode ? 'text-orange-400' : 'text-orange-600')}`}>
@@ -8699,8 +9275,387 @@ export default function BaederApp() {
                 );
               };
 
+              const duelCandidates = allUsers.filter(u => Boolean(u?.id));
+              const trainerCandidates = allUsers.filter(u =>
+                u?.role === 'trainer'
+                || u?.role === 'ausbilder'
+                || u?.role === 'admin'
+                || Boolean(u?.permissions?.canViewAllStats)
+              );
+              const azubiCandidates = allUsers.filter(u => u?.role === 'azubi');
+              const arenaLeaderboard = allUsers
+                .filter(u => Boolean(u?.id))
+                .map((account) => {
+                  const wins = toSafeInt(swimBattleWinsByUserId?.[account.id]);
+                  return {
+                    userId: account.id,
+                    name: account.name || 'Unbekannt',
+                    role: account.role || 'azubi',
+                    wins,
+                    creature: getSeaCreatureTier(wins)
+                  };
+                })
+                .sort((a, b) => b.wins - a.wins)
+                .slice(0, 10);
+              const recentArenaHistory = Array.isArray(swimBattleHistory)
+                ? swimBattleHistory.slice(0, 8)
+                : [];
+
               return (
                 <div className="space-y-4">
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                      <div>
+                        <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                          🏟️ Swim-Arena
+                        </h3>
+                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          1v1-Duelle oder Team Boss-Battle mit Meereswesen-Rangsystem
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSwimArenaMode('duel')}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                            swimArenaMode === 'duel'
+                              ? 'bg-cyan-500 text-white'
+                              : (darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
+                          }`}
+                        >
+                          🤝 1v1 Duel
+                        </button>
+                        <button
+                          onClick={() => setSwimArenaMode('boss')}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                            swimArenaMode === 'boss'
+                              ? 'bg-orange-500 text-white'
+                              : (darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
+                          }`}
+                        >
+                          👨‍🏫 Boss-Battle
+                        </button>
+                      </div>
+                    </div>
+
+                    {swimArenaMode === 'duel' && (
+                      <form onSubmit={handleSwimDuelSubmit} className="space-y-3">
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Disziplin</label>
+                            <select
+                              value={swimDuelForm.discipline}
+                              onChange={(event) => setSwimDuelForm(prev => ({ ...prev, discipline: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                            >
+                              {SWIM_ARENA_DISCIPLINES.map((discipline) => (
+                                <option key={discipline.id} value={discipline.id}>{discipline.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Schwimmtechnik</label>
+                            <select
+                              value={swimDuelForm.style}
+                              onChange={(event) => setSwimDuelForm(prev => ({ ...prev, style: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                            >
+                              {SWIM_STYLES.map((style) => (
+                                <option key={style.id} value={style.id}>{style.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Teilnehmer A</label>
+                            <select
+                              value={swimDuelForm.challengerId}
+                              onChange={(event) => setSwimDuelForm(prev => ({ ...prev, challengerId: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                            >
+                              <option value="">Bitte wählen</option>
+                              {duelCandidates.map((candidate) => (
+                                <option key={candidate.id} value={candidate.id}>
+                                  {candidate.name} ({candidate.role})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Teilnehmer B</label>
+                            <select
+                              value={swimDuelForm.opponentId}
+                              onChange={(event) => setSwimDuelForm(prev => ({ ...prev, opponentId: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                            >
+                              <option value="">Bitte wählen</option>
+                              {duelCandidates.map((candidate) => (
+                                <option key={candidate.id} value={candidate.id}>
+                                  {candidate.name} ({candidate.role})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Zeit A (Sek.)</label>
+                            <input
+                              type="number"
+                              min="0.1"
+                              step="0.1"
+                              value={swimDuelForm.challengerSeconds}
+                              onChange={(event) => setSwimDuelForm(prev => ({ ...prev, challengerSeconds: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                              placeholder="z.B. 36.4"
+                            />
+                          </div>
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Zeit B (Sek.)</label>
+                            <input
+                              type="number"
+                              min="0.1"
+                              step="0.1"
+                              value={swimDuelForm.opponentSeconds}
+                              onChange={(event) => setSwimDuelForm(prev => ({ ...prev, opponentSeconds: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                              placeholder="z.B. 38.1"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-2">
+                          <button
+                            type="submit"
+                            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium"
+                          >
+                            Ergebnis eintragen
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {swimArenaMode === 'boss' && (
+                      <form onSubmit={handleSwimBossBattleSubmit} className="space-y-3">
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Disziplin</label>
+                            <select
+                              value={swimBossForm.discipline}
+                              onChange={(event) => setSwimBossForm(prev => ({ ...prev, discipline: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                            >
+                              {SWIM_ARENA_DISCIPLINES.map((discipline) => (
+                                <option key={discipline.id} value={discipline.id}>{discipline.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Schwimmtechnik</label>
+                            <select
+                              value={swimBossForm.style}
+                              onChange={(event) => setSwimBossForm(prev => ({ ...prev, style: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                            >
+                              {SWIM_STYLES.map((style) => (
+                                <option key={style.id} value={style.id}>{style.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Ausbilder</label>
+                            <select
+                              value={swimBossForm.trainerId}
+                              onChange={(event) => setSwimBossForm(prev => ({ ...prev, trainerId: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                            >
+                              <option value="">Bitte wählen</option>
+                              {trainerCandidates.map((trainerAccount) => (
+                                <option key={trainerAccount.id} value={trainerAccount.id}>
+                                  {trainerAccount.name} ({trainerAccount.role})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className={`block text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Azubis gegen den Ausbilder
+                          </label>
+                          <div className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-2 p-3 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'}`}>
+                            {azubiCandidates.length === 0 && (
+                              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Keine Azubis gefunden.</p>
+                            )}
+                            {azubiCandidates.map((azubiAccount) => {
+                              const checked = swimBossForm.azubiIds.includes(azubiAccount.id);
+                              return (
+                                <label key={azubiAccount.id} className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={(event) => {
+                                      const enabled = event.target.checked;
+                                      setSwimBossForm((prev) => ({
+                                        ...prev,
+                                        azubiIds: enabled
+                                          ? [...prev.azubiIds, azubiAccount.id]
+                                          : prev.azubiIds.filter((id) => id !== azubiAccount.id)
+                                      }));
+                                    }}
+                                  />
+                                  <span>{azubiAccount.name}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Zeit Ausbilder (Sek.)</label>
+                            <input
+                              type="number"
+                              min="0.1"
+                              step="0.1"
+                              value={swimBossForm.trainerSeconds}
+                              onChange={(event) => setSwimBossForm(prev => ({ ...prev, trainerSeconds: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                              placeholder="z.B. 42.0"
+                            />
+                          </div>
+                          <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Team-Zeit Azubis (Sek.)</label>
+                            <input
+                              type="number"
+                              min="0.1"
+                              step="0.1"
+                              value={swimBossForm.azubiSeconds}
+                              onChange={(event) => setSwimBossForm(prev => ({ ...prev, azubiSeconds: event.target.value }))}
+                              className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                              placeholder="z.B. 39.5"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-2">
+                          <button
+                            type="submit"
+                            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium"
+                          >
+                            Boss-Battle auswerten
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {swimBattleResult && (
+                      <div className={`mt-4 p-4 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-cyan-50 border-cyan-200'}`}>
+                        <h4 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                          {swimBattleResult.draw ? '🤝 Unentschieden' : '🏁 Arena-Ergebnis'}
+                        </h4>
+                        <p className={`text-sm mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          {swimBattleResult.mode === 'boss' ? 'Boss-Battle' : '1v1 Duel'} • {swimBattleResult.discipline} • {swimBattleResult.styleName}
+                        </p>
+                        {swimBattleResult.draw ? (
+                          <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            Beide Seiten haben exakt die gleiche Zeit erreicht.
+                          </p>
+                        ) : (
+                          <div className="grid md:grid-cols-2 gap-3">
+                            <div className={`p-3 rounded-lg ${darkMode ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200'}`}>
+                              <div className={`text-sm font-semibold mb-2 ${darkMode ? 'text-green-300' : 'text-green-700'}`}>Sieger</div>
+                              <div className="space-y-1">
+                                {swimBattleResult.winners.map((winner) => (
+                                  <div key={winner.userId} className={`text-sm ${darkMode ? 'text-green-200' : 'text-green-800'}`}>
+                                    {winner.name}: {winner.battleCreature.emoji} {winner.battleCreature.name} ({winner.wins} Siege)
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div className={`p-3 rounded-lg ${darkMode ? 'bg-red-900/30 border border-red-700' : 'bg-red-50 border border-red-200'}`}>
+                              <div className={`text-sm font-semibold mb-2 ${darkMode ? 'text-red-300' : 'text-red-700'}`}>Verlierer</div>
+                              <div className="space-y-1">
+                                {swimBattleResult.losers.map((loser) => (
+                                  <div key={loser.userId} className={`text-sm ${darkMode ? 'text-red-200' : 'text-red-800'}`}>
+                                    {loser.name}: {loser.battleCreature.emoji} {loser.battleCreature.name} ({loser.wins} Siege)
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid lg:grid-cols-2 gap-4">
+                    <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                      <h4 className={`font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        🐟 Meereswesen-Rangliste
+                      </h4>
+                      <p className={`text-xs mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Pro Arena-Sieg gibt es +1 Rang-Sieg und +{SWIM_BATTLE_WIN_POINTS} Team-Battle Punkte.
+                      </p>
+                      <div className="space-y-2">
+                        {arenaLeaderboard.length === 0 && (
+                          <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            Noch keine Arena-Siege eingetragen.
+                          </div>
+                        )}
+                        {arenaLeaderboard.map((entry, index) => (
+                          <div key={entry.userId} className={`flex items-center justify-between gap-3 p-2 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                            <div className="min-w-0">
+                              <div className={`font-medium truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                {index + 1}. {entry.name}
+                              </div>
+                              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {entry.role} • {entry.wins} Siege
+                              </div>
+                            </div>
+                            <div className={`text-sm font-semibold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                              {entry.creature.emoji} {entry.creature.name}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                      <h4 className={`font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        🧾 Arena-Verlauf
+                      </h4>
+                      <div className="space-y-2">
+                        {recentArenaHistory.length === 0 && (
+                          <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            Noch keine Duelle oder Boss-Battles erfasst.
+                          </div>
+                        )}
+                        {recentArenaHistory.map((entry) => {
+                          const winners = (entry.winnerIds || []).map((id) => getUserNameById(id)).join(', ');
+                          const losers = (entry.loserIds || []).map((id) => getUserNameById(id)).join(', ');
+                          const dateText = new Date(entry.created_at).toLocaleString('de-DE');
+                          return (
+                            <div key={entry.id} className={`p-3 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                              <div className={`text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {dateText} • {entry.mode === 'boss' ? 'Boss-Battle' : 'Duel'} • {entry.discipline}
+                              </div>
+                              {entry.draw ? (
+                                <div className={`text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>Unentschieden ({entry.styleName})</div>
+                              ) : (
+                                <div className={`text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                  🏆 {winners || 'Unbekannt'} besiegt {losers || 'Unbekannt'} ({entry.styleName})
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
                     <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                       ⚔️ Team-Battle Details
@@ -8712,6 +9667,9 @@ export default function BaederApp() {
                           <span>👨‍🎓 Team Azubis</span>
                           <span>{battleStats.azubis.points} Pkt</span>
                         </h4>
+                        <p className={`text-xs mb-3 ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>
+                          Swim {battleStats.azubis.swimPoints} + XP/Arena {battleStats.azubis.xpPoints}
+                        </p>
                         {battleStats.azubis.memberList.length === 0 ? (
                           <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                             <p>Noch keine Teilnehmer</p>
@@ -8738,6 +9696,9 @@ export default function BaederApp() {
                           <span>👨‍🏫 Team Trainer</span>
                           <span>{battleStats.trainer.points} Pkt</span>
                         </h4>
+                        <p className={`text-xs mb-3 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
+                          Swim {battleStats.trainer.swimPoints} + XP/Arena {battleStats.trainer.xpPoints}
+                        </p>
                         {battleStats.trainer.memberList.length === 0 ? (
                           <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                             <p>Noch keine Teilnehmer</p>

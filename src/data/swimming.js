@@ -178,49 +178,104 @@ export const getSwimLevel = (points) => {
 };
 
 // Berechnet Team-Battle Statistiken (Azubis vs Trainer/Ausbilder)
-export const calculateTeamBattleStats = (sessions) => {
+// Optional können zusätzliche XP pro User eingebunden werden.
+export const calculateTeamBattleStats = (sessions, xpByUserId = {}, users = []) => {
   const confirmedSessions = sessions.filter(s => s.confirmed);
 
-  // Gruppiere nach Team und User
+  const createTeamBucket = () => ({
+    points: 0,
+    swimPoints: 0,
+    xpPoints: 0,
+    distance: 0,
+    time: 0,
+    members: {}
+  });
+
   const teams = {
-    azubis: { points: 0, distance: 0, time: 0, members: {} },
-    trainer: { points: 0, distance: 0, time: 0, members: {} }
+    azubis: createTeamBucket(),
+    trainer: createTeamBucket()
   };
 
-  confirmedSessions.forEach(session => {
-    const isAzubi = session.user_role === 'azubi';
-    const team = isAzubi ? teams.azubis : teams.trainer;
-    const oderId = session.user_id;
+  const userDirectory = {};
+  users.forEach(user => {
+    if (!user?.id) return;
+    userDirectory[user.id] = {
+      name: user.name || 'Unbekannt',
+      role: user.role || 'trainer'
+    };
+  });
 
-    // Initialisiere Member wenn nötig
-    if (!team.members[oderId]) {
-      team.members[oderId] = {
-        user_id: session.user_id,
-        user_name: session.user_name,
+  const ensureMember = (team, userId, userName = 'Unbekannt') => {
+    if (!team.members[userId]) {
+      team.members[userId] = {
+        user_id: userId,
+        user_name: userName,
         distance: 0,
         time: 0,
         sessions: 0,
+        swimPoints: 0,
+        xp: 0,
         points: 0
       };
     }
+    return team.members[userId];
+  };
+
+  confirmedSessions.forEach(session => {
+    const userId = session.user_id;
+    const role = session.user_role || userDirectory[userId]?.role || 'trainer';
+    const isAzubi = role === 'azubi';
+    const team = isAzubi ? teams.azubis : teams.trainer;
+    const member = ensureMember(
+      team,
+      userId,
+      session.user_name || userDirectory[userId]?.name || 'Unbekannt'
+    );
 
     const distance = session.distance || 0;
     const time = session.time_minutes || 0;
 
-    // Punkte: 1 pro 100m + 0.5 pro Minute
+    // Swim-Punkte: 1 pro 100m + 0.5 pro Minute
     const sessionPoints = Math.floor(distance / 100) + Math.floor(time * 0.5);
 
-    team.members[oderId].distance += distance;
-    team.members[oderId].time += time;
-    team.members[oderId].sessions += 1;
-    team.members[oderId].points += sessionPoints;
+    member.distance += distance;
+    member.time += time;
+    member.sessions += 1;
+    member.swimPoints += sessionPoints;
+    member.points += sessionPoints;
 
     team.distance += distance;
     team.time += time;
-    team.points += sessionPoints;
+    team.swimPoints += sessionPoints;
   });
 
-  // Konvertiere members zu Arrays und sortiere nach Punkten
+  // Ergänze optionale XP-Punkte pro User (z.B. Lernen/Quiz/Prüfung)
+  Object.entries(xpByUserId || {}).forEach(([userId, rawXp]) => {
+    const xp = Math.max(0, Number(rawXp) || 0);
+    if (xp <= 0) return;
+
+    const roleFromUsers = userDirectory[userId]?.role || null;
+    const role = roleFromUsers
+      || (teams.azubis.members[userId] ? 'azubi' : teams.trainer.members[userId] ? 'trainer' : null);
+
+    if (!role) return;
+
+    const team = role === 'azubi' ? teams.azubis : teams.trainer;
+    const member = ensureMember(
+      team,
+      userId,
+      userDirectory[userId]?.name || team.members[userId]?.user_name || 'Unbekannt'
+    );
+
+    member.xp = xp;
+    member.points = member.swimPoints + member.xp;
+    team.xpPoints += xp;
+  });
+
+  teams.azubis.points = teams.azubis.swimPoints + teams.azubis.xpPoints;
+  teams.trainer.points = teams.trainer.swimPoints + teams.trainer.xpPoints;
+
+  // Konvertiere members zu Arrays und sortiere nach Gesamtpunkten
   teams.azubis.memberList = Object.values(teams.azubis.members).sort((a, b) => b.points - a.points);
   teams.trainer.memberList = Object.values(teams.trainer.members).sort((a, b) => b.points - a.points);
 
