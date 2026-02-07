@@ -436,6 +436,8 @@ export default function BaederApp() {
 
   // Toast-Benachrichtigungen
   const [toasts, setToasts] = useState([]);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updatingApp, setUpdatingApp] = useState(false);
 
   // Toast anzeigen
   const showToast = (message, type = 'success', duration = 3000) => {
@@ -451,6 +453,98 @@ export default function BaederApp() {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, duration);
   };
+
+  const checkForPwaUpdate = useCallback(async () => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return false;
+
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) return false;
+
+      if (registration.waiting) {
+        setUpdateAvailable(true);
+        return true;
+      }
+
+      await registration.update();
+
+      if (registration.waiting) {
+        setUpdateAvailable(true);
+        return true;
+      }
+
+      if (registration.installing) {
+        registration.installing.addEventListener('statechange', () => {
+          if (registration.waiting) {
+            setUpdateAvailable(true);
+          }
+        });
+      }
+
+      return false;
+    } catch (error) {
+      console.warn('PWA update check failed:', error);
+      return false;
+    }
+  }, []);
+
+  const applyPwaUpdate = async () => {
+    if (updatingApp) return;
+    setUpdatingApp(true);
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          await registration.update();
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        }
+      }
+
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(key => caches.delete(key)));
+      }
+
+      window.location.reload();
+    } catch (error) {
+      console.error('PWA update failed:', error);
+      setUpdatingApp(false);
+      showToast('Update fehlgeschlagen. Bitte Seite neu laden.', 'error');
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return undefined;
+
+    const onControllerChange = () => {
+      window.location.reload();
+    };
+
+    const onForeground = () => {
+      if (document.visibilityState === 'visible') {
+        void checkForPwaUpdate();
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+    document.addEventListener('visibilitychange', onForeground);
+    window.addEventListener('focus', onForeground);
+
+    void checkForPwaUpdate();
+    const intervalId = window.setInterval(() => {
+      void checkForPwaUpdate();
+    }, 120000);
+
+    return () => {
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+      document.removeEventListener('visibilitychange', onForeground);
+      window.removeEventListener('focus', onForeground);
+      window.clearInterval(intervalId);
+    };
+  }, [checkForPwaUpdate]);
 
   // Content moderation
   const BANNED_WORDS = [
@@ -5061,6 +5155,23 @@ export default function BaederApp() {
               title={soundEnabled ? 'Sound aus' : 'Sound an'}
             >
               {soundEnabled ? '🔊' : '🔇'}
+            </button>
+
+            {/* App Update / Hard Refresh */}
+            <button
+              onClick={() => { void applyPwaUpdate(); }}
+              disabled={updatingApp}
+              className={`px-3 py-2 rounded-lg transition-colors backdrop-blur-sm flex items-center gap-2 ${
+                updateAvailable
+                  ? 'bg-emerald-500/90 hover:bg-emerald-600/90'
+                  : 'bg-white/20 hover:bg-white/30'
+              } ${updatingApp ? 'opacity-70 cursor-not-allowed' : ''}`}
+              title={updateAvailable ? 'Neue Version installieren' : 'App aktualisieren / neu laden'}
+            >
+              <span>{updatingApp ? '⏳' : (updateAvailable ? '⬆️' : '🔄')}</span>
+              <span className="hidden sm:inline text-sm font-medium">
+                {updatingApp ? 'Update...' : (updateAvailable ? 'Update' : 'Neu laden')}
+              </span>
             </button>
 
             {/* Request Notification Permission */}
