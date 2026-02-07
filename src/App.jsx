@@ -8,7 +8,7 @@ import { AUSBILDUNGSRAHMENPLAN, WOCHEN_PRO_JAHR } from './data/ausbildungsrahmen
 import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
 import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, SWIM_BADGES, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
-import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel } from './data/practicalExam';
+import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel, parseExamTimeToSeconds, formatSecondsAsTime } from './data/practicalExam';
 import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
 
@@ -90,6 +90,14 @@ export default function BaederApp() {
     FLASHCARD_REVIEW: 1,
     FLASHCARD_CREATE: 15
   };
+  const PRACTICAL_PASS_XP_BY_GRADE = {
+    1: 40,
+    2: 30,
+    3: 20,
+    4: 10,
+    5: 0,
+    6: 0
+  };
   const PRACTICAL_ATTEMPTS_LOCAL_KEY = 'practical_exam_attempts_local_v1';
 
   const SWIM_BATTLE_WIN_POINTS = 20;
@@ -114,6 +122,7 @@ export default function BaederApp() {
   const XP_META_KEY = '__meta';
   const XP_BREAKDOWN_DEFAULT = {
     examSimulator: 0,
+    practicalExam: 0,
     flashcardLearning: 0,
     flashcardCreation: 0,
     quizWins: 0
@@ -151,6 +160,7 @@ export default function BaederApp() {
       breakdown: {
         ...XP_BREAKDOWN_DEFAULT,
         examSimulator: toSafeInt(rawBreakdown.examSimulator),
+        practicalExam: toSafeInt(rawBreakdown.practicalExam),
         flashcardLearning: toSafeInt(rawBreakdown.flashcardLearning),
         flashcardCreation: toSafeInt(rawBreakdown.flashcardCreation),
         quizWins: toSafeInt(rawBreakdown.quizWins)
@@ -2316,9 +2326,12 @@ export default function BaederApp() {
     }
   };
 
-  const queueXpAward = (sourceKey, amount, options = {}) => {
+  const queueXpAwardForUser = (targetUserInput, sourceKey, amount, options = {}) => {
     const xpAmount = toSafeInt(amount);
-    if (!user?.name || !user?.id || xpAmount <= 0) {
+    const targetUserId = targetUserInput?.id || null;
+    const targetUserName = targetUserInput?.name || null;
+
+    if (!targetUserId || !targetUserName || xpAmount <= 0) {
       return Promise.resolve(0);
     }
 
@@ -2326,23 +2339,25 @@ export default function BaederApp() {
 
     xpAwardQueueRef.current = xpAwardQueueRef.current
       .then(async () => {
-        const currentStats = await getUserStatsFromSupabase(user.name);
+        const currentStats = await getUserStatsFromSupabase(targetUserName);
         const baseStats = ensureUserStatsStructure(currentStats || createEmptyUserStats());
         const { stats: xpUpdatedStats, addedXp } = addXpToStats(baseStats, sourceKey, xpAmount, eventKey);
         if (addedXp <= 0) {
           return 0;
         }
 
-        await saveUserStatsToSupabase(user.name, xpUpdatedStats);
-        setUserStats(xpUpdatedStats);
+        await saveUserStatsToSupabase(targetUserName, xpUpdatedStats);
+        if (targetUserId === user?.id) {
+          setUserStats(xpUpdatedStats);
+        }
         setStatsByUserId(prev => {
           const wins = xpUpdatedStats.wins || 0;
           const losses = xpUpdatedStats.losses || 0;
           const draws = xpUpdatedStats.draws || 0;
           return {
             ...prev,
-            [user.id]: {
-              ...(prev[user.id] || {}),
+            [targetUserId]: {
+              ...(prev[targetUserId] || {}),
               wins,
               losses,
               draws,
@@ -2354,7 +2369,9 @@ export default function BaederApp() {
         });
 
         if (showXpToast) {
-          showToast(`+${addedXp} XP${reason ? ` • ${reason}` : ''}`, 'success', 2500);
+          const isCurrentUserTarget = targetUserId === user?.id;
+          const toastPrefix = isCurrentUserTarget ? `+${addedXp} XP` : `${targetUserName}: +${addedXp} XP`;
+          showToast(`${toastPrefix}${reason ? ` • ${reason}` : ''}`, 'success', 2500);
         }
         return addedXp;
       })
@@ -2364,6 +2381,13 @@ export default function BaederApp() {
       });
 
     return xpAwardQueueRef.current;
+  };
+
+  const queueXpAward = (sourceKey, amount, options = {}) => {
+    if (!user?.id || !user?.name) {
+      return Promise.resolve(0);
+    }
+    return queueXpAwardForUser({ id: user.id, name: user.name }, sourceKey, amount, options);
   };
 
   // Fisher-Yates Shuffle für zufällige Fragenreihenfolge
@@ -2895,6 +2919,50 @@ export default function BaederApp() {
 
   const toPracticalAttemptId = () => `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+  const toPracticalGradeBucket = (averageGrade) => {
+    const value = Number(averageGrade);
+    if (!Number.isFinite(value)) return null;
+    if (value <= 1.5) return 1;
+    if (value <= 2.5) return 2;
+    if (value <= 3.5) return 3;
+    if (value <= 4.0) return 4;
+    if (value <= 5.5) return 5;
+    return 6;
+  };
+
+  const getPracticalPassXpReward = (averageGrade) => {
+    const gradeBucket = toPracticalGradeBucket(averageGrade);
+    const xp = gradeBucket ? (PRACTICAL_PASS_XP_BY_GRADE[gradeBucket] || 0) : 0;
+    return { gradeBucket, xp };
+  };
+
+  const getPracticalDisciplineRequiredDistance = (disciplineId) => {
+    if (disciplineId === 'ap_35m_tauch') return 35;
+    if (disciplineId === 'zp_30m_tauch') return 30;
+    return null;
+  };
+
+  const getPracticalRowSeconds = (row) => {
+    const directSeconds = Number(row?.seconds);
+    if (Number.isFinite(directSeconds) && directSeconds > 0) {
+      return directSeconds;
+    }
+
+    const displayValue = String(row?.displayValue || '').trim();
+    if (!displayValue || displayValue === '-') return null;
+    const match = displayValue.match(/(\d+:\d{1,2}(?:[,.]\d+)?)/);
+    const valueToParse = match?.[1] || displayValue;
+    const parsed = parseExamTimeToSeconds(valueToParse);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+
+  const canUseRowForSpeedRanking = (row, disciplineId) => {
+    const requiredDistance = getPracticalDisciplineRequiredDistance(disciplineId);
+    if (!requiredDistance) return true;
+    const distanceMeters = Number(row?.distanceMeters);
+    return Number.isFinite(distanceMeters) && distanceMeters >= requiredDistance;
+  };
+
   const normalizePracticalAttempt = (rawAttempt) => {
     if (!rawAttempt || typeof rawAttempt !== 'object') return null;
 
@@ -3276,6 +3344,22 @@ export default function BaederApp() {
     };
     setPracticalExamResult(resultPayload);
     void savePracticalExamAttempt(resultPayload);
+
+    if (resultPayload.passed) {
+      const { gradeBucket, xp } = getPracticalPassXpReward(resultPayload.averageGrade);
+      if (xp > 0) {
+        void queueXpAwardForUser(
+          { id: targetUser.id, name: targetUser.name },
+          'practicalExam',
+          xp,
+          {
+            eventKey: `practical_pass_${targetUser.id}_${resultPayload.type}_${resultPayload.createdAt}`,
+            reason: gradeBucket ? `Praxis bestanden • Note ${gradeBucket}` : 'Praxis bestanden',
+            showXpToast: targetUser.id === user?.id
+          }
+        );
+      }
+    }
 
     if (missingTables > 0) {
       showToast('Wertungstabellen fehlen noch teilweise. Bitte nachreichen.', 'info');
@@ -7857,6 +7941,43 @@ export default function BaederApp() {
               return String(a.userName).localeCompare(String(b.userName), 'de');
             });
 
+          const disciplineLeaders = disciplines.map((discipline) => {
+            const isTimeBased = discipline.inputType === 'time' || discipline.inputType === 'time_distance';
+            if (!isTimeBased) {
+              return {
+                discipline,
+                best: null
+              };
+            }
+
+            const best = practicalExamHistory
+              .filter(attempt => attempt.exam_type === practicalExamType)
+              .flatMap((attempt) => {
+                const rows = Array.isArray(attempt.rows) ? attempt.rows : [];
+                const row = rows.find(entry => entry?.id === discipline.id);
+                if (!row) return [];
+                if (!canUseRowForSpeedRanking(row, discipline.id)) return [];
+                const seconds = getPracticalRowSeconds(row);
+                if (!Number.isFinite(seconds) || seconds <= 0) return [];
+                return [{
+                  userId: attempt.user_id,
+                  userName: attempt.user_name || azubiCandidates.find(account => account.id === attempt.user_id)?.name || 'Unbekannt',
+                  createdAt: attempt.created_at,
+                  seconds,
+                  row
+                }];
+              })
+              .sort((a, b) => {
+                if (a.seconds !== b.seconds) return a.seconds - b.seconds;
+                return new Date(a.createdAt) - new Date(b.createdAt);
+              })[0] || null;
+
+            return {
+              discipline,
+              best
+            };
+          });
+
           return (
             <div className="max-w-5xl mx-auto space-y-4">
               <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
@@ -8074,6 +8195,50 @@ export default function BaederApp() {
                   </div>
                 </div>
               )}
+
+              <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    🏁 Schnellste Zeiten je Disziplin
+                  </h3>
+                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Basis: gespeicherte {selectedType.label}-Versuche
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {disciplineLeaders.map((entry) => (
+                    <div
+                      key={entry.discipline.id}
+                      className={`${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'} border rounded-lg p-3`}
+                    >
+                      <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {entry.discipline.name}
+                      </div>
+                      {(entry.discipline.inputType !== 'time' && entry.discipline.inputType !== 'time_distance') ? (
+                        <div className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Keine Zeit-Bestenliste (Notenfach).
+                        </div>
+                      ) : !entry.best ? (
+                        <div className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Noch keine gültige Zeit vorhanden.
+                        </div>
+                      ) : (
+                        <div className="mt-1 space-y-1">
+                          <div className={`text-lg font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                            {formatSecondsAsTime(entry.best.seconds)}
+                          </div>
+                          <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {entry.best.userName}
+                          </div>
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {formatAttemptDate(entry.best.createdAt)} • {entry.best.row?.grade ? formatGradeLabel(entry.best.row.grade, entry.best.row.noteLabel) : 'Keine Note'}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
