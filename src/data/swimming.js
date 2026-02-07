@@ -15,10 +15,10 @@ export const SWIM_CHALLENGES = [
   { id: '10k_club', name: '10km Club', description: '10 km Gesamtdistanz schwimmen', type: 'distance', target: 10000, unit: 'm', icon: '🎯', points: 150, category: 'distanz' },
   { id: 'marathon', name: 'Schwimm-Marathon', description: '42.195 m - die Marathon-Distanz im Wasser', type: 'distance', target: 42195, unit: 'm', icon: '🏅', points: 600, category: 'distanz' },
 
-  // Sprint-Challenges
-  { id: 'sprint_50', name: '50m Sprint', description: '50m unter 35 Sekunden', type: 'time', target: 35, distance: 50, unit: 's', icon: '⚡', points: 100, category: 'sprint' },
-  { id: 'sprint_100', name: '100m Blitz', description: '100m unter 1:30 Minuten', type: 'time', target: 90, distance: 100, unit: 's', icon: '💨', points: 150, category: 'sprint' },
-  { id: 'sprint_200', name: '200m Power', description: '200m unter 3:30 Minuten', type: 'time', target: 210, distance: 200, unit: 's', icon: '🔥', points: 200, category: 'sprint' },
+  // Sprint-Challenges (Zeitangaben in Minuten, passend zum Eingabefeld)
+  { id: 'sprint_50', name: '50m Sprint', description: '50m in maximal 1 Minute', type: 'time', target: 1, distance: 50, unit: 'min', icon: '⚡', points: 100, category: 'sprint' },
+  { id: 'sprint_100', name: '100m Blitz', description: '100m in maximal 2 Minuten', type: 'time', target: 2, distance: 100, unit: 'min', icon: '💨', points: 150, category: 'sprint' },
+  { id: 'sprint_200', name: '200m Power', description: '200m in maximal 4 Minuten', type: 'time', target: 4, distance: 200, unit: 'min', icon: '🔥', points: 200, category: 'sprint' },
 
   // Ausdauer-Challenges
   { id: 'nonstop_1000', name: '1000m Non-Stop', description: '1000m am Stück ohne Pause', type: 'single_distance', target: 1000, unit: 'm', icon: '💪', points: 120, category: 'ausdauer' },
@@ -32,7 +32,7 @@ export const SWIM_CHALLENGES = [
   { id: 'sessions_12', name: 'Fleißiger Schwimmer', description: '12 Trainingseinheiten im Monat', type: 'sessions', target: 12, unit: 'Einheiten', icon: '🗓️', points: 150, category: 'regelmaessigkeit' },
 
   // Technik-Challenges
-  { id: 'alle_stile', name: 'Allrounder', description: 'Alle 4 Schwimmstile in einer Einheit', type: 'styles_single', target: 4, unit: 'Stile', icon: '🌟', points: 80, category: 'technik' },
+  { id: 'alle_stile', name: 'Allrounder', description: 'Alle 4 Schwimmstile mindestens einmal schwimmen', type: 'styles_single', target: 4, unit: 'Stile', icon: '🌟', points: 80, category: 'technik' },
   { id: 'lagen_400', name: 'Lagen-Meister', description: '400m Lagenschwimmen (100m pro Stil)', type: 'single_distance', target: 400, style: 'lagen', unit: 'm', icon: '🏆', points: 150, category: 'technik' },
 ];
 
@@ -130,6 +130,33 @@ export const calculateChallengeProgress = (challenge, sessions, userId) => {
       const qualifying = confirmedSessions.filter(s => (s.time_minutes || 0) >= challenge.target);
       return { current: qualifying.length > 0 ? challenge.target : 0, target: challenge.target, percent: qualifying.length > 0 ? 100 : 0 };
     }
+    case 'time': {
+      // Schnellste Session fuer definierte Distanz (je kleiner die Zeit, desto besser)
+      const matching = confirmedSessions.filter(s =>
+        (s.distance || 0) >= (challenge.distance || 0) &&
+        (!challenge.style || s.style === challenge.style)
+      );
+      if (matching.length === 0) {
+        return { current: 0, target: challenge.target, percent: 0 };
+      }
+
+      const bestMinutes = matching.reduce((best, s) => {
+        const value = Number(s.time_minutes || 0);
+        if (!Number.isFinite(value) || value <= 0) return best;
+        if (best === null || value < best) return value;
+        return best;
+      }, null);
+
+      if (bestMinutes === null) {
+        return { current: 0, target: challenge.target, percent: 0 };
+      }
+
+      const percent = bestMinutes <= challenge.target
+        ? 100
+        : Math.min(100, (challenge.target / bestMinutes) * 100);
+
+      return { current: bestMinutes, target: challenge.target, percent };
+    }
     case 'sessions': {
       // Anzahl Sessions im aktuellen Monat
       const currentMonth = new Date().getMonth();
@@ -157,6 +184,17 @@ export const calculateChallengeProgress = (challenge, sessions, userId) => {
       }
       maxStreak = Math.max(maxStreak, currentStreak, dates.length > 0 ? 1 : 0);
       return { current: maxStreak, target: challenge.target, percent: Math.min(100, (maxStreak / challenge.target) * 100) };
+    }
+    case 'styles_single': {
+      // Anzahl unterschiedlicher geschwommener Hauptstile
+      const trackedStyles = ['kraul', 'brust', 'ruecken', 'schmetterling'];
+      const usedStyles = new Set(
+        confirmedSessions
+          .map(s => s.style)
+          .filter(style => trackedStyles.includes(style))
+      );
+      const current = usedStyles.size;
+      return { current, target: challenge.target, percent: Math.min(100, (current / challenge.target) * 100) };
     }
     default:
       return { current: 0, target: challenge.target, percent: 0 };
