@@ -6292,22 +6292,24 @@ export default function BaederApp() {
                 <p className="text-sm opacity-90 mb-4 italic">💡 {dailyWisdom}</p>
               )}
               {userStats && (
-                <div className="flex justify-center gap-6 mt-4">
-                  <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'}`}>
+                <div className="mt-4 -mx-2 px-2 overflow-x-auto swipe-stats-scroll">
+                  <div className="flex gap-4 md:justify-center snap-x snap-mandatory min-w-max md:min-w-0">
+                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
                     <div className="text-2xl font-bold">🏆 {userStats.wins}</div>
                     <div className="text-sm">Siege</div>
-                  </div>
-                  <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'}`}>
+                    </div>
+                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
                     <div className="text-2xl font-bold">💪 {userStats.losses}</div>
                     <div className="text-sm">Niederlagen</div>
-                  </div>
-                  <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'}`}>
+                    </div>
+                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
                     <div className="text-2xl font-bold">🤝 {userStats.draws}</div>
                     <div className="text-sm">Unentschieden</div>
-                  </div>
-                  <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'}`}>
+                    </div>
+                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
                     <div className="text-2xl font-bold">⭐ {getTotalXpFromStats(userStats)}</div>
                     <div className="text-sm">XP Gesamt</div>
+                    </div>
                   </div>
                 </div>
               )}
