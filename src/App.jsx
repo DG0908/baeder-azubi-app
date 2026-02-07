@@ -736,10 +736,19 @@ export default function BaederApp() {
       return;
     }
 
-    const azubiCandidates = allUsers.filter(account => account?.role === 'azubi');
+    const practicalCandidates = allUsers.filter((account) => {
+      if (!account?.id) return false;
+      const role = String(account.role || '').toLowerCase();
+      return role === 'azubi'
+        || role === 'trainer'
+        || role === 'ausbilder'
+        || role === 'admin'
+        || Boolean(account?.permissions?.canViewAllStats);
+    });
     setPracticalExamTargetUserId((prev) => {
-      if (prev && azubiCandidates.some(account => account.id === prev)) return prev;
-      return azubiCandidates[0]?.id || user.id;
+      if (prev && practicalCandidates.some(account => account.id === prev)) return prev;
+      if (practicalCandidates.some(account => account.id === user.id)) return user.id;
+      return practicalCandidates[0]?.id || user.id;
     });
   }, [user, allUsers]);
 
@@ -3026,23 +3035,38 @@ export default function BaederApp() {
     localStorage.setItem(PRACTICAL_ATTEMPTS_LOCAL_KEY, JSON.stringify(safeAttempts));
   };
 
+  const getPracticalParticipantCandidates = () => allUsers
+    .filter((account) => {
+      if (!account?.id) return false;
+      const role = String(account.role || '').toLowerCase();
+      return role === 'azubi'
+        || role === 'trainer'
+        || role === 'ausbilder'
+        || role === 'admin'
+        || Boolean(account?.permissions?.canViewAllStats);
+    })
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
+
   const getPracticalExamTargetUser = () => {
     if (!user?.id) return null;
     const canManageAll = Boolean(user?.permissions?.canViewAllStats);
     if (!canManageAll) {
       return { id: user.id, name: user.name || 'Unbekannt', role: user.role || 'azubi' };
     }
-    const azubis = allUsers.filter(account => account?.role === 'azubi');
-    const selectedAzubi = azubis.find(account => account.id === practicalExamTargetUserId);
-    if (selectedAzubi) {
+    const participants = getPracticalParticipantCandidates();
+    const selectedParticipant = participants.find(account => account.id === practicalExamTargetUserId);
+    if (selectedParticipant) {
       return {
-        id: selectedAzubi.id,
-        name: selectedAzubi.name || 'Unbekannt',
-        role: selectedAzubi.role || 'azubi'
+        id: selectedParticipant.id,
+        name: selectedParticipant.name || 'Unbekannt',
+        role: selectedParticipant.role || 'azubi'
       };
     }
-    return azubis.length > 0
-      ? { id: azubis[0].id, name: azubis[0].name || 'Unbekannt', role: 'azubi' }
+    if (participants.some(account => account.id === user.id)) {
+      return { id: user.id, name: user.name || 'Unbekannt', role: user.role || 'trainer' };
+    }
+    return participants.length > 0
+      ? { id: participants[0].id, name: participants[0].name || 'Unbekannt', role: participants[0].role || 'azubi' }
       : { id: user.id, name: user.name || 'Unbekannt', role: user.role || 'trainer' };
   };
 
@@ -3240,7 +3264,7 @@ export default function BaederApp() {
         <div class="wrap">
           <h1>Praktische Prüfung - ${escapeHtml(examTypeLabel)}</h1>
           <div class="meta">
-            <div><strong>Azubi:</strong> ${escapeHtml(attempt.user_name || '-')}</div>
+            <div><strong>Teilnehmer:</strong> ${escapeHtml(attempt.user_name || '-')}</div>
             <div><strong>Datum:</strong> ${escapeHtml(createdLabel)}</div>
             <div><strong>Gewertete Disziplinen:</strong> ${escapeHtml(attempt.graded_count ?? '-')}</div>
             <div><strong>Status:</strong> ${escapeHtml(statusLabel)}</div>
@@ -3299,7 +3323,7 @@ export default function BaederApp() {
     }
     const targetUser = getPracticalExamTargetUser();
     if (!targetUser?.id) {
-      showToast('Bitte zuerst einen Azubi auswählen.', 'warning');
+      showToast('Bitte zuerst einen Teilnehmer auswählen.', 'warning');
       return;
     }
 
@@ -7885,11 +7909,9 @@ export default function BaederApp() {
           const selectedType = PRACTICAL_EXAM_TYPES.find(type => type.id === practicalExamType) || PRACTICAL_EXAM_TYPES[0];
           const disciplines = PRACTICAL_SWIM_EXAMS[practicalExamType] || [];
           const canManageAllPractical = Boolean(user?.permissions?.canViewAllStats);
-          const azubiCandidates = allUsers
-            .filter(account => account?.role === 'azubi')
-            .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
+          const practicalCandidates = getPracticalParticipantCandidates();
           const selectedTargetUser = canManageAllPractical
-            ? (azubiCandidates.find(account => account.id === practicalExamTargetUserId) || null)
+            ? (practicalCandidates.find(account => account.id === practicalExamTargetUserId) || null)
             : user;
           const historyFiltered = practicalExamHistory
             .filter((attempt) => practicalExamHistoryTypeFilter === 'alle' || attempt.exam_type === practicalExamHistoryTypeFilter)
@@ -7911,7 +7933,7 @@ export default function BaederApp() {
             if (!comparisonByUserId[attempt.user_id]) {
               comparisonByUserId[attempt.user_id] = {
                 userId: attempt.user_id,
-                userName: attempt.user_name || azubiCandidates.find(account => account.id === attempt.user_id)?.name || 'Unbekannt',
+                userName: attempt.user_name || practicalCandidates.find(account => account.id === attempt.user_id)?.name || 'Unbekannt',
                 attempts: []
               };
             }
@@ -7961,7 +7983,7 @@ export default function BaederApp() {
                 if (!Number.isFinite(seconds) || seconds <= 0) return [];
                 return [{
                   userId: attempt.user_id,
-                  userName: attempt.user_name || azubiCandidates.find(account => account.id === attempt.user_id)?.name || 'Unbekannt',
+                  userName: attempt.user_name || practicalCandidates.find(account => account.id === attempt.user_id)?.name || 'Unbekannt',
                   createdAt: attempt.created_at,
                   seconds,
                   row
@@ -8013,7 +8035,7 @@ export default function BaederApp() {
                 {canManageAllPractical && (
                   <div className="mb-4">
                     <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Prüfung für Azubi
+                      Prüfung für Teilnehmer
                     </label>
                     <select
                       value={practicalExamTargetUserId}
@@ -8024,10 +8046,10 @@ export default function BaederApp() {
                           : 'bg-white border-gray-300 text-gray-800'
                       }`}
                     >
-                      {azubiCandidates.length === 0 && <option value="">Keine Azubis verfügbar</option>}
-                      {azubiCandidates.map((account) => (
+                      {practicalCandidates.length === 0 && <option value="">Keine Teilnehmer verfügbar</option>}
+                      {practicalCandidates.map((account) => (
                         <option key={account.id} value={account.id}>
-                          {account.name}
+                          {account.name} ({account.role || 'user'})
                         </option>
                       ))}
                     </select>
@@ -8113,7 +8135,7 @@ export default function BaederApp() {
                     Ergebnis {selectedType.label}
                   </h3>
                   <div className={`mb-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Azubi: <strong>{practicalExamResult.userName || selectedTargetUser?.name || '-'}</strong>
+                    Teilnehmer: <strong>{practicalExamResult.userName || selectedTargetUser?.name || '-'}</strong>
                   </div>
                   <div className="space-y-2">
                     {practicalExamResult.rows.map((row) => (
@@ -8270,9 +8292,11 @@ export default function BaederApp() {
                             : 'bg-white border-gray-300 text-gray-800'
                         }`}
                       >
-                        <option value="all">Alle Azubis</option>
-                        {azubiCandidates.map((account) => (
-                          <option key={account.id} value={account.id}>{account.name}</option>
+                        <option value="all">Alle Teilnehmer</option>
+                        {practicalCandidates.map((account) => (
+                          <option key={account.id} value={account.id}>
+                            {account.name} ({account.role || 'user'})
+                          </option>
                         ))}
                       </select>
                     )}
@@ -8339,7 +8363,7 @@ export default function BaederApp() {
                 <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      🧭 Trainer-Vergleich (alle Azubis)
+                      🧭 Trainer-Vergleich (alle Teilnehmer)
                     </h3>
                     <select
                       value={practicalExamComparisonType}
