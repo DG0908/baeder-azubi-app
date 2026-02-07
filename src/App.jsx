@@ -9179,9 +9179,9 @@ export default function BaederApp() {
               const userStats = {};
 
               confirmedSessions.forEach(session => {
-                const oderId = session.user_id;
-                if (!userStats[oderId]) {
-                  userStats[oderId] = {
+                const userId = session.user_id;
+                if (!userStats[userId]) {
+                  userStats[userId] = {
                     user_id: session.user_id,
                     user_name: session.user_name,
                     user_role: session.user_role,
@@ -9191,15 +9191,77 @@ export default function BaederApp() {
                     styles: new Set()
                   };
                 }
-                userStats[oderId].total_distance += session.distance || 0;
-                userStats[oderId].total_time += session.time_minutes || 0;
-                userStats[oderId].session_count += 1;
-                userStats[oderId].styles.add(session.style);
+                userStats[userId].total_distance += session.distance || 0;
+                userStats[userId].total_time += session.time_minutes || 0;
+                userStats[userId].session_count += 1;
+                userStats[userId].styles.add(session.style);
               });
 
               // Sortiere nach Gesamtdistanz
               const leaderboard = Object.values(userStats)
                 .sort((a, b) => b.total_distance - a.total_distance);
+
+              const formatMinutes = (minutesInput) => {
+                const minutes = Math.max(0, Number(minutesInput) || 0);
+                if (minutes >= 60) {
+                  return `${Math.floor(minutes / 60)}h ${Math.round(minutes % 60)}min`;
+                }
+                return `${Math.round(minutes)} min`;
+              };
+
+              const challengeTimeLeaderboards = SWIM_CHALLENGES
+                .map((challenge) => {
+                  const challengeSessions = confirmedSessions.filter(session =>
+                    session.challenge_id === challenge.id
+                    && Number(session.time_minutes || 0) > 0
+                    && Number(session.distance || 0) > 0
+                  );
+
+                  if (challengeSessions.length === 0) {
+                    return null;
+                  }
+
+                  const bestByUser = {};
+                  challengeSessions.forEach((session) => {
+                    const userId = session.user_id;
+                    const timeMinutes = Number(session.time_minutes || 0);
+                    const distance = Number(session.distance || 0);
+                    if (!userId || timeMinutes <= 0 || distance <= 0) return;
+
+                    const paceSecondsPer100 = (timeMinutes * 60) / (distance / 100);
+                    if (!Number.isFinite(paceSecondsPer100) || paceSecondsPer100 <= 0) return;
+
+                    const existing = bestByUser[userId];
+                    if (
+                      !existing
+                      || paceSecondsPer100 < existing.paceSecondsPer100
+                      || (paceSecondsPer100 === existing.paceSecondsPer100 && timeMinutes < existing.timeMinutes)
+                    ) {
+                      bestByUser[userId] = {
+                        userId,
+                        userName: session.user_name || 'Unbekannt',
+                        timeMinutes,
+                        distance,
+                        paceSecondsPer100,
+                        date: session.date
+                      };
+                    }
+                  });
+
+                  const ranking = Object.values(bestByUser)
+                    .sort((a, b) => a.paceSecondsPer100 - b.paceSecondsPer100)
+                    .slice(0, 5);
+
+                  if (ranking.length === 0) {
+                    return null;
+                  }
+
+                  return {
+                    challenge,
+                    ranking
+                  };
+                })
+                .filter(Boolean);
 
               return (
                 <div className="space-y-4">
@@ -9259,6 +9321,70 @@ export default function BaederApp() {
                             </div>
                           );
                         })}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <h3 className={`font-bold text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      ⏱️ Schnellste Zeiten pro Challenge
+                    </h3>
+                    <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Gewertet werden bestätigte Challenge-Einheiten nach bester Pace (Sekunden pro 100m).
+                    </p>
+
+                    {challengeTimeLeaderboards.length === 0 ? (
+                      <div className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <p>Noch keine bestätigten Challenge-Zeiten vorhanden.</p>
+                        <p className="text-sm mt-1">Trage Einheiten mit Challenge-Zuordnung ein.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {challengeTimeLeaderboards.map(({ challenge, ranking }) => (
+                          <div
+                            key={challenge.id}
+                            className={`rounded-lg p-4 border ${
+                              darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-3 mb-3">
+                              <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                {challenge.icon} {challenge.name}
+                              </div>
+                              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                Top {ranking.length}
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              {ranking.map((entry, index) => {
+                                const medals = ['🥇', '🥈', '🥉'];
+                                const medal = medals[index] || `${index + 1}.`;
+                                const isCurrentUser = entry.userId === user?.id;
+                                return (
+                                  <div
+                                    key={`${challenge.id}-${entry.userId}`}
+                                    className={`flex items-center gap-3 p-2 rounded-lg ${
+                                      isCurrentUser
+                                        ? (darkMode ? 'bg-cyan-900/40 border border-cyan-700' : 'bg-cyan-50 border border-cyan-200')
+                                        : ''
+                                    }`}
+                                  >
+                                    <span className="w-8 text-center text-lg">{medal}</span>
+                                    <div className="flex-1 min-w-0">
+                                      <div className={`font-medium truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                        {entry.userName}
+                                        {isCurrentUser && <span className="ml-1 text-xs opacity-70">(Du)</span>}
+                                      </div>
+                                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {entry.distance}m in {formatMinutes(entry.timeMinutes)} • {entry.paceSecondsPer100.toFixed(1)} s/100m
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
