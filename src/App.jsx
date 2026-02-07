@@ -8,6 +8,7 @@ import { AUSBILDUNGSRAHMENPLAN, WOCHEN_PRO_JAHR } from './data/ausbildungsrahmen
 import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
 import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, SWIM_BADGES, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
+import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel } from './data/practicalExam';
 import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
 
@@ -263,6 +264,10 @@ export default function BaederApp() {
   const [userExamProgress, setUserExamProgress] = useState(null);
   const [examSelectedAnswers, setExamSelectedAnswers] = useState([]); // Für Multi-Select im Prüfungssimulator
   const [examSelectedAnswer, setExamSelectedAnswer] = useState(null); // Für Single-Choice Feedback
+  const [examSimulatorMode, setExamSimulatorMode] = useState('theory');
+  const [practicalExamType, setPracticalExamType] = useState('zwischen');
+  const [practicalExamInputs, setPracticalExamInputs] = useState({});
+  const [practicalExamResult, setPracticalExamResult] = useState(null);
   
   // UI State
   const [darkMode, setDarkMode] = useState(false);
@@ -2833,6 +2838,7 @@ export default function BaederApp() {
   
   // Exam Simulator Functions
   const loadExamProgress = () => {
+    setExamSimulatorMode('theory');
     const allQuestions = [];
     Object.entries(SAMPLE_QUESTIONS).forEach(([catId, questions]) => {
       questions.forEach(q => { allQuestions.push({ ...q, category: catId }); });
@@ -2847,6 +2853,68 @@ export default function BaederApp() {
     setExamSelectedAnswers([]); // Reset Multi-Select
     setExamSelectedAnswer(null); // Reset Single-Choice
     setUserExamProgress(null);
+  };
+
+  const resetPracticalExam = () => {
+    setPracticalExamInputs({});
+    setPracticalExamResult(null);
+  };
+
+  const updatePracticalExamInput = (disciplineId, value) => {
+    setPracticalExamInputs(prev => ({ ...prev, [disciplineId]: value }));
+    setPracticalExamResult(null);
+  };
+
+  const evaluatePracticalExam = () => {
+    const disciplines = PRACTICAL_SWIM_EXAMS[practicalExamType] || [];
+    if (disciplines.length === 0) {
+      showToast('Keine Disziplinen für diese Prüfung gefunden.', 'warning');
+      return;
+    }
+
+    const missingRequiredInputs = [];
+    const evaluatedRows = disciplines.map((discipline) => {
+      const resolved = resolvePracticalDisciplineResult(discipline, practicalExamInputs);
+      if (resolved.missingRequired) {
+        missingRequiredInputs.push(discipline.name);
+      }
+      return {
+        id: discipline.id,
+        name: discipline.name,
+        inputType: discipline.inputType,
+        ...resolved
+      };
+    });
+
+    if (missingRequiredInputs.length > 0) {
+      showToast(`Bitte gültige Eingaben ergänzen: ${missingRequiredInputs.join(', ')}`, 'warning');
+      return;
+    }
+
+    const numericGrades = evaluatedRows
+      .map(row => toNumericGrade(row.grade))
+      .filter(value => value !== null);
+
+    const averageGrade = numericGrades.length > 0
+      ? numericGrades.reduce((sum, value) => sum + value, 0) / numericGrades.length
+      : null;
+
+    const missingTables = evaluatedRows.filter(row => row.gradingMissing).length;
+    setPracticalExamResult({
+      type: practicalExamType,
+      rows: evaluatedRows,
+      averageGrade,
+      gradedCount: numericGrades.length,
+      passed: averageGrade !== null ? averageGrade <= 4 : null,
+      missingTables,
+      createdAt: Date.now()
+    });
+
+    if (missingTables > 0) {
+      showToast('Wertungstabellen fehlen noch teilweise. Bitte nachreichen.', 'info');
+    } else {
+      showToast('Praktische Prüfung ausgewertet.', 'success');
+    }
   };
 
   // Toggle für Multi-Select im Prüfungssimulator
@@ -5300,9 +5368,6 @@ export default function BaederApp() {
               onClick={() => {
                 setCurrentView(item.id);
                 playSound('splash');
-                if (item.id === 'exam-simulator' && !examSimulator) {
-                  loadExamProgress();
-                }
                 if (item.id === 'flashcards') {
                   loadFlashcards();
                 }
@@ -6079,14 +6144,14 @@ export default function BaederApp() {
 
             <div className="grid md:grid-cols-4 gap-4">
               <div className={`${darkMode ? 'bg-slate-800/95 border-cyan-600' : 'bg-white/95 border-cyan-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-cyan-400`}
-                   onClick={() => {
+               onClick={() => {
                      setCurrentView('exam-simulator');
-                     loadExamProgress();
+                     setExamSimulatorMode('theory');
                      playSound('splash');
                    }}>
                 <div className="text-5xl mb-3 text-center">📝</div>
                 <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Prüfungssimulator</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>30 Fragen üben</p>
+                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Theorie & Praxis üben</p>
               </div>
 
               <div className={`${darkMode ? 'bg-slate-800/95 border-purple-600' : 'bg-white/95 border-purple-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-purple-400`}
@@ -7214,7 +7279,36 @@ export default function BaederApp() {
         )}
 
         {/* Exam Simulator View */}
-        {currentView === 'exam-simulator' && !userExamProgress && (
+        {currentView === 'exam-simulator' && (
+          <div className="max-w-4xl mx-auto mb-4">
+            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-3 shadow-lg`}>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setExamSimulatorMode('theory')}
+                  className={`py-2 rounded-lg font-bold transition-all ${
+                    examSimulatorMode === 'theory'
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
+                      : (darkMode ? 'bg-slate-700 text-gray-200 hover:bg-slate-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
+                  }`}
+                >
+                  📝 Theorie
+                </button>
+                <button
+                  onClick={() => setExamSimulatorMode('practical')}
+                  className={`py-2 rounded-lg font-bold transition-all ${
+                    examSimulatorMode === 'practical'
+                      ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'
+                      : (darkMode ? 'bg-slate-700 text-gray-200 hover:bg-slate-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
+                  }`}
+                >
+                  🏊 Praxis
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentView === 'exam-simulator' && examSimulatorMode === 'theory' && !userExamProgress && (
           <div className="max-w-4xl mx-auto">
             {!examSimulator ? (
               <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-8 shadow-lg text-center`}>
@@ -7336,7 +7430,186 @@ export default function BaederApp() {
           </div>
         )}
 
-        {currentView === 'exam-simulator' && userExamProgress && (
+        {currentView === 'exam-simulator' && examSimulatorMode === 'practical' && (() => {
+          const selectedType = PRACTICAL_EXAM_TYPES.find(type => type.id === practicalExamType) || PRACTICAL_EXAM_TYPES[0];
+          const disciplines = PRACTICAL_SWIM_EXAMS[practicalExamType] || [];
+          return (
+            <div className="max-w-5xl mx-auto space-y-4">
+              <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
+                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                  <div>
+                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      🏊 Praktischer Prüfungssimulator
+                    </h2>
+                    <p className={`mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Zeiten eintragen und Note direkt aus der Wertungstabelle berechnen.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {PRACTICAL_EXAM_TYPES.map((type) => (
+                      <button
+                        key={type.id}
+                        onClick={() => {
+                          setPracticalExamType(type.id);
+                          resetPracticalExam();
+                        }}
+                        className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                          practicalExamType === type.id
+                            ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'
+                            : (darkMode ? 'bg-slate-700 text-gray-200 hover:bg-slate-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
+                        }`}
+                      >
+                        {type.icon} {type.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className={`${darkMode ? 'bg-slate-700' : 'bg-cyan-50'} rounded-lg p-4 mb-4`}>
+                  <div className={`text-sm font-medium ${darkMode ? 'text-cyan-200' : 'text-cyan-800'}`}>
+                    Aktive Prüfung: {selectedType.label}
+                  </div>
+                  <div className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                    Format: Zeit als mm:ss (z. B. 01:42) oder in Sekunden.
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {disciplines.map((discipline) => (
+                    <div
+                      key={discipline.id}
+                      className={`${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'} border rounded-xl p-4`}
+                    >
+                      <div className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {discipline.name}
+                      </div>
+                      <input
+                        type="text"
+                        value={practicalExamInputs[discipline.id] || ''}
+                        onChange={(event) => updatePracticalExamInput(discipline.id, event.target.value)}
+                        placeholder={discipline.inputPlaceholder || 'Wert eingeben'}
+                        className={`w-full px-4 py-2 rounded-lg border ${
+                          darkMode
+                            ? 'bg-slate-800 border-slate-600 text-white placeholder-gray-400'
+                            : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'
+                        }`}
+                      />
+                      {discipline.inputType === 'time_distance' && (
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={practicalExamInputs[`${discipline.id}_distance`] || ''}
+                          onChange={(event) => updatePracticalExamInput(`${discipline.id}_distance`, event.target.value)}
+                          placeholder={discipline.distancePlaceholder || 'Strecke in m'}
+                          className={`w-full mt-2 px-4 py-2 rounded-lg border ${
+                            darkMode
+                              ? 'bg-slate-800 border-slate-600 text-white placeholder-gray-400'
+                              : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'
+                          }`}
+                        />
+                      )}
+                      <div className={`mt-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {discipline.inputType === 'time' && 'Zeit-Eingabe'}
+                        {discipline.inputType === 'grade' && 'Direkte Note'}
+                        {discipline.inputType === 'time_distance' && 'Zeit + Strecke'}
+                        {discipline.required === false ? ' (optional)' : ' (pflicht)'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap gap-3 mt-6">
+                  <button
+                    onClick={evaluatePracticalExam}
+                    className="bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg"
+                  >
+                    Note berechnen
+                  </button>
+                  <button
+                    onClick={resetPracticalExam}
+                    className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} px-6 py-3 rounded-lg font-bold transition-all`}
+                  >
+                    Eingaben zurücksetzen
+                  </button>
+                </div>
+              </div>
+
+              {practicalExamResult && (
+                <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
+                  <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    Ergebnis {selectedType.label}
+                  </h3>
+                  <div className="space-y-2">
+                    {practicalExamResult.rows.map((row) => (
+                      <div
+                        key={row.id}
+                        className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-3 flex items-center justify-between gap-3`}
+                      >
+                        <div>
+                          <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>{row.name}</div>
+                          <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Wert: {row.displayValue}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                            {row.grade ? formatGradeLabel(row.grade, row.noteLabel) : 'Keine Note'}
+                          </div>
+                          {row.points !== null && row.points !== undefined && (
+                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {row.points} Punkte
+                            </div>
+                          )}
+                          {row.gradingMissing && (
+                            <div className={`text-xs ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
+                              Wertungstabelle fehlt
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={`mt-5 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} grid md:grid-cols-3 gap-3`}>
+                    <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-lg p-3`}>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gewertete Disziplinen</div>
+                      <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{practicalExamResult.gradedCount}</div>
+                    </div>
+                    <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-lg p-3`}>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Durchschnittsnote</div>
+                      <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {practicalExamResult.averageGrade !== null ? practicalExamResult.averageGrade.toFixed(2) : '-'}
+                      </div>
+                    </div>
+                    <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-lg p-3`}>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Status</div>
+                      <div className={`text-xl font-bold ${
+                        practicalExamResult.passed === null
+                          ? (darkMode ? 'text-gray-300' : 'text-gray-700')
+                          : practicalExamResult.passed
+                            ? (darkMode ? 'text-green-400' : 'text-green-600')
+                            : (darkMode ? 'text-red-400' : 'text-red-600')
+                      }`}>
+                        {practicalExamResult.passed === null
+                          ? 'offen'
+                          : practicalExamResult.passed ? 'bestanden' : 'nicht bestanden'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {practicalExamResult.missingTables > 0 && (
+                    <div className={`mt-4 text-sm ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
+                      Hinweis: {practicalExamResult.missingTables} Disziplin(en) haben noch keine Wertungstabelle.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {currentView === 'exam-simulator' && examSimulatorMode === 'theory' && userExamProgress && (
           <div className="max-w-4xl mx-auto">
             <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-8 shadow-lg text-center`}>
               <div className="text-6xl mb-4">{userExamProgress.passed ? '🎉' : '📚'}</div>
