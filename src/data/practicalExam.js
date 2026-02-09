@@ -1,6 +1,6 @@
 export const PRACTICAL_EXAM_TYPES = [
-  { id: 'zwischen', label: 'Zwischenpruefung', icon: 'ZP' },
-  { id: 'abschluss', label: 'Abschlusspruefung', icon: 'AP' }
+  { id: 'zwischen', label: 'Zwischenprüfung', icon: 'ZP' },
+  { id: 'abschluss', label: 'Abschlussprüfung', icon: 'AP' }
 ];
 
 const GRADE_LABELS = {
@@ -71,7 +71,7 @@ export const PRACTICAL_SWIM_EXAMS = {
     },
     {
       id: 'zp_hlw',
-      name: 'HLW-Pruefbogen',
+      name: 'HLW-Prüfbogen',
       inputType: 'grade',
       inputPlaceholder: 'z. B. 2',
       required: false,

@@ -604,19 +604,19 @@ export default function BaederApp() {
     tech: [
       { front: 'Optimaler pH-Wert im Schwimmbad?', back: '7,0 - 7,4 (neutral bis leicht basisch)' },
       { front: 'Was macht eine Umwälzpumpe?', back: 'Sie pumpt das Wasser durch die Filteranlage zur Reinigung.' },
-      { front: 'Chlor-Richtwert im Becken?', back: '0,3 - 0,6 mg/l freies Chlor' }
+      { front: 'Chlor-Richtwert im Becken?', back: '0,3 - 0,6 mg/L freies Chlor' }
     ],
     swim: [
-      { front: 'Was ist der Rautek-Griff?', back: 'Rettungsgriff zum Bergen bewusstloser Personen aus Gefahrenbereich.' },
-      { front: 'Wie funktioniert die Mund-zu-Mund-Beatmung?', back: 'Kopf überstrecken, Nase zuhalten, 2x beatmen, dann Herzdruckmassage.' }
+      { front: 'Was ist der Rautek-Griff?', back: 'Rettungsgriff zum Bergen bewusstloser Personen aus dem Gefahrenbereich.' },
+      { front: 'Wie funktioniert die Mund-zu-Mund-Beatmung?', back: 'Kopf überstrecken, Nase zuhalten, 2-mal beatmen, dann Herzdruckmassage.' }
     ],
     first: [
-      { front: 'Verhältnis Herzdruckmassage zu Beatmung?', back: '30:2 - 30 Kompressionen, dann 2 Beatmungen' },
-      { front: 'Wo drückt man bei der Herzdruckmassage?', back: 'Unteres Drittel des Brustbeins, 5-6 cm tief' }
+      { front: 'Verhältnis Herzdruckmassage zu Beatmung?', back: '30:2 - 30 Kompressionen, dann 2 Beatmungen.' },
+      { front: 'Wo drückt man bei der Herzdruckmassage?', back: 'Unteres Drittel des Brustbeins, 5-6 cm tief.' }
     ],
     hygiene: [
       { front: 'Warum Duschpflicht vor dem Schwimmen?', back: 'Entfernung von Schmutz, Schweiß und Kosmetik für bessere Wasserqualität.' },
-      { front: 'Was sind Legionellen?', back: 'Bakterien im Wasser, gefährlich bei Inhalation, vermehren sich bei 25-45°C' }
+      { front: 'Was sind Legionellen?', back: 'Bakterien im Wasser, gefährlich bei Inhalation, vermehren sich bei 25-45 °C.' }
     ],
     pol: [
       { front: 'Was regelt das Arbeitsrecht?', back: 'Beziehung zwischen Arbeitgeber und Arbeitnehmer, Rechte und Pflichten.' },
@@ -884,9 +884,9 @@ export default function BaederApp() {
     
     return {
       result: ph.toFixed(2),
-      explanation: `Bei ${chlorine} mg/l Chlor, ${alkalinity} mg/l Alkalinität${acidCapacity ? ` und ${acidCapacity} mmol/l Säurekapazität` : ''} ergibt sich ein pH-Wert von ${ph.toFixed(2)}. Optimal: 7,0-7,4`,
+      explanation: `Bei ${chlorine} mg/L Chlor, ${alkalinity} mg/L Alkalinität${acidCapacity ? ` und ${acidCapacity} mmol/L Säurekapazität` : ''} ergibt sich ein pH-Wert von ${ph.toFixed(2)}. Optimal: 7,0-7,4`,
       recommendation: ph < 7.0 ? 'pH-Heber (Na₂CO₃) zugeben' : ph > 7.4 ? 'pH-Senker (NaHSO₄) zugeben' : 'pH-Wert optimal!',
-      details: acidCapacity ? `Die Säurekapazität von ${acidCapacity} mmol/l zeigt die Pufferfähigkeit des Wassers an.` : null
+      details: acidCapacity ? `Die Säurekapazität von ${acidCapacity} mmol/L zeigt die Pufferfähigkeit des Wassers an.` : null
     };
   };
 
@@ -899,7 +899,7 @@ export default function BaederApp() {
     
     return {
       result: needed.toFixed(2) + ' kg',
-      explanation: `Für ${poolVolume} m³ Wasser von ${currentChlorine} auf ${targetChlorine} mg/l`,
+      explanation: `Für ${poolVolume} m³ Wasser von ${currentChlorine} auf ${targetChlorine} mg/L`,
       recommendation: needed > 0 ? `${needed.toFixed(2)} kg Chlor zugeben` : 'Kein Chlor nötig'
     };
   };
@@ -9153,14 +9153,14 @@ export default function BaederApp() {
                     <input
                       type="number"
                       step="0.1"
-                      placeholder="Chlor-Wert (mg/l)"
+                      placeholder="Chlor-Wert (mg/L)"
                       value={calculatorInputs.chlorine || ''}
                       onChange={(e) => setCalculatorInputs({...calculatorInputs, chlorine: e.target.value})}
                       className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
                     />
                     <input
                       type="number"
-                      placeholder="Alkalinität (mg/l)"
+                      placeholder="Alkalinität (mg/L)"
                       value={calculatorInputs.alkalinity || ''}
                       onChange={(e) => setCalculatorInputs({...calculatorInputs, alkalinity: e.target.value})}
                       className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
@@ -9168,14 +9168,14 @@ export default function BaederApp() {
                     <input
                       type="number"
                       step="0.1"
-                      placeholder="Säurekapazität (mmol/l) - Optional"
+                      placeholder="Säurekapazität (mmol/L) - Optional"
                       value={calculatorInputs.acidCapacity || ''}
                       onChange={(e) => setCalculatorInputs({...calculatorInputs, acidCapacity: e.target.value})}
                       className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
                     />
                     <div className={`${darkMode ? 'bg-slate-600' : 'bg-blue-100'} rounded-lg p-3 text-sm`}>
                       <p className={darkMode ? 'text-cyan-300' : 'text-blue-800'}>
-                        💡 <strong>Säurekapazität:</strong> Maß für die Pufferfähigkeit des Wassers. Optimal: 2,0-3,0 mmol/l
+                        💡 <strong>Säurekapazität:</strong> Maß für die Pufferfähigkeit des Wassers. Optimal: 2,0-3,0 mmol/L
                       </p>
                     </div>
                   </div>
@@ -9196,7 +9196,7 @@ export default function BaederApp() {
                     <input
                       type="number"
                       step="0.1"
-                      placeholder="Aktueller Chlor-Wert (mg/l)"
+                      placeholder="Aktueller Chlor-Wert (mg/L)"
                       value={calculatorInputs.currentChlorine || ''}
                       onChange={(e) => setCalculatorInputs({...calculatorInputs, currentChlorine: e.target.value})}
                       className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
@@ -9204,7 +9204,7 @@ export default function BaederApp() {
                     <input
                       type="number"
                       step="0.1"
-                      placeholder="Ziel-Chlor-Wert (mg/l)"
+                      placeholder="Ziel-Chlor-Wert (mg/L)"
                       value={calculatorInputs.targetChlorine || ''}
                       onChange={(e) => setCalculatorInputs({...calculatorInputs, targetChlorine: e.target.value})}
                       className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
