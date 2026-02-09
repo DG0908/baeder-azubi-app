@@ -9,10 +9,70 @@ import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS 
 import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, SWIM_BADGES, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
 import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel, parseExamTimeToSeconds, formatSecondsAsTime } from './data/practicalExam';
+import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
 
 export default function BaederApp() {
+  const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
+  const ADAPTIVE_LEARNING_STORAGE_KEY = 'adaptive_learning_mode_v1';
+  const WEEKLY_GOALS_STORAGE_KEY = 'weekly_goals_v1';
+  const WEEKLY_PROGRESS_STORAGE_KEY = 'weekly_progress_v1';
+  const WEEKLY_REMINDER_STORAGE_KEY = 'weekly_goals_reminder_v1';
+  const QUESTION_REPORTS_STORAGE_KEY = 'question_reports_v1';
+  const CHECKLIST_PROGRESS_STORAGE_KEY = 'practical_checklist_progress_v1';
+  const WEEKLY_PROGRESS_TEMPLATE = {
+    quizAnswers: 0,
+    examAnswers: 0,
+    flashcards: 0,
+    checklistItems: 0
+  };
+  const WEEKLY_GOAL_DEFAULTS = {
+    quizAnswers: 40,
+    examAnswers: 30,
+    flashcards: 35,
+    checklistItems: 10
+  };
+
+  const parseJsonSafe = (value, fallback) => {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed ?? fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const sanitizeGoalValue = (value, fallback = 0) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.max(0, Math.round(parsed));
+  };
+
+  const getWeekStartStamp = (input = Date.now()) => {
+    const base = new Date(input);
+    if (Number.isNaN(base.getTime())) return '';
+    const date = new Date(base);
+    const day = date.getDay(); // Sonntag = 0
+    const offsetToMonday = (day + 6) % 7;
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - offsetToMonday);
+    return date.toISOString().slice(0, 10);
+  };
+
+  const buildEmptyWeeklyProgress = (weekStart = getWeekStartStamp()) => ({
+    weekStart,
+    stats: { ...WEEKLY_PROGRESS_TEMPLATE },
+    updatedAt: Date.now()
+  });
+
+  const normalizeQuestionText = (value) => String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+
   const [currentView, setCurrentView] = useState('home');
   const [authView, setAuthView] = useState('login'); // login, register, impressum, datenschutz
   const [user, setUser] = useState(() => {
@@ -336,6 +396,49 @@ export default function BaederApp() {
       }
     }
     return { date: new Date().toDateString(), completed: [], stats: {} };
+  });
+  const [questionPerformance, setQuestionPerformance] = useState(() => {
+    const parsed = parseJsonSafe(localStorage.getItem(QUESTION_PERFORMANCE_STORAGE_KEY), {});
+    return (parsed && typeof parsed === 'object') ? parsed : {};
+  });
+  const [adaptiveLearningEnabled, setAdaptiveLearningEnabled] = useState(() => {
+    const saved = localStorage.getItem(ADAPTIVE_LEARNING_STORAGE_KEY);
+    if (saved === null) return true;
+    return saved === 'true';
+  });
+  const [weeklyGoals, setWeeklyGoals] = useState(() => {
+    const parsed = parseJsonSafe(localStorage.getItem(WEEKLY_GOALS_STORAGE_KEY), {});
+    return {
+      quizAnswers: sanitizeGoalValue(parsed.quizAnswers, WEEKLY_GOAL_DEFAULTS.quizAnswers),
+      examAnswers: sanitizeGoalValue(parsed.examAnswers, WEEKLY_GOAL_DEFAULTS.examAnswers),
+      flashcards: sanitizeGoalValue(parsed.flashcards, WEEKLY_GOAL_DEFAULTS.flashcards),
+      checklistItems: sanitizeGoalValue(parsed.checklistItems, WEEKLY_GOAL_DEFAULTS.checklistItems)
+    };
+  });
+  const [weeklyProgress, setWeeklyProgress] = useState(() => {
+    const currentWeek = getWeekStartStamp();
+    const parsed = parseJsonSafe(localStorage.getItem(WEEKLY_PROGRESS_STORAGE_KEY), null);
+    if (!parsed || typeof parsed !== 'object') return buildEmptyWeeklyProgress(currentWeek);
+    if (parsed.weekStart !== currentWeek) return buildEmptyWeeklyProgress(currentWeek);
+    const rawStats = (parsed.stats && typeof parsed.stats === 'object') ? parsed.stats : {};
+    return {
+      weekStart: currentWeek,
+      stats: {
+        quizAnswers: sanitizeGoalValue(rawStats.quizAnswers, 0),
+        examAnswers: sanitizeGoalValue(rawStats.examAnswers, 0),
+        flashcards: sanitizeGoalValue(rawStats.flashcards, 0),
+        checklistItems: sanitizeGoalValue(rawStats.checklistItems, 0)
+      },
+      updatedAt: parsed.updatedAt || Date.now()
+    };
+  });
+  const [practicalChecklistProgress, setPracticalChecklistProgress] = useState(() => {
+    const parsed = parseJsonSafe(localStorage.getItem(CHECKLIST_PROGRESS_STORAGE_KEY), {});
+    return (parsed && typeof parsed === 'object') ? parsed : {};
+  });
+  const [questionReports, setQuestionReports] = useState(() => {
+    const parsed = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
+    return Array.isArray(parsed) ? parsed : [];
   });
 
   // Kontrollkarte Berufsschule State
@@ -818,6 +921,67 @@ export default function BaederApp() {
     }
 
   }, [currentView, user]);
+
+  useEffect(() => {
+    localStorage.setItem(QUESTION_PERFORMANCE_STORAGE_KEY, JSON.stringify(questionPerformance));
+  }, [questionPerformance]);
+
+  useEffect(() => {
+    localStorage.setItem(ADAPTIVE_LEARNING_STORAGE_KEY, adaptiveLearningEnabled ? 'true' : 'false');
+  }, [adaptiveLearningEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem(WEEKLY_GOALS_STORAGE_KEY, JSON.stringify(weeklyGoals));
+  }, [weeklyGoals]);
+
+  useEffect(() => {
+    localStorage.setItem(WEEKLY_PROGRESS_STORAGE_KEY, JSON.stringify(weeklyProgress));
+  }, [weeklyProgress]);
+
+  useEffect(() => {
+    localStorage.setItem(CHECKLIST_PROGRESS_STORAGE_KEY, JSON.stringify(practicalChecklistProgress));
+  }, [practicalChecklistProgress]);
+
+  useEffect(() => {
+    localStorage.setItem(QUESTION_REPORTS_STORAGE_KEY, JSON.stringify(questionReports));
+  }, [questionReports]);
+
+  useEffect(() => {
+    const currentWeek = getWeekStartStamp();
+    if (weeklyProgress.weekStart !== currentWeek) {
+      setWeeklyProgress(buildEmptyWeeklyProgress(currentWeek));
+    }
+  }, [currentView, weeklyProgress.weekStart]);
+
+  useEffect(() => {
+    if (!user?.id || currentView !== 'home') return;
+
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    const reminderInfo = parseJsonSafe(localStorage.getItem(WEEKLY_REMINDER_STORAGE_KEY), {});
+    if (reminderInfo?.date === today) return;
+
+    const goalKeys = Object.keys(WEEKLY_GOAL_DEFAULTS).filter((key) => sanitizeGoalValue(weeklyGoals[key], 0) > 0);
+    if (goalKeys.length === 0) return;
+
+    const progressRatio = goalKeys.reduce((sum, key) => {
+      const target = sanitizeGoalValue(weeklyGoals[key], 0);
+      const current = sanitizeGoalValue(weeklyProgress.stats?.[key], 0);
+      const ratio = target > 0 ? Math.min(1, current / target) : 1;
+      return sum + ratio;
+    }, 0) / goalKeys.length;
+
+    const weekday = ((now.getDay() + 6) % 7) + 1; // Montag=1 ... Sonntag=7
+    const expectedRatio = weekday / 7;
+
+    if (progressRatio + 0.12 < expectedRatio) {
+      showToast('Wochenziel-Reminder: Du bist hinter deinem Wochenplan.', 'info', 4200);
+      localStorage.setItem(WEEKLY_REMINDER_STORAGE_KEY, JSON.stringify({
+        date: today,
+        weekStart: weeklyProgress.weekStart
+      }));
+    }
+  }, [user?.id, currentView, weeklyGoals, weeklyProgress]);
 
   // Sound Effects
   const playSound = (type) => {
@@ -1689,6 +1853,53 @@ export default function BaederApp() {
         setSubmittedQuestions(qs);
       }
 
+      // Load reported question feedback (if table exists)
+      if (user?.permissions?.canManageUsers) {
+        try {
+          const { data: reportsData, error: reportsError } = await supabase
+            .from('question_reports')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (!reportsError && Array.isArray(reportsData)) {
+            const remoteReports = reportsData.map((row) => {
+              const questionText = String(row.question_text || row.question || '').trim();
+              const category = String(row.category || 'unknown');
+              return {
+                id: row.id ? String(row.id) : `remote-${Date.parse(row.created_at || '') || Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                questionKey: String(
+                  row.question_key
+                  || getQuestionPerformanceKey({ q: questionText, category }, category)
+                ),
+                questionText,
+                category,
+                source: String(row.source || 'unknown'),
+                note: String(row.note || ''),
+                answers: Array.isArray(row.answers) ? row.answers : [],
+                reportedBy: String(row.reported_by || row.user_name || 'Unbekannt'),
+                reportedById: row.reported_by_id || null,
+                status: String(row.status || 'open'),
+                createdAt: row.created_at || new Date().toISOString()
+              };
+            });
+
+            const localReports = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
+            const safeLocalReports = Array.isArray(localReports) ? localReports : [];
+            const merged = [...remoteReports];
+            const seen = new Set(remoteReports.map((entry) => `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`));
+            safeLocalReports.forEach((entry) => {
+              const dedupeKey = `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`;
+              if (seen.has(dedupeKey)) return;
+              seen.add(dedupeKey);
+              merged.push(entry);
+            });
+            setQuestionReports(merged.slice(0, 500));
+          }
+        } catch (error) {
+          console.log('question_reports load skipped');
+        }
+      }
+
       // Load materials from Supabase
       const { data: materialsData } = await supabase
         .from('materials')
@@ -2484,18 +2695,239 @@ export default function BaederApp() {
     return shuffled;
   };
 
+  const getQuestionPerformanceKey = (question, categoryHint = null) => {
+    const categoryId = String(categoryHint || question?.category || 'unknown').trim() || 'unknown';
+    const normalizedText = normalizeQuestionText(question?.q || '');
+    return `${categoryId}::${normalizedText}`;
+  };
+
+  const getQuestionPerformanceEntry = (question, categoryHint = null) => {
+    const key = getQuestionPerformanceKey(question, categoryHint);
+    const raw = (questionPerformance && typeof questionPerformance === 'object') ? questionPerformance[key] : null;
+    return {
+      key,
+      stats: {
+        attempts: sanitizeGoalValue(raw?.attempts, 0),
+        correct: sanitizeGoalValue(raw?.correct, 0),
+        wrong: sanitizeGoalValue(raw?.wrong, 0),
+        wrongStreak: sanitizeGoalValue(raw?.wrongStreak, 0),
+        lastSeen: Number(raw?.lastSeen) || 0
+      }
+    };
+  };
+
+  const getAdaptiveQuestionWeight = (question, categoryHint = null) => {
+    const { stats } = getQuestionPerformanceEntry(question, categoryHint);
+    const attempts = stats.attempts;
+    const wrongRate = attempts > 0 ? stats.wrong / attempts : 0.45;
+    const unseenBonus = attempts === 0 ? 1.5 : 0;
+    const staleDays = stats.lastSeen > 0
+      ? Math.max(0, (Date.now() - stats.lastSeen) / (1000 * 60 * 60 * 24))
+      : 7;
+    const staleBonus = Math.min(1.5, staleDays / 10);
+    const weight = 1 + (wrongRate * 3) + (stats.wrongStreak * 1.2) + unseenBonus + staleBonus;
+    return Math.max(0.2, weight);
+  };
+
+  const pickLearningQuestions = (questions, count, resolveCategoryId = () => null) => {
+    const source = Array.isArray(questions) ? questions.filter(Boolean) : [];
+    const limit = Math.min(Math.max(0, Number(count) || 0), source.length);
+    if (limit <= 0) return [];
+
+    if (!adaptiveLearningEnabled) {
+      return shuffleArray(source).slice(0, limit);
+    }
+
+    const pool = [...source];
+    const selected = [];
+
+    while (selected.length < limit && pool.length > 0) {
+      const weights = pool.map((question) => getAdaptiveQuestionWeight(question, resolveCategoryId(question)));
+      const totalWeight = weights.reduce((sum, value) => sum + value, 0);
+
+      let pickedIndex = 0;
+      if (totalWeight > 0) {
+        let random = Math.random() * totalWeight;
+        for (let idx = 0; idx < weights.length; idx++) {
+          random -= weights[idx];
+          if (random <= 0) {
+            pickedIndex = idx;
+            break;
+          }
+        }
+      } else {
+        pickedIndex = Math.floor(Math.random() * pool.length);
+      }
+
+      selected.push(pool[pickedIndex]);
+      pool.splice(pickedIndex, 1);
+    }
+
+    return shuffleArray(selected);
+  };
+
+  const trackQuestionPerformance = (question, categoryHint, isCorrect) => {
+    if (!question) return;
+    const key = getQuestionPerformanceKey(question, categoryHint);
+    setQuestionPerformance((prev) => {
+      const current = (prev && typeof prev[key] === 'object') ? prev[key] : {};
+      const attempts = sanitizeGoalValue(current.attempts, 0) + 1;
+      const correct = sanitizeGoalValue(current.correct, 0) + (isCorrect ? 1 : 0);
+      const wrong = sanitizeGoalValue(current.wrong, 0) + (isCorrect ? 0 : 1);
+      const wrongStreak = isCorrect ? 0 : sanitizeGoalValue(current.wrongStreak, 0) + 1;
+      return {
+        ...prev,
+        [key]: {
+          attempts,
+          correct,
+          wrong,
+          wrongStreak,
+          lastSeen: Date.now(),
+          lastResult: isCorrect ? 'correct' : 'wrong'
+        }
+      };
+    });
+  };
+
+  const updateWeeklyProgress = (metric, delta = 1) => {
+    const deltaInt = Math.round(Number(delta));
+    if (!Number.isFinite(deltaInt) || deltaInt === 0) return;
+    if (!(metric in WEEKLY_PROGRESS_TEMPLATE)) return;
+
+    const currentWeek = getWeekStartStamp();
+    setWeeklyProgress((prev) => {
+      const safePrev = (prev && typeof prev === 'object') ? prev : buildEmptyWeeklyProgress(currentWeek);
+      const base = safePrev.weekStart === currentWeek
+        ? safePrev
+        : buildEmptyWeeklyProgress(currentWeek);
+      const currentValue = sanitizeGoalValue(base.stats?.[metric], 0);
+      const nextValue = Math.max(0, currentValue + deltaInt);
+      return {
+        weekStart: currentWeek,
+        stats: {
+          ...WEEKLY_PROGRESS_TEMPLATE,
+          ...(base.stats || {}),
+          [metric]: nextValue
+        },
+        updatedAt: Date.now()
+      };
+    });
+  };
+
+  const getChecklistItemKey = (checklistId, itemIndex) => `${checklistId}:${itemIndex}`;
+
+  const isChecklistItemCompleted = (checklistId, itemIndex) => {
+    return Boolean(practicalChecklistProgress[getChecklistItemKey(checklistId, itemIndex)]);
+  };
+
+  const toggleChecklistItem = (checklistId, itemIndex) => {
+    const key = getChecklistItemKey(checklistId, itemIndex);
+    const wasChecked = Boolean(practicalChecklistProgress[key]);
+
+    setPracticalChecklistProgress((prev) => ({
+      ...prev,
+      [key]: !wasChecked
+    }));
+    updateWeeklyProgress('checklistItems', wasChecked ? -1 : 1);
+  };
+
+  const getChecklistProgressStats = (checklist) => {
+    const total = Array.isArray(checklist?.items) ? checklist.items.length : 0;
+    const done = Array.isArray(checklist?.items)
+      ? checklist.items.filter((_, idx) => isChecklistItemCompleted(checklist.id, idx)).length
+      : 0;
+    return { total, done };
+  };
+
+  const reportQuestionIssue = async ({ question, categoryId, source }) => {
+    if (!question || !user?.name) return;
+    const noteInput = window.prompt('Was ist unklar oder fehlerhaft? (optional)', '');
+    if (noteInput === null) return;
+
+    const note = String(noteInput || '').trim();
+    const key = getQuestionPerformanceKey(question, categoryId);
+    const category = String(categoryId || question?.category || 'unknown');
+    const payload = {
+      id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      questionKey: key,
+      questionText: String(question.q || ''),
+      category,
+      source: String(source || 'unknown'),
+      note,
+      answers: Array.isArray(question.a) ? [...question.a] : [],
+      reportedBy: user.name,
+      reportedById: user.id || null,
+      status: 'open',
+      createdAt: new Date().toISOString()
+    };
+
+    let savedRemotely = false;
+    try {
+      const { error } = await supabase
+        .from('question_reports')
+        .insert([{
+          question_key: payload.questionKey,
+          question_text: payload.questionText,
+          category: payload.category,
+          source: payload.source,
+          note: payload.note || null,
+          answers: payload.answers,
+          reported_by: payload.reportedBy,
+          reported_by_id: payload.reportedById,
+          status: payload.status
+        }]);
+      if (!error) {
+        savedRemotely = true;
+      }
+    } catch (error) {
+      console.log('question_reports table unavailable, fallback local only');
+    }
+
+    setQuestionReports((prev) => [payload, ...prev].slice(0, 500));
+    showToast(
+      savedRemotely
+        ? 'Frage gemeldet. Danke fuer dein Feedback!'
+        : 'Frage lokal gemeldet. Danke fuer dein Feedback!',
+      'success'
+    );
+  };
+
+  const toggleQuestionReportStatus = async (reportId) => {
+    const existing = questionReports.find((entry) => entry.id === reportId);
+    if (!existing) return;
+    const nextStatus = existing.status === 'resolved' ? 'open' : 'resolved';
+
+    setQuestionReports((prev) => prev.map((entry) => (
+      entry.id === reportId
+        ? { ...entry, status: nextStatus, resolvedAt: nextStatus === 'resolved' ? new Date().toISOString() : null }
+        : entry
+    )));
+    if (!String(reportId).startsWith('local-')) {
+      try {
+        await supabase
+          .from('question_reports')
+          .update({ status: nextStatus })
+          .eq('id', reportId);
+      } catch {
+        // local state remains source of truth when remote update fails
+      }
+    }
+    showToast(nextStatus === 'resolved' ? 'Meldung als erledigt markiert.' : 'Meldung wieder geoeffnet.', 'info', 1800);
+  };
+
   // Spieler wählt Kategorie → 5 zufällige Fragen werden für BEIDE Spieler gespeichert
   const selectCategory = async (catId) => {
     if (!currentGame || currentGame.currentTurn !== user.name) return;
 
     setQuizCategory(catId);
 
-    // Hole alle Fragen dieser Kategorie und mische sie
+    // Hole alle Fragen dieser Kategorie
     const allQuestions = SAMPLE_QUESTIONS[catId] || [];
-    const shuffledQuestions = shuffleArray(allQuestions);
-
-    // Nimm 5 Fragen (oder weniger falls nicht genug vorhanden)
-    const selectedQuestions = shuffledQuestions.slice(0, Math.min(5, shuffledQuestions.length));
+    const selectedQuestions = pickLearningQuestions(
+      allQuestions,
+      Math.min(5, allQuestions.length),
+      () => catId
+    );
 
     // Mische auch die Antworten jeder Frage
     const questionsWithShuffledAnswers = selectedQuestions.map(q => shuffleAnswers(q));
@@ -2594,6 +3026,8 @@ export default function BaederApp() {
       updateChallengeProgress('category_master', 1, quizCategory);
     }
     updateChallengeProgress('quiz_play', 1);
+    updateWeeklyProgress('quizAnswers', 1);
+    trackQuestionPerformance(currentQuestion, quizCategory, isCorrect);
 
     // Punkte vergeben
     if (isCorrect) {
@@ -2983,9 +3417,13 @@ export default function BaederApp() {
     Object.entries(SAMPLE_QUESTIONS).forEach(([catId, questions]) => {
       questions.forEach(q => { allQuestions.push({ ...q, category: catId }); });
     });
-    const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+    const selectedQuestions = pickLearningQuestions(
+      allQuestions,
+      Math.min(30, allQuestions.length),
+      (question) => question.category
+    );
     // Mische die Antworten jeder Frage, damit die richtige Antwort nicht immer an der gleichen Stelle ist
-    const examQuestions = shuffled.slice(0, Math.min(30, shuffled.length)).map(q => shuffleAnswers(q));
+    const examQuestions = selectedQuestions.map(q => shuffleAnswers(q));
     setExamSimulator({ questions: examQuestions, answers: [], startTime: Date.now() });
     setExamQuestionIndex(0);
     setExamCurrentQuestion(examQuestions[0]);
@@ -3499,6 +3937,8 @@ export default function BaederApp() {
     if (examCurrentQuestion.category) {
       updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
     }
+    updateWeeklyProgress('examAnswers', 1);
+    trackQuestionPerformance(examCurrentQuestion, examCurrentQuestion.category, isCorrect);
 
     const newAnswers = [...examSimulator.answers, {
       question: examCurrentQuestion,
@@ -3535,6 +3975,8 @@ export default function BaederApp() {
     if (examCurrentQuestion.category) {
       updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
     }
+    updateWeeklyProgress('examAnswers', 1);
+    trackQuestionPerformance(examCurrentQuestion, examCurrentQuestion.category, isCorrect);
     const newAnswers = [...examSimulator.answers, { question: examCurrentQuestion, selectedAnswer: answerIndex, correct: isCorrect }];
     setExamSimulator({ ...examSimulator, answers: newAnswers });
     setTimeout(() => {
@@ -4640,6 +5082,7 @@ export default function BaederApp() {
     if (correct) {
       updateChallengeProgress('correct_answers', 1);
     }
+    updateWeeklyProgress('flashcards', 1);
     void queueXpAward('flashcardLearning', XP_REWARDS.FLASHCARD_REVIEW, { showXpToast: false });
 
     return newLevel;
@@ -6035,6 +6478,70 @@ export default function BaederApp() {
               })()}
             </div>
 
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h3 className="text-xl font-bold flex items-center">
+                  <AlertTriangle className="mr-2 text-amber-500" />
+                  Fragen-Feedback
+                </h3>
+                <div className="text-sm text-gray-600">
+                  {questionReports.filter((entry) => entry.status !== 'resolved').length} offen · {questionReports.length} gesamt
+                </div>
+              </div>
+
+              {questionReports.length === 0 ? (
+                <p className="text-gray-500 text-sm">Noch keine Rueckmeldungen zu Fragen vorhanden.</p>
+              ) : (
+                <div className="space-y-3 max-h-[420px] overflow-y-auto">
+                  {questionReports
+                    .slice()
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .map((report) => {
+                      const category = CATEGORIES.find((entry) => entry.id === report.category);
+                      const isResolved = report.status === 'resolved';
+                      return (
+                        <div key={report.id} className={`border rounded-lg p-4 ${isResolved ? 'bg-gray-50 border-gray-200' : 'bg-amber-50 border-amber-200'}`}>
+                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isResolved ? 'bg-green-100 text-green-700' : 'bg-amber-200 text-amber-800'}`}>
+                                {isResolved ? 'Erledigt' : 'Offen'}
+                              </span>
+                              <span className="text-xs text-gray-600">
+                                {category ? `${category.icon} ${category.name}` : report.category}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {new Date(report.createdAt).toLocaleString('de-DE')}
+                            </span>
+                          </div>
+                          <p className="font-semibold text-gray-800 mb-1">{report.questionText}</p>
+                          <p className="text-sm text-gray-600 mb-2">
+                            Quelle: {report.source} · Von: {report.reportedBy || 'Unbekannt'}
+                          </p>
+                          {report.note && (
+                            <p className="text-sm text-gray-700 bg-white border border-gray-200 rounded-md p-2 mb-2">
+                              Hinweis: {report.note}
+                            </p>
+                          )}
+                          <button
+                            onClick={() => {
+                              void toggleQuestionReportStatus(report.id);
+                            }}
+                            className={`px-3 py-2 rounded-lg text-sm font-bold ${
+                              isResolved
+                                ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                                : 'bg-green-500 hover:bg-green-600 text-white'
+                            }`}
+                          >
+                            {isResolved ? 'Wieder oeffnen' : 'Als erledigt markieren'}
+                          </button>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+
             {pendingUsers.length > 0 && (
               <div className="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-6">
                 <h3 className="text-xl font-bold mb-4 flex items-center text-yellow-800">
@@ -6479,6 +6986,87 @@ export default function BaederApp() {
                 )}
               </div>
             )}
+
+            {/* Weekly Goals Section */}
+            <div className={`${darkMode ? 'bg-gradient-to-r from-emerald-900/80 via-cyan-900/70 to-emerald-900/80 border-emerald-700' : 'bg-gradient-to-r from-emerald-50 via-cyan-50 to-emerald-50 border-emerald-300'} border-2 rounded-xl p-6 shadow-lg`}>
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                  <h3 className={`text-xl font-bold ${darkMode ? 'text-emerald-200' : 'text-emerald-800'}`}>
+                    📅 Wochenziele
+                  </h3>
+                  <p className={`text-sm ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
+                    Woche ab {new Date(`${weeklyProgress.weekStart}T00:00:00`).toLocaleDateString('de-DE')}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setWeeklyProgress(buildEmptyWeeklyProgress(getWeekStartStamp()))}
+                  className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-200' : 'bg-white hover:bg-gray-100 text-gray-700'} px-4 py-2 rounded-lg text-sm font-bold border ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}
+                >
+                  Diese Woche resetten
+                </button>
+              </div>
+
+              <div className="grid md:grid-cols-4 gap-3 mb-4">
+                {[
+                  { key: 'quizAnswers', label: 'Quiz', icon: '🎯' },
+                  { key: 'examAnswers', label: 'Pruefung', icon: '📝' },
+                  { key: 'flashcards', label: 'Karteikarten', icon: '🧠' },
+                  { key: 'checklistItems', label: 'Praxis', icon: '✅' }
+                ].map((metric) => {
+                  const target = sanitizeGoalValue(weeklyGoals[metric.key], 0);
+                  const current = sanitizeGoalValue(weeklyProgress.stats?.[metric.key], 0);
+                  const percentage = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
+                  return (
+                    <div key={metric.key} className={`${darkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white border-gray-200'} border rounded-lg p-3`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xl">{metric.icon}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${percentage >= 100 ? 'bg-green-500 text-white' : darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                          {percentage}%
+                        </span>
+                      </div>
+                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {metric.label}
+                      </p>
+                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {current} / {target}
+                      </p>
+                      <div className={`mt-2 h-2 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-gray-200'}`}>
+                        <div
+                          className={`h-2 rounded-full ${percentage >= 100 ? 'bg-green-500' : 'bg-emerald-500'}`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="grid md:grid-cols-4 gap-3">
+                {[
+                  { key: 'quizAnswers', label: 'Quiz/Woche' },
+                  { key: 'examAnswers', label: 'Pruefung/Woche' },
+                  { key: 'flashcards', label: 'Karten/Woche' },
+                  { key: 'checklistItems', label: 'Praxis/Woche' }
+                ].map((metric) => (
+                  <label key={metric.key} className="block">
+                    <span className={`text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {metric.label}
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={sanitizeGoalValue(weeklyGoals[metric.key], 0)}
+                      onChange={(event) => {
+                        const value = sanitizeGoalValue(event.target.value, 0);
+                        setWeeklyGoals((prev) => ({ ...prev, [metric.key]: value }));
+                      }}
+                      className={`mt-1 w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
 
             {/* Win Streak Banner */}
             {userStats && userStats.winStreak >= 3 && (
@@ -6967,6 +7555,24 @@ export default function BaederApp() {
               {/* Kategorie wählen - nur wenn ich dran bin UND noch keine Kategorie gewählt wurde */}
               {!quizCategory && playerTurn === user.name && !waitingForOpponent && (
                 <div>
+                  <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                    <div>
+                      <p className="text-sm font-bold text-gray-700">Adaptiver Lernmodus</p>
+                      <p className="text-xs text-gray-500">
+                        {adaptiveLearningEnabled ? 'Schwerere Fragen kommen oefter.' : 'Reiner Zufall.'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setAdaptiveLearningEnabled((prev) => !prev)}
+                      className={`px-4 py-2 rounded-lg text-sm font-bold ${
+                        adaptiveLearningEnabled
+                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                          : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                      }`}
+                    >
+                      {adaptiveLearningEnabled ? 'Aktiv' : 'Aus'}
+                    </button>
+                  </div>
                   <h3 className="text-xl font-bold text-center mb-4">Wähle eine Kategorie:</h3>
                   <p className="text-center text-gray-500 mb-4">Du wählst 5 Fragen - danach spielt {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} die gleichen Fragen!</p>
                   <div className="grid grid-cols-2 gap-3">
@@ -7103,6 +7709,18 @@ export default function BaederApp() {
                       );
                     })}
                   </div>
+                  <button
+                    onClick={() => {
+                      void reportQuestionIssue({
+                        question: currentQuestion,
+                        categoryId: quizCategory,
+                        source: 'quiz'
+                      });
+                    }}
+                    className="w-full mt-2 bg-amber-100 hover:bg-amber-200 text-amber-800 py-2 rounded-lg font-semibold border border-amber-300"
+                  >
+                    🚩 Frage melden
+                  </button>
                   {/* Multi-Select Bestätigen Button */}
                   {currentQuestion.multi && !answered && selectedAnswers.length > 0 && (
                     <button
@@ -7504,6 +8122,74 @@ export default function BaederApp() {
                 )}
               </div>
             </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h3 className="text-2xl font-bold flex items-center">
+                  <ClipboardList className="mr-2 text-emerald-500" />
+                  Praxis-Checklisten
+                </h3>
+                <div className="text-sm text-gray-600">
+                  {(() => {
+                    const total = PRACTICAL_CHECKLISTS.reduce((sum, checklist) => sum + checklist.items.length, 0);
+                    const done = PRACTICAL_CHECKLISTS.reduce((sum, checklist) => {
+                      const stats = getChecklistProgressStats(checklist);
+                      return sum + stats.done;
+                    }, 0);
+                    return `${done}/${total} Punkte erledigt`;
+                  })()}
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Fuer Schichtstart, Technik und Notfaelle. Diese Checklisten findest du unter Lernen, damit du den Praxisablauf festigst.
+              </p>
+
+              <div className="space-y-4">
+                {PRACTICAL_CHECKLISTS.map((checklist) => {
+                  const category = CATEGORIES.find((entry) => entry.id === checklist.category);
+                  const { done, total } = getChecklistProgressStats(checklist);
+                  const progress = total > 0 ? Math.round((done / total) * 100) : 0;
+
+                  return (
+                    <div key={checklist.id} className="border rounded-xl p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-bold rounded-full text-white ${category?.color || 'bg-gray-500'}`}>
+                            {category?.icon || '📌'} {category?.name || checklist.category}
+                          </span>
+                          <h4 className="font-bold text-gray-800">{checklist.title}</h4>
+                        </div>
+                        <span className="text-sm text-gray-600">{done}/{total}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">{checklist.description}</p>
+
+                      <div className="h-2 bg-gray-200 rounded-full mb-3 overflow-hidden">
+                        <div className="h-2 bg-emerald-500 rounded-full" style={{ width: `${progress}%` }} />
+                      </div>
+
+                      <div className="space-y-2">
+                        {checklist.items.map((item, itemIndex) => {
+                          const checked = isChecklistItemCompleted(checklist.id, itemIndex);
+                          return (
+                            <label key={`${checklist.id}-${itemIndex}`} className={`flex items-start gap-3 rounded-lg p-2 border ${checked ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'}`}>
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleChecklistItem(checklist.id, itemIndex)}
+                                className="mt-1 h-4 w-4 accent-emerald-600"
+                              />
+                              <span className={`text-sm ${checked ? 'text-emerald-800 line-through' : 'text-gray-700'}`}>
+                                {item}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
@@ -7880,6 +8566,26 @@ export default function BaederApp() {
                 <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   Teste dein Wissen mit 30 zufälligen Fragen aus allen Kategorien
                 </p>
+                <div className={`mb-4 ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-emerald-50 border-emerald-200'} border rounded-lg p-3 flex items-center justify-between gap-3`}>
+                  <div className="text-left">
+                    <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-emerald-800'}`}>
+                      Adaptiver Lernmodus
+                    </p>
+                    <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-emerald-700'}`}>
+                      {adaptiveLearningEnabled ? 'Falsch beantwortete Fragen werden priorisiert.' : '30 Fragen im reinen Zufall.'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAdaptiveLearningEnabled((prev) => !prev)}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold ${
+                      adaptiveLearningEnabled
+                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                        : darkMode ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                    }`}
+                  >
+                    {adaptiveLearningEnabled ? 'Aktiv' : 'Aus'}
+                  </button>
+                </div>
                 <div className={`${darkMode ? 'bg-slate-700' : 'bg-blue-50'} rounded-lg p-6 mb-6`}>
                   <div className="grid grid-cols-3 gap-4 mb-4">
                     <div>
@@ -7978,6 +8684,22 @@ export default function BaederApp() {
                     );
                   })}
                 </div>
+                <button
+                  onClick={() => {
+                    void reportQuestionIssue({
+                      question: examCurrentQuestion,
+                      categoryId: examCurrentQuestion?.category,
+                      source: 'exam-simulator'
+                    });
+                  }}
+                  className={`w-full mt-2 py-2 rounded-lg font-semibold border ${
+                    darkMode
+                      ? 'bg-amber-900/40 hover:bg-amber-800/50 text-amber-300 border-amber-700'
+                      : 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300'
+                  }`}
+                >
+                  🚩 Frage melden
+                </button>
 
                 {/* Multi-Select Bestätigen Button */}
                 {examCurrentQuestion.multi && !examAnswered && examSelectedAnswers.length > 0 && (
