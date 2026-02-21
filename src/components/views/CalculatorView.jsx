@@ -21,6 +21,31 @@ const CalculatorView = ({
     performCalculation();
   };
 
+  const commonDilutionPresets = [
+    { label: '1:2', concentrateParts: '1', ratioValue: '2' },
+    { label: '1:3', concentrateParts: '1', ratioValue: '3' },
+    { label: '1:4', concentrateParts: '1', ratioValue: '4' },
+    { label: '1:5', concentrateParts: '1', ratioValue: '5' },
+    { label: '1:10', concentrateParts: '1', ratioValue: '10' },
+    { label: '1:20', concentrateParts: '1', ratioValue: '20' },
+    { label: '1:50', concentrateParts: '1', ratioValue: '50' },
+    { label: '1:100', concentrateParts: '1', ratioValue: '100' }
+  ];
+
+  const applyDilutionPreset = (preset) => {
+    setCalculatorInputs({
+      ...calculatorInputs,
+      concentrateParts: preset.concentrateParts,
+      ratioValue: preset.ratioValue
+    });
+    setCalculatorResult(null);
+  };
+
+  const isDilutionPresetActive = (preset) => (
+    String(calculatorInputs.concentrateParts || '') === preset.concentrateParts
+    && String(calculatorInputs.ratioValue || '') === preset.ratioValue
+  );
+
   return (
   <div className="max-w-4xl mx-auto">
     <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
@@ -396,6 +421,27 @@ const CalculatorView = ({
       {calculatorType === 'dilution' && (
         <div className={`${darkMode ? 'bg-slate-700' : 'bg-amber-50'} rounded-xl p-6 mb-6`}>
           <h3 className={`font-bold mb-4 ${darkMode ? 'text-amber-300' : 'text-amber-800'}`}>Verduennung / Mischverhaeltnis</h3>
+
+          <div className="mb-4">
+            <div className={`text-sm font-semibold mb-2 ${darkMode ? 'text-amber-200' : 'text-amber-900'}`}>
+              Gaengige Mischverhaeltnisse:
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {commonDilutionPresets.map((preset) => (
+                <button
+                  key={preset.label}
+                  onClick={() => applyDilutionPreset(preset)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                    isDilutionPresetActive(preset)
+                      ? 'bg-amber-500 text-white'
+                      : (darkMode ? 'bg-slate-600 text-gray-100 hover:bg-slate-500' : 'bg-white text-gray-700 hover:bg-amber-100')
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="grid md:grid-cols-2 gap-3 mb-4">
             <button
