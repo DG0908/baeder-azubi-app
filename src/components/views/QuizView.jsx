@@ -4,10 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import { CATEGORIES } from '../../data/constants';
 
 const DIFFICULTY_SETTINGS = {
-  anfaenger: { time: 45, label: 'Anfänger', icon: '🟢', color: 'bg-green-500' },
+  anfaenger: { time: 45, label: 'Anfaenger', icon: '🟢', color: 'bg-green-500' },
   profi: { time: 30, label: 'Profi', icon: '🟡', color: 'bg-yellow-500' },
-  experte: { time: 15, label: 'Experte', icon: '🔴', color: 'bg-red-500' }
+  experte: { time: 15, label: 'Experte', icon: '🔴', color: 'bg-red-500' },
+  extra: { time: 75, label: 'Extra schwer', icon: '🧠', color: 'bg-indigo-700' }
 };
+
+const getDifficulty = (difficulty) => DIFFICULTY_SETTINGS[difficulty] || DIFFICULTY_SETTINGS.profi;
 
 const QuizView = ({
   selectedDifficulty,
@@ -29,16 +32,29 @@ const QuizView = ({
   answered,
   selectedAnswers,
   lastSelectedAnswer,
+  isKeywordQuestion,
+  keywordAnswerText,
+  setKeywordAnswerText,
+  keywordAnswerEvaluation,
+  submitKeywordAnswer,
   answerQuestion,
   reportQuestionIssue,
   confirmMultiSelectAnswer,
   proceedToNextRound,
 }) => {
   const { user } = useAuth();
+  const currentDifficulty = getDifficulty(currentGame?.difficulty);
+  const questionIsKeyword = Boolean(currentQuestion && isKeywordQuestion?.(currentQuestion));
+  const availableKeywordGroups = Array.isArray(currentQuestion?.keywordGroups)
+    ? currentQuestion.keywordGroups.length
+    : 0;
+  const requiredKeywordGroups = Math.max(
+    1,
+    Math.min(availableKeywordGroups || 1, Number(currentQuestion?.minKeywordGroups) || availableKeywordGroups || 1)
+  );
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Quiz Lobby - no active game */}
       {!currentGame && (
         <>
           <h2 className="text-3xl font-bold mb-6">Quizduell 🏆</h2>
@@ -46,9 +62,9 @@ const QuizView = ({
             <h3 className="text-xl font-bold mb-4">Spieler herausfordern</h3>
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Schwierigkeitsgrad wählen:
+                Schwierigkeitsgrad waehlen:
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {Object.entries(DIFFICULTY_SETTINGS).map(([key, diff]) => (
                   <button
                     key={key}
@@ -87,7 +103,7 @@ const QuizView = ({
                     ((g.player1 === user.name && g.player2 === u.name) ||
                      (g.player1 === u.name && g.player2 === user.name))
                   ) ? (
-                    <span className="text-sm text-gray-500 italic px-4">Spiel läuft bereits</span>
+                    <span className="text-sm text-gray-500 italic px-4">Spiel laeuft bereits</span>
                   ) : (
                     <button
                       onClick={() => challengePlayer(u.name)}
@@ -107,19 +123,14 @@ const QuizView = ({
         </>
       )}
 
-      {/* Active Quiz Game */}
       {currentGame && (
         <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
           <div className="text-center mb-4">
-            {(() => {
-              const diff = DIFFICULTY_SETTINGS[currentGame.difficulty];
-              return (
-                <span className={`${diff.color} text-white px-6 py-2 rounded-full font-bold inline-flex items-center gap-2`}>
-                  {diff.icon} {diff.label} - {diff.time} Sekunden pro Frage
-                </span>
-              );
-            })()}
+            <span className={`${currentDifficulty.color} text-white px-6 py-2 rounded-full font-bold inline-flex items-center gap-2`}>
+              {currentDifficulty.icon} {currentDifficulty.label} - {currentDifficulty.time} Sekunden pro Frage
+            </span>
           </div>
+
           <div className="flex justify-between items-center mb-6">
             <div className="text-center flex-1">
               <p className="text-sm text-gray-600 mb-1">{currentGame.player1}</p>
@@ -142,7 +153,6 @@ const QuizView = ({
             </div>
           </div>
 
-          {/* Kategorie-Übersicht */}
           {currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && !currentQuestion && (
             <div className="mb-4 flex justify-center gap-2 flex-wrap">
               {currentGame.categoryRounds.map((cr, idx) => {
@@ -156,7 +166,6 @@ const QuizView = ({
             </div>
           )}
 
-          {/* Kategorie wählen - nur wenn ich dran bin UND noch keine Kategorie gewählt wurde */}
           {!quizCategory && playerTurn === user.name && !waitingForOpponent && (
             <div>
               <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
@@ -177,8 +186,8 @@ const QuizView = ({
                   {adaptiveLearningEnabled ? 'Aktiv' : 'Aus'}
                 </button>
               </div>
-              <h3 className="text-xl font-bold text-center mb-4">Wähle eine Kategorie:</h3>
-              <p className="text-center text-gray-500 mb-4">Du wählst 5 Fragen - danach spielt {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} die gleichen Fragen!</p>
+              <h3 className="text-xl font-bold text-center mb-4">Waehle eine Kategorie:</h3>
+              <p className="text-center text-gray-500 mb-4">Du waehlst 5 Fragen - danach spielt {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} die gleichen Fragen!</p>
               <div className="grid grid-cols-2 gap-3">
                 {CATEGORIES.filter(cat => {
                   const played = currentGame.categoryRounds?.map(cr => cr.categoryId) || [];
@@ -197,7 +206,6 @@ const QuizView = ({
             </div>
           )}
 
-          {/* Spieler 2 muss die gleichen Fragen spielen */}
           {!currentQuestion && playerTurn === user.name && currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && (() => {
             const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
             if (!currentCatRound) return false;
@@ -225,18 +233,16 @@ const QuizView = ({
             </div>
           )}
 
-          {/* Warte auf anderen Spieler */}
           {!quizCategory && playerTurn !== user.name && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">⏳</div>
               <p className="text-xl text-gray-600">Warte auf {playerTurn}...</p>
               <p className="text-sm text-gray-400 mt-2">
-                {waitingForOpponent ? 'Dein Gegner spielt jetzt die gleichen Fragen' : 'Dein Gegner wählt eine Kategorie'}
+                {waitingForOpponent ? 'Dein Gegner spielt jetzt die gleichen Fragen' : 'Dein Gegner waehlt eine Kategorie'}
               </p>
             </div>
           )}
 
-          {/* Frage anzeigen */}
           {currentQuestion && playerTurn === user.name && (
             <div className="space-y-4">
               <div className="mb-4">
@@ -258,59 +264,137 @@ const QuizView = ({
                     className={`h-3 rounded-full transition-all duration-1000 ${
                       timeLeft <= 10 ? 'bg-red-500' : 'bg-blue-500'
                     }`}
-                    style={{ width: `${(timeLeft / DIFFICULTY_SETTINGS[currentGame.difficulty].time) * 100}%` }}
+                    style={{ width: `${(timeLeft / (currentDifficulty.time || 30)) * 100}%` }}
                   />
                 </div>
               </div>
+
               <div className="bg-gray-100 rounded-xl p-6">
                 <p className="text-xl font-bold text-center">{currentQuestion.q}</p>
-                {currentQuestion.multi && !answered && (
+                {currentQuestion.multi && !answered && !questionIsKeyword && (
                   <p className="text-center text-sm text-orange-600 mt-2 font-medium">
-                    ⚠️ Mehrere Antworten sind richtig - wähle alle richtigen aus!
+                    ⚠️ Mehrere Antworten sind richtig - waehle alle richtigen aus!
+                  </p>
+                )}
+                {questionIsKeyword && (
+                  <p className="text-center text-sm text-indigo-700 mt-2 font-medium">
+                    🧠 Extra schwer: Freitext antworten und mindestens {requiredKeywordGroups} Schlagwoerter treffen.
                   </p>
                 )}
               </div>
-              <div className="grid gap-3">
-                {currentQuestion.a.map((answer, idx) => {
-                  const isMulti = currentQuestion.multi;
-                  const isSelectedMulti = selectedAnswers.includes(idx);
-                  const isSelectedSingle = lastSelectedAnswer === idx;
-                  const isCorrectAnswer = isMulti
-                    ? currentQuestion.correct.includes(idx)
-                    : idx === currentQuestion.correct;
 
-                  let buttonClass = '';
-                  if (answered) {
-                    if (isCorrectAnswer) {
-                      buttonClass = 'bg-green-500 text-white';
-                    } else if ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle)) {
-                      buttonClass = 'bg-red-500 text-white';
-                    } else {
-                      buttonClass = 'bg-gray-200 text-gray-500';
-                    }
-                  } else {
-                    if (isMulti && isSelectedMulti) {
-                      buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
-                    } else {
-                      buttonClass = 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
-                    }
-                  }
+              {!questionIsKeyword && Array.isArray(currentQuestion.a) && (
+                <>
+                  <div className="grid gap-3">
+                    {currentQuestion.a.map((answer, idx) => {
+                      const isMulti = currentQuestion.multi;
+                      const isSelectedMulti = selectedAnswers.includes(idx);
+                      const isSelectedSingle = lastSelectedAnswer === idx;
+                      const isCorrectAnswer = isMulti
+                        ? currentQuestion.correct.includes(idx)
+                        : idx === currentQuestion.correct;
 
-                  return (
+                      let buttonClass = '';
+                      if (answered) {
+                        if (isCorrectAnswer) {
+                          buttonClass = 'bg-green-500 text-white';
+                        } else if ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle)) {
+                          buttonClass = 'bg-red-500 text-white';
+                        } else {
+                          buttonClass = 'bg-gray-200 text-gray-500';
+                        }
+                      } else if (isMulti && isSelectedMulti) {
+                        buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
+                      } else {
+                        buttonClass = 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
+                      }
+
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => answerQuestion(idx)}
+                          disabled={answered}
+                          className={`p-4 rounded-xl font-medium transition-all ${buttonClass}`}
+                        >
+                          {isMulti && !answered && (
+                            <span className="mr-2">{isSelectedMulti ? '☑️' : '⬜'}</span>
+                          )}
+                          {answer}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {currentQuestion.multi && !answered && selectedAnswers.length > 0 && (
                     <button
-                      key={idx}
-                      onClick={() => answerQuestion(idx)}
-                      disabled={answered}
-                      className={`p-4 rounded-xl font-medium transition-all ${buttonClass}`}
+                      onClick={confirmMultiSelectAnswer}
+                      className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
                     >
-                      {isMulti && !answered && (
-                        <span className="mr-2">{isSelectedMulti ? '☑️' : '⬜'}</span>
-                      )}
-                      {answer}
+                      ✓ Antwort bestaetigen ({selectedAnswers.length} ausgewaehlt)
                     </button>
-                  );
-                })}
-              </div>
+                  )}
+                </>
+              )}
+
+              {questionIsKeyword && (
+                <div className="space-y-3">
+                  <textarea
+                    value={keywordAnswerText}
+                    onChange={(e) => setKeywordAnswerText(e.target.value)}
+                    disabled={answered}
+                    rows={5}
+                    placeholder="Schreibe deine Antwort frei und nenne die wichtigsten Schlagwoerter..."
+                    className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-500"
+                  />
+                  {!answered && (
+                    <button
+                      onClick={submitKeywordAnswer}
+                      disabled={!keywordAnswerText.trim()}
+                      className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
+                        keywordAnswerText.trim()
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
+                          : 'bg-indigo-300 cursor-not-allowed'
+                      }`}
+                    >
+                      Antwort pruefen
+                    </button>
+                  )}
+
+                  {keywordAnswerEvaluation && (
+                    <div className={`rounded-xl border-2 p-4 ${
+                      keywordAnswerEvaluation.isCorrect
+                        ? 'border-emerald-400 bg-emerald-50'
+                        : 'border-amber-400 bg-amber-50'
+                    }`}>
+                      <p className={`font-bold ${keywordAnswerEvaluation.isCorrect ? 'text-emerald-700' : 'text-amber-700'}`}>
+                        {keywordAnswerEvaluation.isCorrect ? '✅ Treffer! Antwort ist korrekt.' : '⚠️ Noch nicht ausreichend.'}
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Treffer: {keywordAnswerEvaluation.matchedCount}/{keywordAnswerEvaluation.requiredGroups} erforderlich
+                      </p>
+                      {keywordAnswerEvaluation.timedOut && (
+                        <p className="text-sm text-red-600 mt-1 font-semibold">Zeit abgelaufen - Antwort wurde als falsch gewertet.</p>
+                      )}
+                      {keywordAnswerEvaluation.matchedLabels?.length > 0 && (
+                        <p className="text-sm text-emerald-700 mt-2">
+                          Erkannt: {keywordAnswerEvaluation.matchedLabels.join(', ')}
+                        </p>
+                      )}
+                      {keywordAnswerEvaluation.missingLabels?.length > 0 && (
+                        <p className="text-sm text-amber-700 mt-1">
+                          Fehlt noch: {keywordAnswerEvaluation.missingLabels.join(', ')}
+                        </p>
+                      )}
+                      {currentQuestion.answerGuide && (
+                        <p className="text-sm text-gray-700 mt-3 border-t border-gray-300 pt-2">
+                          Musterloesung: {currentQuestion.answerGuide}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button
                 onClick={() => {
                   void reportQuestionIssue({
@@ -323,20 +407,13 @@ const QuizView = ({
               >
                 🚩 Frage melden
               </button>
-              {/* Multi-Select Bestätigen Button */}
-              {currentQuestion.multi && !answered && selectedAnswers.length > 0 && (
-                <button
-                  onClick={confirmMultiSelectAnswer}
-                  className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
-                >
-                  ✓ Antwort bestätigen ({selectedAnswers.length} ausgewählt)
-                </button>
-              )}
+
               {answered && timeLeft === 0 && (
                 <div className="bg-red-100 border-2 border-red-500 rounded-xl p-4 text-center">
                   <p className="text-red-700 font-bold">⏰ Zeit abgelaufen!</p>
                 </div>
               )}
+
               {answered && (
                 <button
                   onClick={proceedToNextRound}

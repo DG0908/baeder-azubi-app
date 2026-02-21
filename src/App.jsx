@@ -30,6 +30,7 @@ import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
 import { AUSBILDUNGSRAHMENPLAN, WOCHEN_PRO_JAHR } from './data/ausbildungsrahmenplan';
 import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
 import { SAMPLE_QUESTIONS } from './data/quizQuestions';
+import { KEYWORD_CHALLENGES, buildKeywordFlashcards } from './data/keywordChallenges';
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, SWIM_BADGES, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
 import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel, parseExamTimeToSeconds, formatSecondsAsTime } from './data/practicalExam';
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
@@ -136,11 +137,14 @@ export default function BaederApp() {
   const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
   const [selectedAnswers, setSelectedAnswers] = useState([]); // Für Multi-Select Fragen
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState(null); // Für Single-Choice Feedback
+  const [keywordAnswerText, setKeywordAnswerText] = useState('');
+  const [keywordAnswerEvaluation, setKeywordAnswerEvaluation] = useState(null);
   
   const DIFFICULTY_SETTINGS = {
     anfaenger: { time: 45, label: 'Anfänger', icon: '🟢', color: 'bg-green-500' },
     profi: { time: 30, label: 'Profi', icon: '🟡', color: 'bg-yellow-500' },
-    experte: { time: 15, label: 'Experte', icon: '🔴', color: 'bg-red-500' }
+    experte: { time: 15, label: 'Experte', icon: '🔴', color: 'bg-red-500' },
+    extra: { time: 75, label: 'Extra schwer', icon: '🧠', color: 'bg-indigo-700' }
   };
 
   const normalizePlayerName = (name) => {
@@ -394,6 +398,9 @@ export default function BaederApp() {
   const [newFlashcardFront, setNewFlashcardFront] = useState('');
   const [newFlashcardBack, setNewFlashcardBack] = useState('');
   const [newFlashcardCategory, setNewFlashcardCategory] = useState('org');
+  const [keywordFlashcardMode, setKeywordFlashcardMode] = useState(false);
+  const [flashcardKeywordInput, setFlashcardKeywordInput] = useState('');
+  const [flashcardKeywordEvaluation, setFlashcardKeywordEvaluation] = useState(null);
   
   // Badges State
   const [userBadges, setUserBadges] = useState([]);
@@ -698,6 +705,130 @@ export default function BaederApp() {
     return true;
   };
 
+  const normalizeKeywordText = (value) => String(value || '')
+    .toLowerCase()
+    .replace(/ß/g, 'ss')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const normalizeKeywordGroup = (groupInput) => {
+    if (typeof groupInput === 'string') {
+      return {
+        label: groupInput,
+        terms: [groupInput]
+      };
+    }
+
+    if (Array.isArray(groupInput)) {
+      const terms = groupInput
+        .map((term) => String(term || '').trim())
+        .filter(Boolean);
+      return {
+        label: terms[0] || 'Schlagwort',
+        terms
+      };
+    }
+
+    if (groupInput && typeof groupInput === 'object') {
+      const label = String(groupInput.label || groupInput.name || '').trim();
+      const terms = Array.isArray(groupInput.terms)
+        ? groupInput.terms.map((term) => String(term || '').trim()).filter(Boolean)
+        : [];
+      return {
+        label: label || terms[0] || 'Schlagwort',
+        terms
+      };
+    }
+
+    return { label: 'Schlagwort', terms: [] };
+  };
+
+  const getKeywordGroupsFromQuestion = (question) => {
+    if (!question || !Array.isArray(question.keywordGroups)) return [];
+    return question.keywordGroups
+      .map(normalizeKeywordGroup)
+      .filter((group) => group.terms.length > 0)
+      .map((group) => ({
+        ...group,
+        normalizedTerms: group.terms
+          .map((term) => normalizeKeywordText(term))
+          .filter(Boolean)
+      }))
+      .filter((group) => group.normalizedTerms.length > 0);
+  };
+
+  const isKeywordQuestion = (question) => {
+    return Boolean(question?.type === 'keyword' && getKeywordGroupsFromQuestion(question).length > 0);
+  };
+
+  const evaluateKeywordAnswer = (question, answerInput) => {
+    const groups = getKeywordGroupsFromQuestion(question);
+    const normalizedAnswer = normalizeKeywordText(answerInput);
+    const wordCount = normalizedAnswer ? normalizedAnswer.split(' ').filter(Boolean).length : 0;
+    const requiredWordCount = Math.max(0, Number(question?.minWords) || 0);
+    const requiredGroups = Math.max(
+      1,
+      Math.min(groups.length, Number(question?.minKeywordGroups) || groups.length || 1)
+    );
+
+    if (!normalizedAnswer) {
+      return {
+        isCorrect: false,
+        hasContent: false,
+        requiredGroups,
+        matchedCount: 0,
+        scorePercent: 0,
+        matchedLabels: [],
+        missingLabels: groups.map((group) => group.label),
+        wordCount,
+        requiredWordCount
+      };
+    }
+
+    const matchedLabels = [];
+    const missingLabels = [];
+    groups.forEach((group) => {
+      const matched = group.normalizedTerms.some((term) => normalizedAnswer.includes(term));
+      if (matched) {
+        matchedLabels.push(group.label);
+      } else {
+        missingLabels.push(group.label);
+      }
+    });
+
+    const matchedCount = matchedLabels.length;
+    const hasEnoughWords = wordCount >= requiredWordCount;
+    const isCorrect = matchedCount >= requiredGroups && hasEnoughWords;
+    const scorePercent = Math.max(0, Math.min(100, Math.round((matchedCount / requiredGroups) * 100)));
+
+    return {
+      isCorrect,
+      hasContent: true,
+      requiredGroups,
+      matchedCount,
+      scorePercent,
+      matchedLabels,
+      missingLabels,
+      wordCount,
+      requiredWordCount
+    };
+  };
+
+  const resetQuizKeywordState = () => {
+    setKeywordAnswerText('');
+    setKeywordAnswerEvaluation(null);
+  };
+
+  const resetFlashcardKeywordState = () => {
+    setFlashcardKeywordInput('');
+    setFlashcardKeywordEvaluation(null);
+  };
+
+  const isKeywordFlashcard = (card) => isKeywordQuestion(card);
+
   const FLASHCARD_CONTENT = {
     org: [
       { front: 'Was ist das Hausrecht?', back: 'Das Recht des Badbetreibers, die Hausordnung durchzusetzen und Personen des Platzes zu verweisen.' },
@@ -725,6 +856,7 @@ export default function BaederApp() {
       { front: 'Was ist die Berufsgenossenschaft?', back: 'Träger der gesetzlichen Unfallversicherung für Arbeitsunfälle.' }
     ]
   };
+  const KEYWORD_FLASHCARD_CONTENT = buildKeywordFlashcards(KEYWORD_CHALLENGES);
 
   const BADGES = [
     // Quiz/Lern-Badges
@@ -2077,6 +2209,14 @@ export default function BaederApp() {
       setCategoryRound(0);
       setQuestionInCategory(0);
       setPlayerTurn(game.currentTurn);
+      setQuizCategory(null);
+      setCurrentQuestion(null);
+      setCurrentCategoryQuestions([]);
+      setAnswered(false);
+      setSelectedAnswers([]);
+      setLastSelectedAnswer(null);
+      setTimerActive(false);
+      resetQuizKeywordState();
       setCurrentView('quiz');
     } catch (error) {
       console.error('Accept error:', error);
@@ -2091,6 +2231,12 @@ export default function BaederApp() {
     setCategoryRound(game.categoryRound || 0);
     setQuestionInCategory(0);
     setPlayerTurn(game.currentTurn);
+    setCurrentQuestion(null);
+    setAnswered(false);
+    setSelectedAnswers([]);
+    setLastSelectedAnswer(null);
+    setTimerActive(false);
+    resetQuizKeywordState();
 
     // Prüfe ob der Spieler die gespeicherten Fragen spielen muss
     if (game.categoryRounds && game.categoryRounds.length > 0) {
@@ -2525,37 +2671,50 @@ export default function BaederApp() {
     if (!currentGame || currentGame.currentTurn !== user.name) return;
 
     setQuizCategory(catId);
+    resetQuizKeywordState();
 
-    // Hole alle Fragen dieser Kategorie
-    const allQuestions = SAMPLE_QUESTIONS[catId] || [];
+    const useKeywordQuestions = selectedDifficulty === 'extra' || currentGame.difficulty === 'extra';
+    const categoryKeywordQuestions = KEYWORD_CHALLENGES[catId] || [];
+    const categoryStandardQuestions = SAMPLE_QUESTIONS[catId] || [];
+    const allQuestions = useKeywordQuestions && categoryKeywordQuestions.length > 0
+      ? categoryKeywordQuestions
+      : categoryStandardQuestions;
+    if (useKeywordQuestions && categoryKeywordQuestions.length === 0) {
+      showToast('Für diese Kategorie sind noch keine Extra-schwer-Fragen hinterlegt. Standardfragen werden genutzt.', 'info');
+    }
     const selectedQuestions = pickLearningQuestions(
       allQuestions,
       Math.min(5, allQuestions.length),
       () => catId
     );
 
-    // Mische auch die Antworten jeder Frage
-    const questionsWithShuffledAnswers = selectedQuestions.map(q => shuffleAnswers(q));
+    // Mische Antworten nur bei Auswahlfragen
+    const preparedQuestions = selectedQuestions.map((question) => {
+      if (isKeywordQuestion(question)) {
+        return { ...question, category: catId };
+      }
+      return { ...shuffleAnswers(question), category: catId };
+    });
 
     // Speichere die Fragen im Game für beide Spieler
     if (!currentGame.categoryRounds) currentGame.categoryRounds = [];
     currentGame.categoryRounds.push({
       categoryId: catId,
       categoryName: CATEGORIES.find(c => c.id === catId)?.name || catId,
-      questions: questionsWithShuffledAnswers,
+      questions: preparedQuestions,
       player1Answers: [], // Antworten von Spieler 1
       player2Answers: [], // Antworten von Spieler 2
       chooser: user.name  // Wer hat die Kategorie gewählt
     });
 
-    setCurrentCategoryQuestions(questionsWithShuffledAnswers);
+    setCurrentCategoryQuestions(preparedQuestions);
     setQuestionInCategory(0);
-    setCurrentQuestion(questionsWithShuffledAnswers[0]);
+    setCurrentQuestion(preparedQuestions[0]);
     setAnswered(false);
     setSelectedAnswers([]); // Reset für Multi-Select
     setLastSelectedAnswer(null); // Reset für Single-Choice
 
-    const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
+    const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty]?.time || 30;
     setTimeLeft(timeLimit);
     setTimerActive(true);
 
@@ -2567,8 +2726,20 @@ export default function BaederApp() {
     setAnswered(true);
     setTimerActive(false);
 
+    if (isKeywordQuestion(currentQuestion) && keywordAnswerText.trim()) {
+      const timedOutEvaluation = evaluateKeywordAnswer(currentQuestion, keywordAnswerText);
+      setKeywordAnswerEvaluation({
+        ...timedOutEvaluation,
+        isCorrect: false,
+        timedOut: true
+      });
+    }
+
     // Speichere falsche Antwort (Timeout)
-    await savePlayerAnswer(false, true);
+    await savePlayerAnswer(false, true, {
+      answerType: isKeywordQuestion(currentQuestion) ? 'keyword' : 'choice',
+      keywordText: isKeywordQuestion(currentQuestion) ? keywordAnswerText.trim() : null
+    });
   };
 
   // Toggle Antwort für Multi-Select Fragen
@@ -2596,11 +2767,15 @@ export default function BaederApp() {
       selectedAnswers.length === correctAnswers.length &&
       selectedAnswers.every(idx => correctAnswers.includes(idx));
 
-    await savePlayerAnswer(isCorrect, false);
+    await savePlayerAnswer(isCorrect, false, {
+      answerType: 'multi',
+      selectedAnswers: [...selectedAnswers]
+    });
   };
 
   const answerQuestion = async (answerIndex) => {
     if (answered || !currentGame) return;
+    if (isKeywordQuestion(currentQuestion)) return;
 
     // Multi-Select: Nur togglen, nicht direkt antworten
     if (currentQuestion.multi) {
@@ -2614,11 +2789,38 @@ export default function BaederApp() {
     setLastSelectedAnswer(answerIndex); // Speichere gewählte Antwort für Feedback
 
     const isCorrect = answerIndex === currentQuestion.correct;
-    await savePlayerAnswer(isCorrect, false);
+    await savePlayerAnswer(isCorrect, false, {
+      answerType: 'single',
+      selectedAnswer: answerIndex
+    });
+  };
+
+  const submitKeywordAnswer = async () => {
+    if (answered || !currentGame || !isKeywordQuestion(currentQuestion)) return;
+    const trimmedAnswer = keywordAnswerText.trim();
+    if (!trimmedAnswer) {
+      showToast('Bitte gib zuerst eine Freitext-Antwort ein.', 'error', 1800);
+      return;
+    }
+    const evaluation = evaluateKeywordAnswer(currentQuestion, keywordAnswerText);
+    setKeywordAnswerEvaluation(evaluation);
+    setAnswered(true);
+    setTimerActive(false);
+    await savePlayerAnswer(evaluation.isCorrect, false, {
+      answerType: 'keyword',
+      keywordText: trimmedAnswer,
+      keywordEvaluation: {
+        requiredGroups: evaluation.requiredGroups,
+        matchedCount: evaluation.matchedCount,
+        matchedLabels: evaluation.matchedLabels,
+        missingLabels: evaluation.missingLabels,
+        scorePercent: evaluation.scorePercent
+      }
+    });
   };
 
   // Speichert die Antwort des aktuellen Spielers
-  const savePlayerAnswer = async (isCorrect, isTimeout) => {
+  const savePlayerAnswer = async (isCorrect, isTimeout, answerMeta = {}) => {
     const isPlayer1 = user.name === currentGame.player1;
     const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
 
@@ -2647,7 +2849,8 @@ export default function BaederApp() {
     const answer = {
       questionIndex: questionInCategory,
       correct: isCorrect,
-      timeout: isTimeout
+      timeout: isTimeout,
+      ...answerMeta
     };
 
     if (isPlayer1) {
@@ -2690,8 +2893,9 @@ export default function BaederApp() {
       setAnswered(false);
       setSelectedAnswers([]); // Reset für Multi-Select
       setLastSelectedAnswer(null); // Reset für Single-Choice
+      resetQuizKeywordState();
 
-      const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
+      const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty]?.time || 30;
       setTimeLeft(timeLimit);
       setTimerActive(true);
       return;
@@ -2709,6 +2913,7 @@ export default function BaederApp() {
       setQuizCategory(null);
       setCurrentQuestion(null);
       setPlayerTurn(currentGame.player2);
+      resetQuizKeywordState();
 
       await saveGameToSupabase(currentGame);
 
@@ -2729,6 +2934,7 @@ export default function BaederApp() {
       setQuizCategory(null);
       setCurrentQuestion(null);
       setPlayerTurn(currentGame.player1);
+      resetQuizKeywordState();
 
       await saveGameToSupabase(currentGame);
 
@@ -2762,6 +2968,10 @@ export default function BaederApp() {
       setPlayerTurn(nextChooser);
       setWaitingForOpponent(false);
       setAnswered(false);
+      setSelectedAnswers([]);
+      setLastSelectedAnswer(null);
+      resetQuizKeywordState();
+      setTimerActive(false);
 
       await saveGameToSupabase(currentGame);
 
@@ -2794,8 +3004,9 @@ export default function BaederApp() {
     setSelectedAnswers([]); // Reset für Multi-Select
     setLastSelectedAnswer(null); // Reset für Single-Choice
     setWaitingForOpponent(false);
+    resetQuizKeywordState();
 
-    const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty].time;
+    const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty]?.time || 30;
     setTimeLeft(timeLimit);
     setTimerActive(true);
   };
@@ -2889,6 +3100,7 @@ export default function BaederApp() {
       setSelectedAnswers([]);
       setLastSelectedAnswer(null);
       setTimerActive(false);
+      resetQuizKeywordState();
 
       // Spieleliste neu laden damit beendetes Spiel verschwindet
       loadData();
@@ -4695,11 +4907,36 @@ export default function BaederApp() {
 
   // ==================== ENDE BERICHTSHEFT FUNKTIONEN ====================
 
-  const loadFlashcards = () => {
-    const hardcodedCards = FLASHCARD_CONTENT[newQuestionCategory] || [];
-    const userCards = userFlashcards.filter(fc => fc.category === newQuestionCategory);
+  const loadFlashcards = (options = {}) => {
+    const categoryId = options.categoryId || newQuestionCategory;
+    const useKeywordMode = typeof options.useKeyword === 'boolean'
+      ? options.useKeyword
+      : keywordFlashcardMode;
+
+    const hardcodedCards = useKeywordMode
+      ? (KEYWORD_FLASHCARD_CONTENT[categoryId] || [])
+      : (FLASHCARD_CONTENT[categoryId] || []);
+    const userCards = useKeywordMode ? [] : userFlashcards.filter(fc => fc.category === categoryId);
     const allCards = [...hardcodedCards, ...userCards];
-    setFlashcards(allCards); setFlashcardIndex(0); setCurrentFlashcard(allCards[0] || null); setShowFlashcardAnswer(false);
+
+    setFlashcards(allCards);
+    setFlashcardIndex(0);
+    setCurrentFlashcard(allCards[0] || null);
+    setShowFlashcardAnswer(false);
+    resetFlashcardKeywordState();
+  };
+
+  const evaluateFlashcardKeywordAnswer = () => {
+    if (!currentFlashcard || !isKeywordFlashcard(currentFlashcard)) return null;
+    const trimmedInput = flashcardKeywordInput.trim();
+    if (!trimmedInput) {
+      showToast('Bitte gib zuerst deine Antwort ein.', 'error', 1800);
+      return null;
+    }
+
+    const evaluation = evaluateKeywordAnswer(currentFlashcard, trimmedInput);
+    setFlashcardKeywordEvaluation(evaluation);
+    return evaluation;
   };
 
   // ==================== SPACED REPETITION SYSTEM ====================
@@ -5808,6 +6045,11 @@ export default function BaederApp() {
             answered={answered}
             selectedAnswers={selectedAnswers}
             lastSelectedAnswer={lastSelectedAnswer}
+            isKeywordQuestion={isKeywordQuestion}
+            keywordAnswerText={keywordAnswerText}
+            setKeywordAnswerText={setKeywordAnswerText}
+            keywordAnswerEvaluation={keywordAnswerEvaluation}
+            submitKeywordAnswer={submitKeywordAnswer}
             answerQuestion={answerQuestion}
             reportQuestionIssue={reportQuestionIssue}
             confirmMultiSelectAnswer={confirmMultiSelectAnswer}
@@ -5979,6 +6221,14 @@ export default function BaederApp() {
             queueXpAward={queueXpAward}
             XP_REWARDS={XP_REWARDS}
             FLASHCARD_CONTENT={FLASHCARD_CONTENT}
+            KEYWORD_FLASHCARD_CONTENT={KEYWORD_FLASHCARD_CONTENT}
+            keywordFlashcardMode={keywordFlashcardMode}
+            setKeywordFlashcardMode={setKeywordFlashcardMode}
+            flashcardKeywordInput={flashcardKeywordInput}
+            setFlashcardKeywordInput={setFlashcardKeywordInput}
+            flashcardKeywordEvaluation={flashcardKeywordEvaluation}
+            evaluateFlashcardKeywordAnswer={evaluateFlashcardKeywordAnswer}
+            resetFlashcardKeywordState={resetFlashcardKeywordState}
           />
         )}
 
