@@ -14,12 +14,26 @@ const CalculatorView = ({
   selectedElement,
   setSelectedElement,
   performCalculation,
+  flocculantProducts = [],
+  flocculantPumpTypes = [],
+  flocculantPumpModels = [],
 }) => {
   const { darkMode, playSound } = useApp();
 
   const handleCalculation = () => {
     performCalculation();
   };
+
+  const getDefaultPumpModelForType = (pumpTypeId) => (
+    flocculantPumpModels.find((model) => model.pumpTypeId === pumpTypeId)?.id || ''
+  );
+
+  const selectedPumpTypeId = calculatorInputs.flocPumpTypeId
+    || flocculantPumpTypes[0]?.id
+    || 'peristaltic';
+  const pumpModelsForType = flocculantPumpModels.filter(
+    (model) => model.pumpTypeId === selectedPumpTypeId
+  );
 
   const commonDilutionPresets = [
     { label: '1:2', concentrateParts: '1', ratioValue: '2' },
@@ -53,7 +67,7 @@ const CalculatorView = ({
         🧮 Praxis-Rechner
       </h2>
       
-      <div className="grid md:grid-cols-7 gap-4 mb-6">
+      <div className="grid md:grid-cols-8 gap-4 mb-6">
         <button
           onClick={() => {
             setCalculatorType('ph');
@@ -116,6 +130,34 @@ const CalculatorView = ({
           }`}
         >
           Mix / Verduennung
+        </button>
+        <button
+          onClick={() => {
+            const initialPumpType = flocculantPumpTypes[0]?.id || 'peristaltic';
+            setCalculatorType('flocculation');
+            setCalculatorInputs({
+              flocculationMode: 'continuous',
+              flocProductId: flocculantProducts[0]?.id || '',
+              flocPumpTypeId: initialPumpType,
+              flocPumpModelId: getDefaultPumpModelForType(initialPumpType),
+              flocHoseSizeMm: '6',
+              circulationFlow: '',
+              poolVolume: '',
+              dosingHoursPerDay: '24',
+              stockConcentrationPercent: '1',
+              stockTankLiters: '60',
+              loadProfile: 'normal',
+              waterCondition: 'normal'
+            });
+            setCalculatorResult(null);
+          }}
+          className={`p-4 rounded-xl font-bold ${
+            calculatorType === 'flocculation'
+              ? 'bg-gradient-to-r from-sky-500 to-cyan-500 text-white'
+              : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
+          }`}
+        >
+          Flockung
         </button>
         <button
           onClick={() => {
@@ -525,6 +567,170 @@ const CalculatorView = ({
           <div className={`${darkMode ? 'bg-slate-600' : 'bg-amber-100'} rounded-lg p-3 text-sm mt-4`}>
             <p className={darkMode ? 'text-amber-200' : 'text-amber-800'}>
               Hinweis: Beide Interpretationen sind vorhanden, weil 1:10 in der Praxis unterschiedlich genutzt wird.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {calculatorType === 'flocculation' && (
+        <div className={`${darkMode ? 'bg-slate-700' : 'bg-cyan-50'} rounded-xl p-6 mb-6`}>
+          <h3 className={`font-bold mb-4 ${darkMode ? 'text-cyan-300' : 'text-cyan-800'}`}>
+            Flockungsmittel-Einstellung und Dosierung
+          </h3>
+
+          <div className="grid md:grid-cols-2 gap-3 mb-3">
+            <select
+              value={calculatorInputs.flocculationMode || 'continuous'}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, flocculationMode: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+            >
+              <option value="continuous">Kontinuierliche Flockung</option>
+              <option value="shock">Stossflockung</option>
+            </select>
+            <select
+              value={calculatorInputs.flocProductId || flocculantProducts[0]?.id || ''}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, flocProductId: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+            >
+              {flocculantProducts.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-3 mb-3">
+            <input
+              type="text"
+              placeholder="Umwaelzleistung (m3/h)"
+              value={calculatorInputs.circulationFlow || ''}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, circulationFlow: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+            />
+            <input
+              type="text"
+              placeholder="Beckenvolumen (m3)"
+              value={calculatorInputs.poolVolume || ''}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, poolVolume: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+            />
+            <input
+              type="text"
+              placeholder="Dosierstunden pro Tag (z.B. 24)"
+              value={calculatorInputs.dosingHoursPerDay || ''}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, dosingHoursPerDay: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-3 mb-3">
+            <select
+              value={calculatorInputs.loadProfile || 'normal'}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, loadProfile: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+            >
+              <option value="low">Niedrige Belastung</option>
+              <option value="normal">Normale Belastung</option>
+              <option value="high">Hohe Belastung</option>
+              <option value="peak">Spitzenlast</option>
+            </select>
+            <select
+              value={calculatorInputs.waterCondition || 'normal'}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, waterCondition: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+            >
+              <option value="clear">Sehr klares Wasser</option>
+              <option value="normal">Normales Wasser</option>
+              <option value="turbid">Truebung erhoeht</option>
+              <option value="severe">Stark trueb / Problemfall</option>
+            </select>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-3 mb-3">
+            <select
+              value={selectedPumpTypeId}
+              onChange={(e) => {
+                const nextType = e.target.value;
+                setCalculatorInputs({
+                  ...calculatorInputs,
+                  flocPumpTypeId: nextType,
+                  flocPumpModelId: getDefaultPumpModelForType(nextType)
+                });
+                setCalculatorResult(null);
+              }}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+            >
+              {flocculantPumpTypes.map((pumpType) => (
+                <option key={pumpType.id} value={pumpType.id}>
+                  {pumpType.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={calculatorInputs.flocPumpModelId || pumpModelsForType[0]?.id || ''}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, flocPumpModelId: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+            >
+              {pumpModelsForType.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedPumpTypeId === 'peristaltic' && (
+            <div className="grid md:grid-cols-3 gap-3 mb-3">
+              <select
+                value={calculatorInputs.flocHoseSizeMm || '6'}
+                onChange={(e) => setCalculatorInputs({ ...calculatorInputs, flocHoseSizeMm: e.target.value })}
+                className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+              >
+                <option value="4">Schlauch 4 mm</option>
+                <option value="6">Schlauch 6 mm</option>
+                <option value="8">Schlauch 8 mm</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Ansatzkonzentration (%)"
+                value={calculatorInputs.stockConcentrationPercent || ''}
+                onChange={(e) => setCalculatorInputs({ ...calculatorInputs, stockConcentrationPercent: e.target.value })}
+                className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+              />
+              <input
+                type="text"
+                placeholder="Ansatzbehaelter (L)"
+                value={calculatorInputs.stockTankLiters || ''}
+                onChange={(e) => setCalculatorInputs({ ...calculatorInputs, stockTankLiters: e.target.value })}
+                className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+              />
+            </div>
+          )}
+
+          {selectedPumpTypeId !== 'peristaltic' && (
+            <div className="grid md:grid-cols-2 gap-3 mb-3">
+              <input
+                type="text"
+                placeholder="Ansatzkonzentration (%)"
+                value={calculatorInputs.stockConcentrationPercent || ''}
+                onChange={(e) => setCalculatorInputs({ ...calculatorInputs, stockConcentrationPercent: e.target.value })}
+                className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+              />
+              <input
+                type="text"
+                placeholder="Ansatzbehaelter (L)"
+                value={calculatorInputs.stockTankLiters || ''}
+                onChange={(e) => setCalculatorInputs({ ...calculatorInputs, stockTankLiters: e.target.value })}
+                className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+              />
+            </div>
+          )}
+
+          <div className={`${darkMode ? 'bg-slate-600' : 'bg-cyan-100'} rounded-lg p-3 text-sm`}>
+            <p className={darkMode ? 'text-cyan-200' : 'text-cyan-900'}>
+              Tipp: Der Rechner liefert dir Sollwerte fuer Produktbedarf, Dosierloesung, Tankreichweite und Pumpeneinstellung.
+              Im Alltag danach Sichtkontrolle, Flockenbild und Filtrationsverhalten gegenpruefen.
             </p>
           </div>
         </div>
