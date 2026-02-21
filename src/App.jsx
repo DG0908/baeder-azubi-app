@@ -1082,6 +1082,58 @@ export default function BaederApp() {
     };
   };
 
+  const parseDecimalInput = (value) => {
+    const normalized = String(value ?? '').trim().replace(',', '.');
+    if (!normalized) return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const formatClockTimeFromMinutes = (totalMinutesInput) => {
+    const safeMinutes = Math.max(0, Math.round(totalMinutesInput));
+    const hours = Math.floor(safeMinutes / 60);
+    const minutes = safeMinutes % 60;
+    return `${hours}:${String(minutes).padStart(2, '0')} h`;
+  };
+
+  const calculateIndustrialTime = (inputs) => {
+    const mode = inputs.industrialMode || 'clockToIndustrial';
+
+    if (mode === 'clockToIndustrial') {
+      const hours = parseDecimalInput(inputs.clockHours);
+      const minutes = parseDecimalInput(inputs.clockMinutes);
+      if (hours === null || minutes === null || hours < 0 || minutes < 0 || minutes >= 60) {
+        return null;
+      }
+
+      const totalMinutes = (hours * 60) + minutes;
+      const industrialHours = totalMinutes / 60;
+      const industrialMinutes = totalMinutes * (100 / 60);
+
+      return {
+        result: `${industrialHours.toFixed(2).replace('.', ',')} h`,
+        explanation: `${hours} h ${minutes} min entsprechen ${totalMinutes.toFixed(0)} Minuten Gesamtzeit.`,
+        details: `Industrieminuten: ${industrialMinutes.toFixed(2).replace('.', ',')} min`,
+        recommendation: `Als Industriezeit kannst du ${industrialHours.toFixed(2).replace('.', ',')} h abrechnen.`
+      };
+    }
+
+    const industrialHours = parseDecimalInput(inputs.industrialHours);
+    if (industrialHours === null || industrialHours < 0) {
+      return null;
+    }
+
+    const totalMinutes = industrialHours * 60;
+    const industrialMinutes = industrialHours * 100;
+
+    return {
+      result: formatClockTimeFromMinutes(totalMinutes),
+      explanation: `${industrialHours.toFixed(2).replace('.', ',')} Industriestunden entsprechen ${totalMinutes.toFixed(1).replace('.', ',')} Realminuten.`,
+      details: `Industrieminuten gesamt: ${industrialMinutes.toFixed(2).replace('.', ',')} min`,
+      recommendation: `In Uhrzeit entspricht das ${formatClockTimeFromMinutes(totalMinutes)}.`
+    };
+  };
+
   const handleCalculation = () => {
     let result = null;
     
@@ -1094,6 +1146,9 @@ export default function BaederApp() {
         break;
       case 'volume':
         result = calculateVolume(calculatorInputs);
+        break;
+      case 'industrialTime':
+        result = calculateIndustrialTime(calculatorInputs);
         break;
     }
     
@@ -9795,7 +9850,7 @@ export default function BaederApp() {
                 🧮 Praxis-Rechner
               </h2>
               
-              <div className="grid md:grid-cols-5 gap-4 mb-6">
+              <div className="grid md:grid-cols-6 gap-4 mb-6">
                 <button
                   onClick={() => {
                     setCalculatorType('ph');
@@ -9865,6 +9920,20 @@ export default function BaederApp() {
                   }`}
                 >
                   ⚛️ Periodensystem
+                </button>
+                <button
+                  onClick={() => {
+                    setCalculatorType('industrialTime');
+                    setCalculatorInputs({ industrialMode: 'clockToIndustrial' });
+                    setCalculatorResult(null);
+                  }}
+                  className={`p-4 rounded-xl font-bold ${
+                    calculatorType === 'industrialTime'
+                      ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
+                      : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
+                >
+                  ⏱️ Industriezeit
                 </button>
               </div>
 
@@ -10120,6 +10189,78 @@ export default function BaederApp() {
                       <div className="w-4 h-4 bg-lime-500 rounded"></div>
                       <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Actinoide</span>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {calculatorType === 'industrialTime' && (
+                <div className={`${darkMode ? 'bg-slate-700' : 'bg-teal-50'} rounded-xl p-6 mb-6`}>
+                  <h3 className={`font-bold mb-4 ${darkMode ? 'text-teal-300' : 'text-teal-800'}`}>Industriezeit / Industrieminuten</h3>
+                  <div className="grid md:grid-cols-2 gap-3 mb-4">
+                    <button
+                      onClick={() => {
+                        setCalculatorInputs({ industrialMode: 'clockToIndustrial' });
+                        setCalculatorResult(null);
+                      }}
+                      className={`px-4 py-3 rounded-lg font-semibold ${
+                        (calculatorInputs.industrialMode || 'clockToIndustrial') === 'clockToIndustrial'
+                          ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
+                          : (darkMode ? 'bg-slate-600 text-white hover:bg-slate-500' : 'bg-white text-gray-800 hover:bg-gray-100')
+                      }`}
+                    >
+                      Uhrzeit → Industriezeit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setCalculatorInputs({ industrialMode: 'industrialToClock' });
+                        setCalculatorResult(null);
+                      }}
+                      className={`px-4 py-3 rounded-lg font-semibold ${
+                        (calculatorInputs.industrialMode || 'clockToIndustrial') === 'industrialToClock'
+                          ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
+                          : (darkMode ? 'bg-slate-600 text-white hover:bg-slate-500' : 'bg-white text-gray-800 hover:bg-gray-100')
+                      }`}
+                    >
+                      Industriezeit → Uhrzeit
+                    </button>
+                  </div>
+
+                  {(calculatorInputs.industrialMode || 'clockToIndustrial') === 'clockToIndustrial' ? (
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Stunden (z. B. 1)"
+                        value={calculatorInputs.clockHours || ''}
+                        onChange={(e) => setCalculatorInputs({ ...calculatorInputs, clockHours: e.target.value })}
+                        className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        step="1"
+                        placeholder="Minuten (0-59)"
+                        value={calculatorInputs.clockMinutes || ''}
+                        onChange={(e) => setCalculatorInputs({ ...calculatorInputs, clockMinutes: e.target.value })}
+                        className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+                      />
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder="Industriestunden (z. B. 1,75)"
+                      value={calculatorInputs.industrialHours || ''}
+                      onChange={(e) => setCalculatorInputs({ ...calculatorInputs, industrialHours: e.target.value })}
+                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+                    />
+                  )}
+
+                  <div className={`${darkMode ? 'bg-slate-600' : 'bg-teal-100'} rounded-lg p-3 text-sm mt-4`}>
+                    <p className={darkMode ? 'text-teal-200' : 'text-teal-800'}>
+                      💡 1 Stunde = 60 Realminuten = 100 Industrieminuten.
+                    </p>
                   </div>
                 </div>
               )}
