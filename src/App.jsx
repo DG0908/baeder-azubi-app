@@ -510,7 +510,9 @@ export default function BaederApp() {
   const [berichtsheftDatumAzubi, setBerichtsheftDatumAzubi] = useState('');
   const [berichtsheftDatumAusbilder, setBerichtsheftDatumAusbilder] = useState('');
   const [selectedBerichtsheft, setSelectedBerichtsheft] = useState(null); // Für Bearbeitung
-  const [berichtsheftViewMode, setBerichtsheftViewMode] = useState('edit'); // 'edit', 'list', 'progress', 'profile'
+  const [berichtsheftViewMode, setBerichtsheftViewMode] = useState('edit'); // 'edit', 'list', 'progress', 'profile', 'sign'
+  const [berichtsheftPendingSignatures, setBerichtsheftPendingSignatures] = useState([]);
+  const [berichtsheftPendingLoading, setBerichtsheftPendingLoading] = useState(false);
 
   // Schwimmchallenge State
   const [swimChallengeView, setSwimChallengeView] = useState('overview'); // 'overview', 'challenges', 'add', 'leaderboard', 'battle'
@@ -572,6 +574,9 @@ export default function BaederApp() {
   });
   const azubiProfileSaveTimerRef = useRef(null);
   const xpAwardQueueRef = useRef(Promise.resolve(0));
+  const canManageBerichtsheftSignatures = Boolean(
+    user && (user.role === 'admin' || user.role === 'trainer' || user.canSignReports)
+  );
 
   // Calculator State
   const [calculatorType, setCalculatorType] = useState('ph');
@@ -964,6 +969,11 @@ export default function BaederApp() {
     // Load Berichtsheft when view changes
     if (currentView === 'berichtsheft' && user) {
       loadBerichtsheftEntries();
+      if (canManageBerichtsheftSignatures) {
+        loadBerichtsheftPendingSignatures();
+      } else {
+        setBerichtsheftPendingSignatures([]);
+      }
 
       // Azubi-Profil aus Supabase nachladen falls localStorage leer
       if (user.id && (!azubiProfile.vorname || !azubiProfile.nachname)) {
@@ -985,7 +995,7 @@ export default function BaederApp() {
       }
     }
 
-  }, [currentView, user]);
+  }, [currentView, user, canManageBerichtsheftSignatures]);
 
   useEffect(() => {
     localStorage.setItem(QUESTION_PERFORMANCE_STORAGE_KEY, JSON.stringify(questionPerformance));
@@ -3989,6 +3999,90 @@ export default function BaederApp() {
     }
   };
 
+  const isSignedByAzubi = (entry) => Boolean(String(entry?.signatur_azubi || '').trim());
+  const isSignedByAusbilder = (entry) => Boolean(String(entry?.signatur_ausbilder || '').trim());
+  const hasEntryContent = (entry) => {
+    if (!entry || !entry.entries || typeof entry.entries !== 'object') return false;
+    return Object.values(entry.entries).some((dayRows) => Array.isArray(dayRows)
+      && dayRows.some((row) => String(row?.taetigkeit || '').trim() !== ''));
+  };
+
+  const loadBerichtsheftPendingSignatures = async () => {
+    if (!user || !canManageBerichtsheftSignatures) {
+      setBerichtsheftPendingSignatures([]);
+      return;
+    }
+
+    setBerichtsheftPendingLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('berichtsheft')
+        .select('*')
+        .order('week_start', { ascending: false });
+
+      if (error) throw error;
+
+      const allEntries = Array.isArray(data) ? data : [];
+      let pending = allEntries.filter((entry) =>
+        hasEntryContent(entry)
+        && isSignedByAzubi(entry)
+        && !isSignedByAusbilder(entry)
+      );
+
+      const isAdmin = user.role === 'admin';
+      if (!isAdmin) {
+        pending = pending.filter((entry) =>
+          !entry.assigned_trainer_id
+          || entry.assigned_trainer_id === user.id
+          || String(entry.assigned_trainer_name || '').trim() === String(user.name || '').trim()
+        );
+      }
+
+      setBerichtsheftPendingSignatures(pending);
+    } catch (err) {
+      console.error('Fehler beim Laden offener Berichtshefte:', err);
+      setBerichtsheftPendingSignatures([]);
+    } finally {
+      setBerichtsheftPendingLoading(false);
+    }
+  };
+
+  const assignBerichtsheftTrainer = async (entryId, trainerId) => {
+    if (!entryId || !trainerId) return;
+
+    const trainer = allUsers.find((account) => account.id === trainerId);
+    if (!trainer) {
+      showToast('Ausbilder nicht gefunden.', 'error');
+      return;
+    }
+
+    try {
+      const payload = {
+        assigned_trainer_id: trainerId,
+        assigned_trainer_name: trainer.name || null,
+        assigned_by_id: user?.id || null,
+        assigned_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('berichtsheft')
+        .update(payload)
+        .eq('id', entryId);
+
+      if (error) throw error;
+
+      setBerichtsheftPendingSignatures((prev) => prev.map((entry) => (
+        entry.id === entryId
+          ? { ...entry, ...payload }
+          : entry
+      )));
+      showToast(`Berichtsheft wurde ${trainer.name} zugewiesen.`, 'success');
+    } catch (err) {
+      console.error('Fehler beim Zuweisen des Berichtshefts:', err);
+      showToast('Zuweisung fehlgeschlagen. Bitte Supabase-Migration prüfen.', 'error');
+    }
+  };
+
   const getWeekEndDate = (startDate) => {
     const start = new Date(startDate);
     const end = new Date(start);
@@ -4553,26 +4647,6 @@ export default function BaederApp() {
     return scored.filter(item => item.matchCount > 0).slice(0, 3);
   };
 
-  const applyBerichtsheftInhaltToEntry = (day, index, text) => {
-    const template = String(text || '').trim();
-    if (!template) return;
-
-    setCurrentWeekEntries(prev => ({
-      ...prev,
-      [day]: prev[day].map((entry, i) => {
-        if (i !== index) return entry;
-        const current = String(entry.taetigkeit || '').trim();
-        if (!current) {
-          return { ...entry, taetigkeit: template };
-        }
-        if (normalizeBerichtsheftText(current).includes(normalizeBerichtsheftText(template))) {
-          return entry;
-        }
-        return { ...entry, taetigkeit: `${current}; ${template}` };
-      })
-    }));
-  };
-
   const removeWeekEntry = (day, index) => {
     if (currentWeekEntries[day].length <= 1) return; // Mindestens eine Zeile
     setCurrentWeekEntries(prev => ({
@@ -4606,8 +4680,9 @@ export default function BaederApp() {
     }
 
     try {
+      const targetUserName = selectedBerichtsheft?.user_name || user.name;
       const berichtsheftData = {
-        user_name: user.name,
+        user_name: targetUserName,
         week_start: berichtsheftWeek,
         week_end: getWeekEndDate(berichtsheftWeek),
         ausbildungsjahr: berichtsheftYear,
@@ -4623,6 +4698,11 @@ export default function BaederApp() {
       };
 
       if (selectedBerichtsheft) {
+        berichtsheftData.assigned_trainer_id = selectedBerichtsheft.assigned_trainer_id || null;
+        berichtsheftData.assigned_trainer_name = selectedBerichtsheft.assigned_trainer_name || null;
+        berichtsheftData.assigned_by_id = selectedBerichtsheft.assigned_by_id || null;
+        berichtsheftData.assigned_at = selectedBerichtsheft.assigned_at || null;
+
         // Update
         const { error } = await supabase
           .from('berichtsheft')
@@ -4644,6 +4724,7 @@ export default function BaederApp() {
 
       resetBerichtsheftForm();
       loadBerichtsheftEntries();
+      loadBerichtsheftPendingSignatures();
       setBerichtsheftViewMode('list');
     } catch (err) {
       console.error('Fehler beim Speichern:', err);
@@ -4684,6 +4765,7 @@ export default function BaederApp() {
 
       if (error) throw error;
       loadBerichtsheftEntries();
+      loadBerichtsheftPendingSignatures();
     } catch (err) {
       console.error('Fehler beim Löschen:', err);
     }
@@ -6352,7 +6434,7 @@ export default function BaederApp() {
         {currentView === 'berichtsheft' && (
           <BerichtsheftView
             addWeekEntry={addWeekEntry}
-            applyBerichtsheftInhaltToEntry={applyBerichtsheftInhaltToEntry}
+            assignBerichtsheftTrainer={assignBerichtsheftTrainer}
             azubiProfile={azubiProfile}
             berichtsheftBemerkungAusbilder={berichtsheftBemerkungAusbilder}
             berichtsheftBemerkungAzubi={berichtsheftBemerkungAzubi}
@@ -6360,11 +6442,14 @@ export default function BaederApp() {
             berichtsheftDatumAzubi={berichtsheftDatumAzubi}
             berichtsheftEntries={berichtsheftEntries}
             berichtsheftNr={berichtsheftNr}
+            berichtsheftPendingLoading={berichtsheftPendingLoading}
+            berichtsheftPendingSignatures={berichtsheftPendingSignatures}
             berichtsheftSignaturAusbilder={berichtsheftSignaturAusbilder}
             berichtsheftSignaturAzubi={berichtsheftSignaturAzubi}
             berichtsheftViewMode={berichtsheftViewMode}
             berichtsheftWeek={berichtsheftWeek}
             berichtsheftYear={berichtsheftYear}
+            canManageBerichtsheftSignatures={canManageBerichtsheftSignatures}
             calculateBereichProgress={calculateBereichProgress}
             calculateDayHours={calculateDayHours}
             calculateTotalHours={calculateTotalHours}
@@ -6390,6 +6475,7 @@ export default function BaederApp() {
             setBerichtsheftViewMode={setBerichtsheftViewMode}
             setBerichtsheftWeek={setBerichtsheftWeek}
             setBerichtsheftYear={setBerichtsheftYear}
+            signAssignableUsers={allUsers.filter((account) => account.role === 'trainer' || account.role === 'admin')}
             updateWeekEntry={updateWeekEntry}
           />
         )}
