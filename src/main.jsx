@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import BaederApp from './App.jsx'
+import { AuthProvider } from './context/AuthContext.jsx'
+import { AppProvider } from './context/AppContext.jsx'
 import './index.css'
 
 // LocalStorage wrapper to match window.storage API
@@ -55,6 +57,10 @@ window.storage = {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BaederApp />
+    <AuthProvider>
+      <AppProvider>
+        <BaederApp />
+      </AppProvider>
+    </AuthProvider>
   </React.StrictMode>,
 )
