@@ -14,6 +14,8 @@ const CalculatorView = ({
   selectedElement,
   setSelectedElement,
   performCalculation,
+  chlorinationProducts = [],
+  antichlorProducts = [],
   flocculantProducts = [],
   flocculantPumpTypes = [],
   flocculantPumpModels = [],
@@ -34,6 +36,35 @@ const CalculatorView = ({
   const pumpModelsForType = flocculantPumpModels.filter(
     (model) => model.pumpTypeId === selectedPumpTypeId
   );
+  const selectedPumpModel = pumpModelsForType.find(
+    (model) => model.id === (calculatorInputs.flocPumpModelId || '')
+  ) || pumpModelsForType[0] || null;
+
+  const getHoseOptionsForPumpModel = (model) => {
+    if (!model || model.pumpTypeId !== 'peristaltic') return [];
+
+    if (Array.isArray(model.hoseOptions) && model.hoseOptions.length > 0) {
+      return model.hoseOptions.map((option) => ({
+        ...option,
+        id: option.id || String(option.innerDiameterMm || option.label || '')
+      }));
+    }
+
+    const legacyKeys = Object.keys(model.maxMlHByHose || {});
+    return legacyKeys.map((key) => ({
+      id: key,
+      label: `SK ${key} mm`,
+      innerDiameterMm: Number(key) || null,
+      minMlH: model.minMlHByHose?.[key] ?? null,
+      maxMlH: model.maxMlHByHose?.[key] ?? null
+    }));
+  };
+
+  const hoseOptionsForSelectedModel = getHoseOptionsForPumpModel(selectedPumpModel);
+  const getDefaultHoseOptionIdForPumpModel = (model) => getHoseOptionsForPumpModel(model)[0]?.id || '';
+  const selectedHoseOption = hoseOptionsForSelectedModel.find(
+    (option) => option.id === (calculatorInputs.flocHoseSizeMm || '')
+  ) || hoseOptionsForSelectedModel[0] || null;
 
   const commonDilutionPresets = [
     { label: '1:2', concentrateParts: '1', ratioValue: '2' },
@@ -85,7 +116,13 @@ const CalculatorView = ({
         <button
           onClick={() => {
             setCalculatorType('chlorine');
-            setCalculatorInputs({});
+            setCalculatorInputs({
+              chlorineDirection: 'increase',
+              chlorineProductId: chlorinationProducts[0]?.id || '',
+              chlorineDosingMethod: 'manual',
+              chlorinePlantRunHours: '8',
+              antichlorProductId: antichlorProducts[0]?.id || ''
+            });
             setCalculatorResult(null);
           }}
           className={`p-4 rounded-xl font-bold ${
@@ -134,13 +171,14 @@ const CalculatorView = ({
         <button
           onClick={() => {
             const initialPumpType = flocculantPumpTypes[0]?.id || 'peristaltic';
+            const initialPumpModel = flocculantPumpModels.find((model) => model.pumpTypeId === initialPumpType) || null;
             setCalculatorType('flocculation');
             setCalculatorInputs({
               flocculationMode: 'continuous',
               flocProductId: flocculantProducts[0]?.id || '',
               flocPumpTypeId: initialPumpType,
               flocPumpModelId: getDefaultPumpModelForType(initialPumpType),
-              flocHoseSizeMm: '6',
+              flocHoseSizeMm: getDefaultHoseOptionIdForPumpModel(initialPumpModel),
               circulationFlow: '',
               poolVolume: '',
               dosingHoursPerDay: '24',
@@ -241,11 +279,49 @@ const CalculatorView = ({
 
       {calculatorType === 'chlorine' && (
         <div className={`${darkMode ? 'bg-slate-700' : 'bg-green-50'} rounded-xl p-6 mb-6`}>
-          <h3 className={`font-bold mb-4 ${darkMode ? 'text-green-400' : 'text-green-800'}`}>Chlor-Bedarf berechnen</h3>
+          <h3 className={`font-bold mb-4 ${darkMode ? 'text-green-400' : 'text-green-800'}`}>Chlor- / Anti-Chlor-Bedarf</h3>
           <div className="space-y-3">
+            <div className="grid md:grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  setCalculatorInputs({
+                    ...calculatorInputs,
+                    chlorineDirection: 'increase',
+                    chlorineProductId: calculatorInputs.chlorineProductId || chlorinationProducts[0]?.id || '',
+                    chlorineDosingMethod: calculatorInputs.chlorineDosingMethod || 'manual'
+                  });
+                  setCalculatorResult(null);
+                }}
+                className={`px-4 py-3 rounded-lg font-semibold ${
+                  (calculatorInputs.chlorineDirection || 'increase') === 'increase'
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                    : (darkMode ? 'bg-slate-600 text-white hover:bg-slate-500' : 'bg-white text-gray-800 hover:bg-gray-100')
+                }`}
+              >
+                Hochchloren
+              </button>
+              <button
+                onClick={() => {
+                  setCalculatorInputs({
+                    ...calculatorInputs,
+                    chlorineDirection: 'decrease',
+                    antichlorProductId: calculatorInputs.antichlorProductId || antichlorProducts[0]?.id || ''
+                  });
+                  setCalculatorResult(null);
+                }}
+                className={`px-4 py-3 rounded-lg font-semibold ${
+                  (calculatorInputs.chlorineDirection || 'increase') === 'decrease'
+                    ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white'
+                    : (darkMode ? 'bg-slate-600 text-white hover:bg-slate-500' : 'bg-white text-gray-800 hover:bg-gray-100')
+                }`}
+              >
+                Runterchloren (Anti-Chlor)
+              </button>
+            </div>
+
             <input
               type="number"
-              placeholder="Beckenvolumen (m³)"
+              placeholder="Beckenvolumen (m3)"
               value={calculatorInputs.poolVolume || ''}
               onChange={(e) => setCalculatorInputs({...calculatorInputs, poolVolume: e.target.value})}
               className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
@@ -266,11 +342,74 @@ const CalculatorView = ({
               onChange={(e) => setCalculatorInputs({...calculatorInputs, targetChlorine: e.target.value})}
               className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
             />
+
+            {(calculatorInputs.chlorineDirection || 'increase') === 'increase' && (
+              <>
+                <select
+                  value={calculatorInputs.chlorineProductId || chlorinationProducts[0]?.id || ''}
+                  onChange={(e) => setCalculatorInputs({ ...calculatorInputs, chlorineProductId: e.target.value })}
+                  className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+                >
+                  {chlorinationProducts.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.label}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="grid md:grid-cols-2 gap-3">
+                  <select
+                    value={calculatorInputs.chlorineDosingMethod || 'manual'}
+                    onChange={(e) => {
+                      setCalculatorInputs({ ...calculatorInputs, chlorineDosingMethod: e.target.value });
+                      setCalculatorResult(null);
+                    }}
+                    className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+                  >
+                    <option value="manual">Manuelle Zugabe</option>
+                    <option value="plant">Dosierung ueber Chloranlage</option>
+                  </select>
+
+                  {(calculatorInputs.chlorineDosingMethod || 'manual') === 'plant' && (
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      placeholder="Anlagenlaufzeit (h/Tag)"
+                      value={calculatorInputs.chlorinePlantRunHours || ''}
+                      onChange={(e) => setCalculatorInputs({ ...calculatorInputs, chlorinePlantRunHours: e.target.value })}
+                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+                    />
+                  )}
+                </div>
+              </>
+            )}
+
+            {(calculatorInputs.chlorineDirection || 'increase') === 'decrease' && (
+              <select
+                value={calculatorInputs.antichlorProductId || antichlorProducts[0]?.id || ''}
+                onChange={(e) => setCalculatorInputs({ ...calculatorInputs, antichlorProductId: e.target.value })}
+                className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+              >
+                {antichlorProducts.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.label}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <div className={`${darkMode ? 'bg-slate-600' : 'bg-green-100'} rounded-lg p-3 text-sm`}>
+              <p className={darkMode ? 'text-green-200' : 'text-green-900'}>
+                Tipp: Nach jeder Dosierung ausreichend umwaelzen und Kontrollmessung durchfuehren.
+              </p>
+            </div>
           </div>
         </div>
       )}
 
       {calculatorType === 'volume' && (
+
         <div className={`${darkMode ? 'bg-slate-700' : 'bg-purple-50'} rounded-xl p-6 mb-6`}>
           <h3 className={`font-bold mb-4 ${darkMode ? 'text-purple-400' : 'text-purple-800'}`}>Beckenvolumen berechnen</h3>
           <div className="space-y-3">
@@ -652,10 +791,12 @@ const CalculatorView = ({
               value={selectedPumpTypeId}
               onChange={(e) => {
                 const nextType = e.target.value;
+                const nextDefaultModel = flocculantPumpModels.find((model) => model.pumpTypeId === nextType) || null;
                 setCalculatorInputs({
                   ...calculatorInputs,
                   flocPumpTypeId: nextType,
-                  flocPumpModelId: getDefaultPumpModelForType(nextType)
+                  flocPumpModelId: getDefaultPumpModelForType(nextType),
+                  flocHoseSizeMm: getDefaultHoseOptionIdForPumpModel(nextDefaultModel)
                 });
                 setCalculatorResult(null);
               }}
@@ -669,7 +810,16 @@ const CalculatorView = ({
             </select>
             <select
               value={calculatorInputs.flocPumpModelId || pumpModelsForType[0]?.id || ''}
-              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, flocPumpModelId: e.target.value })}
+              onChange={(e) => {
+                const nextModelId = e.target.value;
+                const nextModel = pumpModelsForType.find((model) => model.id === nextModelId) || null;
+                setCalculatorInputs({
+                  ...calculatorInputs,
+                  flocPumpModelId: nextModelId,
+                  flocHoseSizeMm: getDefaultHoseOptionIdForPumpModel(nextModel)
+                });
+                setCalculatorResult(null);
+              }}
               className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
             >
               {pumpModelsForType.map((model) => (
@@ -683,13 +833,15 @@ const CalculatorView = ({
           {selectedPumpTypeId === 'peristaltic' && (
             <div className="grid md:grid-cols-3 gap-3 mb-3">
               <select
-                value={calculatorInputs.flocHoseSizeMm || '6'}
+                value={calculatorInputs.flocHoseSizeMm || hoseOptionsForSelectedModel[0]?.id || ''}
                 onChange={(e) => setCalculatorInputs({ ...calculatorInputs, flocHoseSizeMm: e.target.value })}
                 className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
               >
-                <option value="4">Schlauch 4 mm</option>
-                <option value="6">Schlauch 6 mm</option>
-                <option value="8">Schlauch 8 mm</option>
+                {hoseOptionsForSelectedModel.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {(option.color ? `${option.color} - ` : '') + option.label}
+                  </option>
+                ))}
               </select>
               <input
                 type="text"
@@ -705,6 +857,27 @@ const CalculatorView = ({
                 onChange={(e) => setCalculatorInputs({ ...calculatorInputs, stockTankLiters: e.target.value })}
                 className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
               />
+              {selectedHoseOption && (
+                <div className={`md:col-span-3 rounded-lg p-3 text-sm ${darkMode ? 'bg-slate-600 text-cyan-200' : 'bg-white text-cyan-900 border'}`}>
+                  Durchfluss Schlauch:
+                  {' '}
+                  {selectedHoseOption.minMlH}
+                  {' '}
+                  -
+                  {' '}
+                  {selectedHoseOption.maxMlH}
+                  {' '}
+                  ml/h
+                  {Number.isFinite(selectedHoseOption.minPressureBar) && Number.isFinite(selectedHoseOption.maxPressureBar) && (
+                    <>
+                      {' | Druck: '}
+                      {Math.abs(selectedHoseOption.minPressureBar - selectedHoseOption.maxPressureBar) < 0.001
+                        ? `${selectedHoseOption.maxPressureBar.toFixed(1).replace('.', ',')} bar`
+                        : `${selectedHoseOption.minPressureBar.toFixed(1).replace('.', ',')} - ${selectedHoseOption.maxPressureBar.toFixed(1).replace('.', ',')} bar`}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

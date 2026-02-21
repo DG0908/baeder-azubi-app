@@ -225,18 +225,94 @@ export default function BaederApp() {
   ];
   const FLOCCULANT_PUMP_MODELS = [
     {
-      id: 'prominent_dulcoflex_df2a',
+      id: 'concept_420_smd',
       pumpTypeId: 'peristaltic',
-      label: 'ProMinent DULCOFLEX DF2a',
-      minMlHByHose: { '4': 20, '6': 35, '8': 60 },
-      maxMlHByHose: { '4': 380, '6': 900, '8': 1500 }
+      label: 'Concept 420 SMD',
+      hoseOptions: [
+        {
+          id: 'blue_sk_3_2',
+          color: 'Blau',
+          label: 'SK 3,2 mm',
+          innerDiameterMm: 3.2,
+          minMlH: 15,
+          maxMlH: 150,
+          minPressureBar: 2.0,
+          maxPressureBar: 2.5
+        },
+        {
+          id: 'green_sk_4_0',
+          color: 'Gruen',
+          label: 'SK 4,0 mm',
+          innerDiameterMm: 4.0,
+          minMlH: 40,
+          maxMlH: 400,
+          minPressureBar: 1.5,
+          maxPressureBar: 2.0
+        },
+        {
+          id: 'red_sk_4_0_reinforced',
+          color: 'Rot',
+          label: 'SK 4,0 mm (verstaerkt)',
+          innerDiameterMm: 4.0,
+          minMlH: 50,
+          maxMlH: 500,
+          minPressureBar: 2.0,
+          maxPressureBar: 2.0
+        },
+        {
+          id: 'black_sk_4_8',
+          color: 'Schwarz',
+          label: 'SK 4,8 mm',
+          innerDiameterMm: 4.8,
+          minMlH: 60,
+          maxMlH: 600
+        }
+      ]
     },
     {
-      id: 'lutz_jesco_peridos_x',
+      id: 'chem_ad_vpp_e',
       pumpTypeId: 'peristaltic',
-      label: 'Lutz-Jesco PERIDOS X',
-      minMlHByHose: { '4': 15, '6': 30, '8': 50 },
-      maxMlHByHose: { '4': 320, '6': 760, '8': 1300 }
+      label: 'Chem AD VPP E',
+      hoseOptions: [
+        {
+          id: 'blue_sk_3_2',
+          color: 'Blau',
+          label: 'SK 3,2 mm',
+          innerDiameterMm: 3.2,
+          minMlH: 15,
+          maxMlH: 150,
+          minPressureBar: 2.0,
+          maxPressureBar: 2.5
+        },
+        {
+          id: 'green_sk_4_0',
+          color: 'Gruen',
+          label: 'SK 4,0 mm',
+          innerDiameterMm: 4.0,
+          minMlH: 40,
+          maxMlH: 400,
+          minPressureBar: 1.5,
+          maxPressureBar: 2.0
+        },
+        {
+          id: 'red_sk_4_0_reinforced',
+          color: 'Rot',
+          label: 'SK 4,0 mm (verstaerkt)',
+          innerDiameterMm: 4.0,
+          minMlH: 50,
+          maxMlH: 500,
+          minPressureBar: 2.0,
+          maxPressureBar: 2.0
+        },
+        {
+          id: 'black_sk_4_8',
+          color: 'Schwarz',
+          label: 'SK 4,8 mm',
+          innerDiameterMm: 4.8,
+          minMlH: 60,
+          maxMlH: 600
+        }
+      ]
     },
     {
       id: 'prominent_gamma_x',
@@ -270,6 +346,36 @@ export default function BaederApp() {
     turbid: 1.2,
     severe: 1.35
   };
+  const CHLORINATION_PRODUCTS = [
+    {
+      id: 'sodium_hypochlorite_13',
+      label: 'Chlorbleichlauge (NaOCl, 13% Aktivchlor)',
+      productType: 'liquid',
+      activeChlorinePercent: 13,
+      densityKgPerL: 1.2
+    },
+    {
+      id: 'aktivchlor_granulate_56',
+      label: 'Aktivchlor Granulat (56% Aktivchlor)',
+      productType: 'solid',
+      activeChlorinePercent: 56
+    }
+  ];
+  const ANTICHLOR_PRODUCTS = [
+    {
+      id: 'antichlor_powder_100',
+      label: 'Natriumthiosulfat Pulver (100%)',
+      productType: 'solid',
+      neutralizationFactorKgPerKgActiveChlorine: 1.8
+    },
+    {
+      id: 'antichlor_solution_38',
+      label: 'Natriumthiosulfat Loesung (38%)',
+      productType: 'liquid',
+      neutralizationFactorKgPerKgActiveChlorine: 4.74,
+      densityKgPerL: 1.3
+    }
+  ];
 
   const SWIM_BATTLE_WIN_POINTS = 20;
   const SWIM_ARENA_DISCIPLINES = [
@@ -1162,16 +1268,102 @@ export default function BaederApp() {
   };
 
   const calculateChlorine = (inputs) => {
-    const { poolVolume, currentChlorine, targetChlorine } = inputs;
-    if (!poolVolume || currentChlorine === undefined || !targetChlorine) return null;
-    
-    const difference = parseFloat(targetChlorine) - parseFloat(currentChlorine);
-    const needed = (difference * parseFloat(poolVolume)) / 1000;
-    
+    const poolVolume = parseDecimalInput(inputs.poolVolume);
+    const currentChlorine = parseDecimalInput(inputs.currentChlorine);
+    const targetChlorine = parseDecimalInput(inputs.targetChlorine);
+    const chlorineDirection = inputs.chlorineDirection === 'decrease' ? 'decrease' : 'increase';
+
+    if (
+      poolVolume === null
+      || currentChlorine === null
+      || targetChlorine === null
+      || poolVolume <= 0
+      || currentChlorine < 0
+      || targetChlorine < 0
+    ) {
+      return null;
+    }
+
+    const deltaMgPerL = targetChlorine - currentChlorine;
+
+    if (chlorineDirection === 'increase') {
+      if (deltaMgPerL <= 0) {
+        return {
+          result: '0,00 kg',
+          explanation: `Aktueller Wert ${currentChlorine.toFixed(2).replace('.', ',')} mg/L liegt bereits auf/ueber Ziel ${targetChlorine.toFixed(2).replace('.', ',')} mg/L.`,
+          recommendation: 'Kein Aufchloren notwendig.'
+        };
+      }
+
+      const product = CHLORINATION_PRODUCTS.find((entry) => entry.id === inputs.chlorineProductId)
+        || CHLORINATION_PRODUCTS[0];
+      const dosingMethod = inputs.chlorineDosingMethod === 'plant' ? 'plant' : 'manual';
+      const activeFraction = (product?.activeChlorinePercent || 0) / 100;
+      if (!product || activeFraction <= 0) return null;
+
+      const activeChlorineKg = (deltaMgPerL * poolVolume) / 1000;
+      const productMassKg = activeChlorineKg / activeFraction;
+      const productLiters = (product.productType === 'liquid' && Number.isFinite(product.densityKgPerL) && product.densityKgPerL > 0)
+        ? (productMassKg / product.densityKgPerL)
+        : null;
+
+      if (dosingMethod === 'plant') {
+        const plantRunHours = parseDecimalInput(inputs.chlorinePlantRunHours);
+        if (plantRunHours === null || plantRunHours <= 0 || plantRunHours > 24) return null;
+
+        const productKgPerHour = productMassKg / plantRunHours;
+        const productLitersPerHour = productLiters !== null ? productLiters / plantRunHours : null;
+
+        return {
+          result: productLitersPerHour !== null
+            ? `${productLitersPerHour.toFixed(3).replace('.', ',')} L/h`
+            : `${productKgPerHour.toFixed(3).replace('.', ',')} kg/h`,
+          explanation: `Aufchloren von ${currentChlorine.toFixed(2).replace('.', ',')} auf ${targetChlorine.toFixed(2).replace('.', ',')} mg/L bei ${poolVolume.toFixed(1).replace('.', ',')} m3.`,
+          details: `Produkt: ${product.label}. Aktivchlor-Bedarf: ${activeChlorineKg.toFixed(3).replace('.', ',')} kg. Gesamtmenge Produkt: ${productLiters !== null ? `${productLiters.toFixed(3).replace('.', ',')} L` : `${productMassKg.toFixed(3).replace('.', ',')} kg`} fuer ${plantRunHours.toFixed(1).replace('.', ',')} h Anlagenlaufzeit.`,
+          recommendation: `Chloranlage auf etwa ${productLitersPerHour !== null ? `${productLitersPerHour.toFixed(3).replace('.', ',')} L/h` : `${productKgPerHour.toFixed(3).replace('.', ',')} kg/h`} einstellen und nach 30-60 min nachmessen.`
+        };
+      }
+
+      return {
+        result: productLiters !== null
+          ? `${productLiters.toFixed(3).replace('.', ',')} L`
+          : `${productMassKg.toFixed(3).replace('.', ',')} kg`,
+        explanation: `Aufchloren von ${currentChlorine.toFixed(2).replace('.', ',')} auf ${targetChlorine.toFixed(2).replace('.', ',')} mg/L bei ${poolVolume.toFixed(1).replace('.', ',')} m3.`,
+        details: `Produkt: ${product.label}. Aktivchlor-Bedarf: ${activeChlorineKg.toFixed(3).replace('.', ',')} kg.`,
+        recommendation: `Produktmenge ${productLiters !== null ? `${productLiters.toFixed(3).replace('.', ',')} L` : `${productMassKg.toFixed(3).replace('.', ',')} kg`} in Teilgaben dosieren und nach 30-60 min kontrollieren.`
+      };
+    }
+
+    const reductionMgPerL = currentChlorine - targetChlorine;
+    if (reductionMgPerL <= 0) {
+      return {
+        result: '0,00 kg',
+        explanation: `Aktueller Wert ${currentChlorine.toFixed(2).replace('.', ',')} mg/L liegt bereits auf/unter Ziel ${targetChlorine.toFixed(2).replace('.', ',')} mg/L.`,
+        recommendation: 'Kein Runterchloren notwendig.'
+      };
+    }
+
+    const antichlorProduct = ANTICHLOR_PRODUCTS.find((entry) => entry.id === inputs.antichlorProductId)
+      || ANTICHLOR_PRODUCTS[0];
+    if (!antichlorProduct) return null;
+
+    const activeChlorineToNeutralizeKg = (reductionMgPerL * poolVolume) / 1000;
+    const antichlorMassKg = activeChlorineToNeutralizeKg * (antichlorProduct.neutralizationFactorKgPerKgActiveChlorine || 0);
+    if (!Number.isFinite(antichlorMassKg) || antichlorMassKg < 0) return null;
+
+    const antichlorLiters = (antichlorProduct.productType === 'liquid'
+      && Number.isFinite(antichlorProduct.densityKgPerL)
+      && antichlorProduct.densityKgPerL > 0)
+      ? antichlorMassKg / antichlorProduct.densityKgPerL
+      : null;
+
     return {
-      result: needed.toFixed(2) + ' kg',
-      explanation: `Für ${poolVolume} m³ Wasser von ${currentChlorine} auf ${targetChlorine} mg/L`,
-      recommendation: needed > 0 ? `${needed.toFixed(2)} kg Chlor zugeben` : 'Kein Chlor nötig'
+      result: antichlorLiters !== null
+        ? `${antichlorLiters.toFixed(3).replace('.', ',')} L`
+        : `${antichlorMassKg.toFixed(3).replace('.', ',')} kg`,
+      explanation: `Runterchloren von ${currentChlorine.toFixed(2).replace('.', ',')} auf ${targetChlorine.toFixed(2).replace('.', ',')} mg/L bei ${poolVolume.toFixed(1).replace('.', ',')} m3.`,
+      details: `Produkt: ${antichlorProduct.label}. Zu neutralisieren: ${activeChlorineToNeutralizeKg.toFixed(3).replace('.', ',')} kg Aktivchlor.`,
+      recommendation: `${antichlorLiters !== null ? `${antichlorLiters.toFixed(3).replace('.', ',')} L` : `${antichlorMassKg.toFixed(3).replace('.', ',')} kg`} Anti-Chlor in 2-3 Teilgaben dosieren, gut umwaelzen und nach 15-30 min erneut messen.`
     };
   };
 
@@ -1224,18 +1416,34 @@ export default function BaederApp() {
         pumpModel: null,
         maxMlH: null,
         minMlH: null,
-        selectedHoseSize: null
+        selectedHoseSize: null,
+        selectedHoseOption: null
       };
     }
 
     if (pumpTypeId === 'peristaltic') {
+      const hoseOptionsFromArray = Array.isArray(model.hoseOptions) ? model.hoseOptions : [];
+      if (hoseOptionsFromArray.length > 0) {
+        const normalizedInput = String(hoseSizeInput || '').trim();
+        const selectedHoseOption = hoseOptionsFromArray.find((option) => option.id === normalizedInput) || hoseOptionsFromArray[0];
+
+        return {
+          pumpModel: model,
+          maxMlH: selectedHoseOption?.maxMlH ?? null,
+          minMlH: selectedHoseOption?.minMlH ?? null,
+          selectedHoseSize: selectedHoseOption?.id ?? null,
+          selectedHoseOption
+        };
+      }
+
       const hoseOptions = Object.keys(model.maxMlHByHose || {});
       if (hoseOptions.length === 0) {
         return {
           pumpModel: model,
           maxMlH: null,
           minMlH: null,
-          selectedHoseSize: null
+          selectedHoseSize: null,
+          selectedHoseOption: null
         };
       }
 
@@ -1246,7 +1454,14 @@ export default function BaederApp() {
         pumpModel: model,
         maxMlH: model.maxMlHByHose?.[selectedHoseSize] ?? null,
         minMlH: model.minMlHByHose?.[selectedHoseSize] ?? null,
-        selectedHoseSize
+        selectedHoseSize,
+        selectedHoseOption: {
+          id: selectedHoseSize,
+          label: `SK ${selectedHoseSize} mm`,
+          innerDiameterMm: parseDecimalInput(selectedHoseSize),
+          minMlH: model.minMlHByHose?.[selectedHoseSize] ?? null,
+          maxMlH: model.maxMlHByHose?.[selectedHoseSize] ?? null
+        }
       };
     }
 
@@ -1254,7 +1469,8 @@ export default function BaederApp() {
       pumpModel: model,
       maxMlH: model.maxMlH ?? null,
       minMlH: model.minMlH ?? null,
-      selectedHoseSize: null
+      selectedHoseSize: null,
+      selectedHoseOption: null
     };
   };
 
@@ -1413,7 +1629,8 @@ export default function BaederApp() {
       pumpModel,
       maxMlH,
       minMlH,
-      selectedHoseSize
+      selectedHoseSize,
+      selectedHoseOption
     } = resolveFlocculantPumpCapacity(pumpTypeId, pumpModelId, inputs.flocHoseSizeMm);
 
     const modelCapacityInfo = (() => {
@@ -1436,13 +1653,29 @@ export default function BaederApp() {
       recommendation = `Pumpeneinstellung: ca. ${modelCapacityInfo.settingPercent.toFixed(1).replace('.', ',')}% (${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h).`;
     }
 
-    const hoseText = selectedHoseSize ? ` | Schlauch: ${selectedHoseSize} mm` : '';
+    const hoseLabel = selectedHoseOption?.label || (selectedHoseSize ? `${selectedHoseSize} mm` : '');
+    const hoseColorText = selectedHoseOption?.color ? `${selectedHoseOption.color} ` : '';
+    const pressureLower = Number.isFinite(selectedHoseOption?.minPressureBar) ? selectedHoseOption.minPressureBar : null;
+    const pressureUpper = Number.isFinite(selectedHoseOption?.maxPressureBar) ? selectedHoseOption.maxPressureBar : null;
+    const pressureText = (() => {
+      if (pressureLower !== null && pressureUpper !== null) {
+        if (Math.abs(pressureLower - pressureUpper) < 0.001) {
+          return `${pressureLower.toFixed(1).replace('.', ',')} bar`;
+        }
+        return `${pressureLower.toFixed(1).replace('.', ',')} - ${pressureUpper.toFixed(1).replace('.', ',')} bar`;
+      }
+      if (pressureUpper !== null) return `${pressureUpper.toFixed(1).replace('.', ',')} bar`;
+      if (pressureLower !== null) return `${pressureLower.toFixed(1).replace('.', ',')} bar`;
+      return null;
+    })();
+    const hoseText = hoseLabel ? ` | Schlauch: ${hoseColorText}${hoseLabel}` : '';
+    const hosePressureText = pressureText ? ` | Druckbereich: ${pressureText}` : '';
     const modelText = pumpModel ? `${pumpModel.label}${hoseText}` : 'kein Modell';
 
     return {
       result: `${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h Dosierloesung`,
       explanation: `${product.label} (${product.base === 'aluminum' ? 'Aluminiumbasis' : 'Eisenbasis'}) bei ${circulationFlow.toFixed(1).replace('.', ',')} m3/h Umwaelzung. Berechnung fuer ${flocculationMode === 'shock' ? 'Stoss' : 'kontinuierliche'} Flockung.`,
-      details: `Produktbedarf: ${(pureProductMlH / 1000).toFixed(3).replace('.', ',')} L/h bzw. ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag. | Dosierloesung: ${(stockSolutionMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag bei ${stockConcentrationPercent.toFixed(1).replace('.', ',')}% Ansatz. | Modell: ${modelText}. | Becken-Umwaelzungen/Tag: ${turnoversPerDay.toFixed(2).replace('.', ',')}. | Ansatz fuer ${stockTankLiters.toFixed(1).replace('.', ',')} L: ${tankProductLiters.toFixed(2).replace('.', ',')} L Produkt + ${tankWaterLiters.toFixed(2).replace('.', ',')} L Wasser. | Tankreichweite: ${tankRuntimeHours ? `${tankRuntimeHours.toFixed(1).replace('.', ',')} h` : '-'}.`,
+      details: `Produktbedarf: ${(pureProductMlH / 1000).toFixed(3).replace('.', ',')} L/h bzw. ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag. | Dosierloesung: ${(stockSolutionMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag bei ${stockConcentrationPercent.toFixed(1).replace('.', ',')}% Ansatz. | Modell: ${modelText}${hosePressureText}. | Becken-Umwaelzungen/Tag: ${turnoversPerDay.toFixed(2).replace('.', ',')}. | Ansatz fuer ${stockTankLiters.toFixed(1).replace('.', ',')} L: ${tankProductLiters.toFixed(2).replace('.', ',')} L Produkt + ${tankWaterLiters.toFixed(2).replace('.', ',')} L Wasser. | Tankreichweite: ${tankRuntimeHours ? `${tankRuntimeHours.toFixed(1).replace('.', ',')} h` : '-'}.`,
       recommendation
     };
   };
@@ -6622,6 +6855,8 @@ export default function BaederApp() {
             selectedElement={selectedElement}
             setSelectedElement={setSelectedElement}
             performCalculation={handleCalculation}
+            chlorinationProducts={CHLORINATION_PRODUCTS}
+            antichlorProducts={ANTICHLOR_PRODUCTS}
             flocculantProducts={FLOCCULANT_PRODUCTS}
             flocculantPumpTypes={FLOCCULANT_PUMP_TYPES}
             flocculantPumpModels={FLOCCULANT_PUMP_MODELS}
