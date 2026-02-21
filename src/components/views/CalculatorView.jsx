@@ -28,7 +28,7 @@ const CalculatorView = ({
         🧮 Praxis-Rechner
       </h2>
       
-      <div className="grid md:grid-cols-6 gap-4 mb-6">
+      <div className="grid md:grid-cols-7 gap-4 mb-6">
         <button
           onClick={() => {
             setCalculatorType('ph');
@@ -70,6 +70,27 @@ const CalculatorView = ({
           }`}
         >
           📏 Beckenvolumen
+        </button>
+        <button
+          onClick={() => {
+            setCalculatorType('dilution');
+            setCalculatorInputs({
+              dilutionMode: 'partToWater',
+              concentrateParts: '1',
+              ratioValue: '10',
+              containerSize: '1',
+              containerUnit: 'l',
+              containerCount: '1'
+            });
+            setCalculatorResult(null);
+          }}
+          className={`p-4 rounded-xl font-bold ${
+            calculatorType === 'dilution'
+              ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+              : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
+          }`}
+        >
+          Mix / Verduennung
         </button>
         <button
           onClick={() => {
@@ -367,6 +388,98 @@ const CalculatorView = ({
               <div className="w-4 h-4 bg-lime-500 rounded"></div>
               <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Actinoide</span>
             </div>
+          </div>
+        </div>
+      )}
+
+
+      {calculatorType === 'dilution' && (
+        <div className={`${darkMode ? 'bg-slate-700' : 'bg-amber-50'} rounded-xl p-6 mb-6`}>
+          <h3 className={`font-bold mb-4 ${darkMode ? 'text-amber-300' : 'text-amber-800'}`}>Verduennung / Mischverhaeltnis</h3>
+
+          <div className="grid md:grid-cols-2 gap-3 mb-4">
+            <button
+              onClick={() => {
+                setCalculatorInputs({ ...calculatorInputs, dilutionMode: 'partToWater' });
+                setCalculatorResult(null);
+              }}
+              className={`px-4 py-3 rounded-lg font-semibold ${
+                (calculatorInputs.dilutionMode || 'partToWater') === 'partToWater'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                  : (darkMode ? 'bg-slate-600 text-white hover:bg-slate-500' : 'bg-white text-gray-800 hover:bg-gray-100')
+              }`}
+            >
+              1:10 = 1 Teil + 10 Teile Wasser
+            </button>
+            <button
+              onClick={() => {
+                setCalculatorInputs({ ...calculatorInputs, dilutionMode: 'partToTotal' });
+                setCalculatorResult(null);
+              }}
+              className={`px-4 py-3 rounded-lg font-semibold ${
+                (calculatorInputs.dilutionMode || 'partToWater') === 'partToTotal'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
+                  : (darkMode ? 'bg-slate-600 text-white hover:bg-slate-500' : 'bg-white text-gray-800 hover:bg-gray-100')
+              }`}
+            >
+              1:10 = 1 Teil in 10 Teilen gesamt
+            </button>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-3 mb-3">
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              placeholder="Teil Konzentrat (z. B. 1)"
+              value={calculatorInputs.concentrateParts || ''}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, concentrateParts: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+            />
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              placeholder="Teil Gegenwert (z. B. 10)"
+              value={calculatorInputs.ratioValue || ''}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, ratioValue: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+            />
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-3">
+            <input
+              type="number"
+              min="0"
+              step="0.1"
+              placeholder="Behaeltergroesse"
+              value={calculatorInputs.containerSize || ''}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, containerSize: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+            />
+            <select
+              value={calculatorInputs.containerUnit || 'l'}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, containerUnit: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
+            >
+              <option value="l">Liter (L)</option>
+              <option value="ml">Milliliter (ml)</option>
+            </select>
+            <input
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Anzahl Behaelter"
+              value={calculatorInputs.containerCount || ''}
+              onChange={(e) => setCalculatorInputs({ ...calculatorInputs, containerCount: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
+            />
+          </div>
+
+          <div className={`${darkMode ? 'bg-slate-600' : 'bg-amber-100'} rounded-lg p-3 text-sm mt-4`}>
+            <p className={darkMode ? 'text-amber-200' : 'text-amber-800'}>
+              Hinweis: Beide Interpretationen sind vorhanden, weil 1:10 in der Praxis unterschiedlich genutzt wird.
+            </p>
           </div>
         </div>
       )}
