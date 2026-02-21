@@ -49,6 +49,11 @@ const ExamSimulatorView = ({
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
+  const formatAnswerLabel = (answerText) => String(answerText ?? '')
+    .replace(/\s*\(\s*optional(?:\s*dabei)?\s*\)/gi, '')
+    .replace(/\s*-\s*optional(?:\s*dabei)?\s*$/gi, '')
+    .replace(/\s+optional(?:\s+dabei)?\s*$/gi, '')
+    .trim();
 
   return (
     <>
@@ -201,7 +206,7 @@ const ExamSimulatorView = ({
                 {isMulti && !examAnswered && (
                   <span className="mr-2">{isSelected ? '☑️' : '⬜'}</span>
                 )}
-                {answer}
+                {formatAnswerLabel(answer)}
               </button>
             );
           })}
