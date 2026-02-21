@@ -14,6 +14,12 @@ import QuestionsView from './components/views/QuestionsView';
 import StatsView from './components/views/StatsView';
 import SchoolCardView from './components/views/SchoolCardView';
 import ProfileView from './components/views/ProfileView';
+import QuizView from './components/views/QuizView';
+import HomeView from './components/views/HomeView';
+import AdminView from './components/views/AdminView';
+import ExamSimulatorView from './components/views/ExamSimulatorView';
+import FlashcardsView from './components/views/FlashcardsView';
+import CalculatorView from './components/views/CalculatorView';
 
 import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, AVATARS } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
@@ -4283,6 +4289,74 @@ export default function BaederApp() {
     }));
   };
 
+  const normalizeBerichtsheftText = (value) => String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const toBerichtsheftTokens = (value) => normalizeBerichtsheftText(value)
+    .split(' ')
+    .filter(token => token.length >= 3);
+
+  const getBerichtsheftYearWeeks = (bereich, year) => {
+    const key = `jahr${year}`;
+    const value = Number(bereich?.wochen?.[key]);
+    return Number.isFinite(value) ? value : 0;
+  };
+
+  const getBerichtsheftBereichSuggestions = (taetigkeit, year) => {
+    const taetigkeitTokens = toBerichtsheftTokens(taetigkeit);
+    if (taetigkeitTokens.length === 0) return [];
+
+    const scored = AUSBILDUNGSRAHMENPLAN.map((bereich) => {
+      const keywordSet = new Set();
+      [bereich.bereich, ...(bereich.inhalte || [])].forEach((text) => {
+        toBerichtsheftTokens(text).forEach(token => keywordSet.add(token));
+      });
+
+      let matchCount = 0;
+      taetigkeitTokens.forEach((token) => {
+        if (keywordSet.has(token)) matchCount += 1;
+      });
+
+      const yearWeeks = getBerichtsheftYearWeeks(bereich, year);
+      const score = (matchCount * 3) + (yearWeeks > 0 ? 1 : 0);
+
+      return { bereich, score, matchCount, yearWeeks };
+    })
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (b.matchCount !== a.matchCount) return b.matchCount - a.matchCount;
+        if (b.yearWeeks !== a.yearWeeks) return b.yearWeeks - a.yearWeeks;
+        return a.bereich.nr - b.bereich.nr;
+      });
+
+    return scored.filter(item => item.matchCount > 0).slice(0, 3);
+  };
+
+  const applyBerichtsheftInhaltToEntry = (day, index, text) => {
+    const template = String(text || '').trim();
+    if (!template) return;
+
+    setCurrentWeekEntries(prev => ({
+      ...prev,
+      [day]: prev[day].map((entry, i) => {
+        if (i !== index) return entry;
+        const current = String(entry.taetigkeit || '').trim();
+        if (!current) {
+          return { ...entry, taetigkeit: template };
+        }
+        if (normalizeBerichtsheftText(current).includes(normalizeBerichtsheftText(template))) {
+          return entry;
+        }
+        return { ...entry, taetigkeit: `${current}; ${template}` };
+      })
+    }));
+  };
+
   const removeWeekEntry = (day, index) => {
     if (currentWeekEntries[day].length <= 1) return; // Mindestens eine Zeile
     setCurrentWeekEntries(prev => ({
@@ -5645,1368 +5719,96 @@ export default function BaederApp() {
       <div className="max-w-7xl mx-auto p-4 relative z-10">
         {/* Admin Panel */}
         {currentView === 'admin' && user.permissions.canManageUsers && (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-8 text-center relative">
-              <h2 className="text-3xl font-bold mb-2">👑 Admin-Bereich</h2>
-              <p className="opacity-90">Nutzerverwaltung & Datenschutz</p>
-              <div className="absolute bottom-2 right-3 text-xs opacity-60">v1.1.0</div>
-            </div>
-
-            {/* Admin Statistics Dashboard */}
-            <div className="grid md:grid-cols-4 gap-4">
-              {(() => {
-                const stats = getAdminStats();
-                return (
-                  <>
-                    <div className="bg-white rounded-xl p-6 shadow-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <Users className="text-blue-500" size={32} />
-                        <span className="text-3xl font-bold text-blue-600">{stats.totalUsers}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">Aktive Nutzer</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {stats.azubis} Azubis • {stats.trainers} Ausbilder
-                      </p>
-                    </div>
-
-                    <div className="bg-white rounded-xl p-6 shadow-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <AlertTriangle className="text-yellow-500" size={32} />
-                        <span className="text-3xl font-bold text-yellow-600">{stats.pendingApprovals}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">Ausstehende Freischaltungen</p>
-                    </div>
-
-                    <div className="bg-white rounded-xl p-6 shadow-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <Trophy className="text-green-500" size={32} />
-                        <span className="text-3xl font-bold text-green-600">{stats.totalGames}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">Laufende Spiele</p>
-                      <p className="text-xs text-gray-500 mt-1">{stats.activeGamesCount} aktiv</p>
-                    </div>
-
-                    <div className="bg-white rounded-xl p-6 shadow-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <Brain className="text-purple-500" size={32} />
-                        <span className="text-3xl font-bold text-purple-600">{stats.totalQuestions}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">Eingereichte Fragen</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {stats.approvedQuestions} genehmigt • {stats.pendingQuestions} offen
-                      </p>
-                    </div>
-
-                    <div className="bg-white rounded-xl p-6 shadow-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <BookOpen className="text-blue-500" size={32} />
-                        <span className="text-3xl font-bold text-blue-600">{stats.totalMaterials}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">Lernmaterialien</p>
-                    </div>
-
-                    <div className="bg-white rounded-xl p-6 shadow-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <MessageCircle className="text-green-500" size={32} />
-                        <span className="text-3xl font-bold text-green-600">{stats.totalMessages}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">Chat-Nachrichten</p>
-                    </div>
-
-                    <div className={`bg-white rounded-xl p-6 shadow-md ${
-                      stats.usersToDeleteSoon > 0 ? 'border-2 border-red-400' : ''
-                    }`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <Trash2 className={stats.usersToDeleteSoon > 0 ? 'text-red-500' : 'text-gray-400'} size={32} />
-                        <span className={`text-3xl font-bold ${
-                          stats.usersToDeleteSoon > 0 ? 'text-red-600' : 'text-gray-400'
-                        }`}>{stats.usersToDeleteSoon}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">Löschung bald fällig</p>
-                      <p className="text-xs text-gray-500 mt-1">Innerhalb 30 Tage</p>
-                    </div>
-
-                    <div className="bg-white rounded-xl p-6 shadow-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <Shield className="text-indigo-500" size={32} />
-                        <span className="text-3xl font-bold text-indigo-600">{stats.admins}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">Administratoren</p>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-
-            <div className="bg-white rounded-xl p-6 shadow-lg">
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <h3 className="text-xl font-bold flex items-center">
-                  <AlertTriangle className="mr-2 text-amber-500" />
-                  Fragen-Feedback
-                </h3>
-                <div className="text-sm text-gray-600">
-                  {questionReports.filter((entry) => entry.status !== 'resolved').length} offen · {questionReports.length} gesamt
-                </div>
-              </div>
-
-              {questionReports.length === 0 ? (
-                <p className="text-gray-500 text-sm">Noch keine Rueckmeldungen zu Fragen vorhanden.</p>
-              ) : (
-                <div className="space-y-3 max-h-[420px] overflow-y-auto">
-                  {questionReports
-                    .slice()
-                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                    .map((report) => {
-                      const category = CATEGORIES.find((entry) => entry.id === report.category);
-                      const isResolved = report.status === 'resolved';
-                      return (
-                        <div key={report.id} className={`border rounded-lg p-4 ${isResolved ? 'bg-gray-50 border-gray-200' : 'bg-amber-50 border-amber-200'}`}>
-                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isResolved ? 'bg-green-100 text-green-700' : 'bg-amber-200 text-amber-800'}`}>
-                                {isResolved ? 'Erledigt' : 'Offen'}
-                              </span>
-                              <span className="text-xs text-gray-600">
-                                {category ? `${category.icon} ${category.name}` : report.category}
-                              </span>
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {new Date(report.createdAt).toLocaleString('de-DE')}
-                            </span>
-                          </div>
-                          <p className="font-semibold text-gray-800 mb-1">{report.questionText}</p>
-                          <p className="text-sm text-gray-600 mb-2">
-                            Quelle: {report.source} · Von: {report.reportedBy || 'Unbekannt'}
-                          </p>
-                          {report.note && (
-                            <p className="text-sm text-gray-700 bg-white border border-gray-200 rounded-md p-2 mb-2">
-                              Hinweis: {report.note}
-                            </p>
-                          )}
-                          <button
-                            onClick={() => {
-                              void toggleQuestionReportStatus(report.id);
-                            }}
-                            className={`px-3 py-2 rounded-lg text-sm font-bold ${
-                              isResolved
-                                ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                                : 'bg-green-500 hover:bg-green-600 text-white'
-                            }`}
-                          >
-                            {isResolved ? 'Wieder oeffnen' : 'Als erledigt markieren'}
-                          </button>
-                        </div>
-                      );
-                    })}
-                </div>
-              )}
-            </div>
-
-            {pendingUsers.length > 0 && (
-              <div className="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-6">
-                <h3 className="text-xl font-bold mb-4 flex items-center text-yellow-800">
-                  <AlertTriangle className="mr-2" />
-                  Ausstehende Freischaltungen ({pendingUsers.length})
-                </h3>
-                <div className="space-y-3">
-                  {pendingUsers.map(acc => (
-                    <div key={acc.email} className="bg-white rounded-lg p-4 flex justify-between items-center">
-                      <div>
-                        <p className="font-bold">{acc.name}</p>
-                        <p className="text-sm text-gray-600">{acc.email} • {PERMISSIONS[acc.role].label}</p>
-                        {acc.role === 'azubi' && acc.trainingEnd && (
-                          <p className="text-xs text-gray-500">Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}</p>
-                        )}
-                      </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => approveUser(acc.email)}
-                            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold"
-                          >
-                            <Check size={20} />
-                          </button>
-                          <button
-                            onClick={async () => {
-                              if (confirm(`Account von ${acc.name} wirklich ablehnen und löschen?`)) {
-                                await supabase.from('profiles').delete().eq('email', acc.email);
-                                loadData();
-                                alert('Account abgelehnt und gelöscht.');
-                              }
-                            }}
-                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold"
-                          >
-                            <X size={20} />
-                          </button>
-                        </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="bg-white rounded-xl p-6 shadow-lg">
-              <h3 className="text-xl font-bold mb-4 flex items-center">
-                <Users className="mr-2 text-blue-500" />
-                Aktive Nutzer ({allUsers.length})
-              </h3>
-              <div className="space-y-3">
-                {allUsers.map(acc => {
-                  const daysLeft = getDaysUntilDeletion(acc);
-                  return (
-                    <div key={acc.email} className="border rounded-lg p-4">
-                      <div className="flex items-start gap-2 mb-1 flex-wrap">
-                        <p className="font-bold">{acc.name}</p>
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
-                          acc.role === 'admin' ? 'bg-purple-500' :
-                          acc.role === 'trainer' ? 'bg-blue-500' : 'bg-green-500'
-                        }`}>
-                          {PERMISSIONS[acc.role].label}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-1">{acc.email}</p>
-                      {acc.trainingEnd && (
-                        <p className="text-xs text-gray-500">
-                          Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}
-                        </p>
-                      )}
-                      {acc.lastLogin && (
-                        <p className="text-xs text-gray-500">
-                          Letzter Login: {new Date(acc.lastLogin).toLocaleDateString()}
-                        </p>
-                      )}
-                      {daysLeft !== null && (
-                        <div className={`mt-1 flex items-center text-xs ${
-                          daysLeft < 30 ? 'text-red-600' : daysLeft < 90 ? 'text-yellow-600' : 'text-gray-600'
-                        }`}>
-                          <AlertTriangle size={14} className="mr-1" />
-                          {daysLeft > 0
-                            ? `Automatische Löschung in ${daysLeft} Tagen`
-                            : 'Löschung steht bevor'}
-                        </div>
-                      )}
-                      <div className="flex gap-2 mt-3 flex-wrap">
-                        <select
-                          value={acc.role}
-                          onChange={(e) => changeUserRole(acc.email, e.target.value)}
-                          className="px-3 py-1.5 border rounded text-sm"
-                          disabled={acc.role === 'admin'}
-                        >
-                          <option value="azubi">Azubi</option>
-                          <option value="trainer">Ausbilder</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                        <button
-                          onClick={() => exportUserData(acc.email, acc.name)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg"
-                          title="Daten exportieren"
-                        >
-                          <Download size={18} />
-                        </button>
-                        {acc.role !== 'admin' && (
-                          <button
-                            onClick={() => deleteUser(acc.email)}
-                            className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg"
-                            title="Nutzer löschen"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        )}
-                        {acc.role === 'trainer' && (
-                          <>
-                            <button
-                              onClick={() => toggleSchoolCardPermission(acc.id, acc.can_view_school_cards)}
-                              className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                                acc.can_view_school_cards
-                                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
-                              title={acc.can_view_school_cards ? 'Kontrollkarten-Zugriff entziehen' : 'Kontrollkarten-Zugriff erteilen'}
-                            >
-                              Kontrollkarten {acc.can_view_school_cards ? '✓' : '○'}
-                            </button>
-                            <button
-                              onClick={() => toggleSignReportsPermission(acc.id, acc.can_sign_reports)}
-                              className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                                acc.can_sign_reports
-                                  ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
-                              title={acc.can_sign_reports ? 'Berichtsheft-Unterschrift entziehen' : 'Berichtsheft-Unterschrift erteilen'}
-                            >
-                              Berichte {acc.can_sign_reports ? '✓' : '○'}
-                            </button>
-                          </>
-                        )}
-                        {acc.role === 'admin' && (
-                          <div className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg text-xs font-bold flex items-center">
-                            <Shield size={14} className="mr-1" />
-                            Geschützt
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* UI Editor Section */}
-            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-              <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                <span className="text-2xl mr-2">🎨</span>
-                UI-Editor (App-Konfiguration)
-              </h3>
-              <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Hier kannst du die Navigation und Farben der App für alle Nutzer anpassen.
-              </p>
-
-              {/* Initialize editing state button */}
-              {editingMenuItems.length === 0 && (
-                <button
-                  onClick={() => {
-                    setEditingMenuItems([...appConfig.menuItems]);
-                    setEditingThemeColors({...appConfig.themeColors});
-                  }}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold mb-4"
-                >
-                  🎨 Editor öffnen
-                </button>
-              )}
-
-              {editingMenuItems.length > 0 && (
-                <>
-                  {/* Menu Items Editor */}
-                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-4 mb-4`}>
-                    <h4 className={`font-bold mb-3 ${darkMode ? 'text-cyan-400' : 'text-gray-800'}`}>
-                      📋 Menü-Reihenfolge & Sichtbarkeit
-                    </h4>
-                    <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {[...editingMenuItems]
-                        .sort((a, b) => a.order - b.order)
-                        .map((item, index) => (
-                          <div
-                            key={item.id}
-                            className={`flex items-center gap-3 p-3 rounded-lg ${
-                              darkMode ? 'bg-slate-600' : 'bg-white'
-                            } ${!item.visible ? 'opacity-50' : ''}`}
-                          >
-                            {/* Order number */}
-                            <span className={`text-sm font-mono ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                              {index + 1}.
-                            </span>
-
-                            {/* Move buttons */}
-                            <div className="flex flex-col gap-1">
-                              <button
-                                onClick={() => moveMenuItem(item.id, 'up')}
-                                disabled={index === 0}
-                                className={`p-1 rounded ${index === 0 ? 'opacity-30' : 'hover:bg-gray-200 dark:hover:bg-slate-500'}`}
-                              >
-                                ⬆️
-                              </button>
-                              <button
-                                onClick={() => moveMenuItem(item.id, 'down')}
-                                disabled={index === editingMenuItems.length - 1}
-                                className={`p-1 rounded ${index === editingMenuItems.length - 1 ? 'opacity-30' : 'hover:bg-gray-200 dark:hover:bg-slate-500'}`}
-                              >
-                                ⬇️
-                              </button>
-                            </div>
-
-                            {/* Icon */}
-                            <input
-                              type="text"
-                              value={item.icon}
-                              onChange={(e) => updateMenuItemIcon(item.id, e.target.value)}
-                              className={`w-12 text-center text-xl p-1 rounded border ${darkMode ? 'bg-slate-700 border-slate-500' : 'border-gray-300'}`}
-                              maxLength={2}
-                            />
-
-                            {/* Label */}
-                            <input
-                              type="text"
-                              value={item.label}
-                              onChange={(e) => updateMenuItemLabel(item.id, e.target.value)}
-                              className={`flex-1 px-3 py-1 rounded border ${darkMode ? 'bg-slate-700 border-slate-500 text-white' : 'border-gray-300'}`}
-                            />
-
-                            {/* Visibility toggle */}
-                            <button
-                              onClick={() => toggleMenuItemVisibility(item.id)}
-                              className={`px-3 py-1 rounded-lg text-sm font-bold ${
-                                item.visible
-                                  ? 'bg-green-500 text-white'
-                                  : 'bg-gray-300 text-gray-600'
-                              }`}
-                            >
-                              {item.visible ? '👁️ Sichtbar' : '🚫 Versteckt'}
-                            </button>
-
-                            {/* Permission indicator */}
-                            {item.requiresPermission && (
-                              <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                                🔒 {item.requiresPermission}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-
-                  {/* Theme Colors Editor */}
-                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-4 mb-4`}>
-                    <h4 className={`font-bold mb-3 ${darkMode ? 'text-cyan-400' : 'text-gray-800'}`}>
-                      🎨 Theme-Farben
-                    </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      {Object.entries(editingThemeColors).map(([key, value]) => (
-                        <div key={key} className="flex flex-col items-center gap-2">
-                          <label className={`text-sm font-medium capitalize ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            {key === 'primary' ? '🔵 Primär' :
-                             key === 'secondary' ? '⚪ Sekundär' :
-                             key === 'success' ? '🟢 Erfolg' :
-                             key === 'danger' ? '🔴 Gefahr' :
-                             key === 'warning' ? '🟡 Warnung' : key}
-                          </label>
-                          <input
-                            type="color"
-                            value={value}
-                            onChange={(e) => updateThemeColor(key, e.target.value)}
-                            className="w-16 h-10 rounded cursor-pointer border-2 border-gray-300"
-                          />
-                          <span className="text-xs font-mono">{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 flex-wrap">
-                    <button
-                      onClick={saveAppConfig}
-                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-3 rounded-lg font-bold"
-                    >
-                      💾 Speichern (für alle Nutzer)
-                    </button>
-                    <button
-                      onClick={resetAppConfig}
-                      className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold"
-                    >
-                      🔄 Zurücksetzen
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingMenuItems([]);
-                        setEditingThemeColors({});
-                      }}
-                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-bold"
-                    >
-                      ❌ Abbrechen
-                    </button>
-                  </div>
-
-                  {/* Info Box */}
-                  <div className={`mt-4 ${darkMode ? 'bg-blue-900/50 border-blue-600' : 'bg-blue-50 border-blue-300'} border-2 rounded-lg p-4`}>
-                    <h4 className={`font-bold mb-2 ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
-                      💡 Hinweise
-                    </h4>
-                    <ul className={`text-sm space-y-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      <li>• Änderungen gelten für <strong>alle Nutzer</strong> nach dem Speichern</li>
-                      <li>• Menüpunkte mit 🔒 sind nur für bestimmte Rollen sichtbar</li>
-                      <li>• Versteckte Menüpunkte erscheinen nicht in der Navigation</li>
-                      <li>• Farben werden aktuell nur in der Vorschau angezeigt</li>
-                    </ul>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+          <AdminView
+            getAdminStats={getAdminStats}
+            questionReports={questionReports}
+            toggleQuestionReportStatus={toggleQuestionReportStatus}
+            pendingUsers={pendingUsers}
+            approveUser={approveUser}
+            loadData={loadData}
+            allUsers={allUsers}
+            getDaysUntilDeletion={getDaysUntilDeletion}
+            changeUserRole={changeUserRole}
+            exportUserData={exportUserData}
+            deleteUser={deleteUser}
+            toggleSchoolCardPermission={toggleSchoolCardPermission}
+            toggleSignReportsPermission={toggleSignReportsPermission}
+            editingMenuItems={editingMenuItems}
+            setEditingMenuItems={setEditingMenuItems}
+            appConfig={appConfig}
+            editingThemeColors={editingThemeColors}
+            setEditingThemeColors={setEditingThemeColors}
+            moveMenuItem={moveMenuItem}
+            updateMenuItemIcon={updateMenuItemIcon}
+            updateMenuItemLabel={updateMenuItemLabel}
+            toggleMenuItemVisibility={toggleMenuItemVisibility}
+            updateThemeColor={updateThemeColor}
+            saveAppConfig={saveAppConfig}
+            resetAppConfig={resetAppConfig}
+          />
         )}
 
-        {/* Existing views - Home, Quiz, Stats, Chat, Materials, News, Exams, Questions */}
-        {/* (Keeping all previous view code - too long to repeat here, but it stays the same) */}
-        
         {currentView === 'home' && (
-          <div className="space-y-6">
-            <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 via-cyan-800 to-cyan-900' : 'bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-500'} text-white rounded-xl p-8 text-center shadow-xl backdrop-blur-sm`}>
-              <h2 className="text-3xl font-bold mb-2 drop-shadow-lg">🌊 Willkommen zurück! 💦</h2>
-              <div className={`${darkMode ? 'bg-white/10 border-white/20' : 'bg-white/20 border-white/30'} border rounded-lg p-3 mb-4 max-w-3xl mx-auto`}>
-                <div className="flex items-center justify-between gap-3 mb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide opacity-90">🧠 Allgemeinbildung</span>
-                  <button
-                    onClick={rotateGeneralKnowledge}
-                    className={`${darkMode ? 'bg-white/15 hover:bg-white/25 border-white/20' : 'bg-white/25 hover:bg-white/35 border-white/30'} border px-2.5 py-1 rounded-md text-xs font-semibold transition-all`}
-                  >
-                    Neuer Satz
-                  </button>
-                </div>
-                <p className="text-sm opacity-95 italic">
-                  💡 {dailyWisdom || DAILY_WISDOM[0] || DID_YOU_KNOW_FACTS[0] || 'Wissen lädt...'}
-                </p>
-              </div>
-              {userStats && (
-                <div className="mt-4 -mx-2 px-2 overflow-x-auto swipe-stats-scroll">
-                  <div className="flex gap-4 md:justify-center snap-x snap-mandatory min-w-max md:min-w-0">
-                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
-                    <div className="text-2xl font-bold">🏆 {userStats.wins}</div>
-                    <div className="text-sm">Siege</div>
-                    </div>
-                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
-                    <div className="text-2xl font-bold">💪 {userStats.losses}</div>
-                    <div className="text-sm">Niederlagen</div>
-                    </div>
-                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
-                    <div className="text-2xl font-bold">🤝 {userStats.draws}</div>
-                    <div className="text-sm">Unentschieden</div>
-                    </div>
-                    <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
-                    <div className="text-2xl font-bold">⭐ {getTotalXpFromStats(userStats)}</div>
-                    <div className="text-sm">XP Gesamt</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* Profil-Button */}
-              <button
-                onClick={() => setCurrentView('profile')}
-                className={`mt-4 inline-flex items-center gap-2 px-6 py-3 ${darkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white/20 hover:bg-white/30'} backdrop-blur-sm rounded-lg border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} transition-all font-medium`}
-              >
-                <span className="text-xl">👤</span>
-                <span>Mein Profil</span>
-              </button>
-            </div>
-
-            {/* Daily Challenges Section */}
-            {dailyChallenges.length > 0 && (
-              <div className={`${darkMode ? 'bg-gradient-to-r from-orange-900/80 via-amber-900/80 to-orange-900/80' : 'bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50'} backdrop-blur-sm border-2 ${darkMode ? 'border-orange-700' : 'border-orange-300'} rounded-xl p-6 shadow-lg`}>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-orange-300' : 'text-orange-800'}`}>
-                    <Target className="mr-2" />
-                    🎯 Tägliche Challenges
-                  </h3>
-                  <div className={`flex items-center gap-2 ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-                    <span className="text-sm font-medium">{getCompletedChallengesCount()}/3 erledigt</span>
-                    {getCompletedChallengesCount() === 3 && <span className="text-xl">🏆</span>}
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {dailyChallenges.map((challenge, idx) => {
-                    const progress = getChallengeProgress(challenge);
-                    const completed = isChallengeCompleted(challenge);
-                    const percentage = Math.min((progress / challenge.target) * 100, 100);
-
-                    return (
-                      <div
-                        key={idx}
-                        className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-md transition-all ${
-                          completed ? 'ring-2 ring-green-500' : ''
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-2xl">{challenge.icon}</span>
-                          {completed && <span className="text-green-500 text-xl">✓</span>}
-                        </div>
-                        <h4 className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                          {challenge.name}
-                        </h4>
-                        <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {challenge.target} {challenge.unit}
-                          {challenge.category && ` ${challenge.category.name}`}
-                        </p>
-                        <div className={`w-full ${darkMode ? 'bg-slate-700' : 'bg-gray-200'} rounded-full h-3 mb-2`}>
-                          <div
-                            className={`h-3 rounded-full transition-all duration-500 ${
-                              completed ? 'bg-green-500' : 'bg-orange-500'
-                            }`}
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            {progress}/{challenge.target}
-                          </span>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            completed
-                              ? 'bg-green-100 text-green-700'
-                              : darkMode ? 'bg-orange-900 text-orange-300' : 'bg-orange-100 text-orange-700'
-                          }`}>
-                            +{challenge.xpReward} XP
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                {getCompletedChallengesCount() === 3 && (
-                  <div className={`mt-4 text-center p-3 rounded-lg ${darkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
-                    <p className={`font-bold ${darkMode ? 'text-green-300' : 'text-green-700'}`}>
-                      🎉 Alle Challenges geschafft! Du hast heute {getTotalXPEarned()} XP verdient!
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Weekly Goals Section */}
-            <div className={`${darkMode ? 'bg-gradient-to-r from-emerald-900/80 via-cyan-900/70 to-emerald-900/80 border-emerald-700' : 'bg-gradient-to-r from-emerald-50 via-cyan-50 to-emerald-50 border-emerald-300'} border-2 rounded-xl p-6 shadow-lg`}>
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <div>
-                  <h3 className={`text-xl font-bold ${darkMode ? 'text-emerald-200' : 'text-emerald-800'}`}>
-                    📅 Wochenziele
-                  </h3>
-                  <p className={`text-sm ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
-                    Woche ab {new Date(`${weeklyProgress.weekStart}T00:00:00`).toLocaleDateString('de-DE')}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setWeeklyProgress(buildEmptyWeeklyProgress(getWeekStartStamp()))}
-                  className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-200' : 'bg-white hover:bg-gray-100 text-gray-700'} px-4 py-2 rounded-lg text-sm font-bold border ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}
-                >
-                  Diese Woche resetten
-                </button>
-              </div>
-
-              <div className="grid md:grid-cols-4 gap-3 mb-4">
-                {[
-                  { key: 'quizAnswers', label: 'Quiz', icon: '🎯' },
-                  { key: 'examAnswers', label: 'Pruefung', icon: '📝' },
-                  { key: 'flashcards', label: 'Karteikarten', icon: '🧠' },
-                  { key: 'checklistItems', label: 'Praxis', icon: '✅' }
-                ].map((metric) => {
-                  const target = sanitizeGoalValue(weeklyGoals[metric.key], 0);
-                  const current = sanitizeGoalValue(weeklyProgress.stats?.[metric.key], 0);
-                  const percentage = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
-                  return (
-                    <div key={metric.key} className={`${darkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white border-gray-200'} border rounded-lg p-3`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xl">{metric.icon}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${percentage >= 100 ? 'bg-green-500 text-white' : darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-                          {percentage}%
-                        </span>
-                      </div>
-                      <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {metric.label}
-                      </p>
-                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {current} / {target}
-                      </p>
-                      <div className={`mt-2 h-2 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-gray-200'}`}>
-                        <div
-                          className={`h-2 rounded-full ${percentage >= 100 ? 'bg-green-500' : 'bg-emerald-500'}`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="grid md:grid-cols-4 gap-3">
-                {[
-                  { key: 'quizAnswers', label: 'Quiz/Woche' },
-                  { key: 'examAnswers', label: 'Pruefung/Woche' },
-                  { key: 'flashcards', label: 'Karten/Woche' },
-                  { key: 'checklistItems', label: 'Praxis/Woche' }
-                ].map((metric) => (
-                  <label key={metric.key} className="block">
-                    <span className={`text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {metric.label}
-                    </span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={sanitizeGoalValue(weeklyGoals[metric.key], 0)}
-                      onChange={(event) => {
-                        const value = sanitizeGoalValue(event.target.value, 0);
-                        setWeeklyGoals((prev) => ({ ...prev, [metric.key]: value }));
-                      }}
-                      className={`mt-1 w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
-                    />
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Win Streak Banner */}
-            {userStats && userStats.winStreak >= 3 && (
-              <div className={`${
-                userStats.winStreak >= 10
-                  ? darkMode ? 'bg-gradient-to-r from-orange-900/80 via-red-900/80 to-orange-900/80 border-orange-500' : 'bg-gradient-to-r from-orange-100 via-red-100 to-orange-100 border-orange-400'
-                  : darkMode ? 'bg-gradient-to-r from-yellow-900/80 via-amber-900/80 to-yellow-900/80 border-yellow-600' : 'bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50 border-yellow-400'
-              } backdrop-blur-sm border-2 rounded-xl p-4 shadow-lg`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl animate-pulse">
-                      {userStats.winStreak >= 25 ? '💎' : userStats.winStreak >= 15 ? '🏆' : userStats.winStreak >= 10 ? '🔥' : userStats.winStreak >= 5 ? '⚡' : '💪'}
-                    </span>
-                    <div>
-                      <p className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {userStats.winStreak} Siege in Folge!
-                      </p>
-                      <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                        {userStats.winStreak >= 25 ? 'Legendäre Serie!' :
-                         userStats.winStreak >= 15 ? 'Dominanz pur!' :
-                         userStats.winStreak >= 10 ? 'Unaufhaltsam!' :
-                         userStats.winStreak >= 5 ? 'Durchstarter!' : 'Weiter so!'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className={`text-right ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    <p className="text-sm">Nächster Meilenstein</p>
-                    <p className="font-bold">
-                      {(() => {
-                        const milestones = [3, 5, 10, 15, 25, 50];
-                        const next = milestones.find(m => m > userStats.winStreak);
-                        return next ? `${next - userStats.winStreak} bis ${next}` : 'Maximum erreicht!';
-                      })()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Spaced Repetition Reminder */}
-            {getTotalDueCards() > 0 && (
-              <div className={`${darkMode ? 'bg-purple-900/80' : 'bg-purple-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-purple-700' : 'border-purple-300'} rounded-xl p-6 shadow-lg`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Brain className={`mr-3 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} size={32} />
-                    <div>
-                      <h3 className={`text-lg font-bold ${darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
-                        🧠 Lernkarten zur Wiederholung
-                      </h3>
-                      <p className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                        {getTotalDueCards()} Karten sind heute fällig
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSpacedRepetitionMode(true);
-                      setCurrentView('flashcards');
-                      playSound('splash');
-                    }}
-                    className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-bold shadow-md flex items-center gap-2"
-                  >
-                    <Zap size={18} />
-                    Jetzt wiederholen
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeGames.filter(g => g.player2 === user.name && g.status === 'waiting').length > 0 && (
-              <div className={`${darkMode ? 'bg-yellow-900/80' : 'bg-yellow-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-yellow-700' : 'border-yellow-400'} rounded-xl p-6 shadow-lg`}>
-                <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>
-                  <Zap className="mr-2" />
-                  ⚡ Offene Herausforderungen
-                </h3>
-                {activeGames.filter(g => g.player2 === user.name && g.status === 'waiting').map(game => {
-                  const diff = DIFFICULTY_SETTINGS[game.difficulty];
-                  return (
-                    <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 flex justify-between items-center shadow-md`}>
-                      <div>
-                        <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>🏊 {game.player1} fordert dich heraus!</p>
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} flex items-center gap-2`}>
-                          <span>Quizduell • 6 Runden</span>
-                          <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold`}>
-                            {diff.icon} {diff.label} ({diff.time}s)
-                          </span>
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          acceptChallenge(game.id);
-                          playSound('whistle');
-                        }}
-                        className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-bold shadow-md"
-                      >
-                        Annehmen 🎯
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {activeGames.filter(g => (g.player1 === user.name || g.player2 === user.name) && g.status === 'active').length > 0 && (
-              <div className={`${darkMode ? 'bg-cyan-900/80' : 'bg-cyan-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-cyan-700' : 'border-cyan-400'} rounded-xl p-6 shadow-lg`}>
-                <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-cyan-300' : 'text-cyan-800'}`}>
-                  <Trophy className="mr-2" />
-                  🏊 Laufende Spiele
-                </h3>
-                {activeGames.filter(g => (g.player1 === user.name || g.player2 === user.name) && g.status === 'active').map(game => {
-                  const diff = DIFFICULTY_SETTINGS[game.difficulty];
-                  return (
-                    <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 flex justify-between items-center shadow-md`}>
-                      <div>
-                        <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>⚔️ {game.player1} vs {game.player2}</p>
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} flex items-center gap-2`}>
-                          <span>Runde {game.round + 1}/6 • {game.player1Score}:{game.player2Score}</span>
-                          <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold`}>
-                            {diff.icon} {diff.label}
-                          </span>
-                          {game.currentTurn === user.name && ' • Du bist dran! ⚡'}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          continueGame(game.id);
-                          playSound('whistle');
-                        }}
-                        className={`px-6 py-2 rounded-lg font-bold shadow-md ${
-                          game.currentTurn === user.name
-                            ? 'bg-green-500 hover:bg-green-600 text-white animate-pulse'
-                            : darkMode
-                              ? 'bg-slate-600 text-gray-300'
-                              : 'bg-gray-300 text-gray-700'
-                        }`}
-                      >
-                        {game.currentTurn === user.name ? 'Weiterspielen ⚡' : 'Anschauen'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* News Section */}
-            {news.length > 0 && (
-              <div className={`${darkMode ? 'bg-red-900/80' : 'bg-red-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-red-700' : 'border-red-400'} rounded-xl p-6 shadow-lg`}>
-                <h3 className={`text-xl font-bold mb-4 flex items-center justify-between ${darkMode ? 'text-red-300' : 'text-red-800'}`}>
-                  <span className="flex items-center">
-                    <Bell className="mr-2" />
-                    📢 Aktuelle News
-                  </span>
-                  <button
-                    onClick={() => {
-                      setCurrentView('news');
-                      playSound('splash');
-                    }}
-                    className={`text-sm ${darkMode ? 'text-red-300 hover:text-red-100' : 'text-red-600 hover:text-red-800'} underline`}
-                  >
-                    Alle anzeigen →
-                  </button>
-                </h3>
-                <div className="space-y-3">
-                  {news.slice(0, 3).map(item => (
-                    <div key={item.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 shadow-md border-l-4 border-red-500`}>
-                      <h4 className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{item.title}</h4>
-                      <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'} line-clamp-2`}>{item.content}</p>
-                      <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                        Von {item.author} • {new Date(item.time).toLocaleDateString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Exams Section */}
-            {exams.length > 0 && (
-              <div className={`${darkMode ? 'bg-green-900/80' : 'bg-green-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-green-700' : 'border-green-400'} rounded-xl p-6 shadow-lg`}>
-                <h3 className={`text-xl font-bold mb-4 flex items-center justify-between ${darkMode ? 'text-green-300' : 'text-green-800'}`}>
-                  <span className="flex items-center">
-                    <Calendar className="mr-2" />
-                    📋 Anstehende Klausuren
-                  </span>
-                  <button
-                    onClick={() => {
-                      setCurrentView('exams');
-                      playSound('splash');
-                    }}
-                    className={`text-sm ${darkMode ? 'text-green-300 hover:text-green-100' : 'text-green-600 hover:text-green-800'} underline`}
-                  >
-                    Alle anzeigen →
-                  </button>
-                </h3>
-                <div className="space-y-3">
-                  {exams.slice(0, 3).map(exam => {
-                    const examDate = new Date(exam.date);
-                    const today = new Date();
-                    const daysUntil = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
-                    const isUrgent = daysUntil <= 7 && daysUntil >= 0;
-                    
-                    return (
-                      <div key={exam.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 shadow-md border-l-4 ${
-                        isUrgent ? 'border-orange-500' : 'border-green-500'
-                      }`}>
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{exam.title}</h4>
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            isUrgent 
-                              ? 'bg-orange-500 text-white animate-pulse' 
-                              : darkMode ? 'bg-green-700 text-green-200' : 'bg-green-100 text-green-800'
-                          }`}>
-                            {daysUntil > 0 ? `in ${daysUntil} Tagen` : daysUntil === 0 ? 'Heute!' : 'Vorbei'}
-                          </span>
-                        </div>
-                        <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'} line-clamp-1`}>{exam.topics}</p>
-                        <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                          {examDate.toLocaleDateString()} • {exam.user}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className={`${darkMode ? 'bg-slate-800/95 border-cyan-600' : 'bg-white/95 border-cyan-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-cyan-400`}
-               onClick={() => {
-                     setCurrentView('exam-simulator');
-                     setExamSimulatorMode('theory');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">📝</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Prüfungssimulator</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Theorie & Praxis üben</p>
-              </div>
-
-              <div className={`${darkMode ? 'bg-slate-800/95 border-purple-600' : 'bg-white/95 border-purple-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-purple-400`}
-                   onClick={() => {
-                     setCurrentView('flashcards');
-                     loadFlashcards();
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">🎴</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-purple-400' : 'text-purple-700'}`}>Karteikarten</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Klassisch lernen</p>
-              </div>
-
-              <div className={`${darkMode ? 'bg-slate-800/95 border-blue-600' : 'bg-white/95 border-blue-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-blue-400`}
-                   onClick={() => {
-                     setCurrentView('calculator');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">🧮</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>Praxis-Rechner</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Mit Lösungsweg</p>
-              </div>
-
-              <div className={`${darkMode ? 'bg-slate-800/95 border-green-600' : 'bg-white/95 border-green-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-green-400`}
-                   onClick={() => {
-                     setCurrentView('quiz');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">🎮</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>Quizduell</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Fordere andere heraus!</p>
-              </div>
-
-              <div className={`${darkMode ? 'bg-slate-800/95 border-cyan-600' : 'bg-white/95 border-cyan-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-cyan-400`}
-                   onClick={() => {
-                     setCurrentView('swim-challenge');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">🏊</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Schwimm-Challenge</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Azubis vs. Trainer!</p>
-              </div>
-
-              <div className={`${darkMode ? 'bg-slate-800/95 border-yellow-600' : 'bg-white/95 border-yellow-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-yellow-400`}
-                   onClick={() => {
-                     setCurrentView('stats');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">🏅</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-yellow-400' : 'text-yellow-700'}`}>Statistiken</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Badges & Ranking</p>
-              </div>
-
-              {user.permissions.canViewAllStats && (
-                <div className={`${darkMode ? 'bg-slate-800/95 border-indigo-600' : 'bg-white/95 border-indigo-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-indigo-400`}
-                     onClick={() => {
-                       setCurrentView('trainer-dashboard');
-                       playSound('splash');
-                     }}>
-                  <div className="text-5xl mb-3 text-center">👨‍🏫</div>
-                  <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-indigo-400' : 'text-indigo-700'}`}>Azubi-Übersicht</h3>
-                  <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Fortschritte sehen</p>
-                </div>
-              )}
-
-              <div className={`${darkMode ? 'bg-slate-800/95 border-green-600' : 'bg-white/95 border-green-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-green-400`}
-                   onClick={() => {
-                     setCurrentView('materials');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">📚</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>Lernmaterialien</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{materials.length} Materialien</p>
-              </div>
-
-              <div className={`${darkMode ? 'bg-slate-800/95 border-indigo-600' : 'bg-white/95 border-indigo-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-indigo-400`}
-                   onClick={() => {
-                     setCurrentView('resources');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">🔗</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-indigo-400' : 'text-indigo-700'}`}>Ressourcen</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{resources.length} Links</p>
-              </div>
-
-              <div className={`${darkMode ? 'bg-slate-800/95 border-pink-600' : 'bg-white/95 border-pink-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-pink-400`}
-                   onClick={() => {
-                     setCurrentView('chat');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">💬</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-pink-400' : 'text-pink-700'}`}>Team-Chat</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{messages.length} Nachrichten</p>
-              </div>
-
-              {/* Berichtsheft */}
-              <div className={`${darkMode ? 'bg-slate-800/95 border-teal-600' : 'bg-white/95 border-teal-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-teal-400`}
-                   onClick={() => {
-                     setCurrentView('berichtsheft');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">📖</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>Berichtsheft</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Ausbildungsnachweis</p>
-              </div>
-
-              {/* Kontrollkarte Berufsschule */}
-              <div className={`${darkMode ? 'bg-slate-800/95 border-orange-600' : 'bg-white/95 border-orange-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-orange-400`}
-                   onClick={() => {
-                     setCurrentView('school-card');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">🎓</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-orange-400' : 'text-orange-700'}`}>Kontrollkarte</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Berufsschule</p>
-              </div>
-
-              {/* Fragen einreichen */}
-              <div className={`${darkMode ? 'bg-slate-800/95 border-amber-600' : 'bg-white/95 border-amber-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-amber-400`}
-                   onClick={() => {
-                     setCurrentView('questions');
-                     playSound('splash');
-                   }}>
-                <div className="text-5xl mb-3 text-center">💡</div>
-                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>Fragen</h3>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Einreichen & lernen</p>
-              </div>
-            </div>
-          </div>
+          <HomeView
+            rotateGeneralKnowledge={rotateGeneralKnowledge}
+            dailyWisdom={dailyWisdom}
+            userStats={userStats}
+            getTotalXpFromStats={getTotalXpFromStats}
+            setCurrentView={setCurrentView}
+            dailyChallenges={dailyChallenges}
+            getChallengeProgress={getChallengeProgress}
+            isChallengeCompleted={isChallengeCompleted}
+            getCompletedChallengesCount={getCompletedChallengesCount}
+            getTotalXPEarned={getTotalXPEarned}
+            weeklyProgress={weeklyProgress}
+            buildEmptyWeeklyProgress={buildEmptyWeeklyProgress}
+            getWeekStartStamp={getWeekStartStamp}
+            setWeeklyProgress={setWeeklyProgress}
+            weeklyGoals={weeklyGoals}
+            sanitizeGoalValue={sanitizeGoalValue}
+            setWeeklyGoals={setWeeklyGoals}
+            getTotalDueCards={getTotalDueCards}
+            setSpacedRepetitionMode={setSpacedRepetitionMode}
+            activeGames={activeGames}
+            acceptChallenge={acceptChallenge}
+            continueGame={continueGame}
+            news={news}
+            exams={exams}
+            setExamSimulatorMode={setExamSimulatorMode}
+            loadFlashcards={loadFlashcards}
+            materials={materials}
+            resources={resources}
+            messages={messages}
+          />
         )}
 
         {/* Quiz View */}
-        {currentView === 'quiz' && !currentGame && (
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6">Quizduell 🏆</h2>
-            <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
-              <h3 className="text-xl font-bold mb-4">Spieler herausfordern</h3>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Schwierigkeitsgrad wählen:
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  {Object.entries(DIFFICULTY_SETTINGS).map(([key, diff]) => (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedDifficulty(key)}
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                        selectedDifficulty === key
-                          ? `${diff.color} text-white border-transparent`
-                          : 'bg-white border-gray-300 hover:border-gray-400'
-                      }`}
-                    >
-                      <div className="text-3xl mb-2">{diff.icon}</div>
-                      <div className="font-bold">{diff.label}</div>
-                      <div className="text-sm opacity-90">{diff.time} Sekunden</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="grid gap-3">
-                {allUsers.filter(u => u.name !== user.name).map(u => (
-                  <div key={u.name} className="border rounded-lg p-4 flex justify-between items-center hover:bg-gray-50">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
-                        u.role === 'trainer' || u.role === 'admin' ? 'bg-purple-100' : 'bg-blue-100'
-                      }`}>
-                        {u.role === 'trainer' || u.role === 'admin' ? '👨‍🏫' : '🎓'}
-                      </div>
-                      <div>
-                        <p className="font-bold">{u.name}</p>
-                        <p className="text-sm text-gray-600">
-                          {u.role === 'admin' ? 'Administrator' : u.role === 'trainer' ? 'Ausbilder' : 'Azubi'}
-                        </p>
-                      </div>
-                    </div>
-                    {activeGames.some(g =>
-                      g.status !== 'finished' &&
-                      ((g.player1 === user.name && g.player2 === u.name) ||
-                       (g.player1 === u.name && g.player2 === user.name))
-                    ) ? (
-                      <span className="text-sm text-gray-500 italic px-4">Spiel läuft bereits</span>
-                    ) : (
-                      <button
-                        onClick={() => challengePlayer(u.name)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold flex items-center space-x-2"
-                      >
-                        <Target size={20} />
-                        <span>Herausfordern</span>
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {allUsers.filter(u => u.name !== user.name).length === 0 && (
-                  <p className="text-gray-500 text-center py-8">Noch keine anderen Spieler online</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {currentView === 'quiz' && currentGame && (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
-              <div className="text-center mb-4">
-                {(() => {
-                  const diff = DIFFICULTY_SETTINGS[currentGame.difficulty];
-                  return (
-                    <span className={`${diff.color} text-white px-6 py-2 rounded-full font-bold inline-flex items-center gap-2`}>
-                      {diff.icon} {diff.label} - {diff.time} Sekunden pro Frage
-                    </span>
-                  );
-                })()}
-              </div>
-              <div className="flex justify-between items-center mb-6">
-                <div className="text-center flex-1">
-                  <p className="text-sm text-gray-600 mb-1">{currentGame.player1}</p>
-                  <p className="text-3xl font-bold text-blue-600">{currentGame.player1Score}</p>
-                </div>
-                <div className="text-center flex-1">
-                  <p className="text-2xl font-bold text-gray-400">Kategorie {(currentGame.categoryRound || 0) + 1}/4</p>
-                  {quizCategory && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      Frage {questionInCategory + 1}/5
-                    </p>
-                  )}
-                  <p className="text-sm text-gray-600 mt-2">
-                    {playerTurn === user.name ? '⚡ Du bist dran!' : `${playerTurn} ist dran...`}
-                  </p>
-                </div>
-                <div className="text-center flex-1">
-                  <p className="text-sm text-gray-600 mb-1">{currentGame.player2}</p>
-                  <p className="text-3xl font-bold text-red-600">{currentGame.player2Score}</p>
-                </div>
-              </div>
-
-              {/* Kategorie-Übersicht */}
-              {currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && !currentQuestion && (
-                <div className="mb-4 flex justify-center gap-2 flex-wrap">
-                  {currentGame.categoryRounds.map((cr, idx) => {
-                    const cat = CATEGORIES.find(c => c.id === cr.categoryId);
-                    return (
-                      <span key={idx} className={`${cat?.color || 'bg-gray-500'} text-white px-3 py-1 rounded-full text-sm`}>
-                        {cat?.icon} {cat?.name}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Kategorie wählen - nur wenn ich dran bin UND noch keine Kategorie gewählt wurde */}
-              {!quizCategory && playerTurn === user.name && !waitingForOpponent && (
-                <div>
-                  <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                    <div>
-                      <p className="text-sm font-bold text-gray-700">Adaptiver Lernmodus</p>
-                      <p className="text-xs text-gray-500">
-                        {adaptiveLearningEnabled ? 'Schwerere Fragen kommen oefter.' : 'Reiner Zufall.'}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setAdaptiveLearningEnabled((prev) => !prev)}
-                      className={`px-4 py-2 rounded-lg text-sm font-bold ${
-                        adaptiveLearningEnabled
-                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                          : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                      }`}
-                    >
-                      {adaptiveLearningEnabled ? 'Aktiv' : 'Aus'}
-                    </button>
-                  </div>
-                  <h3 className="text-xl font-bold text-center mb-4">Wähle eine Kategorie:</h3>
-                  <p className="text-center text-gray-500 mb-4">Du wählst 5 Fragen - danach spielt {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} die gleichen Fragen!</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {CATEGORIES.filter(cat => {
-                      // Bereits gespielte Kategorien ausblenden
-                      const played = currentGame.categoryRounds?.map(cr => cr.categoryId) || [];
-                      return !played.includes(cat.id);
-                    }).map(cat => (
-                      <button
-                        key={cat.id}
-                        onClick={() => selectCategory(cat.id)}
-                        className={`${cat.color} text-white rounded-xl p-4 hover:scale-105 transition-transform`}
-                      >
-                        <div className="text-3xl mb-2">{cat.icon}</div>
-                        <div className="font-bold text-sm">{cat.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Spieler 2 muss die gleichen Fragen spielen */}
-              {!currentQuestion && playerTurn === user.name && currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && (() => {
-                const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
-                if (!currentCatRound) return false;
-                const isPlayer1 = user.name === currentGame.player1;
-                const myAnswers = isPlayer1 ? currentCatRound.player1Answers : currentCatRound.player2Answers;
-                return myAnswers.length === 0 && currentCatRound.questions.length > 0;
-              })() && (
-                <div className="text-center py-8">
-                  <div className="text-6xl mb-4">🎯</div>
-                  <p className="text-xl font-bold mb-2">
-                    {(() => {
-                      const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
-                      return currentCatRound?.categoryName || 'Kategorie';
-                    })()}
-                  </p>
-                  <p className="text-gray-600 mb-4">
-                    {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} hat diese Kategorie gespielt. Jetzt bist du dran mit den gleichen 5 Fragen!
-                  </p>
-                  <button
-                    onClick={startCategoryAsSecondPlayer}
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
-                  >
-                    Los geht's! 🚀
-                  </button>
-                </div>
-              )}
-
-              {/* Warte auf anderen Spieler */}
-              {!quizCategory && playerTurn !== user.name && (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">⏳</div>
-                  <p className="text-xl text-gray-600">Warte auf {playerTurn}...</p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    {waitingForOpponent ? 'Dein Gegner spielt jetzt die gleichen Fragen' : 'Dein Gegner wählt eine Kategorie'}
-                  </p>
-                </div>
-              )}
-
-              {/* Frage anzeigen */}
-              {currentQuestion && playerTurn === user.name && (
-                <div className="space-y-4">
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-gray-600">
-                        {(() => {
-                          const cat = CATEGORIES.find(c => c.id === quizCategory);
-                          return cat ? `${cat.icon} ${cat.name}` : 'Frage';
-                        })()}
-                      </span>
-                      <span className={`text-2xl font-bold ${
-                        timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-blue-600'
-                      }`}>
-                        {timeLeft}s
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                      <div
-                        className={`h-3 rounded-full transition-all duration-1000 ${
-                          timeLeft <= 10 ? 'bg-red-500' : 'bg-blue-500'
-                        }`}
-                        style={{ width: `${(timeLeft / DIFFICULTY_SETTINGS[currentGame.difficulty].time) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="bg-gray-100 rounded-xl p-6">
-                    <p className="text-xl font-bold text-center">{currentQuestion.q}</p>
-                    {currentQuestion.multi && !answered && (
-                      <p className="text-center text-sm text-orange-600 mt-2 font-medium">
-                        ⚠️ Mehrere Antworten sind richtig - wähle alle richtigen aus!
-                      </p>
-                    )}
-                  </div>
-                  <div className="grid gap-3">
-                    {currentQuestion.a.map((answer, idx) => {
-                      // Multi-Select Logik
-                      const isMulti = currentQuestion.multi;
-                      const isSelectedMulti = selectedAnswers.includes(idx);
-                      const isSelectedSingle = lastSelectedAnswer === idx;
-                      const isCorrectAnswer = isMulti
-                        ? currentQuestion.correct.includes(idx)
-                        : idx === currentQuestion.correct;
-
-                      let buttonClass = '';
-                      if (answered) {
-                        if (isCorrectAnswer) {
-                          buttonClass = 'bg-green-500 text-white'; // Richtige Antwort grün
-                        } else if ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle)) {
-                          buttonClass = 'bg-red-500 text-white'; // Falsch ausgewählt rot
-                        } else {
-                          buttonClass = 'bg-gray-200 text-gray-500';
-                        }
-                      } else {
-                        if (isMulti && isSelectedMulti) {
-                          buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
-                        } else {
-                          buttonClass = 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
-                        }
-                      }
-
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() => answerQuestion(idx)}
-                          disabled={answered}
-                          className={`p-4 rounded-xl font-medium transition-all ${buttonClass}`}
-                        >
-                          {isMulti && !answered && (
-                            <span className="mr-2">{isSelectedMulti ? '☑️' : '⬜'}</span>
-                          )}
-                          {answer}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <button
-                    onClick={() => {
-                      void reportQuestionIssue({
-                        question: currentQuestion,
-                        categoryId: quizCategory,
-                        source: 'quiz'
-                      });
-                    }}
-                    className="w-full mt-2 bg-amber-100 hover:bg-amber-200 text-amber-800 py-2 rounded-lg font-semibold border border-amber-300"
-                  >
-                    🚩 Frage melden
-                  </button>
-                  {/* Multi-Select Bestätigen Button */}
-                  {currentQuestion.multi && !answered && selectedAnswers.length > 0 && (
-                    <button
-                      onClick={confirmMultiSelectAnswer}
-                      className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
-                    >
-                      ✓ Antwort bestätigen ({selectedAnswers.length} ausgewählt)
-                    </button>
-                  )}
-                  {answered && timeLeft === 0 && (
-                    <div className="bg-red-100 border-2 border-red-500 rounded-xl p-4 text-center">
-                      <p className="text-red-700 font-bold">⏰ Zeit abgelaufen!</p>
-                    </div>
-                  )}
-                  {answered && (
-                    <button
-                      onClick={proceedToNextRound}
-                      className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg"
-                    >
-                      Weiter →
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+        {currentView === 'quiz' && (
+          <QuizView
+            selectedDifficulty={selectedDifficulty}
+            setSelectedDifficulty={setSelectedDifficulty}
+            allUsers={allUsers}
+            activeGames={activeGames}
+            challengePlayer={challengePlayer}
+            currentGame={currentGame}
+            quizCategory={quizCategory}
+            questionInCategory={questionInCategory}
+            playerTurn={playerTurn}
+            adaptiveLearningEnabled={adaptiveLearningEnabled}
+            setAdaptiveLearningEnabled={setAdaptiveLearningEnabled}
+            selectCategory={selectCategory}
+            waitingForOpponent={waitingForOpponent}
+            startCategoryAsSecondPlayer={startCategoryAsSecondPlayer}
+            currentQuestion={currentQuestion}
+            timeLeft={timeLeft}
+            answered={answered}
+            selectedAnswers={selectedAnswers}
+            lastSelectedAnswer={lastSelectedAnswer}
+            answerQuestion={answerQuestion}
+            reportQuestionIssue={reportQuestionIssue}
+            confirmMultiSelectAnswer={confirmMultiSelectAnswer}
+            proceedToNextRound={proceedToNextRound}
+          />
         )}
 
         {/* Stats View */}
@@ -7090,1719 +5892,107 @@ export default function BaederApp() {
 
         {/* Exam Simulator View */}
         {currentView === 'exam-simulator' && (
-          <div className="max-w-4xl mx-auto mb-4">
-            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-3 shadow-lg`}>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setExamSimulatorMode('theory')}
-                  className={`py-2 rounded-lg font-bold transition-all ${
-                    examSimulatorMode === 'theory'
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
-                      : (darkMode ? 'bg-slate-700 text-gray-200 hover:bg-slate-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
-                  }`}
-                >
-                  📝 Theorie
-                </button>
-                <button
-                  onClick={() => setExamSimulatorMode('practical')}
-                  className={`py-2 rounded-lg font-bold transition-all ${
-                    examSimulatorMode === 'practical'
-                      ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'
-                      : (darkMode ? 'bg-slate-700 text-gray-200 hover:bg-slate-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
-                  }`}
-                >
-                  🏊 Praxis
-                </button>
-              </div>
-            </div>
-          </div>
+          <ExamSimulatorView
+            examSimulatorMode={examSimulatorMode}
+            setExamSimulatorMode={setExamSimulatorMode}
+            userExamProgress={userExamProgress}
+            examSimulator={examSimulator}
+            adaptiveLearningEnabled={adaptiveLearningEnabled}
+            setAdaptiveLearningEnabled={setAdaptiveLearningEnabled}
+            examQuestionIndex={examQuestionIndex}
+            examCurrentQuestion={examCurrentQuestion}
+            examAnswered={examAnswered}
+            examSelectedAnswers={examSelectedAnswers}
+            examSelectedAnswer={examSelectedAnswer}
+            loadExamProgress={loadExamProgress}
+            answerExamQuestion={answerExamQuestion}
+            reportQuestionIssue={reportQuestionIssue}
+            confirmExamMultiSelectAnswer={confirmExamMultiSelectAnswer}
+            resetExam={resetExam}
+            practicalExamType={practicalExamType}
+            setPracticalExamType={setPracticalExamType}
+            practicalExamInputs={practicalExamInputs}
+            practicalExamResult={practicalExamResult}
+            practicalExamTargetUserId={practicalExamTargetUserId}
+            setPracticalExamTargetUserId={setPracticalExamTargetUserId}
+            practicalExamHistory={practicalExamHistory}
+            practicalExamHistoryLoading={practicalExamHistoryLoading}
+            practicalExamHistoryTypeFilter={practicalExamHistoryTypeFilter}
+            setPracticalExamHistoryTypeFilter={setPracticalExamHistoryTypeFilter}
+            practicalExamHistoryUserFilter={practicalExamHistoryUserFilter}
+            setPracticalExamHistoryUserFilter={setPracticalExamHistoryUserFilter}
+            practicalExamComparisonType={practicalExamComparisonType}
+            setPracticalExamComparisonType={setPracticalExamComparisonType}
+            allUsers={allUsers}
+            resetPracticalExam={resetPracticalExam}
+            updatePracticalExamInput={updatePracticalExamInput}
+            evaluatePracticalExam={evaluatePracticalExam}
+            exportPracticalExamToPdf={exportPracticalExamToPdf}
+            loadPracticalExamHistory={loadPracticalExamHistory}
+            canUseRowForSpeedRanking={canUseRowForSpeedRanking}
+            getPracticalRowSeconds={getPracticalRowSeconds}
+            getPracticalParticipantCandidates={getPracticalParticipantCandidates}
+            savePracticalExamAttempt={savePracticalExamAttempt}
+            deletePracticalExamAttempt={deletePracticalExamAttempt}
+          />
         )}
-
-        {currentView === 'exam-simulator' && examSimulatorMode === 'theory' && !userExamProgress && (
-          <div className="max-w-4xl mx-auto">
-            {!examSimulator ? (
-              <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-8 shadow-lg text-center`}>
-                <div className="text-6xl mb-4">📝</div>
-                <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Prüfungssimulator</h2>
-                <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  Teste dein Wissen mit 30 zufälligen Fragen aus allen Kategorien
-                </p>
-                <div className={`mb-4 ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-emerald-50 border-emerald-200'} border rounded-lg p-3 flex items-center justify-between gap-3`}>
-                  <div className="text-left">
-                    <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-emerald-800'}`}>
-                      Adaptiver Lernmodus
-                    </p>
-                    <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-emerald-700'}`}>
-                      {adaptiveLearningEnabled ? 'Falsch beantwortete Fragen werden priorisiert.' : '30 Fragen im reinen Zufall.'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setAdaptiveLearningEnabled((prev) => !prev)}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold ${
-                      adaptiveLearningEnabled
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                        : darkMode ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                    }`}
-                  >
-                    {adaptiveLearningEnabled ? 'Aktiv' : 'Aus'}
-                  </button>
-                </div>
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-blue-50'} rounded-lg p-6 mb-6`}>
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>30</div>
-                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Fragen</div>
-                    </div>
-                    <div>
-                      <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>6</div>
-                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Kategorien</div>
-                    </div>
-                    <div>
-                      <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>50%</div>
-                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Zum Bestehen</div>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    loadExamProgress();
-                    playSound('whistle');
-                  }}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg"
-                >
-                  Prüfung starten 🚀
-                </button>
-              </div>
-            ) : (
-              <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      Frage {examQuestionIndex + 1} / 30
-                    </h3>
-                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {CATEGORIES.find(c => c.id === examCurrentQuestion.category)?.name}
-                    </p>
-                  </div>
-                  <div className={`text-right ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
-                    <div className="text-2xl font-bold">
-                      {examSimulator.answers.filter(a => a.correct).length}
-                    </div>
-                    <div className="text-sm">Richtig</div>
-                  </div>
-                </div>
-                
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-xl p-6 mb-6`}>
-                  <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    {examCurrentQuestion.q}
-                  </p>
-                  {examCurrentQuestion.multi && !examAnswered && (
-                    <p className="text-center text-sm text-orange-600 mt-2 font-medium">
-                      ⚠️ Mehrere Antworten sind richtig - wähle alle richtigen aus!
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid gap-3">
-                  {examCurrentQuestion.a.map((answer, idx) => {
-                    const isMulti = examCurrentQuestion.multi;
-                    const isSelected = isMulti ? examSelectedAnswers.includes(idx) : examSelectedAnswer === idx;
-                    const isCorrectAnswer = isMulti
-                      ? examCurrentQuestion.correct.includes(idx)
-                      : idx === examCurrentQuestion.correct;
-
-                    let buttonClass = '';
-                    if (examAnswered) {
-                      if (isCorrectAnswer) {
-                        buttonClass = 'bg-green-500 text-white'; // Richtige Antwort grün
-                      } else if (isSelected && !isCorrectAnswer) {
-                        buttonClass = 'bg-red-500 text-white'; // Falsch ausgewählt rot
-                      } else {
-                        buttonClass = darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-500';
-                      }
-                    } else {
-                      if (isMulti && isSelected) {
-                        buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
-                      } else {
-                        buttonClass = darkMode
-                          ? 'bg-slate-700 hover:bg-slate-600 border-2 border-slate-600 hover:border-cyan-500 text-white'
-                          : 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
-                      }
-                    }
-
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => answerExamQuestion(idx)}
-                        disabled={examAnswered}
-                        className={`p-4 rounded-xl font-medium transition-all text-left ${buttonClass}`}
-                      >
-                        {isMulti && !examAnswered && (
-                          <span className="mr-2">{isSelected ? '☑️' : '⬜'}</span>
-                        )}
-                        {answer}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  onClick={() => {
-                    void reportQuestionIssue({
-                      question: examCurrentQuestion,
-                      categoryId: examCurrentQuestion?.category,
-                      source: 'exam-simulator'
-                    });
-                  }}
-                  className={`w-full mt-2 py-2 rounded-lg font-semibold border ${
-                    darkMode
-                      ? 'bg-amber-900/40 hover:bg-amber-800/50 text-amber-300 border-amber-700'
-                      : 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300'
-                  }`}
-                >
-                  🚩 Frage melden
-                </button>
-
-                {/* Multi-Select Bestätigen Button */}
-                {examCurrentQuestion.multi && !examAnswered && examSelectedAnswers.length > 0 && (
-                  <button
-                    onClick={confirmExamMultiSelectAnswer}
-                    className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
-                  >
-                    ✓ Antwort bestätigen ({examSelectedAnswers.length} ausgewählt)
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {currentView === 'exam-simulator' && examSimulatorMode === 'practical' && (() => {
-          const selectedType = PRACTICAL_EXAM_TYPES.find(type => type.id === practicalExamType) || PRACTICAL_EXAM_TYPES[0];
-          const disciplines = PRACTICAL_SWIM_EXAMS[practicalExamType] || [];
-          const canManageAllPractical = Boolean(user?.permissions?.canViewAllStats);
-          const practicalCandidates = getPracticalParticipantCandidates();
-          const selectedTargetUser = canManageAllPractical
-            ? (practicalCandidates.find(account => account.id === practicalExamTargetUserId) || null)
-            : user;
-          const historyFiltered = practicalExamHistory
-            .filter((attempt) => practicalExamHistoryTypeFilter === 'alle' || attempt.exam_type === practicalExamHistoryTypeFilter)
-            .filter((attempt) => !canManageAllPractical || practicalExamHistoryUserFilter === 'all' || attempt.user_id === practicalExamHistoryUserFilter);
-          const attemptTypeLabel = (typeId) => PRACTICAL_EXAM_TYPES.find(type => type.id === typeId)?.label || typeId;
-          const formatAttemptDate = (value) => {
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) return '-';
-            return date.toLocaleString('de-DE');
-          };
-
-          const comparisonAttempts = practicalExamHistory
-            .filter((attempt) => attempt.exam_type === 'zwischen' || attempt.exam_type === 'abschluss')
-            .filter((attempt) => practicalExamComparisonType === 'alle' || attempt.exam_type === practicalExamComparisonType);
-
-          const comparisonByUserId = {};
-          comparisonAttempts.forEach((attempt) => {
-            if (!attempt.user_id) return;
-            if (!comparisonByUserId[attempt.user_id]) {
-              comparisonByUserId[attempt.user_id] = {
-                userId: attempt.user_id,
-                userName: attempt.user_name || practicalCandidates.find(account => account.id === attempt.user_id)?.name || 'Unbekannt',
-                attempts: []
-              };
-            }
-            comparisonByUserId[attempt.user_id].attempts.push(attempt);
-          });
-
-          const comparisonRows = Object.values(comparisonByUserId)
-            .map((entry) => {
-              const attempts = entry.attempts
-                .slice()
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-              const latest = attempts[0] || null;
-              const best = attempts
-                .filter(attempt => Number.isFinite(Number(attempt.average_grade)))
-                .sort((a, b) => Number(a.average_grade) - Number(b.average_grade))[0] || null;
-              return {
-                ...entry,
-                attemptsCount: attempts.length,
-                latest,
-                best
-              };
-            })
-            .sort((a, b) => {
-              const aBest = Number.isFinite(Number(a.best?.average_grade)) ? Number(a.best.average_grade) : Number.POSITIVE_INFINITY;
-              const bBest = Number.isFinite(Number(b.best?.average_grade)) ? Number(b.best.average_grade) : Number.POSITIVE_INFINITY;
-              if (aBest !== bBest) return aBest - bBest;
-              return String(a.userName).localeCompare(String(b.userName), 'de');
-            });
-
-          const disciplineLeaders = disciplines.map((discipline) => {
-            const isTimeBased = discipline.inputType === 'time' || discipline.inputType === 'time_distance';
-            if (!isTimeBased) {
-              return {
-                discipline,
-                best: null
-              };
-            }
-
-            const best = practicalExamHistory
-              .filter(attempt => attempt.exam_type === practicalExamType)
-              .flatMap((attempt) => {
-                const rows = Array.isArray(attempt.rows) ? attempt.rows : [];
-                const row = rows.find(entry => entry?.id === discipline.id);
-                if (!row) return [];
-                if (!canUseRowForSpeedRanking(row, discipline.id)) return [];
-                const seconds = getPracticalRowSeconds(row);
-                if (!Number.isFinite(seconds) || seconds <= 0) return [];
-                return [{
-                  userId: attempt.user_id,
-                  userName: attempt.user_name || practicalCandidates.find(account => account.id === attempt.user_id)?.name || 'Unbekannt',
-                  createdAt: attempt.created_at,
-                  seconds,
-                  row
-                }];
-              })
-              .sort((a, b) => {
-                if (a.seconds !== b.seconds) return a.seconds - b.seconds;
-                return new Date(a.createdAt) - new Date(b.createdAt);
-              })[0] || null;
-
-            return {
-              discipline,
-              best
-            };
-          });
-
-          return (
-            <div className="max-w-5xl mx-auto space-y-4">
-              <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                  <div>
-                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      🏊 Praktischer Prüfungssimulator
-                    </h2>
-                    <p className={`mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      Zeiten eintragen und Note direkt aus der Wertungstabelle berechnen.
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    {PRACTICAL_EXAM_TYPES.map((type) => (
-                      <button
-                        key={type.id}
-                        onClick={() => {
-                          setPracticalExamType(type.id);
-                          resetPracticalExam();
-                        }}
-                        className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                          practicalExamType === type.id
-                            ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white'
-                            : (darkMode ? 'bg-slate-700 text-gray-200 hover:bg-slate-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
-                        }`}
-                      >
-                      {type.icon} {type.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {canManageAllPractical && (
-                  <div className="mb-4">
-                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Prüfung für Teilnehmer
-                    </label>
-                    <select
-                      value={practicalExamTargetUserId}
-                      onChange={(event) => setPracticalExamTargetUserId(event.target.value)}
-                      className={`w-full md:w-[360px] px-4 py-2 rounded-lg border ${
-                        darkMode
-                          ? 'bg-slate-700 border-slate-600 text-white'
-                          : 'bg-white border-gray-300 text-gray-800'
-                      }`}
-                    >
-                      {practicalCandidates.length === 0 && <option value="">Keine Teilnehmer verfügbar</option>}
-                      {practicalCandidates.map((account) => (
-                        <option key={account.id} value={account.id}>
-                          {account.name} ({account.role || 'user'})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-cyan-50'} rounded-lg p-4 mb-4`}>
-                  <div className={`text-sm font-medium ${darkMode ? 'text-cyan-200' : 'text-cyan-800'}`}>
-                    Aktive Prüfung: {selectedType.label}
-                  </div>
-                  <div className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    Format: Zeit als mm:ss (z. B. 01:42) oder in Sekunden.
-                  </div>
-                  <div className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    Teilnehmer: {selectedTargetUser?.name || user?.name || 'Unbekannt'}
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  {disciplines.map((discipline) => (
-                    <div
-                      key={discipline.id}
-                      className={`${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'} border rounded-xl p-4`}
-                    >
-                      <div className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {discipline.name}
-                      </div>
-                      <input
-                        type="text"
-                        value={practicalExamInputs[discipline.id] || ''}
-                        onChange={(event) => updatePracticalExamInput(discipline.id, event.target.value)}
-                        placeholder={discipline.inputPlaceholder || 'Wert eingeben'}
-                        className={`w-full px-4 py-2 rounded-lg border ${
-                          darkMode
-                            ? 'bg-slate-800 border-slate-600 text-white placeholder-gray-400'
-                            : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'
-                        }`}
-                      />
-                      {discipline.inputType === 'time_distance' && (
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          value={practicalExamInputs[`${discipline.id}_distance`] || ''}
-                          onChange={(event) => updatePracticalExamInput(`${discipline.id}_distance`, event.target.value)}
-                          placeholder={discipline.distancePlaceholder || 'Strecke in m'}
-                          className={`w-full mt-2 px-4 py-2 rounded-lg border ${
-                            darkMode
-                              ? 'bg-slate-800 border-slate-600 text-white placeholder-gray-400'
-                              : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'
-                          }`}
-                        />
-                      )}
-                      <div className={`mt-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        {discipline.inputType === 'time' && 'Zeit-Eingabe'}
-                        {discipline.inputType === 'grade' && 'Direkte Note'}
-                        {discipline.inputType === 'time_distance' && 'Zeit + Strecke'}
-                        {discipline.required === false ? ' (optional)' : ' (pflicht)'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap gap-3 mt-6">
-                  <button
-                    onClick={evaluatePracticalExam}
-                    className="bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-600 hover:to-emerald-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg"
-                  >
-                    Note berechnen
-                  </button>
-                  <button
-                    onClick={resetPracticalExam}
-                    className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} px-6 py-3 rounded-lg font-bold transition-all`}
-                  >
-                    Eingaben zurücksetzen
-                  </button>
-                </div>
-              </div>
-
-              {practicalExamResult && (
-                <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-                  <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    Ergebnis {selectedType.label}
-                  </h3>
-                  <div className={`mb-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Teilnehmer: <strong>{practicalExamResult.userName || selectedTargetUser?.name || '-'}</strong>
-                  </div>
-                  <div className="space-y-2">
-                    {practicalExamResult.rows.map((row) => (
-                      <div
-                        key={row.id}
-                        className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-3 flex items-center justify-between gap-3`}
-                      >
-                        <div>
-                          <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>{row.name}</div>
-                          <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Wert: {row.displayValue}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className={`font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
-                            {row.grade ? formatGradeLabel(row.grade, row.noteLabel) : 'Keine Note'}
-                          </div>
-                          {row.points !== null && row.points !== undefined && (
-                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {row.points} Punkte
-                            </div>
-                          )}
-                          {row.gradingMissing && (
-                            <div className={`text-xs ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-                              Wertungstabelle fehlt
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className={`mt-5 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} grid md:grid-cols-3 gap-3`}>
-                    <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-lg p-3`}>
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gewertete Disziplinen</div>
-                      <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{practicalExamResult.gradedCount}</div>
-                    </div>
-                    <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-lg p-3`}>
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Durchschnittsnote</div>
-                      <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {practicalExamResult.averageGrade !== null ? practicalExamResult.averageGrade.toFixed(2) : '-'}
-                      </div>
-                    </div>
-                    <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-lg p-3`}>
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Status</div>
-                      <div className={`text-xl font-bold ${
-                        practicalExamResult.passed === null
-                          ? (darkMode ? 'text-gray-300' : 'text-gray-700')
-                          : practicalExamResult.passed
-                            ? (darkMode ? 'text-green-400' : 'text-green-600')
-                            : (darkMode ? 'text-red-400' : 'text-red-600')
-                      }`}>
-                        {practicalExamResult.passed === null
-                          ? 'offen'
-                          : practicalExamResult.passed ? 'bestanden' : 'nicht bestanden'}
-                      </div>
-                    </div>
-                  </div>
-
-                  {practicalExamResult.missingTables > 0 && (
-                    <div className={`mt-4 text-sm ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-                      Hinweis: {practicalExamResult.missingTables} Disziplin(en) haben noch keine Wertungstabelle.
-                    </div>
-                  )}
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <button
-                      onClick={() => exportPracticalExamToPdf()}
-                      className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white px-4 py-2 rounded-lg font-medium"
-                    >
-                      📄 Als PDF exportieren
-                    </button>
-                    <button
-                      onClick={() => void loadPracticalExamHistory()}
-                      className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} px-4 py-2 rounded-lg font-medium`}
-                    >
-                      Historie aktualisieren
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    🏁 Schnellste Zeiten je Disziplin
-                  </h3>
-                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Basis: gespeicherte {selectedType.label}-Versuche
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-2 gap-3">
-                  {disciplineLeaders.map((entry) => (
-                    <div
-                      key={entry.discipline.id}
-                      className={`${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'} border rounded-lg p-3`}
-                    >
-                      <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {entry.discipline.name}
-                      </div>
-                      {(entry.discipline.inputType !== 'time' && entry.discipline.inputType !== 'time_distance') ? (
-                        <div className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Keine Zeit-Bestenliste (Notenfach).
-                        </div>
-                      ) : !entry.best ? (
-                        <div className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          Noch keine gültige Zeit vorhanden.
-                        </div>
-                      ) : (
-                        <div className="mt-1 space-y-1">
-                          <div className={`text-lg font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
-                            {formatSecondsAsTime(entry.best.seconds)}
-                          </div>
-                          <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            {entry.best.userName}
-                          </div>
-                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {formatAttemptDate(entry.best.createdAt)} • {entry.best.row?.grade ? formatGradeLabel(entry.best.row.grade, entry.best.row.noteLabel) : 'Keine Note'}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    🗂️ Versuchshistorie
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    <select
-                      value={practicalExamHistoryTypeFilter}
-                      onChange={(event) => setPracticalExamHistoryTypeFilter(event.target.value)}
-                      className={`px-3 py-2 rounded-lg border text-sm ${
-                        darkMode
-                          ? 'bg-slate-700 border-slate-600 text-white'
-                          : 'bg-white border-gray-300 text-gray-800'
-                      }`}
-                    >
-                      <option value="alle">Alle Prüfungen</option>
-                      {PRACTICAL_EXAM_TYPES.map((type) => (
-                        <option key={type.id} value={type.id}>{type.label}</option>
-                      ))}
-                    </select>
-                    {canManageAllPractical && (
-                      <select
-                        value={practicalExamHistoryUserFilter}
-                        onChange={(event) => setPracticalExamHistoryUserFilter(event.target.value)}
-                        className={`px-3 py-2 rounded-lg border text-sm ${
-                          darkMode
-                            ? 'bg-slate-700 border-slate-600 text-white'
-                            : 'bg-white border-gray-300 text-gray-800'
-                        }`}
-                      >
-                        <option value="all">Alle Teilnehmer</option>
-                        {practicalCandidates.map((account) => (
-                          <option key={account.id} value={account.id}>
-                            {account.name} ({account.role || 'user'})
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                </div>
-
-                {practicalExamHistoryLoading ? (
-                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Historie wird geladen...
-                  </div>
-                ) : historyFiltered.length === 0 ? (
-                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Noch keine gespeicherten Versuche vorhanden.
-                  </div>
-                ) : (
-                  <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
-                    {historyFiltered.map((attempt) => (
-                      <div
-                        key={attempt.id}
-                        className={`${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'} border rounded-lg p-3`}
-                      >
-                        <div className="flex flex-wrap justify-between gap-3">
-                          <div>
-                            <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                              {attempt.user_name} • {attemptTypeLabel(attempt.exam_type)}
-                            </div>
-                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {formatAttemptDate(attempt.created_at)} {attempt.source === 'local' ? '• lokal gespeichert' : ''}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className={`font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
-                              {Number.isFinite(Number(attempt.average_grade)) ? `Ø ${Number(attempt.average_grade).toFixed(2)}` : 'Ø -'}
-                            </div>
-                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {attempt.passed === null ? 'offen' : attempt.passed ? 'bestanden' : 'nicht bestanden'}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-2 space-y-1">
-                          {(attempt.rows || []).map((row) => (
-                            <div key={`${attempt.id}-${row.id}`} className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                              {row.name}: {row.displayValue} • {row.grade ? formatGradeLabel(row.grade, row.noteLabel) : 'Keine Note'}
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="mt-3">
-                          <button
-                            onClick={() => exportPracticalExamToPdf(attempt)}
-                            className={`${darkMode ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'} px-3 py-1.5 rounded-lg text-sm`}
-                          >
-                            📄 PDF exportieren
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {canManageAllPractical && (
-                <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-                  <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                    <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      🧭 Trainer-Vergleich (alle Teilnehmer)
-                    </h3>
-                    <select
-                      value={practicalExamComparisonType}
-                      onChange={(event) => setPracticalExamComparisonType(event.target.value)}
-                      className={`px-3 py-2 rounded-lg border text-sm ${
-                        darkMode
-                          ? 'bg-slate-700 border-slate-600 text-white'
-                          : 'bg-white border-gray-300 text-gray-800'
-                      }`}
-                    >
-                      <option value="alle">Alle Prüfungen</option>
-                      {PRACTICAL_EXAM_TYPES.map((type) => (
-                        <option key={type.id} value={type.id}>{type.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {comparisonRows.length === 0 ? (
-                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Noch keine Vergleichsdaten vorhanden.
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {comparisonRows.map((row, index) => (
-                        <div
-                          key={row.userId}
-                          className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-3 flex flex-wrap items-center justify-between gap-3`}
-                        >
-                          <div>
-                            <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                              {index + 1}. {row.userName}
-                            </div>
-                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {row.attemptsCount} Versuch(e)
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                              Beste Note: {Number.isFinite(Number(row.best?.average_grade)) ? Number(row.best.average_grade).toFixed(2) : '-'}
-                            </div>
-                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              Letzter Versuch: {Number.isFinite(Number(row.latest?.average_grade)) ? Number(row.latest.average_grade).toFixed(2) : '-'} ({formatAttemptDate(row.latest?.created_at)})
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })()}
-
-        {currentView === 'exam-simulator' && examSimulatorMode === 'theory' && userExamProgress && (
-          <div className="max-w-4xl mx-auto">
-            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-8 shadow-lg text-center`}>
-              <div className="text-6xl mb-4">{userExamProgress.passed ? '🎉' : '📚'}</div>
-              <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                {userExamProgress.passed ? 'Bestanden!' : 'Nicht bestanden'}
-              </h2>
-              <div className={`${userExamProgress.passed ? 'bg-green-500' : 'bg-red-500'} text-white rounded-full w-32 h-32 mx-auto flex items-center justify-center mb-6`}>
-                <div className="text-4xl font-bold">{userExamProgress.percentage}%</div>
-              </div>
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-lg p-4`}>
-                  <div className={`text-2xl font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                    {userExamProgress.correct}
-                  </div>
-                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Richtig</div>
-                </div>
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-lg p-4`}>
-                  <div className={`text-2xl font-bold ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
-                    {userExamProgress.total - userExamProgress.correct}
-                  </div>
-                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Falsch</div>
-                </div>
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-100'} rounded-lg p-4`}>
-                  <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
-                    {Math.round(userExamProgress.timeMs / 60000)}min
-                  </div>
-                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Dauer</div>
-                </div>
-              </div>
-              <button
-                onClick={resetExam}
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg"
-              >
-                Neue Prüfung starten
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Flashcards View */}
         {currentView === 'flashcards' && (
-          <div className="max-w-4xl mx-auto">
-            {/* Add Flashcard Form */}
-            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg mb-6`}>
-              <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                ➕ Neue Karteikarte erstellen
-              </h3>
-              <div className="space-y-3">
-                <select
-                  value={newFlashcardCategory}
-                  onChange={(e) => setNewFlashcardCategory(e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg ${
-                    darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white'
-                  }`}
-                >
-                  {CATEGORIES.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
-                  ))}
-                </select>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Vorderseite (Frage):
-                  </label>
-                  <textarea
-                    value={newFlashcardFront}
-                    onChange={(e) => setNewFlashcardFront(e.target.value)}
-                    placeholder="z.B. Was ist der optimale pH-Wert?"
-                    rows="2"
-                    className={`w-full px-4 py-3 border rounded-lg ${
-                      darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white'
-                    }`}
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Rückseite (Antwort):
-                  </label>
-                  <textarea
-                    value={newFlashcardBack}
-                    onChange={(e) => setNewFlashcardBack(e.target.value)}
-                    placeholder="z.B. 7,0 - 7,4 (neutral bis leicht basisch)"
-                    rows="3"
-                    className={`w-full px-4 py-3 border rounded-lg ${
-                      darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white'
-                    }`}
-                  />
-                </div>
-
-                <button
-                  onClick={async () => {
-                    if (!newFlashcardFront.trim() || !newFlashcardBack.trim()) {
-                      alert('Bitte Vorder- und Rückseite ausfüllen!');
-                      return;
-                    }
-
-                    // Content moderation
-                    if (!moderateContent(newFlashcardFront, 'Vorderseite')) {
-                      return;
-                    }
-                    if (!moderateContent(newFlashcardBack, 'Rückseite')) {
-                      return;
-                    }
-
-                    try {
-                      const isApproved = user.permissions.canApproveQuestions;
-                      const { data, error } = await supabase
-                        .from('flashcards')
-                        .insert([{
-                          user_id: user.id,
-                          category: newFlashcardCategory,
-                          question: newFlashcardFront.trim(),
-                          answer: newFlashcardBack.trim(),
-                          approved: isApproved
-                        }])
-                        .select()
-                        .single();
-
-                      if (error) throw error;
-
-                      const flashcard = {
-                        id: data.id,
-                        front: data.question,
-                        back: data.answer,
-                        category: data.category,
-                        approved: data.approved,
-                        userId: data.user_id
-                      };
-
-                      if (flashcard.approved) {
-                        setUserFlashcards([...userFlashcards, flashcard]);
-                        alert('Karteikarte hinzugefügt! 🎴');
-                      } else {
-                        setPendingFlashcards([...pendingFlashcards, flashcard]);
-                        alert('Karteikarte eingereicht! Sie wird nach Prüfung freigeschaltet. ⏳');
-                      }
-
-                      void queueXpAward('flashcardCreation', XP_REWARDS.FLASHCARD_CREATE, {
-                        eventKey: `flashcard_create_${data.id}`,
-                        reason: 'Karteikarte erstellt',
-                        showXpToast: true
-                      });
-
-                      setNewFlashcardFront('');
-                      setNewFlashcardBack('');
-                      playSound('splash');
-                    } catch (error) {
-                      console.error('Flashcard error:', error);
-                      alert('Fehler beim Erstellen der Karteikarte');
-                    }
-                  }}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg"
-                >
-                  <Plus className="inline mr-2" size={20} />
-                  Karteikarte erstellen
-                </button>
-
-                {!user.permissions.canApproveQuestions && (
-                  <p className={`text-sm text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    ℹ️ Deine Karteikarte wird nach Prüfung durch einen Trainer freigeschaltet
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Flashcard Display */}
-            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg mb-6`}>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  🎴 Karteikarten
-                </h2>
-                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {FLASHCARD_CONTENT[newQuestionCategory]?.length || 0} Standard + {userFlashcards.filter(fc => fc.category === newQuestionCategory).length} Custom
-                </div>
-              </div>
-
-              {/* Lernmodus Umschalter */}
-              <div className="flex gap-2 mb-4">
-                <button
-                  onClick={() => {
-                    setSpacedRepetitionMode(false);
-                    loadFlashcards();
-                  }}
-                  className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all ${
-                    !spacedRepetitionMode
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-                      : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  📚 Alle Karten
-                </button>
-                <button
-                  onClick={() => {
-                    setSpacedRepetitionMode(true);
-                    const due = loadDueCards(newQuestionCategory);
-                    if (due.length > 0) {
-                      setFlashcards(due);
-                      setFlashcardIndex(0);
-                      setCurrentFlashcard(due[0]);
-                      setShowFlashcardAnswer(false);
-                    }
-                  }}
-                  className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-                    spacedRepetitionMode
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-                      : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  🧠 Spaced Repetition
-                  {getDueCardCount(newQuestionCategory) > 0 && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                      {getDueCardCount(newQuestionCategory)}
-                    </span>
-                  )}
-                </button>
-              </div>
-
-              {/* Spaced Repetition Info */}
-              {spacedRepetitionMode && (
-                <div className={`${darkMode ? 'bg-purple-900/50' : 'bg-purple-100'} rounded-lg p-4 mb-4`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className={`font-bold ${darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
-                      🧠 Spaced Repetition Modus
-                    </h4>
-                    <span className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                      {dueCards.length} Karten fällig
-                    </span>
-                  </div>
-                  <p className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-700'}`}>
-                    Beantworte mit "Gewusst" oder "Nicht gewusst". Karten die du nicht wusstest kommen früher wieder.
-                  </p>
-                  <div className="flex gap-2 mt-3 flex-wrap">
-                    {[1, 2, 3, 4, 5, 6].map(level => (
-                      <div key={level} className="flex items-center gap-1">
-                        <div className={`w-3 h-3 rounded-full ${getLevelColor(level)}`}></div>
-                        <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {getLevelLabel(level)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Kategorien mit fälligen Karten Übersicht */}
-              {spacedRepetitionMode && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-                  {CATEGORIES.map(cat => {
-                    const dueCount = getDueCardCount(cat.id);
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => {
-                          setNewQuestionCategory(cat.id);
-                          const due = loadDueCards(cat.id);
-                          if (due.length > 0) {
-                            setFlashcards(due);
-                            setFlashcardIndex(0);
-                            setCurrentFlashcard(due[0]);
-                            setShowFlashcardAnswer(false);
-                          } else {
-                            setFlashcards([]);
-                            setCurrentFlashcard(null);
-                          }
-                        }}
-                        className={`p-3 rounded-lg text-left transition-all ${
-                          newQuestionCategory === cat.id
-                            ? `${cat.color} text-white`
-                            : darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>{cat.icon}</span>
-                          {dueCount > 0 && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              newQuestionCategory === cat.id
-                                ? 'bg-white/30 text-white'
-                                : 'bg-red-500 text-white'
-                            }`}>
-                              {dueCount}
-                            </span>
-                          )}
-                        </div>
-                        <p className={`text-xs mt-1 truncate ${
-                          newQuestionCategory === cat.id
-                            ? 'text-white/80'
-                            : darkMode ? 'text-gray-400' : 'text-gray-600'
-                        }`}>
-                          {cat.name}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {!spacedRepetitionMode && (
-                <select
-                  value={newQuestionCategory}
-                  onChange={(e) => {
-                    setNewQuestionCategory(e.target.value);
-                    const hardcodedCards = FLASHCARD_CONTENT[e.target.value] || [];
-                    const userCards = userFlashcards.filter(fc => fc.category === e.target.value);
-                    const allCards = [...hardcodedCards, ...userCards];
-                    setFlashcards(allCards);
-                    setFlashcardIndex(0);
-                    setCurrentFlashcard(allCards[0]);
-                    setShowFlashcardAnswer(false);
-                  }}
-                  className={`w-full px-4 py-3 border rounded-lg mb-6 ${
-                    darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white'
-                  }`}
-                >
-                  {CATEGORIES.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {currentFlashcard && flashcards.length > 0 && (
-              <div className="perspective-1000">
-                {/* Spaced Repetition Level Badge */}
-                {spacedRepetitionMode && currentFlashcard.spacedData && (
-                  <div className="flex justify-center mb-4">
-                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${
-                      darkMode ? 'bg-slate-700' : 'bg-gray-100'
-                    }`}>
-                      <div className={`w-4 h-4 rounded-full ${getLevelColor(currentFlashcard.spacedData.level)}`}></div>
-                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {getLevelLabel(currentFlashcard.spacedData.level)}
-                      </span>
-                      <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        • {currentFlashcard.spacedData.reviewCount || 0}x wiederholt
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <div
-                  onClick={() => {
-                    setShowFlashcardAnswer(!showFlashcardAnswer);
-                    playSound('bubble');
-                  }}
-                  className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 shadow-2xl cursor-pointer transform transition-all hover:scale-105 min-h-[300px] flex items-center justify-center ${
-                    spacedRepetitionMode && currentFlashcard.spacedData
-                      ? `border-4 ${getLevelColor(currentFlashcard.spacedData.level).replace('bg-', 'border-')}`
-                      : ''
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className={`text-sm font-bold mb-4 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
-                      {showFlashcardAnswer ? 'ANTWORT' : 'FRAGE'}
-                    </div>
-                    <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      {showFlashcardAnswer ? currentFlashcard.back : currentFlashcard.front}
-                    </p>
-                    <p className={`text-sm mt-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {showFlashcardAnswer ? '' : 'Klicken zum Umdrehen'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Spaced Repetition Buttons */}
-                {spacedRepetitionMode && showFlashcardAnswer && (
-                  <div className="flex gap-4 mt-6">
-                    <button
-                      onClick={() => {
-                        const newLevel = updateCardSpacedData(currentFlashcard, newQuestionCategory, false);
-                        playSound('wrong');
-
-                        // Nächste Karte oder fertig
-                        if (flashcardIndex < flashcards.length - 1) {
-                          const nextIdx = flashcardIndex + 1;
-                          setFlashcardIndex(nextIdx);
-                          setCurrentFlashcard(flashcards[nextIdx]);
-                          setShowFlashcardAnswer(false);
-                        } else {
-                          // Alle Karten durchgearbeitet
-                          const remaining = loadDueCards(newQuestionCategory);
-                          if (remaining.length > 0) {
-                            setFlashcards(remaining);
-                            setFlashcardIndex(0);
-                            setCurrentFlashcard(remaining[0]);
-                            setShowFlashcardAnswer(false);
-                          } else {
-                            setCurrentFlashcard(null);
-                            setFlashcards([]);
-                          }
-                        }
-                      }}
-                      className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg text-lg"
-                    >
-                      ❌ Nicht gewusst
-                    </button>
-                    <button
-                      onClick={() => {
-                        const newLevel = updateCardSpacedData(currentFlashcard, newQuestionCategory, true);
-                        playSound('correct');
-
-                        // Nächste Karte oder fertig
-                        if (flashcardIndex < flashcards.length - 1) {
-                          const nextIdx = flashcardIndex + 1;
-                          setFlashcardIndex(nextIdx);
-                          setCurrentFlashcard(flashcards[nextIdx]);
-                          setShowFlashcardAnswer(false);
-                        } else {
-                          // Alle Karten durchgearbeitet
-                          const remaining = loadDueCards(newQuestionCategory);
-                          if (remaining.length > 0) {
-                            setFlashcards(remaining);
-                            setFlashcardIndex(0);
-                            setCurrentFlashcard(remaining[0]);
-                            setShowFlashcardAnswer(false);
-                          } else {
-                            setCurrentFlashcard(null);
-                            setFlashcards([]);
-                          }
-                        }
-                      }}
-                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg text-lg"
-                    >
-                      ✅ Gewusst
-                    </button>
-                  </div>
-                )}
-
-                {/* Standard Navigation (nicht im Spaced Repetition Modus oder Antwort noch nicht gezeigt) */}
-                {(!spacedRepetitionMode || !showFlashcardAnswer) && (
-                  <div className="flex justify-between items-center mt-6">
-                    <button
-                      onClick={() => {
-                        if (flashcardIndex > 0) {
-                          const prevIdx = flashcardIndex - 1;
-                          setFlashcardIndex(prevIdx);
-                          setCurrentFlashcard(flashcards[prevIdx]);
-                          setShowFlashcardAnswer(false);
-                          playSound('splash');
-                        }
-                      }}
-                      disabled={flashcardIndex === 0}
-                      className={`px-6 py-3 rounded-lg font-bold ${
-                        flashcardIndex === 0
-                          ? darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400'
-                          : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
-                      }`}
-                    >
-                      ← Zurück
-                    </button>
-                    <div className={darkMode ? 'text-white' : 'text-gray-800'}>
-                      <span className="font-bold">{flashcardIndex + 1}</span> / {flashcards.length}
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (flashcardIndex < flashcards.length - 1) {
-                          const nextIdx = flashcardIndex + 1;
-                          setFlashcardIndex(nextIdx);
-                          setCurrentFlashcard(flashcards[nextIdx]);
-                          setShowFlashcardAnswer(false);
-                          playSound('splash');
-                        }
-                      }}
-                      disabled={flashcardIndex === flashcards.length - 1}
-                      className={`px-6 py-3 rounded-lg font-bold ${
-                        flashcardIndex === flashcards.length - 1
-                          ? darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400'
-                          : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
-                      }`}
-                    >
-                      Weiter →
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(!currentFlashcard || flashcards.length === 0) && (
-              <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 text-center`}>
-                <div className="text-6xl mb-4">{spacedRepetitionMode ? '🎉' : '🎴'}</div>
-                <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  {spacedRepetitionMode ? 'Alle Karten wiederholt!' : 'Keine Karteikarten'}
-                </p>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                  {spacedRepetitionMode
-                    ? 'Super! Du hast alle fälligen Karten in dieser Kategorie durchgearbeitet. Komm später wieder!'
-                    : 'Noch keine Karteikarten in dieser Kategorie. Erstelle die erste!'}
-                </p>
-                {spacedRepetitionMode && (
-                  <button
-                    onClick={() => {
-                      setSpacedRepetitionMode(false);
-                      loadFlashcards();
-                    }}
-                    className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold"
-                  >
-                    📚 Alle Karten anzeigen
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Pending Flashcards for Trainers/Admins */}
-            {user.permissions.canApproveQuestions && (
-              <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg mt-6`}>
-                <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  ⏳ Wartende Karteikarten genehmigen
-                </h3>
-                {pendingFlashcards.length > 0 ? (
-                  <div className="space-y-3">
-                    {pendingFlashcards.map(fc => {
-                      const cat = CATEGORIES.find(c => c.id === fc.category);
-                      return (
-                        <div key={fc.id} className={`${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-yellow-50 border-yellow-300'} border-2 rounded-lg p-4`}>
-                          <div className="flex justify-between items-start mb-3">
-                            <span className={`${cat.color} text-white px-3 py-1 rounded-full text-xs font-bold`}>
-                              {cat.icon} {cat.name}
-                            </span>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => approveFlashcard(fc.id)}
-                                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm font-bold"
-                              >
-                                <Check size={16} className="inline" /> Genehmigen
-                              </button>
-                              <button
-                                onClick={() => deleteFlashcard(fc.id)}
-                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-bold"
-                              >
-                                <X size={16} className="inline" /> Ablehnen
-                              </button>
-                            </div>
-                          </div>
-                          <div className={`${darkMode ? 'bg-slate-600' : 'bg-white'} rounded-lg p-3 mb-2`}>
-                            <p className={`text-sm font-bold mb-1 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>Vorderseite:</p>
-                            <p className={darkMode ? 'text-white' : 'text-gray-800'}>{fc.front}</p>
-                          </div>
-                          <div className={`${darkMode ? 'bg-slate-600' : 'bg-white'} rounded-lg p-3`}>
-                            <p className={`text-sm font-bold mb-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>Rückseite:</p>
-                            <p className={darkMode ? 'text-white' : 'text-gray-800'}>{fc.back}</p>
-                          </div>
-                          <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
-                            Von {fc.createdBy} • {new Date(fc.time).toLocaleString()}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className={`text-center py-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Keine wartenden Karteikarten
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
+          <FlashcardsView
+            flashcards={flashcards}
+            setFlashcards={setFlashcards}
+            flashcardIndex={flashcardIndex}
+            setFlashcardIndex={setFlashcardIndex}
+            currentFlashcard={currentFlashcard}
+            setCurrentFlashcard={setCurrentFlashcard}
+            showFlashcardAnswer={showFlashcardAnswer}
+            setShowFlashcardAnswer={setShowFlashcardAnswer}
+            spacedRepetitionMode={spacedRepetitionMode}
+            setSpacedRepetitionMode={setSpacedRepetitionMode}
+            dueCards={dueCards}
+            newFlashcardCategory={newFlashcardCategory}
+            setNewFlashcardCategory={setNewFlashcardCategory}
+            newFlashcardFront={newFlashcardFront}
+            setNewFlashcardFront={setNewFlashcardFront}
+            newFlashcardBack={newFlashcardBack}
+            setNewFlashcardBack={setNewFlashcardBack}
+            pendingFlashcards={pendingFlashcards}
+            setPendingFlashcards={setPendingFlashcards}
+            userFlashcards={userFlashcards}
+            setUserFlashcards={setUserFlashcards}
+            newQuestionCategory={newQuestionCategory}
+            setNewQuestionCategory={setNewQuestionCategory}
+            deleteFlashcard={deleteFlashcard}
+            approveFlashcard={approveFlashcard}
+            getDueCardCount={getDueCardCount}
+            getLevelColor={getLevelColor}
+            getLevelLabel={getLevelLabel}
+            loadDueCards={loadDueCards}
+            loadFlashcards={loadFlashcards}
+            moderateContent={moderateContent}
+            getCardSpacedData={getCardSpacedData}
+            updateCardSpacedData={updateCardSpacedData}
+            queueXpAward={queueXpAward}
+            XP_REWARDS={XP_REWARDS}
+            FLASHCARD_CONTENT={FLASHCARD_CONTENT}
+          />
         )}
 
         {/* Calculator View */}
         {currentView === 'calculator' && (
-          <div className="max-w-4xl mx-auto">
-            <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-              <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                🧮 Praxis-Rechner
-              </h2>
-              
-              <div className="grid md:grid-cols-6 gap-4 mb-6">
-                <button
-                  onClick={() => {
-                    setCalculatorType('ph');
-                    setCalculatorInputs({});
-                    setCalculatorResult(null);
-                  }}
-                  className={`p-4 rounded-xl font-bold ${
-                    calculatorType === 'ph'
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
-                      : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  💧 pH-Wert
-                </button>
-                <button
-                  onClick={() => {
-                    setCalculatorType('chlorine');
-                    setCalculatorInputs({});
-                    setCalculatorResult(null);
-                  }}
-                  className={`p-4 rounded-xl font-bold ${
-                    calculatorType === 'chlorine'
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
-                      : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  ⚗️ Chlor-Bedarf
-                </button>
-                <button
-                  onClick={() => {
-                    setCalculatorType('volume');
-                    setCalculatorInputs({});
-                    setCalculatorResult(null);
-                  }}
-                  className={`p-4 rounded-xl font-bold ${
-                    calculatorType === 'volume'
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                      : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  📏 Beckenvolumen
-                </button>
-                <button
-                  onClick={() => {
-                    setCalculatorType('chemicals');
-                    setCalculatorInputs({});
-                    setCalculatorResult(null);
-                  }}
-                  className={`p-4 rounded-xl font-bold ${
-                    calculatorType === 'chemicals'
-                      ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
-                      : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  🧪 Chemikalien
-                </button>
-                <button
-                  onClick={() => {
-                    setCalculatorType('periodic');
-                    setCalculatorInputs({});
-                    setCalculatorResult(null);
-                  }}
-                  className={`p-4 rounded-xl font-bold ${
-                    calculatorType === 'periodic'
-                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
-                      : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  ⚛️ Periodensystem
-                </button>
-                <button
-                  onClick={() => {
-                    setCalculatorType('industrialTime');
-                    setCalculatorInputs({ industrialMode: 'clockToIndustrial' });
-                    setCalculatorResult(null);
-                  }}
-                  className={`p-4 rounded-xl font-bold ${
-                    calculatorType === 'industrialTime'
-                      ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
-                      : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  ⏱️ Industriezeit
-                </button>
-              </div>
-
-              {calculatorType === 'ph' && (
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-blue-50'} rounded-xl p-6 mb-6`}>
-                  <h3 className={`font-bold mb-4 ${darkMode ? 'text-cyan-400' : 'text-blue-800'}`}>pH-Wert / Säurekapazität berechnen</h3>
-                  <div className="space-y-3">
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Chlor-Wert (mg/L)"
-                      value={calculatorInputs.chlorine || ''}
-                      onChange={(e) => setCalculatorInputs({...calculatorInputs, chlorine: e.target.value})}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                    <input
-                      type="number"
-                      placeholder="Alkalinität (mg/L)"
-                      value={calculatorInputs.alkalinity || ''}
-                      onChange={(e) => setCalculatorInputs({...calculatorInputs, alkalinity: e.target.value})}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Säurekapazität (mmol/L) - Optional"
-                      value={calculatorInputs.acidCapacity || ''}
-                      onChange={(e) => setCalculatorInputs({...calculatorInputs, acidCapacity: e.target.value})}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                    <div className={`${darkMode ? 'bg-slate-600' : 'bg-blue-100'} rounded-lg p-3 text-sm`}>
-                      <p className={darkMode ? 'text-cyan-300' : 'text-blue-800'}>
-                        💡 <strong>Säurekapazität:</strong> Maß für die Pufferfähigkeit des Wassers. Optimal: 2,0-3,0 mmol/L
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {calculatorType === 'chlorine' && (
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-green-50'} rounded-xl p-6 mb-6`}>
-                  <h3 className={`font-bold mb-4 ${darkMode ? 'text-green-400' : 'text-green-800'}`}>Chlor-Bedarf berechnen</h3>
-                  <div className="space-y-3">
-                    <input
-                      type="number"
-                      placeholder="Beckenvolumen (m³)"
-                      value={calculatorInputs.poolVolume || ''}
-                      onChange={(e) => setCalculatorInputs({...calculatorInputs, poolVolume: e.target.value})}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Aktueller Chlor-Wert (mg/L)"
-                      value={calculatorInputs.currentChlorine || ''}
-                      onChange={(e) => setCalculatorInputs({...calculatorInputs, currentChlorine: e.target.value})}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Ziel-Chlor-Wert (mg/L)"
-                      value={calculatorInputs.targetChlorine || ''}
-                      onChange={(e) => setCalculatorInputs({...calculatorInputs, targetChlorine: e.target.value})}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {calculatorType === 'volume' && (
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-purple-50'} rounded-xl p-6 mb-6`}>
-                  <h3 className={`font-bold mb-4 ${darkMode ? 'text-purple-400' : 'text-purple-800'}`}>Beckenvolumen berechnen</h3>
-                  <div className="space-y-3">
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Länge (m)"
-                      value={calculatorInputs.length || ''}
-                      onChange={(e) => setCalculatorInputs({...calculatorInputs, length: e.target.value})}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Breite (m)"
-                      value={calculatorInputs.width || ''}
-                      onChange={(e) => setCalculatorInputs({...calculatorInputs, width: e.target.value})}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Tiefe (m)"
-                      value={calculatorInputs.depth || ''}
-                      onChange={(e) => setCalculatorInputs({...calculatorInputs, depth: e.target.value})}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {calculatorType === 'chemicals' && (
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-orange-50'} rounded-xl p-6 mb-6`}>
-                  <h3 className={`font-bold mb-4 ${darkMode ? 'text-orange-400' : 'text-orange-800'}`}>🧪 Chemische Zusammensetzungen</h3>
-                  <select
-                    value={selectedChemical?.name || ''}
-                    onChange={(e) => {
-                      const chem = POOL_CHEMICALS.find(c => c.name === e.target.value);
-                      setSelectedChemical(chem);
-                      playSound('bubble');
-                    }}
-                    className={`w-full px-4 py-3 rounded-lg mb-4 ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                  >
-                    <option value="">-- Chemikalie wählen --</option>
-                    {POOL_CHEMICALS.map(chem => (
-                      <option key={chem.name} value={chem.name}>{chem.name}</option>
-                    ))}
-                  </select>
-                  
-                  {selectedChemical && (
-                    <div className={`${darkMode ? 'bg-slate-600' : 'bg-white'} rounded-lg p-6 border-2 ${darkMode ? 'border-orange-500' : 'border-orange-400'}`}>
-                      <div className="text-center mb-4">
-                        <h4 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                          {selectedChemical.name}
-                        </h4>
-                        <div className={`text-5xl font-bold mb-4 ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
-                          {selectedChemical.formula}
-                        </div>
-                      </div>
-                      <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-4`}>
-                        <p className={`font-bold mb-2 ${darkMode ? 'text-orange-400' : 'text-orange-800'}`}>
-                          Verwendung:
-                        </p>
-                        <p className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
-                          {selectedChemical.use}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {calculatorType === 'periodic' && (
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-indigo-50'} rounded-xl p-6 mb-6`}>
-                  <h3 className={`font-bold mb-4 ${darkMode ? 'text-indigo-400' : 'text-indigo-800'}`}>⚛️ Periodensystem der Elemente</h3>
-                  
-                  <div className="grid grid-cols-18 gap-1 mb-6 overflow-x-auto">
-                    {PERIODIC_TABLE.map(element => {
-                      const colors = {
-                        'alkali': 'bg-red-500',
-                        'alkaline-earth': 'bg-orange-500',
-                        'transition': 'bg-yellow-500',
-                        'post-transition': 'bg-green-500',
-                        'metalloid': 'bg-teal-500',
-                        'nonmetal': 'bg-blue-500',
-                        'halogen': 'bg-purple-500',
-                        'noble-gas': 'bg-pink-500',
-                        'lanthanide': 'bg-cyan-500',
-                        'actinide': 'bg-lime-500'
-                      };
-                      
-                      const bgColor = colors[element.category] || 'bg-gray-400';
-                      
-                      return (
-                        <button
-                          key={element.number}
-                          onClick={() => {
-                            setSelectedElement(element);
-                            playSound('bubble');
-                          }}
-                          className={`${bgColor} hover:scale-110 transition-transform rounded p-1 text-white text-center cursor-pointer ${
-                            selectedElement?.number === element.number ? 'ring-2 ring-white scale-110' : ''
-                          }`}
-                          style={{
-                            gridColumn: element.group,
-                            gridRow: element.period,
-                            minWidth: '40px'
-                          }}
-                        >
-                          <div className="text-[8px] font-bold">{element.number}</div>
-                          <div className="text-xs font-bold">{element.symbol}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {selectedElement && (
-                    <div className={`${darkMode ? 'bg-slate-600 border-indigo-500' : 'bg-white border-indigo-400'} rounded-lg p-6 border-2`}>
-                      <div className="text-center mb-4">
-                        <div className={`text-6xl font-bold mb-2 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                          {selectedElement.symbol}
-                        </div>
-                        <h4 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                          {selectedElement.name}
-                        </h4>
-                      </div>
-                      <div className={`grid grid-cols-2 gap-4 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-4`}>
-                        <div>
-                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Ordnungszahl</p>
-                          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{selectedElement.number}</p>
-                        </div>
-                        <div>
-                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Atommasse</p>
-                          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{selectedElement.mass} u</p>
-                        </div>
-                        <div>
-                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Gruppe</p>
-                          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{selectedElement.group}</p>
-                        </div>
-                        <div>
-                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Periode</p>
-                          <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{selectedElement.period}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-red-500 rounded"></div>
-                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Alkalimetalle</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Erdalkalimetalle</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Übergangsmetalle</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Nichtmetalle</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-purple-500 rounded"></div>
-                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Halogene</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-pink-500 rounded"></div>
-                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Edelgase</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-teal-500 rounded"></div>
-                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Halbmetalle</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-cyan-500 rounded"></div>
-                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Lanthanoide</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-lime-500 rounded"></div>
-                      <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Actinoide</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {calculatorType === 'industrialTime' && (
-                <div className={`${darkMode ? 'bg-slate-700' : 'bg-teal-50'} rounded-xl p-6 mb-6`}>
-                  <h3 className={`font-bold mb-4 ${darkMode ? 'text-teal-300' : 'text-teal-800'}`}>Industriezeit / Industrieminuten</h3>
-                  <div className="grid md:grid-cols-2 gap-3 mb-4">
-                    <button
-                      onClick={() => {
-                        setCalculatorInputs({ industrialMode: 'clockToIndustrial' });
-                        setCalculatorResult(null);
-                      }}
-                      className={`px-4 py-3 rounded-lg font-semibold ${
-                        (calculatorInputs.industrialMode || 'clockToIndustrial') === 'clockToIndustrial'
-                          ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
-                          : (darkMode ? 'bg-slate-600 text-white hover:bg-slate-500' : 'bg-white text-gray-800 hover:bg-gray-100')
-                      }`}
-                    >
-                      Uhrzeit → Industriezeit
-                    </button>
-                    <button
-                      onClick={() => {
-                        setCalculatorInputs({ industrialMode: 'industrialToClock' });
-                        setCalculatorResult(null);
-                      }}
-                      className={`px-4 py-3 rounded-lg font-semibold ${
-                        (calculatorInputs.industrialMode || 'clockToIndustrial') === 'industrialToClock'
-                          ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
-                          : (darkMode ? 'bg-slate-600 text-white hover:bg-slate-500' : 'bg-white text-gray-800 hover:bg-gray-100')
-                      }`}
-                    >
-                      Industriezeit → Uhrzeit
-                    </button>
-                  </div>
-
-                  {(calculatorInputs.industrialMode || 'clockToIndustrial') === 'clockToIndustrial' ? (
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder="Stunden (z. B. 1)"
-                        value={calculatorInputs.clockHours || ''}
-                        onChange={(e) => setCalculatorInputs({ ...calculatorInputs, clockHours: e.target.value })}
-                        className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        step="1"
-                        placeholder="Minuten (0-59)"
-                        value={calculatorInputs.clockMinutes || ''}
-                        onChange={(e) => setCalculatorInputs({ ...calculatorInputs, clockMinutes: e.target.value })}
-                        className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                      />
-                    </div>
-                  ) : (
-                    <input
-                      type="text"
-                      placeholder="Industriestunden (z. B. 1,75)"
-                      value={calculatorInputs.industrialHours || ''}
-                      onChange={(e) => setCalculatorInputs({ ...calculatorInputs, industrialHours: e.target.value })}
-                      className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
-                    />
-                  )}
-
-                  <div className={`${darkMode ? 'bg-slate-600' : 'bg-teal-100'} rounded-lg p-3 text-sm mt-4`}>
-                    <p className={darkMode ? 'text-teal-200' : 'text-teal-800'}>
-                      💡 1 Stunde = 60 Realminuten = 100 Industrieminuten.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {calculatorType !== 'chemicals' && calculatorType !== 'periodic' && (
-                <button
-                  onClick={handleCalculation}
-                  className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg mb-6"
-                >
-                  Berechnen 🧮
-                </button>
-              )}
-
-              {calculatorResult && (
-                <div className={`${darkMode ? 'bg-slate-700 border-cyan-600' : 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-300'} border-2 rounded-xl p-6`}>
-                  <div className={`text-center mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    <div className="text-sm font-bold mb-2">ERGEBNIS</div>
-                    <div className="text-4xl font-bold mb-2">{calculatorResult.result}</div>
-                  </div>
-                  <div className={`${darkMode ? 'bg-slate-600' : 'bg-white'} rounded-lg p-4 mb-4`}>
-                    <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      <strong>Berechnung:</strong> {calculatorResult.explanation}
-                    </p>
-                    {calculatorResult.details && (
-                      <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {calculatorResult.details}
-                      </p>
-                    )}
-                    <p className={`text-sm font-bold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
-                      💡 {calculatorResult.recommendation}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <CalculatorView
+            calculatorType={calculatorType}
+            setCalculatorType={setCalculatorType}
+            calculatorInputs={calculatorInputs}
+            setCalculatorInputs={setCalculatorInputs}
+            calculatorResult={calculatorResult}
+            setCalculatorResult={setCalculatorResult}
+            selectedChemical={selectedChemical}
+            setSelectedChemical={setSelectedChemical}
+            selectedElement={selectedElement}
+            setSelectedElement={setSelectedElement}
+            performCalculation={performCalculation}
+          />
         )}
 
         {/* Trainer Dashboard */}
@@ -10407,50 +7597,103 @@ export default function BaederApp() {
                             </div>
                           </div>
 
-                          {currentWeekEntries[day].map((entry, entryIndex) => (
-                            <div key={entryIndex} className="flex flex-wrap lg:flex-nowrap gap-2 mb-2 items-start">
-                              <div className="flex-grow min-w-[200px]">
-                                <input
-                                  type="text"
-                                  value={entry.taetigkeit}
-                                  onChange={(e) => updateWeekEntry(day, entryIndex, 'taetigkeit', e.target.value)}
-                                  placeholder="Ausgeführte Tätigkeit..."
-                                  className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
-                                />
+                          {currentWeekEntries[day].map((entry, entryIndex) => {
+                            const selectedBereich = AUSBILDUNGSRAHMENPLAN.find(
+                              bereich => bereich.nr === parseInt(entry.bereich, 10)
+                            );
+                            const bereichSuggestions = getBerichtsheftBereichSuggestions(entry.taetigkeit, berichtsheftYear);
+                            const showBereichSuggestions = !entry.bereich && bereichSuggestions.length > 0;
+                            const inhaltePreview = (selectedBereich?.inhalte || []).slice(0, 3);
+
+                            return (
+                              <div key={entryIndex} className="mb-3">
+                                <div className="flex flex-wrap lg:flex-nowrap gap-2 items-start">
+                                  <div className="flex-grow min-w-[200px]">
+                                    <input
+                                      type="text"
+                                      value={entry.taetigkeit}
+                                      onChange={(e) => updateWeekEntry(day, entryIndex, 'taetigkeit', e.target.value)}
+                                      placeholder="Ausgeführte Tätigkeit..."
+                                      className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                                    />
+                                  </div>
+                                  <div className="w-20 flex-shrink-0">
+                                    <input
+                                      type="number"
+                                      value={entry.stunden}
+                                      onChange={(e) => updateWeekEntry(day, entryIndex, 'stunden', e.target.value)}
+                                      placeholder="Std."
+                                      step="0.5"
+                                      min="0"
+                                      max="12"
+                                      className={`w-full px-2 py-2 border rounded-lg text-sm text-center ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+                                    />
+                                  </div>
+                                  <div className="w-full sm:w-auto">
+                                    <select
+                                      value={entry.bereich}
+                                      onChange={(e) => updateWeekEntry(day, entryIndex, 'bereich', e.target.value)}
+                                      className={`w-full min-w-[500px] px-2 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                                    >
+                                      <option value="">-- Bereich --</option>
+                                      {AUSBILDUNGSRAHMENPLAN.map((b) => {
+                                        const yearWeeks = getBerichtsheftYearWeeks(b, berichtsheftYear);
+                                        const yearHint = yearWeeks > 0 ? `• ${yearWeeks}W im Jahr ${berichtsheftYear}` : '• laufend/anderes Jahr';
+                                        return (
+                                          <option key={b.nr} value={b.nr}>
+                                            {b.icon} {b.nr}. {b.bereich} {yearHint}
+                                          </option>
+                                        );
+                                      })}
+                                    </select>
+                                  </div>
+                                  <button
+                                    onClick={() => removeWeekEntry(day, entryIndex)}
+                                    disabled={currentWeekEntries[day].length <= 1}
+                                    className={`px-2 py-2 rounded-lg transition-all ${currentWeekEntries[day].length <= 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:bg-red-100'}`}
+                                  >
+                                    <X size={18} />
+                                  </button>
+                                </div>
+
+                                {showBereichSuggestions && (
+                                  <div className={`mt-2 rounded-lg px-3 py-2 text-xs ${darkMode ? 'bg-slate-800 border border-slate-600 text-gray-300' : 'bg-white border border-gray-200 text-gray-700'}`}>
+                                    <div className="font-semibold mb-1">Vorschläge für passenden Bereich:</div>
+                                    <div className="flex flex-wrap gap-2">
+                                      {bereichSuggestions.map(({ bereich }) => (
+                                        <button
+                                          key={`${day}-${entryIndex}-suggest-${bereich.nr}`}
+                                          onClick={() => updateWeekEntry(day, entryIndex, 'bereich', String(bereich.nr))}
+                                          className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-cyan-300' : 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700'} px-2 py-1 rounded-md transition-all`}
+                                        >
+                                          {bereich.icon} {bereich.nr}. {bereich.bereich}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {selectedBereich && inhaltePreview.length > 0 && (
+                                  <div className={`mt-2 rounded-lg px-3 py-2 text-xs ${darkMode ? 'bg-slate-800 border border-slate-600 text-gray-300' : 'bg-white border border-gray-200 text-gray-700'}`}>
+                                    <div className="font-semibold mb-1">Zu vermittelnde Tätigkeiten (Hilfe):</div>
+                                    <div className="space-y-1">
+                                      {inhaltePreview.map((inhalt, idx) => (
+                                        <div key={`${day}-${entryIndex}-inhalt-${idx}`} className="flex items-start justify-between gap-2">
+                                          <span className="leading-5">{inhalt}</span>
+                                          <button
+                                            onClick={() => applyBerichtsheftInhaltToEntry(day, entryIndex, inhalt)}
+                                            className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-cyan-300' : 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700'} px-2 py-0.5 rounded-md whitespace-nowrap transition-all`}
+                                          >
+                                            Übernehmen
+                                          </button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                              <div className="w-20 flex-shrink-0">
-                                <input
-                                  type="number"
-                                  value={entry.stunden}
-                                  onChange={(e) => updateWeekEntry(day, entryIndex, 'stunden', e.target.value)}
-                                  placeholder="Std."
-                                  step="0.5"
-                                  min="0"
-                                  max="12"
-                                  className={`w-full px-2 py-2 border rounded-lg text-sm text-center ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
-                                />
-                              </div>
-                              <div className="w-full sm:w-auto">
-                                <select
-                                  value={entry.bereich}
-                                  onChange={(e) => updateWeekEntry(day, entryIndex, 'bereich', e.target.value)}
-                                  className={`w-full min-w-[500px] px-2 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
-                                >
-                                  <option value="">-- Bereich --</option>
-                                  {AUSBILDUNGSRAHMENPLAN.map(b => (
-                                    <option key={b.nr} value={b.nr}>{b.icon} {b.nr}. {b.bereich}</option>
-                                  ))}
-                                </select>
-                              </div>
-                              <button
-                                onClick={() => removeWeekEntry(day, entryIndex)}
-                                disabled={currentWeekEntries[day].length <= 1}
-                                className={`px-2 py-2 rounded-lg transition-all ${currentWeekEntries[day].length <= 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:bg-red-100'}`}
-                              >
-                                <X size={18} />
-                              </button>
-                            </div>
-                          ))}
+                            );
+                          })}
                           <button
                             onClick={() => addWeekEntry(day)}
                             className={`mt-2 text-sm flex items-center gap-1 ${darkMode ? 'text-cyan-400 hover:text-cyan-300' : 'text-cyan-600 hover:text-cyan-700'}`}
