@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Check, Download, Plus, Trash2, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
@@ -8,7 +8,7 @@ import SignatureCanvas from '../ui/SignatureCanvas';
 const BerichtsheftView = (props) => {
 const {
   addWeekEntry,
-  applyBerichtsheftInhaltToEntry,
+  assignBerichtsheftTrainer,
   azubiProfile,
   berichtsheftBemerkungAusbilder,
   berichtsheftBemerkungAzubi,
@@ -16,11 +16,14 @@ const {
   berichtsheftDatumAzubi,
   berichtsheftEntries,
   berichtsheftNr,
+  berichtsheftPendingLoading,
+  berichtsheftPendingSignatures,
   berichtsheftSignaturAusbilder,
   berichtsheftSignaturAzubi,
   berichtsheftViewMode,
   berichtsheftWeek,
   berichtsheftYear,
+  canManageBerichtsheftSignatures,
   calculateBereichProgress,
   calculateDayHours,
   calculateTotalHours,
@@ -46,10 +49,26 @@ const {
   setBerichtsheftViewMode,
   setBerichtsheftWeek,
   setBerichtsheftYear,
+  signAssignableUsers,
   updateWeekEntry,
 } = props;
   const { user } = useAuth();
   const { darkMode } = useApp();
+  const [assignmentSelectionById, setAssignmentSelectionById] = useState({});
+
+  const signerOptions = useMemo(() => {
+    if (!Array.isArray(signAssignableUsers)) return [];
+    return signAssignableUsers
+      .filter((account) => account && account.id)
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
+  }, [signAssignableUsers]);
+
+  const formatWeekRange = (entry) => {
+    if (!entry?.week_start || !entry?.week_end) return '-';
+    const start = new Date(entry.week_start);
+    const end = new Date(entry.week_end);
+    return `${start.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })} - ${end.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+  };
 
   return (
           <div className="space-y-6">
@@ -83,6 +102,15 @@ const {
                   >
                     👤 Profil
                   </button>
+                  {canManageBerichtsheftSignatures && (
+                    <button
+                      onClick={() => setBerichtsheftViewMode('sign')}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${berichtsheftViewMode === 'sign' ? 'bg-cyan-500 text-white' : (darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-200 text-gray-700')}`}
+                    >
+                      Zum Unterschreiben
+                    </button>
+                  )}
+
                 </div>
               </div>
 
@@ -278,7 +306,16 @@ const {
                             );
                             const bereichSuggestions = getBerichtsheftBereichSuggestions(entry.taetigkeit, berichtsheftYear);
                             const showBereichSuggestions = !entry.bereich && bereichSuggestions.length > 0;
-                            const inhaltePreview = (selectedBereich?.inhalte || []).slice(0, 3);
+                            const inhaltePreview = (selectedBereich?.inhalte || []).slice(0, 6);
+                            const suggestedBereichExamples = showBereichSuggestions
+                              ? bereichSuggestions
+                                .slice(0, 2)
+                                .map(({ bereich }) => ({
+                                  bereich,
+                                  inhalte: (bereich?.inhalte || []).slice(0, 3)
+                                }))
+                                .filter((item) => item.inhalte.length > 0)
+                              : [];
 
                             return (
                               <div key={entryIndex} className="mb-3">
@@ -350,22 +387,40 @@ const {
 
                                 {selectedBereich && inhaltePreview.length > 0 && (
                                   <div className={`mt-2 rounded-lg px-3 py-2 text-xs ${darkMode ? 'bg-slate-800 border border-slate-600 text-gray-300' : 'bg-white border border-gray-200 text-gray-700'}`}>
-                                    <div className="font-semibold mb-1">Zu vermittelnde Tätigkeiten (Hilfe):</div>
+                                    <div className="font-semibold mb-1">Zu vermittelnde Taetigkeiten (Hilfe):</div>
                                     <div className="space-y-1">
                                       {inhaltePreview.map((inhalt, idx) => (
-                                        <div key={`${day}-${entryIndex}-inhalt-${idx}`} className="flex items-start justify-between gap-2">
+                                        <div key={`${day}-${entryIndex}-inhalt-${idx}`} className="flex items-start gap-2">
+                                          <span className={`${darkMode ? 'text-cyan-300' : 'text-cyan-600'}`}>-</span>
                                           <span className="leading-5">{inhalt}</span>
-                                          <button
-                                            onClick={() => applyBerichtsheftInhaltToEntry(day, entryIndex, inhalt)}
-                                            className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-cyan-300' : 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700'} px-2 py-0.5 rounded-md whitespace-nowrap transition-all`}
-                                          >
-                                            Übernehmen
-                                          </button>
                                         </div>
                                       ))}
                                     </div>
                                   </div>
                                 )}
+                                {!selectedBereich && suggestedBereichExamples.length > 0 && (
+                                  <div className={`mt-2 rounded-lg px-3 py-2 text-xs ${darkMode ? 'bg-slate-800 border border-slate-600 text-gray-300' : 'bg-white border border-gray-200 text-gray-700'}`}>
+                                    <div className="font-semibold mb-2">Beispiele aus passenden Bereichen:</div>
+                                    <div className="space-y-2">
+                                      {suggestedBereichExamples.map(({ bereich, inhalte }) => (
+                                        <div key={`${day}-${entryIndex}-example-${bereich.nr}`} className={`rounded-md px-2 py-2 ${darkMode ? 'bg-slate-700/80' : 'bg-cyan-50/70'}`}>
+                                          <div className={`font-medium mb-1 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                                            {bereich.icon} {bereich.nr}. {bereich.bereich}
+                                          </div>
+                                          <div className="space-y-1">
+                                            {inhalte.map((inhalt, idx) => (
+                                              <div key={`${day}-${entryIndex}-example-${bereich.nr}-${idx}`} className="flex items-start gap-2">
+                                                <span className={`${darkMode ? 'text-cyan-300' : 'text-cyan-600'}`}>-</span>
+                                                <span className="leading-5">{inhalt}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
                               </div>
                             );
                           })}
@@ -577,6 +632,99 @@ const {
                         </div>
                       </div>
                     </>
+                  )}
+                </div>
+              )}
+
+              {/* SIGN VIEW - Offene Berichte zur Unterschrift */}
+              {berichtsheftViewMode === 'sign' && canManageBerichtsheftSignatures && (
+                <div className="space-y-4">
+                  <div className={`${darkMode ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-50 to-blue-50'} rounded-xl p-4`}>
+                    <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Hier siehst du alle Wochenberichte, die vom Azubi unterschrieben wurden und noch auf Ausbilder-Unterschrift warten.
+                    </p>
+                  </div>
+
+                  {berichtsheftPendingLoading ? (
+                    <div className={`rounded-xl p-6 text-center ${darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                      Lade offene Berichtshefte...
+                    </div>
+                  ) : berichtsheftPendingSignatures.length === 0 ? (
+                    <div className={`rounded-xl p-6 text-center ${darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                      Aktuell keine offenen Berichtshefte zur Unterschrift.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {berichtsheftPendingSignatures.map((entry) => {
+                        const selectedTrainerId = assignmentSelectionById[entry.id] ?? entry.assigned_trainer_id ?? '';
+                        const azubiName = String(entry.user_name || '').trim() || 'Unbekannt';
+                        const assignedTrainer = String(entry.assigned_trainer_name || '').trim();
+
+                        return (
+                          <div key={entry.id} className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-xl p-4`}>
+                            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                              <div className="space-y-1">
+                                <div className={`text-lg font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                                  Nr. {entry.nachweis_nr} - {azubiName}
+                                </div>
+                                <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                  KW {formatWeekRange(entry)}
+                                  <span className="mx-2">|</span>
+                                  {entry.ausbildungsjahr}. Ausbildungsjahr
+                                  <span className="mx-2">|</span>
+                                  {(entry.total_hours || 0)} Stunden
+                                </div>
+                                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  Zugewiesen an: {assignedTrainer || 'Noch nicht zugewiesen'}
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col gap-2 lg:items-end">
+                                <div className="flex gap-2 flex-wrap">
+                                  <button
+                                    onClick={() => loadBerichtsheftForEdit(entry)}
+                                    className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-all"
+                                  >
+                                    Bericht öffnen
+                                  </button>
+                                  <button
+                                    onClick={() => generateBerichtsheftPDF(entry)}
+                                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-all flex items-center gap-2"
+                                  >
+                                    <Download size={16} /> PDF
+                                  </button>
+                                </div>
+
+                                <div className="flex gap-2 flex-wrap lg:justify-end">
+                                  <select
+                                    value={selectedTrainerId}
+                                    onChange={(event) => setAssignmentSelectionById((prev) => ({
+                                      ...prev,
+                                      [entry.id]: event.target.value
+                                    }))}
+                                    className={`px-3 py-2 border rounded-lg text-sm min-w-[220px] ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300 text-gray-700'}`}
+                                  >
+                                    <option value="">Ausbilder auswählen...</option>
+                                    {signerOptions.map((account) => (
+                                      <option key={account.id} value={account.id}>
+                                        {account.name || 'Unbenannt'}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <button
+                                    onClick={() => assignBerichtsheftTrainer(entry.id, selectedTrainerId)}
+                                    disabled={!selectedTrainerId}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedTrainerId ? 'bg-indigo-500 hover:bg-indigo-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                                  >
+                                    Zuweisen
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               )}
