@@ -1121,6 +1121,16 @@ export default function BaederApp() {
     return `${hours}:${String(minutes).padStart(2, '0')} h`;
   };
 
+  const formatMl = (valueMlInput) => {
+    const valueMl = Number(valueMlInput) || 0;
+    return `${valueMl.toFixed(0).replace('.', ',')} ml`;
+  };
+
+  const formatLitersFromMl = (valueMlInput) => {
+    const valueMl = Number(valueMlInput) || 0;
+    return `${(valueMl / 1000).toFixed(3).replace('.', ',')} L`;
+  };
+
   const calculateIndustrialTime = (inputs) => {
     const mode = inputs.industrialMode || 'clockToIndustrial';
 
@@ -1159,6 +1169,65 @@ export default function BaederApp() {
     };
   };
 
+  const calculateDilution = (inputs) => {
+    const concentrateParts = parseDecimalInput(inputs.concentrateParts);
+    const ratioValue = parseDecimalInput(inputs.ratioValue);
+    const containerSize = parseDecimalInput(inputs.containerSize);
+    const containerCount = parseDecimalInput(inputs.containerCount);
+    const containerUnit = inputs.containerUnit === 'ml' ? 'ml' : 'l';
+    const dilutionMode = inputs.dilutionMode || 'partToWater';
+
+    if (
+      concentrateParts === null
+      || ratioValue === null
+      || containerSize === null
+      || containerCount === null
+      || concentrateParts <= 0
+      || ratioValue <= 0
+      || containerSize <= 0
+      || containerCount <= 0
+    ) {
+      return null;
+    }
+
+    const roundedContainerCount = Math.max(1, Math.floor(containerCount));
+    const volumePerContainerMl = containerUnit === 'l' ? containerSize * 1000 : containerSize;
+    if (!Number.isFinite(volumePerContainerMl) || volumePerContainerMl <= 0) {
+      return null;
+    }
+
+    const totalParts = dilutionMode === 'partToTotal'
+      ? ratioValue
+      : concentrateParts + ratioValue;
+
+    if (!Number.isFinite(totalParts) || totalParts <= concentrateParts) {
+      return null;
+    }
+
+    const totalVolumeMl = volumePerContainerMl * roundedContainerCount;
+    const concentrateTotalMl = totalVolumeMl * (concentrateParts / totalParts);
+    const waterTotalMl = totalVolumeMl - concentrateTotalMl;
+
+    const concentratePerContainerMl = concentrateTotalMl / roundedContainerCount;
+    const waterPerContainerMl = waterTotalMl / roundedContainerCount;
+
+    const ratioText = `${concentrateParts.toString().replace('.', ',')}:${ratioValue.toString().replace('.', ',')}`;
+    const modeText = dilutionMode === 'partToTotal'
+      ? 'Interpretation: 1:10 bedeutet 1 Teil in 10 Teilen gesamt'
+      : 'Interpretation: 1:10 bedeutet 1 Teil + 10 Teile Wasser';
+
+    const roundTo = (value, step = 5) => Math.round(value / step) * step;
+    const concentrateRoundedMl = roundTo(concentratePerContainerMl, 5);
+    const waterRoundedMl = roundTo(waterPerContainerMl, 5);
+
+    return {
+      result: `${formatLitersFromMl(concentrateTotalMl)} Konzentrat`,
+      explanation: `${ratioText} fuer ${roundedContainerCount} Behaelter a ${containerSize.toString().replace('.', ',')} ${containerUnit === 'l' ? 'L' : 'ml'}. ${modeText}.`,
+      details: `Pro Behaelter: ${formatMl(concentratePerContainerMl)} Konzentrat + ${formatMl(waterPerContainerMl)} Wasser. Gesamtmenge: ${formatLitersFromMl(totalVolumeMl)}.`,
+      recommendation: `Praxiswert je Behaelter (auf 5 ml gerundet): ${concentrateRoundedMl} ml Konzentrat + ${waterRoundedMl} ml Wasser. Gesamt Wasser: ${formatLitersFromMl(waterTotalMl)}.`
+    };
+  };
+
   const handleCalculation = () => {
     let result = null;
     
@@ -1174,6 +1243,9 @@ export default function BaederApp() {
         break;
       case 'industrialTime':
         result = calculateIndustrialTime(calculatorInputs);
+        break;
+      case 'dilution':
+        result = calculateDilution(calculatorInputs);
         break;
     }
     
