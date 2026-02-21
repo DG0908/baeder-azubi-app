@@ -1,7 +1,9 @@
 import React from 'react';
+import { Check, Download, Plus, Trash2, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { AUSBILDUNGSRAHMENPLAN } from '../../data/ausbildungsrahmenplan';
+import SignatureCanvas from '../ui/SignatureCanvas';
 
 const BerichtsheftView = (props) => {
 const {

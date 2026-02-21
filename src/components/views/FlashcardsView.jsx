@@ -42,9 +42,26 @@ const FlashcardsView = ({
   queueXpAward,
   XP_REWARDS,
   FLASHCARD_CONTENT,
+  KEYWORD_FLASHCARD_CONTENT,
+  keywordFlashcardMode,
+  setKeywordFlashcardMode,
+  flashcardKeywordInput,
+  setFlashcardKeywordInput,
+  flashcardKeywordEvaluation,
+  evaluateFlashcardKeywordAnswer,
+  resetFlashcardKeywordState,
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
+  const isKeywordFlashcard = currentFlashcard?.type === 'keyword' && Array.isArray(currentFlashcard?.keywordGroups);
+  const keywordCategoryCount = KEYWORD_FLASHCARD_CONTENT?.[newQuestionCategory]?.length || 0;
+  const requiredKeywordGroups = Math.max(
+    1,
+    Math.min(
+      currentFlashcard?.keywordGroups?.length || 1,
+      Number(currentFlashcard?.minKeywordGroups) || currentFlashcard?.keywordGroups?.length || 1
+    )
+  );
 
   return (
   <div className="max-w-4xl mx-auto">
@@ -179,19 +196,23 @@ const FlashcardsView = ({
           🎴 Karteikarten
         </h2>
         <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          {FLASHCARD_CONTENT[newQuestionCategory]?.length || 0} Standard + {userFlashcards.filter(fc => fc.category === newQuestionCategory).length} Custom
+          {keywordFlashcardMode
+            ? `${keywordCategoryCount} Schlagwort-Karten`
+            : `${FLASHCARD_CONTENT[newQuestionCategory]?.length || 0} Standard + ${userFlashcards.filter(fc => fc.category === newQuestionCategory).length} Custom`}
         </div>
       </div>
 
       {/* Lernmodus Umschalter */}
-      <div className="flex gap-2 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
         <button
           onClick={() => {
+            setKeywordFlashcardMode(false);
             setSpacedRepetitionMode(false);
-            loadFlashcards();
+            resetFlashcardKeywordState();
+            loadFlashcards({ useKeyword: false });
           }}
-          className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all ${
-            !spacedRepetitionMode
+          className={`py-3 px-4 rounded-lg font-bold transition-all ${
+            !spacedRepetitionMode && !keywordFlashcardMode
               ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
               : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
@@ -200,7 +221,9 @@ const FlashcardsView = ({
         </button>
         <button
           onClick={() => {
+            setKeywordFlashcardMode(false);
             setSpacedRepetitionMode(true);
+            resetFlashcardKeywordState();
             const due = loadDueCards(newQuestionCategory);
             if (due.length > 0) {
               setFlashcards(due);
@@ -209,8 +232,8 @@ const FlashcardsView = ({
               setShowFlashcardAnswer(false);
             }
           }}
-          className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-            spacedRepetitionMode
+          className={`py-3 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
+            spacedRepetitionMode && !keywordFlashcardMode
               ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
               : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
@@ -221,6 +244,20 @@ const FlashcardsView = ({
               {getDueCardCount(newQuestionCategory)}
             </span>
           )}
+        </button>
+        <button
+          onClick={() => {
+            setKeywordFlashcardMode(true);
+            setSpacedRepetitionMode(false);
+            loadFlashcards({ useKeyword: true });
+          }}
+          className={`py-3 px-4 rounded-lg font-bold transition-all ${
+            keywordFlashcardMode
+              ? 'bg-gradient-to-r from-indigo-600 to-purple-700 text-white shadow-lg'
+              : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          🧠 Schlagwoerter
         </button>
       </div>
 
@@ -261,6 +298,7 @@ const FlashcardsView = ({
                 key={cat.id}
                 onClick={() => {
                   setNewQuestionCategory(cat.id);
+                  resetFlashcardKeywordState();
                   const due = loadDueCards(cat.id);
                   if (due.length > 0) {
                     setFlashcards(due);
@@ -308,13 +346,10 @@ const FlashcardsView = ({
           value={newQuestionCategory}
           onChange={(e) => {
             setNewQuestionCategory(e.target.value);
-            const hardcodedCards = FLASHCARD_CONTENT[e.target.value] || [];
-            const userCards = userFlashcards.filter(fc => fc.category === e.target.value);
-            const allCards = [...hardcodedCards, ...userCards];
-            setFlashcards(allCards);
-            setFlashcardIndex(0);
-            setCurrentFlashcard(allCards[0]);
-            setShowFlashcardAnswer(false);
+            loadFlashcards({
+              categoryId: e.target.value,
+              useKeyword: keywordFlashcardMode
+            });
           }}
           className={`w-full px-4 py-3 border rounded-lg mb-6 ${
             darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white'
@@ -348,10 +383,15 @@ const FlashcardsView = ({
 
         <div
           onClick={() => {
+            if (isKeywordFlashcard) return;
             setShowFlashcardAnswer(!showFlashcardAnswer);
             playSound('bubble');
           }}
-          className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 shadow-2xl cursor-pointer transform transition-all hover:scale-105 min-h-[300px] flex items-center justify-center ${
+          className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 shadow-2xl min-h-[300px] flex items-center justify-center ${
+            isKeywordFlashcard
+              ? 'cursor-default'
+              : 'cursor-pointer transform transition-all hover:scale-105'
+          } ${
             spacedRepetitionMode && currentFlashcard.spacedData
               ? `border-4 ${getLevelColor(currentFlashcard.spacedData.level).replace('bg-', 'border-')}`
               : ''
@@ -359,19 +399,85 @@ const FlashcardsView = ({
         >
           <div className="text-center">
             <div className={`text-sm font-bold mb-4 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
-              {showFlashcardAnswer ? 'ANTWORT' : 'FRAGE'}
+              {isKeywordFlashcard ? 'SCHLAGWORT-CHALLENGE' : (showFlashcardAnswer ? 'ANTWORT' : 'FRAGE')}
             </div>
             <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              {showFlashcardAnswer ? currentFlashcard.back : currentFlashcard.front}
+              {isKeywordFlashcard
+                ? currentFlashcard.front
+                : (showFlashcardAnswer ? currentFlashcard.back : currentFlashcard.front)}
             </p>
             <p className={`text-sm mt-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              {showFlashcardAnswer ? '' : 'Klicken zum Umdrehen'}
+              {isKeywordFlashcard
+                ? `Treffe mindestens ${requiredKeywordGroups} Schlagwoerter.`
+                : (showFlashcardAnswer ? '' : 'Klicken zum Umdrehen')}
             </p>
           </div>
         </div>
 
+        {isKeywordFlashcard && (
+          <div className={`${darkMode ? 'bg-slate-800/95 border-slate-700' : 'bg-indigo-50 border-indigo-200'} border rounded-xl p-4 mt-4`}>
+            <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-indigo-200' : 'text-indigo-800'}`}>
+              Deine Freitext-Antwort
+            </label>
+            <textarea
+              value={flashcardKeywordInput}
+              onChange={(e) => setFlashcardKeywordInput(e.target.value)}
+              rows={4}
+              placeholder="Antworte in eigenen Worten und triff die Schlagwoerter..."
+              className={`w-full px-4 py-3 border-2 rounded-lg mb-3 ${
+                darkMode
+                  ? 'bg-slate-700 border-slate-600 text-white placeholder:text-gray-400'
+                  : 'bg-white border-indigo-200 text-gray-800'
+              }`}
+            />
+            <button
+              onClick={evaluateFlashcardKeywordAnswer}
+              disabled={!flashcardKeywordInput.trim()}
+              className={`w-full py-3 rounded-lg font-bold transition-all ${
+                flashcardKeywordInput.trim()
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-700 text-white hover:from-indigo-700 hover:to-purple-800'
+                  : darkMode
+                    ? 'bg-slate-700 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              Antwort pruefen
+            </button>
+
+            {flashcardKeywordEvaluation && (
+              <div className={`mt-4 rounded-lg border p-3 ${
+                flashcardKeywordEvaluation.isCorrect
+                  ? darkMode ? 'bg-emerald-900/40 border-emerald-600' : 'bg-emerald-50 border-emerald-300'
+                  : darkMode ? 'bg-amber-900/30 border-amber-600' : 'bg-amber-50 border-amber-300'
+              }`}>
+                <p className={`font-bold ${flashcardKeywordEvaluation.isCorrect ? 'text-emerald-500' : 'text-amber-500'}`}>
+                  {flashcardKeywordEvaluation.isCorrect ? '✅ Korrekt' : '⚠️ Noch unvollstaendig'}
+                </p>
+                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                  Treffer: {flashcardKeywordEvaluation.matchedCount}/{flashcardKeywordEvaluation.requiredGroups}
+                </p>
+                {flashcardKeywordEvaluation.matchedLabels?.length > 0 && (
+                  <p className={`text-sm mt-1 ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
+                    Erkannt: {flashcardKeywordEvaluation.matchedLabels.join(', ')}
+                  </p>
+                )}
+                {flashcardKeywordEvaluation.missingLabels?.length > 0 && (
+                  <p className={`text-sm mt-1 ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
+                    Fehlt: {flashcardKeywordEvaluation.missingLabels.join(', ')}
+                  </p>
+                )}
+                {currentFlashcard.back && (
+                  <p className={`text-sm mt-2 pt-2 border-t ${darkMode ? 'text-gray-300 border-slate-600' : 'text-gray-700 border-gray-200'}`}>
+                    Musterantwort: {currentFlashcard.back}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Spaced Repetition Buttons */}
-        {spacedRepetitionMode && showFlashcardAnswer && (
+        {spacedRepetitionMode && showFlashcardAnswer && !isKeywordFlashcard && (
           <div className="flex gap-4 mt-6">
             <button
               onClick={() => {
@@ -384,6 +490,7 @@ const FlashcardsView = ({
                   setFlashcardIndex(nextIdx);
                   setCurrentFlashcard(flashcards[nextIdx]);
                   setShowFlashcardAnswer(false);
+                  resetFlashcardKeywordState();
                 } else {
                   // Alle Karten durchgearbeitet
                   const remaining = loadDueCards(newQuestionCategory);
@@ -392,9 +499,11 @@ const FlashcardsView = ({
                     setFlashcardIndex(0);
                     setCurrentFlashcard(remaining[0]);
                     setShowFlashcardAnswer(false);
+                    resetFlashcardKeywordState();
                   } else {
                     setCurrentFlashcard(null);
                     setFlashcards([]);
+                    resetFlashcardKeywordState();
                   }
                 }
               }}
@@ -413,6 +522,7 @@ const FlashcardsView = ({
                   setFlashcardIndex(nextIdx);
                   setCurrentFlashcard(flashcards[nextIdx]);
                   setShowFlashcardAnswer(false);
+                  resetFlashcardKeywordState();
                 } else {
                   // Alle Karten durchgearbeitet
                   const remaining = loadDueCards(newQuestionCategory);
@@ -421,9 +531,11 @@ const FlashcardsView = ({
                     setFlashcardIndex(0);
                     setCurrentFlashcard(remaining[0]);
                     setShowFlashcardAnswer(false);
+                    resetFlashcardKeywordState();
                   } else {
                     setCurrentFlashcard(null);
                     setFlashcards([]);
+                    resetFlashcardKeywordState();
                   }
                 }
               }}
@@ -444,6 +556,7 @@ const FlashcardsView = ({
                   setFlashcardIndex(prevIdx);
                   setCurrentFlashcard(flashcards[prevIdx]);
                   setShowFlashcardAnswer(false);
+                  resetFlashcardKeywordState();
                   playSound('splash');
                 }
               }}
@@ -466,6 +579,7 @@ const FlashcardsView = ({
                   setFlashcardIndex(nextIdx);
                   setCurrentFlashcard(flashcards[nextIdx]);
                   setShowFlashcardAnswer(false);
+                  resetFlashcardKeywordState();
                   playSound('splash');
                 }
               }}
@@ -487,18 +601,26 @@ const FlashcardsView = ({
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 text-center`}>
         <div className="text-6xl mb-4">{spacedRepetitionMode ? '🎉' : '🎴'}</div>
         <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          {spacedRepetitionMode ? 'Alle Karten wiederholt!' : 'Keine Karteikarten'}
+          {spacedRepetitionMode
+            ? 'Alle Karten wiederholt!'
+            : keywordFlashcardMode
+              ? 'Keine Schlagwort-Karten'
+              : 'Keine Karteikarten'}
         </p>
         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
           {spacedRepetitionMode
-            ? 'Super! Du hast alle fälligen Karten in dieser Kategorie durchgearbeitet. Komm später wieder!'
-            : 'Noch keine Karteikarten in dieser Kategorie. Erstelle die erste!'}
+            ? 'Super! Du hast alle faelligen Karten in dieser Kategorie durchgearbeitet. Komm spaeter wieder!'
+            : keywordFlashcardMode
+              ? 'In dieser Kategorie gibt es noch keine Extra-schwer-Schlagwortkarten.'
+              : 'Noch keine Karteikarten in dieser Kategorie. Erstelle die erste!'}
         </p>
         {spacedRepetitionMode && (
           <button
             onClick={() => {
+              setKeywordFlashcardMode(false);
               setSpacedRepetitionMode(false);
-              loadFlashcards();
+              resetFlashcardKeywordState();
+              loadFlashcards({ useKeyword: false });
             }}
             className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold"
           >

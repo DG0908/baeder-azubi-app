@@ -61,6 +61,9 @@ const randomizeAnswerLengthPattern = (question) => {
 };
 
 export const shuffleAnswers = (question) => {
+  if (!question || !Array.isArray(question.a) || question.a.length === 0) {
+    return { ...(question || {}) };
+  }
   const preparedQuestion = randomizeAnswerLengthPattern(question);
   const answers = [...preparedQuestion.a];
 
