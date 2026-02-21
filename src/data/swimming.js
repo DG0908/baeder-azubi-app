@@ -36,6 +36,237 @@ export const SWIM_CHALLENGES = [
   { id: 'lagen_400', name: 'Lagen-Meister', description: '400m Lagenschwimmen (100m pro Stil)', type: 'single_distance', target: 400, style: 'lagen', unit: 'm', icon: '🏆', points: 150, category: 'technik' },
 ];
 
+
+export const SWIM_TRAINING_PLANS = [
+  // ==================== AUSDAUER (5) ====================
+  {
+    id: 'plan_ausdauer_01',
+    name: 'Ausdauer Start',
+    category: 'ausdauer',
+    difficulty: 'angenehm',
+    styleId: 'brust',
+    targetDistance: 1000,
+    targetTime: 35,
+    xpReward: 12,
+    description: 'Ruhiger Einstieg mit sauberem Tempo und gleichmaessiger Atmung.'
+  },
+  {
+    id: 'plan_ausdauer_02',
+    name: 'Grundlage Plus',
+    category: 'ausdauer',
+    difficulty: 'angenehm',
+    styleId: 'kraul',
+    targetDistance: 1400,
+    targetTime: 42,
+    xpReward: 14,
+    description: 'Konstante Strecke im lockeren bis mittleren Intensitaetsbereich.'
+  },
+  {
+    id: 'plan_ausdauer_03',
+    name: 'Rhythmus 2k',
+    category: 'ausdauer',
+    difficulty: 'fokussiert',
+    styleId: 'kraul',
+    targetDistance: 2000,
+    targetTime: 56,
+    xpReward: 18,
+    description: 'Stabiler Rhythmus ueber laengere Distanz mit Technikfokus.'
+  },
+  {
+    id: 'plan_ausdauer_04',
+    name: 'Langstrecke Basis',
+    category: 'ausdauer',
+    difficulty: 'fokussiert',
+    styleId: 'brust',
+    targetDistance: 2400,
+    targetTime: 68,
+    xpReward: 20,
+    description: 'Laengeres Grundlagentraining fuer Becken-Routine und Ausdauer.'
+  },
+  {
+    id: 'plan_ausdauer_05',
+    name: 'Ausdauer Peak',
+    category: 'ausdauer',
+    difficulty: 'anspruchsvoll',
+    styleId: 'kraul',
+    targetDistance: 3000,
+    targetTime: 80,
+    xpReward: 26,
+    description: 'Fordernde Einheit fuer starke Grundlagenausdauer.'
+  },
+
+  // ==================== SPRINT (5) ====================
+  {
+    id: 'plan_sprint_01',
+    name: 'Sprint Technik Start',
+    category: 'sprint',
+    difficulty: 'angenehm',
+    styleId: 'kraul',
+    targetDistance: 500,
+    targetTime: 13,
+    xpReward: 12,
+    description: 'Kurze schnelle Abschnitte mit Fokus auf Wasserlage und Zug.'
+  },
+  {
+    id: 'plan_sprint_02',
+    name: '50er Serie',
+    category: 'sprint',
+    difficulty: 'angenehm',
+    styleId: 'kraul',
+    targetDistance: 700,
+    targetTime: 17,
+    xpReward: 14,
+    description: 'Wiederholte Sprints mit kontrollierter Erholung.'
+  },
+  {
+    id: 'plan_sprint_03',
+    name: 'Explosiv 900',
+    category: 'sprint',
+    difficulty: 'fokussiert',
+    styleId: 'kraul',
+    targetDistance: 900,
+    targetTime: 20,
+    xpReward: 18,
+    description: 'Intensiver Mix fuer Starts, Wenden und Endbeschleunigung.'
+  },
+  {
+    id: 'plan_sprint_04',
+    name: 'Race Pace',
+    category: 'sprint',
+    difficulty: 'fokussiert',
+    styleId: 'kraul',
+    targetDistance: 1100,
+    targetTime: 24,
+    xpReward: 21,
+    description: 'Hohe Geschwindigkeit mit kurzen Entlastungsphasen.'
+  },
+  {
+    id: 'plan_sprint_05',
+    name: 'Sprint Maximum',
+    category: 'sprint',
+    difficulty: 'anspruchsvoll',
+    styleId: 'kraul',
+    targetDistance: 1300,
+    targetTime: 27,
+    xpReward: 28,
+    description: 'Sehr intensive Serien fuer Tempohaerte und Renndruck.'
+  },
+
+  // ==================== TECHNIK (5) ====================
+  {
+    id: 'plan_technik_01',
+    name: 'Kraul Sauberkeit',
+    category: 'technik',
+    difficulty: 'angenehm',
+    styleId: 'kraul',
+    targetDistance: 900,
+    targetTime: 30,
+    xpReward: 13,
+    description: 'Techniktempo mit Fokus auf Zugweg und Atmungsrhythmus.'
+  },
+  {
+    id: 'plan_technik_02',
+    name: 'Brust Linie',
+    category: 'technik',
+    difficulty: 'angenehm',
+    styleId: 'brust',
+    targetDistance: 900,
+    targetTime: 32,
+    xpReward: 13,
+    description: 'Beinschlag und Gleitphase sauber koordinieren.'
+  },
+  {
+    id: 'plan_technik_03',
+    name: 'Ruecken Kontrolle',
+    category: 'technik',
+    difficulty: 'fokussiert',
+    styleId: 'ruecken',
+    targetDistance: 1000,
+    targetTime: 33,
+    xpReward: 18,
+    description: 'Koerperspannung und Armzug fuer stabile Wasserlage.'
+  },
+  {
+    id: 'plan_technik_04',
+    name: 'Schmetterling Basis',
+    category: 'technik',
+    difficulty: 'fokussiert',
+    styleId: 'schmetterling',
+    targetDistance: 600,
+    targetTime: 24,
+    xpReward: 22,
+    description: 'Delphinbewegung, Timing und gleichmaessige Wellenarbeit.'
+  },
+  {
+    id: 'plan_technik_05',
+    name: 'Technik Master',
+    category: 'technik',
+    difficulty: 'anspruchsvoll',
+    styleId: 'lagen',
+    targetDistance: 1400,
+    targetTime: 42,
+    xpReward: 28,
+    description: 'Lagenfokus fuer Stilwechsel, Technikuebergaenge und Kontrolle.'
+  },
+
+  // ==================== KOMBI (5) ====================
+  {
+    id: 'plan_kombi_01',
+    name: 'Kombi Einstieg',
+    category: 'kombi',
+    difficulty: 'angenehm',
+    styleId: 'lagen',
+    targetDistance: 1000,
+    targetTime: 31,
+    xpReward: 15,
+    description: 'Ausdauer + Technik in einer runden Lageneinheit.'
+  },
+  {
+    id: 'plan_kombi_02',
+    name: 'Kombi Aufbau',
+    category: 'kombi',
+    difficulty: 'angenehm',
+    styleId: 'lagen',
+    targetDistance: 1400,
+    targetTime: 40,
+    xpReward: 17,
+    description: 'Mehr Umfang mit sauberem Stilwechsel.'
+  },
+  {
+    id: 'plan_kombi_03',
+    name: 'Kombi Tempo',
+    category: 'kombi',
+    difficulty: 'fokussiert',
+    styleId: 'lagen',
+    targetDistance: 1800,
+    targetTime: 49,
+    xpReward: 21,
+    description: 'Mittelstrecke mit Technikdruck und Tempowechsel.'
+  },
+  {
+    id: 'plan_kombi_04',
+    name: 'Kombi Wettkampf',
+    category: 'kombi',
+    difficulty: 'fokussiert',
+    styleId: 'lagen',
+    targetDistance: 2200,
+    targetTime: 58,
+    xpReward: 24,
+    description: 'Hoher Umfang mit Wettkampfcharakter.'
+  },
+  {
+    id: 'plan_kombi_05',
+    name: 'Kombi Elite',
+    category: 'kombi',
+    difficulty: 'anspruchsvoll',
+    styleId: 'lagen',
+    targetDistance: 2600,
+    targetTime: 68,
+    xpReward: 32,
+    description: 'Komplette Belastung fuer Ausdauer, Technik und Tempo.'
+  }
+];
+
 export const SWIM_LEVELS = [
   { level: 1, name: 'Bronze-Schwimmer', minPoints: 0, icon: '🥉', color: 'from-amber-600 to-amber-700' },
   { level: 2, name: 'Silber-Schwimmer', minPoints: 500, icon: '🥈', color: 'from-gray-400 to-gray-500' },

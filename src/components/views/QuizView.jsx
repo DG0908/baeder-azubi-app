@@ -52,6 +52,11 @@ const QuizView = ({
     1,
     Math.min(availableKeywordGroups || 1, Number(currentQuestion?.minKeywordGroups) || availableKeywordGroups || 1)
   );
+  const formatAnswerLabel = (answerText) => String(answerText ?? '')
+    .replace(/\s*\(\s*optional(?:\s*dabei)?\s*\)/gi, '')
+    .replace(/\s*-\s*optional(?:\s*dabei)?\s*$/gi, '')
+    .replace(/\s+optional(?:\s+dabei)?\s*$/gi, '')
+    .trim();
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -319,7 +324,7 @@ const QuizView = ({
                           {isMulti && !answered && (
                             <span className="mr-2">{isSelectedMulti ? '☑️' : '⬜'}</span>
                           )}
-                          {answer}
+                          {formatAnswerLabel(answer)}
                         </button>
                       );
                     })}

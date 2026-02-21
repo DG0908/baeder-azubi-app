@@ -31,7 +31,7 @@ import { AUSBILDUNGSRAHMENPLAN, WOCHEN_PRO_JAHR } from './data/ausbildungsrahmen
 import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
 import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 import { KEYWORD_CHALLENGES, buildKeywordFlashcards } from './data/keywordChallenges';
-import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, SWIM_BADGES, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
+import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, SWIM_BADGES, SWIM_TRAINING_PLANS, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
 import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel, parseExamTimeToSeconds, formatSecondsAsTime } from './data/practicalExam';
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
@@ -402,7 +402,8 @@ export default function BaederApp() {
     practicalExam: 0,
     flashcardLearning: 0,
     flashcardCreation: 0,
-    quizWins: 0
+    quizWins: 0,
+    swimTrainingPlans: 0
   };
 
   const createEmptyUserStats = () => ({
@@ -440,7 +441,8 @@ export default function BaederApp() {
         practicalExam: toSafeInt(rawBreakdown.practicalExam),
         flashcardLearning: toSafeInt(rawBreakdown.flashcardLearning),
         flashcardCreation: toSafeInt(rawBreakdown.flashcardCreation),
-        quizWins: toSafeInt(rawBreakdown.quizWins)
+        quizWins: toSafeInt(rawBreakdown.quizWins),
+        swimTrainingPlans: toSafeInt(rawBreakdown.swimTrainingPlans)
       },
       awardedEvents: rawAwardedEvents
     };
@@ -703,7 +705,7 @@ export default function BaederApp() {
   const [berichtsheftPendingLoading, setBerichtsheftPendingLoading] = useState(false);
 
   // Schwimmchallenge State
-  const [swimChallengeView, setSwimChallengeView] = useState('overview'); // 'overview', 'challenges', 'add', 'leaderboard', 'battle'
+  const [swimChallengeView, setSwimChallengeView] = useState('overview'); // 'overview', 'challenges', 'plans', 'add', 'leaderboard', 'battle'
   const [swimSessions, setSwimSessions] = useState([]); // Alle Trainingseinheiten (aus Supabase)
   const [activeSwimChallenges, setActiveSwimChallenges] = useState(() => {
     // Lade aktive Challenges aus localStorage
@@ -716,7 +718,8 @@ export default function BaederApp() {
     time: '',
     style: 'kraul',
     notes: '',
-    challengeId: ''
+    challengeId: '',
+    trainingPlanId: ''
   });
   const [pendingSwimConfirmations, setPendingSwimConfirmations] = useState([]); // Für Trainer: Zu bestätigende Einheiten
   const [swimChallengeFilter, setSwimChallengeFilter] = useState('alle'); // Filter für Challenge-Kategorien
@@ -4885,6 +4888,57 @@ export default function BaederApp() {
     );
   };
 
+  const SWIM_PLAN_NOTE_TAG_PREFIX = '[SWIM_PLAN:';
+  const SWIM_PLAN_NOTE_TAG_REGEX = /\[SWIM_PLAN:([a-z0-9_-]+)\]/i;
+
+  const extractSwimTrainingPlanIdFromNotes = (notesInput) => {
+    const notes = String(notesInput || '');
+    const match = notes.match(SWIM_PLAN_NOTE_TAG_REGEX);
+    return match?.[1] || null;
+  };
+
+  const stripSwimTrainingPlanTagFromNotes = (notesInput) => {
+    const notes = String(notesInput || '');
+    return notes
+      .replace(/\s*\[SWIM_PLAN:[^\]]+\]\s*/gi, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  };
+
+  const encodeSwimTrainingPlanInNotes = (notesInput, trainingPlanIdInput) => {
+    const cleanedNotes = stripSwimTrainingPlanTagFromNotes(notesInput);
+    const trainingPlanId = String(trainingPlanIdInput || '').trim();
+    if (!trainingPlanId) {
+      return cleanedNotes;
+    }
+    return cleanedNotes
+      ? `${cleanedNotes}\n${SWIM_PLAN_NOTE_TAG_PREFIX}${trainingPlanId}]`
+      : `${SWIM_PLAN_NOTE_TAG_PREFIX}${trainingPlanId}]`;
+  };
+
+  const doesSessionFulfillTrainingPlan = (sessionInput, planInput) => {
+    if (!sessionInput || !planInput) return false;
+
+    const distance = Number(sessionInput.distance || 0);
+    const timeMinutes = Number(sessionInput.time_minutes || 0);
+    const styleId = String(sessionInput.style || '');
+
+    if (!Number.isFinite(distance) || !Number.isFinite(timeMinutes) || distance <= 0 || timeMinutes <= 0) {
+      return false;
+    }
+
+    const targetDistance = Number(planInput.targetDistance || 0);
+    const targetTime = Number(planInput.targetTime || 0);
+    if (!Number.isFinite(targetDistance) || !Number.isFinite(targetTime) || targetDistance <= 0 || targetTime <= 0) {
+      return false;
+    }
+
+    const styleMatches = !planInput.styleId || String(planInput.styleId) === styleId;
+    if (!styleMatches) return false;
+
+    return distance >= targetDistance && timeMinutes <= targetTime;
+  };
+
   // Trainingseinheiten aus Supabase laden
   const loadSwimSessions = async () => {
     try {
@@ -4934,7 +4988,7 @@ export default function BaederApp() {
         distance: parseInt(sessionData.distance) || 0,
         time_minutes: parseInt(sessionData.time) || 0,
         style: sessionData.style,
-        notes: sessionData.notes || '',
+        notes: encodeSwimTrainingPlanInNotes(sessionData.notes, sessionData.trainingPlanId),
         challenge_id: sessionData.challengeId || null,
         confirmed: false,
         confirmed_by: null,
@@ -4973,6 +5027,8 @@ export default function BaederApp() {
   // Trainingseinheit bestätigen (Trainer)
   const confirmSwimSession = async (sessionId) => {
     try {
+      const sessionToConfirm = swimSessions.find(s => s.id === sessionId) || null;
+
       const { error } = await supabase
         .from('swim_sessions')
         .update({
@@ -4989,6 +5045,28 @@ export default function BaederApp() {
         s.id === sessionId ? { ...s, confirmed: true, confirmed_by: user.name } : s
       ));
       setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
+
+      if (sessionToConfirm?.user_id && sessionToConfirm?.user_name) {
+        const trainingPlanId = extractSwimTrainingPlanIdFromNotes(sessionToConfirm.notes);
+        if (trainingPlanId) {
+          const trainingPlan = SWIM_TRAINING_PLANS.find(plan => plan.id === trainingPlanId) || null;
+          if (trainingPlan && doesSessionFulfillTrainingPlan(sessionToConfirm, trainingPlan)) {
+            const xpAmount = toSafeInt(trainingPlan.xpReward);
+            if (xpAmount > 0) {
+              void queueXpAwardForUser(
+                { id: sessionToConfirm.user_id, name: sessionToConfirm.user_name },
+                'swimTrainingPlans',
+                xpAmount,
+                {
+                  eventKey: `swim_training_plan_${trainingPlan.id}_${sessionId}`,
+                  reason: `Trainingsplan erfuellt: ${trainingPlan.name}`,
+                  showXpToast: true
+                }
+              );
+            }
+          }
+        }
+      }
 
       return { success: true };
     } catch (err) {
@@ -6923,6 +7001,7 @@ export default function BaederApp() {
             SWIM_ARENA_DISCIPLINES={SWIM_ARENA_DISCIPLINES}
             SWIM_BATTLE_WIN_POINTS={SWIM_BATTLE_WIN_POINTS}
             SWIM_CHALLENGES={SWIM_CHALLENGES}
+            SWIM_TRAINING_PLANS={SWIM_TRAINING_PLANS}
             SWIM_STYLES={SWIM_STYLES}
             activeSwimChallenges={activeSwimChallenges}
             allUsers={allUsers}
