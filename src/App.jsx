@@ -188,6 +188,88 @@ export default function BaederApp() {
     6: 0
   };
   const PRACTICAL_ATTEMPTS_LOCAL_KEY = 'practical_exam_attempts_local_v1';
+  const FLOCCULANT_PRODUCTS = [
+    {
+      id: 'pac_liquid_standard',
+      label: 'PAC fluessig (Aluminiumbasis)',
+      base: 'aluminum',
+      continuousDoseMlPerM3: 0.12,
+      shockDoseMlPerM3: 0.22
+    },
+    {
+      id: 'aluminum_sulfate_solution',
+      label: 'Aluminiumsulfat-Loesung',
+      base: 'aluminum',
+      continuousDoseMlPerM3: 0.15,
+      shockDoseMlPerM3: 0.28
+    },
+    {
+      id: 'ferric_chloride_solution',
+      label: 'Eisen-III-chlorid-Loesung',
+      base: 'iron',
+      continuousDoseMlPerM3: 0.09,
+      shockDoseMlPerM3: 0.18
+    },
+    {
+      id: 'ferric_sulfate_solution',
+      label: 'Eisen-III-sulfat-Loesung',
+      base: 'iron',
+      continuousDoseMlPerM3: 0.11,
+      shockDoseMlPerM3: 0.2
+    }
+  ];
+  const FLOCCULANT_PUMP_TYPES = [
+    { id: 'peristaltic', label: 'Schlauchpumpe' },
+    { id: 'diaphragm', label: 'Membrandosierpumpe' },
+    { id: 'manual', label: 'Manuelle Literdosierung' }
+  ];
+  const FLOCCULANT_PUMP_MODELS = [
+    {
+      id: 'prominent_dulcoflex_df2a',
+      pumpTypeId: 'peristaltic',
+      label: 'ProMinent DULCOFLEX DF2a',
+      minMlHByHose: { '4': 20, '6': 35, '8': 60 },
+      maxMlHByHose: { '4': 380, '6': 900, '8': 1500 }
+    },
+    {
+      id: 'lutz_jesco_peridos_x',
+      pumpTypeId: 'peristaltic',
+      label: 'Lutz-Jesco PERIDOS X',
+      minMlHByHose: { '4': 15, '6': 30, '8': 50 },
+      maxMlHByHose: { '4': 320, '6': 760, '8': 1300 }
+    },
+    {
+      id: 'prominent_gamma_x',
+      pumpTypeId: 'diaphragm',
+      label: 'ProMinent gamma/X',
+      minMlH: 40,
+      maxMlH: 2000
+    },
+    {
+      id: 'grundfos_dde_6_10',
+      pumpTypeId: 'diaphragm',
+      label: 'Grundfos DDE 6-10',
+      minMlH: 60,
+      maxMlH: 6000
+    },
+    {
+      id: 'manual_litering',
+      pumpTypeId: 'manual',
+      label: 'Manuell (Liter an der Pumpe)'
+    }
+  ];
+  const FLOCCULANT_LOAD_FACTORS = {
+    low: 0.85,
+    normal: 1,
+    high: 1.2,
+    peak: 1.35
+  };
+  const FLOCCULANT_WATER_FACTORS = {
+    clear: 0.9,
+    normal: 1,
+    turbid: 1.2,
+    severe: 1.35
+  };
 
   const SWIM_BATTLE_WIN_POINTS = 20;
   const SWIM_ARENA_DISCIPLINES = [
@@ -1131,6 +1213,51 @@ export default function BaederApp() {
     return `${(valueMl / 1000).toFixed(3).replace('.', ',')} L`;
   };
 
+  const resolveFlocculantPumpCapacity = (pumpTypeId, pumpModelId, hoseSizeInput) => {
+    const fallbackModel = FLOCCULANT_PUMP_MODELS.find((model) => model.pumpTypeId === pumpTypeId) || null;
+    const model = FLOCCULANT_PUMP_MODELS.find(
+      (entry) => entry.id === pumpModelId && entry.pumpTypeId === pumpTypeId
+    ) || fallbackModel;
+
+    if (!model) {
+      return {
+        pumpModel: null,
+        maxMlH: null,
+        minMlH: null,
+        selectedHoseSize: null
+      };
+    }
+
+    if (pumpTypeId === 'peristaltic') {
+      const hoseOptions = Object.keys(model.maxMlHByHose || {});
+      if (hoseOptions.length === 0) {
+        return {
+          pumpModel: model,
+          maxMlH: null,
+          minMlH: null,
+          selectedHoseSize: null
+        };
+      }
+
+      const normalizedInput = String(Math.max(1, Math.round(parseDecimalInput(hoseSizeInput) || 0)));
+      const selectedHoseSize = hoseOptions.includes(normalizedInput) ? normalizedInput : hoseOptions[0];
+
+      return {
+        pumpModel: model,
+        maxMlH: model.maxMlHByHose?.[selectedHoseSize] ?? null,
+        minMlH: model.minMlHByHose?.[selectedHoseSize] ?? null,
+        selectedHoseSize
+      };
+    }
+
+    return {
+      pumpModel: model,
+      maxMlH: model.maxMlH ?? null,
+      minMlH: model.minMlH ?? null,
+      selectedHoseSize: null
+    };
+  };
+
   const calculateIndustrialTime = (inputs) => {
     const mode = inputs.industrialMode || 'clockToIndustrial';
 
@@ -1228,6 +1355,98 @@ export default function BaederApp() {
     };
   };
 
+  const calculateFlocculation = (inputs) => {
+    const circulationFlow = parseDecimalInput(inputs.circulationFlow);
+    const poolVolume = parseDecimalInput(inputs.poolVolume);
+    const dosingHoursPerDay = parseDecimalInput(inputs.dosingHoursPerDay);
+    const stockConcentrationPercent = parseDecimalInput(inputs.stockConcentrationPercent);
+    const stockTankLiters = parseDecimalInput(inputs.stockTankLiters);
+    const pumpTypeId = inputs.flocPumpTypeId || 'peristaltic';
+    const pumpModelId = inputs.flocPumpModelId || '';
+    const flocculationMode = inputs.flocculationMode === 'shock' ? 'shock' : 'continuous';
+    const loadProfile = inputs.loadProfile || 'normal';
+    const waterCondition = inputs.waterCondition || 'normal';
+
+    if (
+      circulationFlow === null
+      || poolVolume === null
+      || dosingHoursPerDay === null
+      || stockConcentrationPercent === null
+      || stockTankLiters === null
+      || circulationFlow <= 0
+      || poolVolume <= 0
+      || dosingHoursPerDay <= 0
+      || dosingHoursPerDay > 24
+      || stockConcentrationPercent <= 0
+      || stockConcentrationPercent > 100
+      || stockTankLiters <= 0
+    ) {
+      return null;
+    }
+
+    const product = FLOCCULANT_PRODUCTS.find((item) => item.id === inputs.flocProductId)
+      || FLOCCULANT_PRODUCTS[0];
+    if (!product) return null;
+
+    const loadFactor = FLOCCULANT_LOAD_FACTORS[loadProfile] || 1;
+    const waterFactor = FLOCCULANT_WATER_FACTORS[waterCondition] || 1;
+    const baseDoseMlPerM3 = flocculationMode === 'shock'
+      ? product.shockDoseMlPerM3
+      : product.continuousDoseMlPerM3;
+    const adjustedDoseMlPerM3 = baseDoseMlPerM3 * loadFactor * waterFactor;
+
+    const pureProductMlH = circulationFlow * adjustedDoseMlPerM3;
+    const pureProductMlDay = pureProductMlH * dosingHoursPerDay;
+
+    const stockFraction = stockConcentrationPercent / 100;
+    const stockSolutionMlH = pureProductMlH / stockFraction;
+    const stockSolutionMlDay = stockSolutionMlH * dosingHoursPerDay;
+
+    const turnoversPerDay = (circulationFlow * dosingHoursPerDay) / poolVolume;
+    const tankRuntimeHours = stockSolutionMlH > 0
+      ? (stockTankLiters * 1000) / stockSolutionMlH
+      : null;
+    const tankProductLiters = stockTankLiters * stockFraction;
+    const tankWaterLiters = Math.max(0, stockTankLiters - tankProductLiters);
+
+    const {
+      pumpModel,
+      maxMlH,
+      minMlH,
+      selectedHoseSize
+    } = resolveFlocculantPumpCapacity(pumpTypeId, pumpModelId, inputs.flocHoseSizeMm);
+
+    const modelCapacityInfo = (() => {
+      if (!pumpModel || !maxMlH) return null;
+      const settingPercent = (stockSolutionMlH / maxMlH) * 100;
+      const minPercent = minMlH ? (minMlH / maxMlH) * 100 : 0;
+      return { settingPercent, minPercent };
+    })();
+
+    let recommendation = `Ziel-Dosierung: ${adjustedDoseMlPerM3.toFixed(3).replace('.', ',')} ml/m3 (Produkt).`;
+    if (pumpTypeId === 'manual') {
+      recommendation = `Manuell pro Tag dosieren: ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L Produkt.`;
+    } else if (!pumpModel || !maxMlH) {
+      recommendation = `Pumpenmodell oder Kapazitaet fehlt. Zielzufuhr: ${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h Dosierloesung.`;
+    } else if (modelCapacityInfo.settingPercent > 100) {
+      recommendation = `Pumpe zu klein: benoetigt ${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h, Modell schafft ${(maxMlH / 1000).toFixed(3).replace('.', ',')} L/h.`;
+    } else if (modelCapacityInfo.minPercent > 0 && modelCapacityInfo.settingPercent < modelCapacityInfo.minPercent) {
+      recommendation = `Pumpe laeuft unter Mindestbereich. Stellwert waere ${modelCapacityInfo.settingPercent.toFixed(1).replace('.', ',')}%. Groessere Verduennung oder kleineres Modell nutzen.`;
+    } else {
+      recommendation = `Pumpeneinstellung: ca. ${modelCapacityInfo.settingPercent.toFixed(1).replace('.', ',')}% (${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h).`;
+    }
+
+    const hoseText = selectedHoseSize ? ` | Schlauch: ${selectedHoseSize} mm` : '';
+    const modelText = pumpModel ? `${pumpModel.label}${hoseText}` : 'kein Modell';
+
+    return {
+      result: `${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h Dosierloesung`,
+      explanation: `${product.label} (${product.base === 'aluminum' ? 'Aluminiumbasis' : 'Eisenbasis'}) bei ${circulationFlow.toFixed(1).replace('.', ',')} m3/h Umwaelzung. Berechnung fuer ${flocculationMode === 'shock' ? 'Stoss' : 'kontinuierliche'} Flockung.`,
+      details: `Produktbedarf: ${(pureProductMlH / 1000).toFixed(3).replace('.', ',')} L/h bzw. ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag. | Dosierloesung: ${(stockSolutionMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag bei ${stockConcentrationPercent.toFixed(1).replace('.', ',')}% Ansatz. | Modell: ${modelText}. | Becken-Umwaelzungen/Tag: ${turnoversPerDay.toFixed(2).replace('.', ',')}. | Ansatz fuer ${stockTankLiters.toFixed(1).replace('.', ',')} L: ${tankProductLiters.toFixed(2).replace('.', ',')} L Produkt + ${tankWaterLiters.toFixed(2).replace('.', ',')} L Wasser. | Tankreichweite: ${tankRuntimeHours ? `${tankRuntimeHours.toFixed(1).replace('.', ',')} h` : '-'}.`,
+      recommendation
+    };
+  };
+
   const handleCalculation = () => {
     let result = null;
     
@@ -1246,6 +1465,9 @@ export default function BaederApp() {
         break;
       case 'dilution':
         result = calculateDilution(calculatorInputs);
+        break;
+      case 'flocculation':
+        result = calculateFlocculation(calculatorInputs);
         break;
     }
     
@@ -6400,6 +6622,9 @@ export default function BaederApp() {
             selectedElement={selectedElement}
             setSelectedElement={setSelectedElement}
             performCalculation={handleCalculation}
+            flocculantProducts={FLOCCULANT_PRODUCTS}
+            flocculantPumpTypes={FLOCCULANT_PUMP_TYPES}
+            flocculantPumpModels={FLOCCULANT_PUMP_MODELS}
           />
         )}
 
