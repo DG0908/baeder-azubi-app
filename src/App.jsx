@@ -6327,7 +6327,7 @@ export default function BaederApp() {
             setSelectedChemical={setSelectedChemical}
             selectedElement={selectedElement}
             setSelectedElement={setSelectedElement}
-            performCalculation={performCalculation}
+            performCalculation={handleCalculation}
           />
         )}
 
