@@ -81,7 +81,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const handleRegister = async () => {
-    if (!registerData.name || !registerData.email || !registerData.password) {
+    if (!registerData.name.trim() || !registerData.email.trim() || !registerData.password) {
       alert('Bitte alle Felder ausfüllen!');
       return;
     }
@@ -90,13 +90,16 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    const trimmedEmail = registerData.email.trim().toLowerCase();
+    const trimmedName = registerData.name.trim();
+
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: registerData.email,
+        email: trimmedEmail,
         password: registerData.password,
         options: {
           data: {
-            name: registerData.name,
+            name: trimmedName,
             role: registerData.role,
             training_end: registerData.trainingEnd || null
           }
@@ -118,8 +121,8 @@ export function AuthProvider({ children }) {
         try {
           const { error: rpcError } = await supabase.rpc('create_user_profile', {
             user_id: data.user.id,
-            user_name: registerData.name,
-            user_email: registerData.email,
+            user_name: trimmedName,
+            user_email: trimmedEmail,
             user_role: registerData.role,
             user_training_end: registerData.trainingEnd || null
           });
@@ -130,8 +133,8 @@ export function AuthProvider({ children }) {
               .from('profiles')
               .upsert({
                 id: data.user.id,
-                name: registerData.name,
-                email: registerData.email,
+                name: trimmedName,
+                email: trimmedEmail,
                 role: registerData.role,
                 training_end: registerData.trainingEnd || null,
                 approved: false
