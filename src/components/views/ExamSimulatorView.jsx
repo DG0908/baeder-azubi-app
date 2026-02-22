@@ -46,6 +46,12 @@ const ExamSimulatorView = ({
   getPracticalParticipantCandidates,
   savePracticalExamAttempt,
   deletePracticalExamAttempt,
+  examKeywordMode,
+  setExamKeywordMode,
+  examKeywordInput,
+  setExamKeywordInput,
+  examKeywordEvaluation,
+  submitExamKeywordAnswer,
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
@@ -113,6 +119,26 @@ const ExamSimulatorView = ({
             {adaptiveLearningEnabled ? 'Aktiv' : 'Aus'}
           </button>
         </div>
+        <div className={`mb-4 ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-violet-50 border-violet-200'} border rounded-lg p-3 flex items-center justify-between gap-3`}>
+          <div className="text-left">
+            <p className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-violet-800'}`}>
+              🧠 Schlagwort-Modus
+            </p>
+            <p className={`text-xs ${darkMode ? 'text-gray-300' : 'text-violet-700'}`}>
+              {examKeywordMode ? 'Fragen schriftlich beantworten – triff die Schlüsselbegriffe.' : 'Klassisches Multiple-Choice.'}
+            </p>
+          </div>
+          <button
+            onClick={() => setExamKeywordMode(prev => !prev)}
+            className={`px-4 py-2 rounded-lg text-sm font-bold ${
+              examKeywordMode
+                ? 'bg-violet-500 hover:bg-violet-600 text-white'
+                : darkMode ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+            }`}
+          >
+            {examKeywordMode ? 'Aktiv' : 'Aus'}
+          </button>
+        </div>
         <div className={`${darkMode ? 'bg-slate-700' : 'bg-blue-50'} rounded-lg p-6 mb-6`}>
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div>
@@ -149,6 +175,11 @@ const ExamSimulatorView = ({
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               {CATEGORIES.find(c => c.id === examCurrentQuestion.category)?.name}
             </p>
+            {examKeywordMode && (
+              <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full font-bold ${darkMode ? 'bg-violet-900/60 text-violet-300' : 'bg-violet-100 text-violet-700'}`}>
+                🧠 Schlagwort-Modus
+              </span>
+            )}
           </div>
           <div className={`text-right ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
             <div className="text-2xl font-bold">
@@ -169,48 +200,110 @@ const ExamSimulatorView = ({
           )}
         </div>
 
-        <div className="grid gap-3">
-          {examCurrentQuestion.a.map((answer, idx) => {
-            const isMulti = examCurrentQuestion.multi;
-            const isSelected = isMulti ? examSelectedAnswers.includes(idx) : examSelectedAnswer === idx;
-            const isCorrectAnswer = isMulti
-              ? (Array.isArray(examCurrentQuestion.correct) ? examCurrentQuestion.correct.includes(idx) : false)
-              : idx === examCurrentQuestion.correct;
-
-            let buttonClass = '';
-            if (examAnswered) {
-              if (isCorrectAnswer) {
-                buttonClass = 'bg-green-500 text-white'; // Richtige Antwort grün
-              } else if (isSelected && !isCorrectAnswer) {
-                buttonClass = 'bg-red-500 text-white'; // Falsch ausgewählt rot
-              } else {
-                buttonClass = darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-500';
-              }
-            } else {
-              if (isMulti && isSelected) {
-                buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
-              } else {
-                buttonClass = darkMode
-                  ? 'bg-slate-700 hover:bg-slate-600 border-2 border-slate-600 hover:border-cyan-500 text-white'
-                  : 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
-              }
-            }
-
-            return (
+        {examKeywordMode ? (
+          <div className="space-y-3">
+            <textarea
+              value={examKeywordInput}
+              onChange={(e) => setExamKeywordInput(e.target.value)}
+              disabled={examAnswered}
+              rows={5}
+              placeholder="Antworte in eigenen Worten und nenne die wichtigsten Schlüsselbegriffe..."
+              className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 disabled:opacity-60 ${
+                darkMode
+                  ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400'
+                  : 'bg-white border-violet-200 text-gray-800'
+              }`}
+            />
+            {!examAnswered && (
               <button
-                key={idx}
-                onClick={() => answerExamQuestion(idx)}
-                disabled={examAnswered}
-                className={`p-4 rounded-xl font-medium transition-all text-left ${buttonClass}`}
+                onClick={submitExamKeywordAnswer}
+                disabled={!examKeywordInput.trim()}
+                className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
+                  examKeywordInput.trim()
+                    ? 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700'
+                    : 'bg-violet-300 cursor-not-allowed'
+                }`}
               >
-                {isMulti && !examAnswered && (
-                  <span className="mr-2">{isSelected ? '☑️' : '⬜'}</span>
-                )}
-                {formatAnswerLabel(answer)}
+                Antwort prüfen
               </button>
-            );
-          })}
-        </div>
+            )}
+            {examKeywordEvaluation && (
+              <div className={`rounded-xl border-2 p-4 ${
+                examKeywordEvaluation.isCorrect
+                  ? darkMode ? 'border-emerald-600 bg-emerald-900/40' : 'border-emerald-400 bg-emerald-50'
+                  : darkMode ? 'border-amber-600 bg-amber-900/30' : 'border-amber-400 bg-amber-50'
+              }`}>
+                <p className={`font-bold ${examKeywordEvaluation.isCorrect ? 'text-emerald-500' : 'text-amber-500'}`}>
+                  {examKeywordEvaluation.isCorrect ? '✅ Korrekt!' : '⚠️ Nicht ausreichend.'}
+                </p>
+                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                  Treffer: {examKeywordEvaluation.matchedCount}/{examKeywordEvaluation.requiredGroups} erforderlich
+                </p>
+                {examKeywordEvaluation.matchedLabels?.length > 0 && (
+                  <p className={`text-sm mt-1 ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
+                    Erkannt: {examKeywordEvaluation.matchedLabels.join(', ')}
+                  </p>
+                )}
+                {examKeywordEvaluation.missingLabels?.length > 0 && (
+                  <p className={`text-sm mt-1 ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
+                    Fehlte: {examKeywordEvaluation.missingLabels.join(', ')}
+                  </p>
+                )}
+                <p className={`text-sm mt-2 pt-2 border-t ${darkMode ? 'border-slate-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
+                  Korrekte Antwort: {
+                    examCurrentQuestion.multi && Array.isArray(examCurrentQuestion.correct)
+                      ? examCurrentQuestion.correct.map(idx => formatAnswerLabel(examCurrentQuestion.a[idx])).join(' | ')
+                      : formatAnswerLabel(examCurrentQuestion.a[examCurrentQuestion.correct])
+                  }
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            {examCurrentQuestion.a.map((answer, idx) => {
+              const isMulti = examCurrentQuestion.multi;
+              const isSelected = isMulti ? examSelectedAnswers.includes(idx) : examSelectedAnswer === idx;
+              const isCorrectAnswer = isMulti
+                ? (Array.isArray(examCurrentQuestion.correct) ? examCurrentQuestion.correct.includes(idx) : false)
+                : idx === examCurrentQuestion.correct;
+
+              let buttonClass = '';
+              if (examAnswered) {
+                if (isCorrectAnswer) {
+                  buttonClass = 'bg-green-500 text-white';
+                } else if (isSelected && !isCorrectAnswer) {
+                  buttonClass = 'bg-red-500 text-white';
+                } else {
+                  buttonClass = darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-500';
+                }
+              } else {
+                if (isMulti && isSelected) {
+                  buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
+                } else {
+                  buttonClass = darkMode
+                    ? 'bg-slate-700 hover:bg-slate-600 border-2 border-slate-600 hover:border-cyan-500 text-white'
+                    : 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
+                }
+              }
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => answerExamQuestion(idx)}
+                  disabled={examAnswered}
+                  className={`p-4 rounded-xl font-medium transition-all text-left ${buttonClass}`}
+                >
+                  {isMulti && !examAnswered && (
+                    <span className="mr-2">{isSelected ? '☑️' : '⬜'}</span>
+                  )}
+                  {formatAnswerLabel(answer)}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <button
           onClick={() => {
             void reportQuestionIssue({
@@ -229,7 +322,7 @@ const ExamSimulatorView = ({
         </button>
 
         {/* Multi-Select Bestätigen Button */}
-        {examCurrentQuestion.multi && !examAnswered && examSelectedAnswers.length > 0 && (
+        {!examKeywordMode && examCurrentQuestion.multi && !examAnswered && examSelectedAnswers.length > 0 && (
           <button
             onClick={confirmExamMultiSelectAnswer}
             className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"

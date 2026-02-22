@@ -37,6 +37,8 @@ const QuizView = ({
   setKeywordAnswerText,
   keywordAnswerEvaluation,
   submitKeywordAnswer,
+  quizMCKeywordMode,
+  setQuizMCKeywordMode,
   answerQuestion,
   reportQuestionIssue,
   confirmMultiSelectAnswer,
@@ -276,7 +278,7 @@ const QuizView = ({
 
               <div className="bg-gray-100 rounded-xl p-6">
                 <p className="text-xl font-bold text-center">{currentQuestion.q}</p>
-                {currentQuestion.multi && !answered && !questionIsKeyword && (
+                {currentQuestion.multi && !answered && !questionIsKeyword && !quizMCKeywordMode && (
                   <p className="text-center text-sm text-orange-600 mt-2 font-medium">
                     ⚠️ Mehrere Antworten sind richtig - waehle alle richtigen aus!
                   </p>
@@ -286,9 +288,23 @@ const QuizView = ({
                     🧠 Extra schwer: Freitext antworten und mindestens {requiredKeywordGroups} Schlagwoerter treffen.
                   </p>
                 )}
+                {quizMCKeywordMode && !questionIsKeyword && (
+                  <p className="text-center text-sm text-violet-700 mt-2 font-medium">
+                    🧠 Schlagwort-Modus: Antworte frei und triff die Schlüsselbegriffe.
+                  </p>
+                )}
               </div>
 
-              {!questionIsKeyword && Array.isArray(currentQuestion.a) && (
+              {!questionIsKeyword && !quizMCKeywordMode && !answered && (
+                <button
+                  onClick={() => setQuizMCKeywordMode(true)}
+                  className="w-full py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-500 hover:bg-violet-50 hover:text-violet-700 transition-all border border-gray-200 hover:border-violet-300"
+                >
+                  🧠 Schlagwort-Modus aktivieren
+                </button>
+              )}
+
+              {!questionIsKeyword && Array.isArray(currentQuestion.a) && !quizMCKeywordMode && (
                 <>
                   <div className="grid gap-3">
                     {currentQuestion.a.map((answer, idx) => {
@@ -341,7 +357,7 @@ const QuizView = ({
                 </>
               )}
 
-              {questionIsKeyword && (
+              {(questionIsKeyword || quizMCKeywordMode) && (
                 <div className="space-y-3">
                   <textarea
                     value={keywordAnswerText}
@@ -393,6 +409,15 @@ const QuizView = ({
                       {currentQuestion.answerGuide && (
                         <p className="text-sm text-gray-700 mt-3 border-t border-gray-300 pt-2">
                           Musterloesung: {currentQuestion.answerGuide}
+                        </p>
+                      )}
+                      {quizMCKeywordMode && !questionIsKeyword && (
+                        <p className="text-sm text-gray-700 mt-3 border-t border-gray-300 pt-2">
+                          Korrekte Antwort: {
+                            currentQuestion.multi && Array.isArray(currentQuestion.correct)
+                              ? currentQuestion.correct.map(idx => currentQuestion.a[idx]).join(' | ')
+                              : currentQuestion.a[currentQuestion.correct]
+                          }
                         </p>
                       )}
                     </div>
