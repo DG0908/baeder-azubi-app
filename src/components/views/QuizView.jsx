@@ -359,6 +359,9 @@ const QuizView = ({
 
               {(questionIsKeyword || quizMCKeywordMode) && (
                 <div className="space-y-3">
+                  <p className="text-xs text-gray-400">
+                    💡 Singular und Plural werden beide erkannt – schreib, wie es natürlich klingt.
+                  </p>
                   <textarea
                     value={keywordAnswerText}
                     onChange={(e) => setKeywordAnswerText(e.target.value)}

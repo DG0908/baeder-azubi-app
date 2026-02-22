@@ -918,6 +918,26 @@ export default function BaederApp() {
     .replace(/\s+/g, ' ')
     .trim();
 
+  // Returns the word plus singular/plural variants so matching works both ways.
+  // German plurals are mostly formed with -en, -e, -s; we strip these to get the stem.
+  // The stem is added alongside the original so `includes(term)` matches either form.
+  const getWordVariants = (normalizedWord) => {
+    const variants = [normalizedWord];
+    if (normalizedWord.endsWith('en') && normalizedWord.length - 2 >= 4) {
+      const stem = normalizedWord.slice(0, -2);
+      variants.push(stem);
+      // Two-level strip: Chloriden → Chloride → Chlorid
+      if (stem.endsWith('e') && stem.length - 1 >= 4) {
+        variants.push(stem.slice(0, -1));
+      }
+    } else if (normalizedWord.endsWith('e') && normalizedWord.length - 1 >= 4) {
+      variants.push(normalizedWord.slice(0, -1));
+    } else if (normalizedWord.endsWith('s') && normalizedWord.length - 1 >= 4) {
+      variants.push(normalizedWord.slice(0, -1));
+    }
+    return variants;
+  };
+
   const normalizeKeywordGroup = (groupInput) => {
     if (typeof groupInput === 'string') {
       return {
@@ -957,9 +977,12 @@ export default function BaederApp() {
       .filter((group) => group.terms.length > 0)
       .map((group) => ({
         ...group,
-        normalizedTerms: group.terms
-          .map((term) => normalizeKeywordText(term))
-          .filter(Boolean)
+        normalizedTerms: [...new Set(
+          group.terms
+            .map((term) => normalizeKeywordText(term))
+            .filter(Boolean)
+            .flatMap(getWordVariants)
+        )]
       }))
       .filter((group) => group.normalizedTerms.length > 0);
   };
@@ -1059,7 +1082,11 @@ export default function BaederApp() {
       if (GERMAN_STOPWORDS.has(word)) continue;
       if (seen.has(word)) continue;
       seen.add(word);
-      groups.push({ label: word, terms: [word] });
+      const variants = getWordVariants(word);
+      // Use the shortest variant (stem) as the label so users see the singular form
+      const stem = variants[variants.length - 1];
+      const label = stem.charAt(0).toUpperCase() + stem.slice(1);
+      groups.push({ label, terms: variants });
     }
     return groups;
   };

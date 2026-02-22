@@ -250,6 +250,9 @@ const ExamSimulatorView = ({
 
         {examKeywordMode ? (
           <div className="space-y-3">
+            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              💡 Singular und Plural werden beide erkannt – schreib, wie es natürlich klingt.
+            </p>
             <textarea
               value={examKeywordInput}
               onChange={(e) => setExamKeywordInput(e.target.value)}

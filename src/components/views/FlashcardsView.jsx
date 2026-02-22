@@ -439,9 +439,12 @@ const FlashcardsView = ({
 
         {(isKeywordFlashcard || showFreeTextInput) && (
           <div className={`${darkMode ? 'bg-slate-800/95 border-slate-700' : 'bg-indigo-50 border-indigo-200'} border rounded-xl p-4 mt-4`}>
-            <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-indigo-200' : 'text-indigo-800'}`}>
+            <label className={`block text-sm font-bold mb-1 ${darkMode ? 'text-indigo-200' : 'text-indigo-800'}`}>
               Deine Freitext-Antwort
             </label>
+            <p className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              💡 Singular und Plural werden beide erkannt.
+            </p>
             <textarea
               value={flashcardKeywordInput}
               onChange={(e) => setFlashcardKeywordInput(e.target.value)}
