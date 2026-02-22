@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Check, Download, Plus, Trash2, X } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Download, Plus, Trash2, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { AUSBILDUNGSRAHMENPLAN } from '../../data/ausbildungsrahmenplan';
@@ -55,6 +55,15 @@ const {
   const { user } = useAuth();
   const { darkMode } = useApp();
   const [assignmentSelectionById, setAssignmentSelectionById] = useState({});
+  const [expandedBereiche, setExpandedBereiche] = useState(new Set());
+
+  const toggleBereich = (nr) => {
+    setExpandedBereiche(prev => {
+      const next = new Set(prev);
+      next.has(nr) ? next.delete(nr) : next.add(nr);
+      return next;
+    });
+  };
 
   const signerOptions = useMemo(() => {
     if (!Array.isArray(signAssignableUsers)) return [];
@@ -835,29 +844,61 @@ const {
                           </tr>
                         </thead>
                         <tbody>
-                          {AUSBILDUNGSRAHMENPLAN.map((bereich, idx) => (
-                            <tr key={bereich.nr} className={`border-b ${darkMode ? 'border-slate-600' : 'border-gray-200'} ${idx % 2 === 0 ? '' : (darkMode ? 'bg-slate-750' : 'bg-gray-100')}`}>
-                              <td className={`px-3 py-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                                <span className="mr-1">{bereich.icon}</span> {bereich.nr}
-                              </td>
-                              <td className={`px-3 py-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                                {bereich.bereich}
-                                <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{bereich.paragraph}</div>
-                              </td>
-                              <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                {bereich.wochen.jahr1 || '-'}
-                              </td>
-                              <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                {bereich.wochen.jahr2 || '-'}
-                              </td>
-                              <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                {bereich.wochen.jahr3 || '-'}
-                              </td>
-                              <td className={`px-3 py-2 text-center font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
-                                {bereich.gesamtWochen || 'lfd.'}
-                              </td>
-                            </tr>
-                          ))}
+                          {AUSBILDUNGSRAHMENPLAN.map((bereich, idx) => {
+                            const isOpen = expandedBereiche.has(bereich.nr);
+                            return (
+                              <React.Fragment key={bereich.nr}>
+                                <tr
+                                  onClick={() => toggleBereich(bereich.nr)}
+                                  className={`border-b ${darkMode ? 'border-slate-600' : 'border-gray-200'} ${idx % 2 === 0 ? '' : (darkMode ? 'bg-slate-750' : 'bg-gray-100')} cursor-pointer hover:${darkMode ? 'bg-slate-600' : 'bg-cyan-50'} transition-colors`}
+                                >
+                                  <td className={`px-3 py-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                    <span className="mr-1">{bereich.icon}</span> {bereich.nr}
+                                  </td>
+                                  <td className={`px-3 py-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                    {bereich.bereich}
+                                    <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{bereich.paragraph}</div>
+                                  </td>
+                                  <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    {bereich.wochen.jahr1 || '-'}
+                                  </td>
+                                  <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    {bereich.wochen.jahr2 || '-'}
+                                  </td>
+                                  <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    {bereich.wochen.jahr3 || '-'}
+                                  </td>
+                                  <td className={`px-3 py-2 text-center font-bold ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                                    <div className="flex items-center justify-center gap-1">
+                                      {bereich.gesamtWochen || 'lfd.'}
+                                      {isOpen
+                                        ? <ChevronUp size={14} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
+                                        : <ChevronDown size={14} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
+                                      }
+                                    </div>
+                                  </td>
+                                </tr>
+                                {isOpen && (
+                                  <tr className={`border-b ${darkMode ? 'border-slate-600 bg-slate-800' : 'border-gray-200 bg-cyan-50'}`}>
+                                    <td />
+                                    <td colSpan={5} className="px-4 py-3">
+                                      <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>
+                                        Zu vermittelnde Fertigkeiten und Kenntnisse
+                                      </p>
+                                      <ul className="space-y-1">
+                                        {bereich.inhalte.map((inhalt, i) => (
+                                          <li key={i} className={`flex items-start gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            <span className={`mt-0.5 shrink-0 text-xs font-bold ${darkMode ? 'text-cyan-500' : 'text-cyan-600'}`}>{i + 1}.</span>
+                                            {inhalt}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
