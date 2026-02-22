@@ -86,7 +86,7 @@ const ExamSimulatorView = ({
 
 {examSimulatorMode === 'theory' && !userExamProgress && (
   <div className="max-w-4xl mx-auto">
-    {!examSimulator ? (
+    {!examSimulator || !examCurrentQuestion ? (
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-8 shadow-lg text-center`}>
         <div className="text-6xl mb-4">📝</div>
         <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Prüfungssimulator</h2>
@@ -174,7 +174,7 @@ const ExamSimulatorView = ({
             const isMulti = examCurrentQuestion.multi;
             const isSelected = isMulti ? examSelectedAnswers.includes(idx) : examSelectedAnswer === idx;
             const isCorrectAnswer = isMulti
-              ? examCurrentQuestion.correct.includes(idx)
+              ? (Array.isArray(examCurrentQuestion.correct) ? examCurrentQuestion.correct.includes(idx) : false)
               : idx === examCurrentQuestion.correct;
 
             let buttonClass = '';
