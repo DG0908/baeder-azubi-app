@@ -18,6 +18,7 @@ import QuizView from './components/views/QuizView';
 import HomeView from './components/views/HomeView';
 import AdminView from './components/views/AdminView';
 import ExamSimulatorView from './components/views/ExamSimulatorView';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import FlashcardsView from './components/views/FlashcardsView';
 import CalculatorView from './components/views/CalculatorView';
 import SwimChallengeView from './components/views/SwimChallengeView';
@@ -6825,6 +6826,7 @@ export default function BaederApp() {
 
         {/* Exam Simulator View */}
         {currentView === 'exam-simulator' && (
+          <ErrorBoundary darkMode={darkMode}>
           <ExamSimulatorView
             examSimulatorMode={examSimulatorMode}
             setExamSimulatorMode={setExamSimulatorMode}
@@ -6868,6 +6870,7 @@ export default function BaederApp() {
             savePracticalExamAttempt={savePracticalExamAttempt}
             deletePracticalExamAttempt={deletePracticalExamAttempt}
           />
+          </ErrorBoundary>
         )}
         {/* Flashcards View */}
         {currentView === 'flashcards' && (
