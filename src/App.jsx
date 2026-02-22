@@ -4060,6 +4060,21 @@ export default function BaederApp() {
     }
   };
 
+  const deletePracticalExamAttempt = async (attemptId) => {
+    if (!attemptId) return;
+    // Remove from local state immediately
+    setPracticalExamHistory(prev => prev.filter(entry => entry.id !== attemptId));
+    // Remove from localStorage
+    const existingLocal = loadLocalPracticalAttempts();
+    saveLocalPracticalAttempts(existingLocal.filter(entry => entry.id !== attemptId));
+    // Try to remove from Supabase
+    try {
+      await supabase.from('practical_exam_attempts').delete().eq('id', attemptId);
+    } catch {
+      // Local removal already done, ignore remote error
+    }
+  };
+
   const escapeHtml = (value) => String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
