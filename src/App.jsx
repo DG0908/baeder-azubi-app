@@ -560,6 +560,8 @@ export default function BaederApp() {
   const [examKeywordMode, setExamKeywordMode] = useState(false);
   const [examKeywordInput, setExamKeywordInput] = useState('');
   const [examKeywordEvaluation, setExamKeywordEvaluation] = useState(null);
+  const [theoryExamHistory, setTheoryExamHistory] = useState([]);
+  const [theoryExamHistoryLoading, setTheoryExamHistoryLoading] = useState(false);
   const [practicalExamType, setPracticalExamType] = useState('zwischen');
   const [practicalExamInputs, setPracticalExamInputs] = useState({});
   const [practicalExamResult, setPracticalExamResult] = useState(null);
@@ -1118,6 +1120,7 @@ export default function BaederApp() {
     if (user) {
       loadData();
       loadNotifications();
+      loadTheoryExamHistory();
       const interval = setInterval(() => {
         loadData();
         loadNotifications();
@@ -4442,7 +4445,9 @@ export default function BaederApp() {
     } else {
       const correctAnswers = newAnswers.filter(a => a.correct).length;
       const percentage = Math.round((correctAnswers / newAnswers.length) * 100);
-      setUserExamProgress({ correct: correctAnswers, total: newAnswers.length, percentage, passed: percentage >= 50, timeMs: Date.now() - examSimulator.startTime });
+      const examProgress = { correct: correctAnswers, total: newAnswers.length, percentage, passed: percentage >= 50, timeMs: Date.now() - examSimulator.startTime };
+      setUserExamProgress(examProgress);
+      void saveTheoryExamAttempt(examProgress);
       if (percentage >= 50) playSound('whistle');
 
       const earnedXp =
@@ -4467,6 +4472,41 @@ export default function BaederApp() {
     setExamSelectedAnswer(null);
     setExamKeywordInput('');
     setExamKeywordEvaluation(null);
+  };
+
+  const saveTheoryExamAttempt = async (progress) => {
+    if (!user?.id) return;
+    try {
+      await supabase.from('theory_exam_attempts').insert([{
+        user_id: user.id,
+        user_name: user.name,
+        correct: progress.correct,
+        total: progress.total,
+        percentage: progress.percentage,
+        passed: progress.passed,
+        time_ms: progress.timeMs,
+        keyword_mode: examKeywordMode,
+      }]);
+    } catch (e) {
+      console.warn('Fehler beim Speichern des Prüfungsergebnisses:', e);
+    }
+  };
+
+  const loadTheoryExamHistory = async () => {
+    if (!user?.id) return;
+    setTheoryExamHistoryLoading(true);
+    try {
+      let query = supabase.from('theory_exam_attempts').select('*').order('created_at', { ascending: false });
+      if (!user.permissions?.canViewAllStats) {
+        query = query.eq('user_id', user.id);
+      }
+      const { data } = await query;
+      setTheoryExamHistory(data || []);
+    } catch (e) {
+      console.warn('Fehler beim Laden der Prüfungshistorie:', e);
+    } finally {
+      setTheoryExamHistoryLoading(false);
+    }
   };
 
   // Kontrollkarte Berufsschule Funktionen
@@ -6975,6 +7015,9 @@ export default function BaederApp() {
             setExamKeywordInput={setExamKeywordInput}
             examKeywordEvaluation={examKeywordEvaluation}
             submitExamKeywordAnswer={submitExamKeywordAnswer}
+            theoryExamHistory={theoryExamHistory}
+            theoryExamHistoryLoading={theoryExamHistoryLoading}
+            loadTheoryExamHistory={loadTheoryExamHistory}
           />
           </ErrorBoundary>
         )}
@@ -7061,6 +7104,9 @@ export default function BaederApp() {
             allGames={allGames}
             namesMatch={namesMatch}
             isFinishedGameStatus={isFinishedGameStatus}
+            theoryExamHistory={theoryExamHistory}
+            theoryExamHistoryLoading={theoryExamHistoryLoading}
+            loadTheoryExamHistory={loadTheoryExamHistory}
           />
         )}
 

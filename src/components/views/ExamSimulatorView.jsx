@@ -52,6 +52,9 @@ const ExamSimulatorView = ({
   setExamKeywordInput,
   examKeywordEvaluation,
   submitExamKeywordAnswer,
+  theoryExamHistory,
+  theoryExamHistoryLoading,
+  loadTheoryExamHistory,
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
@@ -164,6 +167,51 @@ const ExamSimulatorView = ({
         >
           Prüfung starten 🚀
         </button>
+
+        {!user.permissions?.canViewAllStats && (
+          <div className={`mt-6 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-xl p-4 text-left`}>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                📊 Meine Ergebnisse
+              </h3>
+              <button
+                onClick={loadTheoryExamHistory}
+                className={`text-xs px-2 py-1 rounded ${darkMode ? 'bg-slate-600 hover:bg-slate-500 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'}`}
+              >
+                Aktualisieren
+              </button>
+            </div>
+            {theoryExamHistoryLoading ? (
+              <p className={`text-sm text-center py-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Laden…</p>
+            ) : !theoryExamHistory || theoryExamHistory.length === 0 ? (
+              <p className={`text-sm text-center py-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Noch keine Prüfungen absolviert</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {theoryExamHistory.slice(0, 10).map(attempt => (
+                  <div
+                    key={attempt.id}
+                    className={`flex justify-between items-center rounded-lg px-3 py-2 ${darkMode ? 'bg-slate-600' : 'bg-white'}`}
+                  >
+                    <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      <span className={attempt.passed ? 'text-green-500' : 'text-red-500'}>
+                        {attempt.passed ? '✅' : '❌'} {attempt.percentage}%
+                      </span>
+                      <span className={`ml-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                        ({attempt.correct}/{attempt.total} richtig)
+                      </span>
+                      {attempt.keyword_mode && (
+                        <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${darkMode ? 'bg-violet-900/60 text-violet-300' : 'bg-violet-100 text-violet-700'}`}>🧠</span>
+                      )}
+                    </div>
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {new Date(attempt.created_at).toLocaleDateString('de-DE')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     ) : (
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
