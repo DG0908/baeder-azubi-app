@@ -56,11 +56,20 @@ const {
   const { darkMode } = useApp();
   const [assignmentSelectionById, setAssignmentSelectionById] = useState({});
   const [expandedBereiche, setExpandedBereiche] = useState(new Set());
+  const [expandedEntryHints, setExpandedEntryHints] = useState(new Set());
 
   const toggleBereich = (nr) => {
     setExpandedBereiche(prev => {
       const next = new Set(prev);
       next.has(nr) ? next.delete(nr) : next.add(nr);
+      return next;
+    });
+  };
+
+  const toggleEntryHint = (entryKey) => {
+    setExpandedEntryHints((prev) => {
+      const next = new Set(prev);
+      next.has(entryKey) ? next.delete(entryKey) : next.add(entryKey);
       return next;
     });
   };
@@ -313,9 +322,14 @@ const {
                             const selectedBereich = AUSBILDUNGSRAHMENPLAN.find(
                               bereich => bereich.nr === parseInt(entry.bereich, 10)
                             );
+                            const entryKey = `${day}-${entryIndex}`;
                             const bereichSuggestions = getBerichtsheftBereichSuggestions(entry.taetigkeit, berichtsheftYear);
                             const showBereichSuggestions = !entry.bereich && bereichSuggestions.length > 0;
                             const inhaltePreview = (selectedBereich?.inhalte || []).slice(0, 6);
+                            const isEntryHintExpanded = expandedEntryHints.has(entryKey);
+                            const visibleInhaltePreview = isEntryHintExpanded
+                              ? inhaltePreview
+                              : inhaltePreview.slice(0, 3);
                             const suggestedBereichExamples = showBereichSuggestions
                               ? bereichSuggestions
                                 .slice(0, 2)
@@ -328,8 +342,8 @@ const {
 
                             return (
                               <div key={entryIndex} className="mb-3">
-                                <div className="flex flex-wrap lg:flex-nowrap gap-2 items-start">
-                                  <div className="flex-grow min-w-[200px]">
+                                <div className="flex flex-col gap-2 md:flex-row md:items-start">
+                                  <div className="min-w-0 flex-1">
                                     <input
                                       type="text"
                                       value={entry.taetigkeit}
@@ -338,7 +352,7 @@ const {
                                       className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
                                     />
                                   </div>
-                                  <div className="w-20 flex-shrink-0">
+                                  <div className="w-full md:w-20 md:flex-shrink-0">
                                     <input
                                       type="number"
                                       value={entry.stunden}
@@ -350,19 +364,19 @@ const {
                                       className={`w-full px-2 py-2 border rounded-lg text-sm text-center ${darkMode ? 'bg-slate-600 border-slate-500 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
                                     />
                                   </div>
-                                  <div className="w-full sm:w-auto">
+                                  <div className="w-full min-w-0 md:flex-1">
                                     <select
                                       value={entry.bereich}
                                       onChange={(e) => updateWeekEntry(day, entryIndex, 'bereich', e.target.value)}
-                                      className={`w-full min-w-[500px] px-2 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
+                                      className={`w-full min-w-0 px-2 py-2 border rounded-lg text-sm ${darkMode ? 'bg-slate-600 border-slate-500 text-white' : 'bg-white border-gray-300'}`}
                                     >
                                       <option value="">-- Bereich --</option>
                                       {AUSBILDUNGSRAHMENPLAN.map((b) => {
                                         const yearWeeks = getBerichtsheftYearWeeks(b, berichtsheftYear);
-                                        const yearHint = yearWeeks > 0 ? `• ${yearWeeks}W im Jahr ${berichtsheftYear}` : '• laufend/anderes Jahr';
+                                        const yearHint = yearWeeks > 0 ? `${yearWeeks}W/J${berichtsheftYear}` : 'laufend';
                                         return (
                                           <option key={b.nr} value={b.nr}>
-                                            {b.icon} {b.nr}. {b.bereich} {yearHint}
+                                            {b.icon} {b.nr}. {b.bereich} ({yearHint})
                                           </option>
                                         );
                                       })}
@@ -371,7 +385,7 @@ const {
                                   <button
                                     onClick={() => removeWeekEntry(day, entryIndex)}
                                     disabled={currentWeekEntries[day].length <= 1}
-                                    className={`px-2 py-2 rounded-lg transition-all ${currentWeekEntries[day].length <= 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:bg-red-100'}`}
+                                    className={`self-end px-2 py-2 rounded-lg transition-all md:self-auto ${currentWeekEntries[day].length <= 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:bg-red-100'}`}
                                   >
                                     <X size={18} />
                                   </button>
@@ -395,10 +409,21 @@ const {
                                 )}
 
                                 {selectedBereich && inhaltePreview.length > 0 && (
-                                  <div className={`mt-2 rounded-lg px-3 py-2 text-xs ${darkMode ? 'bg-slate-800 border border-slate-600 text-gray-300' : 'bg-white border border-gray-200 text-gray-700'}`}>
-                                    <div className="font-semibold mb-1">Zu vermittelnde Taetigkeiten (Hilfe):</div>
-                                    <div className="space-y-1">
-                                      {inhaltePreview.map((inhalt, idx) => (
+                                  <div className={`mt-2 rounded-lg px-3 py-3 text-sm ${darkMode ? 'bg-slate-800 border border-slate-600 text-gray-300' : 'bg-white border border-gray-200 text-gray-700'}`}>
+                                    <div className="mb-2 flex items-center justify-between gap-2">
+                                      <div className="font-semibold">Zu vermittelnde Taetigkeiten (Hilfe):</div>
+                                      {inhaltePreview.length > 3 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleEntryHint(entryKey)}
+                                          className={`text-xs font-medium underline underline-offset-2 ${darkMode ? 'text-cyan-300 hover:text-cyan-200' : 'text-cyan-700 hover:text-cyan-800'}`}
+                                        >
+                                          {isEntryHintExpanded ? 'Weniger' : 'Mehr anzeigen'}
+                                        </button>
+                                      )}
+                                    </div>
+                                    <div className={`space-y-1.5 ${isEntryHintExpanded ? 'max-h-64 overflow-y-auto pr-1' : ''}`}>
+                                      {visibleInhaltePreview.map((inhalt, idx) => (
                                         <div key={`${day}-${entryIndex}-inhalt-${idx}`} className="flex items-start gap-2">
                                           <span className={`${darkMode ? 'text-cyan-300' : 'text-cyan-600'}`}>-</span>
                                           <span className="leading-5">{inhalt}</span>
