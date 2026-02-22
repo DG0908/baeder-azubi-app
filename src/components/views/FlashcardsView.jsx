@@ -45,6 +45,8 @@ const FlashcardsView = ({
   KEYWORD_FLASHCARD_CONTENT,
   keywordFlashcardMode,
   setKeywordFlashcardMode,
+  flashcardFreeTextMode,
+  setFlashcardFreeTextMode,
   flashcardKeywordInput,
   setFlashcardKeywordInput,
   flashcardKeywordEvaluation,
@@ -54,6 +56,7 @@ const FlashcardsView = ({
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
   const isKeywordFlashcard = currentFlashcard?.type === 'keyword' && Array.isArray(currentFlashcard?.keywordGroups);
+  const showFreeTextInput = Boolean(currentFlashcard && !isKeywordFlashcard && flashcardFreeTextMode);
   const keywordCategoryCount = KEYWORD_FLASHCARD_CONTENT?.[newQuestionCategory]?.length || 0;
   const requiredKeywordGroups = Math.max(
     1,
@@ -249,6 +252,7 @@ const FlashcardsView = ({
           onClick={() => {
             setKeywordFlashcardMode(true);
             setSpacedRepetitionMode(false);
+            setFlashcardFreeTextMode(false);
             loadFlashcards({ useKeyword: true });
           }}
           className={`py-3 px-4 rounded-lg font-bold transition-all ${
@@ -258,6 +262,23 @@ const FlashcardsView = ({
           }`}
         >
           🧠 Schlagwoerter
+        </button>
+        <button
+          onClick={() => {
+            setFlashcardFreeTextMode(prev => !prev);
+            if (keywordFlashcardMode) {
+              setKeywordFlashcardMode(false);
+              loadFlashcards({ useKeyword: false });
+            }
+            resetFlashcardKeywordState();
+          }}
+          className={`py-3 px-4 rounded-lg font-bold transition-all ${
+            flashcardFreeTextMode && !keywordFlashcardMode
+              ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg'
+              : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          ✍️ Freitext
         </button>
       </div>
 
@@ -383,12 +404,12 @@ const FlashcardsView = ({
 
         <div
           onClick={() => {
-            if (isKeywordFlashcard) return;
+            if (isKeywordFlashcard || showFreeTextInput) return;
             setShowFlashcardAnswer(!showFlashcardAnswer);
             playSound('bubble');
           }}
           className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 shadow-2xl min-h-[300px] flex items-center justify-center ${
-            isKeywordFlashcard
+            isKeywordFlashcard || showFreeTextInput
               ? 'cursor-default'
               : 'cursor-pointer transform transition-all hover:scale-105'
           } ${
@@ -399,7 +420,7 @@ const FlashcardsView = ({
         >
           <div className="text-center">
             <div className={`text-sm font-bold mb-4 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
-              {isKeywordFlashcard ? 'SCHLAGWORT-CHALLENGE' : (showFlashcardAnswer ? 'ANTWORT' : 'FRAGE')}
+              {isKeywordFlashcard ? 'SCHLAGWORT-CHALLENGE' : showFreeTextInput ? 'FRAGE' : (showFlashcardAnswer ? 'ANTWORT' : 'FRAGE')}
             </div>
             <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
               {isKeywordFlashcard
@@ -409,12 +430,14 @@ const FlashcardsView = ({
             <p className={`text-sm mt-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
               {isKeywordFlashcard
                 ? `Treffe mindestens ${requiredKeywordGroups} Schlagwoerter.`
-                : (showFlashcardAnswer ? '' : 'Klicken zum Umdrehen')}
+                : showFreeTextInput
+                  ? 'Tippe deine Antwort unten ein.'
+                  : (showFlashcardAnswer ? '' : 'Klicken zum Umdrehen')}
             </p>
           </div>
         </div>
 
-        {isKeywordFlashcard && (
+        {(isKeywordFlashcard || showFreeTextInput) && (
           <div className={`${darkMode ? 'bg-slate-800/95 border-slate-700' : 'bg-indigo-50 border-indigo-200'} border rounded-xl p-4 mt-4`}>
             <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-indigo-200' : 'text-indigo-800'}`}>
               Deine Freitext-Antwort
@@ -477,7 +500,7 @@ const FlashcardsView = ({
         )}
 
         {/* Spaced Repetition Buttons */}
-        {spacedRepetitionMode && showFlashcardAnswer && !isKeywordFlashcard && (
+        {spacedRepetitionMode && !isKeywordFlashcard && (showFlashcardAnswer || (showFreeTextInput && flashcardKeywordEvaluation)) && (
           <div className="flex gap-4 mt-6">
             <button
               onClick={() => {
@@ -547,7 +570,7 @@ const FlashcardsView = ({
         )}
 
         {/* Standard Navigation (nicht im Spaced Repetition Modus oder Antwort noch nicht gezeigt) */}
-        {(!spacedRepetitionMode || !showFlashcardAnswer) && (
+        {(!spacedRepetitionMode || !showFlashcardAnswer) && !(spacedRepetitionMode && showFreeTextInput) && (
           <div className="flex justify-between items-center mt-6">
             <button
               onClick={() => {

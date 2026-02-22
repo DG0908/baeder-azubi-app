@@ -140,6 +140,7 @@ export default function BaederApp() {
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState(null); // Für Single-Choice Feedback
   const [keywordAnswerText, setKeywordAnswerText] = useState('');
   const [keywordAnswerEvaluation, setKeywordAnswerEvaluation] = useState(null);
+  const [quizMCKeywordMode, setQuizMCKeywordMode] = useState(false);
   
   const DIFFICULTY_SETTINGS = {
     anfaenger: { time: 45, label: 'Anfänger', icon: '🟢', color: 'bg-green-500' },
@@ -556,6 +557,9 @@ export default function BaederApp() {
   const [examSelectedAnswers, setExamSelectedAnswers] = useState([]); // Für Multi-Select im Prüfungssimulator
   const [examSelectedAnswer, setExamSelectedAnswer] = useState(null); // Für Single-Choice Feedback
   const [examSimulatorMode, setExamSimulatorMode] = useState('theory');
+  const [examKeywordMode, setExamKeywordMode] = useState(false);
+  const [examKeywordInput, setExamKeywordInput] = useState('');
+  const [examKeywordEvaluation, setExamKeywordEvaluation] = useState(null);
   const [practicalExamType, setPracticalExamType] = useState('zwischen');
   const [practicalExamInputs, setPracticalExamInputs] = useState({});
   const [practicalExamResult, setPracticalExamResult] = useState(null);
@@ -592,6 +596,7 @@ export default function BaederApp() {
   const [keywordFlashcardMode, setKeywordFlashcardMode] = useState(false);
   const [flashcardKeywordInput, setFlashcardKeywordInput] = useState('');
   const [flashcardKeywordEvaluation, setFlashcardKeywordEvaluation] = useState(null);
+  const [flashcardFreeTextMode, setFlashcardFreeTextMode] = useState(false);
   
   // Badges State
   const [userBadges, setUserBadges] = useState([]);
@@ -1025,6 +1030,37 @@ export default function BaederApp() {
   };
 
   const isKeywordFlashcard = (card) => isKeywordQuestion(card);
+
+  const autoExtractKeywordGroups = (answerText) => {
+    const GERMAN_STOPWORDS = new Set([
+      'aber', 'alle', 'allem', 'allen', 'aller', 'alles', 'also', 'auch', 'auf', 'auss',
+      'aus', 'ausserdem', 'bei', 'beim', 'bereits', 'dann', 'dabei', 'dadurch', 'damit',
+      'darf', 'dass', 'dem', 'den', 'denen', 'denn', 'der', 'des', 'deshalb', 'dessen',
+      'dies', 'diese', 'diesem', 'diesen', 'dieser', 'dieses', 'doch', 'dort', 'durch',
+      'eine', 'einem', 'einen', 'einer', 'eines', 'erst', 'etwas', 'falls', 'fuer',
+      'gegen', 'gibt', 'haben', 'hatte', 'hatten', 'hier', 'ihnen', 'ihre', 'ihrem',
+      'ihren', 'ihrer', 'ihres', 'immer', 'innen', 'jede', 'jedem', 'jeden', 'jeder',
+      'jedes', 'jetzt', 'jedoch', 'kann', 'kein', 'keine', 'keinem', 'keinen', 'keiner',
+      'keines', 'muss', 'mussen', 'nach', 'nicht', 'noch', 'obwohl', 'ohne', 'oder',
+      'oben', 'sein', 'seine', 'seinem', 'seinen', 'seiner', 'seines', 'sehr', 'sich',
+      'sind', 'sodass', 'soll', 'sollen', 'sollte', 'sowie', 'sonst', 'uber', 'mehr',
+      'viel', 'viele', 'vielen', 'von', 'vor', 'war', 'waren', 'weil', 'wenn', 'werden',
+      'wird', 'wobei', 'wodurch', 'wurde', 'wurden', 'wieder', 'zwischen', 'zwar',
+      'euro', 'unten', 'aussen', 'schon'
+    ]);
+    const normalized = normalizeKeywordText(answerText);
+    const words = normalized.split(/\s+/).filter(Boolean);
+    const seen = new Set();
+    const groups = [];
+    for (const word of words) {
+      if (word.length < 4) continue;
+      if (GERMAN_STOPWORDS.has(word)) continue;
+      if (seen.has(word)) continue;
+      seen.add(word);
+      groups.push({ label: word, terms: [word] });
+    }
+    return groups;
+  };
 
   const FLASHCARD_CONTENT = {
     org: [
@@ -3337,13 +3373,24 @@ export default function BaederApp() {
   };
 
   const submitKeywordAnswer = async () => {
-    if (answered || !currentGame || !isKeywordQuestion(currentQuestion)) return;
+    if (answered || !currentGame || !currentQuestion) return;
+    if (!isKeywordQuestion(currentQuestion) && !quizMCKeywordMode) return;
     const trimmedAnswer = keywordAnswerText.trim();
     if (!trimmedAnswer) {
       showToast('Bitte gib zuerst eine Freitext-Antwort ein.', 'error', 1800);
       return;
     }
-    const evaluation = evaluateKeywordAnswer(currentQuestion, keywordAnswerText);
+    let evaluation;
+    if (isKeywordQuestion(currentQuestion)) {
+      evaluation = evaluateKeywordAnswer(currentQuestion, keywordAnswerText);
+    } else {
+      const correctText = currentQuestion.multi && Array.isArray(currentQuestion.correct)
+        ? currentQuestion.correct.map(idx => String(currentQuestion.a?.[idx] || '')).join('. ')
+        : String(currentQuestion.a?.[currentQuestion.correct] || '');
+      const groups = autoExtractKeywordGroups(correctText);
+      const fakeQ = { keywordGroups: groups, minKeywordGroups: Math.max(1, Math.ceil(groups.length * 0.5)) };
+      evaluation = evaluateKeywordAnswer(fakeQ, keywordAnswerText);
+    }
     setKeywordAnswerEvaluation(evaluation);
     setAnswered(true);
     setTimerActive(false);
@@ -4325,6 +4372,33 @@ export default function BaederApp() {
     }, 2000);
   };
 
+  const submitExamKeywordAnswer = () => {
+    if (examAnswered || !examSimulator || !examCurrentQuestion || !examKeywordInput.trim()) return;
+    const correctText = examCurrentQuestion.multi && Array.isArray(examCurrentQuestion.correct)
+      ? examCurrentQuestion.correct.map(idx => String(examCurrentQuestion.a?.[idx] || '')).join('. ')
+      : String(examCurrentQuestion.a?.[examCurrentQuestion.correct] || '');
+    const groups = autoExtractKeywordGroups(correctText);
+    const fakeQ = { keywordGroups: groups, minKeywordGroups: Math.max(1, Math.ceil(groups.length * 0.5)) };
+    const evaluation = evaluateKeywordAnswer(fakeQ, examKeywordInput);
+    setExamKeywordEvaluation(evaluation);
+    const isCorrect = evaluation.isCorrect;
+    if (isCorrect) { playSound('correct'); } else { playSound('wrong'); }
+    setExamAnswered(true);
+    setExamSelectedAnswer(examCurrentQuestion.multi ? null : examCurrentQuestion.correct);
+    updateChallengeProgress('answer_questions', 1);
+    if (isCorrect) updateChallengeProgress('correct_answers', 1);
+    if (examCurrentQuestion.category) updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
+    updateWeeklyProgress('examAnswers', 1);
+    trackQuestionPerformance(examCurrentQuestion, examCurrentQuestion.category, isCorrect);
+    const newAnswers = [...examSimulator.answers, { question: examCurrentQuestion, selectedAnswer: -1, correct: isCorrect, answerType: 'keyword' }];
+    setExamSimulator({ ...examSimulator, answers: newAnswers });
+    setTimeout(() => {
+      setExamKeywordInput('');
+      setExamKeywordEvaluation(null);
+      proceedToNextExamQuestion(newAnswers);
+    }, 2500);
+  };
+
   const answerExamQuestion = (answerIndex) => {
     if (examAnswered || !examSimulator) return;
 
@@ -4391,6 +4465,8 @@ export default function BaederApp() {
     setUserExamProgress(null);
     setExamSelectedAnswers([]);
     setExamSelectedAnswer(null);
+    setExamKeywordInput('');
+    setExamKeywordEvaluation(null);
   };
 
   // Kontrollkarte Berufsschule Funktionen
@@ -5630,14 +5706,21 @@ export default function BaederApp() {
   };
 
   const evaluateFlashcardKeywordAnswer = () => {
-    if (!currentFlashcard || !isKeywordFlashcard(currentFlashcard)) return null;
+    if (!currentFlashcard) return null;
     const trimmedInput = flashcardKeywordInput.trim();
     if (!trimmedInput) {
       showToast('Bitte gib zuerst deine Antwort ein.', 'error', 1800);
       return null;
     }
-
-    const evaluation = evaluateKeywordAnswer(currentFlashcard, trimmedInput);
+    let evaluation;
+    if (isKeywordFlashcard(currentFlashcard)) {
+      evaluation = evaluateKeywordAnswer(currentFlashcard, trimmedInput);
+    } else {
+      const backText = String(currentFlashcard.back || '');
+      const groups = autoExtractKeywordGroups(backText);
+      const fakeQ = { keywordGroups: groups, minKeywordGroups: Math.max(1, Math.ceil(groups.length * 0.5)) };
+      evaluation = evaluateKeywordAnswer(fakeQ, trimmedInput);
+    }
     setFlashcardKeywordEvaluation(evaluation);
     return evaluation;
   };
@@ -6753,6 +6836,8 @@ export default function BaederApp() {
             setKeywordAnswerText={setKeywordAnswerText}
             keywordAnswerEvaluation={keywordAnswerEvaluation}
             submitKeywordAnswer={submitKeywordAnswer}
+            quizMCKeywordMode={quizMCKeywordMode}
+            setQuizMCKeywordMode={setQuizMCKeywordMode}
             answerQuestion={answerQuestion}
             reportQuestionIssue={reportQuestionIssue}
             confirmMultiSelectAnswer={confirmMultiSelectAnswer}
@@ -6884,6 +6969,12 @@ export default function BaederApp() {
             getPracticalParticipantCandidates={getPracticalParticipantCandidates}
             savePracticalExamAttempt={savePracticalExamAttempt}
             deletePracticalExamAttempt={deletePracticalExamAttempt}
+            examKeywordMode={examKeywordMode}
+            setExamKeywordMode={setExamKeywordMode}
+            examKeywordInput={examKeywordInput}
+            setExamKeywordInput={setExamKeywordInput}
+            examKeywordEvaluation={examKeywordEvaluation}
+            submitExamKeywordAnswer={submitExamKeywordAnswer}
           />
           </ErrorBoundary>
         )}
@@ -6929,6 +7020,8 @@ export default function BaederApp() {
             KEYWORD_FLASHCARD_CONTENT={KEYWORD_FLASHCARD_CONTENT}
             keywordFlashcardMode={keywordFlashcardMode}
             setKeywordFlashcardMode={setKeywordFlashcardMode}
+            flashcardFreeTextMode={flashcardFreeTextMode}
+            setFlashcardFreeTextMode={setFlashcardFreeTextMode}
             flashcardKeywordInput={flashcardKeywordInput}
             setFlashcardKeywordInput={setFlashcardKeywordInput}
             flashcardKeywordEvaluation={flashcardKeywordEvaluation}
