@@ -2190,12 +2190,14 @@ export default function BaederApp() {
             difficulty: g.difficulty,
             categoryRounds: g.rounds_data || [],
             winner: winner,
-            questionHistory: []
+            questionHistory: [],
+            updatedAt: g.updated_at,
           };
         });
         setAllGames(games);
         setActiveGames(games.filter(g => g.status !== 'finished'));
         updateLeaderboard(games, allUsers);
+        await checkExpiredAndRemindGames(games);
       }
 
       // Load all user stats for trainer dashboard cards
@@ -3627,6 +3629,96 @@ export default function BaederApp() {
     const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty]?.time || 30;
     setTimeLeft(timeLimit);
     setTimerActive(true);
+  };
+
+  const autoForfeitGame = async (game, loser, winner) => {
+    try {
+      await supabase.from('games').update({
+        status: 'finished',
+        winner,
+        updated_at: new Date().toISOString()
+      }).eq('id', game.id);
+
+      const opponent = game.player1 === loser ? game.player2 : game.player1;
+      await sendNotification(
+        loser,
+        '⏰ Zeit abgelaufen – Niederlage',
+        `Dein Quizduell gegen ${opponent} wurde nach 48h Inaktivität als Niederlage gewertet.`,
+        'error'
+      );
+      await sendNotification(
+        winner,
+        '🏆 Sieg durch Aufgabe',
+        `${loser} hat 48 Stunden nicht gespielt. Du gewinnst das Quizduell!`,
+        'success'
+      );
+
+      // Nur eigene Stats aktualisieren (RLS erlaubt nur eigene Stats)
+      if (user.name === loser || user.name === winner) {
+        const existingStats = await getUserStatsFromSupabase(user.name);
+        let stats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
+        const opponentName = user.name === loser ? winner : loser;
+        if (!stats.opponents[opponentName]) {
+          stats.opponents[opponentName] = { wins: 0, losses: 0, draws: 0 };
+        }
+        if (user.name === winner) {
+          stats.wins++;
+          stats.opponents[opponentName].wins++;
+          stats.winStreak = (stats.winStreak || 0) + 1;
+          if (stats.winStreak > (stats.bestWinStreak || 0)) stats.bestWinStreak = stats.winStreak;
+        } else {
+          stats.losses++;
+          stats.opponents[opponentName].losses++;
+          stats.winStreak = 0;
+        }
+        await saveUserStatsToSupabase(user.name, stats);
+        setUserStats(stats);
+      }
+
+      setAllGames(prev => prev.map(g => g.id === game.id ? { ...g, status: 'finished', winner } : g));
+      setActiveGames(prev => prev.filter(g => g.id !== game.id));
+      localStorage.removeItem(`quiz_reminder_${game.id}_${game.currentTurn}`);
+    } catch (e) {
+      console.warn('autoForfeitGame Fehler:', e);
+    }
+  };
+
+  const checkExpiredAndRemindGames = async (games) => {
+    if (!user?.name) return;
+    const now = Date.now();
+    const H24 = 24 * 60 * 60 * 1000;
+    const H48 = 48 * 60 * 60 * 1000;
+
+    for (const game of games) {
+      if (game.status === 'finished') continue;
+      const isMine = game.player1 === user.name || game.player2 === user.name;
+      if (!isMine) continue;
+
+      const elapsed = now - new Date(game.updatedAt).getTime();
+      if (isNaN(elapsed)) continue;
+
+      if (elapsed >= H48) {
+        const loser = game.status === 'waiting' ? game.player2 : game.currentTurn;
+        const winner = game.player1 === loser ? game.player2 : game.player1;
+        await autoForfeitGame(game, loser, winner);
+      } else if (elapsed >= H24) {
+        const reminderTarget = game.status === 'waiting' ? game.player2 : game.currentTurn;
+        if (reminderTarget !== user.name) continue;
+        const reminderKey = `quiz_reminder_${game.id}_${reminderTarget}`;
+        const lastSent = localStorage.getItem(reminderKey);
+        if (lastSent && now - parseInt(lastSent) < H24) continue;
+
+        const opponent = game.player1 === reminderTarget ? game.player2 : game.player1;
+        const hoursLeft = Math.round((H48 - elapsed) / 3600000);
+        await sendNotification(
+          reminderTarget,
+          '⏰ Quizduell-Erinnerung',
+          `Du hast noch ca. ${hoursLeft}h für deinen Zug gegen ${opponent} – danach zählt es als Niederlage!`,
+          'warning'
+        );
+        localStorage.setItem(reminderKey, now.toString());
+      }
+    }
   };
 
   const finishGame = async () => {
