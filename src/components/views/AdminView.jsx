@@ -2,7 +2,7 @@ import React from 'react';
 import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
-import { CATEGORIES, PERMISSIONS } from '../../data/constants';
+import { CATEGORIES, PERMISSIONS, MENU_GROUP_LABELS } from '../../data/constants';
 
 const AdminView = ({
   getAdminStats,
@@ -26,6 +26,7 @@ const AdminView = ({
   moveMenuItem,
   updateMenuItemIcon,
   updateMenuItemLabel,
+  updateMenuItemGroup,
   toggleMenuItemVisibility,
   updateThemeColor,
   saveAppConfig,
@@ -418,6 +419,17 @@ const AdminView = ({
                         onChange={(e) => updateMenuItemLabel(item.id, e.target.value)}
                         className={`flex-1 px-3 py-1 rounded border ${darkMode ? 'bg-slate-700 border-slate-500 text-white' : 'border-gray-300'}`}
                       />
+
+                      {/* Group dropdown */}
+                      <select
+                        value={item.group || 'lernen'}
+                        onChange={(e) => updateMenuItemGroup(item.id, e.target.value)}
+                        className={`text-xs rounded px-2 py-1.5 border ${darkMode ? 'bg-slate-700 border-slate-500 text-white' : 'bg-white border-gray-300 text-gray-700'}`}
+                      >
+                        {Object.entries(MENU_GROUP_LABELS).map(([gId, gLabel]) => (
+                          <option key={gId} value={gId}>{gLabel || 'Start'}</option>
+                        ))}
+                      </select>
 
                       {/* Visibility toggle */}
                       <button

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Target } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
 import { CATEGORIES } from '../../data/constants';
 
 const DIFFICULTY_SETTINGS = {
@@ -43,8 +44,10 @@ const QuizView = ({
   reportQuestionIssue,
   confirmMultiSelectAnswer,
   proceedToNextRound,
+  userStats,
 }) => {
   const { user } = useAuth();
+  const { darkMode, playSound } = useApp();
   const currentDifficulty = getDifficulty(currentGame?.difficulty);
   const questionIsKeyword = Boolean(currentQuestion && isKeywordQuestion?.(currentQuestion));
   const availableKeywordGroups = Array.isArray(currentQuestion?.keywordGroups)
@@ -100,41 +103,60 @@ const QuizView = ({
                 ))}
               </div>
             </div>
-            <div className="grid gap-3">
-              {allUsers.filter(u => u.name !== user.name).map(u => (
-                <div key={u.name} className="border rounded-lg p-4 flex justify-between items-center hover:bg-gray-50">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
-                      u.role === 'trainer' || u.role === 'admin' ? 'bg-purple-100' : 'bg-blue-100'
+            <div className="grid gap-2">
+              {allUsers.filter(u => u.name !== user.name).map(u => {
+                const vsStats = userStats?.opponents?.[u.name] || { wins: 0, losses: 0, draws: 0 };
+                const totalVs = vsStats.wins + vsStats.losses + vsStats.draws;
+                const winrate = totalVs > 0 ? Math.round((vsStats.wins / totalVs) * 100) : null;
+                const initials = u.name.slice(0, 2).toUpperCase();
+                const hasActiveGame = activeGames.some(g =>
+                  g.status !== 'finished' &&
+                  ((g.player1 === user.name && g.player2 === u.name) ||
+                   (g.player1 === u.name && g.player2 === user.name))
+                );
+                return (
+                  <div key={u.name} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
+                    {/* Initials Avatar */}
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 ${
+                      u.role === 'trainer' || u.role === 'admin' ? 'bg-purple-500' : 'bg-blue-500'
                     }`}>
-                      {u.role === 'trainer' || u.role === 'admin' ? '👨‍🏫' : '🎓'}
+                      {initials}
                     </div>
-                    <div>
-                      <p className="font-bold">{u.name}</p>
-                      <p className="text-sm text-gray-600">
-                        {u.role === 'admin' ? 'Administrator' : u.role === 'trainer' ? 'Ausbilder' : 'Azubi'}
-                      </p>
+                    {/* Name + Winrate */}
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>{u.name}</p>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+                          {u.role === 'admin' ? 'Administrator' : u.role === 'trainer' ? 'Ausbilder' : 'Azubi'}
+                        </span>
+                        {winrate !== null ? (
+                          <span className={`font-medium ${winrate >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                            · {winrate}% W/R ({totalVs} Sp.)
+                          </span>
+                        ) : (
+                          <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>· Noch nicht gespielt</span>
+                        )}
+                      </div>
                     </div>
+                    {/* Action Button */}
+                    {hasActiveGame ? (
+                      <span className={`text-xs italic px-3 py-1.5 rounded-lg ${darkMode ? 'bg-slate-600 text-gray-300' : 'bg-gray-200 text-gray-500'}`}>
+                        Läuft
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => challengePlayer(u.name)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-bold flex items-center gap-1.5 text-sm transition-all flex-shrink-0"
+                      >
+                        <Target size={16} />
+                        <span>Herausfordern</span>
+                      </button>
+                    )}
                   </div>
-                  {activeGames.some(g =>
-                    g.status !== 'finished' &&
-                    ((g.player1 === user.name && g.player2 === u.name) ||
-                     (g.player1 === u.name && g.player2 === user.name))
-                  ) ? (
-                    <span className="text-sm text-gray-500 italic px-4">Spiel laeuft bereits</span>
-                  ) : (
-                    <button
-                      onClick={() => challengePlayer(u.name)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold flex items-center space-x-2"
-                    >
-                      <Target size={20} />
-                      <span>Herausfordern</span>
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
               {allUsers.filter(u => u.name !== user.name).length === 0 && (
-                <p className="text-gray-500 text-center py-8">Noch keine anderen Spieler online</p>
+                <p className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Noch keine anderen Spieler vorhanden</p>
               )}
             </div>
           </div>
@@ -329,7 +351,7 @@ const QuizView = ({
                       let buttonClass = '';
                       if (answered) {
                         if (isCorrectAnswer) {
-                          buttonClass = 'bg-green-500 text-white';
+                          buttonClass = 'bg-green-500 text-white animate-correct-flash';
                         } else if ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle)) {
                           buttonClass = 'bg-red-500 text-white';
                         } else {

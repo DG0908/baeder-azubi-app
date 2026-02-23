@@ -215,25 +215,51 @@ const ExamSimulatorView = ({
       </div>
     ) : (
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              Frage {examQuestionIndex + 1} / 30
-            </h3>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              {CATEGORIES.find(c => c.id === examCurrentQuestion.category)?.name}
-            </p>
-            {examKeywordMode && (
-              <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full font-bold ${darkMode ? 'bg-violet-900/60 text-violet-300' : 'bg-violet-100 text-violet-700'}`}>
-                🧠 Schlagwort-Modus
+        {/* Progress Header */}
+        <div className="mb-5">
+          <div className="flex justify-between items-center mb-1.5">
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                Frage {examQuestionIndex + 1} / 30
               </span>
-            )}
-          </div>
-          <div className={`text-right ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
-            <div className="text-2xl font-bold">
-              {examSimulator.answers.filter(a => a.correct).length}
+              <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                {CATEGORIES.find(c => c.id === examCurrentQuestion.category)?.name}
+              </span>
+              {examKeywordMode && (
+                <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${darkMode ? 'bg-violet-900/60 text-violet-300' : 'bg-violet-100 text-violet-700'}`}>
+                  🧠 Schlagwort-Modus
+                </span>
+              )}
             </div>
-            <div className="text-sm">Richtig</div>
+            <div className={`flex items-center gap-1.5 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
+              <span className="text-xl font-bold">{examSimulator.answers.filter(a => a.correct).length}</span>
+              <span className="text-xs">Richtig</span>
+            </div>
+          </div>
+          {/* Progress bar */}
+          <div className={`w-full h-2.5 rounded-full overflow-hidden ${darkMode ? 'bg-slate-600' : 'bg-gray-200'}`}>
+            <div
+              className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
+              style={{ width: `${((examQuestionIndex) / 30) * 100}%` }}
+            />
+          </div>
+          {/* Category segment indicators */}
+          <div className="flex gap-0.5 mt-1.5">
+            {[0,1,2,3,4,5].map(seg => {
+              const segStart = seg * 5;
+              const completed = examQuestionIndex > segStart + 4;
+              const active = examQuestionIndex >= segStart && examQuestionIndex <= segStart + 4;
+              return (
+                <div
+                  key={seg}
+                  className={`flex-1 h-1 rounded-full transition-all ${
+                    completed ? (darkMode ? 'bg-cyan-400' : 'bg-cyan-500') :
+                    active ? (darkMode ? 'bg-cyan-600' : 'bg-cyan-300') :
+                    (darkMode ? 'bg-slate-600' : 'bg-gray-200')
+                  }`}
+                />
+              );
+            })}
           </div>
         </div>
         
@@ -901,7 +927,7 @@ const ExamSimulatorView = ({
 
 {examSimulatorMode === 'theory' && userExamProgress && (
   <div className="max-w-4xl mx-auto">
-    <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-8 shadow-lg text-center`}>
+    <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-8 shadow-lg text-center ${userExamProgress.passed ? 'animate-exam-pass' : ''}`}>
       <div className="text-6xl mb-4">{userExamProgress.passed ? '🎉' : '📚'}</div>
       <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
         {userExamProgress.passed ? 'Bestanden!' : 'Nicht bestanden'}

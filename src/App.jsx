@@ -26,7 +26,7 @@ import BerichtsheftView from './components/views/BerichtsheftView';
 import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
 
-import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, AVATARS } from './data/constants';
+import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, AVATARS, MENU_GROUP_LABELS, getLevel, getLevelProgress } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
 import { AUSBILDUNGSRAHMENPLAN, WOCHEN_PRO_JAHR } from './data/ausbildungsrahmenplan';
 import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
@@ -597,6 +597,7 @@ export default function BaederApp() {
   const [editingMenuItems, setEditingMenuItems] = useState([]);
   const [editingThemeColors, setEditingThemeColors] = useState({});
   const [configLoaded, setConfigLoaded] = useState(false);
+  const [showMehrDrawer, setShowMehrDrawer] = useState(false);
   
   // Flashcards State
   const [flashcards, setFlashcards] = useState([]);
@@ -894,6 +895,13 @@ export default function BaederApp() {
       window.clearInterval(intervalId);
     };
   }, [checkForPwaUpdate]);
+
+  // Track last visited view for "Weiter machen" shortcut on Home
+  useEffect(() => {
+    if (currentView && currentView !== 'home') {
+      localStorage.setItem('lastView', currentView);
+    }
+  }, [currentView]);
 
   // Content moderation
   const BANNED_WORDS = [
@@ -6430,6 +6438,13 @@ export default function BaederApp() {
     setEditingMenuItems(newItems);
   };
 
+  // Update menu item group
+  const updateMenuItemGroup = (itemId, newGroup) => {
+    setEditingMenuItems(prev => prev.map(item =>
+      item.id === itemId ? { ...item, group: newGroup } : item
+    ));
+  };
+
   // Update theme color
   const updateThemeColor = (colorKey, newColor) => {
     setEditingThemeColors(prev => ({ ...prev, [colorKey]: newColor }));
@@ -6742,6 +6757,19 @@ export default function BaederApp() {
                 {user.role === 'admin' && ' 👑'}
                 {user.role === 'trainer' && ' 👨‍🏫'}
               </p>
+              {/* Level Badge */}
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-xs font-bold text-white/90 bg-white/20 rounded-full px-2 py-0.5">
+                  Lv.{getLevel(getTotalXpFromStats(userStats))}
+                </span>
+                <div className="w-16 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-white/80 rounded-full transition-all duration-500"
+                    style={{ width: `${getLevelProgress(getTotalXpFromStats(userStats)) * 100}%` }}
+                  />
+                </div>
+                <span className="text-xs opacity-70">{getTotalXpFromStats(userStats)} XP</span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -6929,7 +6957,7 @@ export default function BaederApp() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4 relative z-10">
+      <div className="max-w-7xl mx-auto p-4 relative z-10 pb-20 md:pb-4">
         {/* Admin Panel */}
         {currentView === 'admin' && user.permissions.canManageUsers && (
           <AdminView
@@ -6954,6 +6982,7 @@ export default function BaederApp() {
             moveMenuItem={moveMenuItem}
             updateMenuItemIcon={updateMenuItemIcon}
             updateMenuItemLabel={updateMenuItemLabel}
+            updateMenuItemGroup={updateMenuItemGroup}
             toggleMenuItemVisibility={toggleMenuItemVisibility}
             updateThemeColor={updateThemeColor}
             saveAppConfig={saveAppConfig}
@@ -6992,6 +7021,8 @@ export default function BaederApp() {
             materials={materials}
             resources={resources}
             messages={messages}
+            berichtsheftPendingSignatures={berichtsheftPendingSignatures}
+            menuItems={appConfig.menuItems}
           />
         )}
 
@@ -7028,6 +7059,7 @@ export default function BaederApp() {
             reportQuestionIssue={reportQuestionIssue}
             confirmMultiSelectAnswer={confirmMultiSelectAnswer}
             proceedToNextRound={proceedToNextRound}
+            userStats={userStats}
           />
         )}
 
@@ -7419,6 +7451,103 @@ export default function BaederApp() {
         )}
 
       </div>
+
+      {/* Bottom Navigation Bar — mobile only */}
+      <div className={`fixed bottom-0 left-0 right-0 z-50 md:hidden ${darkMode ? 'bg-slate-900/97 border-slate-700' : 'bg-white/97 border-gray-200'} border-t backdrop-blur-sm flex`}
+           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {[
+          { id: 'home', icon: '🏠', label: 'Start' },
+          { id: 'exam-simulator', icon: '📝', label: 'Prüfung' },
+          { id: 'quiz', icon: '🎮', label: 'Quiz' },
+          { id: 'berichtsheft', icon: '📖', label: 'Bericht' },
+          { id: '__mehr', icon: '☰', label: 'Mehr' },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              if (tab.id === '__mehr') {
+                setShowMehrDrawer(true);
+              } else {
+                setCurrentView(tab.id);
+                playSound('splash');
+              }
+            }}
+            className={`flex-1 flex flex-col items-center justify-center py-2 text-xs transition-all ${
+              currentView === tab.id
+                ? darkMode ? 'text-cyan-400' : 'text-cyan-600'
+                : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <span className="text-xl leading-none mb-0.5">{tab.icon}</span>
+            <span className="text-[10px]">{tab.label}</span>
+            {tab.id !== '__mehr' && currentView === tab.id && (
+              <div className={`w-1 h-1 rounded-full mt-0.5 ${darkMode ? 'bg-cyan-400' : 'bg-cyan-600'}`} />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* "Mehr"-Drawer — grouped menu items */}
+      {showMehrDrawer && (
+        <div
+          className="fixed inset-0 z-[100]"
+          onClick={() => setShowMehrDrawer(false)}
+        >
+          <div className="absolute inset-0 bg-black/50" />
+          <div
+            className={`absolute bottom-0 left-0 right-0 ${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-t-2xl max-h-[75vh] overflow-y-auto`}
+            onClick={e => e.stopPropagation()}
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
+            <div className={`flex justify-between items-center p-4 border-b ${darkMode ? 'border-slate-700' : 'border-gray-100'}`}>
+              <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>Alle Menüpunkte</h3>
+              <button onClick={() => setShowMehrDrawer(false)} className={`p-2 rounded-lg ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-800'}`}>✕</button>
+            </div>
+            <div className="p-4 space-y-4">
+              {Object.entries(MENU_GROUP_LABELS)
+                .filter(([groupId]) => groupId !== 'home')
+                .map(([groupId, groupLabel]) => {
+                  const groupItems = [...appConfig.menuItems]
+                    .filter(item => {
+                      if (!item.visible) return false;
+                      if ((item.group || 'lernen') !== groupId) return false;
+                      if (item.requiresPermission) return user.permissions[item.requiresPermission];
+                      return true;
+                    })
+                    .sort((a, b) => a.order - b.order);
+                  if (groupItems.length === 0) return null;
+                  return (
+                    <div key={groupId}>
+                      <p className={`text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{groupLabel}</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {groupItems.map(item => (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              setCurrentView(item.id);
+                              playSound('splash');
+                              setShowMehrDrawer(false);
+                              if (item.id === 'flashcards') loadFlashcards();
+                            }}
+                            className={`flex flex-col items-center gap-1 p-3 rounded-xl transition-all ${
+                              currentView === item.id
+                                ? darkMode ? 'bg-cyan-900/50 text-cyan-400' : 'bg-cyan-50 text-cyan-600'
+                                : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            <span className="text-2xl">{item.icon}</span>
+                            <span className="text-xs font-medium text-center leading-tight">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
