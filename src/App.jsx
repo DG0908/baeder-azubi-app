@@ -519,6 +519,19 @@ export default function BaederApp() {
     };
   };
 
+  const deductXpFromStats = (statsInput, amount) => {
+    const xpToDeduct = Math.max(0, Math.round(amount));
+    const safeStats = ensureUserStatsStructure(statsInput);
+    if (xpToDeduct === 0) return { stats: safeStats, deductedXp: 0 };
+    const safeCategoryStats = { ...(safeStats.categoryStats || {}) };
+    const xpMeta = getXpMetaFromCategoryStats(safeCategoryStats);
+    const actualDeduction = Math.min(xpToDeduct, xpMeta.totalXp); // nie unter 0
+    if (actualDeduction === 0) return { stats: safeStats, deductedXp: 0 };
+    xpMeta.totalXp -= actualDeduction;
+    safeCategoryStats[XP_META_KEY] = xpMeta;
+    return { stats: { ...safeStats, categoryStats: safeCategoryStats }, deductedXp: actualDeduction };
+  };
+
   // Other State
   const [userStats, setUserStats] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
@@ -3670,6 +3683,12 @@ export default function BaederApp() {
           stats.losses++;
           stats.opponents[opponentName].losses++;
           stats.winStreak = 0;
+          // 100 XP Strafe für den Verlierer
+          const xpResult = deductXpFromStats(stats, 100);
+          stats = xpResult.stats;
+          if (xpResult.deductedXp > 0) {
+            showToast(`-${xpResult.deductedXp} XP Strafe • Quizduell-Aufgabe`, 'error', 3500);
+          }
         }
         await saveUserStatsToSupabase(user.name, stats);
         setUserStats(stats);

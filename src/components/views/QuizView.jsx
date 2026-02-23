@@ -65,6 +65,17 @@ const QuizView = ({
       {!currentGame && (
         <>
           <h2 className="text-3xl font-bold mb-6">Quizduell 🏆</h2>
+
+          <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
+            <p className="font-bold text-amber-800 mb-2">⚠️ Spielregeln – Zeitlimit & Strafen</p>
+            <ul className="space-y-1 text-amber-700">
+              <li>⏰ Spiele laufen maximal <strong>48 Stunden</strong> – danach werden sie automatisch entschieden.</li>
+              <li>🔔 Nach <strong>24 Stunden</strong> Inaktivität erhältst du eine Erinnerungsbenachrichtigung.</li>
+              <li>❌ Wer seinen Zug nicht rechtzeitig macht oder eine Challenge ignoriert, <strong>verliert die Runde</strong>.</li>
+              <li>💥 Zusätzlich werden dem Verlierer <strong>100 XP abgezogen</strong>.</li>
+            </ul>
+          </div>
+
           <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
             <h3 className="text-xl font-bold mb-4">Spieler herausfordern</h3>
             <div className="mb-6">
