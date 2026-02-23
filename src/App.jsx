@@ -5816,7 +5816,7 @@ export default function BaederApp() {
           </tbody>
         </table>
 
-        <div style="margin-bottom: 15px;">
+        <div style="margin-bottom: 15px; page-break-inside: avoid;">
           <strong>Besondere Bemerkungen</strong>
           <div style="display: flex; gap: 15px; margin-top: 8px;">
             <div style="flex: 1; border: 1px solid #333; padding: 8px; min-height: 50px;">
@@ -5830,18 +5830,26 @@ export default function BaederApp() {
           </div>
         </div>
 
-        <div style="margin-top: 20px;">
+        <div style="margin-top: 20px; page-break-inside: avoid;">
           <strong>Für die Richtigkeit</strong>
           <div style="display: flex; gap: 40px; margin-top: 10px;">
             <div style="flex: 1;">
-              <div style="margin-bottom: 5px;">Datum: ${entry.datum_azubi || '________________'}</div>
-              <div style="border-top: 1px solid #333; padding-top: 5px; margin-top: 30px;">
+              <div style="margin-bottom: 5px;">Datum: ${entry.datum_azubi ? new Date(entry.datum_azubi).toLocaleDateString('de-DE') : '________________'}</div>
+              ${entry.signatur_azubi
+                ? `<img src="${entry.signatur_azubi}" style="max-height: 70px; max-width: 220px; display: block; margin: 8px 0;" />`
+                : '<div style="height: 55px;"></div>'
+              }
+              <div style="border-top: 1px solid #333; padding-top: 4px; font-size: 10px; color: #333;">
                 Unterschrift Auszubildende/r
               </div>
             </div>
             <div style="flex: 1;">
-              <div style="margin-bottom: 5px;">Datum: ${entry.datum_ausbilder || '________________'}</div>
-              <div style="border-top: 1px solid #333; padding-top: 5px; margin-top: 30px;">
+              <div style="margin-bottom: 5px;">Datum: ${entry.datum_ausbilder ? new Date(entry.datum_ausbilder).toLocaleDateString('de-DE') : '________________'}</div>
+              ${entry.signatur_ausbilder
+                ? `<img src="${entry.signatur_ausbilder}" style="max-height: 70px; max-width: 220px; display: block; margin: 8px 0;" />`
+                : '<div style="height: 55px;"></div>'
+              }
+              <div style="border-top: 1px solid #333; padding-top: 4px; font-size: 10px; color: #333;">
                 Unterschrift Ausbilder/in
               </div>
             </div>
