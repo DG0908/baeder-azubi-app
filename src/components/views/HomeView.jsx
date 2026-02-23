@@ -1,13 +1,13 @@
-import React from 'react';
+﻿import React from 'react';
 import { Bell, Calendar, Brain, Trophy, Zap, Target } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { DAILY_WISDOM, DID_YOU_KNOW_FACTS } from '../../data/content';
 
 const DIFFICULTY_SETTINGS = {
-  anfaenger: { time: 45, label: 'Anfänger', icon: '🟢', color: 'bg-green-500' },
-  profi: { time: 30, label: 'Profi', icon: '🟡', color: 'bg-yellow-500' },
-  experte: { time: 15, label: 'Experte', icon: '🔴', color: 'bg-red-500' }
+  anfaenger: { time: 45, label: 'Anfaenger', icon: '\u{1F7E2}', color: 'bg-green-500' },
+  profi: { time: 30, label: 'Profi', icon: '\u{1F7E1}', color: 'bg-yellow-500' },
+  experte: { time: 15, label: 'Experte', icon: '\u{1F534}', color: 'bg-red-500' }
 };
 
 const HomeView = ({
@@ -43,14 +43,275 @@ const HomeView = ({
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
+  const dueCards = getTotalDueCards();
+  const completedChallenges = getCompletedChallengesCount();
+  const waitingChallenges = activeGames.filter(g => g.player2 === user.name && g.status === 'waiting');
+  const activeGamesForUser = activeGames.filter(g => (g.player1 === user.name || g.player2 === user.name) && g.status === 'active');
+  const playerTurnGame = activeGamesForUser.find(g => g.currentTurn === user.name);
+
+  const nextExam = exams
+    .map((exam) => {
+      const examDate = new Date(exam.date);
+      const daysUntil = Math.ceil((examDate - new Date()) / (1000 * 60 * 60 * 24));
+      return { ...exam, examDate, daysUntil };
+    })
+    .filter((exam) => !Number.isNaN(exam.examDate.getTime()) && exam.daysUntil >= 0)
+    .sort((a, b) => a.examDate - b.examDate)[0] || null;
+
+  const hasStatsActivity = Boolean(
+    userStats && (
+      (userStats.wins || 0) > 0 ||
+      (userStats.losses || 0) > 0 ||
+      (userStats.draws || 0) > 0 ||
+      getTotalXpFromStats(userStats) > 0
+    )
+  );
+  const isDashboardDataEmpty =
+    !hasStatsActivity &&
+    dueCards === 0 &&
+    waitingChallenges.length === 0 &&
+    activeGamesForUser.length === 0 &&
+    news.length === 0 &&
+    exams.length === 0;
+
+  const openView = (view) => {
+    setCurrentView(view);
+    playSound('splash');
+  };
+
+  const openExamSimulator = () => {
+    setCurrentView('exam-simulator');
+    setExamSimulatorMode('theory');
+    playSound('splash');
+  };
+
+  const openFlashcards = () => {
+    setCurrentView('flashcards');
+    loadFlashcards();
+    playSound('splash');
+  };
+
+  const openSpacedRepetition = () => {
+    setSpacedRepetitionMode(true);
+    setCurrentView('flashcards');
+    playSound('splash');
+  };
+
+  const dashboardSections = [
+    {
+      id: 'learning',
+      title: 'Lernen',
+      description: 'Module fuer Wissensaufbau und Pruefungstraining.',
+      cards: [
+        {
+          id: 'exam-simulator',
+          icon: 'ðŸ“',
+          title: 'Pruefungssimulator',
+          description: 'Theorie und Praxis im Fokusmodus',
+          meta: nextExam ? `Naechste Klausur in ${nextExam.daysUntil} Tagen` : 'Ideal fuer gezielte Vorbereitung',
+          wide: true,
+          onClick: openExamSimulator,
+          style: {
+            darkCard: 'border-cyan-600 hover:border-cyan-400',
+            lightCard: 'border-cyan-200 hover:border-cyan-400',
+            darkTitle: 'text-cyan-400',
+            lightTitle: 'text-cyan-700',
+          }
+        },
+        {
+          id: 'flashcards',
+          icon: 'ðŸŽ´',
+          title: 'Karteikarten',
+          description: 'Klassisch oder als Wiederholung',
+          meta: dueCards > 0 ? `${dueCards} Karten faellig` : 'Keine Karten faellig',
+          onClick: openFlashcards,
+          style: {
+            darkCard: 'border-purple-600 hover:border-purple-400',
+            lightCard: 'border-purple-200 hover:border-purple-400',
+            darkTitle: 'text-purple-400',
+            lightTitle: 'text-purple-700',
+          }
+        },
+        {
+          id: 'calculator',
+          icon: 'ðŸ§®',
+          title: 'Praxis-Rechner',
+          description: 'Rechenwege fuer den Betriebsalltag',
+          meta: 'inklusive Loesungsweg',
+          onClick: () => openView('calculator'),
+          style: {
+            darkCard: 'border-blue-600 hover:border-blue-400',
+            lightCard: 'border-blue-200 hover:border-blue-400',
+            darkTitle: 'text-blue-400',
+            lightTitle: 'text-blue-700',
+          }
+        },
+        {
+          id: 'quiz',
+          icon: 'ðŸŽ®',
+          title: 'Quizduell',
+          description: 'Gegen andere antreten und XP sammeln',
+          meta: playerTurnGame ? 'Du bist in einem laufenden Duell am Zug' : `${activeGamesForUser.length} aktive Duelle`,
+          onClick: () => openView('quiz'),
+          style: {
+            darkCard: 'border-green-600 hover:border-green-400',
+            lightCard: 'border-green-200 hover:border-green-400',
+            darkTitle: 'text-green-400',
+            lightTitle: 'text-green-700',
+          }
+        }
+      ]
+    },
+    {
+      id: 'practice',
+      title: 'Praxis und Nachweise',
+      description: 'Trainingserfolge und Ausbildungsdokumentation.',
+      cards: [
+        {
+          id: 'swim-challenge',
+          icon: 'ðŸŠ',
+          title: 'Schwimm-Challenge',
+          description: 'Disziplinen trainieren und bestaetigen',
+          meta: 'Azubis und Trainer im Vergleich',
+          onClick: () => openView('swim-challenge'),
+          style: {
+            darkCard: 'border-cyan-600 hover:border-cyan-400',
+            lightCard: 'border-cyan-200 hover:border-cyan-400',
+            darkTitle: 'text-cyan-400',
+            lightTitle: 'text-cyan-700',
+          }
+        },
+        {
+          id: 'berichtsheft',
+          icon: 'ðŸ“–',
+          title: 'Berichtsheft',
+          description: 'Wochenberichte und Signaturen',
+          meta: 'Ausbildungsnachweis digital',
+          wide: true,
+          onClick: () => openView('berichtsheft'),
+          style: {
+            darkCard: 'border-teal-600 hover:border-teal-400',
+            lightCard: 'border-teal-200 hover:border-teal-400',
+            darkTitle: 'text-teal-400',
+            lightTitle: 'text-teal-700',
+          }
+        },
+        {
+          id: 'school-card',
+          icon: 'ðŸŽ“',
+          title: 'Kontrollkarte',
+          description: 'Berufsschule und Leistungsnachweise',
+          meta: 'Alle Schulfelder zentral',
+          onClick: () => openView('school-card'),
+          style: {
+            darkCard: 'border-orange-600 hover:border-orange-400',
+            lightCard: 'border-orange-200 hover:border-orange-400',
+            darkTitle: 'text-orange-400',
+            lightTitle: 'text-orange-700',
+          }
+        },
+        {
+          id: 'questions',
+          icon: 'ðŸ’¡',
+          title: 'Fragen',
+          description: 'Fragen einreichen und erweitern',
+          meta: 'Lernpool aktiv mitgestalten',
+          onClick: () => openView('questions'),
+          style: {
+            darkCard: 'border-amber-600 hover:border-amber-400',
+            lightCard: 'border-amber-200 hover:border-amber-400',
+            darkTitle: 'text-amber-400',
+            lightTitle: 'text-amber-700',
+          }
+        }
+      ]
+    },
+    {
+      id: 'overview',
+      title: 'Uebersicht und Team',
+      description: 'Auswertung, Kommunikation und Wissenstransfer.',
+      cards: [
+        ...(user.permissions.canViewAllStats ? [{
+          id: 'trainer-dashboard',
+          icon: 'ðŸ‘¨â€ðŸ«',
+          title: 'Azubi-Uebersicht',
+          description: 'Fortschritte teamweit einsehen',
+          meta: 'Trainer- und Adminbereich',
+          onClick: () => openView('trainer-dashboard'),
+          style: {
+            darkCard: 'border-indigo-600 hover:border-indigo-400',
+            lightCard: 'border-indigo-200 hover:border-indigo-400',
+            darkTitle: 'text-indigo-400',
+            lightTitle: 'text-indigo-700',
+          }
+        }] : []),
+        {
+          id: 'stats',
+          icon: 'ðŸ…',
+          title: 'Statistiken',
+          description: 'Badges, XP und Ranglisten',
+          meta: userStats ? `${userStats.wins} Siege` : 'Noch keine Statistik',
+          onClick: () => openView('stats'),
+          style: {
+            darkCard: 'border-yellow-600 hover:border-yellow-400',
+            lightCard: 'border-yellow-200 hover:border-yellow-400',
+            darkTitle: 'text-yellow-400',
+            lightTitle: 'text-yellow-700',
+          }
+        },
+        {
+          id: 'materials',
+          icon: 'ðŸ“š',
+          title: 'Lernmaterialien',
+          description: 'Dateien und Wissen kompakt',
+          meta: `${materials.length} Materialien`,
+          onClick: () => openView('materials'),
+          style: {
+            darkCard: 'border-green-600 hover:border-green-400',
+            lightCard: 'border-green-200 hover:border-green-400',
+            darkTitle: 'text-green-400',
+            lightTitle: 'text-green-700',
+          }
+        },
+        {
+          id: 'resources',
+          icon: 'ðŸ”—',
+          title: 'Ressourcen',
+          description: 'Wichtige externe Links',
+          meta: `${resources.length} Eintraege`,
+          onClick: () => openView('resources'),
+          style: {
+            darkCard: 'border-indigo-600 hover:border-indigo-400',
+            lightCard: 'border-indigo-200 hover:border-indigo-400',
+            darkTitle: 'text-indigo-400',
+            lightTitle: 'text-indigo-700',
+          }
+        },
+        {
+          id: 'chat',
+          icon: 'ðŸ’¬',
+          title: 'Team-Chat',
+          description: 'Abstimmen und Rueckfragen klaeren',
+          meta: `${messages.length} Nachrichten`,
+          onClick: () => openView('chat'),
+          style: {
+            darkCard: 'border-pink-600 hover:border-pink-400',
+            lightCard: 'border-pink-200 hover:border-pink-400',
+            darkTitle: 'text-pink-400',
+            lightTitle: 'text-pink-700',
+          }
+        }
+      ]
+    }
+  ];
 
   return (
     <div className="space-y-6">
       <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 via-cyan-800 to-cyan-900' : 'bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-500'} text-white rounded-xl p-8 text-center shadow-xl backdrop-blur-sm`}>
-        <h2 className="text-3xl font-bold mb-2 drop-shadow-lg">🌊 Willkommen zurück! 💦</h2>
+        <h2 className="text-3xl font-bold mb-2 drop-shadow-lg">Willkommen zurueck!</h2>
         <div className={`${darkMode ? 'bg-white/10 border-white/20' : 'bg-white/20 border-white/30'} border rounded-lg p-3 mb-4 max-w-3xl mx-auto`}>
           <div className="flex items-center justify-between gap-3 mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wide opacity-90">🧠 Allgemeinbildung</span>
+            <span className="text-xs font-semibold uppercase tracking-wide opacity-90">Allgemeinbildung</span>
             <button
               onClick={rotateGeneralKnowledge}
               className={`${darkMode ? 'bg-white/15 hover:bg-white/25 border-white/20' : 'bg-white/25 hover:bg-white/35 border-white/30'} border px-2.5 py-1 rounded-md text-xs font-semibold transition-all`}
@@ -59,26 +320,26 @@ const HomeView = ({
             </button>
           </div>
           <p className="text-sm opacity-95 italic">
-            💡 {dailyWisdom || DAILY_WISDOM[0] || DID_YOU_KNOW_FACTS[0] || 'Wissen lädt...'}
+            {dailyWisdom || DAILY_WISDOM[0] || DID_YOU_KNOW_FACTS[0] || 'Wissen laedt...'}
           </p>
         </div>
         {userStats && (
           <div className="mt-4 -mx-2 px-2 overflow-x-auto swipe-stats-scroll">
             <div className="flex gap-4 md:justify-center snap-x snap-mandatory min-w-max md:min-w-0">
               <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
-              <div className="text-2xl font-bold">🏆 {userStats.wins}</div>
+              <div className="text-2xl font-bold">{userStats.wins}</div>
               <div className="text-sm">Siege</div>
               </div>
               <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
-              <div className="text-2xl font-bold">💪 {userStats.losses}</div>
+              <div className="text-2xl font-bold">{userStats.losses}</div>
               <div className="text-sm">Niederlagen</div>
               </div>
               <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
-              <div className="text-2xl font-bold">🤝 {userStats.draws}</div>
+              <div className="text-2xl font-bold">{userStats.draws}</div>
               <div className="text-sm">Unentschieden</div>
               </div>
               <div className={`${darkMode ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm rounded-lg px-6 py-3 border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} min-w-[170px] text-center snap-center`}>
-              <div className="text-2xl font-bold">⭐ {getTotalXpFromStats(userStats)}</div>
+              <div className="text-2xl font-bold">? {getTotalXpFromStats(userStats)}</div>
               <div className="text-sm">XP Gesamt</div>
               </div>
             </div>
@@ -89,10 +350,39 @@ const HomeView = ({
           onClick={() => setCurrentView('profile')}
           className={`mt-4 inline-flex items-center gap-2 px-6 py-3 ${darkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white/20 hover:bg-white/30'} backdrop-blur-sm rounded-lg border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} transition-all font-medium`}
         >
-          <span className="text-xl">👤</span>
+          <span className="text-xl">ðŸ‘¤</span>
           <span>Mein Profil</span>
         </button>
       </div>
+
+      {isDashboardDataEmpty && (
+        <div className={`${darkMode ? 'bg-slate-800/95 border-slate-700' : 'bg-white/95 border-gray-200'} border rounded-xl p-5 shadow-lg`}>
+          <h3 className={`text-lg font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Aktuell liegen wohl keine Daten vor</h3>
+          <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Starte mit einem Modul, dann fuellt sich das Dashboard automatisch mit persoenlichen Fortschrittsdaten.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={openExamSimulator}
+              className={`${darkMode ? 'bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/40 text-cyan-100' : 'bg-cyan-50 hover:bg-cyan-100 border-cyan-200 text-cyan-700'} border rounded-lg px-4 py-2 text-sm font-semibold transition-all`}
+            >
+              Pruefungssimulator starten
+            </button>
+            <button
+              onClick={openFlashcards}
+              className={`${darkMode ? 'bg-purple-500/20 hover:bg-purple-500/30 border-purple-500/40 text-purple-100' : 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700'} border rounded-lg px-4 py-2 text-sm font-semibold transition-all`}
+            >
+              Karteikarten oeffnen
+            </button>
+            <button
+              onClick={() => openView('berichtsheft')}
+              className={`${darkMode ? 'bg-teal-500/20 hover:bg-teal-500/30 border-teal-500/40 text-teal-100' : 'bg-teal-50 hover:bg-teal-100 border-teal-200 text-teal-700'} border rounded-lg px-4 py-2 text-sm font-semibold transition-all`}
+            >
+              Berichtsheft aufrufen
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Daily Challenges Section */}
       {dailyChallenges.length > 0 && (
@@ -100,11 +390,11 @@ const HomeView = ({
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-orange-300' : 'text-orange-800'}`}>
               <Target className="mr-2" />
-              🎯 Tägliche Challenges
+              Taegliche Challenges
             </h3>
             <div className={`flex items-center gap-2 ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-              <span className="text-sm font-medium">{getCompletedChallengesCount()}/3 erledigt</span>
-              {getCompletedChallengesCount() === 3 && <span className="text-xl">🏆</span>}
+              <span className="text-sm font-medium">{completedChallenges}/3 erledigt</span>
+              {completedChallenges === 3 && <span className="text-xl">OK</span>}
             </div>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
@@ -122,7 +412,7 @@ const HomeView = ({
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-2xl">{challenge.icon}</span>
-                    {completed && <span className="text-green-500 text-xl">✓</span>}
+                    {completed && <span className="text-green-500 text-xl">?</span>}
                   </div>
                   <h4 className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                     {challenge.name}
@@ -155,10 +445,10 @@ const HomeView = ({
               );
             })}
           </div>
-          {getCompletedChallengesCount() === 3 && (
+          {completedChallenges === 3 && (
             <div className={`mt-4 text-center p-3 rounded-lg ${darkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
               <p className={`font-bold ${darkMode ? 'text-green-300' : 'text-green-700'}`}>
-                🎉 Alle Challenges geschafft! Du hast heute {getTotalXPEarned()} XP verdient!
+                Alle Challenges geschafft! Du hast heute {getTotalXPEarned()} XP verdient!
               </p>
             </div>
           )}
@@ -170,7 +460,7 @@ const HomeView = ({
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <h3 className={`text-xl font-bold ${darkMode ? 'text-emerald-200' : 'text-emerald-800'}`}>
-              📅 Wochenziele
+              Wochenziele
             </h3>
             <p className={`text-sm ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>
               Woche ab {new Date(`${weeklyProgress.weekStart}T00:00:00`).toLocaleDateString('de-DE')}
@@ -186,10 +476,10 @@ const HomeView = ({
 
         <div className="grid md:grid-cols-4 gap-3 mb-4">
           {[
-            { key: 'quizAnswers', label: 'Quiz', icon: '🎯' },
-            { key: 'examAnswers', label: 'Pruefung', icon: '📝' },
-            { key: 'flashcards', label: 'Karteikarten', icon: '🧠' },
-            { key: 'checklistItems', label: 'Praxis', icon: '✅' }
+            { key: 'quizAnswers', label: 'Quiz', icon: 'Q' },
+            { key: 'examAnswers', label: 'Pruefung', icon: 'P' },
+            { key: 'flashcards', label: 'Karteikarten', icon: 'K' },
+            { key: 'checklistItems', label: 'Praxis', icon: '?' }
           ].map((metric) => {
             const target = sanitizeGoalValue(weeklyGoals[metric.key], 0);
             const current = sanitizeGoalValue(weeklyProgress.stats?.[metric.key], 0);
@@ -256,14 +546,14 @@ const HomeView = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-4xl animate-pulse">
-                {userStats.winStreak >= 25 ? '💎' : userStats.winStreak >= 15 ? '🏆' : userStats.winStreak >= 10 ? '🔥' : userStats.winStreak >= 5 ? '⚡' : '💪'}
+                {userStats.winStreak >= 25 ? 'LEG' : userStats.winStreak >= 15 ? 'TOP' : userStats.winStreak >= 10 ? 'HOT' : userStats.winStreak >= 5 ? 'GO' : 'UP'}
               </span>
               <div>
                 <p className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   {userStats.winStreak} Siege in Folge!
                 </p>
                 <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {userStats.winStreak >= 25 ? 'Legendäre Serie!' :
+                  {userStats.winStreak >= 25 ? 'LegendÃ¤re Serie!' :
                    userStats.winStreak >= 15 ? 'Dominanz pur!' :
                    userStats.winStreak >= 10 ? 'Unaufhaltsam!' :
                    userStats.winStreak >= 5 ? 'Durchstarter!' : 'Weiter so!'}
@@ -271,7 +561,7 @@ const HomeView = ({
               </div>
             </div>
             <div className={`text-right ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <p className="text-sm">Nächster Meilenstein</p>
+              <p className="text-sm">NÃ¤chster Meilenstein</p>
               <p className="font-bold">
                 {(() => {
                   const milestones = [3, 5, 10, 15, 25, 50];
@@ -285,26 +575,22 @@ const HomeView = ({
       )}
 
       {/* Spaced Repetition Reminder */}
-      {getTotalDueCards() > 0 && (
+      {dueCards > 0 && (
         <div className={`${darkMode ? 'bg-purple-900/80' : 'bg-purple-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-purple-700' : 'border-purple-300'} rounded-xl p-6 shadow-lg`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Brain className={`mr-3 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} size={32} />
               <div>
                 <h3 className={`text-lg font-bold ${darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
-                  🧠 Lernkarten zur Wiederholung
+                  Lernkarten zur Wiederholung
                 </h3>
                 <p className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                  {getTotalDueCards()} Karten sind heute fällig
+                  {dueCards} Karten sind heute fÃ¤llig
                 </p>
               </div>
             </div>
             <button
-              onClick={() => {
-                setSpacedRepetitionMode(true);
-                setCurrentView('flashcards');
-                playSound('splash');
-              }}
+              onClick={openSpacedRepetition}
               className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-bold shadow-md flex items-center gap-2"
             >
               <Zap size={18} />
@@ -314,20 +600,20 @@ const HomeView = ({
         </div>
       )}
 
-      {activeGames.filter(g => g.player2 === user.name && g.status === 'waiting').length > 0 && (
+      {waitingChallenges.length > 0 && (
         <div className={`${darkMode ? 'bg-yellow-900/80' : 'bg-yellow-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-yellow-700' : 'border-yellow-400'} rounded-xl p-6 shadow-lg`}>
           <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>
             <Zap className="mr-2" />
-            ⚡ Offene Herausforderungen
+            ? Offene Herausforderungen
           </h3>
-          {activeGames.filter(g => g.player2 === user.name && g.status === 'waiting').map(game => {
+          {waitingChallenges.map(game => {
             const diff = DIFFICULTY_SETTINGS[game.difficulty];
             return (
               <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 flex justify-between items-center shadow-md`}>
                 <div>
-                  <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>🏊 {game.player1} fordert dich heraus!</p>
+                  <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} fordert dich heraus!</p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} flex items-center gap-2`}>
-                    <span>Quizduell • 6 Runden</span>
+                    <span>Quizduell â€¢ 6 Runden</span>
                     <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold`}>
                       {diff.icon} {diff.label} ({diff.time}s)
                     </span>
@@ -340,7 +626,7 @@ const HomeView = ({
                   }}
                   className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-bold shadow-md"
                 >
-                  Annehmen 🎯
+                  Annehmen
                 </button>
               </div>
             );
@@ -348,24 +634,24 @@ const HomeView = ({
         </div>
       )}
 
-      {activeGames.filter(g => (g.player1 === user.name || g.player2 === user.name) && g.status === 'active').length > 0 && (
+      {activeGamesForUser.length > 0 && (
         <div className={`${darkMode ? 'bg-cyan-900/80' : 'bg-cyan-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-cyan-700' : 'border-cyan-400'} rounded-xl p-6 shadow-lg`}>
           <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-cyan-300' : 'text-cyan-800'}`}>
             <Trophy className="mr-2" />
-            🏊 Laufende Spiele
+            Laufende Spiele
           </h3>
-          {activeGames.filter(g => (g.player1 === user.name || g.player2 === user.name) && g.status === 'active').map(game => {
+          {activeGamesForUser.map(game => {
             const diff = DIFFICULTY_SETTINGS[game.difficulty];
             return (
               <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 flex justify-between items-center shadow-md`}>
                 <div>
-                  <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>⚔️ {game.player1} vs {game.player2}</p>
+                  <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} vs {game.player2}</p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} flex items-center gap-2`}>
-                    <span>Runde {game.round + 1}/6 • {game.player1Score}:{game.player2Score}</span>
+                    <span>Runde {game.round + 1}/6 â€¢ {game.player1Score}:{game.player2Score}</span>
                     <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold`}>
                       {diff.icon} {diff.label}
                     </span>
-                    {game.currentTurn === user.name && ' • Du bist dran! ⚡'}
+                    {game.currentTurn === user.name && ' â€¢ Du bist dran! ?'}
                   </p>
                 </div>
                 <button
@@ -381,7 +667,7 @@ const HomeView = ({
                         : 'bg-gray-300 text-gray-700'
                   }`}
                 >
-                  {game.currentTurn === user.name ? 'Weiterspielen ⚡' : 'Anschauen'}
+                  {game.currentTurn === user.name ? 'Weiterspielen ?' : 'Anschauen'}
                 </button>
               </div>
             );
@@ -390,55 +676,59 @@ const HomeView = ({
       )}
 
       {/* News Section */}
-      {news.length > 0 && (
-        <div className={`${darkMode ? 'bg-red-900/80' : 'bg-red-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-red-700' : 'border-red-400'} rounded-xl p-6 shadow-lg`}>
-          <h3 className={`text-xl font-bold mb-4 flex items-center justify-between ${darkMode ? 'text-red-300' : 'text-red-800'}`}>
-            <span className="flex items-center">
-              <Bell className="mr-2" />
-              📢 Aktuelle News
-            </span>
-            <button
-              onClick={() => {
-                setCurrentView('news');
-                playSound('splash');
-              }}
-              className={`text-sm ${darkMode ? 'text-red-300 hover:text-red-100' : 'text-red-600 hover:text-red-800'} underline`}
-            >
-              Alle anzeigen →
-            </button>
-          </h3>
+      <div className={`${darkMode ? 'bg-red-900/80' : 'bg-red-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-red-700' : 'border-red-400'} rounded-xl p-6 shadow-lg`}>
+        <h3 className={`text-xl font-bold mb-4 flex items-center justify-between ${darkMode ? 'text-red-300' : 'text-red-800'}`}>
+          <span className="flex items-center">
+            <Bell className="mr-2" />
+            Aktuelle News
+          </span>
+          <button
+            onClick={() => {
+              setCurrentView('news');
+              playSound('splash');
+            }}
+            className={`text-sm ${darkMode ? 'text-red-300 hover:text-red-100' : 'text-red-600 hover:text-red-800'} underline`}
+          >
+            Alle anzeigen
+          </button>
+        </h3>
+        {news.length > 0 ? (
           <div className="space-y-3">
             {news.slice(0, 3).map(item => (
               <div key={item.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 shadow-md border-l-4 border-red-500`}>
                 <h4 className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{item.title}</h4>
                 <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'} line-clamp-2`}>{item.content}</p>
                 <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                  Von {item.author} • {new Date(item.time).toLocaleDateString()}
+                  Von {item.author} am {new Date(item.time).toLocaleDateString('de-DE')}
                 </p>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className={`${darkMode ? 'bg-slate-800 text-gray-300' : 'bg-white text-gray-600'} rounded-lg p-4 text-sm`}>
+            Aktuell liegen wohl keine News vor.
+          </div>
+        )}
+      </div>
 
       {/* Exams Section */}
-      {exams.length > 0 && (
-        <div className={`${darkMode ? 'bg-green-900/80' : 'bg-green-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-green-700' : 'border-green-400'} rounded-xl p-6 shadow-lg`}>
-          <h3 className={`text-xl font-bold mb-4 flex items-center justify-between ${darkMode ? 'text-green-300' : 'text-green-800'}`}>
-            <span className="flex items-center">
-              <Calendar className="mr-2" />
-              📋 Anstehende Klausuren
-            </span>
-            <button
-              onClick={() => {
-                setCurrentView('exams');
-                playSound('splash');
-              }}
-              className={`text-sm ${darkMode ? 'text-green-300 hover:text-green-100' : 'text-green-600 hover:text-green-800'} underline`}
-            >
-              Alle anzeigen →
-            </button>
-          </h3>
+      <div className={`${darkMode ? 'bg-green-900/80' : 'bg-green-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-green-700' : 'border-green-400'} rounded-xl p-6 shadow-lg`}>
+        <h3 className={`text-xl font-bold mb-4 flex items-center justify-between ${darkMode ? 'text-green-300' : 'text-green-800'}`}>
+          <span className="flex items-center">
+            <Calendar className="mr-2" />
+            Anstehende Klausuren
+          </span>
+          <button
+            onClick={() => {
+              setCurrentView('exams');
+              playSound('splash');
+            }}
+            className={`text-sm ${darkMode ? 'text-green-300 hover:text-green-100' : 'text-green-600 hover:text-green-800'} underline`}
+          >
+            Alle anzeigen
+          </button>
+        </h3>
+        {exams.length > 0 ? (
           <div className="space-y-3">
             {exams.slice(0, 3).map(exam => {
               const examDate = new Date(exam.date);
@@ -462,151 +752,59 @@ const HomeView = ({
                   </div>
                   <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'} line-clamp-1`}>{exam.topics}</p>
                   <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                    {examDate.toLocaleDateString()} • {exam.user}
+                    {examDate.toLocaleDateString('de-DE')} | {exam.user}
                   </p>
                 </div>
               );
             })}
           </div>
-        </div>
-      )}
-
-      <div className="grid md:grid-cols-4 gap-4">
-        <div className={`${darkMode ? 'bg-slate-800/95 border-cyan-600' : 'bg-white/95 border-cyan-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-cyan-400`}
-         onClick={() => {
-               setCurrentView('exam-simulator');
-               setExamSimulatorMode('theory');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">📝</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Prüfungssimulator</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Theorie & Praxis üben</p>
-        </div>
-
-        <div className={`${darkMode ? 'bg-slate-800/95 border-purple-600' : 'bg-white/95 border-purple-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-purple-400`}
-             onClick={() => {
-               setCurrentView('flashcards');
-               loadFlashcards();
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">🎴</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-purple-400' : 'text-purple-700'}`}>Karteikarten</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Klassisch lernen</p>
-        </div>
-
-        <div className={`${darkMode ? 'bg-slate-800/95 border-blue-600' : 'bg-white/95 border-blue-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-blue-400`}
-             onClick={() => {
-               setCurrentView('calculator');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">🧮</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>Praxis-Rechner</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Mit Lösungsweg</p>
-        </div>
-
-        <div className={`${darkMode ? 'bg-slate-800/95 border-green-600' : 'bg-white/95 border-green-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-green-400`}
-             onClick={() => {
-               setCurrentView('quiz');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">🎮</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>Quizduell</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Fordere andere heraus!</p>
-        </div>
-
-        <div className={`${darkMode ? 'bg-slate-800/95 border-cyan-600' : 'bg-white/95 border-cyan-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-cyan-400`}
-             onClick={() => {
-               setCurrentView('swim-challenge');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">🏊</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-cyan-400' : 'text-cyan-700'}`}>Schwimm-Challenge</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Azubis vs. Trainer!</p>
-        </div>
-
-        <div className={`${darkMode ? 'bg-slate-800/95 border-yellow-600' : 'bg-white/95 border-yellow-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-yellow-400`}
-             onClick={() => {
-               setCurrentView('stats');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">🏅</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-yellow-400' : 'text-yellow-700'}`}>Statistiken</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Badges & Ranking</p>
-        </div>
-
-        {user.permissions.canViewAllStats && (
-          <div className={`${darkMode ? 'bg-slate-800/95 border-indigo-600' : 'bg-white/95 border-indigo-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-indigo-400`}
-               onClick={() => {
-                 setCurrentView('trainer-dashboard');
-                 playSound('splash');
-               }}>
-            <div className="text-5xl mb-3 text-center">👨‍🏫</div>
-            <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-indigo-400' : 'text-indigo-700'}`}>Azubi-Übersicht</h3>
-            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Fortschritte sehen</p>
+        ) : (
+          <div className={`${darkMode ? 'bg-slate-800 text-gray-300' : 'bg-white text-gray-600'} rounded-lg p-4 text-sm`}>
+            Aktuell liegen wohl keine Klausurtermine vor.
           </div>
         )}
-
-        <div className={`${darkMode ? 'bg-slate-800/95 border-green-600' : 'bg-white/95 border-green-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-green-400`}
-             onClick={() => {
-               setCurrentView('materials');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">📚</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>Lernmaterialien</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{materials.length} Materialien</p>
+      </div>
+      <div className={`${darkMode ? 'bg-slate-800/95 border-slate-700' : 'bg-white/95 border-gray-200'} border rounded-xl p-5 shadow-lg`}>
+        <div className="mb-5">
+          <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Funktionsbereiche</h3>
+          <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Das Dashboard trennt Lernen, Praxis und Organisation, damit jede Aufgabe in ihrem passenden Kontext liegt.
+          </p>
         </div>
 
-        <div className={`${darkMode ? 'bg-slate-800/95 border-indigo-600' : 'bg-white/95 border-indigo-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-indigo-400`}
-             onClick={() => {
-               setCurrentView('resources');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">🔗</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-indigo-400' : 'text-indigo-700'}`}>Ressourcen</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{resources.length} Links</p>
-        </div>
+        <div className="space-y-6">
+          {dashboardSections.map((section) => (
+            <div key={section.id}>
+              <div className="mb-3">
+                <h4 className={`text-base font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{section.title}</h4>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{section.description}</p>
+              </div>
 
-        <div className={`${darkMode ? 'bg-slate-800/95 border-pink-600' : 'bg-white/95 border-pink-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-pink-400`}
-             onClick={() => {
-               setCurrentView('chat');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">💬</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-pink-400' : 'text-pink-700'}`}>Team-Chat</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{messages.length} Nachrichten</p>
-        </div>
-
-        {/* Berichtsheft */}
-        <div className={`${darkMode ? 'bg-slate-800/95 border-teal-600' : 'bg-white/95 border-teal-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-teal-400`}
-             onClick={() => {
-               setCurrentView('berichtsheft');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">📖</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>Berichtsheft</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Ausbildungsnachweis</p>
-        </div>
-
-        {/* Kontrollkarte Berufsschule */}
-        <div className={`${darkMode ? 'bg-slate-800/95 border-orange-600' : 'bg-white/95 border-orange-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-orange-400`}
-             onClick={() => {
-               setCurrentView('school-card');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">🎓</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-orange-400' : 'text-orange-700'}`}>Kontrollkarte</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Berufsschule</p>
-        </div>
-
-        {/* Fragen einreichen */}
-        <div className={`${darkMode ? 'bg-slate-800/95 border-amber-600' : 'bg-white/95 border-amber-200'} backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer border-2 hover:border-amber-400`}
-             onClick={() => {
-               setCurrentView('questions');
-               playSound('splash');
-             }}>
-          <div className="text-5xl mb-3 text-center">💡</div>
-          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>Fragen</h3>
-          <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Einreichen & lernen</p>
+              <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+                {section.cards.map((card) => (
+                  <button
+                    key={card.id}
+                    onClick={card.onClick}
+                    className={`
+                      ${darkMode ? `bg-slate-900/80 ${card.style.darkCard}` : `bg-white ${card.style.lightCard}`}
+                      ${card.wide ? 'md:col-span-2' : ''}
+                      border-2 rounded-xl p-5 text-left shadow-md hover:shadow-xl transition-all hover:-translate-y-0.5
+                    `}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <span className="text-3xl">{card.icon}</span>
+                      <span className={`text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Oeffnen {'->'}</span>
+                    </div>
+                    <h5 className={`text-lg font-bold mb-1 ${darkMode ? card.style.darkTitle : card.style.lightTitle}`}>
+                      {card.title}
+                    </h5>
+                    <p className={`text-sm mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{card.description}</p>
+                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{card.meta}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -614,3 +812,4 @@ const HomeView = ({
 };
 
 export default HomeView;
+
