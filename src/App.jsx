@@ -2677,10 +2677,44 @@ export default function BaederApp() {
 
   const changeUserRole = async (email, newRole) => {
     try {
+      if (!user?.permissions?.canManageUsers) {
+        showToast('Keine Berechtigung für Rollenänderungen.', 'error');
+        return;
+      }
+      if (!user?.isOwner) {
+        showToast('Nur der Hauptadmin darf Rollen ändern.', 'error');
+        return;
+      }
+
+      const targetEmail = String(email || '').trim().toLowerCase();
+      const ownEmail = String(user?.email || '').trim().toLowerCase();
+      const allowedRoles = ['azubi', 'trainer', 'admin'];
+      if (!allowedRoles.includes(newRole)) {
+        showToast('Ungültige Rolle ausgewählt', 'error');
+        return;
+      }
+
+      // Protect against locking yourself out of the admin area.
+      if (targetEmail && targetEmail === ownEmail && newRole !== 'admin') {
+        showToast('Deine eigene Admin-Rolle kann nicht geändert werden.', 'error');
+        return;
+      }
+
+      const targetUser = allUsers.find(
+        (account) => String(account?.email || '').trim().toLowerCase() === targetEmail
+      );
+      if (targetUser?.role === 'admin' && newRole !== 'admin') {
+        const adminCount = allUsers.filter((account) => account.role === 'admin').length;
+        if (adminCount <= 1) {
+          showToast('Mindestens ein Administrator muss erhalten bleiben.', 'error');
+          return;
+        }
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({ role: newRole })
-        .eq('email', email);
+        .eq('email', targetEmail);
 
       if (error) throw error;
 
@@ -6355,8 +6389,8 @@ export default function BaederApp() {
 
   // Save App Config (Admin UI Editor)
   const saveAppConfig = async () => {
-    if (user.role !== 'admin') {
-      showToast('Nur Administratoren können die Konfiguration ändern', 'warning');
+    if (!user?.isOwner) {
+      showToast('Nur der Hauptadmin kann die Konfiguration ändern.', 'warning');
       return;
     }
 
@@ -6751,9 +6785,9 @@ export default function BaederApp() {
               {user.avatar ? AVATARS.find(a => a.id === user.avatar)?.emoji || '🏊‍♂️' : '🏊‍♂️'}
             </div>
             <div>
-              <h1 className="text-2xl font-bold drop-shadow-lg">Bäder-Azubi App</h1>
+              <h1 className="text-2xl font-bold drop-shadow-lg">Aqua Pilot</h1>
               <p className="text-sm opacity-90">
-                {user.name} • {PERMISSIONS[user.role].label}
+                {user.name} • {(PERMISSIONS[user.role] || PERMISSIONS.azubi).label}
                 {user.role === 'admin' && ' 👑'}
                 {user.role === 'trainer' && ' 👨‍🏫'}
               </p>
@@ -6961,6 +6995,9 @@ export default function BaederApp() {
         {/* Admin Panel */}
         {currentView === 'admin' && user.permissions.canManageUsers && (
           <AdminView
+            currentUserEmail={user.email}
+            canManageRoles={Boolean(user.isOwner)}
+            canEditAppConfig={Boolean(user.isOwner)}
             getAdminStats={getAdminStats}
             questionReports={questionReports}
             toggleQuestionReportStatus={toggleQuestionReportStatus}

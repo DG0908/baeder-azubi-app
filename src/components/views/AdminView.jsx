@@ -5,6 +5,9 @@ import { supabase } from '../../supabase';
 import { CATEGORIES, PERMISSIONS, MENU_GROUP_LABELS } from '../../data/constants';
 
 const AdminView = ({
+  currentUserEmail,
+  canManageRoles = false,
+  canEditAppConfig = false,
   getAdminStats,
   questionReports,
   toggleQuestionReportStatus,
@@ -203,7 +206,7 @@ const AdminView = ({
               <div key={acc.email} className="bg-white rounded-lg p-4 flex justify-between items-center">
                 <div>
                   <p className="font-bold">{acc.name}</p>
-                  <p className="text-sm text-gray-600">{acc.email} • {PERMISSIONS[acc.role].label}</p>
+                  <p className="text-sm text-gray-600">{acc.email} • {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}</p>
                   {acc.role === 'azubi' && acc.trainingEnd && (
                     <p className="text-xs text-gray-500">Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}</p>
                   )}
@@ -242,6 +245,9 @@ const AdminView = ({
         <div className="space-y-3">
           {allUsers.map(acc => {
             const daysLeft = getDaysUntilDeletion(acc);
+            const isOwnAccount =
+              String(acc?.email || '').trim().toLowerCase() === String(currentUserEmail || '').trim().toLowerCase();
+            const roleSelectDisabled = isOwnAccount || !canManageRoles;
             return (
               <div key={acc.email} className="border rounded-lg p-4">
                 <div className="flex items-start gap-2 mb-1 flex-wrap">
@@ -250,8 +256,13 @@ const AdminView = ({
                     acc.role === 'admin' ? 'bg-purple-500' :
                     acc.role === 'trainer' ? 'bg-blue-500' : 'bg-green-500'
                   }`}>
-                    {PERMISSIONS[acc.role].label}
+                    {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}
                   </span>
+                  {acc.is_owner && (
+                    <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-white">
+                      Hauptadmin
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-gray-600 mb-1">{acc.email}</p>
                 {acc.trainingEnd && (
@@ -279,7 +290,14 @@ const AdminView = ({
                     value={acc.role}
                     onChange={(e) => changeUserRole(acc.email, e.target.value)}
                     className="px-3 py-1.5 border rounded text-sm"
-                    disabled={acc.role === 'admin'}
+                    disabled={roleSelectDisabled}
+                    title={
+                      isOwnAccount
+                        ? 'Dein eigener Account kann hier nicht umgestellt werden.'
+                        : !canManageRoles
+                          ? 'Nur der Hauptadmin darf Rollen ändern.'
+                          : undefined
+                    }
                   >
                     <option value="azubi">Azubi</option>
                     <option value="trainer">Ausbilder</option>
@@ -350,8 +368,14 @@ const AdminView = ({
           Hier kannst du die Navigation und Farben der App für alle Nutzer anpassen.
         </p>
 
+        {!canEditAppConfig && (
+          <div className={`mb-4 rounded-lg border px-4 py-3 text-sm ${darkMode ? 'border-amber-600 bg-amber-900/30 text-amber-200' : 'border-amber-300 bg-amber-50 text-amber-800'}`}>
+            Nur der Hauptadmin darf Navigation/Farben bearbeiten und speichern.
+          </div>
+        )}
+
         {/* Initialize editing state button */}
-        {editingMenuItems.length === 0 && (
+        {canEditAppConfig && editingMenuItems.length === 0 && (
           <button
             onClick={() => {
               setEditingMenuItems([...appConfig.menuItems]);
@@ -363,7 +387,7 @@ const AdminView = ({
           </button>
         )}
 
-        {editingMenuItems.length > 0 && (
+        {canEditAppConfig && editingMenuItems.length > 0 && (
           <>
             {/* Menu Items Editor */}
             <div className={`${darkMode ? 'bg-slate-700' : 'bg-gray-50'} rounded-lg p-4 mb-4`}>
