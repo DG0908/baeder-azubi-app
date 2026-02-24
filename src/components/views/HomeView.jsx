@@ -553,7 +553,7 @@ const HomeView = ({
                   {userStats.winStreak} Siege in Folge!
                 </p>
                 <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {userStats.winStreak >= 25 ? 'LegendÃ¤re Serie!' :
+                  {userStats.winStreak >= 25 ? 'Legendaere Serie!' :
                    userStats.winStreak >= 15 ? 'Dominanz pur!' :
                    userStats.winStreak >= 10 ? 'Unaufhaltsam!' :
                    userStats.winStreak >= 5 ? 'Durchstarter!' : 'Weiter so!'}
@@ -561,7 +561,7 @@ const HomeView = ({
               </div>
             </div>
             <div className={`text-right ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <p className="text-sm">NÃ¤chster Meilenstein</p>
+              <p className="text-sm">Naechster Meilenstein</p>
               <p className="font-bold">
                 {(() => {
                   const milestones = [3, 5, 10, 15, 25, 50];
@@ -585,7 +585,7 @@ const HomeView = ({
                   Lernkarten zur Wiederholung
                 </h3>
                 <p className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                  {dueCards} Karten sind heute fÃ¤llig
+                  {dueCards} Karten sind heute faellig
                 </p>
               </div>
             </div>
@@ -604,7 +604,7 @@ const HomeView = ({
         <div className={`${darkMode ? 'bg-yellow-900/80' : 'bg-yellow-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-yellow-700' : 'border-yellow-400'} rounded-xl p-6 shadow-lg`}>
           <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>
             <Zap className="mr-2" />
-            ? Offene Herausforderungen
+            Offene Herausforderungen
           </h3>
           {waitingChallenges.map(game => {
             const diff = DIFFICULTY_SETTINGS[game.difficulty];
@@ -613,7 +613,7 @@ const HomeView = ({
                 <div className="min-w-0 flex-1">
                   <p className={`font-bold break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} fordert dich heraus!</p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
-                    <span>Quizduell â€¢ 6 Runden</span>
+                    <span>Quizduell - 6 Runden</span>
                     <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold whitespace-normal break-words`}>
                       {diff.icon} {diff.label} ({diff.time}s)
                     </span>
@@ -647,11 +647,11 @@ const HomeView = ({
                 <div className="min-w-0 flex-1">
                   <p className={`font-bold break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} vs {game.player2}</p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
-                    <span>Runde {game.round + 1}/6 â€¢ {game.player1Score}:{game.player2Score}</span>
+                    <span>Runde {game.round + 1}/6 - {game.player1Score}:{game.player2Score}</span>
                     <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold whitespace-normal break-words`}>
                       {diff.icon} {diff.label}
                     </span>
-                    {game.currentTurn === user.name && ' â€¢ Du bist dran! ?'}
+                    {game.currentTurn === user.name && ' - Du bist dran!'}
                   </p>
                 </div>
                 <button
@@ -667,7 +667,7 @@ const HomeView = ({
                         : 'bg-gray-300 text-gray-700'
                   } w-full min-[720px]:w-auto min-[720px]:justify-self-end whitespace-normal text-center leading-tight`}
                 >
-                  {game.currentTurn === user.name ? 'Weiterspielen ?' : 'Anschauen'}
+                  {game.currentTurn === user.name ? 'Weiterspielen' : 'Anschauen'}
                 </button>
               </div>
             );
