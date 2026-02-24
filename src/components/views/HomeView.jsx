@@ -105,7 +105,7 @@ const HomeView = ({
       cards: [
         {
           id: 'exam-simulator',
-          icon: 'ðŸ“',
+          icon: '\u{1F4DD}',
           title: 'Pruefungssimulator',
           description: 'Theorie und Praxis im Fokusmodus',
           meta: nextExam ? `Naechste Klausur in ${nextExam.daysUntil} Tagen` : 'Ideal fuer gezielte Vorbereitung',
@@ -120,7 +120,7 @@ const HomeView = ({
         },
         {
           id: 'flashcards',
-          icon: 'ðŸŽ´',
+          icon: '\u{1F3B4}',
           title: 'Karteikarten',
           description: 'Klassisch oder als Wiederholung',
           meta: dueCards > 0 ? `${dueCards} Karten faellig` : 'Keine Karten faellig',
@@ -134,7 +134,7 @@ const HomeView = ({
         },
         {
           id: 'calculator',
-          icon: 'ðŸ§®',
+          icon: '\u{1F9EE}',
           title: 'Praxis-Rechner',
           description: 'Rechenwege fuer den Betriebsalltag',
           meta: 'inklusive Loesungsweg',
@@ -148,7 +148,7 @@ const HomeView = ({
         },
         {
           id: 'quiz',
-          icon: 'ðŸŽ®',
+          icon: '\u{1F3AE}',
           title: 'Quizduell',
           description: 'Gegen andere antreten und XP sammeln',
           meta: playerTurnGame ? 'Du bist in einem laufenden Duell am Zug' : `${activeGamesForUser.length} aktive Duelle`,
@@ -169,7 +169,7 @@ const HomeView = ({
       cards: [
         {
           id: 'swim-challenge',
-          icon: 'ðŸŠ',
+          icon: '\u{1F3CA}',
           title: 'Schwimm-Challenge',
           description: 'Disziplinen trainieren und bestaetigen',
           meta: 'Azubis und Trainer im Vergleich',
@@ -183,7 +183,7 @@ const HomeView = ({
         },
         {
           id: 'berichtsheft',
-          icon: 'ðŸ“–',
+          icon: '\u{1F4D6}',
           title: 'Berichtsheft',
           description: 'Wochenberichte und Signaturen',
           meta: 'Ausbildungsnachweis digital',
@@ -198,7 +198,7 @@ const HomeView = ({
         },
         {
           id: 'school-card',
-          icon: 'ðŸŽ“',
+          icon: '\u{1F393}',
           title: 'Kontrollkarte',
           description: 'Berufsschule und Leistungsnachweise',
           meta: 'Alle Schulfelder zentral',
@@ -212,7 +212,7 @@ const HomeView = ({
         },
         {
           id: 'questions',
-          icon: 'ðŸ’¡',
+          icon: '\u{1F4A1}',
           title: 'Fragen',
           description: 'Fragen einreichen und erweitern',
           meta: 'Lernpool aktiv mitgestalten',
@@ -233,7 +233,7 @@ const HomeView = ({
       cards: [
         ...(user.permissions.canViewAllStats ? [{
           id: 'trainer-dashboard',
-          icon: 'ðŸ‘¨â€ðŸ«',
+          icon: '\u{1F468}\u200D\u{1F3EB}',
           title: 'Azubi-Uebersicht',
           description: 'Fortschritte teamweit einsehen',
           meta: 'Trainer- und Adminbereich',
@@ -247,7 +247,7 @@ const HomeView = ({
         }] : []),
         {
           id: 'stats',
-          icon: 'ðŸ…',
+          icon: '\u{1F3C5}',
           title: 'Statistiken',
           description: 'Badges, XP und Ranglisten',
           meta: userStats ? `${userStats.wins} Siege` : 'Noch keine Statistik',
@@ -261,7 +261,7 @@ const HomeView = ({
         },
         {
           id: 'materials',
-          icon: 'ðŸ“š',
+          icon: '\u{1F4DA}',
           title: 'Lernmaterialien',
           description: 'Dateien und Wissen kompakt',
           meta: `${materials.length} Materialien`,
@@ -275,7 +275,7 @@ const HomeView = ({
         },
         {
           id: 'resources',
-          icon: 'ðŸ”—',
+          icon: '\u{1F517}',
           title: 'Ressourcen',
           description: 'Wichtige externe Links',
           meta: `${resources.length} Eintraege`,
@@ -289,7 +289,7 @@ const HomeView = ({
         },
         {
           id: 'chat',
-          icon: 'ðŸ’¬',
+          icon: '\u{1F4AC}',
           title: 'Team-Chat',
           description: 'Abstimmen und Rueckfragen klaeren',
           meta: `${messages.length} Nachrichten`,
@@ -350,7 +350,7 @@ const HomeView = ({
           onClick={() => setCurrentView('profile')}
           className={`mt-4 inline-flex items-center gap-2 px-6 py-3 ${darkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white/20 hover:bg-white/30'} backdrop-blur-sm rounded-lg border-2 ${darkMode ? 'border-white/20' : 'border-white/30'} transition-all font-medium`}
         >
-          <span className="text-xl">ðŸ‘¤</span>
+          <span className="text-xl">{'\u{1F464}'}</span>
           <span>Mein Profil</span>
         </button>
       </div>
