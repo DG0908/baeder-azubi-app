@@ -6789,7 +6789,7 @@ export default function BaederApp() {
               {user.avatar ? AVATARS.find(a => a.id === user.avatar)?.emoji || '🏊‍♂️' : '🏊‍♂️'}
             </div>
             <div>
-              <h1 className="text-2xl font-bold drop-shadow-lg">Aqua Pilot</h1>
+              <h1 className="text-2xl font-bold drop-shadow-lg">Bäder-Azubi App</h1>
               <p className="text-sm opacity-90">
                 {user.name} • {(PERMISSIONS[user.role] || PERMISSIONS.azubi).label}
                 {user.role === 'admin' && ' 👑'}
