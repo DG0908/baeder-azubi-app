@@ -609,12 +609,12 @@ const HomeView = ({
           {waitingChallenges.map(game => {
             const diff = DIFFICULTY_SETTINGS[game.difficulty];
             return (
-              <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 flex justify-between items-center shadow-md`}>
-                <div>
-                  <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} fordert dich heraus!</p>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} flex items-center gap-2`}>
+              <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 grid grid-cols-1 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_auto] min-[720px]:items-center shadow-md`}>
+                <div className="min-w-0 flex-1">
+                  <p className={`font-bold break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} fordert dich heraus!</p>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
                     <span>Quizduell â€¢ 6 Runden</span>
-                    <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold`}>
+                    <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold whitespace-normal break-words`}>
                       {diff.icon} {diff.label} ({diff.time}s)
                     </span>
                   </p>
@@ -624,7 +624,7 @@ const HomeView = ({
                     acceptChallenge(game.id);
                     playSound('whistle');
                   }}
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-bold shadow-md"
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-bold shadow-md w-full min-[720px]:w-auto min-[720px]:justify-self-end whitespace-normal text-center leading-tight"
                 >
                   Annehmen
                 </button>
@@ -643,12 +643,12 @@ const HomeView = ({
           {activeGamesForUser.map(game => {
             const diff = DIFFICULTY_SETTINGS[game.difficulty];
             return (
-              <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 flex justify-between items-center shadow-md`}>
-                <div>
-                  <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} vs {game.player2}</p>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} flex items-center gap-2`}>
+              <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 grid grid-cols-1 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_auto] min-[720px]:items-center shadow-md`}>
+                <div className="min-w-0 flex-1">
+                  <p className={`font-bold break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} vs {game.player2}</p>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
                     <span>Runde {game.round + 1}/6 â€¢ {game.player1Score}:{game.player2Score}</span>
-                    <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold`}>
+                    <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold whitespace-normal break-words`}>
                       {diff.icon} {diff.label}
                     </span>
                     {game.currentTurn === user.name && ' â€¢ Du bist dran! ?'}
@@ -665,7 +665,7 @@ const HomeView = ({
                       : darkMode
                         ? 'bg-slate-600 text-gray-300'
                         : 'bg-gray-300 text-gray-700'
-                  }`}
+                  } w-full min-[720px]:w-auto min-[720px]:justify-self-end whitespace-normal text-center leading-tight`}
                 >
                   {game.currentTurn === user.name ? 'Weiterspielen ?' : 'Anschauen'}
                 </button>

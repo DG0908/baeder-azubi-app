@@ -115,7 +115,7 @@ const QuizView = ({
                    (g.player1 === u.name && g.player2 === user.name))
                 );
                 return (
-                  <div key={u.name} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
+                  <div key={u.name} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-3 p-3 rounded-xl transition-all min-[720px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[720px]:items-center ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
                     {/* Initials Avatar */}
                     <div className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 ${
                       u.role === 'trainer' || u.role === 'admin' ? 'bg-purple-500' : 'bg-blue-500'
@@ -123,9 +123,9 @@ const QuizView = ({
                       {initials}
                     </div>
                     {/* Name + Winrate */}
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-bold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>{u.name}</p>
-                      <div className="flex items-center gap-2 text-xs">
+                    <div className="min-w-0">
+                      <p className={`font-bold break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>{u.name}</p>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
                         <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
                           {u.role === 'admin' ? 'Administrator' : u.role === 'trainer' ? 'Ausbilder' : 'Azubi'}
                         </span>
@@ -140,13 +140,13 @@ const QuizView = ({
                     </div>
                     {/* Action Button */}
                     {hasActiveGame ? (
-                      <span className={`text-xs italic px-3 py-1.5 rounded-lg ${darkMode ? 'bg-slate-600 text-gray-300' : 'bg-gray-200 text-gray-500'}`}>
+                      <span className={`inline-flex col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto justify-center text-xs italic px-3 py-1.5 rounded-lg whitespace-normal text-center leading-tight ${darkMode ? 'bg-slate-600 text-gray-300' : 'bg-gray-200 text-gray-500'}`}>
                         Läuft
                       </span>
                     ) : (
                       <button
                         onClick={() => challengePlayer(u.name)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-bold flex items-center gap-1.5 text-sm transition-all flex-shrink-0"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-sm transition-all col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto whitespace-normal text-center leading-tight"
                       >
                         <Target size={16} />
                         <span>Herausfordern</span>

@@ -9,12 +9,13 @@ const buildUserSession = (userId, profile) => ({
   name: profile.name,
   email: profile.email,
   role: profile.role,
+  isOwner: profile.is_owner || false,
   avatar: profile.avatar || null,
   company: profile.company || null,
   birthDate: profile.birth_date || null,
   canViewSchoolCards: profile.can_view_school_cards || false,
   canSignReports: profile.can_sign_reports || false,
-  permissions: PERMISSIONS[profile.role]
+  permissions: PERMISSIONS[profile.role] || PERMISSIONS.azubi
 });
 
 export function AuthProvider({ children }) {
