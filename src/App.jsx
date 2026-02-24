@@ -2681,7 +2681,9 @@ export default function BaederApp() {
         showToast('Keine Berechtigung für Rollenänderungen.', 'error');
         return;
       }
-      if (!user?.isOwner) {
+      const hasOwnerAccount = allUsers.some((account) => Boolean(account?.is_owner));
+      const canManageSecurity = Boolean(user?.isOwner) || (user?.role === 'admin' && !hasOwnerAccount);
+      if (!canManageSecurity) {
         showToast('Nur der Hauptadmin darf Rollen ändern.', 'error');
         return;
       }
@@ -6389,7 +6391,9 @@ export default function BaederApp() {
 
   // Save App Config (Admin UI Editor)
   const saveAppConfig = async () => {
-    if (!user?.isOwner) {
+    const hasOwnerAccount = allUsers.some((account) => Boolean(account?.is_owner));
+    const canManageSecurity = Boolean(user?.isOwner) || (user?.role === 'admin' && !hasOwnerAccount);
+    if (!canManageSecurity) {
       showToast('Nur der Hauptadmin kann die Konfiguration ändern.', 'warning');
       return;
     }
@@ -6996,8 +7000,8 @@ export default function BaederApp() {
         {currentView === 'admin' && user.permissions.canManageUsers && (
           <AdminView
             currentUserEmail={user.email}
-            canManageRoles={Boolean(user.isOwner)}
-            canEditAppConfig={Boolean(user.isOwner)}
+            canManageRoles={Boolean(user.isOwner) || (user.role === 'admin' && !allUsers.some((account) => Boolean(account?.is_owner)))}
+            canEditAppConfig={Boolean(user.isOwner) || (user.role === 'admin' && !allUsers.some((account) => Boolean(account?.is_owner)))}
             getAdminStats={getAdminStats}
             questionReports={questionReports}
             toggleQuestionReportStatus={toggleQuestionReportStatus}
