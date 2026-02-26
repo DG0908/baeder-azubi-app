@@ -452,7 +452,7 @@ const {
                                     ...prev,
                                     style: plan.styleId || prev.style || 'kraul',
                                     distance: String(plan.targetDistance),
-                                    time: String(plan.targetTime),
+                                    time: `${plan.targetTime}:00,00`,
                                     trainingPlanId: plan.id
                                   }));
                                   setSwimChallengeView('add');
@@ -512,14 +512,47 @@ const {
                     />
                   </div>
                   <div>
-                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Zeit (Minuten)</label>
-                    <input
-                      type="number"
-                      value={swimSessionForm.time}
-                      onChange={(e) => setSwimSessionForm({...swimSessionForm, time: e.target.value})}
-                      placeholder="z.B. 25"
-                      className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
-                    />
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Zeit <span className={`font-normal text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(Min : Sek , 1/100)</span>
+                    </label>
+                    <div className={`flex items-center gap-1 px-3 py-2 border rounded-lg font-mono text-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}>
+                      <input
+                        type="text" inputMode="numeric" pattern="\d*" maxLength={2}
+                        value={swimSessionForm.time ? swimSessionForm.time.split(':')[0] : ''}
+                        onChange={e => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+                          const rest = swimSessionForm.time.includes(':') ? swimSessionForm.time.split(':')[1] : '00,00';
+                          setSwimSessionForm({...swimSessionForm, time: val !== '' ? `${val}:${rest}` : ''});
+                        }}
+                        placeholder="00"
+                        className={`w-8 text-center bg-transparent outline-none ${darkMode ? 'placeholder-gray-600' : 'placeholder-gray-400'}`}
+                      />
+                      <span className={darkMode ? 'text-gray-400' : 'text-gray-400'}>:</span>
+                      <input
+                        type="text" inputMode="numeric" pattern="\d*" maxLength={2}
+                        value={swimSessionForm.time && swimSessionForm.time.includes(':') ? (swimSessionForm.time.split(':')[1]?.split(',')[0] || '') : ''}
+                        onChange={e => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+                          const m = swimSessionForm.time.split(':')[0] || '0';
+                          const cs = swimSessionForm.time.includes(',') ? swimSessionForm.time.split(',')[1] : '00';
+                          setSwimSessionForm({...swimSessionForm, time: `${m}:${val},${cs}`});
+                        }}
+                        placeholder="00"
+                        className={`w-8 text-center bg-transparent outline-none ${darkMode ? 'placeholder-gray-600' : 'placeholder-gray-400'}`}
+                      />
+                      <span className={darkMode ? 'text-gray-400' : 'text-gray-400'}>,</span>
+                      <input
+                        type="text" inputMode="numeric" pattern="\d*" maxLength={2}
+                        value={swimSessionForm.time && swimSessionForm.time.includes(',') ? swimSessionForm.time.split(',')[1] : ''}
+                        onChange={e => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 2);
+                          const beforeComma = swimSessionForm.time.includes(',') ? swimSessionForm.time.split(',')[0] : (swimSessionForm.time || '0:00');
+                          setSwimSessionForm({...swimSessionForm, time: `${beforeComma},${val}`});
+                        }}
+                        placeholder="00"
+                        className={`w-8 text-center bg-transparent outline-none ${darkMode ? 'placeholder-gray-600' : 'placeholder-gray-400'}`}
+                      />
+                    </div>
                   </div>
                   <div className="md:col-span-2">
                     <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Trainingsplan (XP-Bonus)</label>
@@ -541,7 +574,7 @@ const {
                           trainingPlanId: plan.id,
                           style: plan.styleId || swimSessionForm.style,
                           distance: String(plan.targetDistance),
-                          time: String(plan.targetTime)
+                          time: `${plan.targetTime}:00,00`
                         });
                       }}
                       className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
