@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import { Bell, Calendar, Brain, Trophy, Zap, Target } from 'lucide-react';
+import { Bell, Calendar, Brain, Trophy, Zap, Target, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { DAILY_WISDOM, DID_YOU_KNOW_FACTS } from '../../data/content';
@@ -45,6 +45,8 @@ const HomeView = ({
   const { darkMode, playSound } = useApp();
   const dueCards = getTotalDueCards();
   const completedChallenges = getCompletedChallengesCount();
+  const [dailyGoalsExpanded, setDailyGoalsExpanded] = React.useState(true);
+  const [weeklyGoalsExpanded, setWeeklyGoalsExpanded] = React.useState(true);
   const waitingChallenges = activeGames.filter(g => g.player2 === user.name && g.status === 'waiting');
   const activeGamesForUser = activeGames.filter(g => (g.player1 === user.name || g.player2 === user.name) && g.status === 'active');
   const playerTurnGame = activeGamesForUser.find(g => g.currentTurn === user.name);
@@ -392,65 +394,77 @@ const HomeView = ({
               <Target className="mr-2" />
               Taegliche Challenges
             </h3>
-            <div className={`flex items-center gap-2 ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>
-              <span className="text-sm font-medium">{completedChallenges}/3 erledigt</span>
-              {completedChallenges === 3 && <span className="text-xl">OK</span>}
-            </div>
+            <button
+              onClick={() => setDailyGoalsExpanded((prev) => !prev)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium border ${
+                darkMode
+                  ? 'bg-orange-900/40 border-orange-700 text-orange-300 hover:bg-orange-900/60'
+                  : 'bg-white/80 border-orange-300 text-orange-700 hover:bg-orange-100'
+              }`}
+            >
+              <span>{completedChallenges}/3 erledigt</span>
+              {completedChallenges === 3 && <span>OK</span>}
+              {dailyGoalsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
           </div>
-          <div className="grid md:grid-cols-3 gap-4">
-            {dailyChallenges.map((challenge, idx) => {
-              const progress = getChallengeProgress(challenge);
-              const completed = isChallengeCompleted(challenge);
-              const percentage = Math.min((progress / challenge.target) * 100, 100);
+          {dailyGoalsExpanded && (
+            <>
+              <div className="grid md:grid-cols-3 gap-4">
+                {dailyChallenges.map((challenge, idx) => {
+                  const progress = getChallengeProgress(challenge);
+                  const completed = isChallengeCompleted(challenge);
+                  const percentage = Math.min((progress / challenge.target) * 100, 100);
 
-              return (
-                <div
-                  key={idx}
-                  className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-md transition-all ${
-                    completed ? 'ring-2 ring-green-500' : ''
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-2xl">{challenge.icon}</span>
-                    {completed && <span className="text-green-500 text-xl">?</span>}
-                  </div>
-                  <h4 className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    {challenge.name}
-                  </h4>
-                  <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {challenge.target} {challenge.unit}
-                    {challenge.category && ` ${challenge.category.name}`}
-                  </p>
-                  <div className={`w-full ${darkMode ? 'bg-slate-700' : 'bg-gray-200'} rounded-full h-3 mb-2`}>
+                  return (
                     <div
-                      className={`h-3 rounded-full transition-all duration-500 ${
-                        completed ? 'bg-green-500' : 'bg-orange-500'
+                      key={idx}
+                      className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-md transition-all ${
+                        completed ? 'ring-2 ring-green-500' : ''
                       }`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {progress}/{challenge.target}
-                    </span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      completed
-                        ? 'bg-green-100 text-green-700'
-                        : darkMode ? 'bg-orange-900 text-orange-300' : 'bg-orange-100 text-orange-700'
-                    }`}>
-                      +{challenge.xpReward} XP
-                    </span>
-                  </div>
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl">{challenge.icon}</span>
+                        {completed && <span className="text-green-500 text-xl">?</span>}
+                      </div>
+                      <h4 className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        {challenge.name}
+                      </h4>
+                      <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {challenge.target} {challenge.unit}
+                        {challenge.category && ` ${challenge.category.name}`}
+                      </p>
+                      <div className={`w-full ${darkMode ? 'bg-slate-700' : 'bg-gray-200'} rounded-full h-3 mb-2`}>
+                        <div
+                          className={`h-3 rounded-full transition-all duration-500 ${
+                            completed ? 'bg-green-500' : 'bg-orange-500'
+                          }`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          {progress}/{challenge.target}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          completed
+                            ? 'bg-green-100 text-green-700'
+                            : darkMode ? 'bg-orange-900 text-orange-300' : 'bg-orange-100 text-orange-700'
+                        }`}>
+                          +{challenge.xpReward} XP
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {completedChallenges === 3 && (
+                <div className={`mt-4 text-center p-3 rounded-lg ${darkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
+                  <p className={`font-bold ${darkMode ? 'text-green-300' : 'text-green-700'}`}>
+                    Alle Challenges geschafft! Du hast heute {getTotalXPEarned()} XP verdient!
+                  </p>
                 </div>
-              );
-            })}
-          </div>
-          {completedChallenges === 3 && (
-            <div className={`mt-4 text-center p-3 rounded-lg ${darkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
-              <p className={`font-bold ${darkMode ? 'text-green-300' : 'text-green-700'}`}>
-                Alle Challenges geschafft! Du hast heute {getTotalXPEarned()} XP verdient!
-              </p>
-            </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -466,15 +480,30 @@ const HomeView = ({
               Woche ab {new Date(`${weeklyProgress.weekStart}T00:00:00`).toLocaleDateString('de-DE')}
             </p>
           </div>
-          <button
-            onClick={() => setWeeklyProgress(buildEmptyWeeklyProgress(getWeekStartStamp()))}
-            className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-200' : 'bg-white hover:bg-gray-100 text-gray-700'} px-4 py-2 rounded-lg text-sm font-bold border ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}
-          >
-            Diese Woche resetten
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setWeeklyProgress(buildEmptyWeeklyProgress(getWeekStartStamp()))}
+              className={`${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-200' : 'bg-white hover:bg-gray-100 text-gray-700'} px-4 py-2 rounded-lg text-sm font-bold border ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}
+            >
+              Diese Woche resetten
+            </button>
+            <button
+              onClick={() => setWeeklyGoalsExpanded((prev) => !prev)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border ${
+                darkMode
+                  ? 'bg-emerald-900/40 border-emerald-700 text-emerald-200 hover:bg-emerald-900/60'
+                  : 'bg-white/80 border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+              }`}
+            >
+              {weeklyGoalsExpanded ? 'Einklappen' : 'Aufklappen'}
+              {weeklyGoalsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-3 mb-4">
+        {weeklyGoalsExpanded && (
+          <>
+            <div className="grid md:grid-cols-4 gap-3 mb-4">
           {[
             { key: 'quizAnswers', label: 'Quiz', icon: 'Q' },
             { key: 'examAnswers', label: 'Pruefung', icon: 'P' },
@@ -507,9 +536,9 @@ const HomeView = ({
               </div>
             );
           })}
-        </div>
+            </div>
 
-        <div className="grid md:grid-cols-4 gap-3">
+            <div className="grid md:grid-cols-4 gap-3">
           {[
             { key: 'quizAnswers', label: 'Quiz/Woche' },
             { key: 'examAnswers', label: 'Pruefung/Woche' },
@@ -533,7 +562,9 @@ const HomeView = ({
               />
             </label>
           ))}
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Win Streak Banner */}
