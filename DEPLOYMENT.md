@@ -223,6 +223,22 @@ Die App unterstuetzt jetzt echte Handy-/Background-Push-Benachrichtigungen.
    - optional `VITE_PUSH_FUNCTION_NAME=send-web-push`
 5. PWA auf dem Handy neu installieren bzw. einmal neu laden und "Benachrichtigungen erlauben" klicken.
 
+## Berichtsheft-Reminder um 21:00 Uhr (Supabase)
+
+Funktion: Schickt jeden Abend um 21:00 Uhr (Europe/Berlin) einen Push an freigeschaltete Azubis, die fuer heute noch keinen Tageseintrag im Berichtsheft haben.
+
+1. Edge Function deployen:
+   - Pfad: `supabase/functions/send-berichtsheft-reminder/index.ts`
+   - Beispiel: `supabase functions deploy send-berichtsheft-reminder`
+2. Secrets setzen:
+   - `BERICHTSHEFT_REMINDER_SECRET` (frei waehlbarer, langer Zufallswert)
+   - optional `BERICHTSHEFT_REMINDER_TIMEZONE=Europe/Berlin`
+   - optional `BERICHTSHEFT_REMINDER_TARGET_HOUR=21`
+3. Cron-Job in SQL anlegen:
+   - Datei: `supabase/schedule_berichtsheft_reminder.sql`
+   - Platzhalter `REPLACE_WITH_PROJECT_REF` und `REPLACE_WITH_BERICHTSHEFT_REMINDER_SECRET` ersetzen
+   - Script im Supabase SQL Editor ausfuehren
+
 ## Support & Dokumentation
 
 - Vite PWA: https://vite-pwa-org.netlify.app/
