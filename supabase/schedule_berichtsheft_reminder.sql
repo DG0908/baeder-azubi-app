@@ -3,7 +3,6 @@
 -- =====================================================
 -- Anleitung:
 -- 1) Platzhalter unten ersetzen:
---    - REPLACE_WITH_PROJECT_REF
 --    - REPLACE_WITH_BERICHTSHEFT_REMINDER_SECRET
 -- 2) Im Supabase SQL Editor ausfuehren.
 --
@@ -18,14 +17,14 @@ CREATE EXTENSION IF NOT EXISTS pg_net;
 
 DO $$
 DECLARE
-  project_ref text := 'REPLACE_WITH_PROJECT_REF';
+  project_ref text := 'ummqefvkrpzqdznvcnek';
   reminder_secret text := 'REPLACE_WITH_BERICHTSHEFT_REMINDER_SECRET';
   function_url text;
   command_text text;
   existing_job_id int;
 BEGIN
-  IF project_ref LIKE 'REPLACE_WITH_%' OR reminder_secret LIKE 'REPLACE_WITH_%' THEN
-    RAISE EXCEPTION 'Bitte project_ref und reminder_secret vor dem Ausfuehren ersetzen.';
+  IF reminder_secret LIKE 'REPLACE_WITH_%' THEN
+    RAISE EXCEPTION 'Bitte reminder_secret vor dem Ausfuehren ersetzen.';
   END IF;
 
   function_url := format('https://%s.supabase.co/functions/v1/send-berichtsheft-reminder', project_ref);

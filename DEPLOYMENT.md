@@ -236,7 +236,7 @@ Funktion: Schickt jeden Abend um 21:00 Uhr (Europe/Berlin) einen Push an freiges
    - optional `BERICHTSHEFT_REMINDER_TARGET_HOUR=21`
 3. Cron-Job in SQL anlegen:
    - Datei: `supabase/schedule_berichtsheft_reminder.sql`
-   - Platzhalter `REPLACE_WITH_PROJECT_REF` und `REPLACE_WITH_BERICHTSHEFT_REMINDER_SECRET` ersetzen
+   - Platzhalter `REPLACE_WITH_BERICHTSHEFT_REMINDER_SECRET` ersetzen
    - Script im Supabase SQL Editor ausfuehren
 
 ## Support & Dokumentation
