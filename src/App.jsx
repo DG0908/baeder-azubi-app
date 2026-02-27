@@ -4967,6 +4967,61 @@ export default function BaederApp() {
     return Object.values(entry.entries).some((dayRows) => Array.isArray(dayRows)
       && dayRows.some((row) => String(row?.taetigkeit || '').trim() !== ''));
   };
+  const isBerichtsheftReadyForReview = (entry) => (
+    hasEntryContent(entry)
+    && isSignedByAzubi(entry)
+    && !isSignedByAusbilder(entry)
+  );
+
+  const notifyBerichtsheftReadyForReview = async ({ azubiName, weekStart }) => {
+    const normalizedAzubiName = String(azubiName || '').trim();
+    if (!normalizedAzubiName) return;
+
+    try {
+      const { data: reviewers, error: reviewersError } = await supabase
+        .from('profiles')
+        .select('name,role,approved,can_sign_reports')
+        .eq('approved', true);
+
+      if (reviewersError) {
+        console.warn('Reviewer lookup for berichtsheft notification failed:', reviewersError);
+        return;
+      }
+
+      const reviewerNames = [...new Set(
+        (reviewers || [])
+          .filter((profile) => {
+            const role = String(profile?.role || '').trim().toLowerCase();
+            return role === 'admin' || role === 'trainer' || role === 'ausbilder' || Boolean(profile?.can_sign_reports);
+          })
+          .map((profile) => String(profile?.name || '').trim())
+          .filter(Boolean)
+      )].filter((name) => name !== normalizedAzubiName);
+
+      if (reviewerNames.length === 0) return;
+
+      let weekLabel = String(weekStart || '').trim();
+      if (weekLabel) {
+        const weekDate = new Date(weekLabel);
+        if (!Number.isNaN(weekDate.getTime())) {
+          weekLabel = weekDate.toLocaleDateString('de-DE');
+        }
+      } else {
+        weekLabel = 'unbekannt';
+      }
+
+      for (const reviewerName of reviewerNames) {
+        await sendNotification(
+          reviewerName,
+          '📘 Berichtsheft wartet auf Freigabe',
+          `${normalizedAzubiName} hat das Berichtsheft fuer die Woche ab ${weekLabel} abgeschlossen und zur Freigabe eingereicht.`,
+          'berichtsheft_pending'
+        );
+      }
+    } catch (error) {
+      console.warn('Berichtsheft ready notification failed:', error);
+    }
+  };
 
   const loadBerichtsheftPendingSignatures = async () => {
     if (!user || !canManageBerichtsheftSignatures) {
@@ -5748,6 +5803,7 @@ export default function BaederApp() {
 
     try {
       const targetUserName = selectedBerichtsheft?.user_name || user.name;
+      const wasReadyForReview = Boolean(selectedBerichtsheft && isBerichtsheftReadyForReview(selectedBerichtsheft));
       const berichtsheftData = {
         user_name: targetUserName,
         week_start: berichtsheftWeek,
@@ -5763,6 +5819,7 @@ export default function BaederApp() {
         datum_ausbilder: berichtsheftDatumAusbilder || null,
         total_hours: calculateTotalHours()
       };
+      const isReadyForReviewNow = isBerichtsheftReadyForReview(berichtsheftData);
 
       if (selectedBerichtsheft) {
         berichtsheftData.assigned_trainer_id = selectedBerichtsheft.assigned_trainer_id || null;
@@ -5787,6 +5844,13 @@ export default function BaederApp() {
         if (error) throw error;
         showToast('Berichtsheft gespeichert!', 'success');
         setBerichtsheftNr(prev => prev + 1);
+      }
+
+      if (isReadyForReviewNow && !wasReadyForReview) {
+        await notifyBerichtsheftReadyForReview({
+          azubiName: targetUserName,
+          weekStart: berichtsheftWeek
+        });
       }
 
       resetBerichtsheftForm();
