@@ -205,6 +205,24 @@ Wenn du Supabase nutzt, setze die Umgebungsvariablen:
 **GitHub Pages:**
 - Erstelle eine `.env.production` Datei (nicht ins Git committen!)
 
+## Web Push aktivieren (Supabase)
+
+Die App unterstuetzt jetzt echte Handy-/Background-Push-Benachrichtigungen.
+
+1. SQL in Supabase ausfuehren:
+   - Datei: `supabase/create_push_subscriptions_table.sql`
+2. Edge Function deployen:
+   - Pfad: `supabase/functions/send-web-push/index.ts`
+   - Beispiel: `supabase functions deploy send-web-push`
+3. Secrets fuer die Edge Function setzen:
+   - `WEB_PUSH_PUBLIC_KEY`
+   - `WEB_PUSH_PRIVATE_KEY`
+   - `WEB_PUSH_SUBJECT` (z.B. `mailto:admin@deine-domain.de`)
+4. Frontend-Environment setzen:
+   - `VITE_WEB_PUSH_PUBLIC_KEY` (muss zum Edge-Secret passen)
+   - optional `VITE_PUSH_FUNCTION_NAME=send-web-push`
+5. PWA auf dem Handy neu installieren bzw. einmal neu laden und "Benachrichtigungen erlauben" klicken.
+
 ## Support & Dokumentation
 
 - Vite PWA: https://vite-pwa-org.netlify.app/
