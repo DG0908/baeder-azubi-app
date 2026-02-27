@@ -37,6 +37,7 @@ import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineR
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
+import { ensureUserPushSubscription, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -804,6 +805,47 @@ export default function BaederApp() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [updatingApp, setUpdatingApp] = useState(false);
 
+  const syncPushSubscription = useCallback(async (requestPermission = false) => {
+    try {
+      const result = await ensureUserPushSubscription({
+        supabase,
+        user,
+        requestPermission
+      });
+      return result.enabled;
+    } catch (error) {
+      console.warn('Push subscription sync failed:', error);
+      return false;
+    }
+  }, [user]);
+
+  const enablePushNotifications = async () => {
+    if (!isWebPushConfigured()) {
+      showToast('Push ist noch nicht konfiguriert (VAPID Public Key fehlt).', 'warning');
+      return;
+    }
+
+    const enabled = await syncPushSubscription(true);
+    if (!enabled) {
+      if ('Notification' in window && Notification.permission === 'denied') {
+        showToast('Bitte aktiviere Benachrichtigungen in den Browser-/App-Einstellungen.', 'warning');
+      } else {
+        showToast('Push konnte nicht aktiviert werden.', 'error');
+      }
+      return;
+    }
+
+    showToast('Push-Benachrichtigungen aktiviert.', 'success');
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Push aktiviert', {
+        body: 'Du erhaeltst jetzt Handy-Benachrichtigungen fuer neue Ereignisse.',
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-192x192.png',
+        tag: 'push-enabled'
+      });
+    }
+  };
+
   const checkForPwaUpdate = useCallback(async () => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return false;
 
@@ -1179,6 +1221,13 @@ export default function BaederApp() {
 
   useEffect(() => {
     if (!user?.id) return;
+    if (!isWebPushConfigured()) return;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    void syncPushSubscription(false);
+  }, [user?.id, syncPushSubscription]);
+
+  useEffect(() => {
+    if (!user?.id) return;
     applyGeneralKnowledge(false);
   }, [user?.id]);
 
@@ -1231,11 +1280,6 @@ export default function BaederApp() {
   // Check for users to delete on load
   useEffect(() => {
     checkDataRetention();
-
-    // Request notification permission
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
 
     // Load school attendance when view changes
     if (currentView === 'school-card' && user) {
@@ -1984,18 +2028,37 @@ export default function BaederApp() {
 
       if (error) throw error;
 
-      // Desktop notification if permitted
-      if ('Notification' in window && Notification.permission === 'granted') {
+      // Trigger Web-Push fuer Zielnutzer (wenn konfiguriert)
+      try {
+        await triggerWebPushNotification({
+          supabase,
+          userName,
+          title,
+          message,
+          type,
+          notificationId: data?.id
+        });
+      } catch (pushError) {
+        console.warn('Push dispatch failed:', pushError);
+      }
+
+      // Lokale Notification nur dann, wenn die Nachricht den aktuellen User betrifft
+      if (
+        userName === user?.name
+        && 'Notification' in window
+        && Notification.permission === 'granted'
+      ) {
         new Notification(title, {
           body: message,
-          icon: '🏊',
-          badge: '🔔',
+          icon: '/icons/icon-192x192.png',
+          badge: '/icons/icon-192x192.png',
           tag: `notif-${data.id}`
         });
       }
 
-      // Sound notification
-      playSound('whistle');
+      if (userName === user?.name) {
+        playSound('whistle');
+      }
     } catch (error) {
       console.error('Notification error:', error);
     }
@@ -4756,19 +4819,18 @@ export default function BaederApp() {
       // Benachrichtigung an berechtigte Trainer/Admins senden
       const { data: authorizedUsers } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id,name')
         .or('role.eq.admin,can_view_school_cards.eq.true');
 
       if (authorizedUsers) {
         for (const authUser of authorizedUsers) {
-          if (authUser.id !== user.id) {
-            await supabase.from('notifications').insert({
-              user_id: authUser.id,
-              type: 'school_card',
-              title: '📝 Neuer Kontrollkarten-Eintrag',
-              message: `${user.name} hat einen neuen Berufsschul-Eintrag vom ${new Date(newAttendanceDate).toLocaleDateString('de-DE')} hinzugefügt.`,
-              data: { azubi_id: user.id, azubi_name: user.name, date: newAttendanceDate }
-            });
+          if (authUser.id !== user.id && authUser.name) {
+            await sendNotification(
+              authUser.name,
+              '📝 Neuer Kontrollkarten-Eintrag',
+              `${user.name} hat einen neuen Berufsschul-Eintrag vom ${new Date(newAttendanceDate).toLocaleDateString('de-DE')} hinzugefuegt.`,
+              'school_card'
+            );
           }
         }
       }
@@ -6855,16 +6917,7 @@ export default function BaederApp() {
             {/* Request Notification Permission */}
             {'Notification' in window && Notification.permission === 'default' && (
               <button
-                onClick={() => {
-                  Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                      new Notification('🏊 Benachrichtigungen aktiviert!', {
-                        body: 'Du wirst jetzt über News und Spielzüge informiert.',
-                        icon: '🏊'
-                      });
-                    }
-                  });
-                }}
+                onClick={() => { void enablePushNotifications(); }}
                 className="bg-yellow-500/80 hover:bg-yellow-600/80 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm font-bold text-sm flex items-center gap-2 animate-pulse"
                 title="Benachrichtigungen erlauben"
               >
