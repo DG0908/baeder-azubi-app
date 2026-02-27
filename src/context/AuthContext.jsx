@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { PERMISSIONS } from '../data/constants';
+import { triggerWebPushNotification } from '../lib/pushNotifications';
 
 const AuthContext = createContext(null);
 
@@ -81,6 +82,61 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const notifyAdminsAboutPendingRegistration = async ({ name, email, role }) => {
+    try {
+      const { data: admins, error: adminsError } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('role', 'admin')
+        .eq('approved', true);
+
+      if (adminsError) throw adminsError;
+
+      const adminNames = [...new Set(
+        (admins || [])
+          .map((admin) => String(admin.name || '').trim())
+          .filter(Boolean)
+      )];
+
+      if (!adminNames.length) return;
+
+      const title = '🆕 Neue Registrierung';
+      const message = `${name} (${email}) hat sich als ${role} registriert und wartet auf Freischaltung.`;
+
+      const rows = adminNames.map((adminName) => ({
+        user_name: adminName,
+        title,
+        message,
+        type: 'user_approval',
+        read: false
+      }));
+
+      const { data: inserted, error: insertError } = await supabase
+        .from('notifications')
+        .insert(rows)
+        .select('id,user_name');
+
+      if (insertError) throw insertError;
+
+      for (const notif of inserted || []) {
+        try {
+          await triggerWebPushNotification({
+            supabase,
+            userName: notif.user_name,
+            title,
+            message,
+            type: 'user_approval',
+            notificationId: notif.id
+          });
+        } catch (pushError) {
+          console.warn('Registration push dispatch failed:', pushError);
+        }
+      }
+    } catch (error) {
+      console.warn('Admin notification for registration failed:', error);
+    }
+  };
+
   const handleRegister = async () => {
     if (!registerData.name.trim() || !registerData.email.trim() || !registerData.password) {
       alert('Bitte alle Felder ausfüllen!');
@@ -150,6 +206,12 @@ export function AuthProvider({ children }) {
         } catch (e) {
           console.warn('Profil-Erstellung fehlgeschlagen:', e);
         }
+
+        await notifyAdminsAboutPendingRegistration({
+          name: trimmedName,
+          email: trimmedEmail,
+          role: registerData.role
+        });
       }
 
       await supabase.auth.signOut();
