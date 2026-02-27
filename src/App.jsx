@@ -2064,6 +2064,43 @@ export default function BaederApp() {
     }
   };
 
+  const sendNotificationToApprovedUsers = async ({
+    title,
+    message,
+    type = 'info',
+    excludeUserNames = []
+  }) => {
+    try {
+      const excluded = new Set(
+        (excludeUserNames || [])
+          .map(value => String(value || '').trim().toLowerCase())
+          .filter(Boolean)
+      );
+
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('approved', true);
+
+      if (error) throw error;
+
+      const targetNames = [...new Set(
+        (profiles || [])
+          .map(profile => String(profile.name || '').trim())
+          .filter(Boolean)
+      )].filter(name => !excluded.has(name.toLowerCase()));
+
+      for (const name of targetNames) {
+        await sendNotification(name, title, message, type);
+      }
+
+      return targetNames.length;
+    } catch (error) {
+      console.error('Broadcast notification error:', error);
+      return 0;
+    }
+  };
+
   const markNotificationAsRead = async (notifId) => {
     try {
       const { error } = await supabase
@@ -3860,6 +3897,24 @@ export default function BaederApp() {
 
     try {
       await saveGameToSupabase(currentGame);
+      const opponentName = user.name === currentGame.player1 ? currentGame.player2 : currentGame.player1;
+      if (opponentName) {
+        let opponentTitle = '🏁 Quizduell beendet';
+        let opponentMessage = `Quizduell gegen ${user.name} ist beendet.`;
+
+        if (winner === null) {
+          opponentTitle = '🤝 Quizduell unentschieden';
+          opponentMessage = `Dein Quizduell gegen ${user.name} endete unentschieden.`;
+        } else if (winner === opponentName) {
+          opponentTitle = '🏆 Quizduell gewonnen';
+          opponentMessage = `Du hast das Quizduell gegen ${user.name} gewonnen!`;
+        } else {
+          opponentTitle = '😔 Quizduell verloren';
+          opponentMessage = `Du hast das Quizduell gegen ${user.name} verloren.`;
+        }
+
+        await sendNotification(opponentName, opponentTitle, opponentMessage, 'info');
+      }
 
       // Nur eigene Stats aktualisieren (RLS erlaubt nur eigene Stats)
       try {
@@ -5393,6 +5448,37 @@ export default function BaederApp() {
       setSwimSessions(prev => [data[0], ...prev]);
       setPendingSwimConfirmations(prev => [data[0], ...prev]);
 
+      const styleLabel = SWIM_STYLES.find(style => style.id === sessionData.style)?.name || sessionData.style || 'Unbekannt';
+      const sessionDateLabel = sessionData.date
+        ? new Date(sessionData.date).toLocaleDateString('de-DE')
+        : 'ohne Datum';
+
+      const { data: reviewers, error: reviewersError } = await supabase
+        .from('profiles')
+        .select('name,role,approved')
+        .eq('approved', true)
+        .in('role', ['admin', 'trainer']);
+
+      if (reviewersError) {
+        console.warn('Reviewer lookup for swim notification failed:', reviewersError);
+      } else {
+        const reviewerNames = [...new Set(
+          (reviewers || [])
+            .map(profile => String(profile.name || '').trim())
+            .filter(Boolean)
+        )];
+
+        for (const reviewerName of reviewerNames) {
+          if (reviewerName === user.name) continue;
+          await sendNotification(
+            reviewerName,
+            '🏊 Neue Schwimmeinheit wartet auf Freigabe',
+            `${user.name} hat eine Schwimmeinheit eingetragen (${sessionDateLabel}, ${sessionData.distance}m, ${styleLabel}) und wartet auf Bestaetigung.`,
+            'swim_pending'
+          );
+        }
+      }
+
       return { success: true, data: data[0] };
     } catch (err) {
       console.error('Fehler beim Speichern der Schwimm-Einheit:', err);
@@ -6673,6 +6759,13 @@ export default function BaederApp() {
         time: new Date(data.created_at).getTime()
       };
 
+      await sendNotificationToApprovedUsers({
+        title: '📰 Neue News',
+        message: `${user.name} hat eine neue News veroeffentlicht: "${data.title}"`,
+        type: 'news',
+        excludeUserNames: [user.name]
+      });
+
       setNews([newsItem, ...news]);
       setNewsTitle('');
       setNewsContent('');
@@ -6725,6 +6818,17 @@ export default function BaederApp() {
         createdBy: data.created_by,
         time: new Date(data.created_at).getTime()
       };
+
+      const examDateLabel = data.exam_date
+        ? new Date(data.exam_date).toLocaleDateString('de-DE')
+        : 'ohne Termin';
+
+      await sendNotificationToApprovedUsers({
+        title: '📝 Neue Klausur',
+        message: `${user.name} hat eine neue Klausur eingetragen: "${data.title}" (${examDateLabel}).`,
+        type: 'exam',
+        excludeUserNames: [user.name]
+      });
 
       setExams([...exams, exam].sort((a, b) => new Date(a.date) - new Date(b.date)));
       setExamTitle('');
