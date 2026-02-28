@@ -1,6 +1,8 @@
 ﻿// Fragen-Format:
 // - correct: number = Single-Choice (Index der richtigen Antwort)
 // - correct: number[] = Multi-Select (Array der richtigen Indizes) - multi: true muss gesetzt sein
+import { ORG_EXPANSION_QUESTIONS, POL_EXPANSION_QUESTIONS, MATH_QUESTIONS } from './quizQuestionsExpansion.js';
+
 export const SAMPLE_QUESTIONS = {
   // ===== BÄDERORGANISATION (Badebetrieb) =====
   org: [
@@ -50,7 +52,8 @@ export const SAMPLE_QUESTIONS = {
     // Public Relations
     { q: 'Was fällt unter "Public Relations"?', a: ['Zeitungsartikel über das Schwimmbad', 'Gutscheine verkaufen', 'Eintrittspreise erhöhen', 'Personal entlassen'], correct: 0 },
     // Preisdifferenzierung
-    { q: 'Was ist eine "Happy Hour" im Schwimmbad?', a: ['Zeitliche Preisdifferenzierung', 'Örtliche Preisdifferenzierung', 'Preisdifferenzierung nach Zielgruppen', 'Quantitative Preisdifferenzierung'], correct: 0 }
+    { q: 'Was ist eine "Happy Hour" im Schwimmbad?', a: ['Zeitliche Preisdifferenzierung', 'Örtliche Preisdifferenzierung', 'Preisdifferenzierung nach Zielgruppen', 'Quantitative Preisdifferenzierung'], correct: 0 },
+    ...ORG_EXPANSION_QUESTIONS
   ],
 
   // ===== BÄDERTECHNIK =====
@@ -1183,8 +1186,12 @@ export const SAMPLE_QUESTIONS = {
     { q: 'Was ist eine Umweltschutzmaßnahme im Schwimmbad?', a: ['Solaranlage für Warmwasser', 'Mehr Chlor verwenden', 'Längere Öffnungszeiten', 'Mehr Parkplätze bauen'], correct: 0 },
     { q: 'Welche Umweltschutzmaßnahmen gibt es im Schwimmbad? (Mehrere richtig)', a: ['Solarenergie nutzen', 'Wärmerückgewinnung', 'Regenwassernutzung', 'LED-Beleuchtung'], correct: [0, 1, 2, 3], multi: true },
     // Mutterschutz
-    { q: 'Wie viele Wochen gilt das Beschäftigungsverbot nach der Entbindung?', a: ['8 Wochen', '2 Wochen', '6 Wochen', '10 Wochen'], correct: 0 }
+    { q: 'Wie viele Wochen gilt das Beschäftigungsverbot nach der Entbindung?', a: ['8 Wochen', '2 Wochen', '6 Wochen', '10 Wochen'], correct: 0 },
+    ...POL_EXPANSION_QUESTIONS
   ],
+
+  // ===== MATHEMATIK (BÄDERSPEZIFISCH) =====
+  math: MATH_QUESTIONS,
 
   // ===== GESUNDHEITSLEHRE =====
   health: [

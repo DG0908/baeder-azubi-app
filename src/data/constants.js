@@ -1,6 +1,7 @@
 export const CATEGORIES = [
   { id: 'org', name: 'Bäderorganisation', color: 'bg-blue-500', icon: '📋' },
   { id: 'pol', name: 'Politik & Wirtschaft', color: 'bg-green-500', icon: '🏛️' },
+  { id: 'math', name: 'Mathematik', color: 'bg-orange-500', icon: '🧮' },
   { id: 'tech', name: 'Bädertechnik', color: 'bg-purple-500', icon: '⚗️' },
   { id: 'swim', name: 'Schwimm- & Rettungslehre', color: 'bg-cyan-500', icon: '🏊' },
   { id: 'first', name: 'Erste Hilfe', color: 'bg-red-500', icon: '🚑' },
