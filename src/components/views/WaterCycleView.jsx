@@ -213,41 +213,47 @@ const DEEP_DIVE = {
   becken: {
     icon: '🏊‍♂️', subtitle: 'Schwimmbecken · 3D-Interaktiv · DIN 19643',
     kenndaten: [
-      { label: 'Turnover Schwimmer', value: 'max. 12 h' },
-      { label: 'Turnover Lehrbecken', value: 'max. 4 h' },
+      { label: 'Turnover Schwimmer', value: 'max. 12 h (DIN 19643)' },
+      { label: 'Turnover Lehrbecken', value: 'max. 4 h (DIN 19643)' },
       { label: 'Beckentiefe (Norm)', value: '≥ 1,80 m (DIN 18032)' },
-      { label: 'Durchströmung', value: 'Vertikal (Standard)' },
-      { label: 'Überlaufrinne', value: 'Gesamter Umfang' },
-      { label: 'Bahnbreite 50m-Bahn', value: '2,5 m (FINA)' },
+      { label: 'Vertikaldurchströmung', value: 'Bodeneinströmung ↑ → Überlauf oben' },
+      { label: 'Horizontaldurchströmung', value: 'Wandeinströmung → Querstrom → Ablauf' },
+      { label: 'Bahnbreite 50m-Bahn', value: '2,5 m (FINA-Regeln)' },
     ],
     lernpunkte: [
-      'Bodeneinströmung → gleichmäßige Aufwärtsdurchströmung (vertikal)',
-      'Überlaufrinne nimmt Oberflächenwasser ab (höchste Belastung!)',
-      'Turnover = Beckenvolumen [m³] ÷ Volumenstrom [m³/h]',
-      'Totzonen entstehen bei schlechter Hydraulik → Keimgefahr',
-      'Restentleerung am tiefsten Punkt (Gefälle 1–2 % zum Ablauf)',
-      'Wendewandfliesen: Rutschhemmung R9, T-Markierung 2m vor Wand',
-      'Bahnmarkierung: Mittellinie 25 cm breit + Stirnwandmarkierung',
+      'Vertikaldurchströmung (Standard): Einströmdüsen im Boden → Wasser steigt gleichmäßig auf → Überlaufrinne oben → wenig Totzonen, hygienisch optimal',
+      'Horizontaldurchströmung: Düsen in Seitenwand → Wasser strömt quer durch das Becken → Ablauf an Gegenseite → günstig für schmale/lange Becken',
+      'Überlaufrinne nimmt das Oberflächenwasser ab (höchste Verunreinigung!)',
+      'Turnover = Beckenvolumen [m³] ÷ Volumenstrom [m³/h] – je kleiner, desto besser',
+      'Totzonen entstehen bei schlechter Düsenplatzierung → Keimgefahr, schlechte Chlorverteilung',
+      'Restentleerung am tiefsten Punkt (Bodengefälle 1–2 % zum Ablauf), Entsorgung: Kanal',
+      'Wendewandfliesen: Rutschhemmung R9, T-Markierung 2 m vor Wand, 1 m lang',
     ],
     pruefungsfrage: 'Wie wird die Turnover-Zeit berechnet und was ist der Grenzwert?',
-    pruefungsantwort: 'Turnover [h] = Beckenvolumen [m³] ÷ Volumenstrom [m³/h]. Grenzwert: max. 12 h für Schwimmer-, max. 4 h für Lehr-/Kinderbecken (DIN 19643).',
+    pruefungsantwort: 'Turnover [h] = Beckenvolumen [m³] ÷ Volumenstrom [m³/h]. Grenzwert: max. 12 h für Schwimmer-, max. 4 h für Lehr-/Kinderbecken (DIN 19643). Kleiner Turnover = häufigere Aufbereitung = besser.',
   },
   ueberlauf: {
-    icon: '↩️', subtitle: 'Überlaufrinne · Oberflächenabzug',
+    icon: '↩️', subtitle: 'Überlaufrinne · Rinnensysteme · DIN 19643',
     kenndaten: [
-      { label: 'Funktion', value: 'Oberflächenwasser abführen' },
-      { label: 'Ziel', value: 'Schwallwasserbehälter' },
-      { label: 'Wasserqualität', value: 'Höchste Verunreinigung' },
-      { label: 'Rinne', value: 'Gesamter Beckenumfang' },
+      { label: 'Funktion', value: 'Oberflächenwasser kontinuierlich abführen' },
+      { label: 'Belastung', value: 'Höchste Verunreinigung (Öle, Schweiß, Cremes)' },
+      { label: 'Umfang', value: 'Gesamter Beckenumfang (100 %)' },
+      { label: 'Häufigste Bauart', value: 'Spaltrinne (Finnische Rinne)' },
+      { label: 'Skimmer nur für', value: 'Kleinstbecken ≤ 60 m³' },
+      { label: 'Norm', value: 'DIN 19643 / DIN EN 13451-2' },
     ],
     lernpunkte: [
-      'Öle, Schweiß, Sonnencreme akkumulieren an der Oberfläche',
-      'Überlaufrinne führt diese belastete Schicht kontinuierlich ab',
-      'Rinnenwasser wird im Aufbereitungskreislauf mitbehandelt',
-      'Rinnengeometrie muss Überlauf über Gesamtumfang ermöglichen',
+      '① Spaltrinne (Finnische Rinne): Schmaler Längsschlitz rundum – Standard in Hallenbädern, hygienisch, gleichmäßig',
+      '② Rostrinne: Begehbares Stabrost über tiefer Rinne – typisch für Wettkampf- und Sportbäder',
+      '③ Schlitzrinne / Nischenrinne: Diskrete Einzelschlitze in Beckenwand – für Hotel- und Designbäder',
+      '④ Liegende Rinne: Horizontale Öffnung unterhalb Wasserspiegel in der Wand – architektonisch dezent',
+      '⑤ Beckenwandrinne: Vollständig in Beckenwand integriert, kein überstehender Rand',
+      '⑥ Skimmer: Einzelner Oberflächenabsauger – NUR für Kleinstbecken < 60 m³ (Gartenpool etc.)',
+      'Rinnenwasser = höchste Konzentration: Schweiß, Hautfett, Sonnencreme, Haare',
+      'Gleichmäßiger Überlauf über gesamten Umfang = optimale Hydraulik, kein Kurzschluss',
     ],
-    pruefungsfrage: 'Warum ist das Rinnenwasser besonders stark belastet?',
-    pruefungsantwort: 'An der Wasseroberfläche sammeln sich alle hydrophoben Stoffe (Öle, Fette) sowie leichte Partikel. Die Überlaufrinne erfasst genau diese höchstbelastete Schicht.',
+    pruefungsfrage: 'Welche Rinnensysteme werden unterschieden und für welche Bäder sind sie typisch?',
+    pruefungsantwort: 'Spaltrinne (Finnische Rinne): Standard-Hallenbad. Rostrinne: Sportbäder/Wettkampf, begehbar. Schlitz-/Nischenrinne: Hotel- und Designbäder. Liegende Rinne/Beckenwandrinne: architektonisch integriert. Skimmer: nur Kleinstbecken < 60 m³. Allen gemeinsam: Abführung des höchstbelasteten Oberflächenwassers über den gesamten Beckenumfang.',
   },
   ruecklauf: {
     icon: '🔄', subtitle: 'Rücklauf · Einspeisung ins Becken',
@@ -420,7 +426,7 @@ function BeckenDeepDive({ metrics }) {
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="220px"
+      <svg viewBox="0 0 300 220" width="100%" height="280px"
         style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -604,35 +610,59 @@ function DeepDiveSVG({ stationId, metrics, controls, xrayMode }) {
     const dp = metrics.differentialPressure;
     const dpColor = dp > 0.5 ? B.danger : dp > 0.35 ? B.warning : B.success;
     const layers = [
-      { label: 'QUARZKIES', fill: '#2a4530', y: 52, h: 52 },
-      { label: 'QUARZSAND', fill: '#384828', y: 104, h: 60 },
-      { label: 'AKTIVKOHLE', fill: '#1a2838', y: 164, h: 52 },
+      { label: 'QUARZKIES', sub: '4–16mm Stützschicht', fill: '#2a4530', y: 62, h: 46 },
+      { label: 'QUARZSAND', sub: '0,4–1,6mm Hauptfilter', fill: '#384828', y: 108, h: 56 },
+      { label: 'AKTIVKOHLE', sub: '0,8–1,6mm Geruch/Org.', fill: '#1a2838', y: 164, h: 46 },
     ];
     return (
-      <svg viewBox="0 0 300 290" width="100%" height="100%">
-        <rect width="300" height="290" fill={B.bg} rx="8"/>
-        <ellipse cx="105" cy="56" rx="55" ry="17" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <rect x="50" y="54" width="110" height="162" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
+      <svg viewBox="0 0 300 310" width="100%" height="100%">
+        <rect width="300" height="310" fill={B.bg} rx="8"/>
+        {/* Verteilerhaube (top dome) */}
+        <ellipse cx="105" cy="48" rx="55" ry="16" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
+        <text x="105" y="43" fill={B.muted} fontSize="5.5" fontFamily="monospace" textAnchor="middle">VERTEILERHAUBE</text>
+        {/* Distribution spray */}
+        {running && [85, 95, 105, 115, 125].map((fx, i) => (
+          <line key={i} x1="105" y1="62" x2={fx} y2={76}
+            stroke="#4ac8ff" strokeWidth="1" opacity="0.35"
+            strokeDasharray="3 3" className="wc-flow"
+            style={{ animationDuration: '1.3s', animationDelay: `${i * 0.1}s` }}/>
+        ))}
+        {/* Filter body */}
+        <rect x="50" y="46" width="110" height="170" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
         {layers.map(l => (
           <g key={l.label}>
             <rect x="52" y={l.y} width="106" height={l.h} fill={l.fill} fillOpacity={xrayMode ? 0.9 : 0.5}/>
-            <text x="106" y={l.y + l.h / 2 + 4} fill={B.text} fontSize="7" fontFamily="monospace" textAnchor="middle" opacity="0.9">{l.label}</text>
+            <text x="106" y={l.y + l.h / 2 + 1} fill={B.text} fontSize="6.5" fontFamily="monospace" textAnchor="middle" opacity="0.9">{l.label}</text>
+            <text x="106" y={l.y + l.h / 2 + 10} fill={B.muted} fontSize="5" fontFamily="monospace" textAnchor="middle" opacity="0.7">{l.sub}</text>
           </g>
         ))}
-        <ellipse cx="105" cy="216" rx="55" ry="17" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <polygon points="105,30 99,44 111,44" fill={B.accent} opacity="0.7"/>
-        <line x1="105" y1="38" x2="105" y2="54" stroke={B.accent} strokeWidth="2" opacity="0.6"/>
-        <polygon points="105,258 99,244 111,244" fill={B.accent} opacity="0.7"/>
-        <line x1="105" y1="233" x2="105" y2="244" stroke={B.accent} strokeWidth="2" opacity="0.6"/>
-        <circle cx="182" cy="148" r="17" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <circle cx="182" cy="148" r="10" fill={xrayMode ? '#2a5a30' : B.water} opacity={0.6}/>
-        <text x="182" y="176" fill={B.muted} fontSize="6" fontFamily="monospace" textAnchor="middle">TRÜBUNG</text>
-        <rect x="208" y="90" width="82" height="68" fill={B.panel} stroke={`${dpColor}80`} strokeWidth="1" rx="5"/>
-        <text x="249" y="108" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="middle">DIFF.-DRUCK</text>
-        <text x="249" y="132" fill={dpColor} fontSize="20" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{dp}</text>
-        <text x="249" y="145" fill={B.muted} fontSize="7" fontFamily="monospace" textAnchor="middle">bar</text>
-        <text x="249" y="164" fill={dpColor} fontSize="7" fontFamily="monospace" textAnchor="middle">{dp > 0.5 ? '⚠ RÜCKSPÜLEN' : dp > 0.35 ? 'ERHÖHT' : '✓ NORMAL'}</text>
-        <text x="105" y="278" fill={B.muted} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">MEHRSCHICHTFILTER</text>
+        {/* Düsenboden strip */}
+        <rect x="52" y="210" width="106" height="8" fill="#0e2030" stroke="#2a4870" strokeWidth="0.6" strokeDasharray="3 2"/>
+        {[62, 74, 86, 98, 110, 122, 134, 146].map((dx) => (
+          <circle key={dx} cx={dx} cy={214} r="2" fill="#1a3a5a" stroke="#2a5880" strokeWidth="0.6"/>
+        ))}
+        <text x="160" y="216" fill={B.muted} fontSize="5" fontFamily="monospace">DÜSENBODEN</text>
+        {/* Bottom outlet ellipse */}
+        <ellipse cx="105" cy="218" rx="55" ry="16" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
+        {/* Inlet arrow */}
+        <polygon points="105,22 99,36 111,36" fill={B.accent} opacity="0.7"/>
+        <line x1="105" y1="30" x2="105" y2="46" stroke={B.accent} strokeWidth="2" opacity="0.6"/>
+        {/* Outlet arrow */}
+        <polygon points="105,272 99,258 111,258" fill={B.accent} opacity="0.7"/>
+        <line x1="105" y1="234" x2="105" y2="258" stroke={B.accent} strokeWidth="2" opacity="0.6"/>
+        {/* Centre flow arrow */}
+        <line x1="105" y1="72" x2="105" y2="202" stroke="#4a9eff" strokeWidth="1.2" strokeDasharray="7 5" opacity="0.2"/>
+        {/* Turbidity sensor */}
+        <circle cx="185" cy="148" r="15" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
+        <circle cx="185" cy="148" r="9" fill={xrayMode ? '#2a5a30' : B.water} opacity={0.6}/>
+        <text x="185" y="172" fill={B.muted} fontSize="5.5" fontFamily="monospace" textAnchor="middle">TRÜBUNG</text>
+        {/* dP gauge */}
+        <rect x="210" y="80" width="80" height="70" fill={B.panel} stroke={`${dpColor}80`} strokeWidth="1" rx="5"/>
+        <text x="250" y="98" fill={B.muted} fontSize="6" fontFamily="monospace" textAnchor="middle">DIFF.-DRUCK</text>
+        <text x="250" y="122" fill={dpColor} fontSize="20" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{dp}</text>
+        <text x="250" y="135" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="middle">bar</text>
+        <text x="250" y="150" fill={dpColor} fontSize="6.5" fontFamily="monospace" textAnchor="middle">{dp > 0.5 ? '⚠ RÜCKSPÜLEN' : dp > 0.35 ? 'ERHÖHT' : '✓ NORMAL'}</text>
+        <text x="105" y="295" fill={B.muted} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">MEHRSCHICHTFILTER · DRUCKFILTER</text>
       </svg>
     );
   }
@@ -1441,31 +1471,63 @@ const WaterCycleView = () => {
                 {filterMode === 'vertikal' ? (
                   <g className="wc-station" onClick={() => chooseStation('filter')} style={{ cursor: 'pointer' }}>
                     <text x="825" y="82" fill="#2a6090" fontSize="7" fontFamily="monospace" textAnchor="middle" letterSpacing="1">VERTIKALDURCHSTRÖMUNG ↕</text>
+                    {/* Top ellipse – Verteilerhaube */}
                     <ellipse cx="825" cy="100" rx="65" ry="16" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : (symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a')} strokeWidth="1.5"/>
-                    <rect x="760" y="100" width="130" height="425" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : (symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a')} strokeWidth="1.5"/>
-                    <rect x="762" y="118" width="126" height="120" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.45}/>
-                    <rect x="762" y="238" width="126" height="142" fill="#38481a" fillOpacity={xrayMode ? 0.9 : 0.45}/>
-                    <rect x="762" y="380" width="126" height="135" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.45}/>
+                    {/* Verteilerhaube label + pointer */}
+                    <line x1="762" y1="107" x2="744" y2="107" stroke="#2a5070" strokeWidth="0.8"/>
+                    <text x="741" y="110" fill="#3a7090" fontSize="6" fontFamily="monospace" textAnchor="end">VERTEILERHAUBE</text>
+                    {/* Distribution spray from dome when pump running */}
+                    {metrics.flowRate > 0 && !controls.backwashMode && [780, 797, 825, 853, 870].map((fx, i) => (
+                      <line key={i} x1="825" y1="115" x2={fx} y2={138}
+                        stroke="#4ac8ff" strokeWidth="1.3" opacity="0.38"
+                        strokeDasharray="4 3" className="wc-flow"
+                        style={{ animationDuration: '1.3s', animationDelay: `${i * 0.12}s` }}/>
+                    ))}
+                    {/* Filter body */}
+                    <rect x="760" y="100" width="130" height="415" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : (symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a')} strokeWidth="1.5"/>
+                    {/* Filter layers */}
+                    <rect x="762" y="118" width="126" height="115" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.45}/>
+                    <rect x="762" y="233" width="126" height="135" fill="#38481a" fillOpacity={xrayMode ? 0.9 : 0.45}/>
+                    <rect x="762" y="368" width="126" height="115" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.45}/>
+                    {/* Düsenboden strip */}
+                    <rect x="762" y="483" width="126" height="14" fill="#0e2030" fillOpacity={xrayMode ? 0.9 : 0.65} stroke="#2a4870" strokeWidth="0.8" strokeDasharray="3 2.5"/>
+                    {[778, 795, 812, 825, 838, 855, 872].map((dx) => (
+                      <circle key={dx} cx={dx} cy={490} r="2.5" fill="#1a3a5a" stroke="#2a5880" strokeWidth="0.8"/>
+                    ))}
+                    {/* Düsenboden label + pointer */}
+                    <line x1="762" y1="490" x2="744" y2="490" stroke="#2a5070" strokeWidth="0.8"/>
+                    <text x="741" y="493" fill="#3a7090" fontSize="6" fontFamily="monospace" textAnchor="end">DÜSENBODEN</text>
                     {!xrayMode && (<>
-                      <line x1="762" y1="238" x2="888" y2="238" stroke="#1a3a5a" strokeWidth="1" strokeDasharray="4 3"/>
-                      <line x1="762" y1="380" x2="888" y2="380" stroke="#1a3a5a" strokeWidth="1" strokeDasharray="4 3"/>
-                      <text x="825" y="182" fill="#2a5040" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
-                      <text x="825" y="312" fill="#4a6020" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
-                      <text x="825" y="450" fill="#2a4058" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                      <line x1="762" y1="233" x2="888" y2="233" stroke="#1a3a5a" strokeWidth="1" strokeDasharray="4 3"/>
+                      <line x1="762" y1="368" x2="888" y2="368" stroke="#1a3a5a" strokeWidth="1" strokeDasharray="4 3"/>
+                      <line x1="762" y1="483" x2="888" y2="483" stroke="#1a3a5a" strokeWidth="0.8" strokeDasharray="3 2.5"/>
+                      <text x="825" y="170" fill="#2a5040" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
+                      <text x="825" y="181" fill="#1a3a30" fontSize="5.5" fontFamily="monospace" textAnchor="middle">4 – 16 mm · Stützschicht</text>
+                      <text x="825" y="294" fill="#4a6020" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
+                      <text x="825" y="305" fill="#2a4010" fontSize="5.5" fontFamily="monospace" textAnchor="middle">0,4 – 1,6 mm · Hauptfilter</text>
+                      <text x="825" y="419" fill="#2a4058" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                      <text x="825" y="430" fill="#1a3050" fontSize="5.5" fontFamily="monospace" textAnchor="middle">0,8 – 1,6 mm · Geruch/Org.</text>
                     </>)}
                     {xrayMode && (<>
-                      <text x="825" y="182" fill="#60c090" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
-                      <text x="825" y="312" fill="#90c060" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
-                      <text x="825" y="450" fill="#6080a0" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                      <text x="825" y="170" fill="#60c090" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES 4–16mm</text>
+                      <text x="825" y="294" fill="#90c060" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND 0,4–1,6mm</text>
+                      <text x="825" y="419" fill="#6080a0" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE 0,8–1,6mm</text>
                     </>)}
-                    <line x1="825" y1="130" x2="825" y2="488" stroke="#4a9eff" strokeWidth="1.5" strokeDasharray="8 6" opacity="0.22"/>
-                    <polygon points="820,486 825,501 830,486" fill="#4a9eff" opacity="0.28"/>
-                    <ellipse cx="825" cy="525" rx="65" ry="16" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                    <circle cx="912" cy="318" r="18" fill={metrics.differentialPressure > 0.5 ? '#3a0808' : '#081808'} stroke={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} strokeWidth="1.5"/>
-                    <text x="912" y="315" fill={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle">dP</text>
-                    <text x="912" y="326" fill={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} fontSize="6.5" fontFamily="monospace" textAnchor="middle">{metrics.differentialPressure}</text>
+                    {/* Center downward flow arrow */}
+                    <line x1="825" y1="130" x2="825" y2="476" stroke="#4a9eff" strokeWidth="1.5" strokeDasharray="8 6" opacity="0.22"/>
+                    <polygon points="820,474 825,487 830,474" fill="#4a9eff" opacity="0.28"/>
+                    {/* Backwash upward arrow */}
+                    {controls.backwashMode && (
+                      <line x1="825" y1="476" x2="825" y2="130" stroke="#f09030" strokeWidth="1.5" strokeDasharray="8 6" opacity="0.32" className="wc-flow wc-flow-reverse"/>
+                    )}
+                    {/* Bottom ellipse */}
+                    <ellipse cx="825" cy="515" rx="65" ry="16" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                    {/* dP gauge */}
+                    <circle cx="912" cy="310" r="18" fill={metrics.differentialPressure > 0.5 ? '#3a0808' : '#081808'} stroke={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} strokeWidth="1.5"/>
+                    <text x="912" y="307" fill={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle">dP</text>
+                    <text x="912" y="318" fill={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} fontSize="6.5" fontFamily="monospace" textAnchor="middle">{metrics.differentialPressure}</text>
                     <text x="825" y="70" fill="#5a8090" fontSize="8.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">FILTER</text>
-                    {symptomFlags.has('filterTurbidity') && <text x="825" y="548" fill="#d04040" fontSize="7" fontFamily="monospace" textAnchor="middle">⚠ TRÜBUNG</text>}
+                    {symptomFlags.has('filterTurbidity') && <text x="825" y="540" fill="#d04040" fontSize="7" fontFamily="monospace" textAnchor="middle">⚠ TRÜBUNG</text>}
                   </g>
                 ) : (
                   <g className="wc-station" onClick={() => chooseStation('filter')} style={{ cursor: 'pointer' }}>
@@ -1737,7 +1799,7 @@ const WaterCycleView = () => {
       {/* ── Deep Dive Modal ── */}
       {deepDiveStation && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4" onClick={() => setDeepDiveStationId(null)}>
-          <div className="w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden" style={{ background: '#040d1a', border: '1px solid #1a3a5a', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
+          <div className="w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden" style={{ background: '#040d1a', border: '1px solid #1a3a5a', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
             onClick={e => e.stopPropagation()}>
             {/* Modal header */}
             <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid #1a3a5a' }}>
@@ -1763,10 +1825,10 @@ const WaterCycleView = () => {
             </div>
 
             {/* Modal body */}
-            <div className="grid lg:grid-cols-[1.1fr_1fr] overflow-auto flex-1" style={{ minHeight: 0 }}>
+            <div className="grid lg:grid-cols-[1.2fr_1fr] overflow-auto flex-1" style={{ minHeight: 0 }}>
               {/* SVG illustration */}
               <div className="p-5 flex items-center justify-center" style={{ borderRight: '1px solid #1a3a5a', background: '#030c18' }}>
-                <div style={{ width: '100%', maxWidth: 320 }}>
+                <div style={{ width: '100%', maxWidth: 420 }}>
                   <DeepDiveSVG stationId={deepDiveStation.id} metrics={metrics} controls={controls} xrayMode={xrayMode}/>
                 </div>
               </div>
