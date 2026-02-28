@@ -110,17 +110,45 @@ const QuizView = ({
                 ))}
               </div>
             </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Timer fuer Herausforderung (Annahmefrist):
+              </label>
+              <select
+                value={challengeTimeoutMinutes}
+                onChange={(event) => setChallengeTimeoutMinutes(Number(event.target.value) || 1440)}
+                className="w-full md:w-64 border border-gray-300 rounded-lg px-3 py-2 bg-white"
+              >
+                {CHALLENGE_TIMEOUT_OPTIONS.map((option) => (
+                  <option key={option.minutes} value={option.minutes}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="grid gap-2">
               {allUsers.filter(u => u.name !== user.name).map(u => {
                 const vsStats = userStats?.opponents?.[u.name] || { wins: 0, losses: 0, draws: 0 };
                 const totalVs = vsStats.wins + vsStats.losses + vsStats.draws;
                 const winrate = totalVs > 0 ? Math.round((vsStats.wins / totalVs) * 100) : null;
                 const initials = u.name.slice(0, 2).toUpperCase();
-                const hasActiveGame = activeGames.some(g =>
-                  g.status !== 'finished' &&
-                  ((g.player1 === user.name && g.player2 === u.name) ||
-                   (g.player1 === u.name && g.player2 === user.name))
-                );
+                const hasActiveGame = activeGames.some((g) => {
+                  if (g.status === 'finished') return false;
+                  const isPair = (g.player1 === user.name && g.player2 === u.name)
+                    || (g.player1 === u.name && g.player2 === user.name);
+                  if (!isPair) return false;
+                  if (g.status !== 'waiting') return true;
+
+                  const timeoutMinutes = Number(g.challengeTimeoutMinutes || 2880);
+                  const createdTs = new Date(g.createdAt || g.updatedAt || '').getTime();
+                  const explicitExpiryTs = new Date(g.challengeExpiresAt || '').getTime();
+                  const fallbackExpiryTs = Number.isFinite(createdTs)
+                    ? createdTs + Math.max(15, timeoutMinutes) * 60 * 1000
+                    : Number.NaN;
+                  const expiryTs = Number.isFinite(explicitExpiryTs) ? explicitExpiryTs : fallbackExpiryTs;
+                  if (!Number.isFinite(expiryTs)) return true;
+                  return expiryTs > Date.now();
+                });
                 return (
                   <div key={u.name} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-3 p-3 rounded-xl transition-all min-[720px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[720px]:items-center ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
                     {/* Initials Avatar */}
@@ -152,7 +180,7 @@ const QuizView = ({
                       </span>
                     ) : (
                       <button
-                        onClick={() => challengePlayer(u.name)}
+                        onClick={() => challengePlayer(u.name, challengeTimeoutMinutes)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-sm transition-all col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto whitespace-normal text-center leading-tight"
                       >
                         <Target size={16} />
