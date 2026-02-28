@@ -8024,6 +8024,8 @@ export default function BaederApp() {
             allUsers={allUsers}
             activeGames={activeGames}
             challengePlayer={challengePlayer}
+            acceptChallenge={acceptChallenge}
+            continueGame={continueGame}
             currentGame={currentGame}
             quizCategory={quizCategory}
             questionInCategory={questionInCategory}
