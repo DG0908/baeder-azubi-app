@@ -46,15 +46,28 @@ const METRIC_LABELS = {
 };
 
 const STATION_FOCUS = {
-  becken: { x: 192, y: 338, r: 126 },
-  ueberlauf: { x: 338, y: 252, r: 52 },
-  schwall: { x: 522, y: 206, r: 108 },
-  pumpe: { x: 532, y: 430, r: 84 },
-  flockung: { x: 708, y: 430, r: 66 },
-  filter: { x: 854, y: 420, r: 94 },
-  desinfektion: { x: 1022, y: 326, r: 82 },
-  heizung: { x: 1020, y: 166, r: 72 },
-  ruecklauf: { x: 774, y: 154, r: 58 }
+  becken: { x: 208, y: 150, r: 130 },
+  ueberlauf: { x: 426, y: 150, r: 46 },
+  schwall: { x: 522, y: 150, r: 88 },
+  pumpe: { x: 530, y: 328, r: 84 },
+  flockung: { x: 686, y: 330, r: 68 },
+  filter: { x: 854, y: 318, r: 88 },
+  desinfektion: { x: 1040, y: 286, r: 84 },
+  heizung: { x: 1040, y: 156, r: 72 },
+  ruecklauf: { x: 808, y: 108, r: 62 }
+};
+
+const SCHEMATIC_PIPE_PATHS = {
+  'becken-ueberlauf': 'M 356 148 L 420 148',
+  'ueberlauf-schwall': 'M 434 148 L 470 148',
+  'schwall-pumpe': 'M 530 206 L 530 280',
+  'pumpe-flockung': 'M 568 330 L 650 330',
+  'flockung-filter': 'M 722 330 L 820 330',
+  'filter-desinfektion': 'M 888 304 C 950 292 1000 286 1040 286',
+  'desinfektion-heizung': 'M 1040 270 L 1040 194',
+  'heizung-ruecklauf': 'M 1010 138 C 950 114 902 108 840 108',
+  'ruecklauf-becken': 'M 804 108 C 690 110 530 118 356 148',
+  'filter-kanal': 'M 840 362 L 840 452 C 860 520 940 548 1020 548'
 };
 
 const readCondition = (condition, snapshot) => {
@@ -111,9 +124,11 @@ const WaterCycleView = () => {
     WATER_CYCLE_MISSIONS.map((mission) => [mission.id, { status: 'idle', attempts: 0, solvedAt: null }])
   ));
   const [missionLog, setMissionLog] = useState([]);
+  const [deepDiveStationId, setDeepDiveStationId] = useState(null);
 
   const stationMap = useMemo(() => new Map(WATER_CYCLE_STATIONS.map((station) => [station.id, station])), []);
   const selectedStation = stationMap.get(selectedStationId) || WATER_CYCLE_STATIONS[0];
+  const deepDiveStation = deepDiveStationId ? stationMap.get(deepDiveStationId) : null;
   const stationIndex = Math.max(0, WATER_CYCLE_STATION_ORDER.indexOf(selectedStation.id));
   const stationFocus = STATION_FOCUS[selectedStationId] || STATION_FOCUS.becken;
   const mission = WATER_CYCLE_MISSIONS.find((entry) => entry.id === activeMissionId) || WATER_CYCLE_MISSIONS[0];
@@ -206,6 +221,7 @@ const WaterCycleView = () => {
     const reverse = controls.backwashMode && pipe.reversibleInBackwash;
     return {
       ...pipe,
+      path: SCHEMATIC_PIPE_PATHS[pipe.id] || pipe.path,
       hasFlow: activeInMode && metrics.flowRate > 0,
       reverse,
       backwash: pipe.mode === 'backwash' || reverse
@@ -255,21 +271,23 @@ const WaterCycleView = () => {
         @keyframes wcBubble { 0% { transform: translateY(0); opacity: 0.15; } 55% { opacity: 0.95; } 100% { transform: translateY(-18px); opacity: 0; } }
         @keyframes wcPulse { 0% { opacity: 0.85; transform: scale(0.97); } 100% { opacity: 0; transform: scale(1.08); } }
         @keyframes wcSurface { to { stroke-dashoffset: -80; } }
+        @keyframes wcFloat { 0% { transform: translate3d(-50%, -52%, 0) rotateX(58deg) rotateZ(-28deg); } 50% { transform: translate3d(-50%, -48%, 10px) rotateX(58deg) rotateZ(-28deg); } 100% { transform: translate3d(-50%, -52%, 0) rotateX(58deg) rotateZ(-28deg); } }
         .wc-flow { stroke-dasharray: 16 12; animation: wcFlow linear infinite; }
         .wc-flow-reverse { animation-direction: reverse; }
         .wc-impeller { transform-origin: center; animation: wcSpin 1.05s linear infinite; }
         .wc-bubble { animation: wcBubble 1.2s ease-in infinite; }
         .wc-pulse { transform-origin: center; animation: wcPulse 1.4s ease-out infinite; }
         .wc-surface { stroke-dasharray: 8 10; animation: wcSurface 1.4s linear infinite; }
+        .wc-3d-float { animation: wcFloat 5.4s ease-in-out infinite; transform-style: preserve-3d; }
       `}</style>
 
       <section className={`rounded-3xl border p-5 shadow-xl ${darkMode ? 'bg-slate-900/95 border-slate-700 text-white' : 'bg-white/95 border-cyan-100 text-slate-900'}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="max-w-4xl">
             <p className={`text-xs uppercase tracking-[0.2em] ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>Technikraum Simulation</p>
-            <h2 className="text-3xl font-black mt-1">Interaktiver Wasserkreislauf 3.1</h2>
+            <h2 className="text-3xl font-black mt-1">Interaktiver Wasserkreislauf Studio</h2>
             <p className={`text-sm mt-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-              Detailliertes Anlagenbild mit Pumpenraum-Look, X-Ray-Ebene, Missionslogik und praxisnahem Leitstand.
+              Premium-Schaubild mit klarer Prozesslinie, Lernfokus, Missionslogik und Deep-Dive je Bauteil.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -301,66 +319,56 @@ const WaterCycleView = () => {
           <div className="overflow-x-auto">
             <svg className="min-w-[980px] w-full h-[660px] rounded-2xl" viewBox={`0 0 ${WATER_CYCLE_VIEWBOX.width} ${WATER_CYCLE_VIEWBOX.height}`}>
               <defs>
-                <linearGradient id="wcWall" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={darkMode ? '#0b1222' : '#ecfeff'} />
-                  <stop offset="100%" stopColor={darkMode ? '#17263d' : '#f1f5f9'} />
+                <linearGradient id="wcSchematicBg" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor={darkMode ? '#0f172a' : '#f8fbff'} />
+                  <stop offset="100%" stopColor={darkMode ? '#111827' : '#eef4fb'} />
                 </linearGradient>
-                <linearGradient id="wcFloor" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor={darkMode ? '#111827' : '#dbeafe'} />
-                  <stop offset="100%" stopColor={darkMode ? '#0f172a' : '#cbd5e1'} />
+                <linearGradient id="wcPaperPanel" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor={darkMode ? '#0b1220' : '#ffffff'} />
+                  <stop offset="100%" stopColor={darkMode ? '#18253b' : '#f7fafc'} />
                 </linearGradient>
                 <linearGradient id="wcPipeBase" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor={darkMode ? '#334155' : '#cbd5e1'} />
-                  <stop offset="100%" stopColor={darkMode ? '#64748b' : '#94a3b8'} />
+                  <stop offset="0%" stopColor={darkMode ? '#3c4f69' : '#a7b7c8'} />
+                  <stop offset="100%" stopColor={darkMode ? '#60758f' : '#7e92a8'} />
                 </linearGradient>
                 <linearGradient id="wcFlow" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#22d3ee" />
-                  <stop offset="100%" stopColor="#0284c7" />
+                  <stop offset="0%" stopColor="#38bdf8" />
+                  <stop offset="100%" stopColor="#0ea5e9" />
                 </linearGradient>
                 <linearGradient id="wcBackwash" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#f59e0b" />
                   <stop offset="100%" stopColor="#f97316" />
                 </linearGradient>
                 <linearGradient id="wcWater" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#7dd3fc" />
-                  <stop offset="100%" stopColor="#0ea5e9" />
+                  <stop offset="0%" stopColor="#8cd9ff" />
+                  <stop offset="100%" stopColor="#2aa8e8" />
                 </linearGradient>
-                <pattern id="wcTiles" x="0" y="0" width="18" height="18" patternUnits="userSpaceOnUse">
-                  <rect width="18" height="18" fill={darkMode ? '#132339' : '#e0f2fe'} />
-                  <path d="M 0 0 L 18 0 M 0 0 L 0 18" stroke={darkMode ? '#1e3a5f' : '#bfdbfe'} strokeWidth="1" />
+                <pattern id="wcGrid" width="28" height="28" patternUnits="userSpaceOnUse">
+                  <path d="M 28 0 L 0 0 0 28" fill="none" stroke={darkMode ? '#25344a' : '#d5e1ef'} strokeWidth="1" />
                 </pattern>
               </defs>
 
-              <rect width="100%" height="100%" rx="24" fill="url(#wcWall)" />
-              <polygon points="28,506 1240,506 1188,735 80,735" fill="url(#wcFloor)" />
-              {[0, 1, 2, 3, 4, 5].map((index) => (
-                <line
-                  key={`floor-line-${index}`}
-                  x1={70 + index * 190}
-                  y1="530"
-                  x2={110 + index * 175}
-                  y2="720"
-                  stroke={darkMode ? '#1f334e' : '#93c5fd'}
-                  strokeOpacity="0.18"
-                  strokeWidth="1"
-                />
-              ))}
+              <rect width="100%" height="100%" rx="24" fill="url(#wcSchematicBg)" />
+              <rect x="28" y="28" width="1224" height="704" rx="20" fill="url(#wcPaperPanel)" stroke={darkMode ? '#334155' : '#d4e1ef'} />
+              <rect x="28" y="28" width="1224" height="704" rx="20" fill="url(#wcGrid)" opacity={darkMode ? '0.38' : '0.8'} />
+              <text x="58" y="66" fill={darkMode ? '#cbd5e1' : '#1e293b'} fontSize="20" fontWeight="700">Hydraulik-Schaubild Beckenwasseraufbereitung</text>
+              <text x="58" y="88" fill={darkMode ? '#94a3b8' : '#64748b'} fontSize="12">Klick auf eine Komponente fuer Stationswissen oder Deep-Dive</text>
 
               <g pointerEvents="none">
-                <circle cx={stationFocus.x} cy={stationFocus.y} r={stationFocus.r} fill="none" stroke="#22d3ee44" strokeWidth="7" />
-                <circle cx={stationFocus.x} cy={stationFocus.y} r={stationFocus.r} fill="none" stroke="#22d3ee88" strokeWidth="3" className="wc-pulse" />
+                <circle cx={stationFocus.x} cy={stationFocus.y} r={stationFocus.r} fill="none" stroke="#22d3ee3f" strokeWidth="8" />
+                <circle cx={stationFocus.x} cy={stationFocus.y} r={stationFocus.r} fill="none" stroke="#22d3ee7a" strokeWidth="3" className="wc-pulse" />
               </g>
 
               {pipeStates.map((pipe) => (
                 <g key={pipe.id}>
-                  <path d={pipe.path} fill="none" stroke="url(#wcPipeBase)" strokeWidth="18" strokeLinecap="round" />
-                  <path d={pipe.path} fill="none" stroke={darkMode ? '#94a3b855' : '#f8fafccc'} strokeWidth="4" strokeLinecap="round" />
+                  <path d={pipe.path} fill="none" stroke="url(#wcPipeBase)" strokeWidth="16" strokeLinecap="round" />
+                  <path d={pipe.path} fill="none" stroke={darkMode ? '#0f172a99' : '#ffffffbb'} strokeWidth="3" strokeLinecap="round" />
                   {pipe.hasFlow && (
                     <path
                       d={pipe.path}
                       fill="none"
                       stroke={pipe.backwash ? 'url(#wcBackwash)' : 'url(#wcFlow)'}
-                      strokeWidth="9"
+                      strokeWidth="8"
                       strokeLinecap="round"
                       className={`wc-flow ${pipe.reverse ? 'wc-flow-reverse' : ''}`}
                       style={{ animationDuration: `${flowDuration}s` }}
@@ -370,108 +378,96 @@ const WaterCycleView = () => {
               ))}
 
               <g onClick={() => chooseStation('becken')} style={{ cursor: 'pointer' }}>
-                <rect x="72" y="230" width="240" height="210" rx="28" fill="url(#wcTiles)" stroke={selectedStationId === 'becken' ? '#06b6d4' : '#38bdf8'} strokeWidth="5" />
-                <rect x="90" y="284" width="204" height="138" rx="18" fill="url(#wcWater)" opacity="0.92" />
-                <path d="M 102 296 C 146 284 198 304 240 292 C 264 286 282 294 292 298" fill="none" stroke="#e0f2fe" strokeWidth="3" className="wc-surface" />
-                <rect x="88" y="252" width="208" height="16" rx="8" fill={darkMode ? '#334155' : '#cbd5e1'} />
-                <rect x="108" y="222" width="150" height="24" rx="8" fill={darkMode ? '#0f172acc' : '#ffffffdd'} />
-                <text x="117" y="239" fill={darkMode ? '#e2e8f0' : '#0f172a'} fontWeight="700" fontSize="14">Becken + Ueberlaufrinne</text>
+                <rect x="62" y="78" width="294" height="146" rx="16" fill={darkMode ? '#0e1a2c' : '#ffffff'} stroke={selectedStationId === 'becken' ? '#22d3ee' : '#93a9bf'} strokeWidth="3" />
+                <rect x="80" y="122" width="254" height="90" rx="8" fill="url(#wcWater)" opacity="0.9" />
+                <path d="M 96 136 C 130 122 176 142 214 130 C 252 118 290 138 320 128" fill="none" stroke="#dff4ff" strokeWidth="2.4" className="wc-surface" />
+                <rect x="356" y="94" width="58" height="70" rx="8" fill={darkMode ? '#1f2937' : '#f1f5f9'} stroke="#7c90a6" strokeWidth="2" />
+                <text x="76" y="104" fill={darkMode ? '#dbe7f5' : '#1e293b'} fontSize="13" fontWeight="700">Schwimmbecken + Ueberlauf</text>
               </g>
 
               <g onClick={() => chooseStation('ueberlauf')} style={{ cursor: 'pointer' }}>
-                <rect x="320" y="238" width="46" height="28" rx="6" fill={darkMode ? '#374151' : '#e2e8f0'} stroke="#64748b" strokeWidth="2.5" />
-                <rect x="324" y="244" width="38" height="10" rx="5" fill="#60a5fa" opacity="0.7" />
+                <rect x="418" y="128" width="18" height="40" rx="5" fill={darkMode ? '#1f2937' : '#e5edf7'} stroke="#7c90a6" strokeWidth="2" />
               </g>
 
               <g onClick={() => chooseStation('schwall')} style={{ cursor: 'pointer' }}>
-                <rect x="430" y="132" width="188" height="146" rx="16" fill={darkMode ? '#10243d' : '#dbeafe'} stroke="#60a5fa" strokeWidth="3" />
-                <rect x="438" y={140 + (100 - metrics.surgeLevel)} width="172" height={metrics.surgeLevel} rx="10" fill={darkMode ? '#0ea5e955' : '#38bdf888'} />
-                <rect x="444" y="142" width="160" height="20" rx="9" fill={darkMode ? '#0f172abf' : '#ffffffde'} />
-                <text x="452" y="156" fill={darkMode ? '#e2e8f0' : '#0f172a'} fontWeight="700" fontSize="12">Schwallwasserbehaelter</text>
-                <rect x="620" y="148" width="14" height="110" rx="6" fill={darkMode ? '#0f172a' : '#e2e8f0'} stroke="#64748b" />
-                <rect x="622" y={250 - metrics.surgeLevel} width="10" height="8" rx="3" fill="#22d3ee" />
+                <rect x="470" y="88" width="118" height="120" rx="12" fill={darkMode ? '#13233a' : '#ecf4ff'} stroke={selectedStationId === 'schwall' ? '#22d3ee' : '#8aa0b6'} strokeWidth="3" />
+                <rect x="478" y={92 + (104 - metrics.surgeLevel)} width="102" height={metrics.surgeLevel} rx="8" fill="#38bdf84d" />
+                <text x="474" y="80" fill={darkMode ? '#cbd5e1' : '#334155'} fontSize="12" fontWeight="700">Schwallwasserbehaelter</text>
               </g>
 
               <g onClick={() => chooseStation('pumpe')} style={{ cursor: 'pointer' }}>
-                <rect x="420" y="458" width="182" height="34" rx="8" fill={darkMode ? '#374151' : '#cbd5e1'} />
-                <rect x="452" y="370" width="42" height="56" rx="10" fill={darkMode ? '#1f2937' : '#f1f5f9'} stroke="#94a3b8" strokeWidth="2.5" />
-                <circle cx="472" cy="404" r="34" fill={darkMode ? '#1f2937' : '#f8fafc'} stroke="#94a3b8" strokeWidth="3" />
-                <circle cx="532" cy="430" r="52" fill={darkMode ? '#1f2937' : '#e2e8f0'} stroke="#64748b" strokeWidth="4" />
-                <circle cx="532" cy="430" r="19" fill={darkMode ? '#0f172a' : '#94a3b8'} />
+                <circle cx="530" cy="330" r="42" fill={darkMode ? '#1e293b' : '#e8eef5'} stroke="#6f8398" strokeWidth="3" />
+                <circle cx="530" cy="330" r="18" fill={darkMode ? '#0f172a' : '#cbd5e1'} />
                 <g className={controls.pumpEnabled ? 'wc-impeller' : ''}>
-                  <line x1="532" y1="412" x2="532" y2="448" stroke="#22d3ee" strokeWidth="4" />
-                  <line x1="514" y1="430" x2="550" y2="430" stroke="#22d3ee" strokeWidth="4" />
-                  <line x1="520" y1="418" x2="544" y2="442" stroke="#22d3ee" strokeWidth="3" />
+                  <line x1="530" y1="312" x2="530" y2="348" stroke="#22d3ee" strokeWidth="3.2" />
+                  <line x1="512" y1="330" x2="548" y2="330" stroke="#22d3ee" strokeWidth="3.2" />
+                  <line x1="516" y1="316" x2="544" y2="344" stroke="#22d3ee" strokeWidth="2.6" />
                 </g>
                 {symptomFlags.has('pumpBubbles') && (
                   <>
-                    <circle cx="468" cy="406" r="4" fill="#67e8f9" className="wc-bubble" />
-                    <circle cx="482" cy="418" r="3" fill="#22d3ee" className="wc-bubble" style={{ animationDelay: '0.25s' }} />
-                    <circle cx="490" cy="410" r="2.8" fill="#7dd3fc" className="wc-bubble" style={{ animationDelay: '0.52s' }} />
-                    <path d="M 458 352 L 444 330 L 472 330 Z" fill="#f59e0b" />
+                    <circle cx="500" cy="312" r="3.5" fill="#7dd3fc" className="wc-bubble" />
+                    <circle cx="510" cy="322" r="2.6" fill="#38bdf8" className="wc-bubble" style={{ animationDelay: '0.2s' }} />
                   </>
                 )}
-                {xrayMode && selectedStationId === 'pumpe' && (
-                  <>
-                    <circle cx="532" cy="430" r="36" fill="none" stroke="#67e8f9" strokeDasharray="4 4" />
-                    <circle cx="532" cy="430" r="10" fill="#06b6d4aa" />
-                  </>
-                )}
+                <text x="494" y="386" fill={darkMode ? '#cbd5e1' : '#334155'} fontSize="12" fontWeight="700">Pumpe</text>
               </g>
 
               <g onClick={() => chooseStation('flockung')} style={{ cursor: 'pointer' }}>
-                <rect x="650" y="388" width="72" height="96" rx="8" fill={darkMode ? '#1f2937' : '#e2e8f0'} stroke="#64748b" strokeWidth="3" />
-                <rect x="730" y="404" width="28" height="48" rx="6" fill={darkMode ? '#334155' : '#cbd5e1'} />
-                <rect x="764" y="390" width="34" height="98" rx="10" fill={darkMode ? '#0f172a' : '#f8fafc'} stroke="#64748b" strokeWidth="2" />
-                <rect x="770" y="408" width="22" height="74" rx="8" fill="#0ea5e9aa" />
-                <circle cx="745" cy="428" r="4" fill={controls.disinfectPumpEnabled ? '#22c55e' : '#ef4444'} />
+                <rect x="654" y="284" width="68" height="92" rx="10" fill={darkMode ? '#1f2937' : '#e8eef5'} stroke="#7b8da2" strokeWidth="2.5" />
+                <rect x="736" y="300" width="26" height="70" rx="8" fill={darkMode ? '#111827' : '#f8fafc'} stroke="#7b8da2" strokeWidth="2" />
+                <rect x="742" y="318" width="14" height="46" rx="5" fill="#38bdf880" />
+                <text x="642" y="392" fill={darkMode ? '#cbd5e1' : '#334155'} fontSize="12" fontWeight="700">Flockung</text>
               </g>
 
               <g onClick={() => chooseStation('filter')} style={{ cursor: 'pointer' }}>
-                <ellipse cx="854" cy="306" rx="54" ry="17" fill={darkMode ? '#334155' : '#cbd5e1'} />
-                <rect x="800" y="306" width="108" height="224" rx="40" fill={darkMode ? '#1f2937' : '#e2e8f0'} stroke="#64748b" strokeWidth="4" />
-                <ellipse cx="854" cy="530" rx="54" ry="17" fill={darkMode ? '#334155' : '#cbd5e1'} />
-                <circle cx="924" cy="388" r="18" fill={symptomFlags.has('filterTurbidity') ? '#f59e0b' : '#7dd3fc'} stroke="#1e293b" strokeWidth="3" />
-                <path d="M 924 388 m -8 0 a 8 8 0 1 0 16 0 a 8 8 0 1 0 -16 0" fill={symptomFlags.has('filterTurbidity') ? '#fbbf24' : '#dbeafe'} />
-                {symptomFlags.has('filterTurbidity') && <path d="M 938 360 L 924 338 L 952 338 Z" fill="#f59e0b" />}
+                <ellipse cx="854" cy="246" rx="34" ry="12" fill={darkMode ? '#334155' : '#cbd5e1'} />
+                <rect x="820" y="246" width="68" height="166" rx="28" fill={darkMode ? '#1f2937' : '#e2e8f0'} stroke={selectedStationId === 'filter' ? '#22d3ee' : '#72859b'} strokeWidth="3" />
+                <ellipse cx="854" cy="412" rx="34" ry="12" fill={darkMode ? '#334155' : '#cbd5e1'} />
+                <circle cx="906" cy="308" r="14" fill={symptomFlags.has('filterTurbidity') ? '#f59e0b' : '#7dd3fc'} stroke="#1f2937" strokeWidth="2.6" />
                 {xrayMode && selectedStationId === 'filter' && (
                   <>
-                    <rect x="812" y="322" width="84" height="58" fill="#a3e63599" />
-                    <rect x="812" y="380" width="84" height="74" fill="#facc1599" />
-                    <rect x="812" y="454" width="84" height="62" fill="#f9731699" />
+                    <rect x="828" y="264" width="52" height="46" fill="#86efac88" />
+                    <rect x="828" y="310" width="52" height="54" fill="#facc1588" />
+                    <rect x="828" y="364" width="52" height="36" fill="#fb923c88" />
                   </>
                 )}
+                <text x="824" y="434" fill={darkMode ? '#cbd5e1' : '#334155'} fontSize="12" fontWeight="700">Filterkessel</text>
               </g>
 
               <g onClick={() => chooseStation('desinfektion')} style={{ cursor: 'pointer' }}>
-                <rect x="978" y="266" width="98" height="122" rx="10" fill={darkMode ? '#1f2937' : '#e2e8f0'} stroke="#64748b" strokeWidth="3" />
-                <rect x="988" y="278" width="34" height="94" rx="7" fill={darkMode ? '#0f172a' : '#f8fafc'} />
-                <rect x="1032" y="278" width="34" height="94" rx="7" fill={darkMode ? '#0f172a' : '#f8fafc'} />
-                <circle cx="1005" cy="383" r="7" fill={chlorInRange ? '#22c55e' : '#ef4444'} />
-                <circle cx="1048" cy="383" r="7" fill={controls.disinfectPumpEnabled ? '#22c55e' : '#ef4444'} />
-                {symptomFlags.has('lowChlorine') && <path d="M 1058 242 L 1044 220 L 1072 220 Z" fill="#f59e0b" />}
+                <rect x="996" y="238" width="92" height="98" rx="10" fill={darkMode ? '#1f2937' : '#e8eef5'} stroke="#75889e" strokeWidth="3" />
+                <rect x="1006" y="248" width="30" height="78" rx="6" fill={darkMode ? '#0f172a' : '#f8fafc'} />
+                <rect x="1048" y="248" width="30" height="78" rx="6" fill={darkMode ? '#0f172a' : '#f8fafc'} />
+                <circle cx="1021" cy="338" r="5.5" fill={chlorInRange ? '#22c55e' : '#ef4444'} />
+                <circle cx="1062" cy="338" r="5.5" fill={controls.disinfectPumpEnabled ? '#22c55e' : '#ef4444'} />
+                {symptomFlags.has('lowChlorine') && <path d="M 1086 226 L 1074 206 L 1098 206 Z" fill="#f59e0b" />}
+                <text x="986" y="358" fill={darkMode ? '#cbd5e1' : '#334155'} fontSize="12" fontWeight="700">Desinfektion</text>
               </g>
 
               <g onClick={() => chooseStation('heizung')} style={{ cursor: 'pointer' }}>
-                <rect x="970" y="126" width="106" height="74" rx="10" fill={darkMode ? '#1f2937' : '#e2e8f0'} stroke="#64748b" strokeWidth="3" />
-                <path d="M 985 164 C 996 144 1008 184 1020 164 C 1032 144 1044 184 1058 164" fill="none" stroke="#f97316" strokeWidth="3" />
+                <rect x="986" y="106" width="108" height="56" rx="10" fill={darkMode ? '#1f2937' : '#e8eef5'} stroke="#75889e" strokeWidth="3" />
+                <path d="M 1002 136 C 1014 122 1026 150 1038 136 C 1050 122 1062 150 1074 136" fill="none" stroke="#f97316" strokeWidth="2.8" />
+                <text x="988" y="180" fill={darkMode ? '#cbd5e1' : '#334155'} fontSize="12" fontWeight="700">Waermetauscher</text>
               </g>
 
               <g onClick={() => chooseStation('ruecklauf')} style={{ cursor: 'pointer' }}>
-                <rect x="726" y="122" width="88" height="56" rx="8" fill={darkMode ? '#1f2937' : '#e2e8f0'} stroke="#64748b" strokeWidth="3" />
-                <rect x="734" y="130" width="72" height="16" rx="6" fill={darkMode ? '#0f172a' : '#f8fafc'} />
-                <text x="742" y="142" fill={darkMode ? '#e2e8f0' : '#334155'} fontSize="10" fontWeight="700">Ruecklauf</text>
+                <rect x="756" y="84" width="84" height="48" rx="8" fill={darkMode ? '#1f2937' : '#e8eef5'} stroke="#7b8ea4" strokeWidth="2.8" />
+                <rect x="764" y="94" width="68" height="12" rx="5" fill={darkMode ? '#0f172a' : '#ffffff'} />
+                <text x="766" y="154" fill={darkMode ? '#cbd5e1' : '#334155'} fontSize="12" fontWeight="700">Ruecklauf</text>
               </g>
 
+              <rect x="1004" y="548" width="120" height="44" rx="8" fill={darkMode ? '#1f2937' : '#e2e8f0'} stroke="#7b8ea4" strokeWidth="2" />
+              <text x="1014" y="576" fill={darkMode ? '#cbd5e1' : '#334155'} fontSize="12" fontWeight="700">Kanal / Abwurf</text>
+
               {[
-                { key: 'rawValveOpen', x: 520, y: 334, label: 'V1' },
-                { key: 'returnValveOpen', x: 520, y: 210, label: 'V2' },
-                { key: 'ventValveOpen', x: 540, y: 366, label: 'V3' },
-                { key: 'backwashValveOpen', x: 854, y: 550, label: 'V4' }
+                { key: 'rawValveOpen', x: 530, y: 258, label: 'V1' },
+                { key: 'returnValveOpen', x: 612, y: 148, label: 'V2' },
+                { key: 'ventValveOpen', x: 558, y: 304, label: 'V3' },
+                { key: 'backwashValveOpen', x: 840, y: 468, label: 'V4' }
               ].map((valve) => (
                 <g key={valve.key} onClick={() => toggleControl(valve.key)} style={{ cursor: 'pointer' }}>
-                  <circle cx={valve.x} cy={valve.y} r="14" fill={controls[valve.key] ? '#22c55e' : '#ef4444'} stroke={darkMode ? '#0f172a' : '#fff'} strokeWidth="3" />
-                  <text x={valve.x + 20} y={valve.y + 4} fill={darkMode ? '#cbd5e1' : '#334155'} fontSize="12">{valve.label}</text>
+                  <circle cx={valve.x} cy={valve.y} r="12" fill={controls[valve.key] ? '#22c55e' : '#ef4444'} stroke={darkMode ? '#0f172a' : '#fff'} strokeWidth="2.6" />
+                  <text x={valve.x + 16} y={valve.y + 4} fill={darkMode ? '#d3e0ef' : '#334155'} fontSize="11" fontWeight="700">{valve.label}</text>
                 </g>
               ))}
             </svg>
@@ -545,6 +541,20 @@ const WaterCycleView = () => {
                   {stationMap.get(id)?.shortLabel}
                 </button>
               ))}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                onClick={() => setDeepDiveStationId(selectedStation.id)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${darkMode ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/40' : 'bg-cyan-100 text-cyan-800 border border-cyan-300'}`}
+              >
+                3D Deep-Dive
+              </button>
+              <button
+                onClick={() => setXrayMode((prev) => !prev)}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${xrayMode ? 'bg-violet-500 text-white' : (darkMode ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-700')}`}
+              >
+                {xrayMode ? 'Roentgen an' : 'Roentgen aus'}
+              </button>
             </div>
             <div className="mt-3 space-y-2">
               <details open className={`rounded-lg border p-2 ${darkMode ? 'border-slate-700 bg-slate-900/60' : 'border-slate-200 bg-white'}`}>
@@ -687,6 +697,73 @@ const WaterCycleView = () => {
           </section>
         </aside>
       </div>
+
+      {deepDiveStation && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+          <div className={`w-full max-w-4xl rounded-3xl border shadow-2xl ${darkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+            <div className={`flex items-center justify-between px-5 py-4 border-b ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+              <div>
+                <p className={`text-xs uppercase tracking-[0.16em] ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>Deep Dive Ansicht</p>
+                <h3 className="text-xl font-black">{deepDiveStation.title}</h3>
+              </div>
+              <button
+                onClick={() => setDeepDiveStationId(null)}
+                className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${darkMode ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-700'}`}
+              >
+                Schliessen
+              </button>
+            </div>
+            <div className="grid lg:grid-cols-[1.2fr_1fr] gap-4 p-5">
+              <div className={`relative rounded-2xl border min-h-[320px] overflow-hidden ${darkMode ? 'border-slate-700 bg-slate-950' : 'border-slate-200 bg-slate-50'}`}>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(56,189,248,0.25),transparent_45%),radial-gradient(circle_at_70%_75%,rgba(14,165,233,0.14),transparent_40%)]" />
+                <div className="absolute inset-0 [perspective:1200px]">
+                  <div
+                    className={`wc-3d-float absolute left-1/2 top-1/2 w-64 h-40 border shadow-2xl ${xrayMode ? 'opacity-60' : 'opacity-100'} ${darkMode ? 'bg-slate-700/70 border-cyan-400/40' : 'bg-white/90 border-cyan-300'}`}
+                    style={{ transform: 'translate3d(-50%, -50%, 0) rotateX(58deg) rotateZ(-28deg)' }}
+                  />
+                  <div
+                    className={`absolute left-1/2 top-1/2 w-36 h-36 rounded-full border ${darkMode ? 'border-cyan-300/50 bg-cyan-400/10' : 'border-cyan-400 bg-cyan-100/60'}`}
+                    style={{ transform: 'translate3d(-50%, -50%, 40px) rotateX(58deg) rotateZ(-28deg)' }}
+                  />
+                  <div
+                    className={`absolute left-1/2 top-1/2 w-28 h-28 rounded-full border-2 ${darkMode ? 'border-cyan-200/60' : 'border-cyan-500'}`}
+                    style={{ transform: 'translate3d(-50%, -50%, 70px) rotateX(58deg) rotateZ(-28deg)' }}
+                  />
+                </div>
+                <div className={`absolute left-4 bottom-4 rounded-lg px-3 py-1 text-xs font-semibold ${darkMode ? 'bg-slate-900/80 text-cyan-200' : 'bg-white/85 text-cyan-800'}`}>
+                  Interaktive 3D-Schnittansicht
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className={`rounded-xl border p-3 ${darkMode ? 'border-slate-700 bg-slate-800/70' : 'border-slate-200 bg-slate-50'}`}>
+                  <h4 className="font-bold text-sm">Fokus</h4>
+                  <p className={`text-xs mt-1 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{deepDiveStation.summary}</p>
+                </div>
+                <div className={`rounded-xl border p-3 ${darkMode ? 'border-slate-700 bg-slate-800/70' : 'border-slate-200 bg-slate-50'}`}>
+                  <h4 className="font-bold text-sm">Was du hier lernst</h4>
+                  <ul className="mt-2 space-y-1 text-xs">
+                    {deepDiveStation.functionPoints.slice(0, 3).map((point) => <li key={point}>- {point}</li>)}
+                  </ul>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setXrayMode((prev) => !prev)}
+                    className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold ${xrayMode ? 'bg-violet-500 text-white' : (darkMode ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-700')}`}
+                  >
+                    {xrayMode ? 'Roentgen aktiv' : 'Roentgen starten'}
+                  </button>
+                  <button
+                    onClick={() => setDeepDiveStationId(null)}
+                    className={`rounded-lg px-3 py-2 text-sm font-semibold ${darkMode ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-700'}`}
+                  >
+                    Zurueck
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
