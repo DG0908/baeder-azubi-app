@@ -403,6 +403,73 @@ export const KEYWORD_CHALLENGES = {
       answerGuide: 'Umweltschutz umfasst Energie, Wasser, Abfall, Chemikalienmanagement und Nachweise.'
     }
   ],
+  math: [
+    {
+      type: 'keyword',
+      q: 'Nenne 4 Rechenschritte, um einen Dreisatz mit Eintrittspreisen sicher zu loesen.',
+      keywordGroups: [
+        mkGroup('Grundwert notieren', ['grundwert', 'ausgangswert', 'gegeben']),
+        mkGroup('Einheitswert bilden', ['einheitswert', 'pro stueck', 'durch teilen']),
+        mkGroup('Hochrechnen', ['hochrechnen', 'multiplizieren', 'zielmenge']),
+        mkGroup('Einheit pruefen', ['einheit', 'euro', 'kontrolle']),
+        mkGroup('Plausibilitaet', ['plausibel', 'schaetzen', 'gegenprobe'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Dreisatz: Ausgangsdaten notieren, Einheitswert berechnen, auf Zielmenge hochrechnen und Einheit/Plausibilitaet pruefen.'
+    },
+    {
+      type: 'keyword',
+      q: 'Welche 4 Groessen brauchst du fuer die Berechnung eines rechteckigen Beckenvolumens?',
+      keywordGroups: [
+        mkGroup('Laenge', ['laenge']),
+        mkGroup('Breite', ['breite']),
+        mkGroup('Tiefe', ['tiefe']),
+        mkGroup('Formel', ['volumen', 'laenge mal breite mal tiefe', 'l*b*t']),
+        mkGroup('Einheit', ['kubikmeter', 'm3'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Fuer Rechteckbecken: Laenge, Breite, Tiefe und die Formel V = L * B * T (Ergebnis in m3).'
+    },
+    {
+      type: 'keyword',
+      q: 'Nenne 4 typische Kopfrechenstrategien, die im Badebetrieb helfen.',
+      keywordGroups: [
+        mkGroup('Runden', ['runden', 'ueberschlag']),
+        mkGroup('Aufteilen', ['aufteilen', 'zerlegen']),
+        mkGroup('Prozent', ['prozent', '10 prozent', '1 prozent']),
+        mkGroup('Einmaleins', ['einmaleins', 'multiplikation']),
+        mkGroup('Probe', ['gegenprobe', 'kontrolle', 'rueckrechnung'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Hilfreich sind Ueberschlag/Runden, Zerlegen, Prozent-Ankerwerte, sicheres Einmaleins und Gegenprobe.'
+    },
+    {
+      type: 'keyword',
+      q: 'Welche 4 Schritte sind sinnvoll, wenn du eine Formel nach einer gesuchten Groesse umstellst?',
+      keywordGroups: [
+        mkGroup('Gesuchte markieren', ['gesuchte', 'variable markieren', 'x']),
+        mkGroup('Gleiche Operationen', ['beide seiten', 'gleichung', 'operation']),
+        mkGroup('Freistellen', ['freistellen', 'isolieren']),
+        mkGroup('Einsetzen', ['einsetzen', 'werte einsetzen']),
+        mkGroup('Ergebnis pruefen', ['probe', 'einheit', 'kontrollrechnung'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Gesuchte Groesse markieren, mit gleichen Operationen freistellen, Werte einsetzen und per Probe/Einheit kontrollieren.'
+    },
+    {
+      type: 'keyword',
+      q: 'Nenne 4 Rechenthemen aus der Ausbildung, die du im Badalltag direkt brauchst.',
+      keywordGroups: [
+        mkGroup('Dreisatz', ['dreisatz', 'verhaeltnisrechnung']),
+        mkGroup('Prozentrechnung', ['prozent', 'rabatt', 'zuschlag']),
+        mkGroup('Volumen', ['volumen', 'kubikmeter', 'beckeninhalt']),
+        mkGroup('Klammer/Potenzen', ['klammer', 'potenz']),
+        mkGroup('Gleichungen', ['gleichung', 'formelumstellung'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Praxisnah sind Dreisatz, Prozentrechnung, Volumenberechnung, sichere Termrechnung und Formelumstellung.'
+    }
+  ],
   health: [
     {
       type: 'keyword',

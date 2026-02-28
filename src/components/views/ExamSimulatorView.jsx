@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES } from '../../data/constants';
 import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel, parseExamTimeToSeconds, formatSecondsAsTime } from '../../data/practicalExam';
+import { formatAnswerLabel } from '../../lib/utils';
 
 const ExamSimulatorView = ({
   examSimulatorMode,
@@ -58,11 +59,6 @@ const ExamSimulatorView = ({
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
-  const formatAnswerLabel = (answerText) => String(answerText ?? '')
-    .replace(/\s*\(\s*optional(?:\s*dabei)?\s*\)/gi, '')
-    .replace(/\s*-\s*optional(?:\s*dabei)?\s*$/gi, '')
-    .replace(/\s+optional(?:\s+dabei)?\s*$/gi, '')
-    .trim();
 
   return (
     <>
@@ -149,7 +145,7 @@ const ExamSimulatorView = ({
               <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Fragen</div>
             </div>
             <div>
-              <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>6</div>
+              <div className={`text-2xl font-bold ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>{CATEGORIES.length}</div>
               <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Kategorien</div>
             </div>
             <div>
@@ -341,6 +337,7 @@ const ExamSimulatorView = ({
             {examCurrentQuestion.a.map((answer, idx) => {
               const isMulti = examCurrentQuestion.multi;
               const isSelected = isMulti ? examSelectedAnswers.includes(idx) : examSelectedAnswer === idx;
+              const answerLabel = formatAnswerLabel(examCurrentQuestion.displayAnswers?.[idx] ?? answer);
               const isCorrectAnswer = isMulti
                 ? (Array.isArray(examCurrentQuestion.correct) ? examCurrentQuestion.correct.includes(idx) : false)
                 : idx === examCurrentQuestion.correct;
@@ -369,12 +366,13 @@ const ExamSimulatorView = ({
                   key={idx}
                   onClick={() => answerExamQuestion(idx)}
                   disabled={examAnswered}
-                  className={`p-4 rounded-xl font-medium transition-all text-left ${buttonClass}`}
+                  title={formatAnswerLabel(answer)}
+                  className={`p-4 rounded-xl font-medium transition-all text-left min-h-[4.5rem] ${buttonClass}`}
                 >
                   {isMulti && !examAnswered && (
                     <span className="mr-2">{isSelected ? '☑️' : '⬜'}</span>
                   )}
-                  {formatAnswerLabel(answer)}
+                  {answerLabel}
                 </button>
               );
             })}
