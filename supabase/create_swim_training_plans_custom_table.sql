@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.swim_training_plans_custom (
   style_id TEXT NOT NULL DEFAULT 'kraul',
   target_distance INTEGER NOT NULL DEFAULT 1000,
   target_time INTEGER NOT NULL DEFAULT 30,
+  units_json JSONB NOT NULL DEFAULT '[]'::jsonb,
   xp_reward INTEGER NOT NULL DEFAULT 15,
   description TEXT DEFAULT '',
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -33,6 +34,7 @@ ALTER TABLE public.swim_training_plans_custom
   ADD COLUMN IF NOT EXISTS style_id TEXT DEFAULT 'kraul',
   ADD COLUMN IF NOT EXISTS target_distance INTEGER DEFAULT 1000,
   ADD COLUMN IF NOT EXISTS target_time INTEGER DEFAULT 30,
+  ADD COLUMN IF NOT EXISTS units_json JSONB DEFAULT '[]'::jsonb,
   ADD COLUMN IF NOT EXISTS xp_reward INTEGER DEFAULT 15,
   ADD COLUMN IF NOT EXISTS description TEXT DEFAULT '',
   ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE,
@@ -49,6 +51,7 @@ SET
   style_id = COALESCE(style_id, 'kraul'),
   target_distance = GREATEST(100, COALESCE(target_distance, 1000)),
   target_time = GREATEST(1, COALESCE(target_time, 30)),
+  units_json = COALESCE(units_json, '[]'::jsonb),
   xp_reward = GREATEST(1, COALESCE(xp_reward, 15)),
   description = COALESCE(description, ''),
   is_active = COALESCE(is_active, TRUE),
@@ -63,10 +66,35 @@ WHERE
   OR style_id IS NULL
   OR target_distance IS NULL
   OR target_time IS NULL
+  OR units_json IS NULL
   OR xp_reward IS NULL
   OR description IS NULL
   OR is_active IS NULL
   OR created_at IS NULL;
+
+UPDATE public.swim_training_plans_custom
+SET units_json = jsonb_build_array(
+  jsonb_build_object(
+    'id', 'unit_1',
+    'style_id', style_id,
+    'target_distance', target_distance,
+    'target_time', target_time
+  )
+)
+WHERE units_json IS NULL
+  OR jsonb_typeof(units_json) <> 'array';
+
+UPDATE public.swim_training_plans_custom
+SET units_json = jsonb_build_array(
+  jsonb_build_object(
+    'id', 'unit_1',
+    'style_id', style_id,
+    'target_distance', target_distance,
+    'target_time', target_time
+  )
+)
+WHERE jsonb_typeof(units_json) = 'array'
+  AND jsonb_array_length(units_json) = 0;
 
 ALTER TABLE public.swim_training_plans_custom
   ALTER COLUMN created_by_name SET NOT NULL,
@@ -88,6 +116,8 @@ ALTER TABLE public.swim_training_plans_custom
   ALTER COLUMN target_distance SET DEFAULT 1000,
   ALTER COLUMN target_time SET NOT NULL,
   ALTER COLUMN target_time SET DEFAULT 30,
+  ALTER COLUMN units_json SET NOT NULL,
+  ALTER COLUMN units_json SET DEFAULT '[]'::jsonb,
   ALTER COLUMN xp_reward SET NOT NULL,
   ALTER COLUMN xp_reward SET DEFAULT 15,
   ALTER COLUMN description SET DEFAULT '',
@@ -107,6 +137,20 @@ BEGIN
     ALTER TABLE public.swim_training_plans_custom
       ADD CONSTRAINT swim_training_plans_custom_category_check
       CHECK (category IN ('ausdauer', 'sprint', 'technik', 'kombi'));
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'swim_training_plans_custom_units_json_array_check'
+      AND conrelid = 'public.swim_training_plans_custom'::regclass
+  ) THEN
+    ALTER TABLE public.swim_training_plans_custom
+      ADD CONSTRAINT swim_training_plans_custom_units_json_array_check
+      CHECK (jsonb_typeof(units_json) = 'array');
   END IF;
 END $$;
 

@@ -783,7 +783,8 @@ export default function BaederApp() {
     style: 'kraul',
     notes: '',
     challengeId: '',
-    trainingPlanId: ''
+    trainingPlanId: '',
+    trainingPlanUnitId: ''
   });
   const [pendingSwimConfirmations, setPendingSwimConfirmations] = useState([]); // Für Trainer: Zu bestätigende Einheiten
   const [swimChallengeFilter, setSwimChallengeFilter] = useState('alle'); // Filter für Challenge-Kategorien
@@ -5210,19 +5211,75 @@ export default function BaederApp() {
     return 'fokussiert';
   };
 
+  const parseSwimTrainingPlanUnitsJson = (unitsInput) => {
+    if (Array.isArray(unitsInput)) {
+      return unitsInput;
+    }
+    if (typeof unitsInput === 'string') {
+      try {
+        const parsed = JSON.parse(unitsInput);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (err) {
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const normalizeSwimTrainingPlanUnit = (unitInput = {}, index = 0) => {
+    const unit = (unitInput && typeof unitInput === 'object') ? unitInput : {};
+    const requestedId = String(unit.id || unit.unitId || '').trim().toLowerCase();
+    const baseId = requestedId.replace(/[^a-z0-9_-]/g, '') || `unit_${index + 1}`;
+    const styleId = String(unit.styleId || unit.style_id || 'kraul').trim() || 'kraul';
+    const targetDistance = Math.max(100, toSafeInt(unit.targetDistance ?? unit.target_distance));
+    const targetTime = Math.max(1, toSafeInt(unit.targetTime ?? unit.target_time));
+    return {
+      id: baseId,
+      styleId,
+      targetDistance,
+      targetTime
+    };
+  };
+
+  const normalizeSwimTrainingPlanUnits = (unitsInput, fallbackInput = {}) => {
+    const planFallback = (fallbackInput && typeof fallbackInput === 'object') ? fallbackInput : {};
+    const parsedUnits = parseSwimTrainingPlanUnitsJson(unitsInput);
+    const fallbackUnit = {
+      id: 'unit_1',
+      styleId: String(planFallback.style_id || planFallback.styleId || 'kraul').trim() || 'kraul',
+      targetDistance: Math.max(100, toSafeInt(planFallback.target_distance ?? planFallback.targetDistance)),
+      targetTime: Math.max(1, toSafeInt(planFallback.target_time ?? planFallback.targetTime))
+    };
+    const sourceUnits = parsedUnits.length > 0 ? parsedUnits : [fallbackUnit];
+
+    const usedIds = new Set();
+    return sourceUnits.map((unit, index) => {
+      const normalized = normalizeSwimTrainingPlanUnit(unit, index);
+      let finalId = normalized.id;
+      let suffix = 2;
+      while (usedIds.has(finalId)) {
+        finalId = `${normalized.id}_${suffix}`;
+        suffix += 1;
+      }
+      usedIds.add(finalId);
+      return { ...normalized, id: finalId };
+    });
+  };
+
   const normalizeCustomSwimTrainingPlan = (planRowInput) => {
     const planRow = (planRowInput && typeof planRowInput === 'object') ? planRowInput : {};
-    const normalizedDistance = Math.max(1, toSafeInt(planRow.target_distance));
-    const normalizedTime = Math.max(1, toSafeInt(planRow.target_time));
+    const normalizedUnits = normalizeSwimTrainingPlanUnits(planRow.units_json, planRow);
+    const primaryUnit = normalizedUnits[0] || normalizeSwimTrainingPlanUnit({}, 0);
     const normalizedXp = Math.max(1, toSafeInt(planRow.xp_reward));
     return {
       id: String(planRow.id || ''),
       name: String(planRow.name || 'Individueller Plan').trim() || 'Individueller Plan',
       category: normalizeSwimTrainingPlanCategory(planRow.category),
       difficulty: normalizeSwimTrainingPlanDifficulty(planRow.difficulty),
-      styleId: String(planRow.style_id || 'kraul').trim() || 'kraul',
-      targetDistance: normalizedDistance,
-      targetTime: normalizedTime,
+      styleId: primaryUnit.styleId,
+      targetDistance: primaryUnit.targetDistance,
+      targetTime: primaryUnit.targetTime,
+      units: normalizedUnits,
       xpReward: normalizedXp,
       description: String(planRow.description || '').trim(),
       source: 'custom',
@@ -5314,9 +5371,11 @@ export default function BaederApp() {
 
     const category = normalizeSwimTrainingPlanCategory(planInput.category);
     const difficulty = normalizeSwimTrainingPlanDifficulty(planInput.difficulty);
-    const styleId = String(planInput.styleId || 'kraul').trim() || 'kraul';
-    const targetDistance = Math.max(100, toSafeInt(planInput.targetDistance));
-    const targetTime = Math.max(1, toSafeInt(planInput.targetTime));
+    const normalizedUnits = normalizeSwimTrainingPlanUnits(planInput.units, planInput);
+    const primaryUnit = normalizedUnits[0] || normalizeSwimTrainingPlanUnit({}, 0);
+    const styleId = primaryUnit.styleId;
+    const targetDistance = primaryUnit.targetDistance;
+    const targetTime = primaryUnit.targetTime;
     const xpReward = Math.max(1, toSafeInt(planInput.xpReward));
     const description = String(planInput.description || '').trim();
 
@@ -5333,6 +5392,12 @@ export default function BaederApp() {
       style_id: styleId,
       target_distance: targetDistance,
       target_time: targetTime,
+      units_json: normalizedUnits.map((unit) => ({
+        id: unit.id,
+        style_id: unit.styleId,
+        target_distance: unit.targetDistance,
+        target_time: unit.targetTime
+      })),
       xp_reward: xpReward,
       description,
       is_active: true
@@ -5352,6 +5417,12 @@ export default function BaederApp() {
             error: 'Die Tabelle swim_training_plans_custom fehlt noch in Supabase. Bitte Migration ausfuehren.'
           };
         }
+        if (error.code === '42703' && String(error.message || '').includes('units_json')) {
+          return {
+            success: false,
+            error: 'Die Spalte units_json fehlt in swim_training_plans_custom. Bitte das aktuelle Supabase-SQL fuer Trainingsplaene ausfuehren.'
+          };
+        }
         throw error;
       }
 
@@ -5359,10 +5430,13 @@ export default function BaederApp() {
       setCustomSwimTrainingPlans((prev) => [normalized, ...prev]);
 
       if (assignedUserId !== user.id && assignedUser?.name) {
+        const unitLabel = normalizedUnits.length > 1
+          ? `${normalizedUnits.length} Einheiten (Start: ${targetDistance}m in ${targetTime} Min)`
+          : `${targetDistance}m in ${targetTime} Min`;
         await sendNotification(
           assignedUser.name,
           '🏊 Neuer Trainingsplan',
-          `${user.name} hat dir den Plan "${name}" zugewiesen (${targetDistance}m in ${targetTime} Min).`,
+          `${user.name} hat dir den Plan "${name}" zugewiesen (${unitLabel}).`,
           'swim_plan'
         );
       }
@@ -5375,18 +5449,26 @@ export default function BaederApp() {
   };
 
   const swimTrainingPlans = [
-    ...SWIM_TRAINING_PLANS.map((plan) => ({
-      ...plan,
-      source: 'default',
-      isCustom: false,
-      createdByUserId: null,
-      createdByName: '',
-      createdByRole: '',
-      assignedUserId: null,
-      assignedUserName: '',
-      assignedUserRole: '',
-      createdAt: null
-    })),
+    ...SWIM_TRAINING_PLANS.map((plan) => {
+      const normalizedUnits = normalizeSwimTrainingPlanUnits(plan.units, plan);
+      const primaryUnit = normalizedUnits[0] || normalizeSwimTrainingPlanUnit({}, 0);
+      return {
+        ...plan,
+        styleId: primaryUnit.styleId,
+        targetDistance: primaryUnit.targetDistance,
+        targetTime: primaryUnit.targetTime,
+        units: normalizedUnits,
+        source: 'default',
+        isCustom: false,
+        createdByUserId: null,
+        createdByName: '',
+        createdByRole: '',
+        assignedUserId: null,
+        assignedUserName: '',
+        assignedUserRole: '',
+        createdAt: null
+      };
+    }),
     ...customSwimTrainingPlans
   ];
 
@@ -5741,7 +5823,9 @@ export default function BaederApp() {
   };
 
   const SWIM_PLAN_NOTE_TAG_PREFIX = '[SWIM_PLAN:';
+  const SWIM_PLAN_NOTE_UNIT_TAG_PREFIX = '[SWIM_PLAN_UNIT:';
   const SWIM_PLAN_NOTE_TAG_REGEX = /\[SWIM_PLAN:([a-z0-9_-]+)\]/i;
+  const SWIM_PLAN_NOTE_UNIT_TAG_REGEX = /\[SWIM_PLAN_UNIT:([a-z0-9_-]+)\]/i;
 
   const extractSwimTrainingPlanIdFromNotes = (notesInput) => {
     const notes = String(notesInput || '');
@@ -5749,46 +5833,81 @@ export default function BaederApp() {
     return match?.[1] || null;
   };
 
+  const extractSwimTrainingPlanUnitIdFromNotes = (notesInput) => {
+    const notes = String(notesInput || '');
+    const match = notes.match(SWIM_PLAN_NOTE_UNIT_TAG_REGEX);
+    return match?.[1] || null;
+  };
+
+  const extractSwimTrainingPlanSelectionFromNotes = (notesInput) => ({
+    trainingPlanId: extractSwimTrainingPlanIdFromNotes(notesInput),
+    trainingPlanUnitId: extractSwimTrainingPlanUnitIdFromNotes(notesInput)
+  });
+
   const stripSwimTrainingPlanTagFromNotes = (notesInput) => {
     const notes = String(notesInput || '');
     return notes
       .replace(/\s*\[SWIM_PLAN:[^\]]+\]\s*/gi, ' ')
+      .replace(/\s*\[SWIM_PLAN_UNIT:[^\]]+\]\s*/gi, ' ')
       .replace(/\s{2,}/g, ' ')
       .trim();
   };
 
-  const encodeSwimTrainingPlanInNotes = (notesInput, trainingPlanIdInput) => {
+  const encodeSwimTrainingPlanInNotes = (notesInput, trainingPlanIdInput, trainingPlanUnitIdInput) => {
     const cleanedNotes = stripSwimTrainingPlanTagFromNotes(notesInput);
     const trainingPlanId = String(trainingPlanIdInput || '').trim();
+    const trainingPlanUnitId = String(trainingPlanUnitIdInput || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
     if (!trainingPlanId) {
       return cleanedNotes;
     }
+
+    const tags = [`${SWIM_PLAN_NOTE_TAG_PREFIX}${trainingPlanId}]`];
+    if (trainingPlanUnitId) {
+      tags.push(`${SWIM_PLAN_NOTE_UNIT_TAG_PREFIX}${trainingPlanUnitId}]`);
+    }
     return cleanedNotes
-      ? `${cleanedNotes}\n${SWIM_PLAN_NOTE_TAG_PREFIX}${trainingPlanId}]`
-      : `${SWIM_PLAN_NOTE_TAG_PREFIX}${trainingPlanId}]`;
+      ? `${cleanedNotes}\n${tags.join('\n')}`
+      : tags.join('\n');
   };
 
-  const doesSessionFulfillTrainingPlan = (sessionInput, planInput) => {
-    if (!sessionInput || !planInput) return false;
+  const doesSessionFulfillPlanUnit = (sessionInput, planUnitInput) => {
+    if (!sessionInput || !planUnitInput) return false;
 
     const distance = Number(sessionInput.distance || 0);
     const timeMinutes = Number(sessionInput.time_minutes || 0);
     const styleId = String(sessionInput.style || '');
-
     if (!Number.isFinite(distance) || !Number.isFinite(timeMinutes) || distance <= 0 || timeMinutes <= 0) {
       return false;
     }
 
-    const targetDistance = Number(planInput.targetDistance || 0);
-    const targetTime = Number(planInput.targetTime || 0);
+    const targetDistance = Number(planUnitInput.targetDistance || 0);
+    const targetTime = Number(planUnitInput.targetTime || 0);
     if (!Number.isFinite(targetDistance) || !Number.isFinite(targetTime) || targetDistance <= 0 || targetTime <= 0) {
       return false;
     }
 
-    const styleMatches = !planInput.styleId || String(planInput.styleId) === styleId;
+    const styleMatches = !planUnitInput.styleId || String(planUnitInput.styleId) === styleId;
     if (!styleMatches) return false;
 
     return distance >= targetDistance && timeMinutes <= targetTime;
+  };
+
+  const doesSessionFulfillTrainingPlan = (sessionInput, planInput, requestedUnitIdInput = '') => {
+    if (!sessionInput || !planInput) return false;
+
+    const requestedUnitId = String(requestedUnitIdInput || '').trim().toLowerCase();
+    const normalizedUnits = normalizeSwimTrainingPlanUnits(planInput.units, planInput);
+    if (normalizedUnits.length === 0) {
+      return false;
+    }
+
+    if (requestedUnitId) {
+      const requestedUnit = normalizedUnits.find((unit) => unit.id === requestedUnitId);
+      if (!requestedUnit) return false;
+      return doesSessionFulfillPlanUnit(sessionInput, requestedUnit);
+    }
+
+    return normalizedUnits.some((unit) => doesSessionFulfillPlanUnit(sessionInput, unit));
   };
 
   // Trainingseinheiten aus Supabase laden
@@ -5844,7 +5963,11 @@ export default function BaederApp() {
         distance: parseInt(sessionData.distance) || 0,
         time_minutes: parseInt(sessionData.time) || 0,
         style: sessionData.style,
-        notes: encodeSwimTrainingPlanInNotes(sessionData.notes, sessionData.trainingPlanId),
+        notes: encodeSwimTrainingPlanInNotes(
+          sessionData.notes,
+          sessionData.trainingPlanId,
+          sessionData.trainingPlanUnitId
+        ),
         challenge_id: sessionData.challengeId || null,
         confirmed: false,
         confirmed_by: null,
@@ -5934,10 +6057,10 @@ export default function BaederApp() {
       setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
 
       if (sessionToConfirm?.user_id && sessionToConfirm?.user_name) {
-        const trainingPlanId = extractSwimTrainingPlanIdFromNotes(sessionToConfirm.notes);
+        const { trainingPlanId, trainingPlanUnitId } = extractSwimTrainingPlanSelectionFromNotes(sessionToConfirm.notes);
         if (trainingPlanId) {
           const trainingPlan = getSwimTrainingPlanById(trainingPlanId);
-          if (trainingPlan && doesSessionFulfillTrainingPlan(sessionToConfirm, trainingPlan)) {
+          if (trainingPlan && doesSessionFulfillTrainingPlan(sessionToConfirm, trainingPlan, trainingPlanUnitId)) {
             const xpAmount = toSafeInt(trainingPlan.xpReward);
             if (xpAmount > 0) {
               void queueXpAwardForUser(
