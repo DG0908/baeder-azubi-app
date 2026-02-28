@@ -62,6 +62,7 @@ const QuizView = ({
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
   const [challengeTimeoutMinutes, setChallengeTimeoutMinutes] = React.useState(1440);
+  const [countdownNow, setCountdownNow] = React.useState(() => Date.now());
   const currentDifficulty = getDifficulty(currentGame?.difficulty);
   const questionIsKeyword = Boolean(currentQuestion && isKeywordQuestion?.(currentQuestion));
   const availableKeywordGroups = Array.isArray(currentQuestion?.keywordGroups)
@@ -71,20 +72,61 @@ const QuizView = ({
     1,
     Math.min(availableKeywordGroups || 1, Number(currentQuestion?.minKeywordGroups) || availableKeywordGroups || 1)
   );
-  const isWaitingGameExpired = (gameInput) => {
-    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
-    if (String(game.status || '').toLowerCase() !== 'waiting') return false;
+  React.useEffect(() => {
+    if (currentGame) return undefined;
+    const intervalId = window.setInterval(() => {
+      setCountdownNow(Date.now());
+    }, 1000);
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [currentGame]);
 
+  const parseTimestamp = (value) => {
+    const ts = new Date(value || '').getTime();
+    return Number.isFinite(ts) ? ts : null;
+  };
+
+  const getWaitingDeadlineTs = (gameInput) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
     const timeoutMinutesRaw = Number(game.challengeTimeoutMinutes || 2880);
     const timeoutMinutes = Number.isFinite(timeoutMinutesRaw) ? Math.max(15, timeoutMinutesRaw) : 2880;
-    const createdTs = new Date(game.createdAt || game.updatedAt || '').getTime();
-    const explicitExpiryTs = new Date(game.challengeExpiresAt || '').getTime();
+    const createdTs = parseTimestamp(game.createdAt || game.updatedAt);
+    const explicitExpiryTs = parseTimestamp(game.challengeExpiresAt);
     const fallbackExpiryTs = Number.isFinite(createdTs)
       ? createdTs + timeoutMinutes * 60 * 1000
-      : Number.NaN;
-    const expiryTs = Number.isFinite(explicitExpiryTs) ? explicitExpiryTs : fallbackExpiryTs;
-    if (!Number.isFinite(expiryTs)) return false;
-    return expiryTs <= Date.now();
+      : null;
+    return Number.isFinite(explicitExpiryTs) ? explicitExpiryTs : fallbackExpiryTs;
+  };
+
+  const getTurnDeadlineTs = (gameInput) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
+    const updatedTs = parseTimestamp(game.updatedAt || game.createdAt);
+    if (!Number.isFinite(updatedTs)) return null;
+    return updatedTs + 48 * 60 * 60 * 1000;
+  };
+
+  const isWaitingGameExpired = (gameInput, nowInput = Date.now()) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
+    if (String(game.status || '').toLowerCase() !== 'waiting') return false;
+    const deadlineTs = getWaitingDeadlineTs(game);
+    if (!Number.isFinite(deadlineTs)) return false;
+    return deadlineTs <= nowInput;
+  };
+
+  const formatCountdown = (remainingMsInput) => {
+    const remainingMs = Number(remainingMsInput);
+    if (!Number.isFinite(remainingMs)) return '--:--:--';
+    const safeMs = Math.max(0, remainingMs);
+    const totalSeconds = Math.floor(safeMs / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    if (days > 0) {
+      return `${days}d ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
 
   return (
@@ -154,7 +196,7 @@ const QuizView = ({
                   const isPair = (g.player1 === user.name && g.player2 === u.name)
                     || (g.player1 === u.name && g.player2 === user.name);
                   if (!isPair) return false;
-                  if (g.status === 'waiting' && isWaitingGameExpired(g)) return false;
+                  if (g.status === 'waiting' && isWaitingGameExpired(g, countdownNow)) return false;
                   return true;
                 });
                 const hasRelatedGame = Boolean(relatedGame);
@@ -173,6 +215,22 @@ const QuizView = ({
                   && relatedGame.status === 'active'
                   && relatedGame.currentTurn === user.name
                 );
+                const waitingDeadlineTs = relatedGame?.status === 'waiting'
+                  ? getWaitingDeadlineTs(relatedGame)
+                  : null;
+                const turnDeadlineTs = relatedGame?.status === 'active'
+                  ? getTurnDeadlineTs(relatedGame)
+                  : null;
+                const waitingRemainingMs = Number.isFinite(waitingDeadlineTs) ? (waitingDeadlineTs - countdownNow) : null;
+                const turnRemainingMs = Number.isFinite(turnDeadlineTs) ? (turnDeadlineTs - countdownNow) : null;
+                const countdownHint = relatedGame?.status === 'waiting'
+                  ? `Annahmefrist: ${formatCountdown(waitingRemainingMs)}`
+                  : relatedGame?.status === 'active'
+                    ? `${isMyTurn ? 'Deine Runde' : 'Rundenfrist'}: ${formatCountdown(turnRemainingMs)}`
+                    : '';
+                const countdownClass = relatedGame?.status === 'active' && isMyTurn
+                  ? 'text-amber-600'
+                  : 'text-gray-500';
                 return (
                   <div key={u.name} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-3 p-3 rounded-xl transition-all min-[720px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[720px]:items-center ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
                     {/* Initials Avatar */}
@@ -200,29 +258,50 @@ const QuizView = ({
                     {/* Action Button */}
                     {hasRelatedGame ? (
                       isIncomingChallenge ? (
-                        <button
-                          onClick={() => {
-                            acceptChallenge?.(relatedGame.id);
-                            playSound('whistle');
-                          }}
-                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg font-bold text-sm transition-all col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto whitespace-normal text-center leading-tight"
-                        >
-                          Annehmen
-                        </button>
+                        <div className="col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto">
+                          <button
+                            onClick={() => {
+                              acceptChallenge?.(relatedGame.id);
+                              playSound('whistle');
+                            }}
+                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg font-bold text-sm transition-all w-full whitespace-normal text-center leading-tight"
+                          >
+                            Annehmen
+                          </button>
+                          {countdownHint && (
+                            <div className={`mt-1 text-[11px] text-center font-mono ${darkMode ? 'text-gray-300' : countdownClass}`}>
+                              {countdownHint}
+                            </div>
+                          )}
+                        </div>
                       ) : isMyTurn ? (
-                        <button
-                          onClick={() => {
-                            continueGame?.(relatedGame.id);
-                            playSound('whistle');
-                          }}
-                          className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-lg font-bold text-sm transition-all col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto whitespace-normal text-center leading-tight animate-pulse"
-                        >
-                          Weiterspielen
-                        </button>
+                        <div className="col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto">
+                          <button
+                            onClick={() => {
+                              continueGame?.(relatedGame.id);
+                              playSound('whistle');
+                            }}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-lg font-bold text-sm transition-all w-full whitespace-normal text-center leading-tight animate-pulse"
+                          >
+                            Weiterspielen
+                          </button>
+                          {countdownHint && (
+                            <div className={`mt-1 text-[11px] text-center font-mono ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
+                              {countdownHint}
+                            </div>
+                          )}
+                        </div>
                       ) : (
-                        <span className={`inline-flex col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto justify-center text-xs italic px-3 py-1.5 rounded-lg whitespace-normal text-center leading-tight ${darkMode ? 'bg-slate-600 text-gray-300' : 'bg-gray-200 text-gray-500'}`}>
-                          {isOutgoingChallenge ? 'Anfrage gesendet' : 'Läuft'}
-                        </span>
+                        <div className="col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto">
+                          <span className={`inline-flex w-full min-[720px]:w-auto justify-center text-xs italic px-3 py-1.5 rounded-lg whitespace-normal text-center leading-tight ${darkMode ? 'bg-slate-600 text-gray-300' : 'bg-gray-200 text-gray-500'}`}>
+                            {isOutgoingChallenge ? 'Anfrage gesendet' : 'Läuft'}
+                          </span>
+                          {countdownHint && (
+                            <div className={`mt-1 text-[11px] text-center font-mono ${darkMode ? 'text-gray-300' : countdownClass}`}>
+                              {countdownHint}
+                            </div>
+                          )}
+                        </div>
                       )
                     ) : (
                       <button
