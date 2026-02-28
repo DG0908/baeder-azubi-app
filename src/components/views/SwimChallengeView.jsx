@@ -15,6 +15,7 @@ const {
   calculateSwimPoints,
   calculateTeamBattleStats,
   confirmSwimSession,
+  createCustomSwimTrainingPlan,
   getAgeHandicap,
   getSeaCreatureTier,
   getSwimLevel,
@@ -80,6 +81,31 @@ const {
 
   const getTrainingPlanById = (planId) => SWIM_TRAINING_PLANS.find(plan => plan.id === planId) || null;
   const selectedTrainingPlan = getTrainingPlanById(swimSessionForm.trainingPlanId);
+  const isTrainerLike = Boolean(
+    user?.permissions?.canViewAllStats
+    || user?.role === 'admin'
+    || user?.role === 'trainer'
+    || user?.role === 'ausbilder'
+  );
+  const azubiCandidates = allUsers.filter((account) => String(account?.role || '').toLowerCase() === 'azubi' && account?.id);
+  const [customPlanForm, setCustomPlanForm] = React.useState({
+    name: '',
+    category: 'ausdauer',
+    difficulty: 'fokussiert',
+    styleId: 'kraul',
+    targetDistance: '1000',
+    targetTime: '30',
+    xpReward: '15',
+    description: '',
+    assignedUserId: ''
+  });
+
+  React.useEffect(() => {
+    if (!isTrainerLike) return;
+    if (customPlanForm.assignedUserId) return;
+    if (azubiCandidates.length === 0) return;
+    setCustomPlanForm((prev) => ({ ...prev, assignedUserId: azubiCandidates[0].id }));
+  }, [azubiCandidates, customPlanForm.assignedUserId, isTrainerLike]);
 
   const isPlanFulfilledByForm = (planInput) => {
     if (!planInput) return false;
@@ -91,6 +117,41 @@ const {
     }
     const styleMatches = !planInput.styleId || planInput.styleId === styleId;
     return styleMatches && distance >= planInput.targetDistance && timeMinutes <= planInput.targetTime;
+  };
+
+  const handleCreateCustomPlan = async (event) => {
+    event.preventDefault();
+    const payload = {
+      name: customPlanForm.name,
+      category: customPlanForm.category,
+      difficulty: customPlanForm.difficulty,
+      styleId: customPlanForm.styleId,
+      targetDistance: customPlanForm.targetDistance,
+      targetTime: customPlanForm.targetTime,
+      xpReward: customPlanForm.xpReward,
+      description: customPlanForm.description,
+      assignedUserId: isTrainerLike ? customPlanForm.assignedUserId : user?.id
+    };
+
+    const result = await createCustomSwimTrainingPlan(payload);
+    if (!result?.success) {
+      alert(`Fehler beim Speichern des Plans: ${result?.error || 'Unbekannter Fehler'}`);
+      return;
+    }
+
+    const defaultAssignedUserId = isTrainerLike ? (azubiCandidates[0]?.id || '') : '';
+    setCustomPlanForm({
+      name: '',
+      category: customPlanForm.category,
+      difficulty: customPlanForm.difficulty,
+      styleId: customPlanForm.styleId,
+      targetDistance: customPlanForm.targetDistance,
+      targetTime: customPlanForm.targetTime,
+      xpReward: customPlanForm.xpReward,
+      description: '',
+      assignedUserId: defaultAssignedUserId
+    });
+    alert('Trainingsplan gespeichert.');
   };
 
   return (
@@ -414,6 +475,144 @@ const {
                   </p>
                 </div>
 
+                <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-5 shadow-lg`}>
+                  <h4 className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    Eigenen Trainingsplan erstellen
+                  </h4>
+                  <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {isTrainerLike
+                      ? 'Als Ausbilder kannst du Plaene fuer dich oder gezielt fuer Azubis anlegen.'
+                      : 'Stelle dir deinen eigenen Plan zusammen und nutze ihn direkt fuer neue Einheiten.'}
+                  </p>
+                  <form onSubmit={handleCreateCustomPlan} className="grid md:grid-cols-2 gap-3">
+                    <div className="md:col-span-2">
+                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Planname</label>
+                      <input
+                        type="text"
+                        value={customPlanForm.name}
+                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, name: event.target.value }))}
+                        placeholder={isTrainerLike ? 'z.B. Technikblock fuer Lina' : 'z.B. Mein 1km Abendplan'}
+                        required
+                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-800'}`}
+                      />
+                    </div>
+
+                    {isTrainerLike && (
+                      <div className="md:col-span-2">
+                        <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Zuweisen an Azubi</label>
+                        <select
+                          value={customPlanForm.assignedUserId}
+                          onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, assignedUserId: event.target.value }))}
+                          required
+                          className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                        >
+                          {azubiCandidates.length === 0 && <option value="">Keine Azubis verfuegbar</option>}
+                          {azubiCandidates.map((azubi) => (
+                            <option key={azubi.id} value={azubi.id}>{azubi.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Kategorie</label>
+                      <select
+                        value={customPlanForm.category}
+                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, category: event.target.value }))}
+                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                      >
+                        <option value="ausdauer">Ausdauer</option>
+                        <option value="sprint">Sprint</option>
+                        <option value="technik">Technik</option>
+                        <option value="kombi">Kombi</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Schwierigkeit</label>
+                      <select
+                        value={customPlanForm.difficulty}
+                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, difficulty: event.target.value }))}
+                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                      >
+                        <option value="angenehm">Angenehm</option>
+                        <option value="fokussiert">Fokussiert</option>
+                        <option value="anspruchsvoll">Anspruchsvoll</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Stil</label>
+                      <select
+                        value={customPlanForm.styleId}
+                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, styleId: event.target.value }))}
+                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                      >
+                        {SWIM_STYLES.map((style) => (
+                          <option key={style.id} value={style.id}>{style.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Distanz (m)</label>
+                      <input
+                        type="number"
+                        min="100"
+                        step="50"
+                        value={customPlanForm.targetDistance}
+                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, targetDistance: event.target.value }))}
+                        required
+                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Max. Zeit (Min)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={customPlanForm.targetTime}
+                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, targetTime: event.target.value }))}
+                        required
+                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>XP Belohnung</label>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={customPlanForm.xpReward}
+                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, xpReward: event.target.value }))}
+                        required
+                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Beschreibung (optional)</label>
+                      <textarea
+                        rows={2}
+                        value={customPlanForm.description}
+                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, description: event.target.value }))}
+                        placeholder="z.B. Fokus auf gleichmaessigen Rhythmus und saubere Wenden."
+                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-800'}`}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <button
+                        type="submit"
+                        disabled={isTrainerLike && azubiCandidates.length === 0}
+                        className={`w-full py-2 rounded-lg font-medium ${
+                          isTrainerLike && azubiCandidates.length === 0
+                            ? (darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400')
+                            : (darkMode ? 'bg-cyan-600 hover:bg-cyan-500 text-white' : 'bg-cyan-500 hover:bg-cyan-600 text-white')
+                        }`}
+                      >
+                        Trainingsplan speichern
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
                 {['ausdauer', 'sprint', 'technik', 'kombi'].map((categoryId) => {
                   const categoryPlans = SWIM_TRAINING_PLANS.filter(plan => plan.category === categoryId);
                   const categoryMeta = TRAINING_CATEGORY_META[categoryId] || { label: categoryId, icon: '🏊' };
@@ -427,6 +626,9 @@ const {
                         {categoryPlans.map((plan) => {
                           const difficultyMeta = TRAINING_DIFFICULTY_META[plan.difficulty] || TRAINING_DIFFICULTY_META.fokussiert;
                           const styleName = SWIM_STYLES.find(style => style.id === plan.styleId)?.name || 'beliebig';
+                          const isCustomPlan = Boolean(plan.isCustom);
+                          const assignedInfo = String(plan.assignedUserName || '').trim();
+                          const createdInfo = String(plan.createdByName || '').trim();
                           return (
                             <div key={plan.id} className={`rounded-lg p-4 border ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'}`}>
                               <div className="flex items-start justify-between gap-2">
@@ -438,6 +640,23 @@ const {
                                   {difficultyMeta.label}
                                 </span>
                               </div>
+                              {isCustomPlan && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  <span className={`text-[11px] px-2 py-1 rounded-full ${darkMode ? 'bg-cyan-900/50 text-cyan-300' : 'bg-cyan-100 text-cyan-700'}`}>
+                                    Individuell
+                                  </span>
+                                  {assignedInfo && (
+                                    <span className={`text-[11px] px-2 py-1 rounded-full ${darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700'}`}>
+                                      Fuer {assignedInfo}
+                                    </span>
+                                  )}
+                                  {createdInfo && (
+                                    <span className={`text-[11px] px-2 py-1 rounded-full ${darkMode ? 'bg-slate-600 text-gray-200' : 'bg-gray-200 text-gray-700'}`}>
+                                      von {createdInfo}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                               <div className={`text-sm mt-3 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
                                 Ziel: {plan.targetDistance} m in max. {plan.targetTime} Min • Stil: {styleName}
                               </div>
@@ -586,9 +805,10 @@ const {
                           <optgroup key={categoryId} label={`${categoryMeta.icon} ${categoryMeta.label}`}>
                             {plans.map(plan => {
                               const difficulty = TRAINING_DIFFICULTY_META[plan.difficulty]?.label || plan.difficulty;
+                              const customPrefix = plan.isCustom ? '[Individuell] ' : '';
                               return (
                                 <option key={plan.id} value={plan.id}>
-                                  {plan.name} - {difficulty} (+{plan.xpReward} XP)
+                                  {customPrefix}{plan.name} - {difficulty} (+{plan.xpReward} XP)
                                 </option>
                               );
                             })}
