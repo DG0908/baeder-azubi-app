@@ -66,7 +66,7 @@ const LoginScreen = () => {
           </button>
 
           <h2 className="text-2xl font-bold mb-6 text-gray-800">🔒 Datenschutzerklärung</h2>
-          <p className="text-xs text-gray-500 mb-4">Stand: Januar 2025 | Diese Datenschutzerklärung gilt für die Nutzung der Bäder-Azubi App.</p>
+          <p className="text-xs text-gray-500 mb-4">Stand: Januar 2025 | Diese Datenschutzerklärung gilt für die Nutzung von Aqua Pilot.</p>
 
           <div className="space-y-4 text-gray-700 text-sm">
             <section>
@@ -212,8 +212,8 @@ const LoginScreen = () => {
 
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative z-10">
         <div className="text-center mb-8">
-          <img src="/icons/icon-192x192.png" alt="FAB Logo" className="w-24 h-24 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-cyan-700 mb-2">Bäder-Azubi App</h1>
+          <img src="/icons/icon-192x192.png" alt="Aqua Pilot Logo" className="w-24 h-24 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-cyan-700 mb-2">Aqua Pilot</h1>
           <p className="text-cyan-600">Professionelle Lern-Plattform</p>
         </div>
 

@@ -444,6 +444,25 @@ export default function BaederApp() {
     return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed)) : 0;
   };
 
+  const parseDateSafe = (value) => {
+    const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  };
+
+  const getSwimMonthKey = (dateInput = new Date()) => {
+    const date = parseDateSafe(dateInput);
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  };
+
+  const isDateInSwimMonth = (dateInput, monthKey) => {
+    const date = parseDateSafe(dateInput);
+    if (!date) return false;
+    return getSwimMonthKey(date) === String(monthKey || '');
+  };
+
   const getXpMetaFromCategoryStats = (categoryStats) => {
     const safeCategoryStats = (categoryStats && typeof categoryStats === 'object') ? categoryStats : {};
     const rawMeta = (safeCategoryStats[XP_META_KEY] && typeof safeCategoryStats[XP_META_KEY] === 'object')
@@ -750,6 +769,7 @@ export default function BaederApp() {
   // Schwimmchallenge State
   const [swimChallengeView, setSwimChallengeView] = useState('overview'); // 'overview', 'challenges', 'plans', 'add', 'leaderboard', 'battle'
   const [swimSessions, setSwimSessions] = useState([]); // Alle Trainingseinheiten (aus Supabase)
+  const [swimSessionsLoaded, setSwimSessionsLoaded] = useState(false);
   const [activeSwimChallenges, setActiveSwimChallenges] = useState(() => {
     // Lade aktive Challenges aus localStorage
     const saved = localStorage.getItem('active_swim_challenges');
@@ -776,6 +796,7 @@ export default function BaederApp() {
     return saved ? JSON.parse(saved) : {};
   });
   const [swimBattleResult, setSwimBattleResult] = useState(null);
+  const [swimMonthlyResults, setSwimMonthlyResults] = useState([]);
   const [swimDuelForm, setSwimDuelForm] = useState({
     discipline: '50m',
     style: 'kraul',
@@ -5170,6 +5191,128 @@ export default function BaederApp() {
     localStorage.setItem('swim_battle_wins_by_user', JSON.stringify(safeWins));
   };
 
+  const buildSwimmerDistanceRankingForMonth = useCallback((monthKey) => {
+    if (!monthKey) return [];
+
+    const userDirectory = {};
+    allUsers.forEach((account) => {
+      if (!account?.id) return;
+      userDirectory[account.id] = {
+        name: account.name || 'Unbekannt',
+        role: account.role || 'azubi'
+      };
+    });
+
+    const totalsByUserId = {};
+    swimSessions.forEach((session) => {
+      if (!session?.confirmed || !isDateInSwimMonth(session.date, monthKey)) return;
+      const userId = session.user_id || '';
+      if (!userId) return;
+      if (!totalsByUserId[userId]) {
+        totalsByUserId[userId] = {
+          user_id: userId,
+          user_name: session.user_name || userDirectory[userId]?.name || 'Unbekannt',
+          user_role: session.user_role || userDirectory[userId]?.role || 'azubi',
+          distance: 0,
+          time_minutes: 0,
+          sessions: 0
+        };
+      }
+      totalsByUserId[userId].distance += toSafeInt(session.distance);
+      totalsByUserId[userId].time_minutes += toSafeInt(session.time_minutes);
+      totalsByUserId[userId].sessions += 1;
+    });
+
+    return Object.values(totalsByUserId)
+      .sort((a, b) =>
+        (b.distance - a.distance)
+        || (b.sessions - a.sessions)
+        || String(a.user_name || '').localeCompare(String(b.user_name || ''), 'de-DE')
+      );
+  }, [allUsers, swimSessions]);
+
+  const buildSwimMonthlyResultPayload = useCallback((monthDateInput) => {
+    const monthDate = parseDateSafe(monthDateInput);
+    if (!monthDate) return null;
+
+    const targetDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+    const monthKey = getSwimMonthKey(targetDate);
+    if (!monthKey) return null;
+
+    const monthSessions = swimSessions.filter((session) => isDateInSwimMonth(session?.date, monthKey));
+    const battleStats = calculateTeamBattleStats(monthSessions, {}, allUsers);
+
+    let winnerTeam = 'tie';
+    if (battleStats.azubis.points > battleStats.trainer.points) {
+      winnerTeam = 'azubis';
+    } else if (battleStats.trainer.points > battleStats.azubis.points) {
+      winnerTeam = 'trainer';
+    }
+
+    const swimmerRanking = buildSwimmerDistanceRankingForMonth(monthKey);
+    const swimmerOfMonth = swimmerRanking.find((entry) => toSafeInt(entry.distance) > 0) || null;
+
+    return {
+      month_key: monthKey,
+      year: targetDate.getFullYear(),
+      month: targetDate.getMonth() + 1,
+      winner_team: winnerTeam,
+      azubis_points: toSafeInt(battleStats.azubis.points),
+      trainer_points: toSafeInt(battleStats.trainer.points),
+      azubis_distance: toSafeInt(battleStats.azubis.distance),
+      trainer_distance: toSafeInt(battleStats.trainer.distance),
+      swimmer_user_id: swimmerOfMonth?.user_id || null,
+      swimmer_name: swimmerOfMonth?.user_name || null,
+      swimmer_role: swimmerOfMonth?.user_role || null,
+      swimmer_distance: swimmerOfMonth ? toSafeInt(swimmerOfMonth.distance) : 0
+    };
+  }, [allUsers, buildSwimmerDistanceRankingForMonth, swimSessions]);
+
+  const loadSwimMonthlyResults = useCallback(async (yearInput = new Date().getFullYear()) => {
+    try {
+      const parsedYear = Number(yearInput);
+      const year = Number.isFinite(parsedYear) ? Math.max(0, Math.round(parsedYear)) : new Date().getFullYear();
+      const { data, error } = await supabase
+        .from('swim_monthly_results')
+        .select('*')
+        .eq('year', year)
+        .order('month', { ascending: true });
+
+      if (error) {
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          setSwimMonthlyResults([]);
+          return;
+        }
+        throw error;
+      }
+
+      setSwimMonthlyResults(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.warn('Monatsergebnisse konnten nicht geladen werden:', err);
+      setSwimMonthlyResults([]);
+    }
+  }, []);
+
+  const upsertSwimMonthlyResult = useCallback(async (monthDateInput) => {
+    const payload = buildSwimMonthlyResultPayload(monthDateInput);
+    if (!payload) return;
+
+    try {
+      const { error } = await supabase
+        .from('swim_monthly_results')
+        .upsert([payload], { onConflict: 'month_key' });
+
+      if (error) {
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          return;
+        }
+        throw error;
+      }
+    } catch (err) {
+      console.warn('Monatsergebnis konnte nicht gespeichert werden:', err);
+    }
+  }, [buildSwimMonthlyResultPayload]);
+
   const getSeaCreatureTier = (winsInput) => {
     const wins = toSafeInt(winsInput);
     for (let i = SEA_CREATURE_TIERS.length - 1; i >= 0; i--) {
@@ -5445,6 +5588,7 @@ export default function BaederApp() {
 
   // Trainingseinheiten aus Supabase laden
   const loadSwimSessions = async () => {
+    setSwimSessionsLoaded(false);
     try {
       const { data, error } = await supabase
         .from('swim_sessions')
@@ -5456,6 +5600,7 @@ export default function BaederApp() {
         if (error.code === '42P01' || error.message?.includes('does not exist')) {
           console.warn('swim_sessions Tabelle existiert nicht in Supabase');
           setSwimSessions([]);
+          setSwimSessionsLoaded(true);
           return;
         }
         throw error;
@@ -5469,9 +5614,11 @@ export default function BaederApp() {
         const pending = (data || []).filter(s => !s.confirmed);
         setPendingSwimConfirmations(pending);
       }
+      setSwimSessionsLoaded(true);
     } catch (err) {
       console.error('Fehler beim Laden der Schwimm-Einheiten:', err);
       setSwimSessions([]);
+      setSwimSessionsLoaded(true);
     }
   };
 
@@ -5634,8 +5781,35 @@ export default function BaederApp() {
   useEffect(() => {
     if (user) {
       loadSwimSessions();
+    } else {
+      setSwimSessions([]);
+      setPendingSwimConfirmations([]);
+      setSwimSessionsLoaded(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      setSwimMonthlyResults([]);
+      return;
+    }
+    if (!swimSessionsLoaded) return;
+
+    let cancelled = false;
+    const syncSwimMonthlyResults = async () => {
+      const now = new Date();
+      const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      await upsertSwimMonthlyResult(previousMonth);
+      if (!cancelled) {
+        await loadSwimMonthlyResults(now.getFullYear());
+      }
+    };
+
+    void syncSwimMonthlyResults();
+    return () => {
+      cancelled = true;
+    };
+  }, [allUsers, loadSwimMonthlyResults, swimSessions, swimSessionsLoaded, upsertSwimMonthlyResult, user]);
 
   // Prüfe Schwimm-Badges wenn sich Sessions ändern
   useEffect(() => {
@@ -6921,6 +7095,41 @@ export default function BaederApp() {
     }
   };
 
+  const swimCurrentMonthKey = getSwimMonthKey(new Date());
+  const swimCurrentMonthLabel = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }).toUpperCase();
+  const swimCurrentMonthSessions = swimSessions.filter((session) => isDateInSwimMonth(session?.date, swimCurrentMonthKey));
+  const swimCurrentMonthBattleStats = calculateTeamBattleStats(swimCurrentMonthSessions, {}, allUsers);
+  const swimMonthlyDistanceRankingCurrentMonth = buildSwimmerDistanceRankingForMonth(swimCurrentMonthKey);
+  const swimMonthlySwimmerCurrentMonth = swimMonthlyDistanceRankingCurrentMonth[0] || null;
+  const swimYear = new Date().getFullYear();
+  const swimYearlySwimmerRanking = Object.values(
+    swimMonthlyResults.reduce((accumulator, entry) => {
+      const swimmerName = String(entry?.swimmer_name || '').trim();
+      if (!swimmerName) return accumulator;
+      const swimmerId = String(entry?.swimmer_user_id || '').trim();
+      const rankingKey = swimmerId || swimmerName.toLowerCase();
+      if (!accumulator[rankingKey]) {
+        accumulator[rankingKey] = {
+          key: rankingKey,
+          swimmer_user_id: swimmerId || null,
+          swimmer_name: swimmerName,
+          swimmer_role: entry?.swimmer_role || '',
+          titles: 0,
+          total_distance: 0,
+          months: []
+        };
+      }
+      accumulator[rankingKey].titles += 1;
+      accumulator[rankingKey].total_distance += toSafeInt(entry?.swimmer_distance);
+      accumulator[rankingKey].months.push(toSafeInt(entry?.month));
+      return accumulator;
+    }, {})
+  ).sort((a, b) =>
+    (b.titles - a.titles)
+    || (b.total_distance - a.total_distance)
+    || String(a.swimmer_name || '').localeCompare(String(b.swimmer_name || ''), 'de-DE')
+  );
+
   // Login/Register/Impressum/Datenschutz – ausgelagert in LoginScreen
   if (!user) {
     return <LoginScreen />;
@@ -7651,9 +7860,16 @@ export default function BaederApp() {
             swimBossForm={swimBossForm}
             swimChallengeFilter={swimChallengeFilter}
             swimChallengeView={swimChallengeView}
+            swimCurrentMonthBattleStats={swimCurrentMonthBattleStats}
+            swimCurrentMonthLabel={swimCurrentMonthLabel}
             swimDuelForm={swimDuelForm}
+            swimMonthlyDistanceRankingCurrentMonth={swimMonthlyDistanceRankingCurrentMonth}
+            swimMonthlyResults={swimMonthlyResults}
+            swimMonthlySwimmerCurrentMonth={swimMonthlySwimmerCurrentMonth}
             swimSessionForm={swimSessionForm}
             swimSessions={swimSessions}
+            swimYear={swimYear}
+            swimYearlySwimmerRanking={swimYearlySwimmerRanking}
             toSafeInt={toSafeInt}
           />
         )}

@@ -3,6 +3,7 @@ import { Target } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES } from '../../data/constants';
+import { formatAnswerLabel } from '../../lib/utils';
 
 const DIFFICULTY_SETTINGS = {
   anfaenger: { time: 45, label: 'Anfaenger', icon: '🟢', color: 'bg-green-500' },
@@ -12,7 +13,6 @@ const DIFFICULTY_SETTINGS = {
 };
 
 const getDifficulty = (difficulty) => DIFFICULTY_SETTINGS[difficulty] || DIFFICULTY_SETTINGS.profi;
-
 const QuizView = ({
   selectedDifficulty,
   setSelectedDifficulty,
@@ -57,11 +57,6 @@ const QuizView = ({
     1,
     Math.min(availableKeywordGroups || 1, Number(currentQuestion?.minKeywordGroups) || availableKeywordGroups || 1)
   );
-  const formatAnswerLabel = (answerText) => String(answerText ?? '')
-    .replace(/\s*\(\s*optional(?:\s*dabei)?\s*\)/gi, '')
-    .replace(/\s*-\s*optional(?:\s*dabei)?\s*$/gi, '')
-    .replace(/\s+optional(?:\s+dabei)?\s*$/gi, '')
-    .trim();
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -344,6 +339,7 @@ const QuizView = ({
                       const isMulti = currentQuestion.multi;
                       const isSelectedMulti = selectedAnswers.includes(idx);
                       const isSelectedSingle = lastSelectedAnswer === idx;
+                      const answerLabel = formatAnswerLabel(currentQuestion.displayAnswers?.[idx] ?? answer);
                       const isCorrectAnswer = isMulti
                         ? currentQuestion.correct.includes(idx)
                         : idx === currentQuestion.correct;
@@ -368,12 +364,13 @@ const QuizView = ({
                           key={idx}
                           onClick={() => answerQuestion(idx)}
                           disabled={answered}
-                          className={`p-4 rounded-xl font-medium transition-all ${buttonClass}`}
+                          title={formatAnswerLabel(answer)}
+                          className={`p-4 rounded-xl font-medium transition-all min-h-[4.5rem] ${buttonClass}`}
                         >
                           {isMulti && !answered && (
                             <span className="mr-2">{isSelectedMulti ? '☑️' : '⬜'}</span>
                           )}
-                          {formatAnswerLabel(answer)}
+                          {answerLabel}
                         </button>
                       );
                     })}
@@ -451,8 +448,8 @@ const QuizView = ({
                         <p className="text-sm text-gray-700 mt-3 border-t border-gray-300 pt-2">
                           Korrekte Antwort: {
                             currentQuestion.multi && Array.isArray(currentQuestion.correct)
-                              ? currentQuestion.correct.map(idx => currentQuestion.a[idx]).join(' | ')
-                              : currentQuestion.a[currentQuestion.correct]
+                              ? currentQuestion.correct.map(idx => formatAnswerLabel(currentQuestion.a[idx])).join(' | ')
+                              : formatAnswerLabel(currentQuestion.a[currentQuestion.correct])
                           }
                         </p>
                       )}
