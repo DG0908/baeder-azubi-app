@@ -441,3 +441,82 @@ if (mathQuestions.length !== 100) {
 }
 
 export const MATH_QUESTIONS = mathQuestions;
+
+const AEVO_BASE_FACTS = [
+  ['Was ist das Hauptziel der Berufsausbildung nach BBiG?', 'Berufliche Handlungsfaehigkeit vermitteln'],
+  ['Welche Unterlagen bilden die Basis fuer eine strukturierte Ausbildung im Betrieb?', 'Ausbildungsordnung, Ausbildungsrahmenplan und betrieblicher Ausbildungsplan'],
+  ['Was regelt eine Ausbildungsordnung?', 'Berufsprofil, Ausbildungsdauer und Pruefungsanforderungen'],
+  ['Wozu dient der Ausbildungsrahmenplan?', 'Er strukturiert Inhalte zeitlich und sachlich ueber die gesamte Ausbildungszeit'],
+  ['Wozu dient der betriebliche Ausbildungsplan?', 'Er setzt den Rahmenplan konkret auf den Betrieb um'],
+  ['Welche Eignung braucht ein Ausbilder grundsaetzlich?', 'Persoenliche und fachliche Eignung'],
+  ['Was bedeutet persoenliche Eignung eines Ausbilders?', 'Verantwortungsvolles Verhalten ohne gravierende Eignungsausschluesse'],
+  ['Was umfasst die fachliche Eignung eines Ausbilders?', 'Berufliche Fachkenntnisse und berufs-/arbeitspaedagogische Kompetenz'],
+  ['Wozu dient die AEVO-Pruefung?', 'Nachweis der berufs- und arbeitspaedagogischen Eignung'],
+  ['Wer stellt notwendige Ausbildungsmittel zur Verfuegung?', 'Der Ausbildungsbetrieb'],
+  ['Welche Pflicht hat der Azubi beim Berichtsheft?', 'Den Ausbildungsnachweis sorgfaeltig und regelmaessig fuehren'],
+  ['Welche Kernpflicht hat der Ausbilder gegenueber Azubis?', 'Fachlich anleiten, charakterlich foerdern und fuer Sicherheit sorgen'],
+  ['Wie lang darf die Probezeit im Ausbildungsvertrag sein?', 'Mindestens ein und hoechstens vier Monate'],
+  ['Wie kann waehrend der Probezeit gekuendigt werden?', 'Jederzeit und ohne Frist'],
+  ['Wie kann der Betrieb nach der Probezeit kuendigen?', 'Nur aus wichtigem Grund fristlos'],
+  ['Wofuer muss der Azubi freigestellt werden?', 'Fuer Berufsschule, Pruefungen und angeordnete Ausbildungsmaßnahmen'],
+  ['Wie hoch ist die regelmaessige taegliche Arbeitszeit fuer Jugendliche?', 'In der Regel maximal acht Stunden'],
+  ['Wann ist bei Jugendlichen eine Pause spaetestens notwendig?', 'Nach spaetestens viereinhalb Stunden Arbeitszeit'],
+  ['Wozu dient eine Lernzielkontrolle?', 'Lernstand pruefen und weitere Foerderung planen'],
+  ['Was bedeutet SMART bei Lernzielen?', 'Spezifisch, messbar, attraktiv, realistisch und terminiert'],
+  ['Was beschreibt das kognitive Lernziel?', 'Wissen verstehen, einordnen und anwenden'],
+  ['Was beschreibt das psychomotorische Lernziel?', 'Praktische Fertigkeiten sicher ausfuehren'],
+  ['Was beschreibt das affektive Lernziel?', 'Einstellungen, Werte und Verhalten entwickeln'],
+  ['Welche Reihenfolge hat die Vier-Stufen-Methode?', 'Vorbereiten, vormachen/erklaeren, nachmachen lassen, selbststaendig ueben'],
+  ['Was foerdert die Leittextmethode besonders?', 'Selbststaendiges Planen, Entscheiden und Reflektieren'],
+  ['Was zeichnet die Projektmethode aus?', 'Handlungsorientiertes Lernen an einer komplexen Aufgabe'],
+  ['Wie sollte wirksames Feedback gegeben werden?', 'Zeitnah, konkret, respektvoll und nachvollziehbar'],
+  ['Warum sind regelmaessige Beurteilungsgespraeche wichtig?', 'Leistung transparent machen und Ziele gemeinsam nachsteuern'],
+  ['Was ist ein typischer Beurteilungsfehler namens Halo-Effekt?', 'Ein einzelner Eindruck ueberstrahlt die Gesamtbewertung'],
+  ['Was staerkt intrinsische Motivation von Azubis?', 'Sinnvolle Aufgaben, Verantwortung und echte Erfolgserlebnisse'],
+  ['Wie gelingt Lerntransfer in den Arbeitsalltag?', 'Uebungen nah an realen Betriebssituationen gestalten'],
+  ['Was ist bei erkennbarer Ueberforderung sinnvoll?', 'Lernschritte anpassen und gezielt unterstuetzen'],
+  ['Wo sollte konstruktive Kritik gefuehrt werden?', 'Unter vier Augen und auf Sachebene'],
+  ['Wie startet ein gutes Konfliktgespraech?', 'Mit beobachtbaren Fakten statt Vorwuerfen'],
+  ['Was gilt beim Datenschutz in Ausbildungsgespraechen?', 'Nur erforderliche Informationen und vertraulicher Umgang'],
+  ['Was fordert das AGG im Ausbildungsalltag?', 'Diskriminierungsfreie Behandlung aller Auszubildenden'],
+  ['Warum muessen Lernvoraussetzungen individuell beruecksichtigt werden?', 'Weil Lerntempo und Vorerfahrung unterschiedlich sind'],
+  ['Was gehoert in die Vorbereitung einer Unterweisung?', 'Lernziel, Ablauf, Methode, Medien und Zeitplanung'],
+  ['Warum sollten Unterweisungen dokumentiert werden?', 'Nachvollziehbarkeit, Qualitaetssicherung und Rechtsnachweis'],
+  ['Was hat bei praktischen Unterweisungen immer Vorrang?', 'Arbeitssicherheit und korrekte Schutzmaßnahmen'],
+  ['Wann duerfen Aufgaben an Azubis delegiert werden?', 'Wenn Ausbildungsstand passt und Aufsicht sichergestellt ist'],
+  ['Was hilft bei systematischer Pruefungsvorbereitung?', 'Lernplan, Wiederholungen und pruefungsnahe Aufgaben'],
+  ['Warum ist Zwischenfeedback waehrend einer Aufgabe wichtig?', 'Fehler frueh korrigieren und Lernerfolg sichern'],
+  ['Wie sollte bei haeufigen Fehlzeiten reagiert werden?', 'Fruehzeitig klaeren, Ursachen besprechen, Maßnahmen vereinbaren'],
+  ['Wann endet die Ausbildung regulaer?', 'Mit Bestehen der Abschlusspruefung'],
+  ['Was gilt bei nicht bestandener Abschlusspruefung?', 'Auf Verlangen Verlaengerung bis zur naechsten Wiederholungspruefung'],
+  ['Wann ist eine Verkuerzung der Ausbildungszeit moeglich?', 'Bei guten Leistungen mit begruendetem Antrag'],
+  ['Ist ein digital gefuehrtes Berichtsheft zulaessig?', 'Ja, sofern die zustaendigen Stellen es akzeptieren'],
+  ['Was ist ein Aufhebungsvertrag in der Ausbildung?', 'Einvernehmliche Beendigung durch beide Vertragsparteien'],
+  ['Welche Rolle haben Ausbildungsbeauftragte im Betrieb?', 'Sie begleiten Azubis fachlich im Tagesgeschaeft in Abstimmung mit dem Ausbilder']
+];
+
+const AEVO_VARIANT_BUILDERS = [
+  (baseQuestion) => baseQuestion,
+  (baseQuestion) => `AEVO Basis: ${baseQuestion}`,
+  (baseQuestion) => `In der Ausbildereignung gilt: ${baseQuestion}`,
+  (baseQuestion) => `Welche Aussage ist korrekt? ${baseQuestion}`,
+  (baseQuestion) => `Pruefungssimulation AEVO: ${baseQuestion}`
+];
+
+const buildAevoPrompts = (facts, variantBuilders) => {
+  const prompts = [];
+  facts.forEach(([question, answer]) => {
+    variantBuilders.forEach((buildVariant) => {
+      prompts.push([buildVariant(question), answer]);
+    });
+  });
+  return prompts;
+};
+
+const AEVO_EXPANSION_PROMPTS = buildAevoPrompts(AEVO_BASE_FACTS, AEVO_VARIANT_BUILDERS);
+
+if (AEVO_EXPANSION_PROMPTS.length !== 250) {
+  throw new Error(`AEVO question generation expected 250 prompts, got ${AEVO_EXPANSION_PROMPTS.length}`);
+}
+
+export const AEVO_QUESTIONS = buildWithBorrowedDistractors(AEVO_EXPANSION_PROMPTS, 4200);

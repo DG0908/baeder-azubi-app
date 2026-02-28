@@ -1,7 +1,7 @@
 ﻿// Fragen-Format:
 // - correct: number = Single-Choice (Index der richtigen Antwort)
 // - correct: number[] = Multi-Select (Array der richtigen Indizes) - multi: true muss gesetzt sein
-import { ORG_EXPANSION_QUESTIONS, POL_EXPANSION_QUESTIONS, MATH_QUESTIONS } from './quizQuestionsExpansion.js';
+import { ORG_EXPANSION_QUESTIONS, POL_EXPANSION_QUESTIONS, AEVO_QUESTIONS, MATH_QUESTIONS } from './quizQuestionsExpansion.js';
 
 export const SAMPLE_QUESTIONS = {
   // ===== BÄDERORGANISATION (Badebetrieb) =====
@@ -1189,6 +1189,9 @@ export const SAMPLE_QUESTIONS = {
     { q: 'Wie viele Wochen gilt das Beschäftigungsverbot nach der Entbindung?', a: ['8 Wochen', '2 Wochen', '6 Wochen', '10 Wochen'], correct: 0 },
     ...POL_EXPANSION_QUESTIONS
   ],
+
+  // ===== AUSBILDEREIGNUNG =====
+  aevo: AEVO_QUESTIONS,
 
   // ===== MATHEMATIK (BÄDERSPEZIFISCH) =====
   math: MATH_QUESTIONS,
