@@ -7372,9 +7372,6 @@ export default function BaederApp() {
             materialCategory={materialCategory}
             setMaterialCategory={setMaterialCategory}
             addMaterial={addMaterial}
-            getChecklistProgressStats={getChecklistProgressStats}
-            isChecklistItemCompleted={isChecklistItemCompleted}
-            toggleChecklistItem={toggleChecklistItem}
           />
         )}
 
