@@ -25,6 +25,7 @@ import SwimChallengeView from './components/views/SwimChallengeView';
 import BerichtsheftView from './components/views/BerichtsheftView';
 import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
+import WaterCycleView from './components/views/WaterCycleView';
 
 import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, AVATARS, MENU_GROUP_LABELS, getLevel, getLevelProgress } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
@@ -73,6 +74,25 @@ export default function BaederApp() {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return fallback;
     return Math.max(0, Math.round(parsed));
+  };
+
+  const mergeMenuItemsWithDefaults = (customMenuItems) => {
+    const incoming = Array.isArray(customMenuItems) ? customMenuItems : [];
+    const defaultById = new Map(DEFAULT_MENU_ITEMS.map((item) => [item.id, item]));
+
+    const normalizedIncoming = incoming
+      .filter((item) => item && typeof item.id === 'string')
+      .map((item) => {
+        const defaultItem = defaultById.get(item.id);
+        return defaultItem ? { ...defaultItem, ...item } : item;
+      });
+
+    const incomingIds = new Set(normalizedIncoming.map((item) => item.id));
+    const missingDefaults = DEFAULT_MENU_ITEMS
+      .filter((item) => !incomingIds.has(item.id))
+      .map((item) => ({ ...item }));
+
+    return [...normalizedIncoming, ...missingDefaults];
   };
 
   const getWeekStartStamp = (input = Date.now()) => {
@@ -2241,9 +2261,7 @@ export default function BaederApp() {
         if (configError) {
           console.log('No custom config found, using defaults');
         } else if (configData) {
-          const loadedMenuItems = configData.menu_items && configData.menu_items.length > 0
-            ? configData.menu_items
-            : DEFAULT_MENU_ITEMS;
+          const loadedMenuItems = mergeMenuItemsWithDefaults(configData.menu_items);
           const loadedThemeColors = configData.theme_colors && Object.keys(configData.theme_colors).length > 0
             ? configData.theme_colors
             : DEFAULT_THEME_COLORS;
@@ -7358,6 +7376,11 @@ export default function BaederApp() {
             isChecklistItemCompleted={isChecklistItemCompleted}
             toggleChecklistItem={toggleChecklistItem}
           />
+        )}
+
+        {/* Water Cycle View */}
+        {currentView === 'water-cycle' && (
+          <WaterCycleView />
         )}
 
                 {/* Resources View */}
