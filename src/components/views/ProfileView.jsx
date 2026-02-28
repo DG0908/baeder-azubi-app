@@ -363,14 +363,14 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           🎉 Freunde einladen
         </h3>
         <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-          Teile die App mit deinen Azubi-Kollegen und lernt gemeinsam!
+          Teile Aqua Pilot mit deinem Team und lernt gemeinsam!
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={async () => {
               const shareData = {
-                title: 'FAB COMPASS - Bäder-Azubi App',
-                text: 'Hey! Schau dir diese Lern-App für Fachangestellte für Bäderbetriebe an. Quiz, Karteikarten, Schwimm-Challenge und mehr!',
+                title: 'Aqua Pilot',
+                text: 'Hey! Schau dir Aqua Pilot an: Lern-App fuer Fachangestellte fuer Baederbetriebe mit Quiz, Karteikarten, Schwimm-Challenge und mehr.',
                 url: 'https://baeder-azubi-app.vercel.app'
               };
               if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {

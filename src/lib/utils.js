@@ -1,99 +1,197 @@
+const normalizeSpace = (value) => String(value ?? '')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const normalizeKey = (value) => normalizeSpace(value).toLowerCase();
+
 const countWords = (value) => {
-  const normalized = String(value ?? '').trim();
+  const normalized = normalizeSpace(value);
   if (!normalized) return 0;
-  return normalized.split(/\s+/).filter(Boolean).length;
+  return normalized.split(' ').filter(Boolean).length;
 };
 
-const ANSWER_DECORATORS = [
-  (text) => `Option: ${text}`,
-  (text) => `${text} (Antwortoption)`,
-  (text) => `${text} - zur Auswahl`
-];
+const stripNoiseTokens = (value) => normalizeSpace(value)
+  // Remove old/generated wrappers and markers.
+  .replace(/^option\s*:\s*/i, '')
+  .replace(/^antwort\s*:\s*/i, '')
+  .replace(/\s*-\s*zur\s+auswahl\s*$/i, '')
+  .replace(/\(\s*antwortoption\s*\)/gi, '')
+  // Remove optional/hint markers that should not appear in final answer options.
+  .replace(/\(\s*optional[^)]*\)/gi, '')
+  .replace(/\[\s*optional[^\]]*\]/gi, '')
+  .replace(/\boptional\b[:\-]?\s*/gi, '')
+  .replace(/\s{2,}/g, ' ')
+  .trim();
 
-const randomDecorator = () => ANSWER_DECORATORS[Math.floor(Math.random() * ANSWER_DECORATORS.length)];
+const TRAILING_STOP_WORDS = new Set([
+  'und',
+  'oder',
+  'fuer',
+  'fur',
+  'im',
+  'in',
+  'am',
+  'an',
+  'bei',
+  'mit',
+  'von',
+  'zu',
+  'zum',
+  'zur',
+  'des',
+  'der',
+  'die',
+  'das',
+  'dem',
+  'den',
+  'einer',
+  'einem',
+  'einen'
+]);
 
-const ensureWrongAnswerLooksLong = (question, answers) => {
-  if (question.multi && Array.isArray(question.correct)) {
-    const correctSet = new Set(question.correct);
-    const wrongIndices = answers
-      .map((_, idx) => idx)
-      .filter(idx => !correctSet.has(idx));
-    if (wrongIndices.length === 0) return answers;
+const normalizeToken = (value) => normalizeKey(value)
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9]/g, '');
 
-    const hasLongWrong = wrongIndices.some(idx => countWords(answers[idx]) > 1);
-    if (!hasLongWrong) {
-      const targetIndex = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
-      answers[targetIndex] = randomDecorator()(answers[targetIndex]);
-    }
-    return answers;
+const trimTrailingStopWords = (value, minWords = 2) => {
+  let words = normalizeSpace(value).split(' ').filter(Boolean);
+  while (words.length > minWords) {
+    const tailToken = normalizeToken(words[words.length - 1]);
+    if (!TRAILING_STOP_WORDS.has(tailToken)) break;
+    words = words.slice(0, -1);
   }
-
-  if (!Number.isInteger(question.correct)) return answers;
-  const wrongIndices = answers
-    .map((_, idx) => idx)
-    .filter(idx => idx !== question.correct);
-  if (wrongIndices.length === 0) return answers;
-
-  const hasLongWrong = wrongIndices.some(idx => countWords(answers[idx]) > 1);
-  if (!hasLongWrong) {
-    const targetIndex = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
-    answers[targetIndex] = randomDecorator()(answers[targetIndex]);
-  }
-
-  return answers;
+  return words.join(' ');
 };
 
-const randomizeAnswerLengthPattern = (question) => {
-  const answers = [...(question?.a || [])];
-  if (answers.length < 2) return { ...question, a: answers };
+const truncateWords = (value, maxWords) => {
+  const words = normalizeSpace(value).split(' ').filter(Boolean);
+  if (words.length <= maxWords) return normalizeSpace(value);
+  let shortened = words.slice(0, maxWords).join(' ');
+  shortened = trimTrailingStopWords(shortened) || shortened;
+  return `${shortened}...`;
+};
 
-  answers.forEach((answer, idx) => {
-    const isSingleCorrect = !question.multi && Number.isInteger(question.correct) && idx === question.correct;
-    const decorateChance = isSingleCorrect ? 0.25 : 0.65;
-    if (Math.random() < decorateChance) {
-      answers[idx] = randomDecorator()(answer);
-    }
+const buildDisplayAnswers = (question, answers) => {
+  if (!Array.isArray(answers) || answers.length === 0) return [];
+
+  const displayAnswers = answers.map((value) => {
+    const cleaned = stripNoiseTokens(value) || normalizeSpace(value);
+    return countWords(cleaned) > 9 ? truncateWords(cleaned, 9) : cleaned;
   });
 
-  ensureWrongAnswerLooksLong(question, answers);
+  if (question?.multi || !Number.isInteger(question?.correct)) {
+    return displayAnswers;
+  }
 
-  return { ...question, a: answers };
+  const correctIndex = question.correct;
+  if (correctIndex < 0 || correctIndex >= displayAnswers.length) {
+    return displayAnswers;
+  }
+
+  const compactLevels = [6, 5, 4, 3];
+  for (const level of compactLevels) {
+    const correctWords = countWords(displayAnswers[correctIndex]);
+    const wrongWords = displayAnswers
+      .filter((_, index) => index !== correctIndex)
+      .map(countWords);
+    const maxWrongWords = wrongWords.length > 0 ? Math.max(...wrongWords) : 0;
+    if (correctWords < maxWrongWords + 2) break;
+    displayAnswers[correctIndex] = truncateWords(answers[correctIndex], level);
+  }
+
+  return displayAnswers;
+};
+
+const sanitizeQuestionAnswers = (question) => {
+  const originalAnswers = Array.isArray(question?.a)
+    ? question.a.map((value) => normalizeSpace(value))
+    : [];
+  if (originalAnswers.length === 0) return { ...(question || {}), a: [], displayAnswers: [] };
+
+  const cleanedAnswers = originalAnswers.map((value) => {
+    const stripped = stripNoiseTokens(value);
+    return stripped || value;
+  });
+
+  const dedupedAnswers = [];
+  const seen = new Set();
+  for (let i = 0; i < cleanedAnswers.length; i += 1) {
+    const preferred = normalizeSpace(cleanedAnswers[i]);
+    const preferredKey = normalizeKey(preferred);
+    if (preferred && !seen.has(preferredKey)) {
+      dedupedAnswers.push(preferred);
+      seen.add(preferredKey);
+      continue;
+    }
+
+    const fallback = normalizeSpace(originalAnswers[i]);
+    const fallbackKey = normalizeKey(fallback);
+    if (fallback && !seen.has(fallbackKey)) {
+      dedupedAnswers.push(fallback);
+      seen.add(fallbackKey);
+      continue;
+    }
+
+    dedupedAnswers.push(preferred || fallback || `Antwort ${i + 1}`);
+  }
+
+  return {
+    ...question,
+    a: dedupedAnswers,
+    displayAnswers: buildDisplayAnswers(question, dedupedAnswers)
+  };
 };
 
 export const shuffleAnswers = (question) => {
   if (!question || !Array.isArray(question.a) || question.a.length === 0) {
     return { ...(question || {}) };
   }
-  const preparedQuestion = randomizeAnswerLengthPattern(question);
-  const answers = [...preparedQuestion.a];
 
-  // Multi-Select: correct ist ein Array von Indizes
-  if (preparedQuestion.multi && Array.isArray(preparedQuestion.correct)) {
-    const correctAnswers = preparedQuestion.correct.map(idx => answers[idx]);
+  const preparedQuestion = sanitizeQuestionAnswers(question);
+  const indexedAnswers = preparedQuestion.a.map((text, originalIndex) => ({
+    text,
+    displayText: preparedQuestion.displayAnswers?.[originalIndex] ?? text,
+    originalIndex
+  }));
 
-    // Fisher-Yates shuffle
-    for (let i = answers.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [answers[i], answers[j]] = [answers[j], answers[i]];
-    }
-
-    // Finde die neuen Indizes der korrekten Antworten
-    const newCorrectIndices = correctAnswers.map(ans => answers.indexOf(ans));
-
-    return { ...preparedQuestion, a: answers, correct: newCorrectIndices, multi: true };
-  }
-
-  // Single-Choice: correct ist ein einzelner Index
-  const correctAnswer = answers[preparedQuestion.correct];
-
-  // Fisher-Yates shuffle
-  for (let i = answers.length - 1; i > 0; i--) {
+  // Fisher-Yates shuffle.
+  for (let i = indexedAnswers.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
-    [answers[i], answers[j]] = [answers[j], answers[i]];
+    [indexedAnswers[i], indexedAnswers[j]] = [indexedAnswers[j], indexedAnswers[i]];
   }
 
-  // Finde den neuen Index der korrekten Antwort
-  const newCorrectIndex = answers.indexOf(correctAnswer);
+  if (preparedQuestion.multi && Array.isArray(preparedQuestion.correct)) {
+    const correctSet = new Set(
+      preparedQuestion.correct.filter((value) => Number.isInteger(value))
+    );
+    const newCorrectIndices = indexedAnswers
+      .map((entry, newIndex) => (correctSet.has(entry.originalIndex) ? newIndex : -1))
+      .filter((value) => value >= 0);
 
-  return { ...preparedQuestion, a: answers, correct: newCorrectIndex };
+    return {
+      ...preparedQuestion,
+      a: indexedAnswers.map((entry) => entry.text),
+      displayAnswers: indexedAnswers.map((entry) => entry.displayText),
+      correct: newCorrectIndices,
+      multi: true
+    };
+  }
+
+  const originalCorrect = Number.isInteger(preparedQuestion.correct)
+    ? preparedQuestion.correct
+    : 0;
+  const newCorrectIndex = Math.max(
+    0,
+    indexedAnswers.findIndex((entry) => entry.originalIndex === originalCorrect)
+  );
+
+  return {
+    ...preparedQuestion,
+    a: indexedAnswers.map((entry) => entry.text),
+    displayAnswers: indexedAnswers.map((entry) => entry.displayText),
+    correct: newCorrectIndex
+  };
 };
+
+export const formatAnswerLabel = (value) => stripNoiseTokens(value);

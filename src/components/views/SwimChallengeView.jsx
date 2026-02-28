@@ -32,7 +32,6 @@ const {
   setSwimChallengeView,
   setSwimDuelForm,
   setSwimSessionForm,
-  statsByUserId,
   swimArenaMode,
   swimBattleHistory,
   swimBattleResult,
@@ -40,9 +39,16 @@ const {
   swimBossForm,
   swimChallengeFilter,
   swimChallengeView,
+  swimCurrentMonthBattleStats,
+  swimCurrentMonthLabel,
   swimDuelForm,
+  swimMonthlyDistanceRankingCurrentMonth,
+  swimMonthlyResults,
+  swimMonthlySwimmerCurrentMonth,
   swimSessionForm,
   swimSessions,
+  swimYear,
+  swimYearlySwimmerRanking,
   toSafeInt,
 } = props;
   const { user } = useAuth();
@@ -119,16 +125,8 @@ const {
 
             {/* Team-Battle Banner */}
             {(() => {
-              const xpByUserId = Object.fromEntries(
-                Object.entries(statsByUserId).map(([userId, stats]) => [userId, stats?.totalXp || 0])
-              );
-              Object.entries(swimBattleWinsByUserId || {}).forEach(([userId, wins]) => {
-                const bonusPoints = toSafeInt(wins) * SWIM_BATTLE_WIN_POINTS;
-                if (bonusPoints <= 0) return;
-                xpByUserId[userId] = (xpByUserId[userId] || 0) + bonusPoints;
-              });
-              const battleStats = calculateTeamBattleStats(swimSessions, xpByUserId, allUsers);
-              const currentMonth = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }).toUpperCase();
+              const battleStats = swimCurrentMonthBattleStats || calculateTeamBattleStats([], {}, allUsers);
+              const currentMonth = swimCurrentMonthLabel || new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }).toUpperCase();
               const leading = battleStats.azubis.points > battleStats.trainer.points ? 'azubis' : battleStats.trainer.points > battleStats.azubis.points ? 'trainer' : 'tie';
 
               return (
@@ -979,15 +977,7 @@ const {
 
             {/* Team-Battle Detail */}
             {swimChallengeView === 'battle' && (() => {
-              const xpByUserId = Object.fromEntries(
-                Object.entries(statsByUserId).map(([userId, stats]) => [userId, stats?.totalXp || 0])
-              );
-              Object.entries(swimBattleWinsByUserId || {}).forEach(([userId, wins]) => {
-                const bonusPoints = toSafeInt(wins) * SWIM_BATTLE_WIN_POINTS;
-                if (bonusPoints <= 0) return;
-                xpByUserId[userId] = (xpByUserId[userId] || 0) + bonusPoints;
-              });
-              const battleStats = calculateTeamBattleStats(swimSessions, xpByUserId, allUsers);
+              const battleStats = swimCurrentMonthBattleStats || calculateTeamBattleStats([], {}, allUsers);
 
               const renderTeamMember = (member, index, color) => {
                 const medals = ['🥇', '🥈', '🥉'];
@@ -1045,6 +1035,14 @@ const {
               const recentArenaHistory = Array.isArray(swimBattleHistory)
                 ? swimBattleHistory.slice(0, 8)
                 : [];
+              const monthlyDistanceRanking = Array.isArray(swimMonthlyDistanceRankingCurrentMonth)
+                ? swimMonthlyDistanceRankingCurrentMonth
+                : [];
+              const monthlyTopSwimmer = (swimMonthlySwimmerCurrentMonth && toSafeInt(swimMonthlySwimmerCurrentMonth.distance) > 0)
+                ? swimMonthlySwimmerCurrentMonth
+                : null;
+              const monthlyTeamResults = Array.isArray(swimMonthlyResults) ? swimMonthlyResults : [];
+              const monthNames = ['Januar', 'Februar', 'Maerz', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 
               return (
                 <div className="space-y-4">
@@ -1509,6 +1507,109 @@ const {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="grid lg:grid-cols-2 gap-4">
+                    <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                      <h4 className={`font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        🏅 Schwimmer des Monats ({swimCurrentMonthLabel})
+                      </h4>
+                      {monthlyTopSwimmer ? (
+                        <div className="space-y-3">
+                          <div className={`p-3 rounded-lg ${darkMode ? 'bg-cyan-900/30 border border-cyan-700' : 'bg-cyan-50 border border-cyan-200'}`}>
+                            <div className={`font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                              {monthlyTopSwimmer.user_name}
+                            </div>
+                            <div className={`text-sm ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>
+                              {(toSafeInt(monthlyTopSwimmer.distance) / 1000).toFixed(1)} km • {toSafeInt(monthlyTopSwimmer.sessions)} Einheiten
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {monthlyDistanceRanking.slice(0, 5).map((entry, index) => (
+                              <div key={entry.user_id} className={`flex items-center justify-between text-sm p-2 rounded ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                                <span className={darkMode ? 'text-gray-200' : 'text-gray-700'}>
+                                  {index + 1}. {entry.user_name}
+                                </span>
+                                <span className={`font-medium ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                                  {(toSafeInt(entry.distance) / 1000).toFixed(1)} km
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          Noch keine bestaetigten Distanz-Eintraege im aktuellen Monat.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                      <h4 className={`font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        🗓️ Jahresrangliste Schwimmer des Monats ({swimYear})
+                      </h4>
+                      {swimYearlySwimmerRanking.length === 0 ? (
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          Noch keine abgeschlossenen Monatswertungen vorhanden.
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {swimYearlySwimmerRanking.map((entry, index) => (
+                            <div key={entry.key} className={`flex items-center justify-between gap-3 p-2 rounded ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                              <div className="min-w-0">
+                                <div className={`font-medium truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                  {index + 1}. {entry.swimmer_name}
+                                </div>
+                                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  Titel: {toSafeInt(entry.titles)} • Monate: {(entry.months || []).filter((month) => month > 0).join(', ')}
+                                </div>
+                              </div>
+                              <div className={`text-sm font-semibold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                                {(toSafeInt(entry.total_distance) / 1000).toFixed(1)} km
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                    <h4 className={`font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      ⚔️ Team-Gewinner pro Monat ({swimYear})
+                    </h4>
+                    {monthlyTeamResults.length === 0 ? (
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Noch keine gespeicherten Monatsabschluesse vorhanden.
+                      </div>
+                    ) : (
+                      <div className="grid md:grid-cols-2 gap-2">
+                        {monthlyTeamResults.map((entry) => {
+                          const winnerTeam = String(entry.winner_team || 'tie');
+                          const winnerLabel = winnerTeam === 'azubis'
+                            ? 'Azubis'
+                            : winnerTeam === 'trainer'
+                              ? 'Trainer'
+                              : 'Unentschieden';
+                          const winnerClass = winnerTeam === 'azubis'
+                            ? (darkMode ? 'text-cyan-300' : 'text-cyan-700')
+                            : winnerTeam === 'trainer'
+                              ? (darkMode ? 'text-orange-300' : 'text-orange-700')
+                              : (darkMode ? 'text-gray-300' : 'text-gray-700');
+                          const monthNumber = Math.max(1, Math.min(12, toSafeInt(entry.month))) - 1;
+                          const monthLabel = monthNames[monthNumber] || `Monat ${entry.month}`;
+                          return (
+                            <div key={entry.month_key} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'}`}>
+                              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{monthLabel}</div>
+                              <div className={`font-semibold ${winnerClass}`}>{winnerLabel}</div>
+                              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                Azubis {toSafeInt(entry.azubis_points)} : {toSafeInt(entry.trainer_points)} Trainer
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Handicap-System */}

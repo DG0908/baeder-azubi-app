@@ -1,7 +1,7 @@
 {
-  "name": "Bäder-Azubi App",
-  "short_name": "Bäder-Azubi",
-  "description": "Professionelle Lern-Plattform für Auszubildende im Bereich Bäderbetriebe",
+  "name": "Aqua Pilot",
+  "short_name": "Aqua Pilot",
+  "description": "Lern-Plattform fuer Fachangestellte im Bereich Baederbetriebe",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0ea5e9",
