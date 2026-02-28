@@ -3,7 +3,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
-import { AVATARS, PERMISSIONS } from '../../data/constants';
+import { AVATARS, PERMISSIONS, getLevel, getXpToNextLevel } from '../../data/constants';
 import { getAgeHandicap } from '../../data/swimming';
 
 const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) => {
@@ -18,6 +18,24 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
   const [profileSaving, setProfileSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+
+  const getTotalXpFromStats = (statsInput) => {
+    const rawXp = Number(statsInput?.categoryStats?.__meta?.totalXp);
+    return Number.isFinite(rawXp) ? Math.max(0, Math.round(rawXp)) : 0;
+  };
+
+  const getAvatarRequiredLevel = (avatarInput) => {
+    const value = Number(avatarInput?.minLevel);
+    if (!Number.isFinite(value)) return 1;
+    return Math.max(1, Math.round(value));
+  };
+
+  const totalXp = getTotalXpFromStats(userStats);
+  const currentLevel = getLevel(totalXp);
+  const unlockedAvatarCount = AVATARS.filter((avatar) => currentLevel >= getAvatarRequiredLevel(avatar)).length;
+  const nextLockedAvatar = AVATARS
+    .filter((avatar) => currentLevel < getAvatarRequiredLevel(avatar))
+    .sort((a, b) => getAvatarRequiredLevel(a) - getAvatarRequiredLevel(b))[0] || null;
 
   const updateProfileName = async () => {
     if (!profileEditName.trim()) {
@@ -73,6 +91,15 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
   };
 
   const updateProfileAvatar = async (avatarId) => {
+    if (avatarId) {
+      const selectedAvatar = AVATARS.find((avatar) => avatar.id === avatarId) || null;
+      const requiredLevel = getAvatarRequiredLevel(selectedAvatar);
+      if (selectedAvatar && currentLevel < requiredLevel) {
+        showToast(`Dieser Avatar wird ab Level ${requiredLevel} freigeschaltet.`, 'warning');
+        return;
+      }
+    }
+
     setProfileSaving(true);
     try {
       const { error } = await supabase
@@ -154,24 +181,59 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           Avatar auswählen
         </h3>
         <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Wähle einen Avatar für dein Profil
+          Sammle Level und schalte exklusive Avatare frei.
         </p>
+        <div className={`mb-4 flex flex-wrap items-center gap-2 text-xs ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+          <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-cyan-900/50' : 'bg-cyan-100'}`}>
+            Level {currentLevel}
+          </span>
+          <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-gray-100 text-gray-700'}`}>
+            {totalXp} XP
+          </span>
+          <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-emerald-900/50 text-emerald-300' : 'bg-emerald-100 text-emerald-700'}`}>
+            {unlockedAvatarCount}/{AVATARS.length} freigeschaltet
+          </span>
+          {nextLockedAvatar && (
+            <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700'}`}>
+              Nächster: {nextLockedAvatar.emoji} ab Level {getAvatarRequiredLevel(nextLockedAvatar)} ({getXpToNextLevel(totalXp)} XP bis Level {currentLevel + 1})
+            </span>
+          )}
+          {!nextLockedAvatar && (
+            <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-violet-900/50 text-violet-300' : 'bg-violet-100 text-violet-700'}`}>
+              Alle Avatare freigeschaltet
+            </span>
+          )}
+        </div>
         <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
-          {AVATARS.map((avatar) => (
-            <button
-              key={avatar.id}
-              onClick={() => updateProfileAvatar(avatar.id)}
-              disabled={profileSaving}
-              title={avatar.label}
-              className={`text-3xl p-2 rounded-xl transition-all hover:scale-110 ${
-                user.avatar === avatar.id
-                  ? 'bg-cyan-500 ring-2 ring-cyan-400 ring-offset-2 ' + (darkMode ? 'ring-offset-slate-800' : 'ring-offset-white')
-                  : darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
-              }`}
-            >
-              {avatar.emoji}
-            </button>
-          ))}
+          {AVATARS.map((avatar) => {
+            const requiredLevel = getAvatarRequiredLevel(avatar);
+            const isUnlocked = currentLevel >= requiredLevel;
+            const isSelected = user.avatar === avatar.id;
+            return (
+              <div key={avatar.id} className="relative">
+                <button
+                  onClick={() => updateProfileAvatar(avatar.id)}
+                  disabled={profileSaving || !isUnlocked}
+                  title={isUnlocked ? avatar.label : `${avatar.label} (ab Level ${requiredLevel})`}
+                  className={`text-3xl p-2 rounded-xl transition-all ${
+                    isSelected
+                      ? 'bg-cyan-500 ring-2 ring-cyan-400 ring-offset-2 ' + (darkMode ? 'ring-offset-slate-800' : 'ring-offset-white')
+                      : darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
+                  } ${isUnlocked ? 'hover:scale-110' : 'opacity-45 grayscale cursor-not-allowed'}`}
+                >
+                  {avatar.emoji}
+                </button>
+                {!isUnlocked && (
+                  <>
+                    <span className="absolute top-0 right-0 text-[10px] bg-black/70 text-white rounded-full px-1">🔒</span>
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] bg-black/70 text-white rounded px-1">
+                      Lv.{requiredLevel}
+                    </span>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
         {user.avatar && (
           <button

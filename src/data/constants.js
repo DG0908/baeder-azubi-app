@@ -120,4 +120,15 @@ export const AVATARS = [
   { id: 'goggles', emoji: '🥽', label: 'Schwimmbrille' },
   { id: 'flamingo', emoji: '🦩', label: 'Flamingo' },
   { id: 'lifeguard', emoji: '🛟', label: 'Rettungsring' },
+  // Freischaltbare Level-Avatare
+  { id: 'aqua_cadet', emoji: '🧢🏊', label: 'Aqua-Kadett', minLevel: 2 },
+  { id: 'shades_swimmer', emoji: '😎🏊', label: 'Sonnenbrillen-Schwimmer', minLevel: 3 },
+  { id: 'whistle_coach', emoji: '😎📣', label: 'Triller-Profi', minLevel: 4 },
+  { id: 'turbo_dolphin', emoji: '😎🐬', label: 'Turbo-Delfin', minLevel: 5 },
+  { id: 'ring_commander', emoji: '😎🛟', label: 'Rettungsring-Kommandant', minLevel: 6 },
+  { id: 'shark_guard', emoji: '😎🦈', label: 'Hai-Wache', minLevel: 7 },
+  { id: 'trident_master', emoji: '🔱🌊', label: 'Wellenmeister', minLevel: 8 },
+  { id: 'sunset_surfer', emoji: '🌅🏄', label: 'Sunset-Surfer', minLevel: 9 },
+  { id: 'pool_boss', emoji: '👑🏊‍♂️', label: 'Pool-Boss', minLevel: 10 },
+  { id: 'whistle_legend', emoji: '👑📣', label: 'Whistle-Legende', minLevel: 12 }
 ];
