@@ -1,11 +1,23 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  const [darkMode, setDarkMode] = useState(false);
+  const DARK_MODE_STORAGE_KEY = 'baeder_dark_mode';
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const saved = window.localStorage.getItem(DARK_MODE_STORAGE_KEY);
+    if (saved === 'true') return true;
+    if (saved === 'false') return false;
+    return true; // Standard: Dark Mode
+  });
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [toasts, setToasts] = useState([]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(DARK_MODE_STORAGE_KEY, darkMode ? 'true' : 'false');
+  }, [darkMode]);
 
   const showToast = (message, type = 'success', duration = 3000) => {
     const id = Date.now();
