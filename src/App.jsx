@@ -169,6 +169,8 @@ export default function BaederApp() {
     experte: { time: 15, label: 'Experte', icon: '🔴', color: 'bg-red-500' },
     extra: { time: 75, label: 'Extra schwer', icon: '🧠', color: 'bg-indigo-700' }
   };
+  const DEFAULT_CHALLENGE_TIMEOUT_MINUTES = 48 * 60;
+  const CHALLENGE_TIMEOUT_BOUNDS = { min: 15, max: 7 * 24 * 60 };
 
   const normalizePlayerName = (name) => {
     const base = String(name || '')
@@ -442,6 +444,71 @@ export default function BaederApp() {
   const toSafeInt = (value) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed)) : 0;
+  };
+
+  const normalizeChallengeTimeoutMinutes = (value) => {
+    const parsed = toSafeInt(value);
+    if (!parsed) return DEFAULT_CHALLENGE_TIMEOUT_MINUTES;
+    return Math.min(
+      CHALLENGE_TIMEOUT_BOUNDS.max,
+      Math.max(CHALLENGE_TIMEOUT_BOUNDS.min, parsed)
+    );
+  };
+
+  const parseTimestampSafe = (value) => {
+    if (!value) return null;
+    const date = new Date(value);
+    const timestamp = date.getTime();
+    return Number.isFinite(timestamp) ? timestamp : null;
+  };
+
+  const getChallengeTimeoutMs = (gameInput) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
+    const timeoutMinutes = normalizeChallengeTimeoutMinutes(game.challengeTimeoutMinutes);
+    return timeoutMinutes * 60 * 1000;
+  };
+
+  const getChallengeExpiryTimestamp = (gameInput) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
+    const explicitExpiry = parseTimestampSafe(game.challengeExpiresAt);
+    if (explicitExpiry !== null) return explicitExpiry;
+
+    const createdAt = parseTimestampSafe(game.createdAt);
+    if (createdAt !== null) return createdAt + getChallengeTimeoutMs(game);
+
+    const updatedAt = parseTimestampSafe(game.updatedAt);
+    if (updatedAt !== null) return updatedAt + getChallengeTimeoutMs(game);
+
+    return null;
+  };
+
+  const getWaitingChallengeRemainingMs = (gameInput, nowInput = Date.now()) => {
+    const expiryTs = getChallengeExpiryTimestamp(gameInput);
+    if (expiryTs === null) return Number.POSITIVE_INFINITY;
+    return expiryTs - nowInput;
+  };
+
+  const isWaitingChallengeExpired = (gameInput, nowInput = Date.now()) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
+    if (String(game.status || '').toLowerCase() !== 'waiting') return false;
+    return getWaitingChallengeRemainingMs(game, nowInput) <= 0;
+  };
+
+  const formatDurationMinutesCompact = (minutesInput) => {
+    const minutes = Math.max(1, toSafeInt(minutesInput));
+    const days = Math.floor(minutes / 1440);
+    const hours = Math.floor((minutes % 1440) / 60);
+    const mins = minutes % 60;
+
+    if (days > 0) {
+      if (hours > 0) return `${days}d ${hours}h`;
+      return `${days}d`;
+    }
+    if (hours > 0) {
+      if (mins > 0) return `${hours}h ${mins}m`;
+      return `${hours}h`;
+    }
+    return `${mins}m`;
   };
 
   const parseDateSafe = (value) => {
@@ -2350,12 +2417,16 @@ export default function BaederApp() {
             player2Score: g.player2_score,
             currentTurn: g.current_turn,
             categoryRound: g.round || 0,
+            round: g.round || 0,
             status: g.status,
             difficulty: g.difficulty,
             categoryRounds: g.rounds_data || [],
             winner: winner,
             questionHistory: [],
             updatedAt: g.updated_at,
+            createdAt: g.created_at,
+            challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challenge_timeout_minutes),
+            challengeExpiresAt: g.challenge_expires_at || null
           };
         });
         setAllGames(games);
@@ -2944,10 +3015,15 @@ export default function BaederApp() {
   };
 
   // Quiz functions with Supabase
-  const challengePlayer = async (opponent) => {
+  const challengePlayer = async (opponent, timeoutMinutesInput = DEFAULT_CHALLENGE_TIMEOUT_MINUTES) => {
+    const now = Date.now();
+    const timeoutMinutes = normalizeChallengeTimeoutMinutes(timeoutMinutesInput);
+    const challengeExpiresAt = new Date(now + timeoutMinutes * 60 * 1000).toISOString();
+
     // Prüfe ob bereits ein laufendes Spiel gegen diesen Gegner existiert
     const existingGame = activeGames.find(g =>
       g.status !== 'finished' &&
+      !isWaitingChallengeExpired(g, now) &&
       ((g.player1 === user.name && g.player2 === opponent) ||
        (g.player1 === opponent && g.player2 === user.name))
     );
@@ -2958,21 +3034,47 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
+      let timerColumnsUnavailable = false;
+      const basePayload = {
+        player1: user.name,
+        player2: opponent,
+        difficulty: selectedDifficulty,
+        status: 'waiting',
+        round: 0,
+        player1_score: 0,
+        player2_score: 0,
+        current_turn: user.name,
+        rounds_data: []
+      };
+      const payloadWithTimer = {
+        ...basePayload,
+        challenge_timeout_minutes: timeoutMinutes,
+        challenge_expires_at: challengeExpiresAt
+      };
+
+      let data = null;
+      let error = null;
+      const insertWithTimer = await supabase
         .from('games')
-        .insert([{
-          player1: user.name,
-          player2: opponent,
-          difficulty: selectedDifficulty,
-          status: 'waiting',
-          round: 0,
-          player1_score: 0,
-          player2_score: 0,
-          current_turn: user.name,
-          rounds_data: []
-        }])
+        .insert([payloadWithTimer])
         .select()
         .single();
+      data = insertWithTimer.data;
+      error = insertWithTimer.error;
+
+      if (error && error.code === '42703' && (
+        String(error.message || '').includes('challenge_timeout_minutes')
+        || String(error.message || '').includes('challenge_expires_at')
+      )) {
+        timerColumnsUnavailable = true;
+        const legacyInsert = await supabase
+          .from('games')
+          .insert([basePayload])
+          .select()
+          .single();
+        data = legacyInsert.data;
+        error = legacyInsert.error;
+      }
 
       if (error) throw error;
 
@@ -2983,16 +3085,29 @@ export default function BaederApp() {
         difficulty: data.difficulty,
         status: data.status,
         categoryRound: 0, // 0-3 (4 Kategorien)
+        round: 0,
         player1Score: data.player1_score,
         player2Score: data.player2_score,
         currentTurn: data.current_turn,
         categoryRounds: [], // Speichert alle Kategorie-Runden mit Fragen
-        questionHistory: []
+        questionHistory: [],
+        updatedAt: data.updated_at || new Date().toISOString(),
+        createdAt: data.created_at || new Date().toISOString(),
+        challengeTimeoutMinutes: timerColumnsUnavailable
+          ? DEFAULT_CHALLENGE_TIMEOUT_MINUTES
+          : timeoutMinutes,
+        challengeExpiresAt: timerColumnsUnavailable
+          ? null
+          : (data.challenge_expires_at || challengeExpiresAt)
       };
 
       setActiveGames([...activeGames, game]);
       setSelectedOpponent(null);
-      showToast(`Herausforderung an ${opponent} gesendet!`, 'success');
+      if (timerColumnsUnavailable) {
+        showToast('Herausforderung gesendet. Timer-Spalten fehlen in Supabase, aktuell gilt 48h Standard.', 'warning');
+      } else {
+        showToast(`Herausforderung an ${opponent} gesendet! Frist: ${formatDurationMinutesCompact(timeoutMinutes)}.`, 'success');
+      }
     } catch (error) {
       console.error('Challenge error:', error);
       showToast('Fehler beim Senden der Herausforderung', 'error');
@@ -3002,6 +3117,14 @@ export default function BaederApp() {
   const acceptChallenge = async (gameId) => {
     const game = activeGames.find(g => g.id === gameId);
     if (!game) return;
+
+    if (isWaitingChallengeExpired(game)) {
+      const loser = game.player2;
+      const winner = game.player1;
+      await autoForfeitGame(game, loser, winner, 'challenge_expired');
+      showToast('Diese Herausforderung ist bereits abgelaufen.', 'warning');
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -3025,6 +3148,7 @@ export default function BaederApp() {
       setSelectedAnswers([]);
       setLastSelectedAnswer(null);
       setTimerActive(false);
+      localStorage.removeItem(`quiz_waiting_reminder_${game.id}_${game.player2}`);
       resetQuizKeywordState();
       setCurrentView('quiz');
     } catch (error) {
@@ -3831,7 +3955,7 @@ export default function BaederApp() {
     setTimerActive(true);
   };
 
-  const autoForfeitGame = async (game, loser, winner) => {
+  const autoForfeitGame = async (game, loser, winner, reason = 'turn_timeout') => {
     try {
       await supabase.from('games').update({
         status: 'finished',
@@ -3840,16 +3964,24 @@ export default function BaederApp() {
       }).eq('id', game.id);
 
       const opponent = game.player1 === loser ? game.player2 : game.player1;
+      const timeoutLabel = formatDurationMinutesCompact(game.challengeTimeoutMinutes || DEFAULT_CHALLENGE_TIMEOUT_MINUTES);
+      const loserMessage = reason === 'challenge_expired'
+        ? `Die Herausforderung gegen ${opponent} ist abgelaufen (${timeoutLabel}) und wurde als Niederlage gewertet.`
+        : `Dein Quizduell gegen ${opponent} wurde nach 48h Inaktivität als Niederlage gewertet.`;
+      const winnerMessage = reason === 'challenge_expired'
+        ? `${loser} hat die Herausforderung (${timeoutLabel}) nicht rechtzeitig angenommen. Du gewinnst das Quizduell!`
+        : `${loser} hat 48 Stunden nicht gespielt. Du gewinnst das Quizduell!`;
+
       await sendNotification(
         loser,
         '⏰ Zeit abgelaufen – Niederlage',
-        `Dein Quizduell gegen ${opponent} wurde nach 48h Inaktivität als Niederlage gewertet.`,
+        loserMessage,
         'error'
       );
       await sendNotification(
         winner,
         '🏆 Sieg durch Aufgabe',
-        `${loser} hat 48 Stunden nicht gespielt. Du gewinnst das Quizduell!`,
+        winnerMessage,
         'success'
       );
 
@@ -3884,6 +4016,7 @@ export default function BaederApp() {
       setAllGames(prev => prev.map(g => g.id === game.id ? { ...g, status: 'finished', winner } : g));
       setActiveGames(prev => prev.filter(g => g.id !== game.id));
       localStorage.removeItem(`quiz_reminder_${game.id}_${game.currentTurn}`);
+      localStorage.removeItem(`quiz_waiting_reminder_${game.id}_${game.player2}`);
     } catch (e) {
       console.warn('autoForfeitGame Fehler:', e);
     }
@@ -3894,21 +4027,60 @@ export default function BaederApp() {
     const now = Date.now();
     const H24 = 24 * 60 * 60 * 1000;
     const H48 = 48 * 60 * 60 * 1000;
+    const H1 = 60 * 60 * 1000;
 
     for (const game of games) {
       if (game.status === 'finished') continue;
       const isMine = game.player1 === user.name || game.player2 === user.name;
       if (!isMine) continue;
 
-      const elapsed = now - new Date(game.updatedAt).getTime();
-      if (isNaN(elapsed)) continue;
+      if (game.status === 'waiting') {
+        const remainingMs = getWaitingChallengeRemainingMs(game, now);
+        if (!Number.isFinite(remainingMs)) continue;
+
+        if (remainingMs <= 0) {
+          const loser = game.player2;
+          const winner = game.player1;
+          await autoForfeitGame(game, loser, winner, 'challenge_expired');
+          continue;
+        }
+
+        const reminderTarget = game.player2;
+        if (reminderTarget !== user.name) continue;
+
+        const timeoutMs = getChallengeTimeoutMs(game);
+        const createdTs = parseTimestampSafe(game.createdAt || game.updatedAt);
+        if (createdTs === null) continue;
+
+        const elapsedMs = now - createdTs;
+        const reminderThresholdMs = Math.min(H24, Math.max(H1, Math.floor(timeoutMs / 2)));
+        if (elapsedMs < reminderThresholdMs) continue;
+
+        const reminderKey = `quiz_waiting_reminder_${game.id}_${reminderTarget}`;
+        if (localStorage.getItem(reminderKey)) continue;
+
+        const opponent = game.player1;
+        const minutesLeft = Math.max(1, Math.ceil(remainingMs / 60000));
+        await sendNotification(
+          reminderTarget,
+          '⏰ Herausforderung läuft bald ab',
+          `Du hast noch ca. ${formatDurationMinutesCompact(minutesLeft)} um die Herausforderung von ${opponent} anzunehmen.`,
+          'warning'
+        );
+        localStorage.setItem(reminderKey, now.toString());
+        continue;
+      }
+
+      const updatedAtTs = parseTimestampSafe(game.updatedAt);
+      if (updatedAtTs === null) continue;
+      const elapsed = now - updatedAtTs;
 
       if (elapsed >= H48) {
-        const loser = game.status === 'waiting' ? game.player2 : game.currentTurn;
+        const loser = game.currentTurn;
         const winner = game.player1 === loser ? game.player2 : game.player1;
-        await autoForfeitGame(game, loser, winner);
+        await autoForfeitGame(game, loser, winner, 'turn_timeout');
       } else if (elapsed >= H24) {
-        const reminderTarget = game.status === 'waiting' ? game.player2 : game.currentTurn;
+        const reminderTarget = game.currentTurn;
         if (reminderTarget !== user.name) continue;
         const reminderKey = `quiz_reminder_${game.id}_${reminderTarget}`;
         const lastSent = localStorage.getItem(reminderKey);

@@ -39,3 +39,4 @@ dev-dist/
 public/dev-sw.js
 public/sw.js
 public/workbox-*.js
+.vercel
