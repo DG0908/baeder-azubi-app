@@ -334,10 +334,10 @@ const BECKEN_HOTSPOT_DATA = {
 };
 
 function BeckenDeepDive({ metrics }) {
-  const [rx, setRx] = React.useState(-28);
-  const [ry, setRy] = React.useState(22);
-  const [drag, setDrag] = React.useState(null);
-  const [spot, setSpot] = React.useState(null);
+  const [rx, setRx] = useState(-28);
+  const [ry, setRy] = useState(22);
+  const [drag, setDrag] = useState(null);
+  const [spot, setSpot] = useState(null);
 
   const pt = (e) => e.touches ? e.touches[0] : e;
 
@@ -425,11 +425,12 @@ function BeckenDeepDive({ metrics }) {
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
 
+        <defs>
+          <pattern id="bGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+            <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+          </pattern>
+        </defs>
         <rect width="300" height="220" fill="#040d1a"/>
-        {/* Background grid */}
-        <pattern id="bGrid" width="18" height="18" patternUnits="userSpaceOnUse">
-          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
-        </pattern>
         <rect width="300" height="220" fill="url(#bGrid)"/>
 
         {/* Pool faces */}
