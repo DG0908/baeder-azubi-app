@@ -211,21 +211,26 @@ const DEEP_DIVE = {
     pruefungsantwort: 'Nur Partikel ≥ 0,1 µm. Kleinere Partikel (Viren, Eiweiße) müssen durch Flockung zu größeren Aggregaten verbunden werden.',
   },
   becken: {
-    icon: '🏊‍♂️', subtitle: 'Schwimmbecken · Hydraulik & Betrieb',
+    icon: '🏊‍♂️', subtitle: 'Schwimmbecken · 3D-Interaktiv · DIN 19643',
     kenndaten: [
-      { label: 'Einströmung', value: 'Boden-Einströmdüsen' },
-      { label: 'Ausströmung', value: 'Überlaufrinne (Oberfläche)' },
-      { label: 'Turnover max.', value: '12 h (Schwimmerbecken)' },
-      { label: 'Beckentiefe min.', value: '1,80 m (DIN 18032)' },
+      { label: 'Turnover Schwimmer', value: 'max. 12 h' },
+      { label: 'Turnover Lehrbecken', value: 'max. 4 h' },
+      { label: 'Beckentiefe (Norm)', value: '≥ 1,80 m (DIN 18032)' },
+      { label: 'Durchströmung', value: 'Vertikal (Standard)' },
+      { label: 'Überlaufrinne', value: 'Gesamter Umfang' },
+      { label: 'Bahnbreite 50m-Bahn', value: '2,5 m (FINA)' },
     ],
     lernpunkte: [
-      'Bodeneinströmung → gleichmäßige Durchströmung von unten nach oben',
-      'Überlaufrinne nimmt Oberflächenwasser (höchste Belastung) ab',
-      'Turnover = Beckenvolumen ÷ Volumenstrom [h]',
+      'Bodeneinströmung → gleichmäßige Aufwärtsdurchströmung (vertikal)',
+      'Überlaufrinne nimmt Oberflächenwasser ab (höchste Belastung!)',
+      'Turnover = Beckenvolumen [m³] ÷ Volumenstrom [m³/h]',
       'Totzonen entstehen bei schlechter Hydraulik → Keimgefahr',
+      'Restentleerung am tiefsten Punkt (Gefälle 1–2 % zum Ablauf)',
+      'Wendewandfliesen: Rutschhemmung R9, T-Markierung 2m vor Wand',
+      'Bahnmarkierung: Mittellinie 25 cm breit + Stirnwandmarkierung',
     ],
     pruefungsfrage: 'Wie wird die Turnover-Zeit berechnet und was ist der Grenzwert?',
-    pruefungsantwort: 'Turnover [h] = Beckenvolumen [m³] ÷ Volumenstrom [m³/h]. Grenzwert: max. 12 h für Schwimmer-, max. 4 h für Lehr- und Kinderbecken.',
+    pruefungsantwort: 'Turnover [h] = Beckenvolumen [m³] ÷ Volumenstrom [m³/h]. Grenzwert: max. 12 h für Schwimmer-, max. 4 h für Lehr-/Kinderbecken (DIN 19643).',
   },
   ueberlauf: {
     icon: '↩️', subtitle: 'Überlaufrinne · Oberflächenabzug',
@@ -262,6 +267,296 @@ const DEEP_DIVE = {
     pruefungsantwort: 'Unterchloriertes oder pH-falsches Wasser verletzt hygienische Grenzwerte → Badebetrieb muss eingestellt werden. Laut DIN 19643 täglich messen und dokumentieren.',
   },
 };
+
+
+// ─── Interactive 3D Pool Deep-Dive ─────────────────────────────────────────────
+const BECKEN_HOTSPOT_DATA = {
+  ueberlauf: {
+    color: '#4a9eff', icon: '↩️', title: 'Überlaufrinne',
+    items: [
+      '📐 Spaltrinne: schmaler Schlitz rundum (häufigste Bauart)',
+      '📐 Rostrinne: Rost über tiefer Rinne, begehbar (Sportbäder)',
+      '📐 Schlitzrinne: diskrete Schlitze im Beckenrand',
+      '📐 Liegende Rinne: vertikal für Hallenbäder',
+      '⚡ Funktion: erfasst Oberflächenwasser (höchste Belastung)',
+      '📏 Rinne läuft den gesamten Beckenumfang entlang',
+      '🔬 Rinnenwasser enthält: Schweiß, Öle, Sonnencreme',
+    ]
+  },
+  einstroemdüsen: {
+    color: '#34c090', icon: '▲', title: 'Einströmdüsen',
+    items: [
+      '↕ Vertikaldurchströmung: Düsen im Boden, Wasser steigt auf',
+      '↔ Horizontaldurchströmung: Düsen in Wänden, Querstrom',
+      '💡 Gegenstromanlage: starker Strahl für Schwimmer',
+      '📏 DIN 19643: Düsenabstand max. 2,5 m × 3,5 m',
+      '🌊 Einströmgeschwindigkeit: 0,3 – 0,5 m/s',
+      '🔵 Düsentypen: Deckelventil, Dübelventil, Körperdüse',
+      '✅ Gleichmäßige Verteilung verhindert Totzonen',
+    ]
+  },
+  wendewand: {
+    color: '#ffaa40', icon: '🔲', title: 'Wendewandfliesen',
+    items: [
+      '🛡 Rutschhemmung: R9 nach DIN 51097 (Barfußbereich)',
+      '🎨 Kontrastfarben: Orientierung + Kennzeichnung',
+      '📏 T-Markierung: 2 m vor der Wand, 1 m breit',
+      '🔢 Tiefenmarkierung: eingebrannte Zahlen in den Fliesen',
+      '📐 Wendewandtiefe: ≥ 0,8 m für Wettkampf',
+      '🏊 Ablaufblock-Sockel: rutschfeste Trittplatte',
+      '📋 DIN 18032-3: Anforderungen an Sportbäder',
+    ]
+  },
+  restentleerung: {
+    color: '#d04040', icon: '⬇️', title: 'Restentleerung',
+    items: [
+      '📍 Lage: tiefster Punkt des Beckens (Bodengefälle 1–2 %)',
+      '🔧 Nennweite: DN 100–150 je nach Beckenvolumen',
+      '⏱ Entleerungszeit: < 6 h für Übungsbereich',
+      '🚫 Entsorgung: Kanal (NICHT in Aufbereitungskreislauf)',
+      '🔒 Absperrung: Schieber oder Kugelhahn außen',
+      '🧹 Zweck: Reinigung, Inspektion, Reparatur',
+      '🌀 Zuläufe werden vor Entleerung gesperrt',
+    ]
+  },
+  bahnmarkierung: {
+    color: '#a040d0', icon: '📏', title: 'Bahnmarkierung',
+    items: [
+      '📐 Sportstätte 50 m: 8 Bahnen × 2,5 m = 20 m breit',
+      '📐 Sportstätte 25 m: 6–8 Bahnen × 2,5 m',
+      '🔵 Mittellinie: 25 cm breit, dunkle Farbe, Beckenlänge',
+      '🏁 T-Markierung: 2 m vor Wand, 1 m lang, quer',
+      '🎯 Startblock-Abstand: 50 cm Mindestabstand',
+      '🔴 Sportboje: ø 5 cm, alle 5 m entlang Seile',
+      '📋 FINA-Regeln: rot = 1./8. Bahn, blau = 4./5. Bahn',
+    ]
+  },
+};
+
+function BeckenDeepDive({ metrics }) {
+  const [rx, setRx] = React.useState(-28);
+  const [ry, setRy] = React.useState(22);
+  const [drag, setDrag] = React.useState(null);
+  const [spot, setSpot] = React.useState(null);
+
+  const pt = (e) => e.touches ? e.touches[0] : e;
+
+  const onDown = (e) => {
+    if (e.target.closest('[data-hotspot]')) return;
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = pt(e).clientX - drag.x, dy = pt(e).clientY - drag.y;
+    setRy(y => y + dx * 0.55);
+    setRx(x => Math.max(-70, Math.min(15, x - dy * 0.4)));
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onUp = () => setDrag(null);
+
+  const p3 = (x, y, z) => {
+    const cY = Math.cos(ry * Math.PI / 180), sY = Math.sin(ry * Math.PI / 180);
+    const cX = Math.cos(rx * Math.PI / 180), sX = Math.sin(rx * Math.PI / 180);
+    const x1 = x * cY - z * sY, z1 = x * sY + z * cY;
+    const y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+    const d = 340 / (340 + z2);
+    return [150 + x1 * d, 118 + y1 * d, z2];
+  };
+
+  const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
+  const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+  // Pool coords: x ±120 (len 25m), y ±65 (w 12.5m), z 0=surface → 55=floor
+  const TFL = p3(-120,-65,0), TFR = p3(120,-65,0), TBR = p3(120,65,0),  TBL = p3(-120,65,0);
+  const BFL = p3(-120,-65,55),BFR = p3(120,-65,55),BBR = p3(120,65,55), BBL = p3(-120,65,55);
+  // Overflow channel strip (z=-10 to 0 at rim)
+  const OFL = p3(-120,-65,-10),OFR = p3(120,-65,-10),OBR = p3(120,65,-10),OBL = p3(-120,65,-10);
+
+  const faces = [
+    // floor with lane markings
+    { id:'floor',  pts:[BFL,BFR,BBR,BBL], fill:'#061828', stroke:'#1a3a5a', strokeW:1, content:'floor' },
+    // back wall
+    { id:'back',   pts:[TBL,TBR,BBR,BBL], fill:'#081e3c', stroke:'#1a3a5a', strokeW:1 },
+    // left end wall
+    { id:'leftW',  pts:[TFL,TBL,BBL,BFL], fill:'#071830', stroke:'#1a3a5a', strokeW:1, content:'leftWall' },
+    // right end wall
+    { id:'rightW', pts:[TFR,TBR,BBR,BFR], fill:'#071830', stroke:'#1a3a5a', strokeW:1, content:'rightWall' },
+    // front wall
+    { id:'front',  pts:[TFL,TFR,BFR,BFL], fill:'#081e3c', stroke:'#1a3a5a', strokeW:1 },
+    // overflow channel top (rim strip)
+    { id:'ovTop',  pts:[OFL,OFR,TFR,TFL], fill:'#0c2a50', stroke:'#2a5a90', strokeW:1 },
+    { id:'ovBack', pts:[OBL,OBR,TBR,TBL], fill:'#0c2a50', stroke:'#2a5a90', strokeW:1 },
+    { id:'ovLeft', pts:[OFL,TFL,TBL,OBL], fill:'#0a2545', stroke:'#2a5a90', strokeW:0.8 },
+    { id:'ovRite', pts:[OFR,TFR,TBR,OBR], fill:'#0a2545', stroke:'#2a5a90', strokeW:0.8 },
+    // water surface (semi-transparent last = on top)
+    { id:'water',  pts:[TFL,TFR,TBR,TBL], fill:'#1a5090', fillOp:0.55, stroke:'#4ab0ff', strokeW:0.8, content:'water' },
+  ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a,b) => b.zVal - a.zVal);
+
+  // Lane lines on floor (project 4 lanes)
+  const laneLines = [-52,-18,18,52].map(ly => ({
+    a: p3(-110, ly, 55), b: p3(110, ly, 55)
+  }));
+  // T-marks on floor near end walls
+  const tMarks = [
+    [p3(-110,-12,55), p3(-110,12,55), p3(-98,0,55), p3(-122,0,55)],
+    [p3(110,-12,55),  p3(110,12,55),  p3(98,0,55),  p3(122,0,55)],
+  ];
+  // Nozzle positions on floor
+  const nozzles = [[-70,-40],[-70,0],[-70,40],[0,-40],[0,0],[0,40],[70,-40],[70,0],[70,40]]
+    .map(([x,y]) => p3(x, y, 55));
+
+  // Hotspot definitions (3D position)
+  const hotDefs = [
+    { id:'ueberlauf',     x:0,    y:-65,  z:-5,  label:'↩ Überlauf',   color:'#4a9eff' },
+    { id:'einstroemdüsen',x:0,    y:0,    z:55,  label:'▲ Düsen',      color:'#34c090' },
+    { id:'wendewand',     x:-120, y:0,    z:25,  label:'🔲 Wendewand', color:'#ffaa40' },
+    { id:'restentleerung',x:0,    y:35,   z:55,  label:'⬇ Entleer.',   color:'#d04040' },
+    { id:'bahnmarkierung',x:50,   y:0,    z:0,   label:'📏 Bahn',      color:'#a040d0' },
+  ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
+
+  const activeData = spot ? BECKEN_HOTSPOT_DATA[spot] : null;
+
+  return (
+    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
+      <svg viewBox="0 0 300 220" width="100%" height="220px"
+        style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
+
+        <rect width="300" height="220" fill="#040d1a"/>
+        {/* Background grid */}
+        <pattern id="bGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+        </pattern>
+        <rect width="300" height="220" fill="url(#bGrid)"/>
+
+        {/* Pool faces */}
+        {faces.map(f => (
+          <g key={f.id}>
+            <polygon points={poly(f.pts)} fill={f.fill} fillOpacity={f.fillOp || 1}
+              stroke={f.stroke} strokeWidth={f.strokeW}/>
+            {/* Lane lines on floor */}
+            {f.id === 'floor' && laneLines.map((l,i) => (
+              <line key={i} x1={l.a[0].toFixed(1)} y1={l.a[1].toFixed(1)} x2={l.b[0].toFixed(1)} y2={l.b[1].toFixed(1)}
+                stroke="#1a4070" strokeWidth="1.2" opacity="0.7"/>
+            ))}
+            {/* Center lane arrow on floor */}
+            {f.id === 'floor' && (() => {
+              const c1 = p3(-80,0,55), c2 = p3(80,0,55);
+              return <line x1={c1[0].toFixed(1)} y1={c1[1].toFixed(1)} x2={c2[0].toFixed(1)} y2={c2[1].toFixed(1)}
+                stroke="#2a5090" strokeWidth="2.5" opacity="0.8"/>;
+            })()}
+            {/* Nozzles on floor */}
+            {f.id === 'floor' && nozzles.map((n, i) => (
+              <circle key={i} cx={n[0].toFixed(1)} cy={n[1].toFixed(1)} r="2.5"
+                fill="#1a4060" stroke="#2a6090" strokeWidth="0.8"/>
+            ))}
+            {/* T-marks near end walls */}
+            {f.id === 'floor' && tMarks.map((m, i) => (
+              <g key={i}>
+                <line x1={m[0][0].toFixed(1)} y1={m[0][1].toFixed(1)} x2={m[1][0].toFixed(1)} y2={m[1][1].toFixed(1)} stroke="#c04040" strokeWidth="2" opacity="0.7"/>
+                <line x1={m[2][0].toFixed(1)} y1={m[2][1].toFixed(1)} x2={m[3][0].toFixed(1)} y2={m[3][1].toFixed(1)} stroke="#c04040" strokeWidth="2" opacity="0.7"/>
+              </g>
+            ))}
+            {/* Tile band on end walls */}
+            {(f.id === 'leftW' || f.id === 'rightW') && (() => {
+              const [a,b,c,d] = f.pts;
+              // lower quarter of wall = tile band
+              const tile1 = [
+                [a[0]+(d[0]-a[0])*0.55, a[1]+(d[1]-a[1])*0.55],
+                [b[0]+(c[0]-b[0])*0.55, b[1]+(c[1]-b[1])*0.55],
+                [b[0]+(c[0]-b[0])*0.7,  b[1]+(c[1]-b[1])*0.7],
+                [a[0]+(d[0]-a[0])*0.7,  a[1]+(d[1]-a[1])*0.7],
+              ];
+              return <polygon points={tile1.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}
+                fill="#0f3560" fillOpacity="0.7" stroke="#1a5090" strokeWidth="0.6"/>;
+            })()}
+            {/* Water surface animation hint */}
+            {f.id === 'water' && (() => {
+              const w1 = p3(-80, -40, 0), w2 = p3(60, -40, 0), w3 = p3(-60, 20, 0);
+              return <>
+                <line x1={w1[0].toFixed(1)} y1={w1[1].toFixed(1)} x2={w2[0].toFixed(1)} y2={w2[1].toFixed(1)}
+                  stroke="#4ac8ff" strokeWidth="1.5" opacity="0.4" strokeDasharray="8 5" className="wc-surface"/>
+                <line x1={w3[0].toFixed(1)} y1={w3[1].toFixed(1)} x2={p3(80,20,0)[0].toFixed(1)} y2={p3(80,20,0)[1].toFixed(1)}
+                  stroke="#4ac8ff" strokeWidth="1" opacity="0.3" strokeDasharray="6 5" className="wc-surface"/>
+              </>;
+            })()}
+            {/* Overflow channel details */}
+            {(f.id === 'ovTop' || f.id === 'ovBack') && (() => {
+              const [a,b,c,d] = f.pts;
+              const mid1 = [(a[0]+d[0])/2,(a[1]+d[1])/2];
+              const mid2 = [(b[0]+c[0])/2,(b[1]+c[1])/2];
+              return <line x1={mid1[0].toFixed(1)} y1={mid1[1].toFixed(1)} x2={mid2[0].toFixed(1)} y2={mid2[1].toFixed(1)}
+                stroke="#2a6090" strokeWidth="1" opacity="0.5" strokeDasharray="4 3"/>;
+            })()}
+          </g>
+        ))}
+
+        {/* Hotspot markers */}
+        {hotDefs.map(h => (
+          <g key={h.id} data-hotspot="1" style={{ cursor: 'pointer' }}
+            onClick={e => { e.stopPropagation(); setSpot(spot === h.id ? null : h.id); }}>
+            <circle cx={h.proj[0].toFixed(1)} cy={h.proj[1].toFixed(1)} r="14"
+              fill={h.color} fillOpacity={spot === h.id ? 0.4 : 0.15}
+              stroke={h.color} strokeWidth={spot === h.id ? 2.5 : 1.5}>
+              {spot !== h.id && <animate attributeName="r" values="14;17;14" dur="2.5s" repeatCount="indefinite"/>}
+            </circle>
+            <text x={h.proj[0].toFixed(1)} y={(h.proj[1]+4).toFixed(1)}
+              fill="white" fontSize="10" fontWeight="bold" textAnchor="middle"
+              style={{ pointerEvents: 'none' }}>+</text>
+            {spot === h.id && (
+              <text x={h.proj[0].toFixed(1)} y={(h.proj[1]-18).toFixed(1)}
+                fill={h.color} fontSize="7" fontFamily="monospace" textAnchor="middle"
+                style={{ pointerEvents: 'none' }}>{h.label}</text>
+            )}
+          </g>
+        ))}
+
+        {/* Depth indicator */}
+        {(() => {
+          const d1 = p3(130,-65,0), d2 = p3(130,-65,55);
+          return <>
+            <line x1={d1[0].toFixed(1)} y1={d1[1].toFixed(1)} x2={d2[0].toFixed(1)} y2={d2[1].toFixed(1)}
+              stroke="#2a5070" strokeWidth="1" strokeDasharray="3 2" opacity="0.7"/>
+            <text x={(d2[0]+4).toFixed(1)} y={(d1[1]+(d2[1]-d1[1])/2).toFixed(1)} fill="#2a5070" fontSize="6.5" fontFamily="monospace">2,0m</text>
+          </>;
+        })()}
+
+        {/* Label */}
+        <text x="150" y="214" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+        </text>
+      </svg>
+
+      {/* Info overlay panel */}
+      {activeData && (
+        <div style={{
+          background: 'linear-gradient(to bottom, #0a1828, #040d1a)',
+          borderTop: '2px solid ' + activeData.color,
+          padding: '10px 12px',
+          maxHeight: '180px', overflowY: 'auto'
+        }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'6px' }}>
+            <span style={{ color: activeData.color, fontSize:'12px', fontWeight:'bold', fontFamily:'monospace' }}>
+              {activeData.icon} {activeData.title}
+            </span>
+            <button onClick={() => setSpot(null)} style={{
+              background:'transparent', border:'1px solid #1a3a5a', borderRadius:'4px',
+              color:'#5a8090', fontSize:'11px', padding:'2px 7px', cursor:'pointer'
+            }}>✕</button>
+          </div>
+          {activeData.items.map((item, i) => (
+            <p key={i} style={{ color:'#8ab0c0', fontSize:'10px', fontFamily:'monospace', margin:'2px 0', lineHeight:'1.5' }}>
+              {item}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Station-specific animated SVG illustrations ──────────────────────────────
 function DeepDiveSVG({ stationId, metrics, controls, xrayMode }) {
@@ -470,36 +765,7 @@ function DeepDiveSVG({ stationId, metrics, controls, xrayMode }) {
   }
 
   if (stationId === 'becken') {
-    return (
-      <svg viewBox="0 0 300 230" width="100%" height="100%">
-        <rect width="300" height="230" fill={B.bg} rx="8"/>
-        <rect x="20" y="30" width="220" height="130" fill={B.panel} stroke={B.border} strokeWidth="2" rx="4"/>
-        <rect x="26" y="46" width="208" height="108" fill={B.water} fillOpacity="0.28"/>
-        <path d="M26 58 Q60 48 96 58 Q132 68 166 56 Q200 44 234 58"
-          fill="none" stroke="#4ab0ff" strokeWidth="1.5" opacity="0.7" className="wc-surface"/>
-        <rect x="240" y="46" width="14" height="52" fill={B.muted} fillOpacity="0.2" stroke={B.border} strokeWidth="1"/>
-        <polygon points="240,60 248,54 248,66" fill={B.accent} opacity="0.5"/>
-        <text x="254" y="75" fill={B.muted} fontSize="5.5" fontFamily="monospace" transform="rotate(90,254,75)">ÜBERLAUFRINNE</text>
-        {[68, 130, 192].map(x => (
-          <g key={x}>
-            <rect x={x - 8} y={148} width="16" height="8" fill={B.accent} fillOpacity="0.3" stroke={B.accent} strokeWidth="0.8" rx="1"/>
-            <polygon points={`${x},140 ${x - 4},148 ${x + 4},148`} fill={B.accent} opacity="0.65"/>
-          </g>
-        ))}
-        <text x="130" y="170" fill={B.muted} fontSize="7" fontFamily="monospace" textAnchor="middle">▲ BODENEINSTRÖMDÜSEN</text>
-        {[78, 132].map(x => (
-          <g key={x} opacity="0.4">
-            <circle cx={x} cy="80" r="6" fill="none" stroke={B.muted} strokeWidth="1.2"/>
-            <line x1={x} y1="86" x2={x} y2="108" stroke={B.muted} strokeWidth="1.5"/>
-            <line x1={x - 10} y1="96" x2={x + 10} y2="96" stroke={B.muted} strokeWidth="1.5"/>
-          </g>
-        ))}
-        <rect x="20" y="180" width="260" height="38" fill={B.panel} stroke={B.border} strokeWidth="1" rx="4"/>
-        <text x="150" y="194" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="middle">TURNOVER = BECKENVOLUMEN ÷ VOLUMENSTROM</text>
-        <text x="150" y="208" fill={B.accent} fontSize="7" fontFamily="monospace" textAnchor="middle">Max. 12 h · Schwimmerbecken | 4 h · Lehr-/Kinderbecken</text>
-        <text x="150" y="224" fill={B.muted} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">SCHWIMMBECKEN · HYDRAULIK</text>
-      </svg>
-    );
+    return <BeckenDeepDive metrics={metrics}/>;
   }
 
   return (
