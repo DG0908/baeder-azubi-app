@@ -51,16 +51,16 @@ const PIPE_PATHS_VERTICAL = {
 };
 
 const PIPE_PATHS_MOBILE_VERTICAL = {
-  'becken-ueberlauf':     'M 428 52 L 440 52',
-  'ueberlauf-schwall':    'M 440 52 L 440 122',
-  'schwall-pumpe':        'M 395 264 L 395 291',
-  'pumpe-flockung':       'M 395 379 L 395 460',
-  'flockung-filter':      'M 395 460 L 395 480',
-  'filter-desinfektion':  'M 348 652 L 65 652',
-  'desinfektion-heizung': 'M 65 548 L 65 500',
-  'heizung-ruecklauf':    'M 65 430 L 65 300',
-  'ruecklauf-becken':     'M 65 290 L 65 102',
-  'filter-kanal':         'M 432 652 L 440 652 L 440 705',
+  'becken-ueberlauf':     'M 274 54 L 284 54',
+  'ueberlauf-schwall':    'M 284 54 L 356 54 L 356 115',
+  'schwall-pumpe':        'M 356 222 L 356 258',
+  'pumpe-flockung':       'M 356 326 L 356 348',
+  'flockung-filter':      'M 356 408 L 356 422',
+  'filter-desinfektion':  'M 320 603 L 20 603',
+  'desinfektion-heizung': 'M 20 467 L 20 442',
+  'heizung-ruecklauf':    'M 20 370 L 20 298',
+  'ruecklauf-becken':     'M 20 270 L 20 97',
+  'filter-kanal':         'M 392 616 L 415 616 L 415 755',
 };
 
 const PIPE_PATHS_HORIZONTAL = {
@@ -695,49 +695,60 @@ const WaterCycleView = () => {
           {/* ── MOBILE Portrait SVG (shown < sm) ── */}
           <div className="rounded-2xl overflow-hidden shadow-2xl block sm:hidden" style={{ border: '1px solid #1a3a5a' }}>
             <div style={{ background: '#040d1a' }}>
-              <svg className="w-full" viewBox="0 0 440 730" style={{ display: 'block' }}>
+              <svg className="w-full" viewBox="0 0 420 780" style={{ display: 'block' }}>
                 <defs>
                   <linearGradient id="wcBlueBgM" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="#040d1a"/>
                     <stop offset="100%" stopColor="#060f22"/>
                   </linearGradient>
-                  <linearGradient id="wcWaterFillM" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <linearGradient id="wcWaterM" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="#1a6090" stopOpacity="0.75"/>
                     <stop offset="100%" stopColor="#0a3060" stopOpacity="0.9"/>
                   </linearGradient>
-                  <linearGradient id="wcFlowM" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#38b0ff"/>
-                    <stop offset="100%" stopColor="#60c8ff"/>
+                  <linearGradient id="wcHeatM" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#802010"/>
+                    <stop offset="100%" stopColor="#ff6030" stopOpacity="0.6"/>
                   </linearGradient>
-                  <filter id="wcGlowM" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="2.5" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  <filter id="wcGlowM" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="2.5" result="b"/>
+                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                  <filter id="wcGlowSM" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="1.5" result="b"/>
+                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
                   </filter>
                   <pattern id="wcGridM" width="20" height="20" patternUnits="userSpaceOnUse">
                     <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0e2840" strokeWidth="0.5"/>
                   </pattern>
+                  <marker id="arrowUpM" markerWidth="6" markerHeight="6" refX="3" refY="5" orient="auto">
+                    <polygon points="3,0 6,6 0,6" fill="#38b0ff" opacity="0.7"/>
+                  </marker>
+                  <marker id="arrowDnM" markerWidth="6" markerHeight="6" refX="3" refY="1" orient="auto">
+                    <polygon points="3,6 6,0 0,0" fill="#38b0ff" opacity="0.7"/>
+                  </marker>
                 </defs>
-                <rect width="100%" height="100%" fill="url(#wcBlueBgM)"/>
-                <rect width="100%" height="100%" fill="url(#wcGridM)" opacity="0.9"/>
 
-                {/* ── MOBILE PIPES ── */}
+                <rect width="100%" height="100%" fill="url(#wcBlueBgM)"/>
+                <rect width="100%" height="100%" fill="url(#wcGridM)" opacity="0.8"/>
+
+                {/* ══════════════ PIPES ══════════════ */}
                 {WATER_CYCLE_PIPES.map(pipe => {
                   const path = PIPE_PATHS_MOBILE_VERTICAL[pipe.id];
                   if (!path) return null;
-                  const bwMode = controls.backwashMode;
-                  const active = bwMode ? pipe.mode !== 'normal' || pipe.reversibleInBackwash : pipe.mode !== 'backwash';
-                  const rev = bwMode && pipe.reversibleInBackwash;
-                  const backwash = pipe.mode === 'backwash' || rev;
+                  const bw = controls.backwashMode;
+                  const active = bw ? pipe.mode !== 'normal' || pipe.reversibleInBackwash : pipe.mode !== 'backwash';
+                  const rev = bw && pipe.reversibleInBackwash;
+                  const bwPipe = pipe.mode === 'backwash' || rev;
                   const hasFlow = active && metrics.flowRate > 0;
                   return (
                     <g key={pipe.id}>
-                      <path d={path} fill="none" stroke="#0d2540" strokeWidth="18" strokeLinecap="round"/>
-                      <path d={path} fill="none" stroke="#162f50" strokeWidth="12" strokeLinecap="round"/>
+                      <path d={path} fill="none" stroke="#071a30" strokeWidth="20" strokeLinecap="round"/>
+                      <path d={path} fill="none" stroke="#0d2a48" strokeWidth="14" strokeLinecap="round"/>
+                      <path d={path} fill="none" stroke="#122038" strokeWidth="8" strokeLinecap="round"/>
                       {hasFlow && (
                         <path d={path} fill="none"
-                          stroke={backwash ? '#f09030' : '#38b0ff'}
-                          strokeWidth="6" strokeLinecap="round"
-                          strokeDasharray="14 10"
+                          stroke={bwPipe ? '#f09030' : '#4ac8ff'}
+                          strokeWidth="7" strokeLinecap="round"
                           className={rev ? 'wc-flow wc-flow-reverse' : 'wc-flow'}
                           style={{ animationDuration: `${flowDuration}s` }}
                           filter="url(#wcGlowM)"/>
@@ -746,161 +757,284 @@ const WaterCycleView = () => {
                   );
                 })}
 
-                {/* ── POOL (top horizontal strip) ── */}
+                {/* Flow direction arrows on left return pipe */}
+                {metrics.flowRate > 0 && <>
+                  <line x1="20" y1="530" x2="20" y2="488" stroke="#4ac8ff" strokeWidth="2" opacity="0.5" markerEnd="url(#arrowUpM)"/>
+                  <line x1="20" y1="410" x2="20" y2="335" stroke="#4ac8ff" strokeWidth="2" opacity="0.5" markerEnd="url(#arrowUpM)"/>
+                  <line x1="20" y1="235" x2="20" y2="145" stroke="#4ac8ff" strokeWidth="2" opacity="0.5" markerEnd="url(#arrowUpM)"/>
+                  <line x1="356" y1="165" x2="356" y2="200" stroke="#4ac8ff" strokeWidth="2" opacity="0.5" markerEnd="url(#arrowDnM)"/>
+                  <line x1="356" y1="280" x2="356" y2="310" stroke="#4ac8ff" strokeWidth="2" opacity="0.5" markerEnd="url(#arrowDnM)"/>
+                </>}
+
+                {/* ══════════════ BECKEN ══════════════ */}
                 <g onClick={() => chooseStation('becken')} style={{ cursor: 'pointer' }}>
-                  <rect x="8" y="12" width="424" height="90" rx="5" fill="#050e1c" stroke={selectedStationId === 'becken' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <rect x="18" y="52" width="404" height="42" rx="2" fill="url(#wcWaterFillM)"/>
-                  <path d="M18 60 Q90 50 160 60 Q230 70 300 55 Q360 45 422 58" fill="none" stroke="#4ab0ff" strokeWidth="1.5" className="wc-surface" opacity="0.75"/>
-                  {/* Nozzles for return at bottom */}
-                  {[100, 220, 340].map(nx => (
+                  <rect x="10" y="15" width="268" height="82" rx="5"
+                    fill="#050e1c"
+                    stroke={selectedStationId === 'becken' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  {/* Water fill */}
+                  <rect x="18" y="52" width="252" height="37" rx="2" fill="url(#wcWaterM)"/>
+                  {/* Surface wave */}
+                  <path d="M18 58 Q64 48 110 58 Q156 68 202 52 Q238 42 270 55"
+                    fill="none" stroke="#5ad0ff" strokeWidth="1.8"
+                    className="wc-surface" opacity="0.8"/>
+                  {/* Nozzles + jets */}
+                  {[100, 195].map(nx => (
                     <g key={nx}>
-                      <rect x={nx-9} y="97" width="18" height="5" rx="1.5" fill="#4a9eff" fillOpacity="0.35" stroke="#4a9eff" strokeWidth="0.7"/>
-                      {metrics.flowRate > 0 && <line x1={nx} y1="96" x2={nx} y2="89" stroke="#4a9eff" strokeWidth="1.5" opacity="0.4" strokeDasharray="2.5 2"/>}
+                      <rect x={nx - 10} y="94" width="20" height="5" rx="2"
+                        fill="#3a80c0" fillOpacity="0.5" stroke="#4a9eff" strokeWidth="0.8"/>
+                      {metrics.flowRate > 0 && <>
+                        <line x1={nx - 4} y1="93" x2={nx - 4} y2="82" stroke="#4ac8ff" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.7" className="wc-flow"/>
+                        <line x1={nx}     y1="93" x2={nx}     y2="80" stroke="#4ac8ff" strokeWidth="2"   strokeDasharray="3 3" opacity="0.9" className="wc-flow" filter="url(#wcGlowSM)"/>
+                        <line x1={nx + 4} y1="93" x2={nx + 4} y2="82" stroke="#4ac8ff" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.7" className="wc-flow"/>
+                      </>}
                     </g>
                   ))}
-                  {/* Overflow channel right edge */}
-                  <rect x="425" y="20" width="10" height="62" rx="2" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
-                  <rect x="427" y="26" width="6" height="48" rx="1" fill="#1060a0" fillOpacity="0.4"/>
-                  <text x="22" y="33" fill="#5a8090" fontSize="9.5" fontFamily="monospace" letterSpacing="1.5">SCHWIMMBECKEN</text>
-                  <text x="22" y="44" fill="#2a4060" fontSize="7" fontFamily="monospace">BODENEINSTRÖMUNG · DIN 19643</text>
-                  <text x="218" y="116" fill="#2a5070" fontSize="7" fontFamily="monospace" textAnchor="middle">EINSTRÖMDÜSEN</text>
+                  {/* Overflow notch */}
+                  <rect x="274" y="18" width="10" height="79" rx="2" fill="#040c1a" stroke="#1a3a5a" strokeWidth="1"/>
+                  <rect x="276" y="24" width="6" height="62" rx="1" fill="#1060a0" fillOpacity="0.35"/>
+                  {/* Overflow animated drops */}
+                  {metrics.flowRate > 0 && <>
+                    <circle cx="280" cy="54" r="2.5" fill="#4ac8ff" opacity="0.8" filter="url(#wcGlowSM)">
+                      <animate attributeName="cy" values="54;86;86" dur="1.2s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.9;0.5;0" dur="1.2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="280" cy="54" r="2" fill="#4ac8ff" opacity="0.7">
+                      <animate attributeName="cy" values="54;86;86" dur="1.2s" begin="0.4s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.9;0.4;0" dur="1.2s" begin="0.4s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="280" cy="54" r="1.8" fill="#38b0ff" opacity="0.6">
+                      <animate attributeName="cy" values="54;86;86" dur="1.2s" begin="0.8s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.8;0.3;0" dur="1.2s" begin="0.8s" repeatCount="indefinite"/>
+                    </circle>
+                  </>}
+                  <text x="14" y="34" fill="#5a8090" fontSize="9" fontFamily="monospace" letterSpacing="1.5">SCHWIMMBECKEN</text>
+                  <text x="14" y="45" fill="#2a4060" fontSize="7" fontFamily="monospace">BODENEINSTRÖMUNG · DIN 19643</text>
+                  <text x="278" y="26" fill="#1a4060" fontSize="6.5" fontFamily="monospace" transform="rotate(90,278,26)">ÜBERLAUF</text>
+                  <text x="147" y="111" fill="#1a4060" fontSize="6.5" fontFamily="monospace" textAnchor="middle">EINSTRÖMDÜSEN</text>
                 </g>
 
-                {/* ── OVERFLOW label ── */}
-                <text x="378" y="110" fill="#2a5070" fontSize="7" fontFamily="monospace">ÜBERLAUF ↓</text>
-
-                {/* ── SCHWALL (right column, top) ── */}
+                {/* ══════════════ SCHWALL ══════════════ */}
                 <g onClick={() => chooseStation('schwall')} style={{ cursor: 'pointer' }}>
-                  <ellipse cx="395" cy="122" rx="46" ry="13" fill="#060f22" stroke={selectedStationId === 'schwall' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <rect x="349" y="122" width="92" height="130" fill="#060f22" stroke={selectedStationId === 'schwall' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <rect x="351" y={122 + (130 - metrics.surgeLevel * 1.3)} width="88" height={metrics.surgeLevel * 1.3} rx="2" fill="#1060a0" fillOpacity="0.45"/>
-                  <ellipse cx="395" cy="252" rx="46" ry="13" fill="#060f22" stroke={selectedStationId === 'schwall' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <rect x="432" y="126" width="5" height="122" fill="#0e2540" rx="1.5"/>
-                  <rect x="432" y={126 + (122 - metrics.surgeLevel * 1.22)} width="5" height={metrics.surgeLevel * 1.22} fill="#4a9eff" fillOpacity="0.7" rx="1.5"/>
-                  <text x="395" y="110" fill="#5a8090" fontSize="8.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">SCHWALL</text>
-                  <text x="395" y="198" fill="#4a9eff" fontSize="12" fontFamily="monospace" fontWeight="bold" textAnchor="middle">{metrics.surgeLevel}%</text>
+                  <ellipse cx="356" cy="115" rx="36" ry="10" fill="#060f22" stroke={selectedStationId === 'schwall' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  <rect x="320" y="115" width="72" height="107" fill="#060f22" stroke={selectedStationId === 'schwall' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  {/* Water level fill */}
+                  <rect x="322" y={115 + Math.max(0, 107 - metrics.surgeLevel * 1.07)} width="68"
+                    height={Math.max(0, metrics.surgeLevel * 1.07)} rx="2" fill="#1060a0" fillOpacity="0.4"/>
+                  {/* Wave on water surface */}
+                  {metrics.surgeLevel > 5 && metrics.flowRate > 0 && (
+                    <path d={"M 322 " + (115+107-metrics.surgeLevel*1.07+3) + " Q 340 " + (115+107-metrics.surgeLevel*1.07-2) + " 356 " + (115+107-metrics.surgeLevel*1.07+3) + " Q 372 " + (115+107-metrics.surgeLevel*1.07+8) + " 390 " + (115+107-metrics.surgeLevel*1.07+3)}
+                      fill="none" stroke="#4ac8ff" strokeWidth="1.5" opacity="0.5" className="wc-surface"/>
+                  )}
+                  <ellipse cx="356" cy="222" rx="36" ry="10" fill="#060f22" stroke={selectedStationId === 'schwall' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  {/* Level gauge bar right side */}
+                  <rect x="392" y="117" width="5" height="103" rx="2" fill="#0a2030"/>
+                  <rect x="392" y={117 + Math.max(0, 103 - metrics.surgeLevel * 1.03)} width="5"
+                    height={Math.max(0, metrics.surgeLevel * 1.03)} fill="#4a9eff" fillOpacity="0.7" rx="2"/>
+                  <text x="356" y="104" fill="#5a8090" fontSize="8" fontFamily="monospace" textAnchor="middle" letterSpacing="1">SCHWALL</text>
+                  <text x="356" y="174" fill="#4ac8ff" fontSize="13" fontFamily="monospace" fontWeight="bold" textAnchor="middle">{metrics.surgeLevel}%</text>
+                  <text x="356" y="187" fill="#2a5070" fontSize="6.5" fontFamily="monospace" textAnchor="middle">FÜLLSTAND</text>
                 </g>
 
-                {/* ── PUMPE ── */}
+                {/* ══════════════ V1 VALVE ══════════════ */}
+                <g onClick={e => { e.stopPropagation(); toggleControl('rawValveOpen'); }} style={{ cursor: 'pointer' }}>
+                  <circle cx="356" cy="240" r="11" fill={controls.rawValveOpen ? '#0c2e0c' : '#2e0c0c'} stroke={controls.rawValveOpen ? '#34c090' : '#d04040'} strokeWidth="1.8"/>
+                  <text x="356" y="244" fill={controls.rawValveOpen ? '#34c090' : '#d04040'} fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle">V1</text>
+                </g>
+
+                {/* ══════════════ PUMPE ══════════════ */}
                 <g onClick={() => chooseStation('pumpe')} style={{ cursor: 'pointer' }}>
-                  <circle cx="395" cy="335" r="44" fill="#060f22" stroke={selectedStationId === 'pumpe' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <g className={controls.pumpEnabled ? 'wc-impeller' : ''} style={{ transformOrigin: '395px 335px' }}>
+                  <circle cx="356" cy="292" r="34" fill="#060f22" stroke={selectedStationId === 'pumpe' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  <g className={controls.pumpEnabled ? 'wc-impeller' : ''} style={{ transformOrigin: '356px 292px' }}>
                     {[0,60,120,180,240,300].map(deg => {
-                      const r = (deg*Math.PI)/180;
-                      return <line key={deg} x1="395" y1="335" x2={395+28*Math.cos(r)} y2={335+28*Math.sin(r)} stroke="#4a9eff" strokeWidth="2.5" strokeLinecap="round" opacity="0.8"/>;
+                      const rd = (deg * Math.PI) / 180;
+                      return <line key={deg} x1="356" y1="292" x2={356 + 26 * Math.cos(rd)} y2={292 + 26 * Math.sin(rd)} stroke="#4ac8ff" strokeWidth="2.5" strokeLinecap="round" opacity="0.85"/>;
                     })}
-                    <circle cx="395" cy="335" r="7" fill="#060f22" stroke="#4a9eff" strokeWidth="1.5"/>
+                    <circle cx="356" cy="292" r="7" fill="#060f22" stroke="#4ac8ff" strokeWidth="1.5"/>
                   </g>
-                  {symptomFlags.has('pumpBubbles') && (<>
-                    <circle cx="375" cy="318" r="3" fill="#60c0ff" className="wc-bubble"/>
-                    <circle cx="384" cy="326" r="2" fill="#40b0ff" className="wc-bubble" style={{ animationDelay: '0.3s' }}/>
-                  </>)}
-                  <text x="395" y="282" fill="#5a8090" fontSize="8.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">UMWÄLZPUMPE</text>
-                  <text x="395" y="294" fill={controls.pumpEnabled ? '#34c090' : '#d04040'} fontSize="7.5" fontFamily="monospace" textAnchor="middle">{controls.pumpEnabled ? '● BETRIEB' : '○ AUS'}</text>
+                  {symptomFlags.has('pumpBubbles') && <>
+                    <circle cx="342" cy="278" r="3" fill="#60c0ff" className="wc-bubble"/>
+                    <circle cx="352" cy="285" r="2" fill="#40b0ff" className="wc-bubble" style={{ animationDelay: '0.3s' }}/>
+                  </>}
+                  <text x="356" y="246" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">UMWÄLZPUMPE</text>
+                  <text x="356" y="256" fill={controls.pumpEnabled ? '#34c090' : '#d04040'} fontSize="7" fontFamily="monospace" textAnchor="middle">{controls.pumpEnabled ? '● BETRIEB' : '○ AUS'}</text>
+                  {/* V3 side valve */}
+                  <g onClick={e => { e.stopPropagation(); toggleControl('ventValveOpen'); }} style={{ cursor: 'pointer' }}>
+                    <circle cx="386" cy="278" r="10" fill={controls.ventValveOpen ? '#0c2e0c' : '#2e0c0c'} stroke={controls.ventValveOpen ? '#34c090' : '#d04040'} strokeWidth="1.5"/>
+                    <text x="386" y="282" fill={controls.ventValveOpen ? '#34c090' : '#d04040'} fontSize="6.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">V3</text>
+                  </g>
                 </g>
 
-                {/* ── FLOCKUNG (inline dosing) ── */}
+                {/* ══════════════ FLOCKUNG ══════════════ */}
                 <g onClick={() => chooseStation('flockung')} style={{ cursor: 'pointer' }}>
-                  <ellipse cx="395" cy="395" rx="24" ry="7" fill="#060f22" stroke={selectedStationId === 'flockung' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <rect x="371" y="393" width="48" height="62" fill="#060f22" stroke={selectedStationId === 'flockung' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <path d="M371 455 L395 470 L419 455 Z" fill="#060f22" stroke={selectedStationId === 'flockung' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  {[378,390,402,382,398].map((fx,i) => (
-                    <circle key={i} cx={fx} cy={403+(i%3)*9} r={1.3} fill="#6ab0d0" opacity="0.5">
-                      <animate attributeName="cy" values={`${403+(i%3)*9};${400+(i%3)*9};${403+(i%3)*9}`} dur={`${1.8+i*0.2}s`} repeatCount="indefinite"/>
+                  <ellipse cx="356" cy="348" rx="24" ry="7" fill="#060f22" stroke={selectedStationId === 'flockung' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  <rect x="332" y="347" width="48" height="53" fill="#060f22" stroke={selectedStationId === 'flockung' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  <path d="M 332 400 L 356 414 L 380 400 Z" fill="#060f22" stroke={selectedStationId === 'flockung' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  {/* Flockung particles inside vessel */}
+                  {[{cx:340,cy:362},{cx:352,cy:370},{cx:364,cy:358},{cx:345,cy:378},{cx:368,cy:374}].map((p,i) => (
+                    <circle key={i} cx={p.cx} cy={p.cy} r="1.5" fill="#6ab0d0" opacity="0.45">
+                      <animate attributeName="cy" values={p.cy + ";" + (p.cy - 3) + ";" + p.cy} dur={(1.8 + i * 0.2) + "s"} repeatCount="indefinite"/>
                     </circle>
                   ))}
-                  <text x="395" y="383" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">FLOCKUNG</text>
+                  {/* Flockungsmittel dropper (Al₂(SO₄)₃ – yellow-green) */}
+                  <rect x="306" y="358" width="26" height="20" rx="3" fill="#0a1e08" stroke="#5a8020" strokeWidth="1.2"/>
+                  <text x="319" y="371" fill="#80b020" fontSize="5.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">Al₂SO₄</text>
+                  <line x1="332" y1="368" x2="320" y2="368" stroke="#5a8020" strokeWidth="1" strokeDasharray="2 2"/>
+                  {controls.disinfectPumpEnabled && metrics.flowRate > 0 && <>
+                    <circle cx="334" cy="356" r="2.2" fill="#90c030" opacity="0.85" filter="url(#wcGlowSM)">
+                      <animate attributeName="cy" values="356;370;370" dur="1.4s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.9;0.5;0" dur="1.4s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="334" cy="356" r="1.8" fill="#80b828" opacity="0.7">
+                      <animate attributeName="cy" values="356;370;370" dur="1.4s" begin="0.5s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.9;0.4;0" dur="1.4s" begin="0.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="334" cy="356" r="1.5" fill="#a0d038" opacity="0.6">
+                      <animate attributeName="cy" values="356;370;370" dur="1.4s" begin="0.9s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.8;0.3;0" dur="1.4s" begin="0.9s" repeatCount="indefinite"/>
+                    </circle>
+                  </>}
+                  <text x="356" y="338" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">FLOCKUNG</text>
                 </g>
 
-                {/* ── FILTER (vertical, right column) ── */}
+                {/* ══════════════ FILTER ══════════════ */}
                 <g onClick={() => chooseStation('filter')} style={{ cursor: 'pointer' }}>
-                  <text x="390" y="468" fill="#2a6090" fontSize="7" fontFamily="monospace" textAnchor="middle">{filterMode === 'vertikal' ? 'VERTIKAL ↕' : 'HORIZONTAL ↔'}</text>
-                  <ellipse cx="390" cy="480" rx="44" ry="13" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : (symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a')} strokeWidth="1.5"/>
-                  <rect x="346" y="480" width="88" height="172" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : (symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a')} strokeWidth="1.5"/>
+                  <text x="356" y="410" fill="#2a6090" fontSize="6.5" fontFamily="monospace" textAnchor="middle">{filterMode === 'vertikal' ? 'VERTIKAL ↕' : 'HORIZONTAL ↔'}</text>
+                  {/* Verteilerhaube / distribution dome at top */}
+                  <ellipse cx="356" cy="422" rx="36" ry="10"
+                    fill="#060f22"
+                    stroke={selectedStationId === 'filter' ? '#4a9eff' : symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a'}
+                    strokeWidth="1.5"/>
+                  {/* Spray distribution lines from dome */}
+                  {metrics.flowRate > 0 && !controls.backwashMode && [
+                    [340,444],[348,440],[356,446],[364,440],[372,444]
+                  ].map(([fx,fy],i) => (
+                    <line key={i} x1="356" y1="430" x2={fx} y2={fy}
+                      stroke="#4ac8ff" strokeWidth="1.2" opacity="0.45"
+                      strokeDasharray="3 3" className="wc-flow"
+                      style={{ animationDuration: '1.2s', animationDelay: `${i * 0.15}s` }}/>
+                  ))}
+                  <rect x="320" y="422" width="72" height="171"
+                    fill="#060f22"
+                    stroke={selectedStationId === 'filter' ? '#4a9eff' : symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a'}
+                    strokeWidth="1.5"/>
                   {/* Filter layers */}
-                  <rect x="348" y="496" width="84" height="50" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.45}/>
-                  <rect x="348" y="546" width="84" height="55" fill="#38481a" fillOpacity={xrayMode ? 0.9 : 0.45}/>
-                  <rect x="348" y="601" width="84" height="44" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.45}/>
-                  {!xrayMode && (<>
-                    <line x1="348" y1="546" x2="432" y2="546" stroke="#1a3a5a" strokeWidth="0.8" strokeDasharray="3 2.5"/>
-                    <line x1="348" y1="601" x2="432" y2="601" stroke="#1a3a5a" strokeWidth="0.8" strokeDasharray="3 2.5"/>
-                    <text x="390" y="524" fill="#2a5040" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
-                    <text x="390" y="576" fill="#4a6020" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
-                    <text x="390" y="626" fill="#2a4058" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
-                  </>)}
-                  {xrayMode && (<>
-                    <text x="390" y="524" fill="#60c090" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
-                    <text x="390" y="576" fill="#90c060" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
-                    <text x="390" y="626" fill="#6080a0" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
-                  </>)}
-                  {/* Flow arrow */}
-                  <line x1="390" y1="500" x2="390" y2="638" stroke="#4a9eff" strokeWidth="1.3" strokeDasharray="6 5" opacity="0.22"/>
-                  <polygon points="386,636 390,648 394,636" fill="#4a9eff" opacity="0.28"/>
-                  <ellipse cx="390" cy="652" rx="44" ry="13" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  {/* dP gauge */}
-                  <circle cx="434" cy="555" r="16" fill={metrics.differentialPressure > 0.5 ? '#3a0808' : '#081808'} stroke={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} strokeWidth="1.5"/>
-                  <text x="434" y="552" fill={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} fontSize="6.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">dP</text>
-                  <text x="434" y="562" fill={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} fontSize="5.5" fontFamily="monospace" textAnchor="middle">{metrics.differentialPressure}</text>
-                  <text x="390" y="458" fill="#5a8090" fontSize="8.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">FILTER</text>
-                  {symptomFlags.has('filterTurbidity') && <text x="390" y="676" fill="#d04040" fontSize="7" fontFamily="monospace" textAnchor="middle">⚠ TRÜBUNG</text>}
+                  <rect x="322" y="436" width="68" height="44" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.5}/>
+                  <rect x="322" y="480" width="68" height="54" fill="#384818" fillOpacity={xrayMode ? 0.9 : 0.5}/>
+                  <rect x="322" y="534" width="68" height="52" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.5}/>
+                  <line x1="320" y1="480" x2="392" y2="480" stroke="#1a3a5a" strokeWidth="0.8" strokeDasharray="3 2.5"/>
+                  <line x1="320" y1="534" x2="392" y2="534" stroke="#1a3a5a" strokeWidth="0.8" strokeDasharray="3 2.5"/>
+                  {!xrayMode && <>
+                    <text x="356" y="462" fill="#2a5040" fontSize="6.5" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
+                    <text x="356" y="510" fill="#4a6020" fontSize="6.5" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
+                    <text x="356" y="562" fill="#2a4058" fontSize="6.5" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                  </>}
+                  {xrayMode && <>
+                    <text x="356" y="462" fill="#60c090" fontSize="6.5" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
+                    <text x="356" y="510" fill="#90c060" fontSize="6.5" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
+                    <text x="356" y="562" fill="#6080a0" fontSize="6.5" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                  </>}
+                  {/* Vertical flow arrow inside filter */}
+                  <line x1="356" y1="444" x2="356" y2="576" stroke="#4a9eff" strokeWidth="1" strokeDasharray="5 5" opacity="0.18"/>
+                  <polygon points="352,574 356,584 360,574" fill="#4a9eff" opacity="0.22"/>
+                  {/* dP differential pressure gauge */}
+                  <circle cx="400" cy="508" r="17"
+                    fill={metrics.differentialPressure > 0.5 ? '#3a0808' : '#081808'}
+                    stroke={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} strokeWidth="1.5"/>
+                  <text x="400" y="505" fill={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} fontSize="6" fontFamily="monospace" fontWeight="bold" textAnchor="middle">dP</text>
+                  <text x="400" y="515" fill={metrics.differentialPressure > 0.5 ? '#d04040' : '#34c090'} fontSize="5.5" fontFamily="monospace" textAnchor="middle">{metrics.differentialPressure}</text>
+                  <ellipse cx="356" cy="593" rx="36" ry="10" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  <text x="356" y="416" fill="#5a8090" fontSize="8" fontFamily="monospace" textAnchor="middle" letterSpacing="1">FILTER</text>
+                  {symptomFlags.has('filterTurbidity') && <text x="356" y="612" fill="#d04040" fontSize="6.5" fontFamily="monospace" textAnchor="middle">⚠ TRÜBUNG</text>}
                 </g>
 
-                {/* ── DESINFEKTION (left column, inline on return pipe) ── */}
+                {/* ══════════════ V4 backwash valve ══════════════ */}
+                <g onClick={e => { e.stopPropagation(); toggleControl('backwashValveOpen'); }} style={{ cursor: 'pointer' }}>
+                  <circle cx="356" cy="616" r="11" fill={controls.backwashValveOpen ? '#0c2e0c' : '#2e0c0c'} stroke={controls.backwashValveOpen ? '#34c090' : '#d04040'} strokeWidth="1.8"/>
+                  <text x="356" y="620" fill={controls.backwashValveOpen ? '#34c090' : '#d04040'} fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle">V4</text>
+                </g>
+
+                {/* ══════════════ BOTTOM RETURN PIPE LABEL ══════════════ */}
+                <text x="170" y="617" fill="#1a4070" fontSize="6.5" fontFamily="monospace" textAnchor="middle">←── RÜCKLAUF INS BECKEN ──←</text>
+
+                {/* ══════════════ HEIZUNG / WÄRMETAUSCHER ══════════════ */}
+                <g onClick={() => chooseStation('heizung')} style={{ cursor: 'pointer' }}>
+                  {/* Connection stubs from left pipe into heizung */}
+                  <line x1="20" y1="385" x2="35" y2="385" stroke="#2a5070" strokeWidth="3" strokeLinecap="round"/>
+                  <line x1="20" y1="430" x2="35" y2="430" stroke="#2a5070" strokeWidth="3" strokeLinecap="round"/>
+                  <rect x="35" y="370" width="113" height="72" rx="4"
+                    fill="#060f22"
+                    stroke={selectedStationId === 'heizung' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  {/* Heat plates – alternating hot/cold */}
+                  {[381,390,399,408,417,424].map((hy, i) => (
+                    <line key={hy} x1="43" y1={hy} x2="140" y2={hy}
+                      stroke={i % 2 === 0 ? '#b04020' : '#204070'}
+                      strokeWidth="3" opacity={0.55 + (metrics.temperature - 24) * 0.01}>
+                      {i % 2 === 0 && metrics.flowRate > 0 && (
+                        <animate attributeName="opacity" values="0.5;0.85;0.5" dur="1.8s" repeatCount="indefinite" begin={(i * 0.15) + "s"}/>
+                      )}
+                    </line>
+                  ))}
+                  <text x="87" y="360" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="0.8">WÄRMETAUSCHER</text>
+                  <text x="87" y="456" fill={temperatureInRange ? '#34c090' : '#d09030'} fontSize="8" fontFamily="monospace" fontWeight="bold" textAnchor="middle">{metrics.temperature} °C</text>
+                </g>
+
+                {/* ══════════════ DESINFEKTION ══════════════ */}
                 <g onClick={() => chooseStation('desinfektion')} style={{ cursor: 'pointer' }}>
-                  {/* NaOCl */}
-                  <ellipse cx="100" cy="550" rx="20" ry="6" fill="#060f22" stroke={selectedStationId === 'desinfektion' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <rect x="80" y="548" width="40" height="72" fill="#060f22" stroke={selectedStationId === 'desinfektion' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <rect x="83" y="560" width="34" height="52" fill="#001080" fillOpacity="0.2" rx="2"/>
-                  <text x="100" y="590" fill="#4a8ad0" fontSize="7.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">NaOCl</text>
-                  {/* CO₂ */}
-                  <ellipse cx="150" cy="550" rx="18" ry="6" fill="#060f22" stroke={selectedStationId === 'desinfektion' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <rect x="132" y="548" width="36" height="72" fill="#060f22" stroke={selectedStationId === 'desinfektion' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  <rect x="135" y="560" width="30" height="52" fill="#400010" fillOpacity="0.2" rx="2"/>
-                  <text x="150" y="590" fill="#c09040" fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle">CO₂</text>
-                  {/* Injection arrow → pipe at x=65 */}
-                  <line x1="80" y1="580" x2="68" y2="580" stroke="#4a9eff" strokeWidth="1.5" strokeDasharray="2.5 2" opacity="0.6"/>
-                  <circle cx="65" cy="580" r="5" fill={chlorInRange ? '#102a10' : '#3a1010'} stroke={chlorInRange ? '#34c090' : '#d04040'} strokeWidth="1.5">
+                  {/* NaOCl tank */}
+                  <ellipse cx="62" cy="467" rx="24" ry="6" fill="#060f22" stroke={selectedStationId === 'desinfektion' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  <rect x="38" y="465" width="48" height="72" fill="#060f22" stroke={selectedStationId === 'desinfektion' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  <rect x="41" y="477" width="42" height="52" fill="#001080" fillOpacity="0.2" rx="2"/>
+                  <text x="62" y="505" fill="#4a8ad0" fontSize="7.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">NaOCl</text>
+                  {/* CO₂ tank */}
+                  <ellipse cx="118" cy="467" rx="22" ry="6" fill="#060f22" stroke={selectedStationId === 'desinfektion' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  <rect x="96" y="465" width="44" height="72" fill="#060f22" stroke={selectedStationId === 'desinfektion' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
+                  <rect x="99" y="477" width="38" height="52" fill="#400010" fillOpacity="0.2" rx="2"/>
+                  <text x="118" y="505" fill="#c09040" fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle">CO₂</text>
+                  {/* NaOCl injection → left pipe (yellow-green pulse) */}
+                  {controls.disinfectPumpEnabled && metrics.flowRate > 0 && <>
+                    <line x1="38" y1="500" x2="22" y2="500"
+                      stroke="#60c0ff" strokeWidth="3" strokeLinecap="round"
+                      strokeDasharray="4 4"
+                      className="wc-flow wc-flow-reverse"
+                      style={{ animationDuration: '0.8s' }} filter="url(#wcGlowSM)"/>
+                    {/* CO₂ bubbles going up into pipe */}
+                    <circle cx="115" cy="465" r="2.5" fill="#ff9040" opacity="0.7">
+                      <animate attributeName="cy" values="465;450;450" dur="1.5s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.8;0.3;0" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="110" cy="465" r="2" fill="#ffb060" opacity="0.6">
+                      <animate attributeName="cy" values="465;450;450" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.7;0.2;0" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+                    </circle>
+                  </>}
+                  {/* Injection dot on left pipe */}
+                  <circle cx="20" cy="500" r="5"
+                    fill={chlorInRange ? '#102a10' : '#3a1010'}
+                    stroke={chlorInRange ? '#34c090' : '#d04040'} strokeWidth="1.5">
                     <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
                   </circle>
-                  <text x="120" y="540" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">DESINFEKTION</text>
-                  <text x="65" y="626" fill={chlorInRange ? '#34c090' : '#d04040'} fontSize="7" fontFamily="monospace" textAnchor="middle">{metrics.freeChlorine} mg/L Cl₂</text>
+                  <text x="87" y="456" fill="#5a8090" fontSize="7" fontFamily="monospace" textAnchor="middle" letterSpacing="0.8">DESINFEKTION</text>
+                  <text x="87" y="553" fill={chlorInRange ? '#34c090' : '#d04040'} fontSize="7" fontFamily="monospace" textAnchor="middle">{metrics.freeChlorine} mg/L Cl₂</text>
                 </g>
 
-                {/* ── HEIZUNG (left column, above desinf) ── */}
-                <g onClick={() => chooseStation('heizung')} style={{ cursor: 'pointer' }}>
-                  <rect x="12" y="432" width="110" height="65" rx="5" fill="#060f22" stroke={selectedStationId === 'heizung' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
-                  {[443,452,461,470,476].map((hy,i) => (
-                    <line key={hy} x1="20" y1={hy} x2="114" y2={hy} stroke={i%2===0?'#601010':'#104060'} strokeWidth="2.5" opacity="0.5"/>
-                  ))}
-                  <text x="67" y="421" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">WÄRMETAUSCHER</text>
-                  <text x="67" y="508" fill={temperatureInRange ? '#34c090' : '#d09030'} fontSize="7.5" fontFamily="monospace" textAnchor="middle">{metrics.temperature} °C</text>
-                </g>
-
-                {/* ── RÜCKLAUF label (on left return pipe) ── */}
+                {/* ══════════════ RÜCKLAUF label ══════════════ */}
                 <g onClick={() => chooseStation('ruecklauf')} style={{ cursor: 'pointer' }}>
-                  <rect x="8" y="278" width="80" height="30" rx="4" fill="#060f22" stroke={selectedStationId === 'ruecklauf' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.2"/>
-                  <text x="48" y="297" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="0.8">RÜCKLAUF</text>
+                  <rect x="35" y="270" width="82" height="28" rx="4"
+                    fill="#060f22"
+                    stroke={selectedStationId === 'ruecklauf' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.2"/>
+                  <text x="76" y="288" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="0.8">RÜCKLAUF</text>
                 </g>
 
-                {/* Kanal */}
-                <rect x="350" y="700" width="85" height="28" rx="4" fill="#060f22" stroke="#1a3a5a" strokeWidth="1.2"/>
-                <text x="392" y="718" fill="#2a4060" fontSize="7" fontFamily="monospace" textAnchor="middle">KANAL</text>
+                {/* V2 return valve */}
+                <g onClick={e => { e.stopPropagation(); toggleControl('returnValveOpen'); }} style={{ cursor: 'pointer' }}>
+                  <circle cx="20" cy="183" r="11" fill={controls.returnValveOpen ? '#0c2e0c' : '#2e0c0c'} stroke={controls.returnValveOpen ? '#34c090' : '#d04040'} strokeWidth="1.8"/>
+                  <text x="20" y="187" fill={controls.returnValveOpen ? '#34c090' : '#d04040'} fontSize="7" fontFamily="monospace" fontWeight="bold" textAnchor="middle">V2</text>
+                </g>
 
-                {/* Return pipe label */}
-                <text x="205" y="666" fill="#1a4070" fontSize="7" fontFamily="monospace" textAnchor="middle">←── RÜCKLAUF INS BECKEN ──←</text>
+                {/* ══════════════ KANAL ══════════════ */}
+                <rect x="350" y="752" width="65" height="24" rx="4" fill="#060f22" stroke="#1a3a5a" strokeWidth="1.2"/>
+                <text x="382" y="768" fill="#2a4060" fontSize="6.5" fontFamily="monospace" textAnchor="middle">KANAL</text>
 
-                {/* ── VALVE BUTTONS ── */}
-                {[
-                  { key: 'rawValveOpen',     x: 395, y: 267, label: 'V1' },
-                  { key: 'ventValveOpen',    x: 418, y: 322, label: 'V3' },
-                  { key: 'backwashValveOpen',x: 390, y: 666, label: 'V4' },
-                  { key: 'returnValveOpen',  x: 65,  y: 180, label: 'V2' },
-                ].map(v => (
-                  <g key={v.key} onClick={e => { e.stopPropagation(); toggleControl(v.key); }} style={{ cursor: 'pointer' }}>
-                    <circle cx={v.x} cy={v.y} r="12" fill={controls[v.key] ? '#0c2e0c' : '#2e0c0c'} stroke={controls[v.key] ? '#34c090' : '#d04040'} strokeWidth="1.8"/>
-                    <text x={v.x} y={v.y+4} fill={controls[v.key] ? '#34c090' : '#d04040'} fontSize="7.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">{v.label}</text>
-                  </g>
-                ))}
               </svg>
             </div>
           </div>
