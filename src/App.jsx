@@ -1289,6 +1289,20 @@ export default function BaederApp() {
     pol: [
       { front: 'Was regelt das Arbeitsrecht?', back: 'Beziehung zwischen Arbeitgeber und Arbeitnehmer, Rechte und Pflichten.' },
       { front: 'Was ist die Berufsgenossenschaft?', back: 'Träger der gesetzlichen Unfallversicherung für Arbeitsunfälle.' }
+    ],
+    aevo: [
+      { front: 'Was ist das Ziel der Berufsausbildung nach BBiG?', back: 'Berufliche Handlungsfähigkeit vermitteln.' },
+      { front: 'Woraus besteht die Eignung eines Ausbilders?', back: 'Aus persönlicher und fachlicher Eignung.' },
+      { front: 'Wie lange darf die Probezeit in der Ausbildung sein?', back: 'Mindestens 1 Monat, höchstens 4 Monate.' },
+      { front: 'Welche Methode hat 4 feste Schritte in der Unterweisung?', back: 'Die Vier-Stufen-Methode: vorbereiten, vormachen, nachmachen, üben.' },
+      { front: 'Was bedeutet SMART bei Lernzielen?', back: 'Spezifisch, messbar, attraktiv, realistisch und terminiert.' },
+      { front: 'Wofür ist der betriebliche Ausbildungsplan da?', back: 'Er konkretisiert den Ausbildungsrahmenplan für den Betrieb.' },
+      { front: 'Was ist bei Feedback an Azubis wichtig?', back: 'Zeitnah, konkret, respektvoll und nachvollziehbar.' },
+      { front: 'Was muss der Betrieb für Azubis bereitstellen?', back: 'Alle erforderlichen Ausbildungsmittel und Anleitung.' },
+      { front: 'Wann endet die Ausbildung regulär?', back: 'Mit dem Bestehen der Abschlussprüfung.' },
+      { front: 'Was gilt bei nicht bestandener Abschlussprüfung?', back: 'Auf Verlangen Verlängerung bis zur nächsten Wiederholungsprüfung.' },
+      { front: 'Wofür muss ein Azubi freigestellt werden?', back: 'Für Berufsschule, Prüfungen und angeordnete Ausbildungsmaßnahmen.' },
+      { front: 'Warum sind Beurteilungsgespräche wichtig?', back: 'Sie machen Lernfortschritt transparent und helfen beim Nachsteuern.' }
     ]
   };
   const KEYWORD_FLASHCARD_CONTENT = buildKeywordFlashcards(KEYWORD_CHALLENGES);
