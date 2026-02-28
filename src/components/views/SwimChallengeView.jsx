@@ -69,18 +69,101 @@ const {
   };
 
   const SWIM_PLAN_NOTE_TAG_REGEX = /\[SWIM_PLAN:([a-z0-9_-]+)\]/i;
+  const SWIM_PLAN_NOTE_UNIT_TAG_REGEX = /\[SWIM_PLAN_UNIT:([a-z0-9_-]+)\]/i;
   const extractTrainingPlanIdFromNotes = (notesInput) => {
     const notes = String(notesInput || '');
     const match = notes.match(SWIM_PLAN_NOTE_TAG_REGEX);
     return match?.[1] || null;
   };
+  const extractTrainingPlanUnitIdFromNotes = (notesInput) => {
+    const notes = String(notesInput || '');
+    const match = notes.match(SWIM_PLAN_NOTE_UNIT_TAG_REGEX);
+    return match?.[1] || null;
+  };
+  const extractTrainingPlanSelectionFromNotes = (notesInput) => ({
+    trainingPlanId: extractTrainingPlanIdFromNotes(notesInput),
+    trainingPlanUnitId: extractTrainingPlanUnitIdFromNotes(notesInput)
+  });
   const stripTrainingPlanTagFromNotes = (notesInput) => String(notesInput || '')
     .replace(/\s*\[SWIM_PLAN:[^\]]+\]\s*/gi, ' ')
+    .replace(/\s*\[SWIM_PLAN_UNIT:[^\]]+\]\s*/gi, ' ')
     .replace(/\s{2,}/g, ' ')
     .trim();
 
+  const createCustomPlanUnitDraft = (unitInput = {}) => {
+    const requestedId = String(unitInput.id || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    const fallbackId = `unit_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    return {
+      id: requestedId || fallbackId,
+      styleId: String(unitInput.styleId || 'kraul').trim() || 'kraul',
+      targetDistance: String(unitInput.targetDistance || '1000'),
+      targetTime: String(unitInput.targetTime || '30')
+    };
+  };
+
+  const normalizePlanUnitForView = (unitInput = {}, index = 0) => {
+    const unit = (unitInput && typeof unitInput === 'object') ? unitInput : {};
+    const requestedId = String(unit.id || unit.unitId || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    const styleId = String(unit.styleId || unit.style_id || 'kraul').trim() || 'kraul';
+    const targetDistance = Math.max(100, toSafeInt(unit.targetDistance ?? unit.target_distance));
+    const targetTime = Math.max(1, toSafeInt(unit.targetTime ?? unit.target_time));
+    return {
+      id: requestedId || `unit_${index + 1}`,
+      styleId,
+      targetDistance,
+      targetTime
+    };
+  };
+
+  const getPlanUnits = (planInput) => {
+    if (!planInput || typeof planInput !== 'object') return [];
+    const sourceUnits = Array.isArray(planInput.units) && planInput.units.length > 0
+      ? planInput.units
+      : [{
+        id: 'unit_1',
+        styleId: planInput.styleId || 'kraul',
+        targetDistance: planInput.targetDistance || 1000,
+        targetTime: planInput.targetTime || 30
+      }];
+    const usedIds = new Set();
+    return sourceUnits.map((unit, index) => {
+      const normalized = normalizePlanUnitForView(unit, index);
+      let finalId = normalized.id;
+      let suffix = 2;
+      while (usedIds.has(finalId)) {
+        finalId = `${normalized.id}_${suffix}`;
+        suffix += 1;
+      }
+      usedIds.add(finalId);
+      return { ...normalized, id: finalId };
+    });
+  };
+
+  const getPlanUnitLabel = (unitInput, index) => {
+    if (!unitInput) return `Einheit ${index + 1}`;
+    const styleName = SWIM_STYLES.find((style) => style.id === unitInput.styleId)?.name || 'beliebig';
+    return `Einheit ${index + 1}: ${unitInput.targetDistance} m / ${unitInput.targetTime} Min / ${styleName}`;
+  };
+
+  const parseFormTimeToMinutes = (timeInput) => {
+    const raw = String(timeInput || '').trim();
+    if (!raw) return NaN;
+    const minuteToken = raw.includes(':') ? raw.split(':')[0] : raw;
+    const parsed = Number(minuteToken.replace(',', '.'));
+    return Number.isFinite(parsed) ? parsed : NaN;
+  };
+
   const getTrainingPlanById = (planId) => SWIM_TRAINING_PLANS.find(plan => plan.id === planId) || null;
   const selectedTrainingPlan = getTrainingPlanById(swimSessionForm.trainingPlanId);
+  const selectedTrainingPlanUnits = React.useMemo(
+    () => getPlanUnits(selectedTrainingPlan),
+    [selectedTrainingPlan]
+  );
+  const selectedTrainingPlanUnit = React.useMemo(() => {
+    if (selectedTrainingPlanUnits.length === 0) return null;
+    const requestedUnitId = String(swimSessionForm.trainingPlanUnitId || '').trim();
+    return selectedTrainingPlanUnits.find((unit) => unit.id === requestedUnitId) || selectedTrainingPlanUnits[0];
+  }, [selectedTrainingPlanUnits, swimSessionForm.trainingPlanUnitId]);
   const isTrainerLike = Boolean(
     user?.permissions?.canViewAllStats
     || user?.role === 'admin'
@@ -92,9 +175,7 @@ const {
     name: '',
     category: 'ausdauer',
     difficulty: 'fokussiert',
-    styleId: 'kraul',
-    targetDistance: '1000',
-    targetTime: '30',
+    units: [createCustomPlanUnitDraft()],
     xpReward: '15',
     description: '',
     assignedUserId: ''
@@ -107,27 +188,68 @@ const {
     setCustomPlanForm((prev) => ({ ...prev, assignedUserId: azubiCandidates[0].id }));
   }, [azubiCandidates, customPlanForm.assignedUserId, isTrainerLike]);
 
-  const isPlanFulfilledByForm = (planInput) => {
+  const isPlanFulfilledByForm = (planInput, planUnitInput) => {
     if (!planInput) return false;
+    const targetUnit = normalizePlanUnitForView(planUnitInput || getPlanUnits(planInput)[0], 0);
     const distance = Number(swimSessionForm.distance || 0);
-    const timeMinutes = Number(swimSessionForm.time || 0);
+    const timeMinutes = parseFormTimeToMinutes(swimSessionForm.time);
     const styleId = String(swimSessionForm.style || '');
     if (!Number.isFinite(distance) || !Number.isFinite(timeMinutes) || distance <= 0 || timeMinutes <= 0) {
       return false;
     }
-    const styleMatches = !planInput.styleId || planInput.styleId === styleId;
-    return styleMatches && distance >= planInput.targetDistance && timeMinutes <= planInput.targetTime;
+    const styleMatches = !targetUnit.styleId || targetUnit.styleId === styleId;
+    return styleMatches && distance >= targetUnit.targetDistance && timeMinutes <= targetUnit.targetTime;
+  };
+
+  const updateCustomPlanUnitField = (unitId, field, value) => {
+    setCustomPlanForm((prev) => ({
+      ...prev,
+      units: (Array.isArray(prev.units) ? prev.units : []).map((unit) =>
+        unit.id === unitId ? { ...unit, [field]: value } : unit
+      )
+    }));
+  };
+
+  const addCustomPlanUnit = () => {
+    setCustomPlanForm((prev) => ({
+      ...prev,
+      units: [...(Array.isArray(prev.units) ? prev.units : []), createCustomPlanUnitDraft()]
+    }));
+  };
+
+  const removeCustomPlanUnit = (unitId) => {
+    setCustomPlanForm((prev) => {
+      const currentUnits = Array.isArray(prev.units) ? prev.units : [];
+      if (currentUnits.length <= 1) return prev;
+      return {
+        ...prev,
+        units: currentUnits.filter((unit) => unit.id !== unitId)
+      };
+    });
   };
 
   const handleCreateCustomPlan = async (event) => {
     event.preventDefault();
+    const units = (Array.isArray(customPlanForm.units) ? customPlanForm.units : [])
+      .map((unit, index) => normalizePlanUnitForView(unit, index));
+    if (units.length === 0) {
+      alert('Bitte mindestens eine Einheit fuer den Trainingsplan hinterlegen.');
+      return;
+    }
+
     const payload = {
       name: customPlanForm.name,
       category: customPlanForm.category,
       difficulty: customPlanForm.difficulty,
-      styleId: customPlanForm.styleId,
-      targetDistance: customPlanForm.targetDistance,
-      targetTime: customPlanForm.targetTime,
+      styleId: units[0].styleId,
+      targetDistance: units[0].targetDistance,
+      targetTime: units[0].targetTime,
+      units: units.map((unit) => ({
+        id: unit.id,
+        styleId: unit.styleId,
+        targetDistance: unit.targetDistance,
+        targetTime: unit.targetTime
+      })),
       xpReward: customPlanForm.xpReward,
       description: customPlanForm.description,
       assignedUserId: isTrainerLike ? customPlanForm.assignedUserId : user?.id
@@ -140,13 +262,16 @@ const {
     }
 
     const defaultAssignedUserId = isTrainerLike ? (azubiCandidates[0]?.id || '') : '';
+    const firstUnit = units[0] || normalizePlanUnitForView(createCustomPlanUnitDraft(), 0);
     setCustomPlanForm({
       name: '',
       category: customPlanForm.category,
       difficulty: customPlanForm.difficulty,
-      styleId: customPlanForm.styleId,
-      targetDistance: customPlanForm.targetDistance,
-      targetTime: customPlanForm.targetTime,
+      units: [createCustomPlanUnitDraft({
+        styleId: firstUnit.styleId,
+        targetDistance: String(firstUnit.targetDistance),
+        targetTime: String(firstUnit.targetTime)
+      })],
       xpReward: customPlanForm.xpReward,
       description: '',
       assignedUserId: defaultAssignedUserId
@@ -539,41 +664,85 @@ const {
                         <option value="anspruchsvoll">Anspruchsvoll</option>
                       </select>
                     </div>
-                    <div>
-                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Stil</label>
-                      <select
-                        value={customPlanForm.styleId}
-                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, styleId: event.target.value }))}
-                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
-                      >
-                        {SWIM_STYLES.map((style) => (
-                          <option key={style.id} value={style.id}>{style.name}</option>
+                    <div className="md:col-span-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className={`block text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Plan-Einheiten</label>
+                        <button
+                          type="button"
+                          onClick={addCustomPlanUnit}
+                          className={`text-xs font-medium px-2 py-1 rounded border ${
+                            darkMode
+                              ? 'border-cyan-500 text-cyan-300 hover:bg-cyan-900/40'
+                              : 'border-cyan-500 text-cyan-700 hover:bg-cyan-50'
+                          }`}
+                        >
+                          + Einheit
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        {(Array.isArray(customPlanForm.units) ? customPlanForm.units : []).map((unit, index) => (
+                          <div
+                            key={unit.id}
+                            className={`rounded-lg border p-3 ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'}`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                Einheit {index + 1}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeCustomPlanUnit(unit.id)}
+                                disabled={(customPlanForm.units || []).length <= 1}
+                                className={`text-xs px-2 py-1 rounded border ${
+                                  (customPlanForm.units || []).length <= 1
+                                    ? (darkMode ? 'border-slate-500 text-slate-400' : 'border-gray-300 text-gray-400')
+                                    : (darkMode ? 'border-rose-500 text-rose-300 hover:bg-rose-900/30' : 'border-rose-400 text-rose-700 hover:bg-rose-50')
+                                }`}
+                              >
+                                Entfernen
+                              </button>
+                            </div>
+                            <div className="grid md:grid-cols-3 gap-3">
+                              <div>
+                                <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Stil</label>
+                                <select
+                                  value={unit.styleId}
+                                  onChange={(event) => updateCustomPlanUnitField(unit.id, 'styleId', event.target.value)}
+                                  className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                                >
+                                  {SWIM_STYLES.map((style) => (
+                                    <option key={style.id} value={style.id}>{style.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Distanz (m)</label>
+                                <input
+                                  type="number"
+                                  min="100"
+                                  step="50"
+                                  value={unit.targetDistance}
+                                  onChange={(event) => updateCustomPlanUnitField(unit.id, 'targetDistance', event.target.value)}
+                                  required
+                                  className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                                />
+                              </div>
+                              <div>
+                                <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Max. Zeit (Min)</label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  step="1"
+                                  value={unit.targetTime}
+                                  onChange={(event) => updateCustomPlanUnitField(unit.id, 'targetTime', event.target.value)}
+                                  required
+                                  className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                                />
+                              </div>
+                            </div>
+                          </div>
                         ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Distanz (m)</label>
-                      <input
-                        type="number"
-                        min="100"
-                        step="50"
-                        value={customPlanForm.targetDistance}
-                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, targetDistance: event.target.value }))}
-                        required
-                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
-                      />
-                    </div>
-                    <div>
-                      <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Max. Zeit (Min)</label>
-                      <input
-                        type="number"
-                        min="1"
-                        step="1"
-                        value={customPlanForm.targetTime}
-                        onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, targetTime: event.target.value }))}
-                        required
-                        className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
-                      />
+                      </div>
                     </div>
                     <div>
                       <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>XP Belohnung</label>
@@ -625,7 +794,8 @@ const {
                       <div className="grid md:grid-cols-2 gap-3">
                         {categoryPlans.map((plan) => {
                           const difficultyMeta = TRAINING_DIFFICULTY_META[plan.difficulty] || TRAINING_DIFFICULTY_META.fokussiert;
-                          const styleName = SWIM_STYLES.find(style => style.id === plan.styleId)?.name || 'beliebig';
+                          const planUnits = getPlanUnits(plan);
+                          const defaultUnit = planUnits[0] || null;
                           const isCustomPlan = Boolean(plan.isCustom);
                           const assignedInfo = String(plan.assignedUserName || '').trim();
                           const createdInfo = String(plan.createdByName || '').trim();
@@ -658,19 +828,23 @@ const {
                                 </div>
                               )}
                               <div className={`text-sm mt-3 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
-                                Ziel: {plan.targetDistance} m in max. {plan.targetTime} Min • Stil: {styleName}
+                                {(planUnits.length > 1 ? planUnits : [defaultUnit]).filter(Boolean).map((unit, index) => (
+                                  <div key={unit.id}>{getPlanUnitLabel(unit, index)}</div>
+                                ))}
                               </div>
                               <div className={`text-sm mt-1 ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
                                 Belohnung: +{plan.xpReward} XP
                               </div>
                               <button
                                 onClick={() => {
+                                  if (!defaultUnit) return;
                                   setSwimSessionForm(prev => ({
                                     ...prev,
-                                    style: plan.styleId || prev.style || 'kraul',
-                                    distance: String(plan.targetDistance),
-                                    time: `${plan.targetTime}:00,00`,
-                                    trainingPlanId: plan.id
+                                    style: defaultUnit.styleId || prev.style || 'kraul',
+                                    distance: String(defaultUnit.targetDistance),
+                                    time: `${defaultUnit.targetTime}:00,00`,
+                                    trainingPlanId: plan.id,
+                                    trainingPlanUnitId: defaultUnit.id
                                   }));
                                   setSwimChallengeView('add');
                                 }}
@@ -780,18 +954,23 @@ const {
                         if (!planId) {
                           setSwimSessionForm({
                             ...swimSessionForm,
-                            trainingPlanId: ''
+                            trainingPlanId: '',
+                            trainingPlanUnitId: ''
                           });
                           return;
                         }
                         const plan = getTrainingPlanById(planId);
                         if (!plan) return;
+                        const planUnits = getPlanUnits(plan);
+                        const defaultUnit = planUnits[0];
+                        if (!defaultUnit) return;
                         setSwimSessionForm({
                           ...swimSessionForm,
                           trainingPlanId: plan.id,
-                          style: plan.styleId || swimSessionForm.style,
-                          distance: String(plan.targetDistance),
-                          time: `${plan.targetTime}:00,00`
+                          trainingPlanUnitId: defaultUnit.id,
+                          style: defaultUnit.styleId || swimSessionForm.style,
+                          distance: String(defaultUnit.targetDistance),
+                          time: `${defaultUnit.targetTime}:00,00`
                         });
                       }}
                       className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
@@ -817,23 +996,60 @@ const {
                       })}
                     </select>
                   </div>
+                  {selectedTrainingPlan && selectedTrainingPlanUnits.length > 1 && (
+                    <div className="md:col-span-2">
+                      <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Plan-Einheit</label>
+                      <select
+                        value={selectedTrainingPlanUnit?.id || ''}
+                        onChange={(e) => {
+                          const nextUnitId = e.target.value;
+                          const nextUnit = selectedTrainingPlanUnits.find((unit) => unit.id === nextUnitId);
+                          if (!nextUnit) return;
+                          setSwimSessionForm({
+                            ...swimSessionForm,
+                            trainingPlanUnitId: nextUnit.id,
+                            style: nextUnit.styleId || swimSessionForm.style,
+                            distance: String(nextUnit.targetDistance),
+                            time: `${nextUnit.targetTime}:00,00`
+                          });
+                        }}
+                        className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
+                      >
+                        {selectedTrainingPlanUnits.map((unit, index) => (
+                          <option key={unit.id} value={unit.id}>{getPlanUnitLabel(unit, index)}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   {selectedTrainingPlan && (
                     <div className="md:col-span-2">
+                      {(() => {
+                        const isFulfilled = isPlanFulfilledByForm(selectedTrainingPlan, selectedTrainingPlanUnit);
+                        return (
                       <div className={`rounded-lg p-3 border ${
-                        isPlanFulfilledByForm(selectedTrainingPlan)
+                        isFulfilled
                           ? (darkMode ? 'bg-emerald-900/30 border-emerald-700 text-emerald-300' : 'bg-emerald-50 border-emerald-300 text-emerald-700')
                           : (darkMode ? 'bg-slate-700 border-slate-600 text-gray-200' : 'bg-gray-50 border-gray-300 text-gray-700')
                       }`}>
                         <div className="font-semibold">Plan: {selectedTrainingPlan.name} | +{selectedTrainingPlan.xpReward} XP</div>
                         <div className="text-sm mt-1">
-                          Ziel: {selectedTrainingPlan.targetDistance} m in max. {selectedTrainingPlan.targetTime} Min | Stil: {SWIM_STYLES.find(style => style.id === selectedTrainingPlan.styleId)?.name || 'beliebig'}
+                          {selectedTrainingPlanUnit
+                            ? `Ziel: ${selectedTrainingPlanUnit.targetDistance} m in max. ${selectedTrainingPlanUnit.targetTime} Min | Stil: ${SWIM_STYLES.find(style => style.id === selectedTrainingPlanUnit.styleId)?.name || 'beliebig'}`
+                            : 'Ziel konnte nicht geladen werden.'}
                         </div>
+                        {selectedTrainingPlanUnits.length > 1 && selectedTrainingPlanUnit && (
+                          <div className="text-sm mt-1">
+                            Aktive Einheit: {getPlanUnitLabel(selectedTrainingPlanUnit, selectedTrainingPlanUnits.findIndex((unit) => unit.id === selectedTrainingPlanUnit.id))}
+                          </div>
+                        )}
                         <div className="text-sm mt-1">
-                          {isPlanFulfilledByForm(selectedTrainingPlan)
+                          {isFulfilled
                             ? 'Plan mit aktueller Eingabe erfuellt (XP nach Bestaetigung).'
                             : 'Distanz/Zeit/Stil auf Planziel einstellen, um XP zu erhalten.'}
                         </div>
                       </div>
+                        );
+                      })()}
                     </div>
                   )}
                   <div className="md:col-span-2">
@@ -878,7 +1094,8 @@ const {
                           style: 'kraul',
                           notes: '',
                           challengeId: '',
-                          trainingPlanId: ''
+                          trainingPlanId: '',
+                          trainingPlanUnitId: ''
                         });
                         alert('Trainingseinheit eingereicht! Warte auf Bestätigung durch einen Trainer.');
                       } else {
@@ -1868,8 +2085,15 @@ const {
                 </h3>
                 <div className="space-y-3">
                   {pendingSwimConfirmations.map(session => {
-                    const trainingPlanId = extractTrainingPlanIdFromNotes(session.notes);
+                    const { trainingPlanId, trainingPlanUnitId } = extractTrainingPlanSelectionFromNotes(session.notes);
                     const trainingPlan = trainingPlanId ? getTrainingPlanById(trainingPlanId) : null;
+                    const trainingPlanUnits = getPlanUnits(trainingPlan);
+                    const trainingPlanUnit = trainingPlanUnitId
+                      ? trainingPlanUnits.find((unit) => unit.id === trainingPlanUnitId) || null
+                      : null;
+                    const trainingPlanUnitIndex = trainingPlanUnit
+                      ? trainingPlanUnits.findIndex((unit) => unit.id === trainingPlanUnit.id)
+                      : -1;
                     const cleanNotes = stripTrainingPlanTagFromNotes(session.notes);
                     return (
                       <div key={session.id} className={`p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
@@ -1884,6 +2108,7 @@ const {
                           {trainingPlan && (
                             <div className={`text-xs mt-1 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
                               Trainingsplan: {trainingPlan.name} (+{trainingPlan.xpReward} XP bei Erfuellung)
+                              {trainingPlanUnit && trainingPlanUnitIndex >= 0 && ` | ${getPlanUnitLabel(trainingPlanUnit, trainingPlanUnitIndex)}`}
                             </div>
                           )}
                         </div>
