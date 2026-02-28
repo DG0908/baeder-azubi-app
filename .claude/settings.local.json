@@ -5,7 +5,21 @@
       "Bash(git commit:*)",
       "Bash(git fetch:*)",
       "Bash(npm run build:*)",
-      "Bash(git -C \"c:\\\\Users\\\\User\\\\baeder-azubi-app\" log --oneline -20)"
+      "Bash(git -C \"c:\\\\Users\\\\User\\\\baeder-azubi-app\" log --oneline -20)",
+      "Read(//c/**)",
+      "Bash(timeout /t 3 /nobreak)",
+      "Bash(npm run dev:*)",
+      "Bash(node scripts/generate-icons.js:*)",
+      "Bash(npm run preview:*)",
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(npx eslint:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File:*)",
+      "Bash(python3:*)",
+      "Bash(awk:*)",
+      "WebFetch(domain:baeder-azubi-app.vercel.app)",
+      "Bash(grep:*)"
     ]
   }
 }

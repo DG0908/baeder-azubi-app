@@ -12,6 +12,17 @@ const DIFFICULTY_SETTINGS = {
   extra: { time: 75, label: 'Extra schwer', icon: '🧠', color: 'bg-indigo-700' }
 };
 
+const CHALLENGE_TIMEOUT_OPTIONS = [
+  { minutes: 15, label: '15 Min' },
+  { minutes: 30, label: '30 Min' },
+  { minutes: 60, label: '1 Stunde' },
+  { minutes: 120, label: '2 Stunden' },
+  { minutes: 360, label: '6 Stunden' },
+  { minutes: 720, label: '12 Stunden' },
+  { minutes: 1440, label: '24 Stunden' },
+  { minutes: 2880, label: '48 Stunden' }
+];
+
 const getDifficulty = (difficulty) => DIFFICULTY_SETTINGS[difficulty] || DIFFICULTY_SETTINGS.profi;
 const QuizView = ({
   selectedDifficulty,
@@ -48,6 +59,7 @@ const QuizView = ({
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
+  const [challengeTimeoutMinutes, setChallengeTimeoutMinutes] = React.useState(1440);
   const currentDifficulty = getDifficulty(currentGame?.difficulty);
   const questionIsKeyword = Boolean(currentQuestion && isKeywordQuestion?.(currentQuestion));
   const availableKeywordGroups = Array.isArray(currentQuestion?.keywordGroups)
@@ -67,8 +79,8 @@ const QuizView = ({
           <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
             <p className="font-bold text-amber-800 mb-2">⚠️ Spielregeln – Zeitlimit & Strafen</p>
             <ul className="space-y-1 text-amber-700">
-              <li>⏰ Spiele laufen maximal <strong>48 Stunden</strong> – danach werden sie automatisch entschieden.</li>
-              <li>🔔 Nach <strong>24 Stunden</strong> Inaktivität erhältst du eine Erinnerungsbenachrichtigung.</li>
+              <li>⏰ Für Herausforderungen kannst du eine <strong>Annahmefrist</strong> festlegen.</li>
+              <li>🔔 Laufende Duelle behalten <strong>48 Stunden</strong> Zugfrist mit Erinnerung nach 24h.</li>
               <li>❌ Wer seinen Zug nicht rechtzeitig macht oder eine Challenge ignoriert, <strong>verliert die Runde</strong>.</li>
               <li>💥 Zusätzlich werden dem Verlierer <strong>100 XP abgezogen</strong>.</li>
             </ul>
