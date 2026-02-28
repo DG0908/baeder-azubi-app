@@ -770,6 +770,7 @@ export default function BaederApp() {
   const [swimChallengeView, setSwimChallengeView] = useState('overview'); // 'overview', 'challenges', 'plans', 'add', 'leaderboard', 'battle'
   const [swimSessions, setSwimSessions] = useState([]); // Alle Trainingseinheiten (aus Supabase)
   const [swimSessionsLoaded, setSwimSessionsLoaded] = useState(false);
+  const [customSwimTrainingPlans, setCustomSwimTrainingPlans] = useState([]);
   const [activeSwimChallenges, setActiveSwimChallenges] = useState(() => {
     // Lade aktive Challenges aus localStorage
     const saved = localStorage.getItem('active_swim_challenges');
@@ -2323,6 +2324,8 @@ export default function BaederApp() {
           setAllUsers(approvedUsers);
         }
       }
+
+      await loadCustomSwimTrainingPlans();
 
       // Load games from Supabase
       const { data: gamesData } = await supabase
@@ -5191,6 +5194,208 @@ export default function BaederApp() {
     localStorage.setItem('swim_battle_wins_by_user', JSON.stringify(safeWins));
   };
 
+  const normalizeSwimTrainingPlanCategory = (value) => {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (['ausdauer', 'sprint', 'technik', 'kombi'].includes(normalized)) {
+      return normalized;
+    }
+    return 'ausdauer';
+  };
+
+  const normalizeSwimTrainingPlanDifficulty = (value) => {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (['angenehm', 'fokussiert', 'anspruchsvoll'].includes(normalized)) {
+      return normalized;
+    }
+    return 'fokussiert';
+  };
+
+  const normalizeCustomSwimTrainingPlan = (planRowInput) => {
+    const planRow = (planRowInput && typeof planRowInput === 'object') ? planRowInput : {};
+    const normalizedDistance = Math.max(1, toSafeInt(planRow.target_distance));
+    const normalizedTime = Math.max(1, toSafeInt(planRow.target_time));
+    const normalizedXp = Math.max(1, toSafeInt(planRow.xp_reward));
+    return {
+      id: String(planRow.id || ''),
+      name: String(planRow.name || 'Individueller Plan').trim() || 'Individueller Plan',
+      category: normalizeSwimTrainingPlanCategory(planRow.category),
+      difficulty: normalizeSwimTrainingPlanDifficulty(planRow.difficulty),
+      styleId: String(planRow.style_id || 'kraul').trim() || 'kraul',
+      targetDistance: normalizedDistance,
+      targetTime: normalizedTime,
+      xpReward: normalizedXp,
+      description: String(planRow.description || '').trim(),
+      source: 'custom',
+      isCustom: true,
+      createdByUserId: planRow.created_by_user_id || null,
+      createdByName: String(planRow.created_by_name || '').trim(),
+      createdByRole: String(planRow.created_by_role || '').trim(),
+      assignedUserId: planRow.assigned_user_id || null,
+      assignedUserName: String(planRow.assigned_user_name || '').trim(),
+      assignedUserRole: String(planRow.assigned_user_role || '').trim(),
+      createdAt: planRow.created_at || null
+    };
+  };
+
+  const loadCustomSwimTrainingPlans = async () => {
+    if (!user?.id) {
+      setCustomSwimTrainingPlans([]);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('swim_training_plans_custom')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          setCustomSwimTrainingPlans([]);
+          return;
+        }
+        throw error;
+      }
+
+      const normalizedPlans = (Array.isArray(data) ? data : []).map(normalizeCustomSwimTrainingPlan);
+      const canManageAllPlans = Boolean(
+        user?.permissions?.canViewAllStats
+        || user?.role === 'admin'
+        || user?.role === 'trainer'
+        || user?.role === 'ausbilder'
+      );
+
+      const visiblePlans = canManageAllPlans
+        ? normalizedPlans
+        : normalizedPlans.filter((plan) =>
+          plan.assignedUserId === user.id || plan.createdByUserId === user.id
+        );
+
+      setCustomSwimTrainingPlans(visiblePlans);
+    } catch (err) {
+      console.warn('Individuelle Schwimm-Trainingsplaene konnten nicht geladen werden:', err);
+      setCustomSwimTrainingPlans([]);
+    }
+  };
+
+  const createCustomSwimTrainingPlan = async (planInput = {}) => {
+    if (!user?.id) {
+      return { success: false, error: 'Bitte melde dich erneut an.' };
+    }
+
+    const isTrainerLike = Boolean(
+      user?.permissions?.canViewAllStats
+      || user?.role === 'admin'
+      || user?.role === 'trainer'
+      || user?.role === 'ausbilder'
+    );
+    const availableAzubis = allUsers.filter((account) => account?.id && String(account.role || '').toLowerCase() === 'azubi');
+    const requestedAssignedUserId = String(planInput.assignedUserId || '').trim();
+    const fallbackAssignedUserId = isTrainerLike
+      ? (availableAzubis[0]?.id || user.id)
+      : user.id;
+    const assignedUserId = isTrainerLike
+      ? (requestedAssignedUserId || fallbackAssignedUserId)
+      : user.id;
+
+    const assignedUser =
+      allUsers.find((account) => account?.id === assignedUserId)
+      || (assignedUserId === user.id ? { id: user.id, name: user.name, role: user.role } : null);
+
+    if (!assignedUserId || !assignedUser) {
+      return { success: false, error: 'Zielperson fuer den Trainingsplan konnte nicht gefunden werden.' };
+    }
+
+    const name = String(planInput.name || '').trim();
+    if (!name) {
+      return { success: false, error: 'Bitte einen Namen fuer den Trainingsplan angeben.' };
+    }
+
+    const category = normalizeSwimTrainingPlanCategory(planInput.category);
+    const difficulty = normalizeSwimTrainingPlanDifficulty(planInput.difficulty);
+    const styleId = String(planInput.styleId || 'kraul').trim() || 'kraul';
+    const targetDistance = Math.max(100, toSafeInt(planInput.targetDistance));
+    const targetTime = Math.max(1, toSafeInt(planInput.targetTime));
+    const xpReward = Math.max(1, toSafeInt(planInput.xpReward));
+    const description = String(planInput.description || '').trim();
+
+    const insertPayload = {
+      created_by_user_id: user.id,
+      created_by_name: user.name || 'Unbekannt',
+      created_by_role: user.role || 'azubi',
+      assigned_user_id: assignedUserId,
+      assigned_user_name: assignedUser?.name || 'Unbekannt',
+      assigned_user_role: assignedUser?.role || 'azubi',
+      name,
+      category,
+      difficulty,
+      style_id: styleId,
+      target_distance: targetDistance,
+      target_time: targetTime,
+      xp_reward: xpReward,
+      description,
+      is_active: true
+    };
+
+    try {
+      const { data, error } = await supabase
+        .from('swim_training_plans_custom')
+        .insert([insertPayload])
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          return {
+            success: false,
+            error: 'Die Tabelle swim_training_plans_custom fehlt noch in Supabase. Bitte Migration ausfuehren.'
+          };
+        }
+        throw error;
+      }
+
+      const normalized = normalizeCustomSwimTrainingPlan(data);
+      setCustomSwimTrainingPlans((prev) => [normalized, ...prev]);
+
+      if (assignedUserId !== user.id && assignedUser?.name) {
+        await sendNotification(
+          assignedUser.name,
+          '🏊 Neuer Trainingsplan',
+          `${user.name} hat dir den Plan "${name}" zugewiesen (${targetDistance}m in ${targetTime} Min).`,
+          'swim_plan'
+        );
+      }
+
+      return { success: true, data: normalized };
+    } catch (err) {
+      console.error('Fehler beim Speichern des individuellen Trainingsplans:', err);
+      return { success: false, error: err.message || 'Unbekannter Fehler beim Speichern.' };
+    }
+  };
+
+  const swimTrainingPlans = [
+    ...SWIM_TRAINING_PLANS.map((plan) => ({
+      ...plan,
+      source: 'default',
+      isCustom: false,
+      createdByUserId: null,
+      createdByName: '',
+      createdByRole: '',
+      assignedUserId: null,
+      assignedUserName: '',
+      assignedUserRole: '',
+      createdAt: null
+    })),
+    ...customSwimTrainingPlans
+  ];
+
+  const getSwimTrainingPlanById = (planIdInput) => {
+    const planId = String(planIdInput || '').trim();
+    if (!planId) return null;
+    return swimTrainingPlans.find((plan) => String(plan.id || '') === planId) || null;
+  };
+
   const buildSwimmerDistanceRankingForMonth = useCallback((monthKey) => {
     if (!monthKey) return [];
 
@@ -5731,7 +5936,7 @@ export default function BaederApp() {
       if (sessionToConfirm?.user_id && sessionToConfirm?.user_name) {
         const trainingPlanId = extractSwimTrainingPlanIdFromNotes(sessionToConfirm.notes);
         if (trainingPlanId) {
-          const trainingPlan = SWIM_TRAINING_PLANS.find(plan => plan.id === trainingPlanId) || null;
+          const trainingPlan = getSwimTrainingPlanById(trainingPlanId);
           if (trainingPlan && doesSessionFulfillTrainingPlan(sessionToConfirm, trainingPlan)) {
             const xpAmount = toSafeInt(trainingPlan.xpReward);
             if (xpAmount > 0) {
@@ -5785,6 +5990,7 @@ export default function BaederApp() {
       setSwimSessions([]);
       setPendingSwimConfirmations([]);
       setSwimSessionsLoaded(false);
+      setCustomSwimTrainingPlans([]);
     }
   }, [user]);
 
@@ -7827,7 +8033,7 @@ export default function BaederApp() {
             SWIM_ARENA_DISCIPLINES={SWIM_ARENA_DISCIPLINES}
             SWIM_BATTLE_WIN_POINTS={SWIM_BATTLE_WIN_POINTS}
             SWIM_CHALLENGES={SWIM_CHALLENGES}
-            SWIM_TRAINING_PLANS={SWIM_TRAINING_PLANS}
+            SWIM_TRAINING_PLANS={swimTrainingPlans}
             SWIM_STYLES={SWIM_STYLES}
             activeSwimChallenges={activeSwimChallenges}
             allUsers={allUsers}
@@ -7835,6 +8041,7 @@ export default function BaederApp() {
             calculateSwimPoints={calculateSwimPoints}
             calculateTeamBattleStats={calculateTeamBattleStats}
             confirmSwimSession={confirmSwimSession}
+            createCustomSwimTrainingPlan={createCustomSwimTrainingPlan}
             getAgeHandicap={getAgeHandicap}
             getSeaCreatureTier={getSeaCreatureTier}
             getSwimLevel={getSwimLevel}
