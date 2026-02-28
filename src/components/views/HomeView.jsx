@@ -50,6 +50,11 @@ const HomeView = ({
   const [weeklyGoalsExpanded, setWeeklyGoalsExpanded] = React.useState(true);
   const waitingChallenges = activeGames.filter(g => g.player2 === user.name && g.status === 'waiting');
   const activeGamesForUser = activeGames.filter(g => (g.player1 === user.name || g.player2 === user.name) && g.status === 'active');
+  const playerTurnChallenges = activeGamesForUser.filter(g => g.currentTurn === user.name);
+  const actionableChallenges = [
+    ...waitingChallenges.map((game) => ({ ...game, challengeType: 'waiting' })),
+    ...playerTurnChallenges.map((game) => ({ ...game, challengeType: 'turn' }))
+  ];
   const playerTurnGame = activeGamesForUser.find(g => g.currentTurn === user.name);
 
   const nextExam = exams
@@ -664,44 +669,64 @@ const HomeView = ({
         </div>
       )}
 
-      {waitingChallenges.length > 0 && (
+      {actionableChallenges.length > 0 && (
         <div className={`${darkMode ? 'bg-yellow-900/80' : 'bg-yellow-50/95'} backdrop-blur-sm border-2 ${darkMode ? 'border-yellow-700' : 'border-yellow-400'} rounded-xl p-6 shadow-lg`}>
           <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>
             <Zap className="mr-2" />
             Offene Herausforderungen
           </h3>
-          {waitingChallenges.map(game => {
+          {actionableChallenges.map(game => {
             const diff = DIFFICULTY_SETTINGS[game.difficulty] || DIFFICULTY_SETTINGS.profi;
             const remainingMs = getWaitingChallengeRemainingMs(game);
-            const isExpired = Number.isFinite(remainingMs) && remainingMs <= 0;
+            const isWaitingChallenge = game.challengeType === 'waiting';
+            const isExpired = isWaitingChallenge && Number.isFinite(remainingMs) && remainingMs <= 0;
+            const opponentName = isWaitingChallenge
+              ? game.player1
+              : (game.player1 === user.name ? game.player2 : game.player1);
             return (
               <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 grid grid-cols-1 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_auto] min-[720px]:items-center shadow-md`}>
                 <div className="min-w-0 flex-1">
-                  <p className={`font-bold break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} fordert dich heraus!</p>
+                  <p className={`font-bold break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    {isWaitingChallenge ? `${opponentName} fordert dich heraus!` : `Du bist gegen ${opponentName} dran!`}
+                  </p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
-                    <span>Quizduell - 6 Runden</span>
+                    <span>{isWaitingChallenge ? 'Quizduell - 6 Runden' : `Runde ${(Number(game.round ?? game.categoryRound ?? 0) || 0) + 1}/6 - ${game.player1Score}:${game.player2Score}`}</span>
                     <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold whitespace-normal break-words`}>
                       {diff.icon} {diff.label} ({diff.time}s)
                     </span>
-                    <span className={`text-xs font-semibold ${isExpired ? 'text-rose-500' : (darkMode ? 'text-yellow-300' : 'text-yellow-700')}`}>
-                      Frist: {formatRemainingTime(remainingMs)}
-                    </span>
+                    {isWaitingChallenge && (
+                      <span className={`text-xs font-semibold ${isExpired ? 'text-rose-500' : (darkMode ? 'text-yellow-300' : 'text-yellow-700')}`}>
+                        Frist: {formatRemainingTime(remainingMs)}
+                      </span>
+                    )}
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    acceptChallenge(game.id);
-                    playSound('whistle');
-                  }}
-                  disabled={isExpired}
-                  className={`px-6 py-2 rounded-lg font-bold shadow-md w-full min-[720px]:w-auto min-[720px]:justify-self-end whitespace-normal text-center leading-tight ${
-                    isExpired
-                      ? (darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400')
-                      : 'bg-green-500 hover:bg-green-600 text-white'
-                  }`}
-                >
-                  {isExpired ? 'Abgelaufen' : 'Annehmen'}
-                </button>
+                {isWaitingChallenge ? (
+                  <button
+                    onClick={() => {
+                      acceptChallenge(game.id);
+                      playSound('whistle');
+                    }}
+                    disabled={isExpired}
+                    className={`px-6 py-2 rounded-lg font-bold shadow-md w-full min-[720px]:w-auto min-[720px]:justify-self-end whitespace-normal text-center leading-tight ${
+                      isExpired
+                        ? (darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400')
+                        : 'bg-green-500 hover:bg-green-600 text-white'
+                    }`}
+                  >
+                    {isExpired ? 'Abgelaufen' : 'Annehmen'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      continueGame(game.id);
+                      playSound('whistle');
+                    }}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold shadow-md w-full min-[720px]:w-auto min-[720px]:justify-self-end whitespace-normal text-center leading-tight animate-pulse"
+                  >
+                    Weiterspielen
+                  </button>
+                )}
               </div>
             );
           })}
