@@ -7,7 +7,8 @@ import { DAILY_WISDOM, DID_YOU_KNOW_FACTS } from '../../data/content';
 const DIFFICULTY_SETTINGS = {
   anfaenger: { time: 45, label: 'Anfaenger', icon: '\u{1F7E2}', color: 'bg-green-500' },
   profi: { time: 30, label: 'Profi', icon: '\u{1F7E1}', color: 'bg-yellow-500' },
-  experte: { time: 15, label: 'Experte', icon: '\u{1F534}', color: 'bg-red-500' }
+  experte: { time: 15, label: 'Experte', icon: '\u{1F534}', color: 'bg-red-500' },
+  extra: { time: 75, label: 'Extra schwer', icon: '\u{1F9E0}', color: 'bg-indigo-700' }
 };
 
 const HomeView = ({
@@ -97,6 +98,38 @@ const HomeView = ({
     setSpacedRepetitionMode(true);
     setCurrentView('flashcards');
     playSound('splash');
+  };
+
+  const getWaitingChallengeRemainingMs = (gameInput) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
+    const explicitExpiry = new Date(game.challengeExpiresAt || '').getTime();
+    if (Number.isFinite(explicitExpiry)) {
+      return explicitExpiry - Date.now();
+    }
+    const createdTs = new Date(game.createdAt || game.updatedAt || '').getTime();
+    const timeoutMinutesRaw = Number(game.challengeTimeoutMinutes || 2880);
+    const timeoutMinutes = Number.isFinite(timeoutMinutesRaw) ? Math.max(15, timeoutMinutesRaw) : 2880;
+    if (!Number.isFinite(createdTs)) return Number.POSITIVE_INFINITY;
+    return (createdTs + timeoutMinutes * 60 * 1000) - Date.now();
+  };
+
+  const formatRemainingTime = (remainingMsInput) => {
+    const remainingMs = Number(remainingMsInput);
+    if (!Number.isFinite(remainingMs)) return '';
+    if (remainingMs <= 0) return 'Abgelaufen';
+
+    const totalMinutes = Math.max(1, Math.ceil(remainingMs / 60000));
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+
+    if (days > 0) {
+      return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
+    }
+    if (hours > 0) {
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
+    return `${minutes}m`;
   };
 
   const dashboardSections = [
@@ -638,7 +671,9 @@ const HomeView = ({
             Offene Herausforderungen
           </h3>
           {waitingChallenges.map(game => {
-            const diff = DIFFICULTY_SETTINGS[game.difficulty];
+            const diff = DIFFICULTY_SETTINGS[game.difficulty] || DIFFICULTY_SETTINGS.profi;
+            const remainingMs = getWaitingChallengeRemainingMs(game);
+            const isExpired = Number.isFinite(remainingMs) && remainingMs <= 0;
             return (
               <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 grid grid-cols-1 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_auto] min-[720px]:items-center shadow-md`}>
                 <div className="min-w-0 flex-1">
@@ -648,6 +683,9 @@ const HomeView = ({
                     <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold whitespace-normal break-words`}>
                       {diff.icon} {diff.label} ({diff.time}s)
                     </span>
+                    <span className={`text-xs font-semibold ${isExpired ? 'text-rose-500' : (darkMode ? 'text-yellow-300' : 'text-yellow-700')}`}>
+                      Frist: {formatRemainingTime(remainingMs)}
+                    </span>
                   </p>
                 </div>
                 <button
@@ -655,9 +693,14 @@ const HomeView = ({
                     acceptChallenge(game.id);
                     playSound('whistle');
                   }}
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-bold shadow-md w-full min-[720px]:w-auto min-[720px]:justify-self-end whitespace-normal text-center leading-tight"
+                  disabled={isExpired}
+                  className={`px-6 py-2 rounded-lg font-bold shadow-md w-full min-[720px]:w-auto min-[720px]:justify-self-end whitespace-normal text-center leading-tight ${
+                    isExpired
+                      ? (darkMode ? 'bg-slate-700 text-gray-500' : 'bg-gray-200 text-gray-400')
+                      : 'bg-green-500 hover:bg-green-600 text-white'
+                  }`}
                 >
-                  Annehmen
+                  {isExpired ? 'Abgelaufen' : 'Annehmen'}
                 </button>
               </div>
             );
@@ -672,7 +715,7 @@ const HomeView = ({
             Laufende Spiele
           </h3>
           {activeGamesForUser.map(game => {
-            const diff = DIFFICULTY_SETTINGS[game.difficulty];
+            const diff = DIFFICULTY_SETTINGS[game.difficulty] || DIFFICULTY_SETTINGS.profi;
             return (
               <div key={game.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg p-4 mb-3 grid grid-cols-1 gap-3 min-[720px]:grid-cols-[minmax(0,1fr)_auto] min-[720px]:items-center shadow-md`}>
                 <div className="min-w-0 flex-1">
