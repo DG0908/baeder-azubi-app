@@ -1275,6 +1275,7 @@ const WaterCycleView = () => {
         .wc-bubble { animation: wcBubble 1.2s ease-in infinite; }
         .wc-pulse { transform-origin: center; animation: wcPulse 1.4s ease-out infinite; }
         .wc-surface { stroke-dasharray: 8 10; animation: wcSurface 1.4s linear infinite; }
+        .wc-jet { stroke-dasharray: 4 7; animation: wcFlow linear infinite; }
         .wc-station:hover rect, .wc-station:hover circle, .wc-station:hover ellipse { opacity: 0.9; }
       `}</style>
 
@@ -1355,9 +1356,9 @@ const WaterCycleView = () => {
                   const hasFlow = active && metrics.flowRate > 0;
                   return (
                     <g key={pipe.id}>
-                      <path d={path} fill="none" stroke="#071a30" strokeWidth="20" strokeLinecap="round"/>
-                      <path d={path} fill="none" stroke="#0d2a48" strokeWidth="14" strokeLinecap="round"/>
-                      <path d={path} fill="none" stroke="#122038" strokeWidth="8" strokeLinecap="round"/>
+                      <path d={path} fill="none" stroke="#061525" strokeWidth="20" strokeLinecap="round"/>
+                      <path d={path} fill="none" stroke="#1d4060" strokeWidth="14" strokeLinecap="round"/>
+                      <path d={path} fill="none" stroke="#0c2236" strokeWidth="8" strokeLinecap="round"/>
                       {hasFlow && (
                         <path d={path} fill="none"
                           stroke={bwPipe ? '#f09030' : '#4ac8ff'}
@@ -1396,9 +1397,9 @@ const WaterCycleView = () => {
                       <rect x={nx - 10} y="94" width="20" height="5" rx="2"
                         fill="#3a80c0" fillOpacity="0.5" stroke="#4a9eff" strokeWidth="0.8"/>
                       {metrics.flowRate > 0 && <>
-                        <line x1={nx - 4} y1="93" x2={nx - 4} y2="82" stroke="#4ac8ff" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.7" className="wc-flow"/>
-                        <line x1={nx}     y1="93" x2={nx}     y2="80" stroke="#4ac8ff" strokeWidth="2"   strokeDasharray="3 3" opacity="0.9" className="wc-flow" filter="url(#wcGlowSM)"/>
-                        <line x1={nx + 4} y1="93" x2={nx + 4} y2="82" stroke="#4ac8ff" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.7" className="wc-flow"/>
+                        <line x1={nx - 4} y1="93" x2={nx - 4} y2="55" stroke="#4ac8ff" strokeWidth="1.5" opacity="0.7" className="wc-jet" style={{ animationDuration: `${flowDuration}s` }}/>
+                        <line x1={nx}     y1="93" x2={nx}     y2="50" stroke="#4ac8ff" strokeWidth="2.5" opacity="0.95" className="wc-jet" style={{ animationDuration: `${flowDuration}s` }} filter="url(#wcGlowSM)"/>
+                        <line x1={nx + 4} y1="93" x2={nx + 4} y2="55" stroke="#4ac8ff" strokeWidth="1.5" opacity="0.7" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: '0.2s' }}/>
                       </>}
                     </g>
                   ))}
@@ -1718,9 +1719,9 @@ const WaterCycleView = () => {
                     <g key={nx}>
                       <rect x={nx-11} y="511" width="22" height="8" rx="2" fill="#1a4a80" fillOpacity="0.6" stroke="#4a9eff" strokeWidth="1"/>
                       {metrics.flowRate > 0 && <>
-                        <line x1={nx-5} y1="510" x2={nx-5} y2="492" stroke="#4ac8ff" strokeWidth="2" strokeDasharray="5 4" opacity="0.65" className="wc-flow" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15}s` }}/>
-                        <line x1={nx}   y1="510" x2={nx}   y2="488" stroke="#4ac8ff" strokeWidth="2.5" strokeDasharray="5 4" opacity="0.9" className="wc-flow" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15 + 0.2}s` }} filter="url(#wcGlow)"/>
-                        <line x1={nx+5} y1="510" x2={nx+5} y2="492" stroke="#4ac8ff" strokeWidth="2" strokeDasharray="5 4" opacity="0.65" className="wc-flow" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15 + 0.4}s` }}/>
+                        <line x1={nx-5} y1="510" x2={nx-5} y2="470" stroke="#4ac8ff" strokeWidth="2" opacity="0.7" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15}s` }}/>
+                        <line x1={nx}   y1="510" x2={nx}   y2="460" stroke="#4ac8ff" strokeWidth="3" opacity="0.95" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15 + 0.15}s` }} filter="url(#wcGlow)"/>
+                        <line x1={nx+5} y1="510" x2={nx+5} y2="470" stroke="#4ac8ff" strokeWidth="2" opacity="0.7" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15 + 0.3}s` }}/>
                       </>}
                     </g>
                   ))}
