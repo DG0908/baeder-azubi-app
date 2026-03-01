@@ -2050,33 +2050,46 @@ const WaterCycleView = () => {
                 {/* Return path label */}
                 <text x="247" y="696" fill="#1a4070" fontSize="7" fontFamily="monospace" textAnchor="middle">←── RÜCKLAUF INS BECKEN ──←</text>
 
-                {/* ── BECKEN→SCHWALL OVERFLOW STREAM (drawn last = on top of all stations) ── */}
+                {/* ── BECKEN→SCHWALL OVERFLOW STREAM (on top of all stations) ── */}
                 {metrics.flowRate > 0 && !controls.backwashMode && (
                   <g pointerEvents="none">
-                    {/* Pipe casing overlay for the full overflow path: pool wall → Schwall */}
-                    <path d="M 278 113 L 435 113" fill="none" stroke="#020a15" strokeWidth="22" strokeLinecap="round"/>
-                    <path d="M 278 113 L 435 113" fill="none" stroke="#1a4878" strokeWidth="14" strokeLinecap="round"/>
-                    <path d="M 278 113 L 435 113" fill="none" stroke="#0c2848" strokeWidth="7" strokeLinecap="round"/>
-                    {/* Animated water flow */}
-                    <path d="M 278 113 L 435 113" fill="none"
-                      stroke="#4ac8ff" strokeWidth="4.5" strokeLinecap="round" opacity="0.9"
-                      style={{ strokeDasharray: '16 10', animation: `wcFlow ${(flowDuration * 0.28).toFixed(1)}s linear infinite` }}
+                    {/* === HORIZONTAL: pool wall (x=278) → Schwall entrance (x=435) === */}
+                    {/* Semi-transparent backing gives volume/depth */}
+                    <path d="M 278 118 L 435 118" fill="none"
+                      stroke="#0e4888" strokeWidth="20" strokeLinecap="round" opacity="0.45"/>
+                    {/* WIDE bright animated water — clearly visible at 14px */}
+                    <path d="M 278 118 L 435 118" fill="none"
+                      stroke="#60d8ff" strokeWidth="14" strokeLinecap="round" opacity="0.85"
+                      className="wc-flow" style={{ animationDuration: '0.85s' }}
                       filter="url(#wcGlow)"/>
-                    {/* Entry arrow: pool → channel */}
-                    <polygon points="286,107 298,113 286,119" fill="#4ac8ff" opacity="0.85"/>
+                    {/* Water surface shimmer */}
+                    <path d="M 282 110 Q 357 105 432 110" fill="none"
+                      stroke="#a8f0ff" strokeWidth="1.5" opacity="0.5" className="wc-surface"/>
+                    {/* Entry arrow: pool wall → overflow channel */}
+                    <polygon points="283,111 298,118 283,125" fill="#60d8ff" opacity="0.95"/>
                     {/* Mid-path direction arrow */}
-                    <polygon points="350,108 365,113 350,118" fill="#4ac8ff" opacity="0.65"/>
-                    {/* Water falling into Schwall (entry waterfall) */}
-                    <path d="M 435 113 L 435 160" fill="none" stroke="#020a15" strokeWidth="18" strokeLinecap="round"/>
-                    <path d="M 435 113 L 435 160" fill="none" stroke="#1a4878" strokeWidth="10" strokeLinecap="round"/>
-                    <path d="M 435 113 L 435 160" fill="none"
-                      stroke="#4ac8ff" strokeWidth="4" strokeLinecap="round" opacity="0.8"
-                      style={{ strokeDasharray: '6 5', animation: `wcFlow ${(flowDuration * 0.35).toFixed(1)}s linear infinite` }}
+                    <polygon points="350,112 367,118 350,124" fill="#60d8ff" opacity="0.75"/>
+
+                    {/* === VERTICAL: water falling into Schwall cylinder === */}
+                    {/* Backing */}
+                    <path d={`M 444 118 L 444 ${Math.round(100 + (178 - metrics.surgeLevel * 1.78))}`}
+                      fill="none" stroke="#0e4888" strokeWidth="16" strokeLinecap="round" opacity="0.45"/>
+                    {/* Bright animated waterfall stream */}
+                    <path d={`M 444 118 L 444 ${Math.round(100 + (178 - metrics.surgeLevel * 1.78))}`}
+                      fill="none" stroke="#60d8ff" strokeWidth="10" strokeLinecap="round" opacity="0.82"
+                      className="wc-flow" style={{ animationDuration: '0.65s' }}
                       filter="url(#wcGlow)"/>
-                    {/* Direction arrow downward into Schwall */}
-                    <polygon points="430,152 435,163 440,152" fill="#4ac8ff" opacity="0.75"/>
-                    {/* Path label */}
-                    <text x="357" y="100" fill="#2a7090" fontSize="7" fontFamily="monospace" textAnchor="middle" letterSpacing="0.5">ÜBERLAUFRINNE → SCHWALLWASSERBEHÄLTER</text>
+                    {/* Arrow tip at water surface inside Schwall */}
+                    {(() => {
+                      const wy = Math.round(100 + (178 - metrics.surgeLevel * 1.78));
+                      return <polygon points={`438,${wy - 9} 444,${wy + 5} 450,${wy - 9}`} fill="#60d8ff" opacity="0.88"/>;
+                    })()}
+
+                    {/* Label above the overflow path */}
+                    <text x="357" y="101" fill="#40c0e8" fontSize="7.5" fontFamily="monospace"
+                      fontWeight="bold" textAnchor="middle" letterSpacing="0.5">
+                      ÜBERLAUF → SCHWALL
+                    </text>
                   </g>
                 )}
 
