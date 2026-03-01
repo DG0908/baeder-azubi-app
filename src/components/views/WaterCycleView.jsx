@@ -43,7 +43,7 @@ const PIPE_PATHS_VERTICAL = {
   'schwall-pumpe':        'M 500 296 L 500 320',
   'pumpe-flockung':       'M 555 375 L 635 375 L 635 100',
   'flockung-filter':      'M 635 100 L 760 100',
-  'filter-desinfektion':  'M 825 541 L 825 570',
+  'filter-desinfektion':  'M 825 531 L 825 570',
   'desinfektion-heizung': 'M 825 570 L 825 592',
   'heizung-ruecklauf':    'M 755 627 L 400 627 L 400 680',
   'ruecklauf-becken':     'M 340 680 L 155 680 L 155 525',
@@ -566,6 +566,313 @@ function BeckenDeepDive({ metrics }) {
   );
 }
 
+// ─── Überlaufrinne 3D Deep-Dive ─────────────────────────────────────────────────
+function UeberlaufDeepDive() {
+  const [rx, setRx] = useState(-28);
+  const [ry, setRy] = useState(38);
+  const [drag, setDrag] = useState(null);
+  const [spot, setSpot] = useState(null);
+
+  const pt = (e) => e.touches ? e.touches[0] : e;
+  const onDown = (e) => { if (e.target.closest('[data-hotspot]')) return; setDrag({ x: pt(e).clientX, y: pt(e).clientY }); e.preventDefault(); };
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = pt(e).clientX - drag.x, dy = pt(e).clientY - drag.y;
+    setRy(y => y + dx * 0.55);
+    setRx(x => Math.max(-70, Math.min(15, x - dy * 0.4)));
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onUp = () => setDrag(null);
+
+  const p3 = (x, y, z) => {
+    const cY = Math.cos(ry * Math.PI / 180), sY = Math.sin(ry * Math.PI / 180);
+    const cX = Math.cos(rx * Math.PI / 180), sX = Math.sin(rx * Math.PI / 180);
+    const x1 = x * cY - z * sY, z1 = x * sY + z * cY;
+    const y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+    const d = 310 / (310 + z2);
+    return [150 + x1 * d, 105 + y1 * d, z2];
+  };
+  const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
+  const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+  // Scene: pool wall cross-section (X=perimeter ±80, Y=depth 0=surface, Z=0=poolside 30=outside)
+  const faces = [
+    { id:'pf', pts:[p3(-80,55,0),p3(80,55,0),p3(80,55,-60),p3(-80,55,-60)], fill:'#061520', stroke:'#1a3a5a', strokeW:1 },
+    { id:'pb', pts:[p3(-80,0,-60),p3(80,0,-60),p3(80,55,-60),p3(-80,55,-60)], fill:'#05111d', stroke:'#1a3a5a', strokeW:1 },
+    { id:'pl', pts:[p3(-80,0,0),p3(-80,0,-60),p3(-80,55,-60),p3(-80,55,0)], fill:'#071828', stroke:'#1a3a5a', strokeW:0.8 },
+    { id:'pr', pts:[p3(80,0,0),p3(80,0,-60),p3(80,55,-60),p3(80,55,0)], fill:'#071828', stroke:'#1a3a5a', strokeW:0.8 },
+    { id:'wt', pts:[p3(-80,-18,0),p3(80,-18,0),p3(80,-18,30),p3(-80,-18,30)], fill:'#1e2830', stroke:'#2a3a50', strokeW:1 },
+    { id:'wl', pts:[p3(-80,-18,0),p3(-80,55,0),p3(-80,55,30),p3(-80,-18,30)], fill:'#161e2a', stroke:'#2a3a50', strokeW:0.8 },
+    { id:'wr', pts:[p3(80,-18,0),p3(80,55,0),p3(80,55,30),p3(80,-18,30)], fill:'#161e2a', stroke:'#2a3a50', strokeW:0.8 },
+    { id:'wb', pts:[p3(-80,-18,30),p3(80,-18,30),p3(80,55,30),p3(-80,55,30)], fill:'#0e1820', stroke:'#2a3a50', strokeW:0.8 },
+    { id:'cb', pts:[p3(-80,5,0),p3(80,5,0),p3(80,5,22),p3(-80,5,22)], fill:'#0d1a2a', stroke:'#2a4060', strokeW:1 },
+    { id:'ck', pts:[p3(-80,-18,22),p3(80,-18,22),p3(80,5,22),p3(-80,5,22)], fill:'#0c1828', stroke:'#2a4060', strokeW:1 },
+    { id:'cla', pts:[p3(-80,-18,0),p3(-80,-18,22),p3(-80,5,22),p3(-80,5,0)], fill:'#0e1e30', stroke:'#2a4060', strokeW:0.8 },
+    { id:'cra', pts:[p3(80,-18,0),p3(80,-18,22),p3(80,5,22),p3(80,5,0)], fill:'#0e1e30', stroke:'#2a4060', strokeW:0.8 },
+    { id:'ws', pts:[p3(-80,0,0),p3(80,0,0),p3(80,0,-60),p3(-80,0,-60)], fill:'#1a5090', fillOp:0.5, stroke:'#4ab0ff', strokeW:0.8 },
+    { id:'cw', pts:[p3(-80,3,0),p3(80,3,0),p3(80,3,22),p3(-80,3,22)], fill:'#1a4a80', fillOp:0.65, stroke:'#4ab0ff', strokeW:0.8 },
+  ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a,b) => b.zVal - a.zVal);
+
+  const hotDefs = [
+    { id:'wasserspiegel', x:0, y:0, z:-30, label:'≈ Wasserspiegel', color:'#4a9eff' },
+    { id:'schlitz', x:0, y:2, z:0, label:'↓ Einlaufschlitz', color:'#34c090' },
+    { id:'rinne', x:0, y:-8, z:11, label:'⊓ Rinnenkörper', color:'#ffaa40' },
+    { id:'ablauf', x:-70, y:3, z:11, label:'→ Ablaufleitung', color:'#d04040' },
+  ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
+
+  const UDATA = {
+    wasserspiegel: { color:'#4a9eff', icon:'≈', title:'Wasserspiegel', items:[
+      '📏 Beckenwasserstand muss konstant auf Rinnen-Höhe gehalten werden',
+      '⬆ Steigt der Spiegel: mehr Überlauf — OK bis zur Rinnenkapazität',
+      '⬇ Sinkt er: kein Überlauf → Oberfläche wird nicht gereinigt',
+      '🎛 Pegelregelung über Nachspeisung im Schwallwasserbehälter',
+      '📐 DIN 19643: Wasserstand stabil auf ±5 mm Sollwert halten',
+    ]},
+    schlitz: { color:'#34c090', icon:'↓', title:'Einlaufsystem / Rinnensysteme', items:[
+      '① Wiesbadener Rinne (tieflegend, offen): klassisch im Hallenbad, breite Rinne am Beckenrand',
+      '② Wiesbadener Rinne (Beckenumgangshöhe): auf Höhe des Umgangs, begehbar',
+      '③ St.-Moritz-Rinne: eingetauchter Rand mit seitlichem Überlaufschlitz',
+      '④ Züricher Rinne: breiter eingetauchter Rand mit Überlaufkanal darunter',
+      '⑤ Finnische Rinne (Spaltrinne): umlaufender Schlitz am eingetauchten Rand',
+      '⚡ Schlitz erfasst Oberflächenwasser direkt — höchste Keimbelastung',
+    ]},
+    rinne: { color:'#ffaa40', icon:'⊓', title:'Rinnenkörper', items:[
+      '🧱 Material: Keramik, Edelstahl oder Kunststoff (chlorbeständig)',
+      '🔄 Sammelkanal führt Überlaufwasser zur Ablaufleitung',
+      '🚫 Rückstau verhindern: Querschnitt großzügig dimensionieren',
+      '🧹 Biofilm und Ablagerungen: täglich im Öffnungsrundgang prüfen',
+      '⚠ Verstopfte Rinne → Wasserspiegel steigt → Überschwemmungsgefahr',
+      '📋 Reinigung laut Hygieneplan dokumentieren',
+    ]},
+    ablauf: { color:'#d04040', icon:'→', title:'Ablaufleitung zum Schwall', items:[
+      '📍 Tiefster Punkt der Rinne → Gefälle zur Ablaufleitung zwingend',
+      '🔧 Nennweite je nach Rinnenkapazität: DN 80–150',
+      '🔀 Abfluss in den Schwallwasserbehälter (nicht direkt in Kanal)',
+      '🔒 Hygienetrennung: Rinnenwasser NICHT ins Frischwassernetz',
+      '⏱ Hydraulik: max. Überlaufrate 1–2 m³/(m·h)',
+      '📐 DIN EN 13451: Rinne muss vollständig abfließen können',
+    ]},
+  };
+  const activeData = spot ? UDATA[spot] : null;
+  const pipeA = p3(-80, 3, 11), pipeB = p3(-98, 3, 11);
+
+  return (
+    <div style={{ position:'relative', borderRadius:'8px', overflow:'hidden', background:'#040d1a' }}>
+      <svg viewBox="0 0 300 220" width="100%" height="280px"
+        style={{ display:'block', cursor: drag ? 'grabbing' : 'grab', touchAction:'none' }}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
+        <defs><pattern id="uGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+        </pattern></defs>
+        <rect width="300" height="220" fill="#040d1a"/>
+        <rect width="300" height="220" fill="url(#uGrid)"/>
+        {faces.map(f => (
+          <g key={f.id}>
+            <polygon points={poly(f.pts)} fill={f.fill} fillOpacity={f.fillOp || 1} stroke={f.stroke} strokeWidth={f.strokeW}/>
+            {f.id === 'ws' && (() => {
+              const w1 = p3(-60,0,-20), w2 = p3(40,0,-20), w3 = p3(-40,0,-40), w4 = p3(50,0,-40);
+              return <>
+                <line x1={w1[0].toFixed(1)} y1={w1[1].toFixed(1)} x2={w2[0].toFixed(1)} y2={w2[1].toFixed(1)} stroke="#4ac8ff" strokeWidth="1.2" opacity="0.4" strokeDasharray="8 5" className="wc-surface"/>
+                <line x1={w3[0].toFixed(1)} y1={w3[1].toFixed(1)} x2={w4[0].toFixed(1)} y2={w4[1].toFixed(1)} stroke="#4ac8ff" strokeWidth="0.8" opacity="0.3" strokeDasharray="6 4" className="wc-surface"/>
+              </>;
+            })()}
+            {f.id === 'cw' && (() => {
+              const c1 = p3(-40,3,11), c2 = p3(-65,3,11);
+              return <line x1={c1[0].toFixed(1)} y1={c1[1].toFixed(1)} x2={c2[0].toFixed(1)} y2={c2[1].toFixed(1)}
+                stroke="#4ab0ff" strokeWidth="2" opacity="0.6" strokeDasharray="6 4" className="wc-flow" style={{ animationDuration:'1.8s' }}/>;
+            })()}
+            {f.id === 'pf' && [[-60,55,-20],[0,55,-20],[60,55,-20],[-60,55,-40],[0,55,-40],[60,55,-40]].map(([x,y,z],i) => {
+              const c = p3(x,y,z);
+              return <circle key={i} cx={c[0].toFixed(1)} cy={c[1].toFixed(1)} r="2" fill="#0d2a40" opacity="0.4"/>;
+            })}
+          </g>
+        ))}
+        <line x1={pipeA[0].toFixed(1)} y1={pipeA[1].toFixed(1)} x2={pipeB[0].toFixed(1)} y2={pipeB[1].toFixed(1)} stroke="#1a4060" strokeWidth="9" strokeLinecap="round"/>
+        <line x1={pipeA[0].toFixed(1)} y1={pipeA[1].toFixed(1)} x2={pipeB[0].toFixed(1)} y2={pipeB[1].toFixed(1)} stroke="#0c2030" strokeWidth="5" strokeLinecap="round"/>
+        <line x1={pipeA[0].toFixed(1)} y1={pipeA[1].toFixed(1)} x2={pipeB[0].toFixed(1)} y2={pipeB[1].toFixed(1)} stroke="#4a9eff" strokeWidth="2.5" strokeLinecap="round" opacity="0.6" strokeDasharray="5 4" className="wc-flow" style={{ animationDuration:'1.5s' }}/>
+        <text x={(pipeB[0]-4).toFixed(1)} y={(pipeB[1]-7).toFixed(1)} fill="#4a9eff" fontSize="5.5" fontFamily="monospace" textAnchor="middle">→ SCHWALL</text>
+        {hotDefs.map(h => (
+          <g key={h.id} data-hotspot="1" style={{ cursor:'pointer' }} onClick={e => { e.stopPropagation(); setSpot(spot === h.id ? null : h.id); }}>
+            <circle cx={h.proj[0].toFixed(1)} cy={h.proj[1].toFixed(1)} r="13" fill={h.color} fillOpacity={spot===h.id?0.4:0.15} stroke={h.color} strokeWidth={spot===h.id?2.5:1.5}>
+              {spot!==h.id && <animate attributeName="r" values="13;16;13" dur="2.5s" repeatCount="indefinite"/>}
+            </circle>
+            <text x={h.proj[0].toFixed(1)} y={(h.proj[1]+4).toFixed(1)} fill="white" fontSize="10" fontWeight="bold" textAnchor="middle" style={{ pointerEvents:'none' }}>+</text>
+            {spot===h.id && <text x={h.proj[0].toFixed(1)} y={(h.proj[1]-18).toFixed(1)} fill={h.color} fontSize="6.5" fontFamily="monospace" textAnchor="middle" style={{ pointerEvents:'none' }}>{h.label}</text>}
+          </g>
+        ))}
+        <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+        </text>
+      </svg>
+      {activeData && (
+        <div style={{ background:'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop:'2px solid '+activeData.color, padding:'10px 12px', maxHeight:'180px', overflowY:'auto' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'6px' }}>
+            <span style={{ color:activeData.color, fontSize:'12px', fontWeight:'bold', fontFamily:'monospace' }}>{activeData.icon} {activeData.title}</span>
+            <button onClick={() => setSpot(null)} style={{ background:'transparent', border:'1px solid #1a3a5a', borderRadius:'4px', color:'#5a8090', fontSize:'11px', padding:'2px 7px', cursor:'pointer' }}>✕</button>
+          </div>
+          {activeData.items.map((item, i) => (
+            <p key={i} style={{ color:'#8ab0c0', fontSize:'10px', fontFamily:'monospace', margin:'2px 0', lineHeight:'1.5' }}>{item}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Rücklaufleitung 3D Deep-Dive ──────────────────────────────────────────────
+function RuecklaufDeepDive({ metrics }) {
+  const [rx, setRx] = useState(-32);
+  const [ry, setRy] = useState(-18);
+  const [drag, setDrag] = useState(null);
+  const [spot, setSpot] = useState(null);
+  const running = metrics.flowRate > 0;
+
+  const pt = (e) => e.touches ? e.touches[0] : e;
+  const onDown = (e) => { if (e.target.closest('[data-hotspot]')) return; setDrag({ x: pt(e).clientX, y: pt(e).clientY }); e.preventDefault(); };
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = pt(e).clientX - drag.x, dy = pt(e).clientY - drag.y;
+    setRy(y => y + dx * 0.55);
+    setRx(x => Math.max(-70, Math.min(15, x - dy * 0.4)));
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onUp = () => setDrag(null);
+
+  const p3 = (x, y, z) => {
+    const cY = Math.cos(ry * Math.PI / 180), sY = Math.sin(ry * Math.PI / 180);
+    const cX = Math.cos(rx * Math.PI / 180), sX = Math.sin(rx * Math.PI / 180);
+    const x1 = x * cY - z * sY, z1 = x * sY + z * cY;
+    const y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+    const d = 310 / (310 + z2);
+    return [150 + x1 * d, 108 + y1 * d, z2];
+  };
+  const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
+  const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+  // X=width ±80, Y=0=floor 20=underground -25=water above, Z=pool length ±50
+  const nozzlePos = [[-55,-35],[-55,0],[-55,35],[0,-35],[0,0],[0,35],[55,-35],[55,0],[55,35]];
+  const faces = [
+    { id:'ug', pts:[p3(-80,0,-50),p3(80,0,-50),p3(80,30,-50),p3(-80,30,-50)], fill:'#030a12', stroke:'#0a1a2a', strokeW:1 },
+    { id:'lw', pts:[p3(-80,0,-50),p3(-80,0,50),p3(-80,30,50),p3(-80,30,-50)], fill:'#070e1c', stroke:'#1a3050', strokeW:1 },
+    { id:'fl', pts:[p3(-80,0,-50),p3(80,0,-50),p3(80,0,50),p3(-80,0,50)], fill:'#071828', stroke:'#1a3a5a', strokeW:1.5 },
+    { id:'wa', pts:[p3(-80,-32,-50),p3(80,-32,-50),p3(80,-32,50),p3(-80,-32,50)], fill:'#1a5090', fillOp:0.2, stroke:'#4ab0ff', strokeW:0.5 },
+  ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a,b) => b.zVal - a.zVal);
+
+  const pL = p3(-80,18,0), pR = p3(80,18,0);
+  const branchX = [-55, 0, 55];
+
+  const hotDefs = [
+    { id:'hauptleitung', x:0, y:18, z:0, label:'⊙ Rücklaufleitung', color:'#4a9eff' },
+    { id:'einstroemduse', x:0, y:0, z:0, label:'▲ Einströmdüse', color:'#34c090' },
+    { id:'stroemung', x:50, y:-18, z:30, label:'∿ Strömung', color:'#ffaa40' },
+    { id:'verteiler', x:-50, y:18, z:-35, label:'⊗ Verteiler', color:'#d04040' },
+  ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
+
+  const RDATA = {
+    hauptleitung: { color:'#4a9eff', icon:'⊙', title:'Rücklaufleitung', items:[
+      '📍 Führt aufbereitetes Reinwasser zurück ins Becken',
+      '🔧 Nennweite: DN 100–200 je nach Volumenstrom',
+      '🌊 Fließgeschwindigkeit: 0,3–0,7 m/s (Schutz vor Erosion)',
+      '⚙ Material: PVC-U, PP oder Edelstahl (chlorbeständig)',
+      '🔀 Verteilerleitung verzweigt auf alle Einströmdüsen',
+      '📐 DIN 19643: Hydraulik gleichmäßig auf Düsen aufteilen',
+    ]},
+    einstroemduse: { color:'#34c090', icon:'▲', title:'Einströmdüsen', items:[
+      '↕ Vertikaldurchströmung: Düsen im Boden, Wasser steigt auf',
+      '↔ Horizontaldurchströmung: Düsen in Wand, Querstrom',
+      '📏 DIN 19643: Düsenraster max. 2,5 m × 3,5 m',
+      '🌊 Einströmgeschwindigkeit: 0,3–0,5 m/s',
+      '🔵 Düsentypen: Deckelventil, Dübelventil, Körperdüse',
+      '✅ Gleichmäßige Verteilung verhindert Totzonen',
+    ]},
+    stroemung: { color:'#ffaa40', icon:'∿', title:'Strömungsbild', items:[
+      '🌊 Aufsteigende Strömung: Reinwasser verdrängt Schmutzwasser zur Rinne',
+      '🔄 Totzonen sind hygienisch kritisch — Keimbildung möglich',
+      '📐 Hydraulische Simulation bei Planung vorgeschrieben',
+      '🎯 Ziel: lückenlose Durchflutung des gesamten Beckens',
+      '👁 Sichttiefe und Oberflächenbewegung zeigen Strömungsqualität an',
+    ]},
+    verteiler: { color:'#d04040', icon:'⊗', title:'Verteilerleitung', items:[
+      '🔀 Teilt Volumenstrom gleichmäßig auf alle Düsenstränge auf',
+      '📐 Ringförmige Anordnung sichert Druckausgleich',
+      '🔧 Reinigungsanschlüsse (Spül-T) an strategischen Stellen',
+      '⚠ Teilverblockung → ungleiche Strömung → Totzonen',
+      '📋 Umbau erfordert hydraulische Neuberechnung',
+    ]},
+  };
+  const activeData = spot ? RDATA[spot] : null;
+
+  return (
+    <div style={{ position:'relative', borderRadius:'8px', overflow:'hidden', background:'#040d1a' }}>
+      <svg viewBox="0 0 300 220" width="100%" height="280px"
+        style={{ display:'block', cursor: drag ? 'grabbing' : 'grab', touchAction:'none' }}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
+        <defs><pattern id="rGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+        </pattern></defs>
+        <rect width="300" height="220" fill="#040d1a"/>
+        <rect width="300" height="220" fill="url(#rGrid)"/>
+        {faces.map(f => (
+          <g key={f.id}>
+            <polygon points={poly(f.pts)} fill={f.fill} fillOpacity={f.fillOp||1} stroke={f.stroke} strokeWidth={f.strokeW}/>
+            {f.id === 'fl' && nozzlePos.map(([x,z],i) => {
+              const c = p3(x,0,z);
+              return <circle key={i} cx={c[0].toFixed(1)} cy={c[1].toFixed(1)} r="2.5" fill="#0d2a40" opacity="0.6"/>;
+            })}
+          </g>
+        ))}
+        <line x1={pL[0].toFixed(1)} y1={pL[1].toFixed(1)} x2={pR[0].toFixed(1)} y2={pR[1].toFixed(1)} stroke="#0d2a40" strokeWidth="16" strokeLinecap="round"/>
+        <line x1={pL[0].toFixed(1)} y1={pL[1].toFixed(1)} x2={pR[0].toFixed(1)} y2={pR[1].toFixed(1)} stroke="#1a4060" strokeWidth="11" strokeLinecap="round"/>
+        <line x1={pL[0].toFixed(1)} y1={pL[1].toFixed(1)} x2={pR[0].toFixed(1)} y2={pR[1].toFixed(1)} stroke="#0d2030" strokeWidth="6" strokeLinecap="round"/>
+        {running && <line x1={pL[0].toFixed(1)} y1={pL[1].toFixed(1)} x2={pR[0].toFixed(1)} y2={pR[1].toFixed(1)} stroke="#4a9eff" strokeWidth="3.5" strokeLinecap="round" opacity="0.75" strokeDasharray="8 6" className="wc-flow" style={{ animationDuration:'2s' }}/>}
+        {branchX.map((x, i) => {
+          const top = p3(x,0,0), bot = p3(x,18,0);
+          return <g key={i}>
+            <line x1={top[0].toFixed(1)} y1={top[1].toFixed(1)} x2={bot[0].toFixed(1)} y2={bot[1].toFixed(1)} stroke="#0f2a40" strokeWidth="8" strokeLinecap="round"/>
+            <line x1={top[0].toFixed(1)} y1={top[1].toFixed(1)} x2={bot[0].toFixed(1)} y2={bot[1].toFixed(1)} stroke="#1a4060" strokeWidth="5" strokeLinecap="round"/>
+            {running && <line x1={top[0].toFixed(1)} y1={top[1].toFixed(1)} x2={bot[0].toFixed(1)} y2={bot[1].toFixed(1)} stroke="#4a9eff" strokeWidth="2.5" strokeLinecap="round" opacity="0.6" strokeDasharray="5 4" className="wc-flow" style={{ animationDuration:'1.5s', animationDelay:`${i*0.2}s` }}/>}
+          </g>;
+        })}
+        {nozzlePos.map(([x,z],i) => {
+          const pos = p3(x,0,z), tip = p3(x,-22,z);
+          return <g key={i}>
+            <circle cx={pos[0].toFixed(1)} cy={pos[1].toFixed(1)} r="4.5" fill="#0d2030" stroke="#2a5080" strokeWidth="1.2"/>
+            <circle cx={pos[0].toFixed(1)} cy={pos[1].toFixed(1)} r="2.5" fill="#1a4060" stroke="#4a80c0" strokeWidth="0.8"/>
+            {running && <line x1={pos[0].toFixed(1)} y1={pos[1].toFixed(1)} x2={tip[0].toFixed(1)} y2={tip[1].toFixed(1)} stroke="#4ac8ff" strokeWidth="2" opacity="0.75" strokeDasharray="4 3" className="wc-flow" style={{ animationDuration:'1.1s', animationDelay:`${i*0.08}s` }} filter="url(#wcGlow)"/>}
+          </g>;
+        })}
+        {hotDefs.map(h => (
+          <g key={h.id} data-hotspot="1" style={{ cursor:'pointer' }} onClick={e => { e.stopPropagation(); setSpot(spot===h.id?null:h.id); }}>
+            <circle cx={h.proj[0].toFixed(1)} cy={h.proj[1].toFixed(1)} r="13" fill={h.color} fillOpacity={spot===h.id?0.4:0.15} stroke={h.color} strokeWidth={spot===h.id?2.5:1.5}>
+              {spot!==h.id && <animate attributeName="r" values="13;16;13" dur="2.5s" repeatCount="indefinite"/>}
+            </circle>
+            <text x={h.proj[0].toFixed(1)} y={(h.proj[1]+4).toFixed(1)} fill="white" fontSize="10" fontWeight="bold" textAnchor="middle" style={{ pointerEvents:'none' }}>+</text>
+            {spot===h.id && <text x={h.proj[0].toFixed(1)} y={(h.proj[1]-18).toFixed(1)} fill={h.color} fontSize="6.5" fontFamily="monospace" textAnchor="middle" style={{ pointerEvents:'none' }}>{h.label}</text>}
+          </g>
+        ))}
+        <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+        </text>
+      </svg>
+      {activeData && (
+        <div style={{ background:'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop:'2px solid '+activeData.color, padding:'10px 12px', maxHeight:'180px', overflowY:'auto' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'6px' }}>
+            <span style={{ color:activeData.color, fontSize:'12px', fontWeight:'bold', fontFamily:'monospace' }}>{activeData.icon} {activeData.title}</span>
+            <button onClick={() => setSpot(null)} style={{ background:'transparent', border:'1px solid #1a3a5a', borderRadius:'4px', color:'#5a8090', fontSize:'11px', padding:'2px 7px', cursor:'pointer' }}>✕</button>
+          </div>
+          {activeData.items.map((item, i) => (
+            <p key={i} style={{ color:'#8ab0c0', fontSize:'10px', fontFamily:'monospace', margin:'2px 0', lineHeight:'1.5' }}>{item}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Station-specific animated SVG illustrations ──────────────────────────────
 function DeepDiveSVG({ stationId, metrics, controls, xrayMode }) {
   const running = controls.pumpEnabled;
@@ -798,6 +1105,14 @@ function DeepDiveSVG({ stationId, metrics, controls, xrayMode }) {
 
   if (stationId === 'becken') {
     return <BeckenDeepDive metrics={metrics}/>;
+  }
+
+  if (stationId === 'ueberlauf') {
+    return <UeberlaufDeepDive />;
+  }
+
+  if (stationId === 'ruecklauf') {
+    return <RuecklaufDeepDive metrics={metrics}/>;
   }
 
   return (
@@ -1380,12 +1695,13 @@ const WaterCycleView = () => {
                 {/* ── PIPES ── */}
                 {pipeStates.map(pipe => (
                   <g key={pipe.id}>
-                    <path d={pipe.path} fill="none" stroke="#0d2540" strokeWidth="22" strokeLinecap="round"/>
-                    <path d={pipe.path} fill="none" stroke="#162f50" strokeWidth="16" strokeLinecap="round"/>
+                    <path d={pipe.path} fill="none" stroke="#06141f" strokeWidth="28" strokeLinecap="round"/>
+                    <path d={pipe.path} fill="none" stroke="#1d4060" strokeWidth="20" strokeLinecap="round"/>
+                    <path d={pipe.path} fill="none" stroke="#0c2236" strokeWidth="12" strokeLinecap="round"/>
                     {pipe.hasFlow && (
                       <path d={pipe.path} fill="none"
                         stroke={pipe.backwash ? 'url(#wcBackwash)' : 'url(#wcFlow)'}
-                        strokeWidth="8" strokeLinecap="round"
+                        strokeWidth="7" strokeLinecap="round"
                         className={`wc-flow${pipe.reverse ? ' wc-flow-reverse' : ''}`}
                         style={{ animationDuration: `${flowDuration}s` }}
                         filter="url(#wcGlow)"/>
@@ -1398,10 +1714,14 @@ const WaterCycleView = () => {
                   <rect x="25" y="45" width="265" height="480" rx="6" fill="#050e1c" stroke={selectedStationId === 'becken' ? '#4a9eff' : '#1a3a5a'} strokeWidth="2"/>
                   <rect x="35" y="195" width="245" height="320" rx="3" fill="url(#wcWaterFill)"/>
                   <path d="M35 203 Q78 191 120 203 Q162 215 205 197 Q238 185 280 200" fill="none" stroke="#4ab0ff" strokeWidth="1.8" className="wc-surface" opacity="0.75"/>
-                  {[90, 145, 200].map(nx => (
+                  {[90, 145, 200].map((nx, ni) => (
                     <g key={nx}>
-                      <rect x={nx-11} y="510" width="22" height="7" rx="2" fill="#4a9eff" fillOpacity="0.3" stroke="#4a9eff" strokeWidth="0.8"/>
-                      {metrics.flowRate > 0 && <line x1={nx} y1="508" x2={nx} y2="498" stroke="#4a9eff" strokeWidth="1.5" opacity="0.4" strokeDasharray="3 2"/>}
+                      <rect x={nx-11} y="511" width="22" height="8" rx="2" fill="#1a4a80" fillOpacity="0.6" stroke="#4a9eff" strokeWidth="1"/>
+                      {metrics.flowRate > 0 && <>
+                        <line x1={nx-5} y1="510" x2={nx-5} y2="492" stroke="#4ac8ff" strokeWidth="2" strokeDasharray="5 4" opacity="0.65" className="wc-flow" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15}s` }}/>
+                        <line x1={nx}   y1="510" x2={nx}   y2="488" stroke="#4ac8ff" strokeWidth="2.5" strokeDasharray="5 4" opacity="0.9" className="wc-flow" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15 + 0.2}s` }} filter="url(#wcGlow)"/>
+                        <line x1={nx+5} y1="510" x2={nx+5} y2="492" stroke="#4ac8ff" strokeWidth="2" strokeDasharray="5 4" opacity="0.65" className="wc-flow" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15 + 0.4}s` }}/>
+                      </>}
                     </g>
                   ))}
                   <rect x="278" y="96" width="12" height="80" rx="3" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
