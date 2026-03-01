@@ -1663,8 +1663,8 @@ const WaterCycleView = () => {
                     <stop offset="100%" stopColor="#060f22"/>
                   </linearGradient>
                   <linearGradient id="wcWaterFill" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#1a6090" stopOpacity="0.75"/>
-                    <stop offset="100%" stopColor="#0a3060" stopOpacity="0.9"/>
+                    <stop offset="0%" stopColor="#1e7ab8" stopOpacity="0.92"/>
+                    <stop offset="100%" stopColor="#0c3a6a" stopOpacity="0.97"/>
                   </linearGradient>
                   <linearGradient id="wcFlow" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor="#38b0ff"/>
@@ -1789,7 +1789,7 @@ const WaterCycleView = () => {
                 {/* ── ÜBERLAUF (overflow channel cross-section) ── */}
                 <g className="wc-station" onClick={() => chooseStation('ueberlauf')} style={{ cursor: 'pointer' }}>
                   {/* Channel outer walls: left, bottom, right — U-shape open at top */}
-                  <path d="M 291 96 L 291 141 L 352 141 L 352 96" fill="#060f22"
+                  <path d="M 291 96 L 291 141 L 352 141 L 352 96" fill="none"
                     stroke={selectedStationId === 'ueberlauf' ? '#4a9eff' : '#1a4060'} strokeWidth="1.5"/>
                   {/* Channel water fill — continuous with pool water level at y=107 */}
                   <rect x="292" y="107" width="59" height="33" fill="#1060c0"
@@ -2049,6 +2049,36 @@ const WaterCycleView = () => {
 
                 {/* Return path label */}
                 <text x="247" y="696" fill="#1a4070" fontSize="7" fontFamily="monospace" textAnchor="middle">←── RÜCKLAUF INS BECKEN ──←</text>
+
+                {/* ── BECKEN→SCHWALL OVERFLOW STREAM (drawn last = on top of all stations) ── */}
+                {metrics.flowRate > 0 && !controls.backwashMode && (
+                  <g pointerEvents="none">
+                    {/* Pipe casing overlay for the full overflow path: pool wall → Schwall */}
+                    <path d="M 278 113 L 435 113" fill="none" stroke="#020a15" strokeWidth="22" strokeLinecap="round"/>
+                    <path d="M 278 113 L 435 113" fill="none" stroke="#1a4878" strokeWidth="14" strokeLinecap="round"/>
+                    <path d="M 278 113 L 435 113" fill="none" stroke="#0c2848" strokeWidth="7" strokeLinecap="round"/>
+                    {/* Animated water flow */}
+                    <path d="M 278 113 L 435 113" fill="none"
+                      stroke="#4ac8ff" strokeWidth="4.5" strokeLinecap="round" opacity="0.9"
+                      style={{ strokeDasharray: '16 10', animation: `wcFlow ${(flowDuration * 0.28).toFixed(1)}s linear infinite` }}
+                      filter="url(#wcGlow)"/>
+                    {/* Entry arrow: pool → channel */}
+                    <polygon points="286,107 298,113 286,119" fill="#4ac8ff" opacity="0.85"/>
+                    {/* Mid-path direction arrow */}
+                    <polygon points="350,108 365,113 350,118" fill="#4ac8ff" opacity="0.65"/>
+                    {/* Water falling into Schwall (entry waterfall) */}
+                    <path d="M 435 113 L 435 160" fill="none" stroke="#020a15" strokeWidth="18" strokeLinecap="round"/>
+                    <path d="M 435 113 L 435 160" fill="none" stroke="#1a4878" strokeWidth="10" strokeLinecap="round"/>
+                    <path d="M 435 113 L 435 160" fill="none"
+                      stroke="#4ac8ff" strokeWidth="4" strokeLinecap="round" opacity="0.8"
+                      style={{ strokeDasharray: '6 5', animation: `wcFlow ${(flowDuration * 0.35).toFixed(1)}s linear infinite` }}
+                      filter="url(#wcGlow)"/>
+                    {/* Direction arrow downward into Schwall */}
+                    <polygon points="430,152 435,163 440,152" fill="#4ac8ff" opacity="0.75"/>
+                    {/* Path label */}
+                    <text x="357" y="100" fill="#2a7090" fontSize="7" fontFamily="monospace" textAnchor="middle" letterSpacing="0.5">ÜBERLAUFRINNE → SCHWALLWASSERBEHÄLTER</text>
+                  </g>
+                )}
 
                 {/* ── FLOW SEQUENCE NUMBERS ── */}
                 <g pointerEvents="none">
