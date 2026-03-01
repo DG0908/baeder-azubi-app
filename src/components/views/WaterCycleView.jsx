@@ -1800,10 +1800,9 @@ const WaterCycleView = () => {
                     <text x="741" y="110" fill="#3a7090" fontSize="6" fontFamily="monospace" textAnchor="end">VERTEILERHAUBE</text>
                     {/* Distribution spray from dome when pump running */}
                     {metrics.flowRate > 0 && !controls.backwashMode && [780, 797, 825, 853, 870].map((fx, i) => (
-                      <line key={i} x1="825" y1="115" x2={fx} y2={138}
-                        stroke="#4ac8ff" strokeWidth="1.3" opacity="0.38"
-                        strokeDasharray="4 3" className="wc-flow"
-                        style={{ animationDuration: '1.3s', animationDelay: `${i * 0.12}s` }}/>
+                      <line key={i} x1="825" y1="115" x2={fx} y2={146}
+                        stroke="#4ac8ff" strokeWidth="1.6" opacity="0.6"
+                        style={{ strokeDasharray: '4 3', animation: `wcFlow 1.2s linear ${i * 0.12}s infinite` }}/>
                     ))}
                     {/* Filter body */}
                     <rect x="760" y="100" width="130" height="415" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : (symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a')} strokeWidth="1.5"/>
@@ -1835,13 +1834,19 @@ const WaterCycleView = () => {
                       <text x="825" y="294" fill="#90c060" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND 0,4–1,6mm</text>
                       <text x="825" y="419" fill="#6080a0" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE 0,8–1,6mm</text>
                     </>)}
-                    {/* Center downward flow arrow */}
-                    <line x1="825" y1="130" x2="825" y2="476" stroke="#4a9eff" strokeWidth="1.5" strokeDasharray="8 6" opacity="0.22"/>
-                    <polygon points="820,474 825,487 830,474" fill="#4a9eff" opacity="0.28"/>
-                    {/* Backwash upward arrow */}
-                    {controls.backwashMode && (
-                      <line x1="825" y1="476" x2="825" y2="130" stroke="#f09030" strokeWidth="1.5" strokeDasharray="8 6" opacity="0.32" className="wc-flow wc-flow-reverse"/>
+                    {/* Center downward flow — animated in normal mode */}
+                    {!controls.backwashMode && metrics.flowRate > 0 && (
+                      <line x1="825" y1="138" x2="825" y2="476"
+                        stroke="#4a9eff" strokeWidth="2.5" opacity="0.55"
+                        style={{ strokeDasharray: '9 7', animation: `wcFlow ${flowDuration}s linear infinite` }}/>
                     )}
+                    {!controls.backwashMode && <polygon points="820,474 825,488 830,474" fill="#4a9eff" opacity={metrics.flowRate > 0 ? 0.55 : 0.2}/>}
+                    {/* Backwash upward flow — animated orange */}
+                    {controls.backwashMode && (
+                      <line x1="825" y1="476" x2="825" y2="138" stroke="#f09030" strokeWidth="2.5"
+                        opacity="0.6" style={{ strokeDasharray: '9 7', animation: `wcFlow ${flowDuration}s linear infinite reverse` }}/>
+                    )}
+                    {controls.backwashMode && <polygon points="820,140 825,126 830,140" fill="#f09030" opacity="0.65"/>}
                     {/* Bottom ellipse */}
                     <ellipse cx="825" cy="515" rx="65" ry="16" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.5"/>
                     {/* dP gauge */}
@@ -1910,6 +1915,27 @@ const WaterCycleView = () => {
                   <text x="829" y="581" fill="#5a8090" fontSize="8.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">WÄRMETAUSCHER</text>
                   <text x="829" y="678" fill={temperatureInRange ? '#34c090' : '#d09030'} fontSize="8" fontFamily="monospace" textAnchor="middle">{metrics.temperature} °C</text>
                 </g>
+
+                {/* ── FLOW TRACE: Filter → Desinfektion → Heizung (on top of stations) ── */}
+                {metrics.flowRate > 0 && !controls.backwashMode && filterMode === 'vertikal' && (
+                  <g pointerEvents="none">
+                    {/* Pipe casing overlay: filter-bottom → through desinf. → heizung top */}
+                    <path d="M 825 531 L 825 597" fill="none" stroke="#061525" strokeWidth="20" strokeLinecap="round"/>
+                    <path d="M 825 531 L 825 597" fill="none" stroke="#1d4060" strokeWidth="14" strokeLinecap="round"/>
+                    <path d="M 825 531 L 825 597" fill="none" stroke="#0c2236" strokeWidth="8" strokeLinecap="round"/>
+                    {/* Animated flow on this stretch */}
+                    <path d="M 825 531 L 825 597" fill="none"
+                      stroke="url(#wcFlow)" strokeWidth="7" strokeLinecap="round"
+                      className="wc-flow" style={{ animationDuration: `${flowDuration}s` }}
+                      filter="url(#wcGlow)"/>
+                    {/* Heat exchanger: animated warm-side lines pulse when water flows */}
+                    {[604, 614, 624, 634, 640].map((hy, i) => i % 2 === 1 && (
+                      <line key={hy} x1="768" y1={hy} x2="890" y2={hy}
+                        stroke="#4a9eff" strokeWidth="2.5" opacity="0.45"
+                        style={{ strokeDasharray: '12 8', animation: `wcFlow ${flowDuration}s linear ${i * 0.12}s infinite` }}/>
+                    ))}
+                  </g>
+                )}
 
                 {/* ── RÜCKLAUF (on return pipe, bottom center) ── */}
                 <g className="wc-station" onClick={() => chooseStation('ruecklauf')} style={{ cursor: 'pointer' }}>
