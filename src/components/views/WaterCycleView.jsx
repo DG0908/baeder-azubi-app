@@ -1731,8 +1731,9 @@ const WaterCycleView = () => {
                 {/* ── BECKEN (pool cross-section, left column) ── */}
                 <g className="wc-station" onClick={() => chooseStation('becken')} style={{ cursor: 'pointer' }}>
                   <rect x="25" y="45" width="265" height="480" rx="6" fill="#050e1c" stroke={selectedStationId === 'becken' ? '#4a9eff' : '#1a3a5a'} strokeWidth="2"/>
-                  <rect x="35" y="195" width="245" height="320" rx="3" fill="url(#wcWaterFill)"/>
-                  <path d="M35 203 Q78 191 120 203 Q162 215 205 197 Q238 185 280 200" fill="none" stroke="#4ab0ff" strokeWidth="1.8" className="wc-surface" opacity="0.75"/>
+                  {/* Water fill — raised to overflow rim level so water reaches the Überlaufrinne */}
+                  <rect x="35" y="105" width="243" height="410" rx="3" fill="url(#wcWaterFill)"/>
+                  <path d="M35 107 Q78 101 120 107 Q162 113 205 106 Q241 101 278 107" fill="none" stroke="#4ab0ff" strokeWidth="1.8" className="wc-surface" opacity="0.75"/>
                   {[90, 145, 200].map((nx, ni) => (
                     <g key={nx}>
                       <rect x={nx-11} y="511" width="22" height="8" rx="2" fill="#1a4a80" fillOpacity="0.6" stroke="#4a9eff" strokeWidth="1"/>
@@ -1755,31 +1756,54 @@ const WaterCycleView = () => {
                     <line x1="78" y1="519" x2="216" y2="519" stroke="#4ac8ff" strokeWidth="2.5" opacity="0.35"
                       style={{ strokeDasharray: '6 5', animation: `wcFlow ${flowDuration}s linear infinite` }}/>
                   )}
-                  <rect x="278" y="96" width="12" height="80" rx="3" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
-                  <rect x="280" y="103" width="8" height="62" rx="1" fill="#1060a0" fillOpacity="0.4"/>
+                  {/* Pool wall with overflow notch: wall above notch (y=96–105) */}
+                  <rect x="278" y="96" width="12" height="11" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
+                  {/* Overflow notch opening at y=105–122 — water flows through here */}
+                  <rect x="278" y="105" width="12" height="18" fill="#102850" fillOpacity="0.8"/>
+                  {/* Pool water visible through notch (same blue as pool fill) */}
+                  <rect x="279" y="106" width="10" height="16" fill="#1060c0" fillOpacity="0.5" rx="1"/>
+                  {/* Wall below notch (y=122–176) */}
+                  <rect x="278" y="122" width="12" height="54" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
+                  {/* Animated overflow cascade: water flowing rightward through the notch */}
+                  {metrics.flowRate > 0 && [
+                    { x: 280, delay: 0,    w: 2.5 },
+                    { x: 283, delay: 0.18, w: 2   },
+                    { x: 286, delay: 0.36, w: 2.5 },
+                  ].map(({ x, delay, w }) => (
+                    <line key={x}
+                      x1={x} y1="107" x2={x} y2="121"
+                      stroke="#4ac8ff" strokeWidth={w} opacity="0.75"
+                      style={{ strokeDasharray: '3 5', animation: `wcFlow 0.65s linear ${delay}s infinite` }}/>
+                  ))}
+                  {/* Overflow glow when flowing */}
+                  {metrics.flowRate > 0 && (
+                    <rect x="278" y="105" width="13" height="18" fill="#4ac8ff" fillOpacity="0.08" filter="url(#wcGlow)"/>
+                  )}
                   <text x="40" y="68" fill="#5a8090" fontSize="9" fontFamily="monospace" letterSpacing="1.5">SCHWIMMBECKEN</text>
                   <text x="40" y="81" fill="#2a4060" fontSize="7" fontFamily="monospace">QUERSCHNITT · BODENEINSTRÖMUNG</text>
-                  <text x="289" y="97" fill="#2a4060" fontSize="7" fontFamily="monospace" transform="rotate(90,289,97)">ÜBERLAUFRINNE</text>
+                  <text x="289" y="131" fill="#2a4060" fontSize="6.5" fontFamily="monospace" transform="rotate(90,289,131)">ÜBERLAUFRINNE</text>
                   <text x="155" y="533" fill="#2a5070" fontSize="7" fontFamily="monospace" textAnchor="middle">EINSTRÖMDÜSEN</text>
-                  <text x="157" y="175" fill="#0a1f38" fontSize="22" fontFamily="monospace" fontWeight="bold" textAnchor="middle" opacity="0.5">BECKEN</text>
+                  <text x="157" y="280" fill="#0a1f38" fontSize="22" fontFamily="monospace" fontWeight="bold" textAnchor="middle" opacity="0.35">BECKEN</text>
                 </g>
 
                 {/* ── ÜBERLAUF (overflow channel cross-section) ── */}
                 <g className="wc-station" onClick={() => chooseStation('ueberlauf')} style={{ cursor: 'pointer' }}>
-                  {/* Channel trough: left-bottom-right walls (U-shape open at top) */}
+                  {/* Channel outer walls: left, bottom, right — U-shape open at top */}
                   <path d="M 291 96 L 291 141 L 352 141 L 352 96" fill="#060f22"
                     stroke={selectedStationId === 'ueberlauf' ? '#4a9eff' : '#1a4060'} strokeWidth="1.5"/>
-                  {/* Water fill in channel */}
-                  <rect x="292" y="113" width="59" height="27" fill="#102850"
-                    fillOpacity={metrics.flowRate > 0 ? 0.72 : 0.28} rx="1"/>
-                  {/* Surface wave when flowing */}
+                  {/* Channel water fill — continuous with pool water level at y=107 */}
+                  <rect x="292" y="107" width="59" height="33" fill="#1060c0"
+                    fillOpacity={metrics.flowRate > 0 ? 0.45 : 0.2} rx="1"/>
+                  {/* Channel surface wave at the same level as pool surface */}
+                  <path d="M292 109 Q312 104 324 109 Q336 114 351 109"
+                    fill="none" stroke="#4ab0ff" strokeWidth="1.3" className="wc-surface"
+                    opacity={metrics.flowRate > 0 ? 0.7 : 0.35}/>
+                  {/* Animated flow moving rightward through channel toward Schwall */}
                   {metrics.flowRate > 0 && (
-                    <path d="M293 115 Q312 109 324 115 Q336 121 351 115"
-                      fill="none" stroke="#4ab0ff" strokeWidth="1.3" className="wc-surface" opacity="0.65"/>
+                    <line x1="292" y1="120" x2="351" y2="120"
+                      stroke="#4ac8ff" strokeWidth="2" opacity="0.5"
+                      style={{ strokeDasharray: '8 6', animation: `wcFlow ${(flowDuration * 0.4).toFixed(1)}s linear infinite` }}/>
                   )}
-                  {/* Overflow slot: connection from pool wall into channel */}
-                  <rect x="287" y="115" width="6" height="9"
-                    fill="#4ab0ff" fillOpacity={metrics.flowRate > 0 ? 0.55 : 0.18}/>
                   {/* Labels */}
                   <text x="321" y="83" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">ÜBERLAUF</text>
                   <text x="321" y="154" fill="#2a5070" fontSize="6" fontFamily="monospace" textAnchor="middle">RINNE</text>
