@@ -1710,6 +1710,24 @@ const WaterCycleView = () => {
                   </g>
                 ))}
 
+                {/* ── FLOW DIRECTION ARROWS (midpoints on key pipe segments) ── */}
+                {metrics.flowRate > 0 && (
+                  <g pointerEvents="none">
+                    {/* becken→überlauf→schwall: rightward at y=118, midpoint ~x=392 */}
+                    {!controls.backwashMode && <polygon points="390,113 405,118 390,123" fill="#4a9eff" opacity="0.6"/>}
+                    {/* pumpe→flockung: upward at x=635, midpoint ~y=237 */}
+                    {!controls.backwashMode && <polygon points="630,237 635,222 640,237" fill="#4a9eff" opacity="0.6"/>}
+                    {/* heizung→rücklauf: leftward at y=627, midpoint ~x=577 */}
+                    {!controls.backwashMode && <polygon points="582,622 567,627 582,632" fill="#4a9eff" opacity="0.6"/>}
+                    {/* rücklauf→becken: leftward at y=680, midpoint ~x=248 */}
+                    <polygon points="253,675 238,680 253,685" fill="#4a9eff" opacity="0.6"/>
+                    {/* rücklauf→becken: upward at x=155, midpoint ~y=602 */}
+                    <polygon points="150,607 155,592 160,607" fill="#4a9eff" opacity="0.6"/>
+                    {/* backwash: filter→kanal downward at x=980, midpoint ~y=555 */}
+                    {controls.backwashMode && <polygon points="975,557 980,572 985,557" fill="#f09030" opacity="0.6"/>}
+                  </g>
+                )}
+
                 {/* ── BECKEN (pool cross-section, left column) ── */}
                 <g className="wc-station" onClick={() => chooseStation('becken')} style={{ cursor: 'pointer' }}>
                   <rect x="25" y="45" width="265" height="480" rx="6" fill="#050e1c" stroke={selectedStationId === 'becken' ? '#4a9eff' : '#1a3a5a'} strokeWidth="2"/>
@@ -1725,6 +1743,18 @@ const WaterCycleView = () => {
                       </>}
                     </g>
                   ))}
+                  {/* Return pipe entry glow at pool floor (where ruecklauf-becken arrives at 155,525) */}
+                  <circle cx="155" cy="522" r="8" fill="#4ac8ff"
+                    fillOpacity={metrics.flowRate > 0 ? 0.18 : 0.05}
+                    filter={metrics.flowRate > 0 ? 'url(#wcGlow)' : undefined}/>
+                  <circle cx="155" cy="522" r="3.5" fill="#4ac8ff"
+                    fillOpacity={metrics.flowRate > 0 ? 0.55 : 0.12}/>
+                  {/* Horizontal distribution manifold at pool floor connecting entry to nozzle positions */}
+                  <line x1="78" y1="519" x2="216" y2="519" stroke="#152a45" strokeWidth="5" strokeLinecap="round" opacity="0.7"/>
+                  {metrics.flowRate > 0 && (
+                    <line x1="78" y1="519" x2="216" y2="519" stroke="#4ac8ff" strokeWidth="2.5" opacity="0.35"
+                      style={{ strokeDasharray: '6 5', animation: `wcFlow ${flowDuration}s linear infinite` }}/>
+                  )}
                   <rect x="278" y="96" width="12" height="80" rx="3" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
                   <rect x="280" y="103" width="8" height="62" rx="1" fill="#1060a0" fillOpacity="0.4"/>
                   <text x="40" y="68" fill="#5a8090" fontSize="9" fontFamily="monospace" letterSpacing="1.5">SCHWIMMBECKEN</text>
@@ -1734,10 +1764,25 @@ const WaterCycleView = () => {
                   <text x="157" y="175" fill="#0a1f38" fontSize="22" fontFamily="monospace" fontWeight="bold" textAnchor="middle" opacity="0.5">BECKEN</text>
                 </g>
 
-                {/* ── ÜBERLAUF click zone ── */}
-                <g onClick={() => chooseStation('ueberlauf')} style={{ cursor: 'pointer' }}>
-                  <rect x="278" y="93" width="72" height="52" rx="3" fill="transparent" stroke={selectedStationId === 'ueberlauf' ? '#4a9eff' : 'transparent'} strokeWidth="1.5"/>
-                  <text x="356" y="108" fill="#2a5070" fontSize="7" fontFamily="monospace">ÜBERLAUF →</text>
+                {/* ── ÜBERLAUF (overflow channel cross-section) ── */}
+                <g className="wc-station" onClick={() => chooseStation('ueberlauf')} style={{ cursor: 'pointer' }}>
+                  {/* Channel trough: left-bottom-right walls (U-shape open at top) */}
+                  <path d="M 291 96 L 291 141 L 352 141 L 352 96" fill="#060f22"
+                    stroke={selectedStationId === 'ueberlauf' ? '#4a9eff' : '#1a4060'} strokeWidth="1.5"/>
+                  {/* Water fill in channel */}
+                  <rect x="292" y="113" width="59" height="27" fill="#102850"
+                    fillOpacity={metrics.flowRate > 0 ? 0.72 : 0.28} rx="1"/>
+                  {/* Surface wave when flowing */}
+                  {metrics.flowRate > 0 && (
+                    <path d="M293 115 Q312 109 324 115 Q336 121 351 115"
+                      fill="none" stroke="#4ab0ff" strokeWidth="1.3" className="wc-surface" opacity="0.65"/>
+                  )}
+                  {/* Overflow slot: connection from pool wall into channel */}
+                  <rect x="287" y="115" width="6" height="9"
+                    fill="#4ab0ff" fillOpacity={metrics.flowRate > 0 ? 0.55 : 0.18}/>
+                  {/* Labels */}
+                  <text x="321" y="83" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">ÜBERLAUF</text>
+                  <text x="321" y="154" fill="#2a5070" fontSize="6" fontFamily="monospace" textAnchor="middle">RINNE</text>
                 </g>
 
                 {/* ── SCHWALL (cylinder, top-center) ── */}
@@ -1772,6 +1817,14 @@ const WaterCycleView = () => {
                   <text x="500" y="323" fill="#5a8090" fontSize="8.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">UMWÄLZPUMPE</text>
                   <text x="500" y="335" fill={controls.pumpEnabled ? '#34c090' : '#d04040'} fontSize="7.5" fontFamily="monospace" textAnchor="middle">{controls.pumpEnabled ? '● BETRIEB' : '○ AUS'}</text>
                 </g>
+
+                {/* Q metric callout on pump outlet pipe */}
+                {metrics.flowRate > 0 && !controls.backwashMode && (
+                  <g pointerEvents="none">
+                    <rect x="557" y="351" width="58" height="15" rx="3" fill="#040d1a" stroke="#1a4060" strokeWidth="0.8" opacity="0.9"/>
+                    <text x="586" y="362" fill="#4a9eff" fontSize="7.5" fontFamily="monospace" fontWeight="bold" textAnchor="middle">Q {metrics.flowRate} m³/h</text>
+                  </g>
+                )}
 
                 {/* ── FLOCKUNG (dosing vessel on upward pressure pipe at x=635) ── */}
                 <g className="wc-station" onClick={() => chooseStation('flockung')} style={{ cursor: 'pointer' }}>
@@ -1940,18 +1993,55 @@ const WaterCycleView = () => {
                 {/* ── RÜCKLAUF (on return pipe, bottom center) ── */}
                 <g className="wc-station" onClick={() => chooseStation('ruecklauf')} style={{ cursor: 'pointer' }}>
                   <rect x="345" y="662" width="88" height="35" rx="5" fill="#060f22" stroke={selectedStationId === 'ruecklauf' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.2"/>
-                  <circle cx="389" cy="679" r="10" fill="#040d1a" stroke="#1a3a5a" strokeWidth="1"/>
-                  <line x1="379" y1="679" x2="399" y2="679" stroke="#4a9eff" strokeWidth="1.5" opacity="0.6"/>
-                  <polygon points="395,675 401,679 395,683" fill="#4a9eff" opacity="0.7"/>
+                  {/* Flow-meter symbol: circle with crossing lines */}
+                  <circle cx="389" cy="679" r="12" fill="#040d1a" stroke={selectedStationId === 'ruecklauf' ? '#4a9eff' : '#1a4060'} strokeWidth="1.2"/>
+                  <line x1="377" y1="679" x2="401" y2="679" stroke="#4a9eff" strokeWidth="1.8" opacity="0.65"/>
+                  <line x1="389" y1="667" x2="389" y2="691" stroke="#4a9eff" strokeWidth="0.8" strokeDasharray="2 2" opacity="0.35"/>
+                  <polygon points="396,675 403,679 396,683" fill="#4a9eff" opacity={metrics.flowRate > 0 ? 0.85 : 0.3}/>
+                  {/* Animated flow dot when active */}
+                  {metrics.flowRate > 0 && (
+                    <circle cx="389" cy="679" r="4" fill="none" stroke="#4ac8ff" strokeWidth="1" opacity="0.5">
+                      <animate attributeName="r" values="4;8;4" dur="2s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                  )}
                   <text x="389" y="657" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">RÜCKLAUF</text>
+                  <text x="389" y="710" fill="#2a5070" fontSize="6" fontFamily="monospace" textAnchor="middle">EINSTRÖMSYSTEM</text>
                 </g>
 
                 {/* Kanal / Abwurf */}
-                <rect x="964" y="650" width="130" height="38" rx="5" fill="#060f22" stroke="#1a3a5a" strokeWidth="1.2"/>
-                <text x="1029" y="673" fill="#2a4060" fontSize="8" fontFamily="monospace" textAnchor="middle">KANAL / ABWURF</text>
+                <rect x="964" y="650" width="130" height="38" rx="5" fill="#060f22"
+                  stroke={controls.backwashMode ? '#f09030' : '#1a3a5a'} strokeWidth={controls.backwashMode ? 1.8 : 1.2}/>
+                {/* Drain arrow symbol */}
+                <polygon points="1029,657 1034,667 1024,667" fill={controls.backwashMode ? '#f09030' : '#1a3a5a'} opacity="0.7"/>
+                <line x1="1029" y1="667" x2="1029" y2="680" stroke={controls.backwashMode ? '#f09030' : '#1a4060'} strokeWidth="1.5" opacity="0.6"/>
+                {/* Backwash drain wave when active */}
+                {controls.backwashMode && metrics.flowRate > 0 && (
+                  <path d="M967 682 Q990 677 1010 682 Q1030 687 1050 682 Q1070 677 1091 682"
+                    fill="none" stroke="#f09030" strokeWidth="1.2" opacity="0.55" className="wc-surface"/>
+                )}
+                <text x="1029" y="695" fill={controls.backwashMode ? '#f09030' : '#2a4060'} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="0.5">KANAL / ABWURF</text>
+                <text x="1029" y="640" fill={controls.backwashMode ? '#f09030' : '#1a3a5a'} fontSize="6.5" fontFamily="monospace" textAnchor="middle">{controls.backwashMode ? '⚠ RÜCKSPÜLUNG' : 'SCHMUTZWASSER'}</text>
 
-                {/* Return label */}
-                <text x="495" y="696" fill="#1a4070" fontSize="7.5" fontFamily="monospace" textAnchor="middle">←── RÜCKLAUF INS BECKEN ──←</text>
+                {/* Return path label */}
+                <text x="247" y="696" fill="#1a4070" fontSize="7" fontFamily="monospace" textAnchor="middle">←── RÜCKLAUF INS BECKEN ──←</text>
+
+                {/* ── FLOW SEQUENCE NUMBERS ── */}
+                <g pointerEvents="none">
+                  {[
+                    { n: '①', x: 44,  y: 76  },  // Becken
+                    { n: '②', x: 292, y: 80  },  // Überlauf
+                    { n: '③', x: 422, y: 85  },  // Schwall
+                    { n: '④', x: 422, y: 323 },  // Pumpe
+                    { n: '⑤', x: 640, y: 231 },  // Flockung
+                    { n: '⑥', x: 738, y: 68  },  // Filter
+                    { n: '⑦', x: 848, y: 534 },  // Desinfektion
+                    { n: '⑧', x: 738, y: 578 },  // Heizung
+                    { n: '⑨', x: 331, y: 654 },  // Rücklauf
+                  ].map(({ n, x, y }) => (
+                    <text key={n} x={x} y={y} fill="#1a5578" fontSize="11" fontFamily="monospace" fontWeight="bold">{n}</text>
+                  ))}
+                </g>
 
                 {/* ── VALVE BUTTONS ── */}
                 {[
