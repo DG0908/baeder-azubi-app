@@ -26,8 +26,8 @@ const METRIC_LABELS = {
 };
 
 const STATION_FOCUS_VERTICAL = {
-  becken:       { x: 157,  y: 285, r: 155 },
-  ueberlauf:    { x: 320,  y: 118, r: 42  },
+  becken:       { x: 112,  y: 285, r: 110 },
+  ueberlauf:    { x: 315,  y: 125, r: 80  },
   schwall:      { x: 500,  y: 195, r: 100 },
   pumpe:        { x: 500,  y: 375, r: 70  },
   flockung:     { x: 680,  y: 272, r: 55  },
@@ -38,15 +38,15 @@ const STATION_FOCUS_VERTICAL = {
 };
 
 const PIPE_PATHS_VERTICAL = {
-  'becken-ueberlauf':     'M 290 118 L 350 118',
-  'ueberlauf-schwall':    'M 350 118 L 435 118',
+  'becken-ueberlauf':     'M 195 125 L 315 125',
+  'ueberlauf-schwall':    'M 315 125 L 435 125',
   'schwall-pumpe':        'M 500 296 L 500 320',
   'pumpe-flockung':       'M 555 375 L 635 375 L 635 100',
   'flockung-filter':      'M 635 100 L 760 100',
   'filter-desinfektion':  'M 825 531 L 825 570',
   'desinfektion-heizung': 'M 825 570 L 825 592',
   'heizung-ruecklauf':    'M 755 627 L 400 627 L 400 680',
-  'ruecklauf-becken':     'M 340 680 L 155 680 L 155 525',
+  'ruecklauf-becken':     'M 340 680 L 112 680 L 112 525',
   'filter-kanal':         'M 888 450 L 980 450 L 980 660',
 };
 
@@ -56,23 +56,23 @@ const PIPE_PATHS_MOBILE_VERTICAL = {
   'schwall-pumpe':        'M 356 222 L 356 258',
   'pumpe-flockung':       'M 356 326 L 356 348',
   'flockung-filter':      'M 356 408 L 356 422',
-  'filter-desinfektion':  'M 320 603 L 20 603',
-  'desinfektion-heizung': 'M 20 467 L 20 442',
-  'heizung-ruecklauf':    'M 20 370 L 20 298',
-  'ruecklauf-becken':     'M 20 270 L 20 97',
+  'filter-desinfektion':  'M 320 603 L 20 603 L 20 500',
+  'desinfektion-heizung': 'M 20 500 L 20 406',
+  'heizung-ruecklauf':    'M 20 406 L 20 284',
+  'ruecklauf-becken':     'M 20 284 L 20 97',
   'filter-kanal':         'M 392 616 L 415 616 L 415 755',
 };
 
 const PIPE_PATHS_HORIZONTAL = {
-  'becken-ueberlauf':     'M 290 118 L 350 118',
-  'ueberlauf-schwall':    'M 350 118 L 435 118',
+  'becken-ueberlauf':     'M 195 125 L 315 125',
+  'ueberlauf-schwall':    'M 315 125 L 435 125',
   'schwall-pumpe':        'M 500 296 L 500 320',
   'pumpe-flockung':       'M 555 375 L 635 375 L 635 100',
   'flockung-filter':      'M 635 100 L 635 330 L 645 330',
   'filter-desinfektion':  'M 1025 330 L 1080 330 L 1080 572 L 825 572',
   'desinfektion-heizung': 'M 825 572 L 825 592',
   'heizung-ruecklauf':    'M 755 627 L 400 627 L 400 680',
-  'ruecklauf-becken':     'M 340 680 L 155 680 L 155 525',
+  'ruecklauf-becken':     'M 340 680 L 112 680 L 112 525',
   'filter-kanal':         'M 900 380 L 980 380 L 980 660',
 };
 
@@ -1649,6 +1649,38 @@ const WaterCycleView = () => {
                 <rect x="350" y="752" width="65" height="24" rx="4" fill="#060f22" stroke="#1a3a5a" strokeWidth="1.2"/>
                 <text x="382" y="768" fill="#2a4060" fontSize="6.5" fontFamily="monospace" textAnchor="middle">KANAL</text>
 
+                {/* ══════════════ FULL CIRCUIT FLOW (continuous path through ALL stations) ══════════════ */}
+                {metrics.flowRate > 0 && !controls.backwashMode && (() => {
+                  // Complete water circuit: Becken → Überlauf → Schwall (through) → Pumpe (through) → Flockung (through) → Filter (through) → Desinf → Heizung → Rücklauf → Becken
+                  const circuitPath = 'M 274 54 L 284 54 L 356 54 L 356 115 L 356 222 L 356 258 L 356 326 L 356 348 L 356 408 L 356 422 L 356 603 L 320 603 L 20 603 L 20 500 L 20 406 L 20 284 L 20 97';
+                  const circuitRel = 'M 0 0 L 10 0 L 82 0 L 82 61 L 82 168 L 82 204 L 82 272 L 82 294 L 82 354 L 82 368 L 82 549 L 46 549 L -254 549 L -254 446 L -254 352 L -254 230 L -254 43';
+                  const dur = (parseFloat(flowDuration) * 3.5 + 2).toFixed(1);
+                  return (
+                    <g pointerEvents="none">
+                      {/* Continuous flow line through everything */}
+                      <path d={circuitPath} fill="none" stroke="#0a3a6a"
+                        strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" opacity="0.45"/>
+                      <path d={circuitPath} fill="none" stroke="#60d8ff"
+                        strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"
+                        className="wc-flow" style={{ animationDuration: `${flowDuration}s` }}
+                        filter="url(#wcGlowM)"/>
+                      {/* Water particles traveling the full circuit */}
+                      {[0, 0.15, 0.3, 0.45, 0.6, 0.75].map((frac, i) => (
+                        <circle key={`mc-${i}`} r="4" fill="#48cae4" opacity="0.9" cx="274" cy="54" filter="url(#wcGlowM)">
+                          <animateMotion
+                            dur={`${dur}s`}
+                            begin={`${(frac * parseFloat(dur)).toFixed(1)}s`}
+                            repeatCount="indefinite"
+                            path={circuitRel}
+                            keyPoints="0;1"
+                            keyTimes="0;1"
+                            calcMode="linear"/>
+                        </circle>
+                      ))}
+                    </g>
+                  );
+                })()}
+
               </svg>
             </div>
           </div>
@@ -1677,6 +1709,11 @@ const WaterCycleView = () => {
                   <filter id="wcGlow" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="3" result="blur"/>
                     <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                  <filter id="wcGlowStrong" x="-40%" y="-40%" width="180%" height="180%">
+                    <feGaussianBlur stdDeviation="6" result="blur"/>
+                    <feColorMatrix in="blur" type="matrix" values="1.5 0 0 0 0  0 1.5 0 0 0.1  0 0 2 0 0.2  0 0 0 1.2 0" result="colorBlur"/>
+                    <feMerge><feMergeNode in="colorBlur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                   </filter>
                   <pattern id="wcGrid" width="24" height="24" patternUnits="userSpaceOnUse">
                     <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#0e2840" strokeWidth="0.6"/>
@@ -1713,16 +1750,16 @@ const WaterCycleView = () => {
                 {/* ── FLOW DIRECTION ARROWS (midpoints on key pipe segments) ── */}
                 {metrics.flowRate > 0 && (
                   <g pointerEvents="none">
-                    {/* becken→überlauf→schwall: rightward at y=118, midpoint ~x=392 */}
-                    {!controls.backwashMode && <polygon points="390,113 405,118 390,123" fill="#4a9eff" opacity="0.6"/>}
+                    {/* becken→überlauf→schwall: rightward at y=125, midpoint ~x=310 */}
+                    {!controls.backwashMode && <polygon points="310,120 325,125 310,130" fill="#4a9eff" opacity="0.6"/>}
                     {/* pumpe→flockung: upward at x=635, midpoint ~y=237 */}
                     {!controls.backwashMode && <polygon points="630,237 635,222 640,237" fill="#4a9eff" opacity="0.6"/>}
                     {/* heizung→rücklauf: leftward at y=627, midpoint ~x=577 */}
                     {!controls.backwashMode && <polygon points="582,622 567,627 582,632" fill="#4a9eff" opacity="0.6"/>}
                     {/* rücklauf→becken: leftward at y=680, midpoint ~x=248 */}
                     <polygon points="253,675 238,680 253,685" fill="#4a9eff" opacity="0.6"/>
-                    {/* rücklauf→becken: upward at x=155, midpoint ~y=602 */}
-                    <polygon points="150,607 155,592 160,607" fill="#4a9eff" opacity="0.6"/>
+                    {/* rücklauf→becken: upward at x=112, midpoint ~y=602 */}
+                    <polygon points="107,607 112,592 117,607" fill="#4a9eff" opacity="0.6"/>
                     {/* backwash: filter→kanal downward at x=980, midpoint ~y=555 */}
                     {controls.backwashMode && <polygon points="975,557 980,572 985,557" fill="#f09030" opacity="0.6"/>}
                   </g>
@@ -1730,83 +1767,105 @@ const WaterCycleView = () => {
 
                 {/* ── BECKEN (pool cross-section, left column) ── */}
                 <g className="wc-station" onClick={() => chooseStation('becken')} style={{ cursor: 'pointer' }}>
-                  <rect x="25" y="45" width="265" height="480" rx="6" fill="#050e1c" stroke={selectedStationId === 'becken' ? '#4a9eff' : '#1a3a5a'} strokeWidth="2"/>
-                  {/* Water fill — raised to overflow rim level so water reaches the Überlaufrinne */}
-                  <rect x="35" y="105" width="243" height="410" rx="3" fill="url(#wcWaterFill)"/>
-                  <path d="M35 107 Q78 101 120 107 Q162 113 205 106 Q241 101 278 107" fill="none" stroke="#4ab0ff" strokeWidth="1.8" className="wc-surface" opacity="0.75"/>
-                  {[90, 145, 200].map((nx, ni) => (
+                  <rect x="25" y="45" width="170" height="480" rx="6" fill="#050e1c" stroke={selectedStationId === 'becken' ? '#4a9eff' : '#1a3a5a'} strokeWidth="2"/>
+                  {/* Water fill — level at y=105, above weir crest at y=108 so water overflows */}
+                  <rect x="35" y="105" width="148" height="410" rx="3" fill="url(#wcWaterFill)"/>
+                  <path d="M35 107 Q70 101 105 107 Q140 113 165 106 Q175 103 183 107" fill="none" stroke="#4ab0ff" strokeWidth="1.8" className="wc-surface" opacity="0.75"/>
+                  {/* Bodeneinströmdüsen (2 nozzles for narrower pool) */}
+                  {[80, 135].map((nx, ni) => (
                     <g key={nx}>
                       <rect x={nx-11} y="511" width="22" height="8" rx="2" fill="#1a4a80" fillOpacity="0.6" stroke="#4a9eff" strokeWidth="1"/>
                       {metrics.flowRate > 0 && <>
-                        <line x1={nx-5} y1="510" x2={nx-5} y2="470" stroke="#4ac8ff" strokeWidth="2" opacity="0.7" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15}s` }}/>
-                        <line x1={nx}   y1="510" x2={nx}   y2="460" stroke="#4ac8ff" strokeWidth="3" opacity="0.95" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15 + 0.15}s` }} filter="url(#wcGlow)"/>
-                        <line x1={nx+5} y1="510" x2={nx+5} y2="470" stroke="#4ac8ff" strokeWidth="2" opacity="0.7" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.15 + 0.3}s` }}/>
+                        <line x1={nx-5} y1="510" x2={nx-5} y2="470" stroke="#4ac8ff" strokeWidth="2" opacity="0.7" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.2}s` }}/>
+                        <line x1={nx}   y1="510" x2={nx}   y2="460" stroke="#4ac8ff" strokeWidth="3" opacity="0.95" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.2 + 0.15}s` }} filter="url(#wcGlow)"/>
+                        <line x1={nx+5} y1="510" x2={nx+5} y2="470" stroke="#4ac8ff" strokeWidth="2" opacity="0.7" className="wc-jet" style={{ animationDuration: `${flowDuration}s`, animationDelay: `${ni * 0.2 + 0.3}s` }}/>
                       </>}
                     </g>
                   ))}
-                  {/* Return pipe entry glow at pool floor (where ruecklauf-becken arrives at 155,525) */}
-                  <circle cx="155" cy="522" r="8" fill="#4ac8ff"
+                  {/* Return pipe entry glow at pool floor (ruecklauf-becken arrives at 112,525) */}
+                  <circle cx="112" cy="522" r="8" fill="#4ac8ff"
                     fillOpacity={metrics.flowRate > 0 ? 0.18 : 0.05}
                     filter={metrics.flowRate > 0 ? 'url(#wcGlow)' : undefined}/>
-                  <circle cx="155" cy="522" r="3.5" fill="#4ac8ff"
+                  <circle cx="112" cy="522" r="3.5" fill="#4ac8ff"
                     fillOpacity={metrics.flowRate > 0 ? 0.55 : 0.12}/>
-                  {/* Horizontal distribution manifold at pool floor connecting entry to nozzle positions */}
-                  <line x1="78" y1="519" x2="216" y2="519" stroke="#152a45" strokeWidth="5" strokeLinecap="round" opacity="0.7"/>
+                  {/* Horizontal distribution manifold at pool floor */}
+                  <line x1="65" y1="519" x2="165" y2="519" stroke="#152a45" strokeWidth="5" strokeLinecap="round" opacity="0.7"/>
                   {metrics.flowRate > 0 && (
-                    <line x1="78" y1="519" x2="216" y2="519" stroke="#4ac8ff" strokeWidth="2.5" opacity="0.35"
+                    <line x1="65" y1="519" x2="165" y2="519" stroke="#4ac8ff" strokeWidth="2.5" opacity="0.35"
                       style={{ strokeDasharray: '6 5', animation: `wcFlow ${flowDuration}s linear infinite` }}/>
                   )}
-                  {/* Pool wall with overflow notch: wall above notch (y=96–105) */}
-                  <rect x="278" y="96" width="12" height="11" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
-                  {/* Overflow notch opening at y=105–122 — water flows through here */}
-                  <rect x="278" y="105" width="12" height="18" fill="#102850" fillOpacity="0.8"/>
-                  {/* Pool water visible through notch (same blue as pool fill) */}
-                  <rect x="279" y="106" width="10" height="16" fill="#1060c0" fillOpacity="0.5" rx="1"/>
-                  {/* Wall below notch (y=122–176) */}
-                  <rect x="278" y="122" width="12" height="54" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
-                  {/* Animated overflow cascade: water flowing rightward through the notch */}
-                  {metrics.flowRate > 0 && [
-                    { x: 280, delay: 0,    w: 2.5 },
-                    { x: 283, delay: 0.18, w: 2   },
-                    { x: 286, delay: 0.36, w: 2.5 },
-                  ].map(({ x, delay, w }) => (
-                    <line key={x}
-                      x1={x} y1="107" x2={x} y2="121"
-                      stroke="#4ac8ff" strokeWidth={w} opacity="0.75"
-                      style={{ strokeDasharray: '3 5', animation: `wcFlow 0.65s linear ${delay}s infinite` }}/>
-                  ))}
-                  {/* Overflow glow when flowing */}
+                  {/* ── OVERFLOW WEIR (right pool wall) ── */}
+                  {/* Wall above weir crest (y=45 to y=108) */}
+                  <rect x="183" y="45" width="12" height="63" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
+                  {/* Weir crest line — the visible overflow edge */}
+                  <line x1="183" y1="108" x2="195" y2="108" stroke="#4a9eff" strokeWidth="2" opacity="0.7"/>
+                  {/* Open overflow slot (y=108 to y=142) — water cascades through here */}
+                  <rect x="183" y="108" width="12" height="34" fill="#102850" fillOpacity="0.6"/>
+                  <rect x="184" y="109" width="10" height="32" fill="#1060c0" fillOpacity="0.45" rx="1"/>
+                  {/* Wall below weir (y=142 to pool bottom y=525) */}
+                  <rect x="183" y="142" width="12" height="383" fill="#050e1c" stroke="#1a3a5a" strokeWidth="1"/>
+                  {/* Animated waterfall cascade through the weir opening */}
+                  {metrics.flowRate > 0 && <>
+                    {/* Bright water sheet falling over weir */}
+                    <rect x="184" y="108" width="10" height="34" fill="#2090d0" fillOpacity="0.6" rx="1"/>
+                    {[
+                      { x: 185, delay: 0,    w: 3.5 },
+                      { x: 187, delay: 0.08, w: 3   },
+                      { x: 189, delay: 0.16, w: 4   },
+                      { x: 191, delay: 0.24, w: 3.5 },
+                      { x: 193, delay: 0.12, w: 3   },
+                    ].map(({ x, delay, w }) => (
+                      <line key={x}
+                        x1={x} y1="108" x2={x} y2="142"
+                        stroke="#60d8ff" strokeWidth={w} opacity="0.85"
+                        style={{ strokeDasharray: '5 4', animation: `wcFlow 0.45s linear ${delay}s infinite` }}
+                        filter="url(#wcGlow)"/>
+                    ))}
+                    {/* Splash at bottom of cascade */}
+                    <ellipse cx="189" cy="145" rx="8" ry="3" fill="#60d8ff" fillOpacity="0.2" filter="url(#wcGlow)"/>
+                  </>}
+                  {/* Weir glow when flowing */}
                   {metrics.flowRate > 0 && (
-                    <rect x="278" y="105" width="13" height="18" fill="#4ac8ff" fillOpacity="0.08" filter="url(#wcGlow)"/>
+                    <rect x="182" y="105" width="16" height="42" fill="#4ac8ff" fillOpacity="0.15" filter="url(#wcGlowStrong)"/>
                   )}
-                  <text x="40" y="68" fill="#5a8090" fontSize="9" fontFamily="monospace" letterSpacing="1.5">SCHWIMMBECKEN</text>
-                  <text x="40" y="81" fill="#2a4060" fontSize="7" fontFamily="monospace">QUERSCHNITT · BODENEINSTRÖMUNG</text>
-                  <text x="289" y="131" fill="#2a4060" fontSize="6.5" fontFamily="monospace" transform="rotate(90,289,131)">ÜBERLAUFRINNE</text>
-                  <text x="155" y="533" fill="#2a5070" fontSize="7" fontFamily="monospace" textAnchor="middle">EINSTRÖMDÜSEN</text>
-                  <text x="157" y="280" fill="#0a1f38" fontSize="22" fontFamily="monospace" fontWeight="bold" textAnchor="middle" opacity="0.35">BECKEN</text>
+                  <text x="35" y="68" fill="#5a8090" fontSize="8.5" fontFamily="monospace" letterSpacing="1">SCHWIMMBECKEN</text>
+                  <text x="35" y="80" fill="#2a4060" fontSize="6.5" fontFamily="monospace">QUERSCHNITT</text>
+                  <text x="112" y="533" fill="#2a5070" fontSize="7" fontFamily="monospace" textAnchor="middle">EINSTRÖMDÜSEN</text>
+                  <text x="112" y="280" fill="#0a1f38" fontSize="20" fontFamily="monospace" fontWeight="bold" textAnchor="middle" opacity="0.35">BECKEN</text>
                 </g>
 
-                {/* ── ÜBERLAUF (overflow channel cross-section) ── */}
+                {/* ── ÜBERLAUFRINNE (wide channel: x=195→435, directly connected to Schwall) ── */}
                 <g className="wc-station" onClick={() => chooseStation('ueberlauf')} style={{ cursor: 'pointer' }}>
-                  {/* Channel outer walls: left, bottom, right — U-shape open at top */}
-                  <path d="M 291 96 L 291 141 L 352 141 L 352 96" fill="none"
+                  {/* Channel U-shape: left wall, bottom, right wall (right wall = Schwall left wall) */}
+                  <path d="M 195 96 L 195 155 L 435 155 L 435 96" fill="none"
                     stroke={selectedStationId === 'ueberlauf' ? '#4a9eff' : '#1a4060'} strokeWidth="1.5"/>
-                  {/* Channel water fill — continuous with pool water level at y=107 */}
-                  <rect x="292" y="107" width="59" height="33" fill="#1060c0"
-                    fillOpacity={metrics.flowRate > 0 ? 0.45 : 0.2} rx="1"/>
-                  {/* Channel surface wave at the same level as pool surface */}
-                  <path d="M292 109 Q312 104 324 109 Q336 114 351 109"
-                    fill="none" stroke="#4ab0ff" strokeWidth="1.3" className="wc-surface"
-                    opacity={metrics.flowRate > 0 ? 0.7 : 0.35}/>
-                  {/* Animated flow moving rightward through channel toward Schwall */}
-                  {metrics.flowRate > 0 && (
-                    <line x1="292" y1="120" x2="351" y2="120"
-                      stroke="#4ac8ff" strokeWidth="2" opacity="0.5"
-                      style={{ strokeDasharray: '8 6', animation: `wcFlow ${(flowDuration * 0.4).toFixed(1)}s linear infinite` }}/>
-                  )}
+                  {/* Channel water fill — bright, clearly visible */}
+                  <rect x="197" y="110" width="236" height="43" fill="url(#wcWaterFill)"
+                    fillOpacity={metrics.flowRate > 0 ? 0.75 : 0.25} rx="2"/>
+                  {/* Channel surface wave across full width */}
+                  <path d="M197 112 Q240 105 280 112 Q320 119 360 112 Q400 105 433 112"
+                    fill="none" stroke="#5ac0ff" strokeWidth="2" className="wc-surface"
+                    opacity={metrics.flowRate > 0 ? 0.85 : 0.3}/>
+                  {/* Animated flow arrows moving rightward through channel — 3 rows */}
+                  {metrics.flowRate > 0 && <>
+                    <line x1="197" y1="120" x2="433" y2="120"
+                      stroke="#60d8ff" strokeWidth="4" opacity="0.65"
+                      style={{ strokeDasharray: '12 8', animation: `wcFlow ${(flowDuration * 0.3).toFixed(1)}s linear infinite` }}
+                      filter="url(#wcGlow)"/>
+                    <line x1="197" y1="130" x2="433" y2="130"
+                      stroke="#60d8ff" strokeWidth="3.5" opacity="0.55"
+                      style={{ strokeDasharray: '10 10', animation: `wcFlow ${(flowDuration * 0.35).toFixed(1)}s linear 0.15s infinite` }}/>
+                    <line x1="197" y1="140" x2="433" y2="140"
+                      stroke="#60d8ff" strokeWidth="3" opacity="0.45"
+                      style={{ strokeDasharray: '8 12', animation: `wcFlow ${(flowDuration * 0.4).toFixed(1)}s linear 0.3s infinite` }}/>
+                    {/* Direction arrows in channel */}
+                    {[240, 320, 400].map(ax => (
+                      <polygon key={ax} points={`${ax},117 ${ax+12},125 ${ax},133`} fill="#60d8ff" opacity="0.5"/>
+                    ))}
+                  </>}
                   {/* Labels */}
-                  <text x="321" y="83" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">ÜBERLAUF</text>
-                  <text x="321" y="154" fill="#2a5070" fontSize="6" fontFamily="monospace" textAnchor="middle">RINNE</text>
+                  <text x="315" y="88" fill="#5a8090" fontSize="8" fontFamily="monospace" textAnchor="middle" letterSpacing="1">ÜBERLAUFRINNE</text>
+                  <text x="315" y="168" fill="#2a5070" fontSize="6.5" fontFamily="monospace" textAnchor="middle">→ ZUM SCHWALLWASSERBEHÄLTER →</text>
                 </g>
 
                 {/* ── SCHWALL (cylinder, top-center) ── */}
@@ -1993,19 +2052,9 @@ const WaterCycleView = () => {
                   <text x="829" y="678" fill={temperatureInRange ? '#34c090' : '#d09030'} fontSize="8" fontFamily="monospace" textAnchor="middle">{metrics.temperature} °C</text>
                 </g>
 
-                {/* ── FLOW TRACE: Filter → Desinfektion → Heizung (on top of stations) ── */}
+                {/* ── HEIZUNG: animated warm-side plate lines ── */}
                 {metrics.flowRate > 0 && !controls.backwashMode && filterMode === 'vertikal' && (
                   <g pointerEvents="none">
-                    {/* Pipe casing overlay: filter-bottom → through desinf. → heizung top */}
-                    <path d="M 825 531 L 825 597" fill="none" stroke="#061525" strokeWidth="20" strokeLinecap="round"/>
-                    <path d="M 825 531 L 825 597" fill="none" stroke="#1d4060" strokeWidth="14" strokeLinecap="round"/>
-                    <path d="M 825 531 L 825 597" fill="none" stroke="#0c2236" strokeWidth="8" strokeLinecap="round"/>
-                    {/* Animated flow on this stretch */}
-                    <path d="M 825 531 L 825 597" fill="none"
-                      stroke="url(#wcFlow)" strokeWidth="7" strokeLinecap="round"
-                      className="wc-flow" style={{ animationDuration: `${flowDuration}s` }}
-                      filter="url(#wcGlow)"/>
-                    {/* Heat exchanger: animated warm-side lines pulse when water flows */}
                     {[604, 614, 624, 634, 640].map((hy, i) => i % 2 === 1 && (
                       <line key={hy} x1="768" y1={hy} x2="890" y2={hy}
                         stroke="#4a9eff" strokeWidth="2.5" opacity="0.45"
@@ -2048,56 +2097,94 @@ const WaterCycleView = () => {
                 <text x="1029" y="640" fill={controls.backwashMode ? '#f09030' : '#1a3a5a'} fontSize="6.5" fontFamily="monospace" textAnchor="middle">{controls.backwashMode ? '⚠ RÜCKSPÜLUNG' : 'SCHMUTZWASSER'}</text>
 
                 {/* Return path label */}
-                <text x="247" y="696" fill="#1a4070" fontSize="7" fontFamily="monospace" textAnchor="middle">←── RÜCKLAUF INS BECKEN ──←</text>
+                <text x="200" y="696" fill="#1a4070" fontSize="7" fontFamily="monospace" textAnchor="middle">←── RÜCKLAUF INS BECKEN ──←</text>
 
-                {/* ── BECKEN→SCHWALL OVERFLOW STREAM (on top of all stations) ── */}
+                {/* ── FULL CIRCUIT FLOW: durchgehender Kreislauf durch ALLE Stationen ── */}
+                {metrics.flowRate > 0 && !controls.backwashMode && (() => {
+                  // Becken(195,125) → Rinne → Schwall(435,125→500,296) → Pumpe(500,320→555,375) → Flockung(635,375→635,100) → Filter(760,100→825,531) → Desinf(825,570) → Heizung(825,592) → Rücklauf(755,627→400,680) → Becken(112,680→112,525)
+                  const circuit = 'M 195 125 L 435 125 L 435 200 L 500 296 L 500 320 L 500 375 L 555 375 L 635 375 L 635 100 L 760 100 L 825 100 L 825 531 L 825 570 L 825 592 L 825 627 L 755 627 L 400 627 L 400 680 L 340 680 L 112 680 L 112 525';
+                  const circuitRel = 'M 0 0 L 240 0 L 240 75 L 305 171 L 305 195 L 305 250 L 360 250 L 440 250 L 440 -25 L 565 -25 L 630 -25 L 630 406 L 630 445 L 630 467 L 630 502 L 560 502 L 205 502 L 205 555 L 145 555 L -83 555 L -83 400';
+                  const dur = (parseFloat(flowDuration) * 4 + 3).toFixed(1);
+                  return (
+                    <g pointerEvents="none">
+                      {/* Backing for contrast */}
+                      <path d={circuit} fill="none" stroke="#0a3a6a"
+                        strokeWidth="18" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"/>
+                      {/* Animated flow line */}
+                      <path d={circuit} fill="none" stroke="#60d8ff"
+                        strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" opacity="0.75"
+                        className="wc-flow" style={{ animationDuration: `${flowDuration}s` }}
+                        filter="url(#wcGlowStrong)"/>
+                      {/* 6 water particles traveling the full circuit */}
+                      {[0, 0.17, 0.33, 0.5, 0.67, 0.83].map((frac, i) => (
+                        <circle key={`dc-${i}`} r="4.5" fill="#48cae4" opacity="0.9" cx="195" cy="125" filter="url(#wcGlowStrong)">
+                          <animateMotion
+                            dur={`${dur}s`}
+                            begin={`${(frac * parseFloat(dur)).toFixed(1)}s`}
+                            repeatCount="indefinite"
+                            path={circuitRel}
+                            keyPoints="0;1"
+                            keyTimes="0;1"
+                            calcMode="linear"/>
+                        </circle>
+                      ))}
+                    </g>
+                  );
+                })()}
+
+                {/* ── BACKWASH FLOW OVERLAY (segment-based, only during backwash) ── */}
+                {controls.backwashMode && metrics.flowRate > 0 && (
+                  <g pointerEvents="none">
+                    {pipeStates.filter(p => p.hasFlow).map(pipe => (
+                      <g key={`ftop-${pipe.id}`}>
+                        <path d={pipe.path} fill="none" stroke="#804020"
+                          strokeWidth="18" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+                        <path d={pipe.path} fill="none" stroke="#f0a040"
+                          strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" opacity="0.88"
+                          className={`wc-flow${pipe.reverse ? ' wc-flow-reverse' : ''}`}
+                          style={{ animationDuration: `${flowDuration}s` }}
+                          filter="url(#wcGlowStrong)"/>
+                      </g>
+                    ))}
+                  </g>
+                )}
+
+                {/* ── CHLOR-INJEKTION: animierte Tropfen vom NaOCl-Tank zum Rohr ── */}
+                {controls.disinfectPumpEnabled && metrics.flowRate > 0 && (
+                  <g pointerEvents="none">
+                    {[0, 0.4, 0.8].map((delay) => (
+                      <circle key={delay} cx="852" cy="572" r="2.5" fill="#4abaff" opacity="0.9" filter="url(#wcGlow)">
+                        <animate attributeName="cx" values="865;840;825" dur="1.4s" begin={`${delay}s`} repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="0.9;0.7;0" dur="1.4s" begin={`${delay}s`} repeatCount="indefinite"/>
+                      </circle>
+                    ))}
+                    {/* Injection splash at pipe */}
+                    <circle cx="825" cy="572" r="6" fill="none" stroke="#4abaff" strokeWidth="1.5" opacity="0.6" filter="url(#wcGlow)">
+                      <animate attributeName="r" values="4;10;4" dur="1.8s" repeatCount="indefinite"/>
+                      <animate attributeName="opacity" values="0.7;0;0.7" dur="1.8s" repeatCount="indefinite"/>
+                    </circle>
+                  </g>
+                )}
+
+                {/* ── SCHWALL-EINTRITT: Wasserfall aus der Rinne in den Zylinder ── */}
                 {metrics.flowRate > 0 && !controls.backwashMode && (
                   <g pointerEvents="none">
-                    {/* === HORIZONTAL: pool wall (x=278) → Schwall entrance (x=435) === */}
-                    {/* Semi-transparent backing gives volume/depth */}
-                    <path d="M 278 118 L 435 118" fill="none"
-                      stroke="#0e4888" strokeWidth="20" strokeLinecap="round" opacity="0.45"/>
-                    {/* WIDE bright animated water — clearly visible at 14px */}
-                    <path d="M 278 118 L 435 118" fill="none"
-                      stroke="#60d8ff" strokeWidth="14" strokeLinecap="round" opacity="0.85"
-                      className="wc-flow" style={{ animationDuration: '0.85s' }}
-                      filter="url(#wcGlow)"/>
-                    {/* Water surface shimmer */}
-                    <path d="M 282 110 Q 357 105 432 110" fill="none"
-                      stroke="#a8f0ff" strokeWidth="1.5" opacity="0.5" className="wc-surface"/>
-                    {/* Entry arrow: pool wall → overflow channel */}
-                    <polygon points="283,111 298,118 283,125" fill="#60d8ff" opacity="0.95"/>
-                    {/* Mid-path direction arrow */}
-                    <polygon points="350,112 367,118 350,124" fill="#60d8ff" opacity="0.75"/>
-
-                    {/* === VERTICAL: water falling into Schwall cylinder === */}
-                    {/* Backing */}
-                    <path d={`M 444 118 L 444 ${Math.round(100 + (178 - metrics.surgeLevel * 1.78))}`}
-                      fill="none" stroke="#0e4888" strokeWidth="16" strokeLinecap="round" opacity="0.45"/>
-                    {/* Bright animated waterfall stream */}
-                    <path d={`M 444 118 L 444 ${Math.round(100 + (178 - metrics.surgeLevel * 1.78))}`}
-                      fill="none" stroke="#60d8ff" strokeWidth="10" strokeLinecap="round" opacity="0.82"
-                      className="wc-flow" style={{ animationDuration: '0.65s' }}
-                      filter="url(#wcGlow)"/>
-                    {/* Arrow tip at water surface inside Schwall */}
+                    <path d={`M 444 155 L 444 ${Math.round(100 + (178 - metrics.surgeLevel * 1.78))}`}
+                      fill="none" stroke="#60d8ff" strokeWidth="8" strokeLinecap="round" opacity="0.75"
+                      className="wc-flow" style={{ animationDuration: '0.55s' }}
+                      filter="url(#wcGlowStrong)"/>
                     {(() => {
                       const wy = Math.round(100 + (178 - metrics.surgeLevel * 1.78));
-                      return <polygon points={`438,${wy - 9} 444,${wy + 5} 450,${wy - 9}`} fill="#60d8ff" opacity="0.88"/>;
+                      return <polygon points={`438,${wy - 8} 444,${wy + 4} 450,${wy - 8}`} fill="#60d8ff" opacity="0.85"/>;
                     })()}
-
-                    {/* Label above the overflow path */}
-                    <text x="357" y="101" fill="#40c0e8" fontSize="7.5" fontFamily="monospace"
-                      fontWeight="bold" textAnchor="middle" letterSpacing="0.5">
-                      ÜBERLAUF → SCHWALL
-                    </text>
                   </g>
                 )}
 
                 {/* ── FLOW SEQUENCE NUMBERS ── */}
                 <g pointerEvents="none">
                   {[
-                    { n: '①', x: 44,  y: 76  },  // Becken
-                    { n: '②', x: 292, y: 80  },  // Überlauf
+                    { n: '①', x: 35,  y: 93  },  // Becken
+                    { n: '②', x: 250, y: 82  },  // Überlauf
                     { n: '③', x: 422, y: 85  },  // Schwall
                     { n: '④', x: 422, y: 323 },  // Pumpe
                     { n: '⑤', x: 640, y: 231 },  // Flockung
@@ -2113,7 +2200,7 @@ const WaterCycleView = () => {
                 {/* ── VALVE BUTTONS ── */}
                 {[
                   { key: 'rawValveOpen',     x: 500, y: 308, label: 'V1' },
-                  { key: 'returnValveOpen',  x: 220, y: 680, label: 'V2' },
+                  { key: 'returnValveOpen',  x: 180, y: 680, label: 'V2' },
                   { key: 'ventValveOpen',    x: 560, y: 345, label: 'V3' },
                   { key: 'backwashValveOpen',x: 825, y: 545, label: 'V4' },
                 ].map(v => (
