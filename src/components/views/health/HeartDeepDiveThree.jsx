@@ -141,32 +141,32 @@ const CIRCULATION_STEPS = [
   {
     id: 'small-out',
     focus: 'klein',
-    title: '1) Rechte Herzhälfte -> Lunge',
-    description: 'O2-armes Blut geht aus der rechten Herzhälfte über die Pulmonalarterie zur Lunge.',
+    title: '1) Rechtes Herz -> Lunge',
+    description: 'O2-armes Blut fliesst vom rechten Herz ueber die Pulmonalarterie zur Lunge.',
     paths: ['p-small-out'],
     nodes: ['node-right', 'node-lungs'],
   },
   {
     id: 'small-back',
     focus: 'klein',
-    title: '2) Lunge -> Linke Herzhälfte',
-    description: 'Nach dem Gasaustausch kommt O2-reiches Blut über die Lungenvenen zur linken Herzhälfte zurück.',
+    title: '2) Lunge -> Linkes Herz',
+    description: 'Nach dem Gasaustausch kommt O2-reiches Blut ueber die Lungenvenen zum linken Herz zurueck.',
     paths: ['p-small-back'],
     nodes: ['node-lungs', 'node-left'],
   },
   {
     id: 'large-out',
     focus: 'gross',
-    title: '3) Linke Herzhälfte -> Körper',
-    description: 'Die linke Herzhälfte pumpt O2-reiches Blut über Aorta und Arterien in den Körper.',
+    title: '3) Linkes Herz -> Koerper',
+    description: 'Das linke Herz pumpt O2-reiches Blut ueber Aorta und Arterien in den Koerper.',
     paths: ['p-large-out'],
     nodes: ['node-left', 'node-body'],
   },
   {
     id: 'large-back',
     focus: 'gross',
-    title: '4) Körper -> Rechte Herzhälfte',
-    description: 'O2-armes Blut fließt über Venen/Hohlvenen zurück zur rechten Herzhälfte.',
+    title: '4) Koerper -> Rechtes Herz',
+    description: 'O2-armes Blut fliesst ueber Venen und Hohlvenen zur rechten Herzseite zurueck.',
     paths: ['p-large-back'],
     nodes: ['node-body', 'node-right'],
   },
@@ -204,13 +204,13 @@ function CirculationMap({ cycleMode, heartRate }) {
   const pathOpacity = (focus, pathId) => {
     if (!isPathVisible(focus)) return 0.08;
     if (!activeStep) return 0.64;
-    return isPathActive(pathId) ? 0.97 : 0.24;
+    return isPathActive(pathId) ? 0.98 : 0.24;
   };
 
   const renderFlowDots = (pathId, color, count, duration, visible, emphasized) => {
     if (!visible) return null;
     const radius = emphasized ? 5.2 : 3.4;
-    const fillOpacity = emphasized ? 1 : 0.45;
+    const fillOpacity = emphasized ? 1 : 0.4;
     return Array.from({ length: count }, (_, idx) => (
       <circle key={`${pathId}-${idx}`} r={radius} fill={color} opacity={fillOpacity}>
         <animateMotion dur={`${duration}s`} repeatCount="indefinite" begin={`${(idx / count) * duration}s`}>
@@ -221,28 +221,18 @@ function CirculationMap({ cycleMode, heartRate }) {
     ));
   };
 
-  const drawNode = (id, x, y, label, color) => (
-    <g key={id}>
-      <circle
-        cx={x}
-        cy={y}
-        r={isNodeActive(id) ? 24 : 18}
-        fill={isNodeActive(id) ? '#13385a' : '#0b1f35'}
-        stroke={color}
-        strokeWidth={isNodeActive(id) ? 3.4 : 2.2}
-      />
-      <text x={x} y={y + 4} textAnchor="middle" fontSize="13" fill="#d7ebff" fontFamily="monospace" fontWeight="700">
-        {id === 'node-right' ? 'R' : id === 'node-left' ? 'L' : id === 'node-lungs' ? 'Lu' : 'K'}
-      </text>
-      <text x={x} y={y + 36} textAnchor="middle" fontSize="14" fill="#c3dcf4" fontFamily="monospace">
-        {label}
+  const drawStepBadge = (number, x, y, active) => (
+    <g key={`badge-${number}`}>
+      <circle cx={x} cy={y} r={active ? 17 : 14} fill={active ? '#1f5178' : '#10253b'} stroke="#5aa8ff" strokeWidth="2" />
+      <text x={x} y={y + 5} textAnchor="middle" fontSize="14" fill="#d7efff" fontFamily="monospace" fontWeight="700">
+        {number}
       </text>
     </g>
   );
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #1a3a5a', background: 'radial-gradient(circle at 50% 20%, #103050, #05111f)' }}>
-      <svg viewBox="0 0 1000 700" width="100%" role="img" aria-label="Schrittweise Darstellung von grossem und kleinem Blutkreislauf">
+      <svg viewBox="0 0 1000 700" width="100%" role="img" aria-label="Schaubild mit Herz, Lunge und Koerper fuer den Blutkreislauf">
         <defs>
           <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
             <path d="M0,0 L0,6 L9,3 z" fill="#ff7864" />
@@ -250,32 +240,92 @@ function CirculationMap({ cycleMode, heartRate }) {
           <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
             <path d="M0,0 L0,6 L9,3 z" fill="#5aa8ff" />
           </marker>
-          <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1a3f62" />
+          <linearGradient id="panelGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#183a59" />
             <stop offset="100%" stopColor="#0b2138" />
           </linearGradient>
+          <linearGradient id="heartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#cf4d63" />
+            <stop offset="100%" stopColor="#7f2335" />
+          </linearGradient>
           <linearGradient id="lungGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#244f75" />
-            <stop offset="100%" stopColor="#173f60" />
+            <stop offset="0%" stopColor="#8fc8ff" />
+            <stop offset="100%" stopColor="#4d8dc8" />
           </linearGradient>
         </defs>
 
-        <path
-          d="M500 70 C620 80 735 190 735 315 L735 500 C735 620 620 670 500 670 C380 670 265 620 265 500 L265 315 C265 190 380 80 500 70 Z"
-          fill="url(#bodyGrad)"
-          opacity="0.28"
-          stroke="#2e638d"
-          strokeWidth="2"
-        />
-        <ellipse cx="500" cy="208" rx="140" ry="78" fill="url(#lungGrad)" opacity="0.5" stroke="#6cb4ff" strokeWidth="2.4" />
-        <ellipse cx="500" cy="352" rx="92" ry="70" fill="#7a2536" stroke="#f190a4" strokeWidth="2.4" opacity="0.92" />
-        <text x="500" y="354" textAnchor="middle" fontSize="20" fill="#ffd8df" fontFamily="monospace" fontWeight="700">
-          Herz
-        </text>
+        <rect x="40" y="32" width="920" height="628" rx="28" fill="url(#panelGrad)" opacity="0.3" stroke="#2e638d" strokeWidth="2" />
+
+        <g>
+          <rect
+            x="380"
+            y="70"
+            width="240"
+            height="180"
+            rx="16"
+            fill="#0c2136"
+            stroke={isNodeActive('node-lungs') ? '#8fc8ff' : '#2a5a90'}
+            strokeWidth={isNodeActive('node-lungs') ? '3' : '1.8'}
+          />
+          <rect x="492" y="90" width="16" height="36" rx="7" fill="#c9e6ff" />
+          <line x1="500" y1="126" x2="500" y2="214" stroke="#9dd2ff" strokeWidth="6" strokeLinecap="round" />
+          <ellipse cx="452" cy="176" rx="52" ry="60" fill="url(#lungGrad)" opacity="0.85" />
+          <ellipse cx="548" cy="176" rx="52" ry="60" fill="url(#lungGrad)" opacity="0.85" />
+          <text x="500" y="236" textAnchor="middle" fontSize="18" fill="#d7efff" fontFamily="monospace" fontWeight="700">
+            Lunge
+          </text>
+        </g>
+
+        <g>
+          <rect
+            x="380"
+            y="270"
+            width="240"
+            height="210"
+            rx="16"
+            fill="#0c2136"
+            stroke={(isNodeActive('node-right') || isNodeActive('node-left')) ? '#f190a4' : '#2a5a90'}
+            strokeWidth={(isNodeActive('node-right') || isNodeActive('node-left')) ? '3' : '1.8'}
+          />
+          <path
+            d="M500 430 C476 410 435 383 435 338 C435 300 462 276 494 292 C507 298 515 308 521 320 C527 307 535 298 548 292 C580 276 607 300 607 338 C607 383 566 410 542 430 L521 448 Z"
+            fill="url(#heartGrad)"
+            stroke="#ffb2c1"
+            strokeWidth="2.4"
+          />
+          <path d="M521 322 L521 444" stroke="#5a0d1d" strokeWidth="2.2" />
+          <text x="470" y="462" textAnchor="middle" fontSize="12" fill="#b9d9f3" fontFamily="monospace">rechts</text>
+          <text x="570" y="462" textAnchor="middle" fontSize="12" fill="#b9d9f3" fontFamily="monospace">links</text>
+          <text x="500" y="298" textAnchor="middle" fontSize="18" fill="#ffd8df" fontFamily="monospace" fontWeight="700">
+            Herz
+          </text>
+        </g>
+
+        <g>
+          <rect
+            x="700"
+            y="220"
+            width="230"
+            height="300"
+            rx="16"
+            fill="#0c2136"
+            stroke={isNodeActive('node-body') ? '#ffb58f' : '#2a5a90'}
+            strokeWidth={isNodeActive('node-body') ? '3' : '1.8'}
+          />
+          <circle cx="815" cy="274" r="30" fill="#b9dbf7" />
+          <rect x="784" y="308" width="62" height="100" rx="28" fill="#9cc9ea" />
+          <line x1="784" y1="336" x2="744" y2="380" stroke="#9cc9ea" strokeWidth="14" strokeLinecap="round" />
+          <line x1="846" y1="336" x2="886" y2="380" stroke="#9cc9ea" strokeWidth="14" strokeLinecap="round" />
+          <line x1="795" y1="408" x2="772" y2="466" stroke="#9cc9ea" strokeWidth="14" strokeLinecap="round" />
+          <line x1="835" y1="408" x2="858" y2="466" stroke="#9cc9ea" strokeWidth="14" strokeLinecap="round" />
+          <text x="815" y="486" textAnchor="middle" fontSize="18" fill="#d7efff" fontFamily="monospace" fontWeight="700">
+            Koerper
+          </text>
+        </g>
 
         <path
           id="p-small-out"
-          d="M462 352 C410 324 412 246 486 210"
+          d="M470 368 C425 330 430 246 488 210"
           fill="none"
           stroke="#5aa8ff"
           strokeWidth={isPathActive('p-small-out') ? 15 : 12}
@@ -290,7 +340,7 @@ function CirculationMap({ cycleMode, heartRate }) {
         </path>
         <path
           id="p-small-back"
-          d="M515 210 C586 245 587 325 538 352"
+          d="M512 210 C575 246 580 332 532 368"
           fill="none"
           stroke="#ff7864"
           strokeWidth={isPathActive('p-small-back') ? 15 : 12}
@@ -303,10 +353,9 @@ function CirculationMap({ cycleMode, heartRate }) {
             <animate attributeName="stroke-dashoffset" from="24" to="0" dur="0.9s" repeatCount="indefinite" />
           )}
         </path>
-
         <path
           id="p-large-out"
-          d="M538 352 C700 302 850 370 858 500"
+          d="M540 368 C640 332 724 333 790 356"
           fill="none"
           stroke="#ff7864"
           strokeWidth={isPathActive('p-large-out') ? 16 : 13}
@@ -321,7 +370,7 @@ function CirculationMap({ cycleMode, heartRate }) {
         </path>
         <path
           id="p-large-back"
-          d="M858 500 C690 646 322 646 462 352"
+          d="M790 374 C704 472 602 510 470 370"
           fill="none"
           stroke="#5aa8ff"
           strokeWidth={isPathActive('p-large-back') ? 16 : 13}
@@ -340,10 +389,18 @@ function CirculationMap({ cycleMode, heartRate }) {
         {renderFlowDots('p-large-out', '#ff9a83', 12, flowDuration, isPathVisible('gross'), isPathActive('p-large-out'))}
         {renderFlowDots('p-large-back', '#79bcff', 12, flowDuration, isPathVisible('gross'), isPathActive('p-large-back'))}
 
-        {drawNode('node-right', 462, 352, 'Rechte Herzhälfte', '#6ab4ff')}
-        {drawNode('node-left', 538, 352, 'Linke Herzhälfte', '#ff9ba6')}
-        {drawNode('node-lungs', 500, 208, 'Lunge', '#6ab4ff')}
-        {drawNode('node-body', 858, 500, 'Körper', '#ffb58f')}
+        <circle cx="470" cy="368" r={isNodeActive('node-right') ? 15 : 10} fill="#5aa8ff" />
+        <circle cx="532" cy="368" r={isNodeActive('node-left') ? 15 : 10} fill="#ff90a0" />
+        <circle cx="500" cy="210" r={isNodeActive('node-lungs') ? 15 : 10} fill="#9ad0ff" />
+        <circle cx="790" cy="365" r={isNodeActive('node-body') ? 15 : 10} fill="#ffc39b" />
+
+        {drawStepBadge(1, 430, 283, isPathActive('p-small-out'))}
+        {drawStepBadge(2, 572, 286, isPathActive('p-small-back'))}
+        {drawStepBadge(3, 665, 330, isPathActive('p-large-out'))}
+        {drawStepBadge(4, 657, 448, isPathActive('p-large-back'))}
+
+        <text x="430" y="54" fontFamily="monospace" fontSize="14" fill="#9ac2de">KLEINER KREISLAUF</text>
+        <text x="735" y="54" fontFamily="monospace" fontSize="14" fill="#9ac2de">GROSSER KREISLAUF</text>
       </svg>
 
       <div className="px-4 py-3" style={{ borderTop: '1px solid #1a3a5a', background: '#061325' }}>
