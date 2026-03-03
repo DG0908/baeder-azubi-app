@@ -22,7 +22,7 @@ export const DEFAULT_MENU_ITEMS = [
   { id: 'trainer-dashboard', icon: '👨‍🏫', label: 'Azubi-Übersicht', visible: true, order: 7, requiresPermission: 'canViewAllStats', group: 'verwaltung' },
   { id: 'chat', icon: '💬', label: 'Chat', visible: true, order: 8, requiresPermission: null, group: 'sozial' },
   { id: 'materials', icon: '📚', label: 'Lernen', visible: true, order: 9, requiresPermission: null, group: 'lernen' },
-  { id: 'water-cycle', icon: '💧', label: 'Wasserkreislauf', visible: true, order: 9.5, requiresPermission: null, group: 'lernen' },
+  { id: 'interactive-learning', icon: '🎓', label: 'Interaktives Lernen', visible: true, order: 9.5, requiresPermission: null, group: 'lernen' },
   { id: 'resources', icon: '🔗', label: 'Ressourcen', visible: true, order: 10, requiresPermission: null, group: 'lernen' },
   { id: 'news', icon: '📢', label: 'News', visible: true, order: 11, requiresPermission: null, group: 'sozial' },
   { id: 'exams', icon: '📋', label: 'Klausuren', visible: true, order: 12, requiresPermission: null, group: 'dokumentieren' },

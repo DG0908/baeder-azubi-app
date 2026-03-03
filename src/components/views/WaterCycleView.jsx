@@ -1713,6 +1713,8 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
 
   const kerzeTop = p3(20, 8, 14);
   const kerzeBot = p3(20, 52, 14);
+  const modelZoom = 1.28;
+  const modelTransform = `translate(150 108) scale(${modelZoom}) translate(-150 -108)`;
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
@@ -1725,6 +1727,7 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
         </pattern></defs>
         <rect width="300" height="220" fill="#040d1a"/>
         <rect width="300" height="220" fill="url(#fiGrid)"/>
+        <g transform={modelTransform}>
 
         {sceneFaces.map(f => (
           <g key={f.id}>
@@ -1742,13 +1745,6 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
           return <text key={l.id} x={mid[0].toFixed(1)} y={mid[1].toFixed(1)} fill="#b0cce0" fontSize="5.3"
             fontFamily="monospace" textAnchor="middle" opacity="0.82">{l.label}</text>;
         })}
-        <g>
-          <rect x="196" y="16" width="94" height="48" rx="4" fill="#081a2d" stroke="#1a3a5a" strokeWidth="0.9"/>
-          <text x="243" y="26" fill="#6fb2e0" fontSize="5" fontFamily="monospace" textAnchor="middle">SCHICHTEN (OBEN -&gt; UNTEN)</text>
-          <text x="201" y="38" fill="#9fbfe0" fontSize="5" fontFamily="monospace">1) AKTIVKOHLE</text>
-          <text x="201" y="48" fill="#9fbfe0" fontSize="5" fontFamily="monospace">2) QUARZSAND</text>
-          <text x="201" y="58" fill="#9fbfe0" fontSize="5" fontFamily="monospace">3) STUETZKIES</text>
-        </g>
 
         {[[-22, nozzleY, -16], [-8, nozzleY, -20], [8, nozzleY, -18], [22, nozzleY, -12], [-16, nozzleY, 12], [0, nozzleY, 15], [16, nozzleY, 14]].map(([x, y, z], i) => {
           const c = p3(x, y, z);
@@ -1788,6 +1784,8 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
             <circle cx={kerzeBot[0].toFixed(1)} cy={kerzeBot[1].toFixed(1)} r="3.3" fill="#2b3f5a" stroke="#c090ff" strokeWidth="1"/>
           </g>
         )}
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot, 12.5, 6))}
+        </g>
 
         <g data-hotspot="1" style={{ cursor: 'pointer' }} onClick={(e) => {
           e.stopPropagation();
@@ -1805,7 +1803,13 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
         <text x="261" y="89" fill={dpColor} fontSize="14" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{dp}</text>
         <text x="261" y="97" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">bar</text>
 
-        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot, 12.5, 6))}
+        <g>
+          <rect x="196" y="16" width="94" height="48" rx="4" fill="#081a2d" stroke="#1a3a5a" strokeWidth="0.9"/>
+          <text x="243" y="26" fill="#6fb2e0" fontSize="5" fontFamily="monospace" textAnchor="middle">SCHICHTEN (OBEN -&gt; UNTEN)</text>
+          <text x="201" y="38" fill="#9fbfe0" fontSize="5" fontFamily="monospace">1) AKTIVKOHLE</text>
+          <text x="201" y="48" fill="#9fbfe0" fontSize="5" fontFamily="monospace">2) QUARZSAND</text>
+          <text x="201" y="58" fill="#9fbfe0" fontSize="5" fontFamily="monospace">3) STUETZKIES</text>
+        </g>
 
         <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
           {drag ? 'DREHEN...' : '<- ZIEHEN ZUM DREHEN | HOTSPOT ANTIPPEN ->'}
