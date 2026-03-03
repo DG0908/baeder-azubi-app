@@ -53,24 +53,10 @@ const LEARNING_CATEGORIES = [
         available: false,
       },
       {
-        id: 'das-wasser',
-        name: 'Das Wasser',
-        description: 'Grundlagen zu Wasserbeschaffenheit und Einflussfaktoren',
-        icon: '💦',
-        available: false,
-      },
-      {
-        id: 'redox-spannung',
-        name: 'Redox-Spannung',
-        description: 'Bedeutung des Redoxpotenzials fuer Aufbereitung und Desinfektion',
-        icon: '🔋',
-        available: false,
-      },
-      {
-        id: 'ph-wert',
-        name: 'pH-Wert',
-        description: 'pH-Zusammenhaenge, Sollbereiche und Korrekturmassnahmen',
-        icon: '🧪',
+        id: 'chemie-badewasser',
+        name: 'Chemie der Badewasseraufbereitung',
+        description: 'Unterthemen: Das Wasser, pH-Wert, Redox-Spannung, Saeuren und Basen, Oxidierbarkeit, Wasserhaerte, Korrosion und Korrosionsschutz',
+        icon: '⚗️',
         available: false,
       },
       {
