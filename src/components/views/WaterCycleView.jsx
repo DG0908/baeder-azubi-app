@@ -128,15 +128,15 @@ const DEEP_DIVE = {
   filter: {
     icon: '🗂️', subtitle: 'Mehrschichtfilter · Druckfilter',
     kenndaten: [
-      { label: 'Schichten (von oben)', value: 'Quarzkies → Quarzsand → Aktivkohle' },
+      { label: 'Schichten (von oben)', value: 'Aktivkohle -> Quarzsand -> Stuetzkies' },
       { label: 'Filtrat ab', value: 'Partikel ≥ 0,1 µm' },
       { label: 'Rückspülung bei', value: 'dP > 0,5 bar oder nach 72 h' },
       { label: 'Rückspülwasser', value: 'Nicht zurück ins Becken!' },
     ],
     lernpunkte: [
-      'Kies (oben): Stützschicht, hält Sandschicht an Ort',
-      'Quarzsand (mitte): Hauptfilterleistung, Feinstpartikel',
-      'Aktivkohle (unten): Bindet organische Verbindungen',
+      'Aktivkohle (oben): bindet organische Verbindungen und Chloramine',
+      'Quarzsand (Mitte): Hauptfilterleistung fuer Feinstpartikel',
+      'Stuetzkies (unten): Tragschicht und Lastverteilung ueber dem Duesenboden',
       'Rückspülung löst Schmutz → Kanal/Abwurf',
     ],
     pruefungsfrage: 'Ab welchem Differenzdruck muss rückgespült werden?',
@@ -277,6 +277,23 @@ const DEEP_DIVE = {
 
 
 // ─── Interactive 3D Pool Deep-Dive ─────────────────────────────────────────────
+const FILTER_REFERENCE_TABS = {
+  materialien: [
+    'Aktivkohle: Adsorption von organischen Spurenstoffen und Chloraminen',
+    'Quarzsand: Hauptfilterstufe fuer Flocken und Schwebstoffe',
+    'Stuetzkies: Tragschicht, Lastverteilung, Schutz des Duesenbodens',
+    'Hydroanthrazit: in manchen Filtern als obere Leichtschicht statt Aktivkohle',
+    'AFM/Glasgranulat: alternative Mehrschichtmedien mit geringer Biofilmbildung',
+  ],
+  filterarten: [
+    'Mehrschicht-Druckfilter (am haeufigsten im Schwimmbadkreislauf)',
+    'Einschicht-Sandfilter (kleinere Anlagen/Bestandsanlagen)',
+    'Aktivkohlefilter als Zusatzstufe bei Geruchs-/THM-Themen',
+    'Kerzen-/Patronenfilter eher in Nebenstrom oder kleinen Technikstrecken',
+    'Ultrafiltration/Membranfiltration in Sonderanlagen oder hoher Hygienestufe',
+  ],
+};
+
 const BECKEN_HOTSPOT_DATA = {
   ueberlauf: {
     color: '#4a9eff', icon: '↩️', title: 'Überlaufrinne',
@@ -1471,6 +1488,7 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
   const [ry, setRy] = useState(32);
   const [drag, setDrag] = useState(null);
   const [spot, setSpot] = useState(null);
+  const [showKerze, setShowKerze] = useState(false);
   const dp = metrics.differentialPressure;
   const dpColor = dp > 0.5 ? '#d04040' : dp > 0.35 ? '#d09030' : '#34c090';
 
@@ -1497,54 +1515,74 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
   const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
   const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
 
-  // Tall cylinder: R=42, top y=-70, bottom y=65
-  const R = 42, YT = -70, YB = 65;
-  const N = 8;
+  const R = 42, YT = -72, YB = 66;
+  const N = 10;
+  const nozzleY = 53;
   const ang = i => (i / N) * Math.PI * 2;
   const topPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), YT, R * Math.sin(ang(i))));
   const botPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), YB, R * Math.sin(ang(i))));
 
-  // Filter layers: Quarzkies (-30 to -5), Quarzsand (-5 to 30), Aktivkohle (30 to 50)
+  // Corrected layer order: Aktivkohle top, Quarzsand middle, Stuetzkies bottom.
   const layers = [
-    { id: 'kies', y1: -30, y2: -5, fill: '#2a4530', label: 'QUARZKIES' },
-    { id: 'sand', y1: -5, y2: 30, fill: '#384828', label: 'QUARZSAND' },
-    { id: 'kohle', y1: 30, y2: 50, fill: '#1a2838', label: 'AKTIVKOHLE' },
+    { id: 'aktivkohle', y1: -54, y2: -26, fill: '#223646', label: 'AKTIVKOHLE (OBEN)' },
+    { id: 'quarzsand', y1: -26, y2: 18, fill: '#5b4b2c', label: 'QUARZSAND' },
+    { id: 'stuetzkies', y1: 18, y2: 48, fill: '#374a2e', label: 'STUETZKIES' },
   ];
+
   const layerFaces = [];
-  layers.forEach(l => {
+  layers.forEach((l) => {
     const lTop = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), l.y1, R * Math.sin(ang(i))));
     const lBot = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), l.y2, R * Math.sin(ang(i))));
     for (let i = 0; i < N; i++) {
       const j = (i + 1) % N;
       layerFaces.push({
-        id: `${l.id}${i}`, pts: [lTop[i], lTop[j], lBot[j], lBot[i]],
-        fill: l.fill, fillOp: 0.65, stroke: '#1a3a5a', strokeW: 0.5
+        id: `${l.id}${i}`,
+        pts: [lTop[i], lTop[j], lBot[j], lBot[i]],
+        fill: l.fill,
+        fillOp: 0.72,
+        stroke: '#1a3a5a',
+        strokeW: 0.45,
       });
     }
-    // Top surface of each layer
-    layerFaces.push({ id: `${l.id}t`, pts: lTop, fill: l.fill, fillOp: 0.4, stroke: '#2a5a90', strokeW: 0.5 });
+    layerFaces.push({
+      id: `${l.id}t`,
+      pts: lTop,
+      fill: l.fill,
+      fillOp: 0.45,
+      stroke: '#2a5a90',
+      strokeW: 0.5,
+    });
   });
 
-  // Nozzle plate at y=52
-  const npPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), 52, R * Math.sin(ang(i))));
+  const npPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), nozzleY, R * Math.sin(ang(i))));
 
   const sideFaces = [];
   for (let i = 0; i < N; i++) {
     const j = (i + 1) % N;
-    // Vessel wall above filter layers
     sideFaces.push({
-      id: `vs${i}`, pts: [topPts[i], topPts[j],
-        p3(R * Math.cos(ang(j)), -30, R * Math.sin(ang(j))),
-        p3(R * Math.cos(ang(i)), -30, R * Math.sin(ang(i)))],
-      fill: '#081e3c', fillOp: 0.4, stroke: '#1a3a5a', strokeW: 0.6
+      id: `vTop${i}`,
+      pts: [
+        topPts[i],
+        topPts[j],
+        p3(R * Math.cos(ang(j)), layers[0].y1, R * Math.sin(ang(j))),
+        p3(R * Math.cos(ang(i)), layers[0].y1, R * Math.sin(ang(i))),
+      ],
+      fill: '#08203f',
+      fillOp: 0.42,
+      stroke: '#1a3a5a',
+      strokeW: 0.6,
     });
-    // Vessel wall below filter
     sideFaces.push({
-      id: `vb${i}`, pts: [
-        p3(R * Math.cos(ang(i)), 52, R * Math.sin(ang(i))),
-        p3(R * Math.cos(ang(j)), 52, R * Math.sin(ang(j))),
-        botPts[j], botPts[i]],
-      fill: '#0e2030', stroke: '#1a3a5a', strokeW: 0.6
+      id: `vBot${i}`,
+      pts: [
+        p3(R * Math.cos(ang(i)), nozzleY, R * Math.sin(ang(i))),
+        p3(R * Math.cos(ang(j)), nozzleY, R * Math.sin(ang(j))),
+        botPts[j],
+        botPts[i],
+      ],
+      fill: '#0d2030',
+      stroke: '#1a3a5a',
+      strokeW: 0.6,
     });
   }
 
@@ -1552,57 +1590,127 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
     { id: 'bot', pts: botPts, fill: '#061828', stroke: '#1a3a5a', strokeW: 1 },
     ...sideFaces,
     ...layerFaces,
-    { id: 'np', pts: npPts, fill: '#0e2030', fillOp: 0.7, stroke: '#2a4870', strokeW: 1 },
-    { id: 'top', pts: topPts, fill: '#0c2a50', fillOp: 0.3, stroke: '#2a5a90', strokeW: 1.2 },
+    { id: 'np', pts: npPts, fill: '#10283c', fillOp: 0.8, stroke: '#2a4870', strokeW: 1.1 },
+    { id: 'top', pts: topPts, fill: '#0c2a50', fillOp: 0.34, stroke: '#2a5a90', strokeW: 1.2 },
   ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a, b) => b.zVal - a.zVal);
   const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 108);
 
-  // Distribution dome at top
-  const domeCenter = p3(0, YT - 8, 0);
-  // Inlet/outlet pipes
-  const inA = p3(0, YT - 5, -R - 5), inB = p3(0, YT - 5, -R - 30);
-  const outA = p3(0, YB + 5, -R - 5), outB = p3(0, YB + 5, -R - 30);
+  const bellTop = p3(0, YT - 10, -2);
+  const bellBot = p3(0, -6, -2);
+
+  const pipeDefs = [
+    { id: 'rohwasser', from: [-12, YT - 8, -R - 8], to: [-12, YT - 8, -R - 34], color: '#4a9eff', label: 'ROH' },
+    { id: 'reinwasser', from: [R + 5, -6, 0], to: [R + 32, -6, 0], color: '#34c090', label: 'REIN' },
+    { id: 'spuelwasser', from: [14, YT - 8, -R - 8], to: [14, YT - 8, -R - 32], color: '#66c0ff', label: 'SPUEL' },
+    { id: 'schlammwasser', from: [R + 5, YB - 8, 10], to: [R + 30, YB - 8, 10], color: '#d09030', label: 'SCHLAMM' },
+    { id: 'spuelluft', from: [-R - 5, -20, 10], to: [-R - 30, -20, 10], color: '#b0d8ff', label: 'LUFT' },
+    { id: 'absenken', from: [-R - 5, 24, -10], to: [-R - 30, 24, -10], color: '#c090ff', label: 'ABSENK' },
+    { id: 'entleerung', from: [0, YB + 5, R - 2], to: [0, YB + 30, R - 2], color: '#ffaa40', label: 'ENTL' },
+    { id: 'entlueftung', from: [0, YT - 10, R - 2], to: [0, YT - 30, R - 2], color: '#7ad0ff', label: 'VENT' },
+  ].map((p) => {
+    const [fx, fy, fz] = p.from;
+    const [tx, ty, tz] = p.to;
+    return {
+      ...p,
+      pa: p3(fx, fy, fz),
+      pb: p3(tx, ty, tz),
+      valve: p3((fx + tx) / 2, (fy + ty) / 2, (fz + tz) / 2),
+    };
+  });
 
   const hotDefs = [
-    { id: 'verteilung', x: 0, y: YT - 8, z: 0, label: '⊙ Verteiler', color: '#4a9eff' },
-    { id: 'schichten', x: 0, y: 10, z: 0, label: '▥ Schichten', color: '#34c090' },
-    { id: 'dusenboden', x: 0, y: 52, z: 0, label: '⊞ Düsenboden', color: '#ffaa40' },
-    { id: 'druck', x: R + 20, y: -10, z: 0, label: '◎ dP', color: dpColor },
+    { id: 'filterglocke', x: 0, y: YT - 7, z: -2, label: 'FG Filterglocke', color: '#4a9eff' },
+    { id: 'schichten', x: 0, y: -2, z: 0, label: 'LS Schichten', color: '#34c090' },
+    { id: 'dusenboden', x: 0, y: nozzleY, z: 0, label: 'DB Duesenboden', color: '#ffaa40' },
+    { id: 'filterkerze', x: 20, y: 24, z: 14, label: 'FK Filterkerze', color: '#c090ff' },
+    { id: 'rohwasser', x: -12, y: YT - 8, z: -R - 20, label: 'RW Rohwasser', color: '#4a9eff' },
+    { id: 'reinwasser', x: R + 19, y: -6, z: 0, label: 'RE Reinwasser', color: '#34c090' },
+    { id: 'spuelwasser', x: 14, y: YT - 8, z: -R - 20, label: 'SW Spuelwasser', color: '#66c0ff' },
+    { id: 'schlammwasser', x: R + 18, y: YB - 8, z: 10, label: 'SL Schlammw.', color: '#d09030' },
+    { id: 'spuelluft', x: -R - 18, y: -20, z: 10, label: 'LU Spuelluft', color: '#b0d8ff' },
+    { id: 'absenken', x: -R - 18, y: 24, z: -10, label: 'AB Absenken', color: '#c090ff' },
+    { id: 'entleerung', x: 0, y: YB + 18, z: R - 2, label: 'EN Entleerung', color: '#ffaa40' },
+    { id: 'entlueftung', x: 0, y: YT - 22, z: R - 2, label: 'VL Entlueftung', color: '#7ad0ff' },
+    { id: 'druck', x: R + 20, y: -12, z: 0, label: 'DP dP', color: dpColor },
   ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
 
   const FIDATA = {
-    verteilung: { color: '#4a9eff', icon: '⊙', title: 'Verteilerhaube', items: [
-      '🌊 Verteilt Rohwasser gleichmäßig über die Filterfläche',
-      '📐 Ringförmiger Spalt oder Düsenplatte',
-      '🛡 Verhindert Kraterbildung in der Kiesschicht',
-      '⚠ Ungleichmäßige Verteilung → Kurzschlussströmung',
-      '📋 Bei Rückspülung: Wasser strömt von unten nach oben',
+    filterglocke: { color: '#4a9eff', icon: 'FG', title: 'Filterglocke / Verteiler', items: [
+      'Rohwasser tritt oben ein und wird gleichmaessig verteilt',
+      'Verhindert Kanalbildung und lokale Ueberstroemung',
+      'Austritt in den Filterraum erfolgt radial in den Kopfbereich',
+      'Bei defekter Glocke: ungleichmaessige Filtration und Trubdurchbruch',
     ]},
-    schichten: { color: '#34c090', icon: '▥', title: 'Filterschichten', items: [
-      '⬆ Quarzkies (4–16 mm): Stützschicht, hält Sand in Position',
-      '⬜ Quarzsand (0,4–1,6 mm): Hauptfilter, Feinstpartikel',
-      '⬛ Aktivkohle (0,8–1,6 mm): Organik, Geruch, Chloramine',
-      '📏 Schichtdicke gesamt: ca. 1,2–1,5 m',
-      '🔬 Filterfeinheit: Partikel ≥ 0,1 µm (mit Flockung)',
-      '📐 Filtergeschwindigkeit: 20–30 m/h bei Druckfiltern',
+    schichten: { color: '#34c090', icon: 'LS', title: 'Filterschichten (korrigiert)', items: [
+      'Oben: Aktivkohle (Adsorption von Organik, Geruch, Chloraminen)',
+      'Mitte: Quarzsand (Hauptabscheidung von Flocken und Partikeln)',
+      'Unten: Stuetzkies (Tragschicht zur Lastverteilung)',
+      'Diese Reihenfolge ist im Modell jetzt entsprechend umgesetzt',
+      'Rueckspuelen bei dP > 0,5 bar oder spaetestens nach 72 h',
     ]},
-    dusenboden: { color: '#ffaa40', icon: '⊞', title: 'Düsenboden', items: [
-      '🔧 Stützt das Filterbett und verteilt Rückspülwasser',
-      '📏 Schlitzdüsen: Spaltweite 0,2–0,4 mm',
-      '🔀 Gleichmäßige Rückspülung über gesamte Bodenfläche',
-      '⚠ Verstopfte Düsen → ungleichmäßige Rückspülung',
-      '📋 Kontrolle bei jeder Filterrevision (jährlich)',
+    dusenboden: { color: '#ffaa40', icon: 'DB', title: 'Duesenboden', items: [
+      'Duesenboden stuetzt den Filteraufbau mechanisch',
+      'Verteilt Rueckspuelwasser gleichmaessig auf die Flaeche',
+      'Schlitzweite typ. 0,2-0,4 mm',
+      'Verstopfte Duesen fuehren zu Totzonen und unvollstaendiger Spuelung',
     ]},
-    druck: { color: dpColor, icon: '◎', title: 'Differenzdruck (ΔP)', items: [
-      `📊 Aktuell: ${dp} bar ${dp > 0.5 ? '⚠ RÜCKSPÜLEN!' : dp > 0.35 ? '(erhöht)' : '(normal)'}`,
-      '📏 Sauber: 0,1–0,2 bar | Verschmutzt: > 0,5 bar',
-      '⏱ Rückspülung bei ΔP > 0,5 bar ODER nach 72 h',
-      '🔄 Rückspülung: 10–15 min mit 40–60 m/h',
-      '🚫 Rückspülwasser → Kanal (nicht zurück ins Becken!)',
-      '📐 DIN 19643: Rückspülprotokoll dokumentieren',
+    filterkerze: { color: '#c090ff', icon: 'FK', title: 'Filterkerze (Taste im Modell)', items: [
+      'Mit Taste "KERZE AN/AUS" wird eine Beispiel-Filterkerze eingeblendet',
+      'Darstellung zeigt Schlitze und Anschluss am Duesenboden',
+      'Hilft beim Verstaendnis von Stroemung und Rueckspuelverteilung',
+      'Kerzenbruch oder Verkalkung verursacht lokale Kurzschlussstroemung',
+    ]},
+    rohwasser: { color: '#4a9eff', icon: 'RW', title: 'Rohwasserklappe', items: [
+      'Eintritt des belasteten Wassers in den Filterkopf',
+      'Armatur fuer Normalbetrieb offen, bei Wartung absperrbar',
+      'Hydraulik muss ohne Luftsack und mit konstantem Durchsatz laufen',
+    ]},
+    reinwasser: { color: '#34c090', icon: 'RE', title: 'Reinwasserklappe', items: [
+      'Austritt des filtrierten Wassers zur Folgebehandlung',
+      'Bei Trubdurchbruch sofort pruefen: Schichten, dP, Rueckspuelzustand',
+      'Im Regelbetrieb stetiger Abfluss ohne Pulsation',
+    ]},
+    spuelwasser: { color: '#66c0ff', icon: 'SW', title: 'Spuelwasserklappe', items: [
+      'Rueckspuelbetrieb: Stroemung von unten nach oben',
+      'Loest Ablagerungen aus den Schichten',
+      'Spuelwasser nie ins Becken zurueckfuehren',
+    ]},
+    schlammwasser: { color: '#d09030', icon: 'SL', title: 'Schlammwasserklappe', items: [
+      'Fuehrt verschmutztes Rueckspuelwasser zum Kanal/Abwurf',
+      'Im Normalbetrieb geschlossen',
+      'Falsche Schaltstellung kann zu hygienischem Risiko fuehren',
+    ]},
+    spuelluft: { color: '#b0d8ff', icon: 'LU', title: 'Spuelluftklappe', items: [
+      'Luft-Wasser-Spuelung lockert das Filterbett vor Rueckspuelung',
+      'Verbessert Austrag von Biofilm und Partikeln',
+      'Nur in dafuer freigegebenen Fahrweisen zuschalten',
+    ]},
+    absenken: { color: '#c090ff', icon: 'AB', title: 'Klappe zum Absenken', items: [
+      'Absenkfunktion fuer Schichtberuhigung oder Wartungsfahrweise',
+      'Hydraulik wird kontrolliert reduziert',
+      'Nur nach Betriebsanweisung schalten',
+    ]},
+    entleerung: { color: '#ffaa40', icon: 'EN', title: 'Entleerung', items: [
+      'Vollstaendige Entleerung fuer Revision und Reparatur',
+      'Entleerung nur bei gesicherter Absperrung der Zu-/Ablaufe',
+      'Entleerungsweg muss in den Kanal gefuehrt sein',
+    ]},
+    entlueftung: { color: '#7ad0ff', icon: 'VL', title: 'Entlueftung', items: [
+      'Entfernt Luftpolster im Kopfbereich',
+      'Luft im Filter reduziert wirksame Filterflaeche',
+      'Bei Inbetriebnahme und nach Wartung gezielt entlueften',
+    ]},
+    druck: { color: dpColor, icon: '?', title: 'Differenzdruck (dP)', items: [
+      `Aktuell: ${dp} bar ${dp > 0.5 ? '-> Rueckspuelen' : dp > 0.35 ? '(erhoeht)' : '(normal)'}`,
+      'Richtwert sauber: 0,1-0,2 bar',
+      'Rueckspuelgrenze: > 0,5 bar oder zeitgesteuert',
+      'dP-Anstieg zeigt Beladung und hydraulische Belastung',
     ]},
   };
   const activeData = spot ? FIDATA[spot] : null;
+
+  const kerzeTop = p3(20, 8, 14);
+  const kerzeBot = p3(20, 52, 14);
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
@@ -1622,54 +1730,90 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
           </g>
         ))}
 
-        {/* Distribution dome */}
-        <ellipse cx={domeCenter[0].toFixed(1)} cy={domeCenter[1].toFixed(1)} rx="18" ry="8"
-          fill="#0c2a50" fillOpacity="0.5" stroke="#2a5a90" strokeWidth="1"/>
+        <ellipse cx={bellTop[0].toFixed(1)} cy={bellTop[1].toFixed(1)} rx="17" ry="7"
+          fill="#0e3158" fillOpacity="0.55" stroke="#5aa0e8" strokeWidth="1"/>
+        <line x1={bellTop[0].toFixed(1)} y1={(bellTop[1] + 1).toFixed(1)} x2={bellBot[0].toFixed(1)} y2={bellBot[1].toFixed(1)}
+          stroke="#4a9eff" strokeWidth="2" opacity="0.65" strokeDasharray="4 3" className="wc-flow" style={{ animationDuration: '1.8s' }}/>
 
-        {/* Layer labels */}
-        {layers.map(l => {
+        {layers.map((l) => {
           const mid = p3(0, (l.y1 + l.y2) / 2, 0);
-          return <text key={l.id} x={mid[0].toFixed(1)} y={mid[1].toFixed(1)} fill="#b0cce0" fontSize="5.5"
-            fontFamily="monospace" textAnchor="middle" opacity="0.8">{l.label}</text>;
+          return <text key={l.id} x={mid[0].toFixed(1)} y={mid[1].toFixed(1)} fill="#b0cce0" fontSize="5.3"
+            fontFamily="monospace" textAnchor="middle" opacity="0.82">{l.label}</text>;
         })}
+        <g>
+          <rect x="196" y="16" width="94" height="48" rx="4" fill="#081a2d" stroke="#1a3a5a" strokeWidth="0.9"/>
+          <text x="243" y="26" fill="#6fb2e0" fontSize="5" fontFamily="monospace" textAnchor="middle">SCHICHTEN (OBEN -&gt; UNTEN)</text>
+          <text x="201" y="38" fill="#9fbfe0" fontSize="5" fontFamily="monospace">1) AKTIVKOHLE</text>
+          <text x="201" y="48" fill="#9fbfe0" fontSize="5" fontFamily="monospace">2) QUARZSAND</text>
+          <text x="201" y="58" fill="#9fbfe0" fontSize="5" fontFamily="monospace">3) STUETZKIES</text>
+        </g>
 
-        {/* Nozzle dots on düsenboden */}
-        {[[-20, 52, -15], [0, 52, -20], [20, 52, -10], [-15, 52, 10], [15, 52, 15]].map(([x, y, z], i) => {
+        {[[-22, nozzleY, -16], [-8, nozzleY, -20], [8, nozzleY, -18], [22, nozzleY, -12], [-16, nozzleY, 12], [0, nozzleY, 15], [16, nozzleY, 14]].map(([x, y, z], i) => {
           const c = p3(x, y, z);
-          return <circle key={i} cx={c[0].toFixed(1)} cy={c[1].toFixed(1)} r="2" fill="#1a3a5a" stroke="#2a5880" strokeWidth="0.6"/>;
+          return <circle key={i} cx={c[0].toFixed(1)} cy={c[1].toFixed(1)} r="2" fill="#15344f" stroke="#60a9f0" strokeWidth="0.7"/>;
         })}
 
-        {/* Inlet pipe */}
-        <line x1={inA[0].toFixed(1)} y1={inA[1].toFixed(1)} x2={inB[0].toFixed(1)} y2={inB[1].toFixed(1)}
-          stroke="#1a4060" strokeWidth="8" strokeLinecap="round"/>
-        <line x1={inA[0].toFixed(1)} y1={inA[1].toFixed(1)} x2={inB[0].toFixed(1)} y2={inB[1].toFixed(1)}
-          stroke="#0c2030" strokeWidth="5" strokeLinecap="round"/>
-        <text x={inB[0].toFixed(1)} y={(inB[1] - 6).toFixed(1)} fill="#4a9eff" fontSize="5" fontFamily="monospace" textAnchor="middle">EINLASS</text>
+        {pipeDefs.map((pipe) => (
+          <g key={pipe.id}>
+            <line x1={pipe.pa[0].toFixed(1)} y1={pipe.pa[1].toFixed(1)} x2={pipe.pb[0].toFixed(1)} y2={pipe.pb[1].toFixed(1)}
+              stroke="#122a40" strokeWidth="8" strokeLinecap="round"/>
+            <line x1={pipe.pa[0].toFixed(1)} y1={pipe.pa[1].toFixed(1)} x2={pipe.pb[0].toFixed(1)} y2={pipe.pb[1].toFixed(1)}
+              stroke={pipe.color} strokeWidth="2.3" strokeLinecap="round" opacity="0.68" strokeDasharray="5 4" className="wc-flow"
+              style={{ animationDuration: pipe.id === 'reinwasser' ? '1.3s' : '1.9s' }}/>
+            <circle cx={pipe.valve[0].toFixed(1)} cy={pipe.valve[1].toFixed(1)} r="5.3" fill="#081626" stroke={pipe.color} strokeWidth="1.2"/>
+            <line x1={(pipe.valve[0] - 2.6).toFixed(1)} y1={(pipe.valve[1] - 2.6).toFixed(1)} x2={(pipe.valve[0] + 2.6).toFixed(1)} y2={(pipe.valve[1] + 2.6).toFixed(1)}
+              stroke={pipe.color} strokeWidth="1"/>
+            <line x1={(pipe.valve[0] - 2.6).toFixed(1)} y1={(pipe.valve[1] + 2.6).toFixed(1)} x2={(pipe.valve[0] + 2.6).toFixed(1)} y2={(pipe.valve[1] - 2.6).toFixed(1)}
+              stroke={pipe.color} strokeWidth="1"/>
+            <text x={pipe.pb[0].toFixed(1)} y={(pipe.pb[1] - 6).toFixed(1)} fill={pipe.color} fontSize="4.8" fontFamily="monospace" textAnchor="middle">
+              {pipe.label}
+            </text>
+          </g>
+        ))}
 
-        {/* Outlet pipe */}
-        <line x1={outA[0].toFixed(1)} y1={outA[1].toFixed(1)} x2={outB[0].toFixed(1)} y2={outB[1].toFixed(1)}
-          stroke="#1a4060" strokeWidth="8" strokeLinecap="round"/>
-        <line x1={outA[0].toFixed(1)} y1={outA[1].toFixed(1)} x2={outB[0].toFixed(1)} y2={outB[1].toFixed(1)}
-          stroke="#0c2030" strokeWidth="5" strokeLinecap="round"/>
-        <text x={outB[0].toFixed(1)} y={(outB[1] - 6).toFixed(1)} fill="#34c090" fontSize="5" fontFamily="monospace" textAnchor="middle">AUSLASS</text>
+        {showKerze && (
+          <g>
+            <line x1={kerzeTop[0].toFixed(1)} y1={kerzeTop[1].toFixed(1)} x2={kerzeBot[0].toFixed(1)} y2={kerzeBot[1].toFixed(1)}
+              stroke="#d0a8ff" strokeWidth="7" strokeLinecap="round" opacity="0.45"/>
+            <line x1={kerzeTop[0].toFixed(1)} y1={kerzeTop[1].toFixed(1)} x2={kerzeBot[0].toFixed(1)} y2={kerzeBot[1].toFixed(1)}
+              stroke="#f0d8ff" strokeWidth="2.5" strokeLinecap="round" opacity="0.9"/>
+            {Array.from({ length: 7 }, (_, i) => 12 + i * 5.5).map((y, i) => {
+              const l = p3(17.4, y, 14);
+              const r = p3(22.6, y, 14);
+              return <line key={i} x1={l[0].toFixed(1)} y1={l[1].toFixed(1)} x2={r[0].toFixed(1)} y2={r[1].toFixed(1)}
+                stroke="#c090ff" strokeWidth="1.2" opacity="0.95"/>;
+            })}
+            <circle cx={kerzeBot[0].toFixed(1)} cy={kerzeBot[1].toFixed(1)} r="3.3" fill="#2b3f5a" stroke="#c090ff" strokeWidth="1"/>
+          </g>
+        )}
 
-        {/* dP display */}
-        <rect x="232" y="60" width="58" height="42" fill="#0a1a2e" stroke={`${dpColor}80`} strokeWidth="1" rx="4"/>
-        <text x="261" y="74" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">DIFF.-DRUCK</text>
-        <text x="261" y="90" fill={dpColor} fontSize="14" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{dp}</text>
-        <text x="261" y="98" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">bar</text>
+        <g data-hotspot="1" style={{ cursor: 'pointer' }} onClick={(e) => {
+          e.stopPropagation();
+          setShowKerze(v => !v);
+          setSpot('filterkerze');
+        }}>
+          <rect x="8" y="8" width="88" height="18" rx="4" fill="#0a1a2e" stroke="#355f8a" strokeWidth="1"/>
+          <text x="52" y="20" fill={showKerze ? '#d0a8ff' : '#7aa7d3'} fontSize="6.2" fontFamily="monospace" textAnchor="middle">
+            {showKerze ? 'KERZE AUSBLENDEN' : 'KERZE EINBLENDEN'}
+          </text>
+        </g>
 
-        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot))}
+        <rect x="232" y="58" width="58" height="44" fill="#0a1a2e" stroke={`${dpColor}80`} strokeWidth="1" rx="4"/>
+        <text x="261" y="72" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">DIFF.-DRUCK</text>
+        <text x="261" y="89" fill={dpColor} fontSize="14" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{dp}</text>
+        <text x="261" y="97" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">bar</text>
+
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot, 12.5, 6))}
 
         <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
-          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+          {drag ? 'DREHEN...' : '<- ZIEHEN ZUM DREHEN | HOTSPOT ANTIPPEN ->'}
         </text>
       </svg>
       {activeData && (
-        <div style={{ background: 'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop: '2px solid ' + activeData.color, padding: '10px 12px', maxHeight: '180px', overflowY: 'auto' }}>
+        <div style={{ background: 'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop: '2px solid ' + activeData.color, padding: '10px 12px', maxHeight: '220px', overflowY: 'auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
             <span style={{ color: activeData.color, fontSize: '12px', fontWeight: 'bold', fontFamily: 'monospace' }}>{activeData.icon} {activeData.title}</span>
-            <button onClick={() => setSpot(null)} style={{ background: 'transparent', border: '1px solid #1a3a5a', borderRadius: '4px', color: '#5a8090', fontSize: '11px', padding: '2px 7px', cursor: 'pointer' }}>✕</button>
+            <button onClick={() => setSpot(null)} style={{ background: 'transparent', border: '1px solid #1a3a5a', borderRadius: '4px', color: '#5a8090', fontSize: '11px', padding: '2px 7px', cursor: 'pointer' }}>X</button>
           </div>
           {activeData.items.map((item, i) => (
             <p key={i} style={{ color: '#8ab0c0', fontSize: '10px', fontFamily: 'monospace', margin: '2px 0', lineHeight: '1.5' }}>{item}</p>
@@ -1680,7 +1824,6 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
   );
 }
 
-// ─── Desinfektionsanlage 3D Deep-Dive ────────────────────────────────────────
 function DesinfektionDeepDive({ metrics, xrayMode = false }) {
   const [rx, setRx] = useState(-18);
   const [ry, setRy] = useState(22);
@@ -2142,6 +2285,7 @@ const WaterCycleView = () => {
   const [selectedStationId, setSelectedStationId] = useState(WATER_CYCLE_STATION_ORDER[0]);
   const [controls, setControls] = useState(WATER_CYCLE_DEFAULT_CONTROLS);
   const [xrayMode, setXrayMode] = useState(false);
+  const [filterInfoTab, setFilterInfoTab] = useState('materialien');
   const [showCheatSheet, setShowCheatSheet] = useState(false);
   const [autoTour, setAutoTour] = useState(false);
   const [activeMissionId, setActiveMissionId] = useState(WATER_CYCLE_MISSIONS[0].id);
@@ -2209,6 +2353,11 @@ const WaterCycleView = () => {
     }, 3200);
     return () => window.clearInterval(t);
   }, [autoTour]);
+
+  useEffect(() => {
+    if (!deepDiveStationId) return;
+    if (deepDiveStationId === 'filter') setFilterInfoTab('materialien');
+  }, [deepDiveStationId]);
 
   useEffect(() => {
     if (!(controls.backwashMode && controls.backwashValveOpen && controls.pumpEnabled)) return undefined;
@@ -2539,20 +2688,20 @@ const WaterCycleView = () => {
                     stroke={selectedStationId === 'filter' ? '#4a9eff' : symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a'}
                     strokeWidth="1.5"/>
                   {/* Filter layers */}
-                  <rect x="322" y="436" width="68" height="44" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.5}/>
+                  <rect x="322" y="436" width="68" height="44" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.5}/>
                   <rect x="322" y="480" width="68" height="54" fill="#384818" fillOpacity={xrayMode ? 0.9 : 0.5}/>
-                  <rect x="322" y="534" width="68" height="52" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.5}/>
+                  <rect x="322" y="534" width="68" height="52" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.5}/>
                   <line x1="320" y1="480" x2="392" y2="480" stroke="#1a3a5a" strokeWidth="0.8" strokeDasharray="3 2.5"/>
                   <line x1="320" y1="534" x2="392" y2="534" stroke="#1a3a5a" strokeWidth="0.8" strokeDasharray="3 2.5"/>
                   {!xrayMode && <>
-                    <text x="356" y="462" fill="#2a5040" fontSize="6.5" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
+                    <text x="356" y="462" fill="#2a4058" fontSize="6.5" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
                     <text x="356" y="510" fill="#4a6020" fontSize="6.5" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
-                    <text x="356" y="562" fill="#2a4058" fontSize="6.5" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                    <text x="356" y="562" fill="#2a5040" fontSize="6.5" fontFamily="monospace" textAnchor="middle">STUETZKIES</text>
                   </>}
                   {xrayMode && <>
-                    <text x="356" y="462" fill="#60c090" fontSize="6.5" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
+                    <text x="356" y="462" fill="#6080a0" fontSize="6.5" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
                     <text x="356" y="510" fill="#90c060" fontSize="6.5" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
-                    <text x="356" y="562" fill="#6080a0" fontSize="6.5" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                    <text x="356" y="562" fill="#60c090" fontSize="6.5" fontFamily="monospace" textAnchor="middle">STUETZKIES</text>
                   </>}
                   {/* Vertical flow arrow inside filter */}
                   <line x1="356" y1="444" x2="356" y2="576" stroke="#4a9eff" strokeWidth="1" strokeDasharray="5 5" opacity="0.18"/>
@@ -2950,9 +3099,9 @@ const WaterCycleView = () => {
                     {/* Filter body */}
                     <rect x="760" y="100" width="130" height="415" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : (symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a')} strokeWidth="1.5"/>
                     {/* Filter layers */}
-                    <rect x="762" y="118" width="126" height="115" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.45}/>
+                    <rect x="762" y="118" width="126" height="115" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.45}/>
                     <rect x="762" y="233" width="126" height="135" fill="#38481a" fillOpacity={xrayMode ? 0.9 : 0.45}/>
-                    <rect x="762" y="368" width="126" height="115" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.45}/>
+                    <rect x="762" y="368" width="126" height="115" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.45}/>
                     {/* Düsenboden strip */}
                     <rect x="762" y="483" width="126" height="14" fill="#0e2030" fillOpacity={xrayMode ? 0.9 : 0.65} stroke="#2a4870" strokeWidth="0.8" strokeDasharray="3 2.5"/>
                     {[778, 795, 812, 825, 838, 855, 872].map((dx) => (
@@ -2965,17 +3114,17 @@ const WaterCycleView = () => {
                       <line x1="762" y1="233" x2="888" y2="233" stroke="#1a3a5a" strokeWidth="1" strokeDasharray="4 3"/>
                       <line x1="762" y1="368" x2="888" y2="368" stroke="#1a3a5a" strokeWidth="1" strokeDasharray="4 3"/>
                       <line x1="762" y1="483" x2="888" y2="483" stroke="#1a3a5a" strokeWidth="0.8" strokeDasharray="3 2.5"/>
-                      <text x="825" y="170" fill="#2a5040" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
-                      <text x="825" y="181" fill="#1a3a30" fontSize="5.5" fontFamily="monospace" textAnchor="middle">4 – 16 mm · Stützschicht</text>
+                      <text x="825" y="170" fill="#2a4058" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                      <text x="825" y="181" fill="#1a3050" fontSize="5.5" fontFamily="monospace" textAnchor="middle">0,8-1,6 mm - Adsorption</text>
                       <text x="825" y="294" fill="#4a6020" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
-                      <text x="825" y="305" fill="#2a4010" fontSize="5.5" fontFamily="monospace" textAnchor="middle">0,4 – 1,6 mm · Hauptfilter</text>
-                      <text x="825" y="419" fill="#2a4058" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
-                      <text x="825" y="430" fill="#1a3050" fontSize="5.5" fontFamily="monospace" textAnchor="middle">0,8 – 1,6 mm · Geruch/Org.</text>
+                      <text x="825" y="305" fill="#2a4010" fontSize="5.5" fontFamily="monospace" textAnchor="middle">0,4-1,6 mm - Hauptfilter</text>
+                      <text x="825" y="419" fill="#2a5040" fontSize="7" fontFamily="monospace" textAnchor="middle">STUETZKIES</text>
+                      <text x="825" y="430" fill="#1a3a30" fontSize="5.5" fontFamily="monospace" textAnchor="middle">4-16 mm - Tragschicht</text>
                     </>)}
                     {xrayMode && (<>
-                      <text x="825" y="170" fill="#60c090" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES 4–16mm</text>
-                      <text x="825" y="294" fill="#90c060" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND 0,4–1,6mm</text>
-                      <text x="825" y="419" fill="#6080a0" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE 0,8–1,6mm</text>
+                      <text x="825" y="170" fill="#6080a0" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE 0,8-1,6mm</text>
+                      <text x="825" y="294" fill="#90c060" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND 0,4-1,6mm</text>
+                      <text x="825" y="419" fill="#60c090" fontSize="7" fontFamily="monospace" textAnchor="middle">STUETZKIES 4-16mm</text>
                     </>)}
                     {/* Center downward flow — animated in normal mode */}
                     {!controls.backwashMode && metrics.flowRate > 0 && (
@@ -3004,20 +3153,20 @@ const WaterCycleView = () => {
                     <text x="835" y="248" fill="#2a6090" fontSize="7" fontFamily="monospace" textAnchor="middle" letterSpacing="1">HORIZONTALDURCHSTRÖMUNG ↔</text>
                     <ellipse cx="645" cy="330" rx="16" ry="75" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : (symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a')} strokeWidth="1.5"/>
                     <rect x="645" y="255" width="380" height="150" fill="#060f22" stroke={selectedStationId === 'filter' ? '#4a9eff' : (symptomFlags.has('filterTurbidity') ? '#d04040' : '#1a3a5a')} strokeWidth="1.5"/>
-                    <rect x="660" y="257" width="112" height="146" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.45}/>
+                    <rect x="660" y="257" width="112" height="146" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.45}/>
                     <rect x="772" y="257" width="124" height="146" fill="#38481a" fillOpacity={xrayMode ? 0.9 : 0.45}/>
-                    <rect x="896" y="257" width="118" height="146" fill="#1a2838" fillOpacity={xrayMode ? 0.9 : 0.45}/>
+                    <rect x="896" y="257" width="118" height="146" fill="#2a4030" fillOpacity={xrayMode ? 0.9 : 0.45}/>
                     {!xrayMode && (<>
                       <line x1="772" y1="257" x2="772" y2="405" stroke="#1a3a5a" strokeWidth="1" strokeDasharray="4 3"/>
                       <line x1="896" y1="257" x2="896" y2="405" stroke="#1a3a5a" strokeWidth="1" strokeDasharray="4 3"/>
-                      <text x="716" y="335" fill="#2a5040" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
+                      <text x="716" y="335" fill="#2a4058" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
                       <text x="834" y="335" fill="#4a6020" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
-                      <text x="955" y="335" fill="#2a4058" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                      <text x="955" y="335" fill="#2a5040" fontSize="7" fontFamily="monospace" textAnchor="middle">STUETZKIES</text>
                     </>)}
                     {xrayMode && (<>
-                      <text x="716" y="335" fill="#60c090" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZKIES</text>
+                      <text x="716" y="335" fill="#6080a0" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
                       <text x="834" y="335" fill="#90c060" fontSize="7" fontFamily="monospace" textAnchor="middle">QUARZSAND</text>
-                      <text x="955" y="335" fill="#6080a0" fontSize="7" fontFamily="monospace" textAnchor="middle">AKTIVKOHLE</text>
+                      <text x="955" y="335" fill="#60c090" fontSize="7" fontFamily="monospace" textAnchor="middle">STUETZKIES</text>
                     </>)}
                     <line x1="665" y1="330" x2="1005" y2="330" stroke="#4a9eff" strokeWidth="1.5" strokeDasharray="8 6" opacity="0.22"/>
                     <polygon points="1000,325 1015,330 1000,335" fill="#4a9eff" opacity="0.28"/>
@@ -3459,6 +3608,42 @@ const WaterCycleView = () => {
                 </div>
 
                 {/* Prüfungsfrage */}
+                {deepDiveStation.id === 'filter' && (
+                  <div className="rounded-xl p-3" style={{ background: '#0a1a2e', border: '1px solid #1a3a5a' }}>
+                    <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#4a9eff' }}>FILTERWISSEN</p>
+                    <div className="flex gap-1.5 mb-2">
+                      <button
+                        onClick={() => setFilterInfoTab('materialien')}
+                        className="rounded-md px-2 py-1 text-[11px] font-semibold"
+                        style={{
+                          background: filterInfoTab === 'materialien' ? '#1e4f76' : '#0c2238',
+                          color: filterInfoTab === 'materialien' ? '#d7efff' : '#7aa7c8',
+                          border: '1px solid #2a5a90'
+                        }}>
+                        Materialien
+                      </button>
+                      <button
+                        onClick={() => setFilterInfoTab('filterarten')}
+                        className="rounded-md px-2 py-1 text-[11px] font-semibold"
+                        style={{
+                          background: filterInfoTab === 'filterarten' ? '#1e4f76' : '#0c2238',
+                          color: filterInfoTab === 'filterarten' ? '#d7efff' : '#7aa7c8',
+                          border: '1px solid #2a5a90'
+                        }}>
+                        Filterarten
+                      </button>
+                    </div>
+                    <ul className="space-y-1.5 text-sm">
+                      {(FILTER_REFERENCE_TABS[filterInfoTab] || []).map((item) => (
+                        <li key={item} className="flex gap-2">
+                          <span style={{ color: '#4a9eff', flexShrink: 0 }}>-</span>
+                          <span style={{ color: '#b0c8e0' }}>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 <div className="rounded-xl p-3" style={{ background: '#0a2038', border: '1px solid #1a5060' }}>
                   <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#34c090' }}>PRÜFUNGSFRAGE</p>
                   <p className="text-sm font-semibold mb-2" style={{ color: '#c0d8f0' }}>
