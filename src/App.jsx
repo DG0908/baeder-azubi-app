@@ -25,7 +25,7 @@ import SwimChallengeView from './components/views/SwimChallengeView';
 import BerichtsheftView from './components/views/BerichtsheftView';
 import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
-import WaterCycleView from './components/views/WaterCycleView';
+import InteractiveLearningView from './components/views/InteractiveLearningView';
 
 import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, AVATARS, MENU_GROUP_LABELS, getLevel, getLevelProgress } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
@@ -8101,9 +8101,9 @@ export default function BaederApp() {
           />
         )}
 
-        {/* Water Cycle View */}
-        {currentView === 'water-cycle' && (
-          <WaterCycleView />
+        {/* Interactive Learning Hub (includes Water Cycle) */}
+        {currentView === 'interactive-learning' && (
+          <InteractiveLearningView />
         )}
 
                 {/* Resources View */}
