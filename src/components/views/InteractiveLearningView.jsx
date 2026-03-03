@@ -3,6 +3,7 @@ import { ArrowLeft, BookOpen, ChevronRight, Clock, Droplets, FlaskConical, Heart
 import { useApp } from '../../context/AppContext';
 
 const LazyWaterCycleView = lazy(() => import('./WaterCycleView'));
+const LazyHeartDeepDiveThree = lazy(() => import('./health/HeartDeepDiveThree'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -202,14 +203,14 @@ const LEARNING_CATEGORIES = [
         name: 'Herz',
         description: 'Aufbau, Funktion und Rolle des Herzens im Kreislaufsystem',
         icon: '🫀',
-        available: false,
+        available: true,
       },
       {
         id: 'blutkreislauf-gross-klein',
         name: 'Großer & kleiner Blutkreislauf',
         description: 'Weg des Blutes durch Koerper- und Lungenkreislauf',
         icon: '🩸',
-        available: false,
+        available: true,
       },
       {
         id: 'hyperventilation',
@@ -409,6 +410,34 @@ const InteractiveLearningView = () => {
           )}
         >
           <LazyWaterCycleView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'herz' || activeModule === 'blutkreislauf-gross-klein') {
+    const initialTab = activeModule === 'blutkreislauf-gross-klein' ? 'kreislauf' : 'anatomie';
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade 3D-Herzmodell...
+            </div>
+          )}
+        >
+          <LazyHeartDeepDiveThree initialTab={initialTab} />
         </Suspense>
       </div>
     );
