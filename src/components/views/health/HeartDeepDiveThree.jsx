@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -137,28 +137,112 @@ const CYCLE_DETAILS = {
   },
 };
 
-function CirculationMap({ cycleMode, heartRate }) {
-  const showGross = cycleMode === 'gross' || cycleMode === 'beide';
-  const showKlein = cycleMode === 'klein' || cycleMode === 'beide';
-  const grossOpacity = showGross ? 1 : 0.18;
-  const kleinOpacity = showKlein ? 1 : 0.18;
-  const flowDuration = Math.max(2.8, (60 / Math.max(heartRate, 40)) * 6);
+const CIRCULATION_STEPS = [
+  {
+    id: 'small-out',
+    focus: 'klein',
+    title: '1) Rechte Herzhälfte -> Lunge',
+    description: 'O2-armes Blut geht aus der rechten Herzhälfte über die Pulmonalarterie zur Lunge.',
+    paths: ['p-small-out'],
+    nodes: ['node-right', 'node-lungs'],
+  },
+  {
+    id: 'small-back',
+    focus: 'klein',
+    title: '2) Lunge -> Linke Herzhälfte',
+    description: 'Nach dem Gasaustausch kommt O2-reiches Blut über die Lungenvenen zur linken Herzhälfte zurück.',
+    paths: ['p-small-back'],
+    nodes: ['node-lungs', 'node-left'],
+  },
+  {
+    id: 'large-out',
+    focus: 'gross',
+    title: '3) Linke Herzhälfte -> Körper',
+    description: 'Die linke Herzhälfte pumpt O2-reiches Blut über Aorta und Arterien in den Körper.',
+    paths: ['p-large-out'],
+    nodes: ['node-left', 'node-body'],
+  },
+  {
+    id: 'large-back',
+    focus: 'gross',
+    title: '4) Körper -> Rechte Herzhälfte',
+    description: 'O2-armes Blut fließt über Venen/Hohlvenen zurück zur rechten Herzhälfte.',
+    paths: ['p-large-back'],
+    nodes: ['node-body', 'node-right'],
+  },
+];
 
-  const renderFlowDots = (pathId, color, count, duration, enabled) => {
-    if (!enabled) return null;
+function CirculationMap({ cycleMode, heartRate }) {
+  const [stepIndex, setStepIndex] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(true);
+
+  const visibleSteps = useMemo(() => {
+    if (cycleMode === 'beide') return CIRCULATION_STEPS;
+    return CIRCULATION_STEPS.filter((step) => step.focus === cycleMode);
+  }, [cycleMode]);
+
+  const activeStep = visibleSteps[Math.min(stepIndex, Math.max(visibleSteps.length - 1, 0))] || null;
+  const flowDuration = Math.max(3, Math.min(7.2, (60 / Math.max(heartRate, 45)) * 4.8));
+  const stepDurationMs = Math.max(1700, Math.min(3400, Math.round((60 / Math.max(heartRate, 45)) * 2100)));
+
+  useEffect(() => {
+    setStepIndex(0);
+  }, [cycleMode]);
+
+  useEffect(() => {
+    if (!autoPlay || visibleSteps.length < 2) return undefined;
+    const timer = setInterval(() => {
+      setStepIndex((prev) => ((prev + 1) % visibleSteps.length));
+    }, stepDurationMs);
+    return () => clearInterval(timer);
+  }, [autoPlay, visibleSteps, stepDurationMs]);
+
+  const isPathVisible = (focus) => cycleMode === 'beide' || cycleMode === focus;
+  const isPathActive = (pathId) => Boolean(activeStep && activeStep.paths.includes(pathId));
+  const isNodeActive = (nodeId) => Boolean(activeStep && activeStep.nodes.includes(nodeId));
+
+  const pathOpacity = (focus, pathId) => {
+    if (!isPathVisible(focus)) return 0.08;
+    if (!activeStep) return 0.64;
+    return isPathActive(pathId) ? 0.97 : 0.24;
+  };
+
+  const renderFlowDots = (pathId, color, count, duration, visible, emphasized) => {
+    if (!visible) return null;
+    const radius = emphasized ? 5.2 : 3.4;
+    const fillOpacity = emphasized ? 1 : 0.45;
     return Array.from({ length: count }, (_, idx) => (
-      <circle key={`${pathId}-${idx}`} r="5" fill={color}>
+      <circle key={`${pathId}-${idx}`} r={radius} fill={color} opacity={fillOpacity}>
         <animateMotion dur={`${duration}s`} repeatCount="indefinite" begin={`${(idx / count) * duration}s`}>
           <mpath href={`#${pathId}`} />
         </animateMotion>
-        <animate attributeName="opacity" values="0.25;1;0.25" dur="1.15s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.25;1;0.25" dur="1.2s" repeatCount="indefinite" />
       </circle>
     ));
   };
 
+  const drawNode = (id, x, y, label, color) => (
+    <g key={id}>
+      <circle
+        cx={x}
+        cy={y}
+        r={isNodeActive(id) ? 24 : 18}
+        fill={isNodeActive(id) ? '#13385a' : '#0b1f35'}
+        stroke={color}
+        strokeWidth={isNodeActive(id) ? 3.4 : 2.2}
+      />
+      <text x={x} y={y + 4} textAnchor="middle" fontSize="13" fill="#d7ebff" fontFamily="monospace" fontWeight="700">
+        {id === 'node-right' ? 'R' : id === 'node-left' ? 'L' : id === 'node-lungs' ? 'Lu' : 'K'}
+      </text>
+      <text x={x} y={y + 36} textAnchor="middle" fontSize="14" fill="#c3dcf4" fontFamily="monospace">
+        {label}
+      </text>
+    </g>
+  );
+
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #1a3a5a', background: 'radial-gradient(circle at 50% 30%, #0d2a44, #05111f)' }}>
-      <svg viewBox="0 0 1000 700" width="100%" role="img" aria-label="Schema grosser und kleiner Blutkreislauf">
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #1a3a5a', background: 'radial-gradient(circle at 50% 20%, #103050, #05111f)' }}>
+      <svg viewBox="0 0 1000 700" width="100%" role="img" aria-label="Schrittweise Darstellung von grossem und kleinem Blutkreislauf">
         <defs>
           <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
             <path d="M0,0 L0,6 L9,3 z" fill="#ff7864" />
@@ -167,112 +251,163 @@ function CirculationMap({ cycleMode, heartRate }) {
             <path d="M0,0 L0,6 L9,3 z" fill="#5aa8ff" />
           </marker>
           <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#133552" />
-            <stop offset="100%" stopColor="#0a2034" />
+            <stop offset="0%" stopColor="#1a3f62" />
+            <stop offset="100%" stopColor="#0b2138" />
           </linearGradient>
           <linearGradient id="lungGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1c4a70" />
-            <stop offset="100%" stopColor="#133a5a" />
+            <stop offset="0%" stopColor="#244f75" />
+            <stop offset="100%" stopColor="#173f60" />
           </linearGradient>
         </defs>
 
         <path
-          d="M500 70 C610 70 700 170 700 280 L700 500 C700 600 620 650 500 650 C380 650 300 600 300 500 L300 280 C300 170 390 70 500 70 Z"
+          d="M500 70 C620 80 735 190 735 315 L735 500 C735 620 620 670 500 670 C380 670 265 620 265 500 L265 315 C265 190 380 80 500 70 Z"
           fill="url(#bodyGrad)"
-          opacity="0.32"
+          opacity="0.28"
           stroke="#2e638d"
           strokeWidth="2"
         />
-
-        <ellipse cx="390" cy="250" rx="78" ry="108" fill="url(#lungGrad)" opacity="0.45" stroke="#5aa8ff" strokeWidth="2" />
-        <ellipse cx="610" cy="250" rx="78" ry="108" fill="url(#lungGrad)" opacity="0.45" stroke="#5aa8ff" strokeWidth="2" />
-
-        <ellipse cx="500" cy="340" rx="70" ry="78" fill="#7b2738" stroke="#f18ba0" strokeWidth="2.5" opacity="0.88" />
-        <text x="500" y="344" textAnchor="middle" fontSize="20" fill="#ffd5dd" fontFamily="monospace" fontWeight="700">
+        <ellipse cx="500" cy="208" rx="140" ry="78" fill="url(#lungGrad)" opacity="0.5" stroke="#6cb4ff" strokeWidth="2.4" />
+        <ellipse cx="500" cy="352" rx="92" ry="70" fill="#7a2536" stroke="#f190a4" strokeWidth="2.4" opacity="0.92" />
+        <text x="500" y="354" textAnchor="middle" fontSize="20" fill="#ffd8df" fontFamily="monospace" fontWeight="700">
           Herz
         </text>
 
         <path
-          id="sys-red"
-          d="M530 340 C690 250 830 280 850 390 C868 510 710 620 540 610"
-          fill="none"
-          stroke="#ff7864"
-          strokeWidth="14"
-          strokeLinecap="round"
-          markerEnd="url(#arrow-red)"
-          opacity={grossOpacity}
-        />
-        <path
-          id="sys-blue"
-          d="M540 610 C350 600 160 510 180 390 C200 280 340 250 470 332"
+          id="p-small-out"
+          d="M462 352 C410 324 412 246 486 210"
           fill="none"
           stroke="#5aa8ff"
-          strokeWidth="14"
+          strokeWidth={isPathActive('p-small-out') ? 15 : 12}
           strokeLinecap="round"
           markerEnd="url(#arrow-blue)"
-          opacity={grossOpacity}
-        />
-
+          opacity={pathOpacity('klein', 'p-small-out')}
+          strokeDasharray={isPathActive('p-small-out') ? '14 10' : undefined}
+        >
+          {isPathActive('p-small-out') && (
+            <animate attributeName="stroke-dashoffset" from="24" to="0" dur="0.9s" repeatCount="indefinite" />
+          )}
+        </path>
         <path
-          id="pul-blue-left"
-          d="M470 350 C440 330 405 300 380 270"
-          fill="none"
-          stroke="#5aa8ff"
-          strokeWidth="10"
-          strokeLinecap="round"
-          markerEnd="url(#arrow-blue)"
-          opacity={kleinOpacity}
-        />
-        <path
-          id="pul-blue-right"
-          d="M470 350 C540 330 585 305 620 270"
-          fill="none"
-          stroke="#5aa8ff"
-          strokeWidth="10"
-          strokeLinecap="round"
-          markerEnd="url(#arrow-blue)"
-          opacity={kleinOpacity}
-        />
-        <path
-          id="pul-red-left"
-          d="M380 270 C420 255 455 285 500 322"
+          id="p-small-back"
+          d="M515 210 C586 245 587 325 538 352"
           fill="none"
           stroke="#ff7864"
-          strokeWidth="10"
+          strokeWidth={isPathActive('p-small-back') ? 15 : 12}
           strokeLinecap="round"
           markerEnd="url(#arrow-red)"
-          opacity={kleinOpacity}
-        />
+          opacity={pathOpacity('klein', 'p-small-back')}
+          strokeDasharray={isPathActive('p-small-back') ? '14 10' : undefined}
+        >
+          {isPathActive('p-small-back') && (
+            <animate attributeName="stroke-dashoffset" from="24" to="0" dur="0.9s" repeatCount="indefinite" />
+          )}
+        </path>
+
         <path
-          id="pul-red-right"
-          d="M620 270 C580 255 545 285 500 322"
+          id="p-large-out"
+          d="M538 352 C700 302 850 370 858 500"
           fill="none"
           stroke="#ff7864"
-          strokeWidth="10"
+          strokeWidth={isPathActive('p-large-out') ? 16 : 13}
           strokeLinecap="round"
           markerEnd="url(#arrow-red)"
-          opacity={kleinOpacity}
-        />
+          opacity={pathOpacity('gross', 'p-large-out')}
+          strokeDasharray={isPathActive('p-large-out') ? '16 10' : undefined}
+        >
+          {isPathActive('p-large-out') && (
+            <animate attributeName="stroke-dashoffset" from="26" to="0" dur="0.9s" repeatCount="indefinite" />
+          )}
+        </path>
+        <path
+          id="p-large-back"
+          d="M858 500 C690 646 322 646 462 352"
+          fill="none"
+          stroke="#5aa8ff"
+          strokeWidth={isPathActive('p-large-back') ? 16 : 13}
+          strokeLinecap="round"
+          markerEnd="url(#arrow-blue)"
+          opacity={pathOpacity('gross', 'p-large-back')}
+          strokeDasharray={isPathActive('p-large-back') ? '16 10' : undefined}
+        >
+          {isPathActive('p-large-back') && (
+            <animate attributeName="stroke-dashoffset" from="26" to="0" dur="0.9s" repeatCount="indefinite" />
+          )}
+        </path>
 
-        {renderFlowDots('sys-red', '#ff9276', 12, flowDuration, showGross)}
-        {renderFlowDots('sys-blue', '#72b9ff', 12, flowDuration, showGross)}
-        {renderFlowDots('pul-blue-left', '#76bfff', 6, flowDuration * 0.75, showKlein)}
-        {renderFlowDots('pul-blue-right', '#76bfff', 6, flowDuration * 0.75, showKlein)}
-        {renderFlowDots('pul-red-left', '#ff9a85', 6, flowDuration * 0.75, showKlein)}
-        {renderFlowDots('pul-red-right', '#ff9a85', 6, flowDuration * 0.75, showKlein)}
+        {renderFlowDots('p-small-out', '#75beff', 7, flowDuration * 0.8, isPathVisible('klein'), isPathActive('p-small-out'))}
+        {renderFlowDots('p-small-back', '#ff9b87', 7, flowDuration * 0.8, isPathVisible('klein'), isPathActive('p-small-back'))}
+        {renderFlowDots('p-large-out', '#ff9a83', 12, flowDuration, isPathVisible('gross'), isPathActive('p-large-out'))}
+        {renderFlowDots('p-large-back', '#79bcff', 12, flowDuration, isPathVisible('gross'), isPathActive('p-large-back'))}
 
-        <g fontFamily="monospace" fontSize="16" fill="#cde6ff">
-          <text x="740" y="285" opacity={grossOpacity}>1) Aorta / Arterien</text>
-          <text x="745" y="505" opacity={grossOpacity}>2) Koerperkapillaren</text>
-          <text x="225" y="515" opacity={grossOpacity}>3) Hohlvenen</text>
-          <text x="315" y="225" opacity={kleinOpacity}>4) Lungenkreislauf</text>
-          <text x="588" y="225" opacity={kleinOpacity}>5) Gasaustausch</text>
-        </g>
+        {drawNode('node-right', 462, 352, 'Rechte Herzhälfte', '#6ab4ff')}
+        {drawNode('node-left', 538, 352, 'Linke Herzhälfte', '#ff9ba6')}
+        {drawNode('node-lungs', 500, 208, 'Lunge', '#6ab4ff')}
+        {drawNode('node-body', 858, 500, 'Körper', '#ffb58f')}
       </svg>
-      <div className="flex flex-wrap gap-3 px-4 py-3 text-xs font-mono" style={{ borderTop: '1px solid #1a3a5a', background: '#061325' }}>
-        <span style={{ color: '#ff9276' }}>ROT: O2-reich zum Koerper / von der Lunge</span>
-        <span style={{ color: '#72b9ff' }}>BLAU: O2-arm zur Lunge / vom Koerper</span>
-        <span style={{ color: '#6d8ca9' }}>Flussgeschwindigkeit skaliert mit Herzfrequenz</span>
+
+      <div className="px-4 py-3" style={{ borderTop: '1px solid #1a3a5a', background: '#061325' }}>
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <button
+            type="button"
+            onClick={() => setStepIndex((prev) => Math.max(prev - 1, 0))}
+            className="rounded-md px-2.5 py-1 text-xs font-semibold"
+            style={{ background: '#0c2238', color: '#9ac2de', border: '1px solid #2a5a90' }}
+          >
+            Schritt zurueck
+          </button>
+          <button
+            type="button"
+            onClick={() => setStepIndex((prev) => Math.min(prev + 1, Math.max(visibleSteps.length - 1, 0)))}
+            className="rounded-md px-2.5 py-1 text-xs font-semibold"
+            style={{ background: '#0c2238', color: '#9ac2de', border: '1px solid #2a5a90' }}
+          >
+            Schritt vor
+          </button>
+          <button
+            type="button"
+            onClick={() => setAutoPlay((prev) => !prev)}
+            className="rounded-md px-2.5 py-1 text-xs font-semibold"
+            style={{
+              background: autoPlay ? '#1e4f76' : '#0c2238',
+              color: autoPlay ? '#d7efff' : '#9ac2de',
+              border: '1px solid #2a5a90',
+            }}
+          >
+            {autoPlay ? 'Auto-Durchlauf an' : 'Auto-Durchlauf aus'}
+          </button>
+        </div>
+
+        {activeStep && (
+          <div className="rounded-lg p-3 mb-3" style={{ border: '1px solid #2a5a90', background: '#081a2e' }}>
+            <p className="text-xs font-mono font-bold mb-1" style={{ color: '#d7efff' }}>{activeStep.title}</p>
+            <p className="text-xs leading-relaxed" style={{ color: '#8ab0c0' }}>{activeStep.description}</p>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2 mb-3">
+          {visibleSteps.map((step, idx) => (
+            <button
+              key={step.id}
+              type="button"
+              onClick={() => setStepIndex(idx)}
+              className="rounded-md px-2 py-1 text-[11px] font-semibold"
+              style={{
+                background: activeStep?.id === step.id ? '#1e4f76' : '#0c2238',
+                color: activeStep?.id === step.id ? '#d7efff' : '#7aa7c8',
+                border: '1px solid #2a5a90',
+              }}
+            >
+              {step.title}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-3 text-xs font-mono">
+          <span style={{ color: '#ff9a83' }}>ROT: O2-reich</span>
+          <span style={{ color: '#79bcff' }}>BLAU: O2-arm</span>
+          <span style={{ color: '#6d8ca9' }}>Arterie = vom Herzen weg, Vene = zum Herzen hin</span>
+        </div>
       </div>
     </div>
   );
@@ -810,6 +945,15 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie', initialSce
               </div>
             ) : (
               <div className="space-y-2">
+                <div className="rounded-lg p-3" style={{ background: '#081a2e', border: '1px solid #2a5a90' }}>
+                  <p className="text-xs font-mono font-bold mb-1" style={{ color: '#d7efff' }}>
+                    Laien-Merksatz
+                  </p>
+                  <p className="text-xs leading-relaxed" style={{ color: '#9ec4de' }}>
+                    Arterie bedeutet immer: Blut fließt vom Herzen weg. Vene bedeutet immer: Blut fließt zum Herzen zurück.
+                    Die Farbe (O2-reich oder O2-arm) kann je nach Kreislauf unterschiedlich sein.
+                  </p>
+                </div>
                 {(['klein', 'gross']).map((key) => {
                   const detail = CYCLE_DETAILS[key];
                   const highlighted =
