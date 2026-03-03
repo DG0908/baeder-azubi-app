@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { ArrowLeft, BookOpen, ChevronRight, Clock, Droplets, FlaskConical, Heart, Lock, ShieldCheck, Wrench } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import WaterCycleView from './WaterCycleView';
+
+const LazyWaterCycleView = lazy(() => import('./WaterCycleView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -108,7 +109,15 @@ const InteractiveLearningView = () => {
           <ArrowLeft size={16} />
           Zurück zu Bädertechnik
         </button>
-        <WaterCycleView />
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Wasserkreislauf-Simulation...
+            </div>
+          )}
+        >
+          <LazyWaterCycleView />
+        </Suspense>
       </div>
     );
   }
