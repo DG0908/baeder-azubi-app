@@ -294,6 +294,8 @@ const FILTER_REFERENCE_TABS = {
   ],
 };
 
+const DEEP_DIVE_MODEL_HEIGHT = 'clamp(360px, 64vh, 820px)';
+
 const BECKEN_HOTSPOT_DATA = {
   ueberlauf: {
     color: '#4a9eff', icon: '↩️', title: 'Überlaufrinne',
@@ -502,7 +504,7 @@ function BeckenDeepDive({ metrics, xrayMode = false }) {
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="280px"
+      <svg viewBox="0 0 300 220" width="100%" height={DEEP_DIVE_MODEL_HEIGHT}
         style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -717,7 +719,7 @@ function UeberlaufDeepDive({ xrayMode = false }) {
 
   return (
     <div style={{ position:'relative', borderRadius:'8px', overflow:'hidden', background:'#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="280px"
+      <svg viewBox="0 0 300 220" width="100%" height={DEEP_DIVE_MODEL_HEIGHT}
         style={{ display:'block', cursor: drag ? 'grabbing' : 'grab', touchAction:'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -858,7 +860,7 @@ function RuecklaufDeepDive({ metrics, xrayMode = false }) {
 
   return (
     <div style={{ position:'relative', borderRadius:'8px', overflow:'hidden', background:'#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="280px"
+      <svg viewBox="0 0 300 220" width="100%" height={DEEP_DIVE_MODEL_HEIGHT}
         style={{ display:'block', cursor: drag ? 'grabbing' : 'grab', touchAction:'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -1036,7 +1038,7 @@ function SchwallDeepDive({ metrics, xrayMode = false }) {
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="280px"
+      <svg viewBox="0 0 300 220" width="100%" height={DEEP_DIVE_MODEL_HEIGHT}
         style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -1220,7 +1222,7 @@ function PumpeDeepDive({ metrics, xrayMode = false }) {
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="280px"
+      <svg viewBox="0 0 300 220" width="100%" height={DEEP_DIVE_MODEL_HEIGHT}
         style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -1404,7 +1406,7 @@ function FlockungDeepDive({ metrics, xrayMode = false }) {
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="280px"
+      <svg viewBox="0 0 300 220" width="100%" height={DEEP_DIVE_MODEL_HEIGHT}
         style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -1714,7 +1716,7 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="280px"
+      <svg viewBox="0 0 300 220" width="100%" height={DEEP_DIVE_MODEL_HEIGHT}
         style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -1956,7 +1958,7 @@ function DesinfektionDeepDive({ metrics, xrayMode = false }) {
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="280px"
+      <svg viewBox="0 0 300 220" width="100%" height={DEEP_DIVE_MODEL_HEIGHT}
         style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -2145,7 +2147,7 @@ function HeizungDeepDive({ metrics, xrayMode = false }) {
 
   return (
     <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
-      <svg viewBox="0 0 300 220" width="100%" height="280px"
+      <svg viewBox="0 0 300 220" width="100%" height={DEEP_DIVE_MODEL_HEIGHT}
         style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
@@ -3573,10 +3575,10 @@ const WaterCycleView = () => {
             </div>
 
             {/* Modal body */}
-            <div className="grid lg:grid-cols-[1.2fr_1fr] overflow-auto flex-1" style={{ minHeight: 0 }}>
+            <div className="grid lg:grid-cols-[1.35fr_1fr] overflow-auto flex-1" style={{ minHeight: 0 }}>
               {/* SVG illustration */}
-              <div className="p-5 flex items-center justify-center" style={{ borderRight: '1px solid #1a3a5a', background: '#030c18' }}>
-                <div style={{ width: '100%', maxWidth: 420 }}>
+              <div className="p-4 lg:p-5" style={{ borderRight: '1px solid #1a3a5a', background: '#030c18' }}>
+                <div style={{ width: '100%' }}>
                   <DeepDiveSVG stationId={deepDiveStation.id} metrics={metrics} controls={controls} xrayMode={xrayMode}/>
                 </div>
               </div>
@@ -3684,3 +3686,4 @@ const WaterCycleView = () => {
 };
 
 export default WaterCycleView;
+
