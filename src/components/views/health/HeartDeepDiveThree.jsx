@@ -137,6 +137,147 @@ const CYCLE_DETAILS = {
   },
 };
 
+function CirculationMap({ cycleMode, heartRate }) {
+  const showGross = cycleMode === 'gross' || cycleMode === 'beide';
+  const showKlein = cycleMode === 'klein' || cycleMode === 'beide';
+  const grossOpacity = showGross ? 1 : 0.18;
+  const kleinOpacity = showKlein ? 1 : 0.18;
+  const flowDuration = Math.max(2.8, (60 / Math.max(heartRate, 40)) * 6);
+
+  const renderFlowDots = (pathId, color, count, duration, enabled) => {
+    if (!enabled) return null;
+    return Array.from({ length: count }, (_, idx) => (
+      <circle key={`${pathId}-${idx}`} r="5" fill={color}>
+        <animateMotion dur={`${duration}s`} repeatCount="indefinite" begin={`${(idx / count) * duration}s`}>
+          <mpath href={`#${pathId}`} />
+        </animateMotion>
+        <animate attributeName="opacity" values="0.25;1;0.25" dur="1.15s" repeatCount="indefinite" />
+      </circle>
+    ));
+  };
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #1a3a5a', background: 'radial-gradient(circle at 50% 30%, #0d2a44, #05111f)' }}>
+      <svg viewBox="0 0 1000 700" width="100%" role="img" aria-label="Schema grosser und kleiner Blutkreislauf">
+        <defs>
+          <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#ff7864" />
+          </marker>
+          <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#5aa8ff" />
+          </marker>
+          <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#133552" />
+            <stop offset="100%" stopColor="#0a2034" />
+          </linearGradient>
+          <linearGradient id="lungGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1c4a70" />
+            <stop offset="100%" stopColor="#133a5a" />
+          </linearGradient>
+        </defs>
+
+        <path
+          d="M500 70 C610 70 700 170 700 280 L700 500 C700 600 620 650 500 650 C380 650 300 600 300 500 L300 280 C300 170 390 70 500 70 Z"
+          fill="url(#bodyGrad)"
+          opacity="0.32"
+          stroke="#2e638d"
+          strokeWidth="2"
+        />
+
+        <ellipse cx="390" cy="250" rx="78" ry="108" fill="url(#lungGrad)" opacity="0.45" stroke="#5aa8ff" strokeWidth="2" />
+        <ellipse cx="610" cy="250" rx="78" ry="108" fill="url(#lungGrad)" opacity="0.45" stroke="#5aa8ff" strokeWidth="2" />
+
+        <ellipse cx="500" cy="340" rx="70" ry="78" fill="#7b2738" stroke="#f18ba0" strokeWidth="2.5" opacity="0.88" />
+        <text x="500" y="344" textAnchor="middle" fontSize="20" fill="#ffd5dd" fontFamily="monospace" fontWeight="700">
+          Herz
+        </text>
+
+        <path
+          id="sys-red"
+          d="M530 340 C690 250 830 280 850 390 C868 510 710 620 540 610"
+          fill="none"
+          stroke="#ff7864"
+          strokeWidth="14"
+          strokeLinecap="round"
+          markerEnd="url(#arrow-red)"
+          opacity={grossOpacity}
+        />
+        <path
+          id="sys-blue"
+          d="M540 610 C350 600 160 510 180 390 C200 280 340 250 470 332"
+          fill="none"
+          stroke="#5aa8ff"
+          strokeWidth="14"
+          strokeLinecap="round"
+          markerEnd="url(#arrow-blue)"
+          opacity={grossOpacity}
+        />
+
+        <path
+          id="pul-blue-left"
+          d="M470 350 C440 330 405 300 380 270"
+          fill="none"
+          stroke="#5aa8ff"
+          strokeWidth="10"
+          strokeLinecap="round"
+          markerEnd="url(#arrow-blue)"
+          opacity={kleinOpacity}
+        />
+        <path
+          id="pul-blue-right"
+          d="M470 350 C540 330 585 305 620 270"
+          fill="none"
+          stroke="#5aa8ff"
+          strokeWidth="10"
+          strokeLinecap="round"
+          markerEnd="url(#arrow-blue)"
+          opacity={kleinOpacity}
+        />
+        <path
+          id="pul-red-left"
+          d="M380 270 C420 255 455 285 500 322"
+          fill="none"
+          stroke="#ff7864"
+          strokeWidth="10"
+          strokeLinecap="round"
+          markerEnd="url(#arrow-red)"
+          opacity={kleinOpacity}
+        />
+        <path
+          id="pul-red-right"
+          d="M620 270 C580 255 545 285 500 322"
+          fill="none"
+          stroke="#ff7864"
+          strokeWidth="10"
+          strokeLinecap="round"
+          markerEnd="url(#arrow-red)"
+          opacity={kleinOpacity}
+        />
+
+        {renderFlowDots('sys-red', '#ff9276', 12, flowDuration, showGross)}
+        {renderFlowDots('sys-blue', '#72b9ff', 12, flowDuration, showGross)}
+        {renderFlowDots('pul-blue-left', '#76bfff', 6, flowDuration * 0.75, showKlein)}
+        {renderFlowDots('pul-blue-right', '#76bfff', 6, flowDuration * 0.75, showKlein)}
+        {renderFlowDots('pul-red-left', '#ff9a85', 6, flowDuration * 0.75, showKlein)}
+        {renderFlowDots('pul-red-right', '#ff9a85', 6, flowDuration * 0.75, showKlein)}
+
+        <g fontFamily="monospace" fontSize="16" fill="#cde6ff">
+          <text x="740" y="285" opacity={grossOpacity}>1) Aorta / Arterien</text>
+          <text x="745" y="505" opacity={grossOpacity}>2) Koerperkapillaren</text>
+          <text x="225" y="515" opacity={grossOpacity}>3) Hohlvenen</text>
+          <text x="315" y="225" opacity={kleinOpacity}>4) Lungenkreislauf</text>
+          <text x="588" y="225" opacity={kleinOpacity}>5) Gasaustausch</text>
+        </g>
+      </svg>
+      <div className="flex flex-wrap gap-3 px-4 py-3 text-xs font-mono" style={{ borderTop: '1px solid #1a3a5a', background: '#061325' }}>
+        <span style={{ color: '#ff9276' }}>ROT: O2-reich zum Koerper / von der Lunge</span>
+        <span style={{ color: '#72b9ff' }}>BLAU: O2-arm zur Lunge / vom Koerper</span>
+        <span style={{ color: '#6d8ca9' }}>Flussgeschwindigkeit skaliert mit Herzfrequenz</span>
+      </div>
+    </div>
+  );
+}
+
 function FlowParticles({ running, color, start, end, speed = 0.24, count = 10, scale = 0.042 }) {
   const refs = useRef([]);
   const startVec = useMemo(() => new THREE.Vector3(...start), [start]);
@@ -401,13 +542,15 @@ function HeartAssembly({
   );
 }
 
-export default function HeartDeepDiveThree({ initialTab = 'anatomie' }) {
+export default function HeartDeepDiveThree({ initialTab = 'anatomie', initialScene = 'heart' }) {
+  const startsInCirculation = initialScene === 'circulation' || initialTab === 'kreislauf';
   const [xrayMode, setXrayMode] = useState(false);
   const [showLabels, setShowLabels] = useState(true);
   const [heartRate, setHeartRate] = useState(74);
   const [activeSpot, setActiveSpot] = useState('linkeKammer');
-  const [cycleMode, setCycleMode] = useState(initialTab === 'kreislauf' ? 'beide' : 'klein');
+  const [cycleMode, setCycleMode] = useState(startsInCirculation ? 'beide' : 'klein');
   const [infoTab, setInfoTab] = useState(initialTab === 'kreislauf' ? 'kreislauf' : 'anatomie');
+  const [sceneView, setSceneView] = useState(startsInCirculation ? 'circulation' : 'heart');
 
   const activeSpotData = activeSpot ? HEART_SPOT_DATA[activeSpot] : null;
   const cardiacOutput = useMemo(() => ((heartRate * STROKE_VOLUME_ML) / 1000).toFixed(1), [heartRate]);
@@ -433,27 +576,61 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie' }) {
             Anatomie + grosser/kleiner Blutkreislauf
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <button
             type="button"
-            onClick={() => setXrayMode((prev) => !prev)}
+            onClick={() => {
+              setSceneView('heart');
+              setInfoTab('anatomie');
+            }}
             className="rounded-lg px-3 py-1.5 text-sm font-semibold"
             style={{
-              background: xrayMode ? '#3b185f' : '#0a1a2e',
-              color: xrayMode ? '#d2adff' : '#7ab0d0',
+              background: sceneView === 'heart' ? '#1e4f76' : '#0a1a2e',
+              color: sceneView === 'heart' ? '#d7efff' : '#7ab0d0',
               border: '1px solid #1a3a5a',
             }}
           >
-            {xrayMode ? 'Roentgen an' : 'Roentgen aus'}
+            Herz 3D
           </button>
           <button
             type="button"
-            onClick={() => setShowLabels((prev) => !prev)}
+            onClick={() => {
+              setSceneView('circulation');
+              setInfoTab('kreislauf');
+            }}
             className="rounded-lg px-3 py-1.5 text-sm font-semibold"
-            style={{ background: '#0a1a2e', color: '#7ab0d0', border: '1px solid #1a3a5a' }}
+            style={{
+              background: sceneView === 'circulation' ? '#1e4f76' : '#0a1a2e',
+              color: sceneView === 'circulation' ? '#d7efff' : '#7ab0d0',
+              border: '1px solid #1a3a5a',
+            }}
           >
-            {showLabels ? 'Hotspots an' : 'Hotspots aus'}
+            Kreislaufkarte
           </button>
+          {sceneView === 'heart' && (
+            <>
+              <button
+                type="button"
+                onClick={() => setXrayMode((prev) => !prev)}
+                className="rounded-lg px-3 py-1.5 text-sm font-semibold"
+                style={{
+                  background: xrayMode ? '#3b185f' : '#0a1a2e',
+                  color: xrayMode ? '#d2adff' : '#7ab0d0',
+                  border: '1px solid #1a3a5a',
+                }}
+              >
+                {xrayMode ? 'Roentgen an' : 'Roentgen aus'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowLabels((prev) => !prev)}
+                className="rounded-lg px-3 py-1.5 text-sm font-semibold"
+                style={{ background: '#0a1a2e', color: '#7ab0d0', border: '1px solid #1a3a5a' }}
+              >
+                {showLabels ? 'Hotspots an' : 'Hotspots aus'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -484,48 +661,60 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie' }) {
             ))}
           </div>
 
-          <div style={{ width: '100%', height: MODEL_HEIGHT, borderRadius: '0.85rem', overflow: 'hidden' }}>
-            <Canvas dpr={[1, 1.8]} camera={{ position: [0, 1.7, 7.4], fov: 48 }} onPointerMissed={() => setActiveSpot(null)}>
-              <color attach="background" args={['#030c18']} />
-              <ambientLight intensity={0.36} />
-              <hemisphereLight intensity={0.5} color="#a2ceff" groundColor="#0b1f35" />
-              <directionalLight position={[4, 8, 5]} intensity={1.16} color="#e2eeff" />
-              <pointLight position={[-3.8, 2.2, 2]} intensity={0.8} color="#5aa8ff" />
-              <pointLight position={[3.4, 2.1, 2.2]} intensity={0.78} color="#ff7462" />
+          {sceneView === 'heart' ? (
+            <>
+              <div style={{ width: '100%', height: MODEL_HEIGHT, borderRadius: '0.85rem', overflow: 'hidden' }}>
+                <Canvas dpr={[1, 1.8]} camera={{ position: [0, 1.7, 7.4], fov: 48 }} onPointerMissed={() => setActiveSpot(null)}>
+                  <color attach="background" args={['#030c18']} />
+                  <ambientLight intensity={0.36} />
+                  <hemisphereLight intensity={0.5} color="#a2ceff" groundColor="#0b1f35" />
+                  <directionalLight position={[4, 8, 5]} intensity={1.16} color="#e2eeff" />
+                  <pointLight position={[-3.8, 2.2, 2]} intensity={0.8} color="#5aa8ff" />
+                  <pointLight position={[3.4, 2.1, 2.2]} intensity={0.78} color="#ff7462" />
 
-              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.95, 0]} receiveShadow>
-                <planeGeometry args={[20, 20]} />
-                <meshStandardMaterial color="#071426" roughness={0.9} metalness={0.08} />
-              </mesh>
-              <gridHelper args={[20, 36, '#12314f', '#0a1e32']} position={[0, -1.94, 0]} />
+                  <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.95, 0]} receiveShadow>
+                    <planeGeometry args={[20, 20]} />
+                    <meshStandardMaterial color="#071426" roughness={0.9} metalness={0.08} />
+                  </mesh>
+                  <gridHelper args={[20, 36, '#12314f', '#0a1e32']} position={[0, -1.94, 0]} />
 
-              <HeartAssembly
-                xrayMode={xrayMode}
-                activeSpot={activeSpot}
-                setActiveSpot={setActiveSpot}
-                cycleMode={cycleMode}
-                showLabels={showLabels}
-                heartRate={heartRate}
-                showSystemicFlow={showSystemicFlow}
-                showPulmonaryFlow={showPulmonaryFlow}
-              />
+                  <HeartAssembly
+                    xrayMode={xrayMode}
+                    activeSpot={activeSpot}
+                    setActiveSpot={setActiveSpot}
+                    cycleMode={cycleMode}
+                    showLabels={showLabels}
+                    heartRate={heartRate}
+                    showSystemicFlow={showSystemicFlow}
+                    showPulmonaryFlow={showPulmonaryFlow}
+                  />
 
-              <OrbitControls
-                enablePan={false}
-                minDistance={4.9}
-                maxDistance={10.6}
-                minPolarAngle={Math.PI * 0.14}
-                maxPolarAngle={Math.PI * 0.78}
-                target={[0, 0.9, 0]}
-                autoRotate={!activeSpot}
-                autoRotateSpeed={0.24}
-              />
-            </Canvas>
-          </div>
-
-          <div className="mt-3 text-[11px] font-mono tracking-widest" style={{ color: '#5f86a8' }}>
-            ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN · KREISLAUF-MODUS WECHSELN
-          </div>
+                  <OrbitControls
+                    enablePan={false}
+                    minDistance={4.9}
+                    maxDistance={10.6}
+                    minPolarAngle={Math.PI * 0.14}
+                    maxPolarAngle={Math.PI * 0.78}
+                    target={[0, 0.9, 0]}
+                    autoRotate={!activeSpot}
+                    autoRotateSpeed={0.24}
+                  />
+                </Canvas>
+              </div>
+              <div className="mt-3 text-[11px] font-mono tracking-widest" style={{ color: '#5f86a8' }}>
+                ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN · KREISLAUF-MODUS WECHSELN
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ width: '100%', height: MODEL_HEIGHT }}>
+                <CirculationMap cycleMode={cycleMode} heartRate={heartRate} />
+              </div>
+              <div className="mt-3 text-[11px] font-mono tracking-widest" style={{ color: '#5f86a8' }}>
+                KLARE FLUSSRICHTUNG: ROT = O2-REICH, BLAU = O2-ARM
+              </div>
+            </>
+          )}
         </div>
 
         <div className="p-5 space-y-3 overflow-y-auto">
@@ -552,7 +741,10 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie' }) {
             <div className="flex gap-1.5 mb-3">
               <button
                 type="button"
-                onClick={() => setInfoTab('anatomie')}
+                onClick={() => {
+                  setInfoTab('anatomie');
+                  setSceneView('heart');
+                }}
                 className="rounded-md px-2.5 py-1 text-[11px] font-semibold"
                 style={{
                   background: infoTab === 'anatomie' ? '#1e4f76' : '#0c2238',
@@ -564,7 +756,10 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie' }) {
               </button>
               <button
                 type="button"
-                onClick={() => setInfoTab('kreislauf')}
+                onClick={() => {
+                  setInfoTab('kreislauf');
+                  setSceneView('circulation');
+                }}
                 className="rounded-md px-2.5 py-1 text-[11px] font-semibold"
                 style={{
                   background: infoTab === 'kreislauf' ? '#1e4f76' : '#0c2238',

@@ -417,6 +417,7 @@ const InteractiveLearningView = () => {
 
   if (activeModule === 'herz' || activeModule === 'blutkreislauf-gross-klein') {
     const initialTab = activeModule === 'blutkreislauf-gross-klein' ? 'kreislauf' : 'anatomie';
+    const initialScene = activeModule === 'blutkreislauf-gross-klein' ? 'circulation' : 'heart';
     return (
       <div>
         <button
@@ -437,7 +438,7 @@ const InteractiveLearningView = () => {
             </div>
           )}
         >
-          <LazyHeartDeepDiveThree initialTab={initialTab} />
+          <LazyHeartDeepDiveThree initialTab={initialTab} initialScene={initialScene} />
         </Suspense>
       </div>
     );
