@@ -340,7 +340,64 @@ const BECKEN_HOTSPOT_DATA = {
   },
 };
 
-function BeckenDeepDive({ metrics }) {
+const applyDeepDiveXray = (faces, xrayMode, cx = 150, cy = 110) => {
+  if (!xrayMode) return faces;
+  return faces.map((face) => {
+    const center = face.pts.reduce((acc, p) => ({ x: acc.x + p[0], y: acc.y + p[1] }), { x: 0, y: 0 });
+    const fx = center.x / face.pts.length;
+    const fy = center.y / face.pts.length;
+    const vx = fx - cx;
+    const vy = fy - cy;
+    const len = Math.hypot(vx, vy);
+    const nx = len > 0.001 ? vx / len : 0;
+    const ny = len > 0.001 ? vy / len : -1;
+    const depth = clamp(((face.zVal ?? 0) + 160) / 320, 0.15, 1);
+    const shift = 3 + depth * 10;
+    const ox = nx * shift;
+    const oy = ny * shift;
+    return {
+      ...face,
+      pts: face.pts.map((p) => [p[0] + ox, p[1] + oy, p[2]]),
+      fillOp: clamp((face.fillOp ?? 1) * 0.62, 0.08, 0.86),
+      strokeW: (face.strokeW ?? 1) + 0.2,
+    };
+  });
+};
+
+const renderDeepDiveFace = (face, poly, xrayMode) => (
+  <>
+    <polygon points={poly(face.pts)} fill={face.fill} fillOpacity={face.fillOp || 1}
+      stroke={face.stroke} strokeWidth={face.strokeW}/>
+    {xrayMode && (
+      <polygon points={poly(face.pts)} fill="none" stroke="#73c9ff"
+        strokeWidth={Math.max(0.6, (face.strokeW || 1) * 0.8)}
+        strokeDasharray="4 2" opacity="0.72"/>
+    )}
+  </>
+);
+
+const renderDeepDiveHotspot = (hotspot, activeId, setActive, radius = 13, labelSize = 6.5) => (
+  <g key={hotspot.id} data-hotspot="1" style={{ cursor: 'pointer' }}
+    onClick={(e) => { e.stopPropagation(); setActive(activeId === hotspot.id ? null : hotspot.id); }}>
+    <circle cx={hotspot.proj[0].toFixed(1)} cy={hotspot.proj[1].toFixed(1)} r={radius}
+      fill={hotspot.color} fillOpacity={activeId === hotspot.id ? 0.4 : 0.15}
+      stroke={hotspot.color} strokeWidth={activeId === hotspot.id ? 2.5 : 1.5}>
+      {activeId !== hotspot.id && <animate attributeName="r" values={`${radius};${radius + 3};${radius}`} dur="2.5s" repeatCount="indefinite"/>}
+    </circle>
+    <circle cx={hotspot.proj[0].toFixed(1)} cy={hotspot.proj[1].toFixed(1)} r={Math.max(2.5, radius * 0.22)}
+      fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="0.9" style={{ pointerEvents: 'none' }}/>
+    <text x={hotspot.proj[0].toFixed(1)} y={(hotspot.proj[1] + 4).toFixed(1)}
+      fill="white" fontSize="10" fontWeight="bold" textAnchor="middle"
+      style={{ pointerEvents: 'none' }}>+</text>
+    {activeId === hotspot.id && (
+      <text x={hotspot.proj[0].toFixed(1)} y={(hotspot.proj[1] - 18).toFixed(1)}
+        fill={hotspot.color} fontSize={labelSize} fontFamily="monospace" textAnchor="middle"
+        style={{ pointerEvents: 'none' }}>{hotspot.label}</text>
+    )}
+  </g>
+);
+
+function BeckenDeepDive({ metrics, xrayMode = false }) {
   const [rx, setRx] = useState(-28);
   const [ry, setRy] = useState(22);
   const [drag, setDrag] = useState(null);
@@ -400,6 +457,7 @@ function BeckenDeepDive({ metrics }) {
     // water surface (semi-transparent last = on top)
     { id:'water',  pts:[TFL,TFR,TBR,TBL], fill:'#1a5090', fillOp:0.55, stroke:'#4ab0ff', strokeW:0.8, content:'water' },
   ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a,b) => b.zVal - a.zVal);
+  const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 118);
 
   // Lane lines on floor (project 4 lanes)
   const laneLines = [-52,-18,18,52].map(ly => ({
@@ -441,10 +499,9 @@ function BeckenDeepDive({ metrics }) {
         <rect width="300" height="220" fill="url(#bGrid)"/>
 
         {/* Pool faces */}
-        {faces.map(f => (
+        {sceneFaces.map(f => (
           <g key={f.id}>
-            <polygon points={poly(f.pts)} fill={f.fill} fillOpacity={f.fillOp || 1}
-              stroke={f.stroke} strokeWidth={f.strokeW}/>
+            {renderDeepDiveFace(f, poly, xrayMode)}
             {/* Lane lines on floor */}
             {f.id === 'floor' && laneLines.map((l,i) => (
               <line key={i} x1={l.a[0].toFixed(1)} y1={l.a[1].toFixed(1)} x2={l.b[0].toFixed(1)} y2={l.b[1].toFixed(1)}
@@ -503,24 +560,7 @@ function BeckenDeepDive({ metrics }) {
         ))}
 
         {/* Hotspot markers */}
-        {hotDefs.map(h => (
-          <g key={h.id} data-hotspot="1" style={{ cursor: 'pointer' }}
-            onClick={e => { e.stopPropagation(); setSpot(spot === h.id ? null : h.id); }}>
-            <circle cx={h.proj[0].toFixed(1)} cy={h.proj[1].toFixed(1)} r="14"
-              fill={h.color} fillOpacity={spot === h.id ? 0.4 : 0.15}
-              stroke={h.color} strokeWidth={spot === h.id ? 2.5 : 1.5}>
-              {spot !== h.id && <animate attributeName="r" values="14;17;14" dur="2.5s" repeatCount="indefinite"/>}
-            </circle>
-            <text x={h.proj[0].toFixed(1)} y={(h.proj[1]+4).toFixed(1)}
-              fill="white" fontSize="10" fontWeight="bold" textAnchor="middle"
-              style={{ pointerEvents: 'none' }}>+</text>
-            {spot === h.id && (
-              <text x={h.proj[0].toFixed(1)} y={(h.proj[1]-18).toFixed(1)}
-                fill={h.color} fontSize="7" fontFamily="monospace" textAnchor="middle"
-                style={{ pointerEvents: 'none' }}>{h.label}</text>
-            )}
-          </g>
-        ))}
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot, 14, 7))}
 
         {/* Depth indicator */}
         {(() => {
@@ -567,7 +607,7 @@ function BeckenDeepDive({ metrics }) {
 }
 
 // ─── Überlaufrinne 3D Deep-Dive ─────────────────────────────────────────────────
-function UeberlaufDeepDive() {
+function UeberlaufDeepDive({ xrayMode = false }) {
   const [rx, setRx] = useState(-28);
   const [ry, setRy] = useState(38);
   const [drag, setDrag] = useState(null);
@@ -613,6 +653,7 @@ function UeberlaufDeepDive() {
     { id:'ws', pts:[p3(-80,0,0),p3(80,0,0),p3(80,0,-60),p3(-80,0,-60)], fill:'#1a5090', fillOp:0.5, stroke:'#4ab0ff', strokeW:0.8 },
     { id:'cw', pts:[p3(-80,3,0),p3(80,3,0),p3(80,3,22),p3(-80,3,22)], fill:'#1a4a80', fillOp:0.65, stroke:'#4ab0ff', strokeW:0.8 },
   ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a,b) => b.zVal - a.zVal);
+  const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 105);
 
   const hotDefs = [
     { id:'wasserspiegel', x:0, y:0, z:-30, label:'≈ Wasserspiegel', color:'#4a9eff' },
@@ -668,9 +709,9 @@ function UeberlaufDeepDive() {
         </pattern></defs>
         <rect width="300" height="220" fill="#040d1a"/>
         <rect width="300" height="220" fill="url(#uGrid)"/>
-        {faces.map(f => (
+        {sceneFaces.map(f => (
           <g key={f.id}>
-            <polygon points={poly(f.pts)} fill={f.fill} fillOpacity={f.fillOp || 1} stroke={f.stroke} strokeWidth={f.strokeW}/>
+            {renderDeepDiveFace(f, poly, xrayMode)}
             {f.id === 'ws' && (() => {
               const w1 = p3(-60,0,-20), w2 = p3(40,0,-20), w3 = p3(-40,0,-40), w4 = p3(50,0,-40);
               return <>
@@ -693,15 +734,7 @@ function UeberlaufDeepDive() {
         <line x1={pipeA[0].toFixed(1)} y1={pipeA[1].toFixed(1)} x2={pipeB[0].toFixed(1)} y2={pipeB[1].toFixed(1)} stroke="#0c2030" strokeWidth="5" strokeLinecap="round"/>
         <line x1={pipeA[0].toFixed(1)} y1={pipeA[1].toFixed(1)} x2={pipeB[0].toFixed(1)} y2={pipeB[1].toFixed(1)} stroke="#4a9eff" strokeWidth="2.5" strokeLinecap="round" opacity="0.6" strokeDasharray="5 4" className="wc-flow" style={{ animationDuration:'1.5s' }}/>
         <text x={(pipeB[0]-4).toFixed(1)} y={(pipeB[1]-7).toFixed(1)} fill="#4a9eff" fontSize="5.5" fontFamily="monospace" textAnchor="middle">→ SCHWALL</text>
-        {hotDefs.map(h => (
-          <g key={h.id} data-hotspot="1" style={{ cursor:'pointer' }} onClick={e => { e.stopPropagation(); setSpot(spot === h.id ? null : h.id); }}>
-            <circle cx={h.proj[0].toFixed(1)} cy={h.proj[1].toFixed(1)} r="13" fill={h.color} fillOpacity={spot===h.id?0.4:0.15} stroke={h.color} strokeWidth={spot===h.id?2.5:1.5}>
-              {spot!==h.id && <animate attributeName="r" values="13;16;13" dur="2.5s" repeatCount="indefinite"/>}
-            </circle>
-            <text x={h.proj[0].toFixed(1)} y={(h.proj[1]+4).toFixed(1)} fill="white" fontSize="10" fontWeight="bold" textAnchor="middle" style={{ pointerEvents:'none' }}>+</text>
-            {spot===h.id && <text x={h.proj[0].toFixed(1)} y={(h.proj[1]-18).toFixed(1)} fill={h.color} fontSize="6.5" fontFamily="monospace" textAnchor="middle" style={{ pointerEvents:'none' }}>{h.label}</text>}
-          </g>
-        ))}
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot))}
         <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
           {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
         </text>
@@ -722,7 +755,7 @@ function UeberlaufDeepDive() {
 }
 
 // ─── Rücklaufleitung 3D Deep-Dive ──────────────────────────────────────────────
-function RuecklaufDeepDive({ metrics }) {
+function RuecklaufDeepDive({ metrics, xrayMode = false }) {
   const [rx, setRx] = useState(-32);
   const [ry, setRy] = useState(-18);
   const [drag, setDrag] = useState(null);
@@ -760,6 +793,7 @@ function RuecklaufDeepDive({ metrics }) {
     { id:'fl', pts:[p3(-80,0,-50),p3(80,0,-50),p3(80,0,50),p3(-80,0,50)], fill:'#071828', stroke:'#1a3a5a', strokeW:1.5 },
     { id:'wa', pts:[p3(-80,-32,-50),p3(80,-32,-50),p3(80,-32,50),p3(-80,-32,50)], fill:'#1a5090', fillOp:0.2, stroke:'#4ab0ff', strokeW:0.5 },
   ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a,b) => b.zVal - a.zVal);
+  const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 108);
 
   const pL = p3(-80,18,0), pR = p3(80,18,0);
   const branchX = [-55, 0, 55];
@@ -816,9 +850,9 @@ function RuecklaufDeepDive({ metrics }) {
         </pattern></defs>
         <rect width="300" height="220" fill="#040d1a"/>
         <rect width="300" height="220" fill="url(#rGrid)"/>
-        {faces.map(f => (
+        {sceneFaces.map(f => (
           <g key={f.id}>
-            <polygon points={poly(f.pts)} fill={f.fill} fillOpacity={f.fillOp||1} stroke={f.stroke} strokeWidth={f.strokeW}/>
+            {renderDeepDiveFace(f, poly, xrayMode)}
             {f.id === 'fl' && nozzlePos.map(([x,z],i) => {
               const c = p3(x,0,z);
               return <circle key={i} cx={c[0].toFixed(1)} cy={c[1].toFixed(1)} r="2.5" fill="#0d2a40" opacity="0.6"/>;
@@ -845,15 +879,7 @@ function RuecklaufDeepDive({ metrics }) {
             {running && <line x1={pos[0].toFixed(1)} y1={pos[1].toFixed(1)} x2={tip[0].toFixed(1)} y2={tip[1].toFixed(1)} stroke="#4ac8ff" strokeWidth="2" opacity="0.75" strokeDasharray="4 3" className="wc-flow" style={{ animationDuration:'1.1s', animationDelay:`${i*0.08}s` }} filter="url(#wcGlow)"/>}
           </g>;
         })}
-        {hotDefs.map(h => (
-          <g key={h.id} data-hotspot="1" style={{ cursor:'pointer' }} onClick={e => { e.stopPropagation(); setSpot(spot===h.id?null:h.id); }}>
-            <circle cx={h.proj[0].toFixed(1)} cy={h.proj[1].toFixed(1)} r="13" fill={h.color} fillOpacity={spot===h.id?0.4:0.15} stroke={h.color} strokeWidth={spot===h.id?2.5:1.5}>
-              {spot!==h.id && <animate attributeName="r" values="13;16;13" dur="2.5s" repeatCount="indefinite"/>}
-            </circle>
-            <text x={h.proj[0].toFixed(1)} y={(h.proj[1]+4).toFixed(1)} fill="white" fontSize="10" fontWeight="bold" textAnchor="middle" style={{ pointerEvents:'none' }}>+</text>
-            {spot===h.id && <text x={h.proj[0].toFixed(1)} y={(h.proj[1]-18).toFixed(1)} fill={h.color} fontSize="6.5" fontFamily="monospace" textAnchor="middle" style={{ pointerEvents:'none' }}>{h.label}</text>}
-          </g>
-        ))}
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot))}
         <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
           {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
         </text>
@@ -873,6 +899,1184 @@ function RuecklaufDeepDive({ metrics }) {
   );
 }
 
+// ─── Schwallwasserbehälter 3D Deep-Dive ─────────────────────────────────────
+function SchwallDeepDive({ metrics, xrayMode = false }) {
+  const [rx, setRx] = useState(-25);
+  const [ry, setRy] = useState(30);
+  const [drag, setDrag] = useState(null);
+  const [spot, setSpot] = useState(null);
+  const level = metrics.surgeLevel;
+  const fillFrac = level / 100;
+
+  const pt = (e) => e.touches ? e.touches[0] : e;
+  const onDown = (e) => { if (e.target.closest('[data-hotspot]')) return; setDrag({ x: pt(e).clientX, y: pt(e).clientY }); e.preventDefault(); };
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = pt(e).clientX - drag.x, dy = pt(e).clientY - drag.y;
+    setRy(y => y + dx * 0.55);
+    setRx(x => Math.max(-70, Math.min(15, x - dy * 0.4)));
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onUp = () => setDrag(null);
+
+  const p3 = (x, y, z) => {
+    const cY = Math.cos(ry * Math.PI / 180), sY = Math.sin(ry * Math.PI / 180);
+    const cX = Math.cos(rx * Math.PI / 180), sX = Math.sin(rx * Math.PI / 180);
+    const x1 = x * cY - z * sY, z1 = x * sY + z * cY;
+    const y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+    const d = 320 / (320 + z2);
+    return [150 + x1 * d, 112 + y1 * d, z2];
+  };
+  const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
+  const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+  // Octagonal cylinder: radius 50, top y=-60, bottom y=60
+  const R = 50, TOP = -60, BOT = 60;
+  const waterY = BOT - (BOT - TOP) * fillFrac;
+  const N = 8;
+  const ang = i => (i / N) * Math.PI * 2;
+  const topPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), TOP, R * Math.sin(ang(i))));
+  const botPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), BOT, R * Math.sin(ang(i))));
+  const watPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), waterY, R * Math.sin(ang(i))));
+
+  // Build side faces
+  const sideFaces = [];
+  for (let i = 0; i < N; i++) {
+    const j = (i + 1) % N;
+    sideFaces.push({
+      id: `s${i}`, pts: [topPts[i], topPts[j], botPts[j], botPts[i]],
+      fill: '#081e3c', stroke: '#1a3a5a', strokeW: 1
+    });
+    // Water-filled portion of side
+    if (fillFrac > 0.02) {
+      sideFaces.push({
+        id: `sw${i}`, pts: [watPts[i], watPts[j], botPts[j], botPts[i]],
+        fill: '#1060a0', fillOp: 0.35, stroke: '#2a6090', strokeW: 0.5
+      });
+    }
+  }
+
+  const faces = [
+    // Bottom
+    { id: 'bot', pts: botPts, fill: '#061828', stroke: '#1a3a5a', strokeW: 1 },
+    ...sideFaces,
+    // Water surface
+    ...(fillFrac > 0.02 ? [{ id: 'water', pts: watPts, fill: '#1a5090', fillOp: 0.55, stroke: '#4ab0ff', strokeW: 0.8 }] : []),
+    // Top rim (transparent)
+    { id: 'top', pts: topPts, fill: '#0c2a50', fillOp: 0.3, stroke: '#2a5a90', strokeW: 1.2 },
+  ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a, b) => b.zVal - a.zVal);
+  const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 112);
+
+  // Level gauge strip
+  const gaugeX = R + 8;
+  const gTop = p3(gaugeX, TOP, 0), gBot = p3(gaugeX, BOT, 0), gWat = p3(gaugeX, waterY, 0);
+
+  // Inlet/outlet pipes
+  const inA = p3(-R - 5, -20, 0), inB = p3(-R - 30, -20, 0);
+  const outA = p3(R + 5, 40, 0), outB = p3(R + 30, 40, 0);
+
+  const hotDefs = [
+    { id: 'zulauf', x: -R - 15, y: -20, z: 0, label: '← Zulauf', color: '#4a9eff' },
+    { id: 'ablauf', x: R + 15, y: 40, z: 0, label: '→ Ablauf', color: '#34c090' },
+    { id: 'schwimmer', x: gaugeX, y: waterY, z: 0, label: '⊡ Pegel', color: '#ffaa40' },
+    { id: 'frischwasser', x: 0, y: TOP - 5, z: 0, label: '↓ Nachspeis.', color: '#d04040' },
+  ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
+
+  const SDATA = {
+    zulauf: { color: '#4a9eff', icon: '←', title: 'Zulauf (Überlaufrinne)', items: [
+      '🌊 Wasser aus der Überlaufrinne fließt hier ein',
+      '📍 Freier Einlauf oberhalb des max. Wasserspiegels',
+      '⚡ Höchste Keimbelastung im gesamten Kreislauf',
+      '🔀 Schwallwasser = Oberflächenwasser + Verdrängungswasser',
+      '📐 DIN 19643: Schwallbehälter ≥ 10 % Beckenvolumen',
+    ]},
+    ablauf: { color: '#34c090', icon: '→', title: 'Ablauf (zur Pumpe)', items: [
+      '📍 Am tiefsten Punkt des Behälters',
+      '🔧 Nennweite: DN 100–200 je nach Volumenstrom',
+      '⚙ Saugseitige Verrohrung der Umwälzpumpe',
+      '🚫 Siebkorb/Grobfilter vor Pumpe schützt Laufrad',
+      '📐 NPSH: Saughöhe beachten → Kavitationsgefahr',
+    ]},
+    schwimmer: { color: '#ffaa40', icon: '⊡', title: 'Pegelmessung / Schwimmer', items: [
+      '📏 Schwimmerschalter: min/max Pegelsteuerung',
+      '⬆ Hoher Pegel: viele Badegäste → viel Verdrängung',
+      '⬇ Niedriger Pegel: Nachspeisung aktivieren',
+      '🎛 Automatische Nachspeisung über Magnetventil',
+      '📊 Pegelverlauf zeigt Besucherzahlen an',
+      '⚠ Trockenlaufschutz: Pumpe aus bei Pegel < Minimum',
+    ]},
+    frischwasser: { color: '#d04040', icon: '↓', title: 'Frischwassernachspeisung', items: [
+      '💧 Gleicht Verdunstung und Rückspülverluste aus',
+      '📐 DIN 19643: max. 30 L/Badegast·Tag Frischwasser',
+      '🔧 Magnetventil gesteuert durch Schwimmerschalter',
+      '🚰 Trinkwasserqualität vorgeschrieben',
+      '🔒 Systemtrenner (BA/CA) gegen Rücksaugen',
+      '📋 Verbrauch dokumentieren (Wasserzähler)',
+    ]},
+  };
+  const activeData = spot ? SDATA[spot] : null;
+
+  return (
+    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
+      <svg viewBox="0 0 300 220" width="100%" height="280px"
+        style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
+        <defs><pattern id="sGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+        </pattern></defs>
+        <rect width="300" height="220" fill="#040d1a"/>
+        <rect width="300" height="220" fill="url(#sGrid)"/>
+
+        {sceneFaces.map(f => (
+          <g key={f.id}>
+            {renderDeepDiveFace(f, poly, xrayMode)}
+            {f.id === 'water' && (() => {
+              const w1 = p3(-30, waterY, -20), w2 = p3(30, waterY, -20);
+              return <line x1={w1[0].toFixed(1)} y1={w1[1].toFixed(1)} x2={w2[0].toFixed(1)} y2={w2[1].toFixed(1)}
+                stroke="#4ac8ff" strokeWidth="1.2" opacity="0.4" strokeDasharray="6 4" className="wc-surface"/>;
+            })()}
+          </g>
+        ))}
+
+        {/* Level gauge */}
+        <line x1={gTop[0].toFixed(1)} y1={gTop[1].toFixed(1)} x2={gBot[0].toFixed(1)} y2={gBot[1].toFixed(1)}
+          stroke="#1a3a5a" strokeWidth="3" opacity="0.5"/>
+        <line x1={gWat[0].toFixed(1)} y1={gWat[1].toFixed(1)} x2={gBot[0].toFixed(1)} y2={gBot[1].toFixed(1)}
+          stroke="#4a9eff" strokeWidth="3" opacity="0.7"/>
+        <text x={(gWat[0] + 8).toFixed(1)} y={gWat[1].toFixed(1)} fill="#4a9eff" fontSize="6" fontFamily="monospace">{level}%</text>
+
+        {/* Inlet pipe */}
+        <line x1={inA[0].toFixed(1)} y1={inA[1].toFixed(1)} x2={inB[0].toFixed(1)} y2={inB[1].toFixed(1)}
+          stroke="#1a4060" strokeWidth="9" strokeLinecap="round"/>
+        <line x1={inA[0].toFixed(1)} y1={inA[1].toFixed(1)} x2={inB[0].toFixed(1)} y2={inB[1].toFixed(1)}
+          stroke="#0c2030" strokeWidth="5" strokeLinecap="round"/>
+        <line x1={inA[0].toFixed(1)} y1={inA[1].toFixed(1)} x2={inB[0].toFixed(1)} y2={inB[1].toFixed(1)}
+          stroke="#4a9eff" strokeWidth="2.5" opacity="0.6" strokeDasharray="5 4" className="wc-flow" style={{ animationDuration: '1.5s' }}/>
+        <text x={(inB[0] - 2).toFixed(1)} y={(inB[1] - 7).toFixed(1)} fill="#4a9eff" fontSize="5" fontFamily="monospace" textAnchor="end">ÜBERLAUF →</text>
+
+        {/* Outlet pipe */}
+        <line x1={outA[0].toFixed(1)} y1={outA[1].toFixed(1)} x2={outB[0].toFixed(1)} y2={outB[1].toFixed(1)}
+          stroke="#1a4060" strokeWidth="9" strokeLinecap="round"/>
+        <line x1={outA[0].toFixed(1)} y1={outA[1].toFixed(1)} x2={outB[0].toFixed(1)} y2={outB[1].toFixed(1)}
+          stroke="#0c2030" strokeWidth="5" strokeLinecap="round"/>
+        <line x1={outA[0].toFixed(1)} y1={outA[1].toFixed(1)} x2={outB[0].toFixed(1)} y2={outB[1].toFixed(1)}
+          stroke="#34c090" strokeWidth="2.5" opacity="0.6" strokeDasharray="5 4" className="wc-flow" style={{ animationDuration: '1.5s' }}/>
+        <text x={(outB[0] + 2).toFixed(1)} y={(outB[1] - 7).toFixed(1)} fill="#34c090" fontSize="5" fontFamily="monospace">→ PUMPE</text>
+
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot))}
+
+        <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+        </text>
+      </svg>
+      {activeData && (
+        <div style={{ background: 'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop: '2px solid ' + activeData.color, padding: '10px 12px', maxHeight: '180px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span style={{ color: activeData.color, fontSize: '12px', fontWeight: 'bold', fontFamily: 'monospace' }}>{activeData.icon} {activeData.title}</span>
+            <button onClick={() => setSpot(null)} style={{ background: 'transparent', border: '1px solid #1a3a5a', borderRadius: '4px', color: '#5a8090', fontSize: '11px', padding: '2px 7px', cursor: 'pointer' }}>✕</button>
+          </div>
+          {activeData.items.map((item, i) => (
+            <p key={i} style={{ color: '#8ab0c0', fontSize: '10px', fontFamily: 'monospace', margin: '2px 0', lineHeight: '1.5' }}>{item}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Kreiselpumpe 3D Deep-Dive ───────────────────────────────────────────────
+function PumpeDeepDive({ metrics, xrayMode = false }) {
+  const [rx, setRx] = useState(-20);
+  const [ry, setRy] = useState(25);
+  const [drag, setDrag] = useState(null);
+  const [spot, setSpot] = useState(null);
+  const running = metrics.flowRate > 0;
+
+  const pt = (e) => e.touches ? e.touches[0] : e;
+  const onDown = (e) => { if (e.target.closest('[data-hotspot]')) return; setDrag({ x: pt(e).clientX, y: pt(e).clientY }); e.preventDefault(); };
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = pt(e).clientX - drag.x, dy = pt(e).clientY - drag.y;
+    setRy(y => y + dx * 0.55);
+    setRx(x => Math.max(-70, Math.min(15, x - dy * 0.4)));
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onUp = () => setDrag(null);
+
+  const p3 = (x, y, z) => {
+    const cY = Math.cos(ry * Math.PI / 180), sY = Math.sin(ry * Math.PI / 180);
+    const cX = Math.cos(rx * Math.PI / 180), sX = Math.sin(rx * Math.PI / 180);
+    const x1 = x * cY - z * sY, z1 = x * sY + z * cY;
+    const y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+    const d = 320 / (320 + z2);
+    return [150 + x1 * d, 110 + y1 * d, z2];
+  };
+  const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
+  const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+  // Pump housing: flattened cylinder, R=55 x-z plane, height ±20 in y
+  const R = 55, HT = -20, HB = 20;
+  const N = 10;
+  const ang = i => (i / N) * Math.PI * 2;
+  const topPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), HT, R * Math.sin(ang(i))));
+  const botPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), HB, R * Math.sin(ang(i))));
+
+  const sideFaces = [];
+  for (let i = 0; i < N; i++) {
+    const j = (i + 1) % N;
+    sideFaces.push({
+      id: `ps${i}`, pts: [topPts[i], topPts[j], botPts[j], botPts[i]],
+      fill: '#0e2535', stroke: '#1a3a5a', strokeW: 1
+    });
+  }
+
+  // Motor box below pump
+  const mTL = p3(-25, HB, -20), mTR = p3(25, HB, -20), mBL = p3(-25, HB + 45, -20), mBR = p3(25, HB + 45, -20);
+  const mTLf = p3(-25, HB, 20), mTRf = p3(25, HB, 20), mBLf = p3(-25, HB + 45, 20), mBRf = p3(25, HB + 45, 20);
+
+  const faces = [
+    { id: 'mbot', pts: [mBL, mBR, mBRf, mBLf], fill: '#060e18', stroke: '#1a2a40', strokeW: 1 },
+    { id: 'mback', pts: [mTL, mTR, mBR, mBL], fill: '#081520', stroke: '#1a2a40', strokeW: 1 },
+    { id: 'mfrt', pts: [mTLf, mTRf, mBRf, mBLf], fill: '#081520', stroke: '#1a2a40', strokeW: 1 },
+    { id: 'mlft', pts: [mTL, mTLf, mBLf, mBL], fill: '#0a1828', stroke: '#1a2a40', strokeW: 0.8 },
+    { id: 'mrgt', pts: [mTR, mTRf, mBRf, mBR], fill: '#0a1828', stroke: '#1a2a40', strokeW: 0.8 },
+    { id: 'pbot', pts: botPts, fill: '#081828', stroke: '#1a3a5a', strokeW: 1 },
+    ...sideFaces,
+    { id: 'ptop', pts: topPts, fill: '#0c2a50', fillOp: 0.5, stroke: '#2a5a90', strokeW: 1.2 },
+  ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a, b) => b.zVal - a.zVal);
+  const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 110);
+
+  // Impeller vanes (6 blades on top face, animated rotation via CSS)
+  const bladeAngle = running ? 'wcSpin 1.1s linear infinite' : 'none';
+  const center = p3(0, HT - 2, 0);
+  const bladeLen = 40;
+
+  // Suction/discharge pipes
+  const suckA = p3(-R - 5, 0, 0), suckB = p3(-R - 35, 0, 0);
+  const discA = p3(0, HT - 5, -R - 5), discB = p3(0, HT - 5, -R - 35);
+
+  const hotDefs = [
+    { id: 'laufrad', x: 0, y: HT - 2, z: 0, label: '⚙ Laufrad', color: '#4a9eff' },
+    { id: 'saugseite', x: -R - 20, y: 0, z: 0, label: '← Saugseite', color: '#34c090' },
+    { id: 'druckseite', x: 0, y: HT - 5, z: -R - 20, label: '↑ Druckseite', color: '#ffaa40' },
+    { id: 'motor', x: 0, y: HB + 25, z: 0, label: '⊞ Motor', color: '#d04040' },
+  ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
+
+  const PDATA = {
+    laufrad: { color: '#4a9eff', icon: '⚙', title: 'Laufrad (Impeller)', items: [
+      '🔄 Radialläufer: 6 Schaufeln, wandelt Drehung → Strömungsenergie',
+      '📐 Pumpenkurve: Q↑ → H↓ (mehr Durchfluss = weniger Förderhöhe)',
+      '⚡ Drehzahl: 1450 oder 2900 U/min (2- oder 4-polig)',
+      '🔧 Material: Edelstahl oder Bronze (chlorbeständig)',
+      '⚠ Kavitation: Dampfblasen bei Unterdruck → Materialschäden',
+      '📋 Verschleiß am Spalt zwischen Laufrad und Gehäuse prüfen',
+    ]},
+    saugseite: { color: '#34c090', icon: '←', title: 'Saugseite (Einlass)', items: [
+      '📍 Anschluss: Schwallwasserbehälter → Pumpe',
+      '🔧 Nennweite: DN 100–200 je nach Volumenstrom',
+      '⚠ NPSH: Saughöhe beachten → Kavitationsgefahr',
+      '🛡 Siebkorb vor Pumpe schützt Laufrad vor Fremdkörpern',
+      '🔒 Absperrarmatur + Rückschlagventil erforderlich',
+      '📐 Saugleitung: kurz, dicht, steigend verlegen',
+    ]},
+    druckseite: { color: '#ffaa40', icon: '↑', title: 'Druckseite (Auslass)', items: [
+      '📍 Anschluss: Pumpe → Flockung → Filter → Desinfektion',
+      '📏 Druck am Auslass: 1,5–3,0 bar (je nach Anlage)',
+      '🔧 Rückschlagklappe verhindert Rückfluss bei Pumpen-Aus',
+      '📊 Manometer zur Drucküberwachung',
+      '🌊 Volumenstrom: typisch 30–120 m³/h je nach Beckengröße',
+      '⚠ Druckstoß bei schnellem Schließen → Rohrbruchgefahr',
+    ]},
+    motor: { color: '#d04040', icon: '⊞', title: 'Antriebsmotor', items: [
+      '⚡ Drehstrom-Asynchronmotor, IE3 Effizienzklasse',
+      '🔌 Leistung: 2,2–15 kW je nach Förderstrom',
+      '🌡 Thermischer Motorschutz gegen Überhitzung',
+      '🔧 Gleitringdichtung: Übergang Welle→Gehäuse abdichten',
+      '📋 Schmierung: halbjährlich Lagerfett nachfüllen',
+      '⚙ Frequenzumrichter (FU) für stufenlose Drehzahlregelung',
+    ]},
+  };
+  const activeData = spot ? PDATA[spot] : null;
+
+  return (
+    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
+      <svg viewBox="0 0 300 220" width="100%" height="280px"
+        style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
+        <defs><pattern id="pGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+        </pattern></defs>
+        <rect width="300" height="220" fill="#040d1a"/>
+        <rect width="300" height="220" fill="url(#pGrid)"/>
+
+        {sceneFaces.map(f => (
+          <g key={f.id}>
+            {renderDeepDiveFace(f, poly, xrayMode)}
+            {f.id === 'mrgt' && <text x={((mBR[0] + mBRf[0]) / 2).toFixed(1)} y={((mBR[1] + mBRf[1]) / 2 + 5).toFixed(1)} fill="#1a3a5a" fontSize="6" fontFamily="monospace" textAnchor="middle">MOTOR</text>}
+          </g>
+        ))}
+
+        {/* Impeller on top face */}
+        <g style={{ transformOrigin: `${center[0].toFixed(1)}px ${center[1].toFixed(1)}px`, animation: bladeAngle }}>
+          {[0, 60, 120, 180, 240, 300].map(deg => {
+            const r = (deg * Math.PI) / 180;
+            const tip = p3(bladeLen * Math.cos(r), HT - 2, bladeLen * Math.sin(r));
+            return <line key={deg} x1={center[0].toFixed(1)} y1={center[1].toFixed(1)} x2={tip[0].toFixed(1)} y2={tip[1].toFixed(1)}
+              stroke="#4a9eff" strokeWidth="3" strokeLinecap="round" opacity="0.85"/>;
+          })}
+          <circle cx={center[0].toFixed(1)} cy={center[1].toFixed(1)} r="8" fill="#0a1828" stroke="#4a9eff" strokeWidth="2"/>
+        </g>
+
+        {/* Suction pipe */}
+        <line x1={suckA[0].toFixed(1)} y1={suckA[1].toFixed(1)} x2={suckB[0].toFixed(1)} y2={suckB[1].toFixed(1)}
+          stroke="#1a4060" strokeWidth="10" strokeLinecap="round"/>
+        <line x1={suckA[0].toFixed(1)} y1={suckA[1].toFixed(1)} x2={suckB[0].toFixed(1)} y2={suckB[1].toFixed(1)}
+          stroke="#0c2030" strokeWidth="6" strokeLinecap="round"/>
+        {running && <line x1={suckA[0].toFixed(1)} y1={suckA[1].toFixed(1)} x2={suckB[0].toFixed(1)} y2={suckB[1].toFixed(1)}
+          stroke="#4a9eff" strokeWidth="3" opacity="0.7" strokeDasharray="6 5" className="wc-flow" style={{ animationDuration: '1.3s' }}/>}
+        <text x={(suckB[0] - 2).toFixed(1)} y={(suckB[1] - 7).toFixed(1)} fill="#4a9eff" fontSize="5" fontFamily="monospace" textAnchor="end">SAUG</text>
+
+        {/* Discharge pipe */}
+        <line x1={discA[0].toFixed(1)} y1={discA[1].toFixed(1)} x2={discB[0].toFixed(1)} y2={discB[1].toFixed(1)}
+          stroke="#1a4060" strokeWidth="10" strokeLinecap="round"/>
+        <line x1={discA[0].toFixed(1)} y1={discA[1].toFixed(1)} x2={discB[0].toFixed(1)} y2={discB[1].toFixed(1)}
+          stroke="#0c2030" strokeWidth="6" strokeLinecap="round"/>
+        {running && <line x1={discA[0].toFixed(1)} y1={discA[1].toFixed(1)} x2={discB[0].toFixed(1)} y2={discB[1].toFixed(1)}
+          stroke="#ffaa40" strokeWidth="3" opacity="0.7" strokeDasharray="6 5" className="wc-flow" style={{ animationDuration: '1.3s' }}/>}
+        <text x={(discB[0]).toFixed(1)} y={(discB[1] - 7).toFixed(1)} fill="#ffaa40" fontSize="5" fontFamily="monospace" textAnchor="middle">DRUCK</text>
+
+        {/* Flow rate display */}
+        <rect x="230" y="12" width="60" height="36" fill="#0a1a2e" stroke="#1a3a5a" strokeWidth="1" rx="4"/>
+        <text x="260" y="26" fill="#456080" fontSize="5.5" fontFamily="monospace" textAnchor="middle">VOLUMENSTROM</text>
+        <text x="260" y="40" fill={running ? '#4a9eff' : '#456080'} fontSize="13" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{metrics.flowRate}</text>
+        <text x="260" y="46" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">m³/h</text>
+
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot))}
+
+        <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+        </text>
+      </svg>
+      {activeData && (
+        <div style={{ background: 'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop: '2px solid ' + activeData.color, padding: '10px 12px', maxHeight: '180px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span style={{ color: activeData.color, fontSize: '12px', fontWeight: 'bold', fontFamily: 'monospace' }}>{activeData.icon} {activeData.title}</span>
+            <button onClick={() => setSpot(null)} style={{ background: 'transparent', border: '1px solid #1a3a5a', borderRadius: '4px', color: '#5a8090', fontSize: '11px', padding: '2px 7px', cursor: 'pointer' }}>✕</button>
+          </div>
+          {activeData.items.map((item, i) => (
+            <p key={i} style={{ color: '#8ab0c0', fontSize: '10px', fontFamily: 'monospace', margin: '2px 0', lineHeight: '1.5' }}>{item}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Flockung 3D Deep-Dive ──────────────────────────────────────────────────
+function FlockungDeepDive({ metrics, xrayMode = false }) {
+  const [rx, setRx] = useState(-22);
+  const [ry, setRy] = useState(28);
+  const [drag, setDrag] = useState(null);
+  const [spot, setSpot] = useState(null);
+  const running = metrics.flowRate > 0;
+
+  const pt = (e) => e.touches ? e.touches[0] : e;
+  const onDown = (e) => { if (e.target.closest('[data-hotspot]')) return; setDrag({ x: pt(e).clientX, y: pt(e).clientY }); e.preventDefault(); };
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = pt(e).clientX - drag.x, dy = pt(e).clientY - drag.y;
+    setRy(y => y + dx * 0.55);
+    setRx(x => Math.max(-70, Math.min(15, x - dy * 0.4)));
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onUp = () => setDrag(null);
+
+  const p3 = (x, y, z) => {
+    const cY = Math.cos(ry * Math.PI / 180), sY = Math.sin(ry * Math.PI / 180);
+    const cX = Math.cos(rx * Math.PI / 180), sX = Math.sin(rx * Math.PI / 180);
+    const x1 = x * cY - z * sY, z1 = x * sY + z * cY;
+    const y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+    const d = 320 / (320 + z2);
+    return [150 + x1 * d, 110 + y1 * d, z2];
+  };
+  const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
+  const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+  // Rectangular tank: x ±45, y -55 (top) to 50 (bottom), z ±35
+  // Conical bottom from y=50 to y=75 converging to center
+  const XW = 45, ZW = 35, YT = -55, YB = 50, YC = 75;
+  const TFL = p3(-XW, YT, -ZW), TFR = p3(XW, YT, -ZW), TBR = p3(XW, YT, ZW), TBL = p3(-XW, YT, ZW);
+  const BFL = p3(-XW, YB, -ZW), BFR = p3(XW, YB, -ZW), BBR = p3(XW, YB, ZW), BBL = p3(-XW, YB, ZW);
+  const CONE = p3(0, YC, 0);
+  // Water surface at y=-20
+  const WY = -20;
+  const WFL = p3(-XW, WY, -ZW), WFR = p3(XW, WY, -ZW), WBR = p3(XW, WY, ZW), WBL = p3(-XW, WY, ZW);
+
+  const faces = [
+    { id: 'cfl', pts: [BFL, BFR, CONE], fill: '#071828', stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'cbk', pts: [BBL, BBR, CONE], fill: '#061520', stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'clt', pts: [BFL, BBL, CONE], fill: '#081e30', stroke: '#1a3a5a', strokeW: 0.8 },
+    { id: 'crt', pts: [BFR, BBR, CONE], fill: '#081e30', stroke: '#1a3a5a', strokeW: 0.8 },
+    { id: 'back', pts: [TBL, TBR, BBR, BBL], fill: '#061520', stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'left', pts: [TFL, TBL, BBL, BFL], fill: '#071830', stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'right', pts: [TFR, TBR, BBR, BFR], fill: '#071830', stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'front', pts: [TFL, TFR, BFR, BFL], fill: '#081e3c', stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'water', pts: [WFL, WFR, WBR, WBL], fill: '#1a5090', fillOp: 0.45, stroke: '#4ab0ff', strokeW: 0.8 },
+    { id: 'top', pts: [TFL, TFR, TBR, TBL], fill: '#0c2a50', fillOp: 0.25, stroke: '#2a5a90', strokeW: 1 },
+  ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a, b) => b.zVal - a.zVal);
+  const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 110);
+
+  // Stirrer shaft + paddles
+  const shaftTop = p3(0, YT - 10, 0), shaftBot = p3(0, YB - 10, 0);
+  const pad1L = p3(-30, -5, 0), pad1R = p3(30, -5, 0);
+  const pad2L = p3(-30, 25, 0), pad2R = p3(30, 25, 0);
+
+  // Dosing pipe
+  const doseTop = p3(-XW - 15, YT - 15, 0), doseMid = p3(-XW - 15, YT, 0), doseIn = p3(-XW, YT, 0);
+
+  // Particles (micro → flocs)
+  const microPos = [[-20, -10, -15], [15, -5, 10], [-10, 5, -20], [25, 0, 15], [-25, 10, 5]];
+  const flocPos = [[-15, 30, -10], [10, 35, 8], [0, 40, -5]];
+
+  const hotDefs = [
+    { id: 'ruehrer', x: 0, y: 10, z: 0, label: '⟳ Rührer', color: '#4a9eff' },
+    { id: 'dosierung', x: -XW - 15, y: YT - 5, z: 0, label: '↓ Dosierung', color: '#34c090' },
+    { id: 'mischzone', x: 0, y: -10, z: 0, label: '∿ Mischzone', color: '#ffaa40' },
+    { id: 'flocken', x: 0, y: 38, z: 0, label: '● Flocken', color: '#d04040' },
+  ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
+
+  const FDATA = {
+    ruehrer: { color: '#4a9eff', icon: '⟳', title: 'Rührwerk', items: [
+      '🔄 Langsam drehend: 20–80 U/min (Flocken nicht zerstören!)',
+      '⚙ Typ: Gitterrührer oder Paddelrührer',
+      '📐 Rührzeit: 15–30 min Verweilzeit im Behälter',
+      '⚠ Zu schnell → Flocken brechen auf → schlechte Filtration',
+      '⚠ Zu langsam → keine Durchmischung → Kurzschlussströmung',
+      '🔧 Material: Edelstahl, chlorbeständig',
+    ]},
+    dosierung: { color: '#34c090', icon: '↓', title: 'Flockungsmittel-Dosierung', items: [
+      '💧 Mittel: Aluminiumsulfat (Al₂(SO₄)₃) oder Polyelektrolyt',
+      '📏 Dosierung: 0,1–0,3 mg/L Aluminium',
+      '⚙ Dosierpumpe: Membran- oder Schlauchpumpe',
+      '📐 pH-Optimum: 6,8–7,2 für Aluminiumsulfat',
+      '⚠ Überdosierung → Aluminium im Beckenwasser (Grenzwert 0,05 mg/L)',
+      '📋 Dosierung proportional zum Volumenstrom regeln',
+    ]},
+    mischzone: { color: '#ffaa40', icon: '∿', title: 'Mischzone (Koagulation)', items: [
+      '⚡ Schnellmischung: Flockungsmittel + Wasser sofort verteilen',
+      '🔬 Destabilisierung: Partikel-Ladung wird neutralisiert',
+      '📐 G-Wert (Geschwindigkeitsgradient): 30–70 s⁻¹',
+      '🌊 Orthokinetische Flockung: Teilchen treffen durch Strömung aufeinander',
+      '📏 Mikropartikel < 0,1 µm verbinden sich zu Mikroflocken',
+    ]},
+    flocken: { color: '#d04040', icon: '●', title: 'Flockenbildung', items: [
+      '📏 Mikroflocken → Makroflocken: von < 0,1 µm auf ≥ 5 µm',
+      '🎯 Ziel: Flocken groß genug für Sandfilter-Abscheidung',
+      '⬇ Flocken sinken im Konusteil ab → Abzug zum Filter',
+      '📊 Trübungsmessung nach Flockung zeigt Wirksamkeit',
+      '⚠ Flockenbruch: zu hohe Strömung oder pH-Schwankung',
+      '📋 Jar-Test: Labormethode zur optimalen Dosisfindung',
+    ]},
+  };
+  const activeData = spot ? FDATA[spot] : null;
+
+  return (
+    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
+      <svg viewBox="0 0 300 220" width="100%" height="280px"
+        style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
+        <defs><pattern id="fGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+        </pattern></defs>
+        <rect width="300" height="220" fill="#040d1a"/>
+        <rect width="300" height="220" fill="url(#fGrid)"/>
+
+        {sceneFaces.map(f => (
+          <g key={f.id}>
+            {renderDeepDiveFace(f, poly, xrayMode)}
+            {f.id === 'water' && (() => {
+              const w1 = p3(-25, WY, -15), w2 = p3(20, WY, 15);
+              return <line x1={w1[0].toFixed(1)} y1={w1[1].toFixed(1)} x2={w2[0].toFixed(1)} y2={w2[1].toFixed(1)}
+                stroke="#4ac8ff" strokeWidth="1" opacity="0.35" strokeDasharray="5 4" className="wc-surface"/>;
+            })()}
+          </g>
+        ))}
+
+        {/* Stirrer shaft */}
+        <line x1={shaftTop[0].toFixed(1)} y1={shaftTop[1].toFixed(1)} x2={shaftBot[0].toFixed(1)} y2={shaftBot[1].toFixed(1)}
+          stroke="#2a4060" strokeWidth="2.5"/>
+        {/* Paddles */}
+        <g style={{ transformOrigin: `${p3(0, -5, 0)[0].toFixed(1)}px ${p3(0, -5, 0)[1].toFixed(1)}px`, animation: running ? 'wcSpin 3s linear infinite' : 'none' }}>
+          <line x1={pad1L[0].toFixed(1)} y1={pad1L[1].toFixed(1)} x2={pad1R[0].toFixed(1)} y2={pad1R[1].toFixed(1)}
+            stroke="#456080" strokeWidth="4" strokeLinecap="round" opacity="0.7"/>
+          <line x1={pad2L[0].toFixed(1)} y1={pad2L[1].toFixed(1)} x2={pad2R[0].toFixed(1)} y2={pad2R[1].toFixed(1)}
+            stroke="#456080" strokeWidth="4" strokeLinecap="round" opacity="0.7"/>
+        </g>
+
+        {/* Dosing pipe */}
+        <line x1={doseTop[0].toFixed(1)} y1={doseTop[1].toFixed(1)} x2={doseMid[0].toFixed(1)} y2={doseMid[1].toFixed(1)}
+          stroke="#1a4060" strokeWidth="4" strokeLinecap="round"/>
+        <line x1={doseMid[0].toFixed(1)} y1={doseMid[1].toFixed(1)} x2={doseIn[0].toFixed(1)} y2={doseIn[1].toFixed(1)}
+          stroke="#1a4060" strokeWidth="4" strokeLinecap="round"/>
+        {running && <line x1={doseTop[0].toFixed(1)} y1={doseTop[1].toFixed(1)} x2={doseMid[0].toFixed(1)} y2={doseMid[1].toFixed(1)}
+          stroke="#34c090" strokeWidth="2" opacity="0.7" strokeDasharray="4 3" className="wc-flow" style={{ animationDuration: '1.5s' }}/>}
+        <text x={(doseTop[0]).toFixed(1)} y={(doseTop[1] - 5).toFixed(1)} fill="#34c090" fontSize="5" fontFamily="monospace" textAnchor="middle">FLOCKUNGS-</text>
+        <text x={(doseTop[0]).toFixed(1)} y={(doseTop[1] + 1).toFixed(1)} fill="#34c090" fontSize="5" fontFamily="monospace" textAnchor="middle">MITTEL</text>
+
+        {/* Micro-particles */}
+        {microPos.map(([x, y, z], i) => {
+          const c = p3(x, y, z);
+          return <circle key={`m${i}`} cx={c[0].toFixed(1)} cy={c[1].toFixed(1)} r="1.8" fill="#7ab5d8" opacity="0.6">
+            <animate attributeName="cy" values={`${c[1].toFixed(1)};${(c[1] - 3).toFixed(1)};${c[1].toFixed(1)}`} dur={`${1.8 + i * 0.2}s`} repeatCount="indefinite"/>
+          </circle>;
+        })}
+        {/* Larger flocs */}
+        {flocPos.map(([x, y, z], i) => {
+          const c = p3(x, y, z);
+          return <circle key={`f${i}`} cx={c[0].toFixed(1)} cy={c[1].toFixed(1)} r={3 + i * 0.8} fill="#507090" opacity="0.55">
+            <animate attributeName="cy" values={`${c[1].toFixed(1)};${(c[1] + 3).toFixed(1)};${c[1].toFixed(1)}`} dur={`${2 + i * 0.3}s`} repeatCount="indefinite"/>
+          </circle>;
+        })}
+
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot))}
+
+        <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+        </text>
+      </svg>
+      {activeData && (
+        <div style={{ background: 'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop: '2px solid ' + activeData.color, padding: '10px 12px', maxHeight: '180px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span style={{ color: activeData.color, fontSize: '12px', fontWeight: 'bold', fontFamily: 'monospace' }}>{activeData.icon} {activeData.title}</span>
+            <button onClick={() => setSpot(null)} style={{ background: 'transparent', border: '1px solid #1a3a5a', borderRadius: '4px', color: '#5a8090', fontSize: '11px', padding: '2px 7px', cursor: 'pointer' }}>✕</button>
+          </div>
+          {activeData.items.map((item, i) => (
+            <p key={i} style={{ color: '#8ab0c0', fontSize: '10px', fontFamily: 'monospace', margin: '2px 0', lineHeight: '1.5' }}>{item}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Mehrschichtfilter 3D Deep-Dive ─────────────────────────────────────────
+function FilterDeepDive({ metrics, xrayMode = false }) {
+  const [rx, setRx] = useState(-24);
+  const [ry, setRy] = useState(32);
+  const [drag, setDrag] = useState(null);
+  const [spot, setSpot] = useState(null);
+  const dp = metrics.differentialPressure;
+  const dpColor = dp > 0.5 ? '#d04040' : dp > 0.35 ? '#d09030' : '#34c090';
+
+  const pt = (e) => e.touches ? e.touches[0] : e;
+  const onDown = (e) => { if (e.target.closest('[data-hotspot]')) return; setDrag({ x: pt(e).clientX, y: pt(e).clientY }); e.preventDefault(); };
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = pt(e).clientX - drag.x, dy = pt(e).clientY - drag.y;
+    setRy(y => y + dx * 0.55);
+    setRx(x => Math.max(-70, Math.min(15, x - dy * 0.4)));
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onUp = () => setDrag(null);
+
+  const p3 = (x, y, z) => {
+    const cY = Math.cos(ry * Math.PI / 180), sY = Math.sin(ry * Math.PI / 180);
+    const cX = Math.cos(rx * Math.PI / 180), sX = Math.sin(rx * Math.PI / 180);
+    const x1 = x * cY - z * sY, z1 = x * sY + z * cY;
+    const y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+    const d = 320 / (320 + z2);
+    return [150 + x1 * d, 108 + y1 * d, z2];
+  };
+  const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
+  const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+  // Tall cylinder: R=42, top y=-70, bottom y=65
+  const R = 42, YT = -70, YB = 65;
+  const N = 8;
+  const ang = i => (i / N) * Math.PI * 2;
+  const topPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), YT, R * Math.sin(ang(i))));
+  const botPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), YB, R * Math.sin(ang(i))));
+
+  // Filter layers: Quarzkies (-30 to -5), Quarzsand (-5 to 30), Aktivkohle (30 to 50)
+  const layers = [
+    { id: 'kies', y1: -30, y2: -5, fill: '#2a4530', label: 'QUARZKIES' },
+    { id: 'sand', y1: -5, y2: 30, fill: '#384828', label: 'QUARZSAND' },
+    { id: 'kohle', y1: 30, y2: 50, fill: '#1a2838', label: 'AKTIVKOHLE' },
+  ];
+  const layerFaces = [];
+  layers.forEach(l => {
+    const lTop = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), l.y1, R * Math.sin(ang(i))));
+    const lBot = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), l.y2, R * Math.sin(ang(i))));
+    for (let i = 0; i < N; i++) {
+      const j = (i + 1) % N;
+      layerFaces.push({
+        id: `${l.id}${i}`, pts: [lTop[i], lTop[j], lBot[j], lBot[i]],
+        fill: l.fill, fillOp: 0.65, stroke: '#1a3a5a', strokeW: 0.5
+      });
+    }
+    // Top surface of each layer
+    layerFaces.push({ id: `${l.id}t`, pts: lTop, fill: l.fill, fillOp: 0.4, stroke: '#2a5a90', strokeW: 0.5 });
+  });
+
+  // Nozzle plate at y=52
+  const npPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), 52, R * Math.sin(ang(i))));
+
+  const sideFaces = [];
+  for (let i = 0; i < N; i++) {
+    const j = (i + 1) % N;
+    // Vessel wall above filter layers
+    sideFaces.push({
+      id: `vs${i}`, pts: [topPts[i], topPts[j],
+        p3(R * Math.cos(ang(j)), -30, R * Math.sin(ang(j))),
+        p3(R * Math.cos(ang(i)), -30, R * Math.sin(ang(i)))],
+      fill: '#081e3c', fillOp: 0.4, stroke: '#1a3a5a', strokeW: 0.6
+    });
+    // Vessel wall below filter
+    sideFaces.push({
+      id: `vb${i}`, pts: [
+        p3(R * Math.cos(ang(i)), 52, R * Math.sin(ang(i))),
+        p3(R * Math.cos(ang(j)), 52, R * Math.sin(ang(j))),
+        botPts[j], botPts[i]],
+      fill: '#0e2030', stroke: '#1a3a5a', strokeW: 0.6
+    });
+  }
+
+  const faces = [
+    { id: 'bot', pts: botPts, fill: '#061828', stroke: '#1a3a5a', strokeW: 1 },
+    ...sideFaces,
+    ...layerFaces,
+    { id: 'np', pts: npPts, fill: '#0e2030', fillOp: 0.7, stroke: '#2a4870', strokeW: 1 },
+    { id: 'top', pts: topPts, fill: '#0c2a50', fillOp: 0.3, stroke: '#2a5a90', strokeW: 1.2 },
+  ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a, b) => b.zVal - a.zVal);
+  const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 108);
+
+  // Distribution dome at top
+  const domeCenter = p3(0, YT - 8, 0);
+  // Inlet/outlet pipes
+  const inA = p3(0, YT - 5, -R - 5), inB = p3(0, YT - 5, -R - 30);
+  const outA = p3(0, YB + 5, -R - 5), outB = p3(0, YB + 5, -R - 30);
+
+  const hotDefs = [
+    { id: 'verteilung', x: 0, y: YT - 8, z: 0, label: '⊙ Verteiler', color: '#4a9eff' },
+    { id: 'schichten', x: 0, y: 10, z: 0, label: '▥ Schichten', color: '#34c090' },
+    { id: 'dusenboden', x: 0, y: 52, z: 0, label: '⊞ Düsenboden', color: '#ffaa40' },
+    { id: 'druck', x: R + 20, y: -10, z: 0, label: '◎ dP', color: dpColor },
+  ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
+
+  const FIDATA = {
+    verteilung: { color: '#4a9eff', icon: '⊙', title: 'Verteilerhaube', items: [
+      '🌊 Verteilt Rohwasser gleichmäßig über die Filterfläche',
+      '📐 Ringförmiger Spalt oder Düsenplatte',
+      '🛡 Verhindert Kraterbildung in der Kiesschicht',
+      '⚠ Ungleichmäßige Verteilung → Kurzschlussströmung',
+      '📋 Bei Rückspülung: Wasser strömt von unten nach oben',
+    ]},
+    schichten: { color: '#34c090', icon: '▥', title: 'Filterschichten', items: [
+      '⬆ Quarzkies (4–16 mm): Stützschicht, hält Sand in Position',
+      '⬜ Quarzsand (0,4–1,6 mm): Hauptfilter, Feinstpartikel',
+      '⬛ Aktivkohle (0,8–1,6 mm): Organik, Geruch, Chloramine',
+      '📏 Schichtdicke gesamt: ca. 1,2–1,5 m',
+      '🔬 Filterfeinheit: Partikel ≥ 0,1 µm (mit Flockung)',
+      '📐 Filtergeschwindigkeit: 20–30 m/h bei Druckfiltern',
+    ]},
+    dusenboden: { color: '#ffaa40', icon: '⊞', title: 'Düsenboden', items: [
+      '🔧 Stützt das Filterbett und verteilt Rückspülwasser',
+      '📏 Schlitzdüsen: Spaltweite 0,2–0,4 mm',
+      '🔀 Gleichmäßige Rückspülung über gesamte Bodenfläche',
+      '⚠ Verstopfte Düsen → ungleichmäßige Rückspülung',
+      '📋 Kontrolle bei jeder Filterrevision (jährlich)',
+    ]},
+    druck: { color: dpColor, icon: '◎', title: 'Differenzdruck (ΔP)', items: [
+      `📊 Aktuell: ${dp} bar ${dp > 0.5 ? '⚠ RÜCKSPÜLEN!' : dp > 0.35 ? '(erhöht)' : '(normal)'}`,
+      '📏 Sauber: 0,1–0,2 bar | Verschmutzt: > 0,5 bar',
+      '⏱ Rückspülung bei ΔP > 0,5 bar ODER nach 72 h',
+      '🔄 Rückspülung: 10–15 min mit 40–60 m/h',
+      '🚫 Rückspülwasser → Kanal (nicht zurück ins Becken!)',
+      '📐 DIN 19643: Rückspülprotokoll dokumentieren',
+    ]},
+  };
+  const activeData = spot ? FIDATA[spot] : null;
+
+  return (
+    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
+      <svg viewBox="0 0 300 220" width="100%" height="280px"
+        style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
+        <defs><pattern id="fiGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+        </pattern></defs>
+        <rect width="300" height="220" fill="#040d1a"/>
+        <rect width="300" height="220" fill="url(#fiGrid)"/>
+
+        {sceneFaces.map(f => (
+          <g key={f.id}>
+            {renderDeepDiveFace(f, poly, xrayMode)}
+          </g>
+        ))}
+
+        {/* Distribution dome */}
+        <ellipse cx={domeCenter[0].toFixed(1)} cy={domeCenter[1].toFixed(1)} rx="18" ry="8"
+          fill="#0c2a50" fillOpacity="0.5" stroke="#2a5a90" strokeWidth="1"/>
+
+        {/* Layer labels */}
+        {layers.map(l => {
+          const mid = p3(0, (l.y1 + l.y2) / 2, 0);
+          return <text key={l.id} x={mid[0].toFixed(1)} y={mid[1].toFixed(1)} fill="#b0cce0" fontSize="5.5"
+            fontFamily="monospace" textAnchor="middle" opacity="0.8">{l.label}</text>;
+        })}
+
+        {/* Nozzle dots on düsenboden */}
+        {[[-20, 52, -15], [0, 52, -20], [20, 52, -10], [-15, 52, 10], [15, 52, 15]].map(([x, y, z], i) => {
+          const c = p3(x, y, z);
+          return <circle key={i} cx={c[0].toFixed(1)} cy={c[1].toFixed(1)} r="2" fill="#1a3a5a" stroke="#2a5880" strokeWidth="0.6"/>;
+        })}
+
+        {/* Inlet pipe */}
+        <line x1={inA[0].toFixed(1)} y1={inA[1].toFixed(1)} x2={inB[0].toFixed(1)} y2={inB[1].toFixed(1)}
+          stroke="#1a4060" strokeWidth="8" strokeLinecap="round"/>
+        <line x1={inA[0].toFixed(1)} y1={inA[1].toFixed(1)} x2={inB[0].toFixed(1)} y2={inB[1].toFixed(1)}
+          stroke="#0c2030" strokeWidth="5" strokeLinecap="round"/>
+        <text x={inB[0].toFixed(1)} y={(inB[1] - 6).toFixed(1)} fill="#4a9eff" fontSize="5" fontFamily="monospace" textAnchor="middle">EINLASS</text>
+
+        {/* Outlet pipe */}
+        <line x1={outA[0].toFixed(1)} y1={outA[1].toFixed(1)} x2={outB[0].toFixed(1)} y2={outB[1].toFixed(1)}
+          stroke="#1a4060" strokeWidth="8" strokeLinecap="round"/>
+        <line x1={outA[0].toFixed(1)} y1={outA[1].toFixed(1)} x2={outB[0].toFixed(1)} y2={outB[1].toFixed(1)}
+          stroke="#0c2030" strokeWidth="5" strokeLinecap="round"/>
+        <text x={outB[0].toFixed(1)} y={(outB[1] - 6).toFixed(1)} fill="#34c090" fontSize="5" fontFamily="monospace" textAnchor="middle">AUSLASS</text>
+
+        {/* dP display */}
+        <rect x="232" y="60" width="58" height="42" fill="#0a1a2e" stroke={`${dpColor}80`} strokeWidth="1" rx="4"/>
+        <text x="261" y="74" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">DIFF.-DRUCK</text>
+        <text x="261" y="90" fill={dpColor} fontSize="14" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{dp}</text>
+        <text x="261" y="98" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">bar</text>
+
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot))}
+
+        <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+        </text>
+      </svg>
+      {activeData && (
+        <div style={{ background: 'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop: '2px solid ' + activeData.color, padding: '10px 12px', maxHeight: '180px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span style={{ color: activeData.color, fontSize: '12px', fontWeight: 'bold', fontFamily: 'monospace' }}>{activeData.icon} {activeData.title}</span>
+            <button onClick={() => setSpot(null)} style={{ background: 'transparent', border: '1px solid #1a3a5a', borderRadius: '4px', color: '#5a8090', fontSize: '11px', padding: '2px 7px', cursor: 'pointer' }}>✕</button>
+          </div>
+          {activeData.items.map((item, i) => (
+            <p key={i} style={{ color: '#8ab0c0', fontSize: '10px', fontFamily: 'monospace', margin: '2px 0', lineHeight: '1.5' }}>{item}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Desinfektionsanlage 3D Deep-Dive ────────────────────────────────────────
+function DesinfektionDeepDive({ metrics, xrayMode = false }) {
+  const [rx, setRx] = useState(-18);
+  const [ry, setRy] = useState(22);
+  const [drag, setDrag] = useState(null);
+  const [spot, setSpot] = useState(null);
+  const cl = metrics.freeChlorine;
+  const clOk = cl >= 0.3 && cl <= 0.6;
+  const clColor = clOk ? '#34c090' : cl > 0.8 ? '#d04040' : '#d09030';
+
+  const pt = (e) => e.touches ? e.touches[0] : e;
+  const onDown = (e) => { if (e.target.closest('[data-hotspot]')) return; setDrag({ x: pt(e).clientX, y: pt(e).clientY }); e.preventDefault(); };
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = pt(e).clientX - drag.x, dy = pt(e).clientY - drag.y;
+    setRy(y => y + dx * 0.55);
+    setRx(x => Math.max(-70, Math.min(15, x - dy * 0.4)));
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onUp = () => setDrag(null);
+
+  const p3 = (x, y, z) => {
+    const cY = Math.cos(ry * Math.PI / 180), sY = Math.sin(ry * Math.PI / 180);
+    const cX = Math.cos(rx * Math.PI / 180), sX = Math.sin(rx * Math.PI / 180);
+    const x1 = x * cY - z * sY, z1 = x * sY + z * cY;
+    const y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+    const d = 320 / (320 + z2);
+    return [150 + x1 * d, 108 + y1 * d, z2];
+  };
+  const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
+  const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+  // NaOCl tank: octagonal cylinder at left, R=28, x-offset -55
+  const TR = 28, TN = 8, TX = -55, TTY = -55, TBY = 30;
+  const tAng = i => (i / TN) * Math.PI * 2;
+  const tankTop = Array.from({ length: TN }, (_, i) => p3(TX + TR * Math.cos(tAng(i)), TTY, TR * Math.sin(tAng(i))));
+  const tankBot = Array.from({ length: TN }, (_, i) => p3(TX + TR * Math.cos(tAng(i)), TBY, TR * Math.sin(tAng(i))));
+  // Liquid inside
+  const liqY = TBY - (TBY - TTY) * 0.6;
+  const tankLiq = Array.from({ length: TN }, (_, i) => p3(TX + TR * Math.cos(tAng(i)), liqY, TR * Math.sin(tAng(i))));
+
+  const tankSides = [];
+  for (let i = 0; i < TN; i++) {
+    const j = (i + 1) % TN;
+    tankSides.push({ id: `ts${i}`, pts: [tankTop[i], tankTop[j], tankBot[j], tankBot[i]], fill: '#081e3c', stroke: '#1a3a5a', strokeW: 1 });
+    tankSides.push({ id: `tl${i}`, pts: [tankLiq[i], tankLiq[j], tankBot[j], tankBot[i]], fill: '#001080', fillOp: 0.3, stroke: '#2050a0', strokeW: 0.4 });
+  }
+
+  // CO₂ tank: smaller octagonal cylinder at right-back, R=20, x-offset 30
+  const CR = 20, CX = 30, CTY = -45, CBY = 15;
+  const co2Top = Array.from({ length: TN }, (_, i) => p3(CX + CR * Math.cos(tAng(i)), CTY, CR * Math.sin(tAng(i))));
+  const co2Bot = Array.from({ length: TN }, (_, i) => p3(CX + CR * Math.cos(tAng(i)), CBY, CR * Math.sin(tAng(i))));
+  const co2Sides = [];
+  for (let i = 0; i < TN; i++) {
+    const j = (i + 1) % TN;
+    co2Sides.push({ id: `cs${i}`, pts: [co2Top[i], co2Top[j], co2Bot[j], co2Bot[i]], fill: '#1a1808', stroke: '#3a3020', strokeW: 0.8 });
+  }
+
+  // Main water pipe: horizontal box at y=55, z=0
+  const PY = 55, PH = 12;
+  const pipeFaces = [
+    { id: 'pf', pts: [p3(-90, PY, -PH), p3(90, PY, -PH), p3(90, PY + PH, -PH), p3(-90, PY + PH, -PH)], fill: '#0e1e30', stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'pt', pts: [p3(-90, PY, -PH), p3(90, PY, -PH), p3(90, PY, PH), p3(-90, PY, PH)], fill: '#0c2a50', stroke: '#2a5a90', strokeW: 1 },
+    { id: 'pb', pts: [p3(-90, PY, PH), p3(90, PY, PH), p3(90, PY + PH, PH), p3(-90, PY + PH, PH)], fill: '#081828', stroke: '#1a3a5a', strokeW: 0.8 },
+  ];
+
+  const faces = [
+    ...pipeFaces,
+    { id: 'tbot', pts: tankBot, fill: '#061828', stroke: '#1a3a5a', strokeW: 1 },
+    ...tankSides,
+    { id: 'tliq', pts: tankLiq, fill: '#1a40a0', fillOp: 0.45, stroke: '#4070d0', strokeW: 0.6 },
+    { id: 'ttop', pts: tankTop, fill: '#0c2a50', fillOp: 0.35, stroke: '#2a5a90', strokeW: 1 },
+    { id: 'cbot', pts: co2Bot, fill: '#0a0a04', stroke: '#2a2818', strokeW: 0.8 },
+    ...co2Sides,
+    { id: 'ctop', pts: co2Top, fill: '#1a1808', fillOp: 0.5, stroke: '#3a3020', strokeW: 1 },
+  ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a, b) => b.zVal - a.zVal);
+  const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 108);
+
+  // Dosing line from NaOCl to pipe
+  const doseA = p3(TX, TBY, 0), doseB = p3(TX, PY, 0);
+  // Injection point on pipe
+  const injPt = p3(-20, PY, 0);
+  // Measurement cell downstream
+  const measPt = p3(50, PY, 0);
+  // CO₂ dosing line
+  const co2A = p3(CX, CBY, 0), co2B = p3(CX, PY, 0);
+
+  const hotDefs = [
+    { id: 'naocl', x: TX, y: (TTY + TBY) / 2, z: 0, label: '⬡ NaOCl', color: '#4a9eff' },
+    { id: 'co2', x: CX, y: (CTY + CBY) / 2, z: 0, label: '⬡ CO₂', color: '#d09030' },
+    { id: 'injektion', x: -20, y: PY, z: 0, label: '↓ Injektion', color: '#34c090' },
+    { id: 'messzelle', x: 50, y: PY, z: 0, label: '◎ Messzelle', color: clColor },
+  ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
+
+  const DDATA = {
+    naocl: { color: '#4a9eff', icon: '⬡', title: 'NaOCl-Vorratstank', items: [
+      '💧 Natriumhypochlorit (NaOCl): 12–15 % Aktivchlor',
+      '📏 Dosiermenge: 0,5–2 g/m³ je nach Belastung',
+      '🔧 Membrandosierpumpe: proportional zum Volumenstrom',
+      '⚠ Lagerung: kühl, dunkel, max. 3 Monate (Zerfall!)',
+      '🛡 Auffangwanne + Leckage-Alarm vorgeschrieben',
+      '📋 GHS-Kennzeichnung: ätzend, umweltgefährdend',
+    ]},
+    co2: { color: '#d09030', icon: '⬡', title: 'CO₂ pH-Korrektur', items: [
+      '📐 Ziel-pH: 7,0–7,4 (optimal für Chlorwirkung)',
+      '💨 CO₂ löst sich → Kohlensäure → senkt pH',
+      '⚖ Alternative: Salzsäure (HCl) – aggressiver',
+      '📊 pH-Sonde steuert CO₂-Ventil automatisch',
+      '⚠ pH > 7,5 → Chlor nur noch 50 % wirksam!',
+      '📋 pH-Wert 3× täglich messen und dokumentieren',
+    ]},
+    injektion: { color: '#34c090', icon: '↓', title: 'Injektionspunkt', items: [
+      '📍 Nach Filter, vor Heizung (DIN 19643-Reihenfolge)',
+      '🔧 Impfstelle: T-Stück mit Rückschlagventil',
+      '🌊 Turbulente Strömung für schnelle Durchmischung',
+      '📏 Kontaktzeit: min. 30 s bis zur Messstelle',
+      '⚠ Dosierung VOR der Heizung (Chlor verdampft bei Hitze)',
+      '🔒 Rückschlagventil verhindert Wasserrücktritt in Tank',
+    ]},
+    messzelle: { color: clColor, icon: '◎', title: 'Chlor-Messzelle', items: [
+      `📊 Aktuell: ${cl} mg/L freies Chlor ${clOk ? '✓ IM SOLL' : cl < 0.3 ? '↑ ZU NIEDRIG' : '↓ ZU HOCH'}`,
+      '📏 Sollbereich: 0,3–0,6 mg/L (DIN 19643)',
+      '🔬 DPD-Methode: Farbreaktion → photometrische Messung',
+      '⚙ Online-Sensor: amperometrisch, alle 30 s Messwert',
+      '📋 Manuelle Gegenmessung: 3× täglich mit DPD-Test',
+      '⚠ Gebundenes Chlor (Chloramine) separat prüfen!',
+    ]},
+  };
+  const activeData = spot ? DDATA[spot] : null;
+
+  return (
+    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
+      <svg viewBox="0 0 300 220" width="100%" height="280px"
+        style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
+        <defs><pattern id="dGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+        </pattern></defs>
+        <rect width="300" height="220" fill="#040d1a"/>
+        <rect width="300" height="220" fill="url(#dGrid)"/>
+
+        {sceneFaces.map(f => (
+          <g key={f.id}>
+            {renderDeepDiveFace(f, poly, xrayMode)}
+          </g>
+        ))}
+
+        {/* Tank labels */}
+        {(() => { const c = p3(TX, (TTY + TBY) / 2, 0); return <text x={c[0].toFixed(1)} y={c[1].toFixed(1)} fill="#5090d0" fontSize="7" fontWeight="bold" fontFamily="monospace" textAnchor="middle">NaOCl</text>; })()}
+        {(() => { const c = p3(CX, (CTY + CBY) / 2, 0); return <text x={c[0].toFixed(1)} y={c[1].toFixed(1)} fill="#d09040" fontSize="6" fontWeight="bold" fontFamily="monospace" textAnchor="middle">CO₂</text>; })()}
+
+        {/* Dosing lines */}
+        <line x1={doseA[0].toFixed(1)} y1={doseA[1].toFixed(1)} x2={doseB[0].toFixed(1)} y2={doseB[1].toFixed(1)}
+          stroke="#2a5090" strokeWidth="3" strokeLinecap="round"/>
+        <line x1={doseA[0].toFixed(1)} y1={doseA[1].toFixed(1)} x2={doseB[0].toFixed(1)} y2={doseB[1].toFixed(1)}
+          stroke="#4a9eff" strokeWidth="1.5" opacity="0.6" strokeDasharray="4 3" className="wc-flow" style={{ animationDuration: '1.5s' }}/>
+
+        <line x1={co2A[0].toFixed(1)} y1={co2A[1].toFixed(1)} x2={co2B[0].toFixed(1)} y2={co2B[1].toFixed(1)}
+          stroke="#3a3020" strokeWidth="3" strokeLinecap="round"/>
+        <line x1={co2A[0].toFixed(1)} y1={co2A[1].toFixed(1)} x2={co2B[0].toFixed(1)} y2={co2B[1].toFixed(1)}
+          stroke="#d09040" strokeWidth="1.5" opacity="0.5" strokeDasharray="4 3" className="wc-flow" style={{ animationDuration: '2s' }}/>
+
+        {/* Injection point marker */}
+        <circle cx={injPt[0].toFixed(1)} cy={injPt[1].toFixed(1)} r="5" fill="#0a1828" stroke={clColor} strokeWidth="1.5">
+          <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
+        </circle>
+
+        {/* Measurement cell */}
+        <circle cx={measPt[0].toFixed(1)} cy={measPt[1].toFixed(1)} r="6" fill="#0a1828" stroke={clColor} strokeWidth="2"/>
+        <circle cx={measPt[0].toFixed(1)} cy={measPt[1].toFixed(1)} r="3" fill={clColor} opacity="0.5"/>
+
+        {/* Flow direction on pipe */}
+        {(() => {
+          const a = p3(-70, PY + PH / 2, 0), b = p3(70, PY + PH / 2, 0);
+          return <line x1={a[0].toFixed(1)} y1={a[1].toFixed(1)} x2={b[0].toFixed(1)} y2={b[1].toFixed(1)}
+            stroke="#4a9eff" strokeWidth="2" opacity="0.5" strokeDasharray="8 5" className="wc-flow" style={{ animationDuration: '2s' }}/>;
+        })()}
+
+        {/* Chlorine display */}
+        <rect x="232" y="8" width="60" height="44" fill="#0a1a2e" stroke={`${clColor}80`} strokeWidth="1" rx="4"/>
+        <text x="262" y="20" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">FREIES CHLOR</text>
+        <text x="262" y="36" fill={clColor} fontSize="14" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{cl}</text>
+        <text x="262" y="44" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">mg/L</text>
+        <text x="262" y="50" fill={clColor} fontSize="4.5" fontFamily="monospace" textAnchor="middle">{clOk ? '✓ SOLL' : cl < 0.3 ? '↑ NIEDRIG' : '↓ HOCH'}</text>
+
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot))}
+
+        <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+        </text>
+      </svg>
+      {activeData && (
+        <div style={{ background: 'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop: '2px solid ' + activeData.color, padding: '10px 12px', maxHeight: '180px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span style={{ color: activeData.color, fontSize: '12px', fontWeight: 'bold', fontFamily: 'monospace' }}>{activeData.icon} {activeData.title}</span>
+            <button onClick={() => setSpot(null)} style={{ background: 'transparent', border: '1px solid #1a3a5a', borderRadius: '4px', color: '#5a8090', fontSize: '11px', padding: '2px 7px', cursor: 'pointer' }}>✕</button>
+          </div>
+          {activeData.items.map((item, i) => (
+            <p key={i} style={{ color: '#8ab0c0', fontSize: '10px', fontFamily: 'monospace', margin: '2px 0', lineHeight: '1.5' }}>{item}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Plattenwärmetauscher 3D Deep-Dive ───────────────────────────────────────
+function HeizungDeepDive({ metrics, xrayMode = false }) {
+  const [rx, setRx] = useState(-20);
+  const [ry, setRy] = useState(28);
+  const [drag, setDrag] = useState(null);
+  const [spot, setSpot] = useState(null);
+  const temp = metrics.temperature;
+  const tempOk = temp >= 26 && temp <= 28;
+  const tempColor = tempOk ? '#34c090' : '#d09030';
+
+  const pt = (e) => e.touches ? e.touches[0] : e;
+  const onDown = (e) => { if (e.target.closest('[data-hotspot]')) return; setDrag({ x: pt(e).clientX, y: pt(e).clientY }); e.preventDefault(); };
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = pt(e).clientX - drag.x, dy = pt(e).clientY - drag.y;
+    setRy(y => y + dx * 0.55);
+    setRx(x => Math.max(-70, Math.min(15, x - dy * 0.4)));
+    setDrag({ x: pt(e).clientX, y: pt(e).clientY });
+    e.preventDefault();
+  };
+  const onUp = () => setDrag(null);
+
+  const p3 = (x, y, z) => {
+    const cY = Math.cos(ry * Math.PI / 180), sY = Math.sin(ry * Math.PI / 180);
+    const cX = Math.cos(rx * Math.PI / 180), sX = Math.sin(rx * Math.PI / 180);
+    const x1 = x * cY - z * sY, z1 = x * sY + z * cY;
+    const y1 = y * cX - z1 * sX, z2 = y * sX + z1 * cX;
+    const d = 320 / (320 + z2);
+    return [150 + x1 * d, 108 + y1 * d, z2];
+  };
+  const avgZ = pts => pts.reduce((s, p) => s + p[2], 0) / pts.length;
+  const poly = pts => pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+  // Rectangular block: x ±60, y ±50, z ±30 (plate stack)
+  const XW = 60, YH = 50, ZD = 30;
+  const TFL = p3(-XW, -YH, -ZD), TFR = p3(XW, -YH, -ZD), TBR = p3(XW, -YH, ZD), TBL = p3(-XW, -YH, ZD);
+  const BFL = p3(-XW, YH, -ZD), BFR = p3(XW, YH, -ZD), BBR = p3(XW, YH, ZD), BBL = p3(-XW, YH, ZD);
+
+  // Internal plates (visible through semi-transparent front)
+  const plateCount = 8;
+  const plateGap = (2 * ZD) / (plateCount + 1);
+
+  const faces = [
+    { id: 'bot', pts: [BFL, BFR, BBR, BBL], fill: '#061520', stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'back', pts: [TBL, TBR, BBR, BBL], fill: '#081828', stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'left', pts: [TFL, TBL, BBL, BFL], fill: '#0a1e30', stroke: '#1a3a5a', strokeW: 1, content: 'left' },
+    { id: 'right', pts: [TFR, TBR, BBR, BFR], fill: '#0a1e30', stroke: '#1a3a5a', strokeW: 1, content: 'right' },
+    { id: 'front', pts: [TFL, TFR, BFR, BFL], fill: '#081e3c', fillOp: 0.45, stroke: '#1a3a5a', strokeW: 1 },
+    { id: 'top', pts: [TFL, TFR, TBR, TBL], fill: '#0c2a50', fillOp: 0.35, stroke: '#2a5a90', strokeW: 1 },
+  ].map(f => ({ ...f, zVal: avgZ(f.pts) })).sort((a, b) => b.zVal - a.zVal);
+  const sceneFaces = applyDeepDiveXray(faces, xrayMode, 150, 108);
+
+  // Plate cross-sections (alternating red/blue channels)
+  const plates = [];
+  for (let i = 1; i <= plateCount; i++) {
+    const z = -ZD + i * plateGap;
+    plates.push({
+      z, color: i % 2 === 0 ? '#3a1010' : '#0a2040',
+      top: p3(-XW + 4, -YH + 4, z), bot: p3(-XW + 4, YH - 4, z),
+      topR: p3(XW - 4, -YH + 4, z), botR: p3(XW - 4, YH - 4, z)
+    });
+  }
+
+  // Connection pipes: primary (hot) left side, secondary (cold) right side
+  const primIn = p3(-XW - 5, -YH + 15, 0), primInB = p3(-XW - 30, -YH + 15, 0);
+  const primOut = p3(-XW - 5, YH - 15, 0), primOutB = p3(-XW - 30, YH - 15, 0);
+  const secIn = p3(XW + 5, YH - 15, 0), secInB = p3(XW + 30, YH - 15, 0);
+  const secOut = p3(XW + 5, -YH + 15, 0), secOutB = p3(XW + 30, -YH + 15, 0);
+
+  const hotDefs = [
+    { id: 'platten', x: 0, y: 0, z: 0, label: '▥ Platten', color: '#4a9eff' },
+    { id: 'primaer', x: -XW - 18, y: 0, z: 0, label: '← Primär', color: '#d04040' },
+    { id: 'sekundaer', x: XW + 18, y: 0, z: 0, label: '→ Sekundär', color: '#3080d0' },
+    { id: 'dichtung', x: 0, y: -YH - 5, z: 0, label: '⊙ Dichtung', color: '#ffaa40' },
+  ].map(h => ({ ...h, proj: p3(h.x, h.y, h.z) }));
+
+  const HDATA = {
+    platten: { color: '#4a9eff', icon: '▥', title: 'Wärmetauscherplatten', items: [
+      '🔧 Material: Edelstahl 1.4404 (AISI 316L), 0,5–0,8 mm',
+      '📐 Wellenprofil: Fischgrätmuster für turbulente Strömung',
+      '🔄 Gegenstrom: Primär ↓ / Sekundär ↑ → max. Wärmeübertragung',
+      '📏 Typisch 20–60 Platten je nach Leistung',
+      '⚠ Kalkablagerungen reduzieren Wärmeübergang drastisch',
+      '📋 CIP-Reinigung (Zitronensäure) mind. 1× jährlich',
+    ]},
+    primaer: { color: '#d04040', icon: '←', title: 'Primärkreis (Heizwasser)', items: [
+      '🌡 Vorlauf: 60–90 °C (Fernwärme oder Kessel)',
+      '🌡 Rücklauf: 40–55 °C (nach Wärmeabgabe)',
+      '⚙ Regelventil: steuert Vorlauf-Temperatur',
+      '🔒 Hydraulisch getrennt vom Beckenwasser!',
+      '📊 Wärmemengenzähler für Energiemonitoring',
+      '📐 Leistung: 50–500 kW je nach Beckengröße',
+    ]},
+    sekundaer: { color: '#3080d0', icon: '→', title: 'Sekundärkreis (Beckenwasser)', items: [
+      `🌡 Aktuell: ${temp} °C ${tempOk ? '✓ IM SOLL' : '⚠ PRÜFEN'}`,
+      '📐 Ziel: 26–28 °C (Schwimmer), bis 32 °C (Kinder)',
+      '🌊 Beckenwasser durchströmt Plattenzwischenräume',
+      '📍 Position im Kreislauf: NACH Desinfektion',
+      '⚠ Chlor bei > 35 °C → verstärkter Abbau → nachdosieren',
+      '📋 Temperatur 3× täglich messen und dokumentieren',
+    ]},
+    dichtung: { color: '#ffaa40', icon: '⊙', title: 'Plattendichtungen', items: [
+      '🔧 Material: EPDM oder NBR (chlorbeständig)',
+      '📐 Dichtringe zwischen jeder Platte eingeklebt',
+      '🔀 Lenken Primär- und Sekundärmedium alternierend',
+      '⚠ Defekte Dichtung → Vermischung der Kreisläufe!',
+      '📏 Lebensdauer: 5–10 Jahre je nach Chlorgehalt',
+      '📋 Visuelle Kontrolle bei jeder Revision auf Verformung',
+    ]},
+  };
+  const activeData = spot ? HDATA[spot] : null;
+
+  return (
+    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', background: '#040d1a' }}>
+      <svg viewBox="0 0 300 220" width="100%" height="280px"
+        style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
+        <defs><pattern id="hGrid" width="18" height="18" patternUnits="userSpaceOnUse">
+          <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#0a1e32" strokeWidth="0.4"/>
+        </pattern></defs>
+        <rect width="300" height="220" fill="#040d1a"/>
+        <rect width="300" height="220" fill="url(#hGrid)"/>
+
+        {sceneFaces.map(f => (
+          <g key={f.id}>
+            {renderDeepDiveFace(f, poly, xrayMode)}
+          </g>
+        ))}
+
+        {/* Internal plates */}
+        {plates.map((pl, i) => (
+          <line key={i} x1={pl.top[0].toFixed(1)} y1={pl.top[1].toFixed(1)} x2={pl.bot[0].toFixed(1)} y2={pl.bot[1].toFixed(1)}
+            stroke={pl.color} strokeWidth="2.5" opacity="0.65"/>
+        ))}
+
+        {/* Primary pipes (red/hot) */}
+        <line x1={primIn[0].toFixed(1)} y1={primIn[1].toFixed(1)} x2={primInB[0].toFixed(1)} y2={primInB[1].toFixed(1)}
+          stroke="#3a1010" strokeWidth="8" strokeLinecap="round"/>
+        <line x1={primIn[0].toFixed(1)} y1={primIn[1].toFixed(1)} x2={primInB[0].toFixed(1)} y2={primInB[1].toFixed(1)}
+          stroke="#d04040" strokeWidth="3" opacity="0.7" strokeDasharray="5 4" className="wc-flow" style={{ animationDuration: '1.5s' }}/>
+        <text x={(primInB[0] - 2).toFixed(1)} y={(primInB[1] - 6).toFixed(1)} fill="#d04040" fontSize="5" fontFamily="monospace" textAnchor="end">VORLAUF</text>
+
+        <line x1={primOut[0].toFixed(1)} y1={primOut[1].toFixed(1)} x2={primOutB[0].toFixed(1)} y2={primOutB[1].toFixed(1)}
+          stroke="#3a1010" strokeWidth="8" strokeLinecap="round" opacity="0.6"/>
+        <line x1={primOut[0].toFixed(1)} y1={primOut[1].toFixed(1)} x2={primOutB[0].toFixed(1)} y2={primOutB[1].toFixed(1)}
+          stroke="#d07070" strokeWidth="2" opacity="0.5" strokeDasharray="5 4" className="wc-flow" style={{ animationDuration: '1.5s', animationDirection: 'reverse' }}/>
+        <text x={(primOutB[0] - 2).toFixed(1)} y={(primOutB[1] - 6).toFixed(1)} fill="#d07070" fontSize="5" fontFamily="monospace" textAnchor="end">RÜCKLAUF</text>
+
+        {/* Secondary pipes (blue/cold) */}
+        <line x1={secIn[0].toFixed(1)} y1={secIn[1].toFixed(1)} x2={secInB[0].toFixed(1)} y2={secInB[1].toFixed(1)}
+          stroke="#0a2040" strokeWidth="8" strokeLinecap="round"/>
+        <line x1={secIn[0].toFixed(1)} y1={secIn[1].toFixed(1)} x2={secInB[0].toFixed(1)} y2={secInB[1].toFixed(1)}
+          stroke="#3080d0" strokeWidth="3" opacity="0.7" strokeDasharray="5 4" className="wc-flow" style={{ animationDuration: '1.5s' }}/>
+        <text x={(secInB[0] + 2).toFixed(1)} y={(secInB[1] - 6).toFixed(1)} fill="#3080d0" fontSize="5" fontFamily="monospace">KALT EIN</text>
+
+        <line x1={secOut[0].toFixed(1)} y1={secOut[1].toFixed(1)} x2={secOutB[0].toFixed(1)} y2={secOutB[1].toFixed(1)}
+          stroke="#0a2040" strokeWidth="8" strokeLinecap="round" opacity="0.6"/>
+        <line x1={secOut[0].toFixed(1)} y1={secOut[1].toFixed(1)} x2={secOutB[0].toFixed(1)} y2={secOutB[1].toFixed(1)}
+          stroke="#3080d0" strokeWidth="2" opacity="0.5" strokeDasharray="5 4" className="wc-flow" style={{ animationDuration: '1.5s', animationDirection: 'reverse' }}/>
+        <text x={(secOutB[0] + 2).toFixed(1)} y={(secOutB[1] - 6).toFixed(1)} fill="#3080d0" fontSize="5" fontFamily="monospace">WARM AUS</text>
+
+        {/* Temperature display */}
+        <rect x="232" y="8" width="60" height="40" fill="#0a1a2e" stroke={`${tempColor}80`} strokeWidth="1" rx="4"/>
+        <text x="262" y="20" fill="#456080" fontSize="5" fontFamily="monospace" textAnchor="middle">BECKENWASSER</text>
+        <text x="262" y="34" fill={tempColor} fontSize="13" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{temp}°C</text>
+        <text x="262" y="44" fill={tempColor} fontSize="4.5" fontFamily="monospace" textAnchor="middle">{tempOk ? '✓ IM SOLL' : '⚠ PRÜFEN'}</text>
+
+        {hotDefs.map(h => renderDeepDiveHotspot(h, spot, setSpot))}
+
+        <text x="150" y="215" fill="#1a3a5a" fontSize="6.5" fontFamily="monospace" textAnchor="middle">
+          {drag ? '◉ DREHEN…' : '⟵ ZIEHEN ZUM DREHEN · HOTSPOT ANTIPPEN ⟶'}
+        </text>
+      </svg>
+      {activeData && (
+        <div style={{ background: 'linear-gradient(to bottom,#0a1828,#040d1a)', borderTop: '2px solid ' + activeData.color, padding: '10px 12px', maxHeight: '180px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span style={{ color: activeData.color, fontSize: '12px', fontWeight: 'bold', fontFamily: 'monospace' }}>{activeData.icon} {activeData.title}</span>
+            <button onClick={() => setSpot(null)} style={{ background: 'transparent', border: '1px solid #1a3a5a', borderRadius: '4px', color: '#5a8090', fontSize: '11px', padding: '2px 7px', cursor: 'pointer' }}>✕</button>
+          </div>
+          {activeData.items.map((item, i) => (
+            <p key={i} style={{ color: '#8ab0c0', fontSize: '10px', fontFamily: 'monospace', margin: '2px 0', lineHeight: '1.5' }}>{item}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Station-specific animated SVG illustrations ──────────────────────────────
 function DeepDiveSVG({ stationId, metrics, controls, xrayMode }) {
   const running = controls.pumpEnabled;
@@ -883,236 +2087,39 @@ function DeepDiveSVG({ stationId, metrics, controls, xrayMode }) {
   };
 
   if (stationId === 'pumpe') {
-    return (
-      <svg viewBox="0 0 300 250" width="100%" height="100%">
-        <rect width="300" height="250" fill={B.bg} rx="8"/>
-        <circle cx="148" cy="118" r="72" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <path d="M148 118 Q195 80 200 118 Q205 162 165 188 Q120 208 88 178 Q50 144 62 98 Q74 54 122 44 Q172 36 200 78"
-          fill="none" stroke={B.muted} strokeWidth="8" strokeLinecap="round" opacity="0.35"/>
-        <g style={{ transformOrigin: '148px 118px', animation: running ? 'wcSpin 1.1s linear infinite' : 'none' }}>
-          {[0, 60, 120, 180, 240, 300].map(deg => {
-            const r = (deg * Math.PI) / 180;
-            return <line key={deg} x1="148" y1="118" x2={148 + 46 * Math.cos(r)} y2={118 + 46 * Math.sin(r)}
-              stroke={B.accent} strokeWidth="3.5" strokeLinecap="round" opacity="0.85"/>;
-          })}
-          <circle cx="148" cy="118" r="11" fill={B.panel} stroke={B.accent} strokeWidth="2"/>
-        </g>
-        <rect x="14" y="108" width="62" height="20" fill={B.panel} stroke={B.border} strokeWidth="1.5" rx="3"/>
-        <polygon points="64,118 52,112 52,124" fill={B.accent} opacity="0.7"/>
-        <rect x="136" y="12" width="24" height="56" fill={B.panel} stroke={B.border} strokeWidth="1.5" rx="3"/>
-        <polygon points="148,20 141,34 155,34" fill={B.accent} opacity="0.7"/>
-        <rect x="110" y="192" width="76" height="30" fill={B.panel} stroke={B.border} strokeWidth="1.5" rx="5"/>
-        <text x="148" y="212" fill={B.muted} fontSize="8" fontFamily="monospace" textAnchor="middle">MOTOR</text>
-        <text x="14" y="104" fill={B.muted} fontSize="7" fontFamily="monospace">SAUGSEITE</text>
-        <text x="136" y="9" fill={B.muted} fontSize="7" fontFamily="monospace">DRUCKSEITE</text>
-        <rect x="222" y="56" width="70" height="62" fill={B.panel} stroke={B.border} strokeWidth="1" rx="5"/>
-        <text x="257" y="74" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="middle">VOLUMENSTROM</text>
-        <text x="257" y="98" fill={running ? B.accent : B.muted} fontSize="20" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{metrics.flowRate}</text>
-        <text x="257" y="110" fill={B.muted} fontSize="7" fontFamily="monospace" textAnchor="middle">m³/h</text>
-        <text x="148" y="242" fill={B.muted} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">KREISELPUMPE · RADIALLÄUFER</text>
-      </svg>
-    );
+    return <PumpeDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
   if (stationId === 'filter') {
-    const dp = metrics.differentialPressure;
-    const dpColor = dp > 0.5 ? B.danger : dp > 0.35 ? B.warning : B.success;
-    const layers = [
-      { label: 'QUARZKIES', sub: '4–16mm Stützschicht', fill: '#2a4530', y: 62, h: 46 },
-      { label: 'QUARZSAND', sub: '0,4–1,6mm Hauptfilter', fill: '#384828', y: 108, h: 56 },
-      { label: 'AKTIVKOHLE', sub: '0,8–1,6mm Geruch/Org.', fill: '#1a2838', y: 164, h: 46 },
-    ];
-    return (
-      <svg viewBox="0 0 300 310" width="100%" height="100%">
-        <rect width="300" height="310" fill={B.bg} rx="8"/>
-        {/* Verteilerhaube (top dome) */}
-        <ellipse cx="105" cy="48" rx="55" ry="16" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <text x="105" y="43" fill={B.muted} fontSize="5.5" fontFamily="monospace" textAnchor="middle">VERTEILERHAUBE</text>
-        {/* Distribution spray */}
-        {running && [85, 95, 105, 115, 125].map((fx, i) => (
-          <line key={i} x1="105" y1="62" x2={fx} y2={76}
-            stroke="#4ac8ff" strokeWidth="1" opacity="0.35"
-            strokeDasharray="3 3" className="wc-flow"
-            style={{ animationDuration: '1.3s', animationDelay: `${i * 0.1}s` }}/>
-        ))}
-        {/* Filter body */}
-        <rect x="50" y="46" width="110" height="170" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        {layers.map(l => (
-          <g key={l.label}>
-            <rect x="52" y={l.y} width="106" height={l.h} fill={l.fill} fillOpacity={xrayMode ? 0.9 : 0.5}/>
-            <text x="106" y={l.y + l.h / 2 + 1} fill={B.text} fontSize="6.5" fontFamily="monospace" textAnchor="middle" opacity="0.9">{l.label}</text>
-            <text x="106" y={l.y + l.h / 2 + 10} fill={B.muted} fontSize="5" fontFamily="monospace" textAnchor="middle" opacity="0.7">{l.sub}</text>
-          </g>
-        ))}
-        {/* Düsenboden strip */}
-        <rect x="52" y="210" width="106" height="8" fill="#0e2030" stroke="#2a4870" strokeWidth="0.6" strokeDasharray="3 2"/>
-        {[62, 74, 86, 98, 110, 122, 134, 146].map((dx) => (
-          <circle key={dx} cx={dx} cy={214} r="2" fill="#1a3a5a" stroke="#2a5880" strokeWidth="0.6"/>
-        ))}
-        <text x="160" y="216" fill={B.muted} fontSize="5" fontFamily="monospace">DÜSENBODEN</text>
-        {/* Bottom outlet ellipse */}
-        <ellipse cx="105" cy="218" rx="55" ry="16" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        {/* Inlet arrow */}
-        <polygon points="105,22 99,36 111,36" fill={B.accent} opacity="0.7"/>
-        <line x1="105" y1="30" x2="105" y2="46" stroke={B.accent} strokeWidth="2" opacity="0.6"/>
-        {/* Outlet arrow */}
-        <polygon points="105,272 99,258 111,258" fill={B.accent} opacity="0.7"/>
-        <line x1="105" y1="234" x2="105" y2="258" stroke={B.accent} strokeWidth="2" opacity="0.6"/>
-        {/* Centre flow arrow */}
-        <line x1="105" y1="72" x2="105" y2="202" stroke="#4a9eff" strokeWidth="1.2" strokeDasharray="7 5" opacity="0.2"/>
-        {/* Turbidity sensor */}
-        <circle cx="185" cy="148" r="15" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <circle cx="185" cy="148" r="9" fill={xrayMode ? '#2a5a30' : B.water} opacity={0.6}/>
-        <text x="185" y="172" fill={B.muted} fontSize="5.5" fontFamily="monospace" textAnchor="middle">TRÜBUNG</text>
-        {/* dP gauge */}
-        <rect x="210" y="80" width="80" height="70" fill={B.panel} stroke={`${dpColor}80`} strokeWidth="1" rx="5"/>
-        <text x="250" y="98" fill={B.muted} fontSize="6" fontFamily="monospace" textAnchor="middle">DIFF.-DRUCK</text>
-        <text x="250" y="122" fill={dpColor} fontSize="20" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{dp}</text>
-        <text x="250" y="135" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="middle">bar</text>
-        <text x="250" y="150" fill={dpColor} fontSize="6.5" fontFamily="monospace" textAnchor="middle">{dp > 0.5 ? '⚠ RÜCKSPÜLEN' : dp > 0.35 ? 'ERHÖHT' : '✓ NORMAL'}</text>
-        <text x="105" y="295" fill={B.muted} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">MEHRSCHICHTFILTER · DRUCKFILTER</text>
-      </svg>
-    );
+    return <FilterDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
   if (stationId === 'desinfektion') {
-    const cl = metrics.freeChlorine;
-    const clOk = cl >= 0.3 && cl <= 0.6;
-    const clColor = clOk ? B.success : cl > 0.8 ? B.danger : B.warning;
-    return (
-      <svg viewBox="0 0 300 250" width="100%" height="100%">
-        <rect width="300" height="250" fill={B.bg} rx="8"/>
-        <ellipse cx="80" cy="56" rx="30" ry="10" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <rect x="50" y="54" width="60" height="110" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <ellipse cx="80" cy="164" rx="30" ry="10" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <rect x="55" y="68" width="50" height="88" fill="#001080" fillOpacity="0.25" rx="2"/>
-        <text x="80" y="120" fill="#5090d0" fontSize="11" fontWeight="bold" fontFamily="monospace" textAnchor="middle">NaOCl</text>
-        <text x="80" y="48" fill={B.muted} fontSize="6" fontFamily="monospace" textAnchor="middle">DESINFEKTIONSMITTEL</text>
-        <ellipse cx="172" cy="70" rx="24" ry="8" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <rect x="148" y="68" width="48" height="96" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <ellipse cx="172" cy="164" rx="24" ry="8" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <rect x="152" y="82" width="40" height="74" fill="#402000" fillOpacity="0.3" rx="2"/>
-        <text x="172" y="128" fill="#d09040" fontSize="9" fontWeight="bold" fontFamily="monospace" textAnchor="middle">CO₂</text>
-        <text x="172" y="62" fill={B.muted} fontSize="6" fontFamily="monospace" textAnchor="middle">pH-KORREKTUR</text>
-        <line x1="80" y1="174" x2="80" y2="200" stroke={B.accent} strokeWidth="2" opacity="0.6"/>
-        <line x1="80" y1="200" x2="250" y2="200" stroke={B.accent} strokeWidth="4" strokeLinecap="round" opacity="0.7"/>
-        <circle cx="140" cy="200" r="8" fill={B.panel} stroke={clColor} strokeWidth="2">
-          <animate attributeName="r" values="8;11;8" dur="2s" repeatCount="indefinite"/>
-          <animate attributeName="stroke-opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/>
-        </circle>
-        <rect x="220" y="68" width="72" height="72" fill={B.panel} stroke={`${clColor}80`} strokeWidth="1" rx="5"/>
-        <text x="256" y="86" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="middle">FREIES CHLOR</text>
-        <text x="256" y="110" fill={clColor} fontSize="20" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{cl}</text>
-        <text x="256" y="124" fill={B.muted} fontSize="7" fontFamily="monospace" textAnchor="middle">mg/L</text>
-        <text x="256" y="140" fill={clColor} fontSize="7" fontFamily="monospace" textAnchor="middle">{clOk ? '✓ SOLL' : cl < 0.3 ? '↑ ZU NIEDRIG' : '↓ ZU HOCH'}</text>
-        <text x="150" y="238" fill={B.muted} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">DESINFEKTIONSANLAGE · CHLORIERUNG</text>
-      </svg>
-    );
+    return <DesinfektionDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
   if (stationId === 'heizung') {
-    const temp = metrics.temperature;
-    const tempOk = temp >= 26 && temp <= 28;
-    return (
-      <svg viewBox="0 0 300 240" width="100%" height="100%">
-        <rect width="300" height="240" fill={B.bg} rx="8"/>
-        <rect x="60" y="40" width="160" height="148" fill={B.panel} stroke={B.border} strokeWidth="1.5" rx="4"/>
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
-          <rect key={i} x="68" y={50 + i * 13} width="144" height="10"
-            fill={i % 2 === 0 ? '#3a1010' : '#0a2040'} fillOpacity="0.7" rx="1"/>
-        ))}
-        <polygon points="52,65 62,60 62,70" fill="#d04040" opacity="0.7"/>
-        <polygon points="52,91 62,86 62,96" fill="#d04040" opacity="0.7"/>
-        <polygon points="62,160 52,155 52,165" fill="#d07070" opacity="0.45"/>
-        <text x="38" y="112" fill="#c05050" fontSize="7.5" fontFamily="monospace" textAnchor="middle" transform="rotate(-90,38,112)">PRIMÄR (HEISSWASSER)</text>
-        <polygon points="228,78 238,73 238,83" fill="#3080d0" opacity="0.7"/>
-        <polygon points="228,104 238,99 238,109" fill="#3080d0" opacity="0.7"/>
-        <polygon points="238,130 228,125 228,135" fill="#3080d0" opacity="0.45"/>
-        <text x="262" y="112" fill="#3080d0" fontSize="7.5" fontFamily="monospace" textAnchor="middle" transform="rotate(90,262,112)">SEKUNDÄR (BECKENWASSER)</text>
-        <rect x="75" y="200" width="150" height="26" fill={B.panel} stroke={`${tempOk ? B.success : B.warning}60`} strokeWidth="1" rx="4"/>
-        <text x="150" y="211" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="middle">BECKENWASSERTEMPERATUR</text>
-        <text x="150" y="222" fill={tempOk ? B.success : B.warning} fontSize="8.5" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{temp} °C  {tempOk ? '✓ IM SOLL' : '⚠ PRÜFEN'}</text>
-        <text x="150" y="236" fill={B.muted} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">PLATTENWÄRMETAUSCHER · GEGENSTROM</text>
-      </svg>
-    );
+    return <HeizungDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
   if (stationId === 'schwall') {
-    const level = metrics.surgeLevel;
-    const fillH = Math.round(160 * level / 100);
-    return (
-      <svg viewBox="0 0 300 260" width="100%" height="100%">
-        <rect width="300" height="260" fill={B.bg} rx="8"/>
-        <ellipse cx="120" cy="48" rx="58" ry="14" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <rect x="62" y="46" width="116" height="162" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <ellipse cx="120" cy="208" rx="58" ry="14" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <rect x="64" y={208 - fillH} width="112" height={fillH} fill={B.water} fillOpacity="0.4" rx="2"/>
-        <line x1="64" y1={208 - fillH} x2="176" y2={208 - fillH} stroke="#4ab0ff" strokeWidth="1.5" opacity="0.7">
-          <animate attributeName="y1" values={`${208 - fillH};${204 - fillH};${208 - fillH}`} dur="2.5s" repeatCount="indefinite"/>
-          <animate attributeName="y2" values={`${208 - fillH};${210 - fillH};${208 - fillH}`} dur="2.5s" repeatCount="indefinite"/>
-        </line>
-        <rect x="190" y="46" width="12" height="162" fill={B.muted} fillOpacity="0.15" rx="2"/>
-        <rect x="190" y={208 - fillH} width="12" height={fillH} fill={B.accent} fillOpacity="0.6" rx="2"/>
-        <text x="196" y={Math.max(70, 205 - fillH)} fill={B.accent} fontSize="7" fontFamily="monospace" textAnchor="middle">{level}%</text>
-        <polygon points="62,90 50,84 50,96" fill={B.accent} opacity="0.6"/>
-        <text x="46" y="80" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="end">ÜBERLAUF</text>
-        <polygon points="178,196 190,190 190,202" fill={B.accent} opacity="0.6"/>
-        <text x="194" y="210" fill={B.muted} fontSize="6.5" fontFamily="monospace">ZUR PUMPE</text>
-        <rect x="218" y="82" width="72" height="54" fill={B.panel} stroke={B.border} strokeWidth="1" rx="5"/>
-        <text x="254" y="100" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="middle">FÜLLSTAND</text>
-        <text x="254" y="122" fill={B.accent} fontSize="20" fontWeight="bold" fontFamily="monospace" textAnchor="middle">{level}</text>
-        <text x="254" y="131" fill={B.muted} fontSize="7" fontFamily="monospace" textAnchor="middle">%</text>
-        <text x="120" y="250" fill={B.muted} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">SCHWALLWASSERBEHÄLTER</text>
-      </svg>
-    );
+    return <SchwallDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
   if (stationId === 'flockung') {
-    return (
-      <svg viewBox="0 0 300 250" width="100%" height="100%">
-        <rect width="300" height="250" fill={B.bg} rx="8"/>
-        <ellipse cx="108" cy="52" rx="52" ry="13" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <rect x="56" y="50" width="104" height="132" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <path d="M56 182 L108 210 L160 182 Z" fill={B.panel} stroke={B.border} strokeWidth="1.5"/>
-        <rect x="58" y="68" width="100" height="108" fill={B.water} fillOpacity="0.12"/>
-        {[73, 93, 108, 128, 143, 80, 120, 135].map((x, i) => (
-          <circle key={i} cx={x} cy={100 + (i % 4) * 16} r={1.5 + (i % 3) * 0.6} fill="#7ab5d8" opacity="0.5">
-            <animate attributeName="cy" values={`${100 + (i % 4) * 16};${96 + (i % 4) * 16};${100 + (i % 4) * 16}`} dur={`${1.8 + i * 0.2}s`} repeatCount="indefinite"/>
-          </circle>
-        ))}
-        {[83, 107, 127].map((x, i) => (
-          <circle key={`fl${i}`} cx={x} cy={152 + i * 12} r={3.5 + i} fill="#507090" opacity="0.6">
-            <animate attributeName="cy" values={`${152 + i * 12};${157 + i * 12};${152 + i * 12}`} dur={`${2 + i * 0.3}s`} repeatCount="indefinite"/>
-          </circle>
-        ))}
-        <g style={{ transformOrigin: '108px 100px', animation: running ? 'wcSpin 3s linear infinite' : 'none' }}>
-          <line x1="108" y1="66" x2="108" y2="134" stroke={B.muted} strokeWidth="2" opacity="0.5"/>
-          <line x1="80" y1="90" x2="136" y2="90" stroke={B.muted} strokeWidth="3" strokeLinecap="round" opacity="0.65"/>
-          <line x1="80" y1="112" x2="136" y2="112" stroke={B.muted} strokeWidth="3" strokeLinecap="round" opacity="0.65"/>
-        </g>
-        <line x1="108" y1="36" x2="108" y2="50" stroke={B.accent} strokeWidth="2" opacity="0.7"/>
-        <polygon points="108,36 102,48 114,48" fill={B.accent} opacity="0.7"/>
-        <text x="108" y="28" fill={B.muted} fontSize="6.5" fontFamily="monospace" textAnchor="middle">FLOCKUNGSMITTEL</text>
-        <polygon points="108,222 102,210 114,210" fill={B.accent} opacity="0.7"/>
-        <circle cx="220" cy="82" r="4" fill="#7ab5d8" opacity="0.6"/>
-        <text x="228" y="86" fill={B.muted} fontSize="7" fontFamily="monospace">MIKROPARTIKEL</text>
-        <circle cx="220" cy="102" r="6" fill="#507090" opacity="0.6"/>
-        <text x="230" y="106" fill={B.muted} fontSize="7" fontFamily="monospace">FLOCKEN ≥ 5µm</text>
-        <text x="148" y="242" fill={B.muted} fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="1">FLOCKUNGSBEHÄLTER · KOAGULATION</text>
-      </svg>
-    );
+    return <FlockungDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
   if (stationId === 'becken') {
-    return <BeckenDeepDive metrics={metrics}/>;
+    return <BeckenDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
   if (stationId === 'ueberlauf') {
-    return <UeberlaufDeepDive />;
+    return <UeberlaufDeepDive xrayMode={xrayMode}/>;
   }
 
   if (stationId === 'ruecklauf') {
-    return <RuecklaufDeepDive metrics={metrics}/>;
+    return <RuecklaufDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
   return (
