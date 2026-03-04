@@ -19,6 +19,7 @@ import {
 import {
   formatCondition,
   formatLogTime,
+  isConditionOk,
   isMissionSolved,
   PIPE_PATHS_HORIZONTAL,
   PIPE_PATHS_MOBILE_VERTICAL,
