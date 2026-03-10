@@ -31,6 +31,19 @@ const dampEuler = (
   ref.current.rotation.z = THREE.MathUtils.damp(ref.current.rotation.z, target[2], lambda, delta);
 };
 
+// Data vectors are semantic, then mapped to joint-local Euler axes.
+const toShoulderEuler = (value: [number, number, number]): [number, number, number] => ([
+  value[0] * 0.22,
+  value[1],
+  value[2]
+]);
+
+const toElbowEuler = (value: [number, number, number]): [number, number, number] => ([
+  value[2] * 0.25,
+  value[1] * 0.25,
+  value[0]
+]);
+
 export default function SwimmerModel({
   styleData,
   isPlaying,
@@ -140,10 +153,10 @@ export default function SwimmerModel({
       pelvisRef.current.rotation.z = THREE.MathUtils.damp(pelvisRef.current.rotation.z, -body.roll * 0.58, 8, delta);
     }
 
-    dampEuler(leftShoulderRef, leftArm.shoulder, delta, 10);
-    dampEuler(leftElbowRef, leftArm.elbow, delta, 10);
-    dampEuler(rightShoulderRef, rightArm.shoulder, delta, 10);
-    dampEuler(rightElbowRef, rightArm.elbow, delta, 10);
+    dampEuler(leftShoulderRef, toShoulderEuler(leftArm.shoulder), delta, 14);
+    dampEuler(leftElbowRef, toElbowEuler(leftArm.elbow), delta, 14);
+    dampEuler(rightShoulderRef, toShoulderEuler(rightArm.shoulder), delta, 14);
+    dampEuler(rightElbowRef, toElbowEuler(rightArm.elbow), delta, 14);
 
     const leftHip = body.leftHip + kickWave * kickBlend;
     const rightHip = body.rightHip - kickWave * kickBlend;
