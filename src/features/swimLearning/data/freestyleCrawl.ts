@@ -129,9 +129,9 @@ export const freestyleCrawlStyle: SwimStyleData = {
     }
   ],
   animation: {
-    loopDuration: 4.2,
+    loopDuration: 2.9,
     kickFrequency: 6,
-    kickAmplitude: 0.22,
+    kickAmplitude: 0.2,
     bodyFrames: [
       {
         t: 0,
@@ -199,17 +199,16 @@ export const freestyleCrawlStyle: SwimStyleData = {
       }
     ],
     leftArmFrames: [
-      { t: 0, shoulder: [-0.62, 0.22, -0.12], elbow: [0.65, 0.16, -0.04] },
-      { t: 0.25, shoulder: [0.16, 0.06, -0.64], elbow: [1.08, 0.08, 0.02] },
-      { t: 0.5, shoulder: [0.96, -0.2, -1.24], elbow: [0.78, -0.02, 0.02] },
-      { t: 0.75, shoulder: [-0.36, 0.62, 0.44], elbow: [1.0, 0.1, -0.12] }
+      { t: 0, shoulder: [-0.18, 0.16, -0.12], elbow: [0.35, 0.1, -0.02] },
+      { t: 0.25, shoulder: [0.22, 0.06, -0.58], elbow: [1.08, 0.08, 0.02] },
+      { t: 0.5, shoulder: [0.28, -0.14, -1.08], elbow: [0.76, -0.02, 0.02] },
+      { t: 0.75, shoulder: [-0.14, 0.38, 0.92], elbow: [1.32, 0.12, -0.06] }
     ],
     rightArmFrames: [
-      { t: 0, shoulder: [0.96, -0.2, -1.24], elbow: [0.78, -0.02, 0.02] },
-      { t: 0.25, shoulder: [-0.36, 0.62, 0.44], elbow: [1.0, 0.1, -0.12] },
-      { t: 0.5, shoulder: [-0.62, 0.22, -0.12], elbow: [0.65, 0.16, -0.04] },
-      { t: 0.75, shoulder: [0.16, 0.06, -0.64], elbow: [1.08, 0.08, 0.02] }
+      { t: 0, shoulder: [0.28, -0.14, -1.08], elbow: [0.76, -0.02, 0.02] },
+      { t: 0.25, shoulder: [-0.14, 0.38, 0.92], elbow: [1.32, 0.12, -0.06] },
+      { t: 0.5, shoulder: [-0.18, 0.16, -0.12], elbow: [0.35, 0.1, -0.02] },
+      { t: 0.75, shoulder: [0.22, 0.06, -0.58], elbow: [1.08, 0.08, 0.02] }
     ]
   }
 };
-
