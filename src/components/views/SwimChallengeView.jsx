@@ -1117,33 +1117,88 @@ const {
 
             {/* Bestenliste */}
             {swimChallengeView === 'leaderboard' && (() => {
-              // Aggregiere bestätigte Sessions pro Benutzer
-              const confirmedSessions = swimSessions.filter(s => s.confirmed);
-              const userStats = {};
-
-              confirmedSessions.forEach(session => {
-                const userId = session.user_id;
-                if (!userStats[userId]) {
-                  userStats[userId] = {
-                    user_id: session.user_id,
-                    user_name: session.user_name,
-                    user_role: session.user_role,
-                    total_distance: 0,
-                    total_time: 0,
-                    session_count: 0,
-                    styles: new Set()
+              const now = new Date();
+              const rankingYear = Number.isFinite(Number(swimYear)) ? Number(swimYear) : now.getFullYear();
+              const currentMonthNumber = now.getMonth() + 1;
+              const currentMonthLabel = swimCurrentMonthLabel || now.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }).toUpperCase();
+              const monthNames = ['Januar', 'Februar', 'Maerz', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+              const pastMonthChampions = (Array.isArray(swimMonthlyResults) ? swimMonthlyResults : [])
+                .filter((entry) =>
+                  toSafeInt(entry?.year) === rankingYear
+                  && toSafeInt(entry?.month) > 0
+                  && toSafeInt(entry?.month) < currentMonthNumber
+                  && String(entry?.swimmer_name || '').trim()
+                )
+                .sort((a, b) => toSafeInt(b?.month) - toSafeInt(a?.month));
+              const yearlyChampion = Array.isArray(swimYearlySwimmerRanking) && swimYearlySwimmerRanking.length > 0
+                ? swimYearlySwimmerRanking[0]
+                : null;
+              const parseSessionDateParts = (dateInput) => {
+                const raw = String(dateInput || '').trim();
+                const dateMatch = raw.match(/^(\d{4})-(\d{2})/);
+                if (dateMatch) {
+                  return {
+                    year: Number(dateMatch[1]),
+                    month: Number(dateMatch[2])
                   };
                 }
-                userStats[userId].total_distance += session.distance || 0;
-                userStats[userId].total_time += session.time_minutes || 0;
-                userStats[userId].session_count += 1;
-                userStats[userId].styles.add(session.style);
+                const parsedDate = new Date(raw);
+                if (Number.isNaN(parsedDate.getTime())) return null;
+                return {
+                  year: parsedDate.getFullYear(),
+                  month: parsedDate.getMonth() + 1
+                };
+              };
+              const buildDistanceLeaderboard = (sessionsInput) => {
+                const rankingByUserId = {};
+                sessionsInput.forEach((session) => {
+                  if (!session?.confirmed) return;
+                  const userId = String(session.user_id || '').trim();
+                  if (!userId) return;
+                  if (!rankingByUserId[userId]) {
+                    rankingByUserId[userId] = {
+                      user_id: userId,
+                      user_name: session.user_name || 'Unbekannt',
+                      user_role: session.user_role || 'azubi',
+                      total_distance: 0,
+                      total_time: 0,
+                      session_count: 0
+                    };
+                  }
+                  rankingByUserId[userId].total_distance += toSafeInt(session.distance);
+                  rankingByUserId[userId].total_time += toSafeInt(session.time_minutes);
+                  rankingByUserId[userId].session_count += 1;
+                });
+
+                return Object.values(rankingByUserId).sort((a, b) =>
+                  (b.total_distance - a.total_distance)
+                  || (b.session_count - a.session_count)
+                  || (a.total_time - b.total_time)
+                  || String(a.user_name || '').localeCompare(String(b.user_name || ''), 'de-DE')
+                );
+              };
+              const confirmedSessions = swimSessions.filter((session) => Boolean(session?.confirmed));
+              const yearlyConfirmedSessions = confirmedSessions.filter((session) => {
+                const dateParts = parseSessionDateParts(session?.date);
+                return dateParts?.year === rankingYear;
               });
-
-              // Sortiere nach Gesamtdistanz
-              const leaderboard = Object.values(userStats)
-                .sort((a, b) => b.total_distance - a.total_distance);
-
+              const leaderboard = buildDistanceLeaderboard(yearlyConfirmedSessions);
+              const currentMonthLeaderboard = (Array.isArray(swimMonthlyDistanceRankingCurrentMonth) ? swimMonthlyDistanceRankingCurrentMonth : [])
+                .map((entry) => ({
+                  user_id: entry?.user_id || '',
+                  user_name: entry?.user_name || 'Unbekannt',
+                  user_role: entry?.user_role || 'azubi',
+                  total_distance: toSafeInt(entry?.distance),
+                  total_time: toSafeInt(entry?.time_minutes),
+                  session_count: toSafeInt(entry?.sessions)
+                }))
+                .filter((entry) => entry.user_id)
+                .sort((a, b) =>
+                  (b.total_distance - a.total_distance)
+                  || (b.session_count - a.session_count)
+                  || (a.total_time - b.total_time)
+                  || String(a.user_name || '').localeCompare(String(b.user_name || ''), 'de-DE')
+                );
               const formatMinutes = (minutesInput) => {
                 const minutes = Math.max(0, Number(minutesInput) || 0);
                 if (minutes >= 60) {
@@ -1154,7 +1209,7 @@ const {
 
               const challengeTimeLeaderboards = SWIM_CHALLENGES
                 .map((challenge) => {
-                  const challengeSessions = confirmedSessions.filter(session =>
+                  const challengeSessions = yearlyConfirmedSessions.filter(session =>
                     session.challenge_id === challenge.id
                     && Number(session.time_minutes || 0) > 0
                     && Number(session.distance || 0) > 0
@@ -1210,13 +1265,13 @@ const {
                 <div className="space-y-4">
                   <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
                     <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      🏆 Bestenliste - Gesamtdistanz
+                      🏆 Jahresrangliste Gesamtdistanz ({rankingYear})
                     </h3>
 
                     {leaderboard.length === 0 ? (
                       <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         <span className="text-5xl mb-4 block">🏊</span>
-                        <p>Noch keine bestätigten Einträge vorhanden.</p>
+                        <p>Noch keine bestätigten Einträge im Jahr {rankingYear}.</p>
                         <p className="text-sm mt-2">Trage deine erste Trainingseinheit ein!</p>
                       </div>
                     ) : (
@@ -1250,7 +1305,7 @@ const {
                                   </span>
                                 </div>
                                 <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                  {entry.session_count} Einheiten • ⌀ {avgPace} Min/100m
+                                  {entry.session_count} Einheiten • Ø {avgPace} Min/100m
                                 </div>
                               </div>
                               <div className="text-right">
@@ -1268,9 +1323,87 @@ const {
                     )}
                   </div>
 
+                  <div className="grid lg:grid-cols-2 gap-4">
+                    <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                      <h3 className={`font-bold text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        🏅 Champions der vergangenen Monate ({rankingYear})
+                      </h3>
+                      {yearlyChampion && (
+                        <div className={`mb-3 p-3 rounded-lg ${darkMode ? 'bg-cyan-900/30 border border-cyan-700' : 'bg-cyan-50 border border-cyan-200'}`}>
+                          <div className={`text-sm ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>Bisheriger Jahres-Champion</div>
+                          <div className={`font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>{yearlyChampion.swimmer_name}</div>
+                          <div className={`text-xs ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>
+                            {toSafeInt(yearlyChampion.titles)} Titel • {(toSafeInt(yearlyChampion.total_distance) / 1000).toFixed(1)} km
+                          </div>
+                        </div>
+                      )}
+
+                      {pastMonthChampions.length === 0 ? (
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          Noch keine abgeschlossenen Champion-Monate verfügbar.
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {pastMonthChampions.map((entry) => {
+                            const monthNumber = Math.max(1, Math.min(12, toSafeInt(entry?.month))) - 1;
+                            const monthLabel = monthNames[monthNumber] || `Monat ${toSafeInt(entry?.month)}`;
+                            const winnerName = String(entry?.swimmer_name || '').trim() || 'Unbekannt';
+                            const distanceKm = (toSafeInt(entry?.swimmer_distance) / 1000).toFixed(1);
+                            return (
+                              <div key={entry?.month_key || `${rankingYear}-${monthNumber}`} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'}`}>
+                                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{monthLabel} {toSafeInt(entry?.year)}</div>
+                                <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{winnerName}</div>
+                                <div className={`text-xs ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>{distanceKm} km</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+                      <h3 className={`font-bold text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                        📅 Monatsrangliste Gesamtdistanz ({currentMonthLabel})
+                      </h3>
+                      {currentMonthLeaderboard.length === 0 ? (
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          Noch keine bestätigten Distanz-Einträge im aktuellen Monat.
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {currentMonthLeaderboard.map((entry, index) => {
+                            const isCurrentUser = entry.user_id === user?.id;
+                            return (
+                              <div
+                                key={`month-${entry.user_id}`}
+                                className={`p-3 rounded-lg flex items-center justify-between gap-3 ${
+                                  isCurrentUser
+                                    ? (darkMode ? 'bg-cyan-900/40 border border-cyan-700' : 'bg-cyan-50 border border-cyan-200')
+                                    : (darkMode ? 'bg-slate-700' : 'bg-gray-50')
+                                }`}
+                              >
+                                <div className="min-w-0">
+                                  <div className={`font-medium truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                    {index + 1}. {entry.user_name} {isCurrentUser ? '(Du)' : ''}
+                                  </div>
+                                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    {entry.session_count} Einheiten • {formatMinutes(entry.total_time)}
+                                  </div>
+                                </div>
+                                <div className={`text-sm font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                                  {(entry.total_distance / 1000).toFixed(1)} km
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
                     <h3 className={`font-bold text-lg mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      ⏱️ Schnellste Zeiten pro Challenge
+                      ⏱️ Schnellste Zeiten pro Challenge ({rankingYear})
                     </h3>
                     <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       Gewertet werden bestätigte Challenge-Einheiten nach bester Pace (Sekunden pro 100m).
@@ -1381,12 +1514,12 @@ const {
 
                   {/* Eigene Statistiken */}
                   {(() => {
-                    const myStats = userStats[user?.id];
+                    const myStats = leaderboard.find((entry) => entry.user_id === user?.id) || null;
                     if (!myStats) return null;
-                    const myRank = leaderboard.findIndex(e => e.user_id === user?.id) + 1;
+                    const myRank = leaderboard.findIndex((entry) => entry.user_id === user?.id) + 1;
                     return (
                       <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 to-blue-900' : 'bg-gradient-to-r from-cyan-500 to-blue-600'} text-white rounded-xl p-6 shadow-lg`}>
-                        <h3 className="font-bold text-lg mb-4">📊 Deine Statistiken</h3>
+                        <h3 className="font-bold text-lg mb-4">📊 Deine Jahres-Statistiken</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div className="text-center">
                             <div className="text-3xl font-bold">{myRank}.</div>
@@ -1411,7 +1544,6 @@ const {
                 </div>
               );
             })()}
-
             {/* Team-Battle Detail */}
             {swimChallengeView === 'battle' && (() => {
               const battleStats = swimCurrentMonthBattleStats || calculateTeamBattleStats([], {}, allUsers);
