@@ -125,32 +125,91 @@ const CAMERA_PRESETS = {
   top: { label: 'Top', position: [0.35, 6.1, 1.3], target: [0.0, 0.16, 0] }
 };
 
-const ARM_POSES = {
-  eintauchen: {
-    shoulder: [-0.56, 0.26, -0.14],
-    elbow: [0.62, 0.2, -0.04]
+const REFERENCE_PHASES = [
+  {
+    id: 'phase_1_strecklage',
+    label: 'Phase 1: Strecklage',
+    summary: 'Vorderer Arm lang, Gegenseite beendet den Druck bis zur Huefte.',
+    bodyRoll: -0.1,
+    torsoPitch: -0.065,
+    headYaw: 0,
+    headPitch: 0.06,
+    leftArm: {
+      shoulder: [-0.62, 0.22, -0.12],
+      elbow: [0.65, 0.16, -0.04]
+    },
+    rightArm: {
+      shoulder: [0.92, -0.2, -1.2],
+      elbow: [0.78, -0.02, 0.02]
+    },
+    leftLeg: { hip: -0.05, knee: 0.2, ankle: -0.08 },
+    rightLeg: { hip: 0.21, knee: 0.34, ankle: 0.02 }
   },
-  wasserfassen: {
-    shoulder: [0.06, 0.1, -0.54],
-    elbow: [1.08, 0.1, 0.02]
+  {
+    id: 'phase_2_wasserfassen',
+    label: 'Phase 2: Wasserfassen',
+    summary: 'Vorderarm stellt an, Gegenseite fuehrt den Ellbogen hoch zur Rueckholung.',
+    bodyRoll: 0.02,
+    torsoPitch: -0.06,
+    headYaw: 0,
+    headPitch: 0.06,
+    leftArm: {
+      shoulder: [0.16, 0.06, -0.64],
+      elbow: [1.08, 0.08, 0.02]
+    },
+    rightArm: {
+      shoulder: [-0.28, 0.56, 0.36],
+      elbow: [1.0, 0.08, -0.1]
+    },
+    leftLeg: { hip: 0.18, knee: 0.32, ankle: 0.01 },
+    rightLeg: { hip: -0.08, knee: 0.22, ankle: -0.08 }
   },
-  zugphase: {
-    shoulder: [0.58, -0.12, -0.98],
-    elbow: [1.24, -0.06, 0.07]
+  {
+    id: 'phase_3_druck_streck',
+    label: 'Phase 3: Druckphase',
+    summary: 'Druckarm beschleunigt nach hinten, Gegenseite liegt wieder lang gestreckt.',
+    bodyRoll: 0.11,
+    torsoPitch: -0.06,
+    headYaw: 0.05,
+    headPitch: 0.06,
+    leftArm: {
+      shoulder: [0.96, -0.2, -1.24],
+      elbow: [0.78, -0.02, 0.02]
+    },
+    rightArm: {
+      shoulder: [-0.6, 0.24, -0.14],
+      elbow: [0.66, 0.18, -0.04]
+    },
+    leftLeg: { hip: -0.07, knee: 0.22, ankle: -0.08 },
+    rightLeg: { hip: 0.22, knee: 0.34, ankle: 0.02 }
   },
-  druckphase: {
-    shoulder: [0.96, -0.22, -1.26],
-    elbow: [0.78, -0.02, 0.02]
-  },
-  rueckholphase: {
-    shoulder: [-0.36, 0.62, 0.42],
-    elbow: [1.0, 0.08, -0.12]
+  {
+    id: 'phase_4_rotation_atmung',
+    label: 'Phase 4: Rotation + Atmung',
+    summary: 'Rumpf rotiert zur Atemseite, Mund ist frei, Rueckhol-Ellbogen bleibt hoch.',
+    bodyRoll: 0.19,
+    torsoPitch: -0.055,
+    headYaw: 0.58,
+    headPitch: 0.08,
+    leftArm: {
+      shoulder: [-0.36, 0.62, 0.44],
+      elbow: [1.0, 0.1, -0.12]
+    },
+    rightArm: {
+      shoulder: [0.12, 0.08, -0.72],
+      elbow: [1.12, 0.1, 0.02]
+    },
+    leftLeg: { hip: 0.2, knee: 0.34, ankle: 0.02 },
+    rightLeg: { hip: -0.09, knee: 0.2, ankle: -0.08 }
   }
-};
+];
 
-const NEUTRAL_ARM_POSE = {
-  shoulder: [0.0, 0.0, -0.25],
-  elbow: [0.7, 0.0, 0.0]
+const ARM_PHASE_TO_REFERENCE = {
+  eintauchen: 'phase_1_strecklage',
+  wasserfassen: 'phase_2_wasserfassen',
+  zugphase: 'phase_2_wasserfassen',
+  druckphase: 'phase_3_druck_streck',
+  rueckholphase: 'phase_4_rotation_atmung'
 };
 
 const phaseIndexById = ARM_PHASES.reduce((acc, phase, index) => {
@@ -158,21 +217,16 @@ const phaseIndexById = ARM_PHASES.reduce((acc, phase, index) => {
   return acc;
 }, {});
 
-const asArray3 = (value, fallback = [0, 0, 0]) => {
-  if (!Array.isArray(value) || value.length < 3) return fallback;
-  return [Number(value[0]) || 0, Number(value[1]) || 0, Number(value[2]) || 0];
-};
+const referencePhaseIndexById = REFERENCE_PHASES.reduce((acc, phase, index) => {
+  acc[phase.id] = index;
+  return acc;
+}, {});
 
 const lerpArray3 = (from, to, t) => ([
   THREE.MathUtils.lerp(from[0], to[0], t),
   THREE.MathUtils.lerp(from[1], to[1], t),
   THREE.MathUtils.lerp(from[2], to[2], t)
 ]);
-
-const mirrorPose = (pose) => ({
-  shoulder: [pose.shoulder[0], -pose.shoulder[1], -pose.shoulder[2]],
-  elbow: [pose.elbow[0], -pose.elbow[1], -pose.elbow[2]]
-});
 
 const scalePose = (pose, shoulderScale = 1, elbowScale = 1) => ({
   shoulder: [
@@ -187,25 +241,45 @@ const scalePose = (pose, shoulderScale = 1, elbowScale = 1) => ({
   ]
 });
 
-const getPoseByIndex = (index) => {
-  const safeIndex = ((index % ARM_PHASES.length) + ARM_PHASES.length) % ARM_PHASES.length;
-  const phase = ARM_PHASES[safeIndex];
-  return {
-    shoulder: asArray3(ARM_POSES[phase.id]?.shoulder),
-    elbow: asArray3(ARM_POSES[phase.id]?.elbow)
-  };
+const getReferencePhaseById = (id) => {
+  const index = referencePhaseIndexById[id];
+  return REFERENCE_PHASES[index ?? 0];
 };
 
-const sampleArmPose = (progress) => {
-  const wrapped = ((progress % ARM_PHASES.length) + ARM_PHASES.length) % ARM_PHASES.length;
-  const index = Math.floor(wrapped);
-  const nextIndex = (index + 1) % ARM_PHASES.length;
-  const t = wrapped - index;
-  const a = getPoseByIndex(index);
-  const b = getPoseByIndex(nextIndex);
+const sampleReferencePhase = (progress) => {
+  const safeProgress = ((progress % 1) + 1) % 1;
+  const scaled = safeProgress * REFERENCE_PHASES.length;
+  const index = Math.floor(scaled) % REFERENCE_PHASES.length;
+  const nextIndex = (index + 1) % REFERENCE_PHASES.length;
+  const t = scaled - index;
+  const a = REFERENCE_PHASES[index];
+  const b = REFERENCE_PHASES[nextIndex];
+
   return {
-    shoulder: lerpArray3(a.shoulder, b.shoulder, t),
-    elbow: lerpArray3(a.elbow, b.elbow, t)
+    id: a.id,
+    label: a.label,
+    bodyRoll: THREE.MathUtils.lerp(a.bodyRoll, b.bodyRoll, t),
+    torsoPitch: THREE.MathUtils.lerp(a.torsoPitch, b.torsoPitch, t),
+    headYaw: THREE.MathUtils.lerp(a.headYaw, b.headYaw, t),
+    headPitch: THREE.MathUtils.lerp(a.headPitch, b.headPitch, t),
+    leftArm: {
+      shoulder: lerpArray3(a.leftArm.shoulder, b.leftArm.shoulder, t),
+      elbow: lerpArray3(a.leftArm.elbow, b.leftArm.elbow, t)
+    },
+    rightArm: {
+      shoulder: lerpArray3(a.rightArm.shoulder, b.rightArm.shoulder, t),
+      elbow: lerpArray3(a.rightArm.elbow, b.rightArm.elbow, t)
+    },
+    leftLeg: {
+      hip: THREE.MathUtils.lerp(a.leftLeg.hip, b.leftLeg.hip, t),
+      knee: THREE.MathUtils.lerp(a.leftLeg.knee, b.leftLeg.knee, t),
+      ankle: THREE.MathUtils.lerp(a.leftLeg.ankle, b.leftLeg.ankle, t)
+    },
+    rightLeg: {
+      hip: THREE.MathUtils.lerp(a.rightLeg.hip, b.rightLeg.hip, t),
+      knee: THREE.MathUtils.lerp(a.rightLeg.knee, b.rightLeg.knee, t),
+      ankle: THREE.MathUtils.lerp(a.rightLeg.ankle, b.rightLeg.ankle, t)
+    }
   };
 };
 
@@ -336,69 +410,100 @@ function SwimmerRig({
   useFrame((state, delta) => {
     const elapsed = state.clock.getElapsedTime();
     const baseSpeed = THREE.MathUtils.clamp(speed, 0.45, 1.8);
-    const cycle = elapsed * baseSpeed * 0.96;
-    const bodyRollBase = viewMode === 'deep' && deepDiveFocus === 'atmung' ? 0.21 : 0.15;
-    const bodyRoll = Math.sin(elapsed * baseSpeed * 1.22) * bodyRollBase;
+    const cycle = elapsed * baseSpeed * 0.23;
+    const referenceSample = sampleReferencePhase(cycle);
+    const deepReferenceId = ARM_PHASE_TO_REFERENCE[selectedArmPhase] || REFERENCE_PHASES[0].id;
+    const deepReference = getReferencePhaseById(deepReferenceId);
+    const breathingReference = getReferencePhaseById('phase_4_rotation_atmung');
+
+    const isDeepArm = viewMode === 'deep' && deepDiveFocus === 'armzug';
+    const isDeepKick = viewMode === 'deep' && deepDiveFocus === 'beinschlag';
+    const isDeepBreath = viewMode === 'deep' && deepDiveFocus === 'atmung';
+
+    let bodyRollTarget = referenceSample.bodyRoll;
+    let torsoPitchTarget = referenceSample.torsoPitch;
+
+    if (isDeepArm) {
+      bodyRollTarget = deepReference.bodyRoll * 0.8;
+      torsoPitchTarget = deepReference.torsoPitch;
+    }
+    if (isDeepKick) {
+      bodyRollTarget *= 0.55;
+      torsoPitchTarget -= 0.004;
+    }
+    if (isDeepBreath) {
+      bodyRollTarget = breathingReference.bodyRoll * 1.05;
+      torsoPitchTarget = breathingReference.torsoPitch;
+    }
 
     if (rootRef.current) {
-      const travel = Math.sin(elapsed * baseSpeed * 0.85) * 0.06;
+      const travel = Math.sin(elapsed * baseSpeed * 0.58) * (viewMode === 'full' ? 0.04 : 0.02);
       const cameraYawOffset = cameraPreset === 'front' ? 0.2 : 0;
       rootRef.current.position.x = travel;
-      rootRef.current.position.y = 0.2 + Math.sin(elapsed * baseSpeed * 1.7) * 0.009;
-      rootRef.current.rotation.z = THREE.MathUtils.damp(rootRef.current.rotation.z, bodyRoll, 7, delta);
-      rootRef.current.rotation.y = cameraYawOffset + Math.sin(elapsed * baseSpeed * 0.45) * 0.02;
-      rootRef.current.rotation.x = -0.07 + Math.sin(elapsed * baseSpeed * 1.35) * 0.01;
+      rootRef.current.position.y = 0.2 + Math.sin(elapsed * baseSpeed * 1.2) * 0.006;
+      rootRef.current.rotation.z = THREE.MathUtils.damp(rootRef.current.rotation.z, bodyRollTarget, 7, delta);
+      rootRef.current.rotation.y = cameraYawOffset + Math.sin(elapsed * baseSpeed * 0.35) * 0.014;
+      rootRef.current.rotation.x = THREE.MathUtils.damp(
+        rootRef.current.rotation.x,
+        torsoPitchTarget + Math.sin(elapsed * baseSpeed * 1.3) * 0.006,
+        6,
+        delta
+      );
     }
 
     if (torsoRef.current) {
       torsoRef.current.rotation.x = THREE.MathUtils.damp(
         torsoRef.current.rotation.x,
-        Math.sin(elapsed * baseSpeed * 1.7) * 0.035,
+        torsoPitchTarget + Math.sin(elapsed * baseSpeed * 1.7) * 0.014,
         10,
         delta
       );
     }
 
     if (upperTorsoRef.current) {
-      upperTorsoRef.current.rotation.z = THREE.MathUtils.damp(upperTorsoRef.current.rotation.z, bodyRoll * 0.95, 7, delta);
+      upperTorsoRef.current.rotation.z = THREE.MathUtils.damp(upperTorsoRef.current.rotation.z, bodyRollTarget * 0.96, 7, delta);
       upperTorsoRef.current.rotation.y = THREE.MathUtils.damp(
         upperTorsoRef.current.rotation.y,
-        Math.sin(elapsed * baseSpeed * 0.9) * 0.05,
+        Math.sin(elapsed * baseSpeed * 0.78) * 0.028,
         6,
         delta
       );
     }
     if (pelvisRef.current) {
-      pelvisRef.current.rotation.z = THREE.MathUtils.damp(pelvisRef.current.rotation.z, -bodyRoll * 0.62, 7, delta);
+      pelvisRef.current.rotation.z = THREE.MathUtils.damp(pelvisRef.current.rotation.z, -bodyRollTarget * 0.58, 7, delta);
       pelvisRef.current.rotation.y = THREE.MathUtils.damp(
         pelvisRef.current.rotation.y,
-        -Math.sin(elapsed * baseSpeed * 0.9) * 0.035,
+        -Math.sin(elapsed * baseSpeed * 0.78) * 0.022,
         6,
         delta
       );
     }
 
-    const isDeepArm = viewMode === 'deep' && deepDiveFocus === 'armzug';
-    const isDeepKick = viewMode === 'deep' && deepDiveFocus === 'beinschlag';
-    const isDeepBreath = viewMode === 'deep' && deepDiveFocus === 'atmung';
-
-    let leftArmPose = scalePose(sampleArmPose(cycle), 1.12, 1.08);
-    let rightArmPose = mirrorPose(scalePose(sampleArmPose(cycle + ARM_PHASES.length / 2), 1.12, 1.08));
+    let leftArmPose = scalePose(referenceSample.leftArm, 1.05, 1.05);
+    let rightArmPose = scalePose(referenceSample.rightArm, 1.05, 1.05);
 
     if (isDeepArm) {
-      const pulse = Math.sin(elapsed * 2.3) * 0.05;
-      const basePose = scalePose(getPoseByIndex(selectedPhaseIndex), 1.18, 1.14);
+      const pulse = Math.sin(elapsed * 2.1) * 0.03;
+      const basePose = scalePose(deepReference.leftArm, 1.12, 1.1);
       leftArmPose = {
         shoulder: [basePose.shoulder[0], basePose.shoulder[1] + pulse, basePose.shoulder[2]],
-        elbow: [basePose.elbow[0] + pulse * 0.5, basePose.elbow[1], basePose.elbow[2]]
+        elbow: [basePose.elbow[0] + pulse * 0.35, basePose.elbow[1], basePose.elbow[2]]
       };
-      rightArmPose = mirrorPose(scalePose(NEUTRAL_ARM_POSE, 0.92, 0.92));
+      rightArmPose = scalePose(deepReference.rightArm, 0.74, 0.74);
     } else if (isDeepKick) {
-      leftArmPose = scalePose(sampleArmPose(cycle * 0.48), 0.78, 0.78);
-      rightArmPose = mirrorPose(scalePose(sampleArmPose(cycle * 0.48 + ARM_PHASES.length / 2), 0.78, 0.78));
+      leftArmPose = scalePose(referenceSample.leftArm, 0.82, 0.82);
+      rightArmPose = scalePose(referenceSample.rightArm, 0.82, 0.82);
     } else if (isDeepBreath) {
-      leftArmPose = scalePose(sampleArmPose(cycle * 0.62), 0.92, 0.9);
-      rightArmPose = mirrorPose(scalePose(sampleArmPose(cycle * 0.62 + ARM_PHASES.length / 2), 0.92, 0.9));
+      const breathPulse = Math.sin(elapsed * baseSpeed * 1.25) * 0.03;
+      leftArmPose = {
+        shoulder: [
+          breathingReference.leftArm.shoulder[0],
+          breathingReference.leftArm.shoulder[1] + breathPulse,
+          breathingReference.leftArm.shoulder[2]
+        ],
+        elbow: breathingReference.leftArm.elbow
+      };
+      rightArmPose = scalePose(breathingReference.rightArm, 0.92, 0.9);
     }
 
     dampEuler(leftShoulderRef, leftArmPose.shoulder, delta, 11);
@@ -406,27 +511,65 @@ function SwimmerRig({
     dampEuler(rightShoulderRef, rightArmPose.shoulder, delta, 11);
     dampEuler(rightElbowRef, rightArmPose.elbow, delta, 11);
 
-    const kickWave = Math.sin(elapsed * baseSpeed * (isDeepKick ? 6.8 : 5.4));
-    const positive = Math.max(0, kickWave);
-    const negative = Math.max(0, -kickWave);
+    let leftLegTarget = {
+      hip: referenceSample.leftLeg.hip,
+      knee: referenceSample.leftLeg.knee,
+      ankle: referenceSample.leftLeg.ankle
+    };
+    let rightLegTarget = {
+      hip: referenceSample.rightLeg.hip,
+      knee: referenceSample.rightLeg.knee,
+      ankle: referenceSample.rightLeg.ankle
+    };
 
-    let activeWeight = selectedKickMode === 'aktiv' ? 1 : 0.78;
-    let passiveWeight = selectedKickMode === 'passiv' ? 1 : 0.76;
+    if (viewMode === 'full') {
+      const flutter = Math.sin(elapsed * baseSpeed * 5.5);
+      leftLegTarget.hip += flutter * 0.08;
+      rightLegTarget.hip -= flutter * 0.08;
+      leftLegTarget.knee += Math.max(0, -flutter) * 0.12;
+      rightLegTarget.knee += Math.max(0, flutter) * 0.12;
+      leftLegTarget.ankle += flutter * 0.08;
+      rightLegTarget.ankle -= flutter * 0.08;
+    }
+
     if (isDeepKick) {
-      activeWeight *= 1.18;
-      passiveWeight *= 1.18;
-    }
-    if (isDeepArm) {
-      activeWeight *= 0.68;
-      passiveWeight *= 0.68;
+      const kickWave = Math.sin(elapsed * baseSpeed * 6.2);
+      const down = Math.max(0, kickWave);
+      const up = Math.max(0, -kickWave);
+      const activeGain = selectedKickMode === 'aktiv' ? 0.48 : 0.34;
+      const passiveGain = selectedKickMode === 'passiv' ? 0.42 : 0.28;
+
+      leftLegTarget = {
+        hip: -0.08 + down * activeGain - up * passiveGain,
+        knee: 0.17 + up * (0.36 + passiveGain * 0.24) + down * 0.08,
+        ankle: -0.08 + down * 0.22 - up * 0.14
+      };
+      rightLegTarget = {
+        hip: -0.08 + up * activeGain - down * passiveGain,
+        knee: 0.17 + down * (0.36 + passiveGain * 0.24) + up * 0.08,
+        ankle: -0.08 + up * 0.22 - down * 0.14
+      };
     }
 
-    const leftHipTarget = -0.1 + (positive * 0.56 * activeWeight) - (negative * 0.42 * passiveWeight);
-    const rightHipTarget = -0.1 + (negative * 0.56 * activeWeight) - (positive * 0.42 * passiveWeight);
-    const leftKneeTarget = 0.18 + (negative * 0.48 * passiveWeight) + (positive * 0.14);
-    const rightKneeTarget = 0.18 + (positive * 0.48 * passiveWeight) + (negative * 0.14);
-    const leftAnkleTarget = -0.07 + (positive * 0.24) - (negative * 0.13);
-    const rightAnkleTarget = -0.07 + (negative * 0.24) - (positive * 0.13);
+    if (isDeepArm) {
+      leftLegTarget = {
+        hip: THREE.MathUtils.lerp(leftLegTarget.hip, -0.06, 0.55),
+        knee: THREE.MathUtils.lerp(leftLegTarget.knee, 0.2, 0.55),
+        ankle: THREE.MathUtils.lerp(leftLegTarget.ankle, -0.07, 0.55)
+      };
+      rightLegTarget = {
+        hip: THREE.MathUtils.lerp(rightLegTarget.hip, 0.02, 0.55),
+        knee: THREE.MathUtils.lerp(rightLegTarget.knee, 0.22, 0.55),
+        ankle: THREE.MathUtils.lerp(rightLegTarget.ankle, -0.02, 0.55)
+      };
+    }
+
+    const leftHipTarget = leftLegTarget.hip;
+    const rightHipTarget = rightLegTarget.hip;
+    const leftKneeTarget = leftLegTarget.knee;
+    const rightKneeTarget = rightLegTarget.knee;
+    const leftAnkleTarget = leftLegTarget.ankle;
+    const rightAnkleTarget = rightLegTarget.ankle;
 
     dampEuler(leftHipRef, [leftHipTarget, 0, 0], delta, 10);
     dampEuler(rightHipRef, [rightHipTarget, 0, 0], delta, 10);
@@ -436,12 +579,12 @@ function SwimmerRig({
     dampEuler(rightAnkleRef, [rightAnkleTarget, 0, 0], delta, 10);
 
     if (headRef.current) {
-      let yawTarget = 0;
-      let pitchTarget = 0.06;
+      let yawTarget = referenceSample.headYaw;
+      let pitchTarget = referenceSample.headPitch;
 
       if (selectedBreathingMode === 'zwei_zug') {
         const cyclePhase = ((elapsed * baseSpeed * 0.64) % 1 + 1) % 1;
-        yawTarget = cyclePhase > 0.7 && cyclePhase < 0.9 ? 0.55 : 0;
+        yawTarget = cyclePhase > 0.7 && cyclePhase < 0.9 ? 0.52 : 0;
       } else if (selectedBreathingMode === 'drei_zug') {
         const cyclePhase = ((elapsed * baseSpeed * 0.5) % 1.5 + 1.5) % 1.5;
         if (cyclePhase > 0.2 && cyclePhase < 0.36) yawTarget = -0.5;
@@ -452,8 +595,8 @@ function SwimmerRig({
       }
 
       if (isDeepBreath) {
-        yawTarget *= 1.35;
-        pitchTarget += 0.02;
+        yawTarget = yawTarget === 0 ? breathingReference.headYaw * 0.95 : yawTarget * 1.16;
+        pitchTarget = breathingReference.headPitch + 0.01;
       }
 
       headRef.current.rotation.y = THREE.MathUtils.damp(headRef.current.rotation.y, yawTarget, 8, delta);
@@ -696,6 +839,7 @@ export default function CrawlTechniqueDeepDiveThree() {
   const activeKickMode = KICK_MODES.find((mode) => mode.id === selectedKickMode) || KICK_MODES[0];
   const activeBreathMode = BREATH_MODES.find((mode) => mode.id === selectedBreathingMode) || BREATH_MODES[0];
   const activeKickPhaseIds = KICK_MODE_TO_PHASES[selectedKickMode] || [];
+  const activeReferencePhase = getReferencePhaseById(ARM_PHASE_TO_REFERENCE[selectedArmPhase]);
 
   return (
     <div className="space-y-4">
@@ -787,7 +931,7 @@ export default function CrawlTechniqueDeepDiveThree() {
                 : 'bg-white/90 border-gray-200 text-gray-800'
             }`}
           >
-            <div className="grid gap-1 sm:grid-cols-3">
+            <div className="grid gap-1 sm:grid-cols-4">
               <div className={`text-[11px] rounded px-2 py-1 border ${darkMode ? 'bg-cyan-900/30 border-cyan-600 text-cyan-100' : 'bg-cyan-50 border-cyan-300 text-cyan-800'}`}>
                 Armzug: <span className="font-semibold">{activeArmPhase.label}</span>
               </div>
@@ -796,6 +940,9 @@ export default function CrawlTechniqueDeepDiveThree() {
               </div>
               <div className={`text-[11px] rounded px-2 py-1 border ${darkMode ? 'bg-emerald-900/30 border-emerald-600 text-emerald-100' : 'bg-emerald-50 border-emerald-300 text-emerald-800'}`}>
                 Atmung: <span className="font-semibold">{activeBreathMode.label}</span>
+              </div>
+              <div className={`text-[11px] rounded px-2 py-1 border ${darkMode ? 'bg-violet-900/30 border-violet-600 text-violet-100' : 'bg-violet-50 border-violet-300 text-violet-800'}`}>
+                Referenz: <span className="font-semibold">{activeReferencePhase.label}</span>
               </div>
             </div>
           </div>
@@ -836,7 +983,7 @@ export default function CrawlTechniqueDeepDiveThree() {
 
       {viewMode === 'deep' && (
         <div className={`rounded-xl border p-3 ${darkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-white border-gray-200'}`}>
-          <div className="grid lg:grid-cols-2 gap-3">
+          <div className="grid xl:grid-cols-3 gap-3">
             <div>
               <h3 className={`text-xs font-bold mb-2 ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>
                 Armzugphasen (vollstaendig)
@@ -877,6 +1024,30 @@ export default function CrawlTechniqueDeepDiveThree() {
                       }`}
                     >
                       {phase.label}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <h3 className={`text-xs font-bold mb-2 ${darkMode ? 'text-violet-200' : 'text-violet-700'}`}>
+                Referenzphasen (Vorlagebild)
+              </h3>
+              <div className="grid gap-1.5">
+                {REFERENCE_PHASES.map((phase) => {
+                  const isActive = phase.id === activeReferencePhase.id;
+                  return (
+                    <div
+                      key={phase.id}
+                      className={`text-[11px] rounded px-2 py-1.5 border ${
+                        isActive
+                          ? (darkMode ? 'bg-violet-900/35 border-violet-500 text-violet-100' : 'bg-violet-50 border-violet-400 text-violet-800')
+                          : (darkMode ? 'bg-slate-800/70 border-slate-700 text-slate-300' : 'bg-gray-50 border-gray-200 text-gray-600')
+                      }`}
+                    >
+                      <div className="font-semibold">{phase.label}</div>
+                      <div className="opacity-80">{phase.summary}</div>
                     </div>
                   );
                 })}
@@ -974,6 +1145,9 @@ export default function CrawlTechniqueDeepDiveThree() {
           <p className={`text-xs mt-1 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>{activeArmPhase.hint}</p>
           <p className={`text-xs mt-2 ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>
             Fokus: {activeArmPhase.focus}
+          </p>
+          <p className={`text-[11px] mt-2 ${darkMode ? 'text-violet-200' : 'text-violet-700'}`}>
+            Referenzbild: {activeReferencePhase.label}
           </p>
         </div>
 
