@@ -174,6 +174,19 @@ const mirrorPose = (pose) => ({
   elbow: [pose.elbow[0], -pose.elbow[1], -pose.elbow[2]]
 });
 
+const scalePose = (pose, shoulderScale = 1, elbowScale = 1) => ({
+  shoulder: [
+    pose.shoulder[0] * shoulderScale,
+    pose.shoulder[1] * shoulderScale,
+    pose.shoulder[2] * shoulderScale
+  ],
+  elbow: [
+    pose.elbow[0] * elbowScale,
+    pose.elbow[1] * elbowScale,
+    pose.elbow[2] * elbowScale
+  ]
+});
+
 const getPoseByIndex = (index) => {
   const safeIndex = ((index % ARM_PHASES.length) + ARM_PHASES.length) % ARM_PHASES.length;
   const phase = ARM_PHASES[safeIndex];
@@ -322,56 +335,57 @@ function SwimmerRig({
 
   useFrame((state, delta) => {
     const elapsed = state.clock.getElapsedTime();
-    const baseSpeed = THREE.MathUtils.clamp(speed, 0.4, 1.8);
-    const cycle = elapsed * baseSpeed * 0.92;
-    const bodyRoll = Math.sin(elapsed * baseSpeed * 1.35) * 0.2;
+    const baseSpeed = THREE.MathUtils.clamp(speed, 0.4, 2.2);
+    const motionBoost = viewMode === 'deep' ? 1.15 : 1.38;
+    const cycle = elapsed * baseSpeed * 1.08;
+    const bodyRoll = Math.sin(elapsed * baseSpeed * 1.45) * 0.3 * motionBoost;
 
     if (rootRef.current) {
-      const travel = Math.sin(elapsed * baseSpeed * 0.95) * 0.14;
+      const travel = Math.sin(elapsed * baseSpeed * 1.1) * 0.28;
       const cameraYawOffset = cameraPreset === 'front' ? 0.2 : 0;
       rootRef.current.position.x = travel;
-      rootRef.current.position.y = 0.22 + Math.sin(elapsed * baseSpeed * 1.8) * 0.018;
+      rootRef.current.position.y = 0.2 + Math.sin(elapsed * baseSpeed * 2.1) * 0.032;
       rootRef.current.rotation.z = THREE.MathUtils.damp(rootRef.current.rotation.z, bodyRoll, 7, delta);
-      rootRef.current.rotation.y = cameraYawOffset + Math.sin(elapsed * baseSpeed * 0.5) * 0.035;
-      rootRef.current.rotation.x = -0.04 + Math.sin(elapsed * baseSpeed * 1.6) * 0.015;
+      rootRef.current.rotation.y = cameraYawOffset + Math.sin(elapsed * baseSpeed * 0.8) * 0.07;
+      rootRef.current.rotation.x = -0.08 + Math.sin(elapsed * baseSpeed * 1.95) * 0.03;
     }
 
     if (torsoRef.current) {
       torsoRef.current.rotation.x = THREE.MathUtils.damp(
         torsoRef.current.rotation.x,
-        Math.sin(elapsed * baseSpeed * 1.8) * 0.06,
+        Math.sin(elapsed * baseSpeed * 2.2) * 0.12,
         10,
         delta
       );
     }
 
     if (upperTorsoRef.current) {
-      upperTorsoRef.current.rotation.z = THREE.MathUtils.damp(upperTorsoRef.current.rotation.z, bodyRoll * 0.85, 7, delta);
-      upperTorsoRef.current.rotation.y = THREE.MathUtils.damp(upperTorsoRef.current.rotation.y, Math.sin(elapsed * baseSpeed * 0.9) * 0.08, 6, delta);
+      upperTorsoRef.current.rotation.z = THREE.MathUtils.damp(upperTorsoRef.current.rotation.z, bodyRoll * 0.92, 7, delta);
+      upperTorsoRef.current.rotation.y = THREE.MathUtils.damp(upperTorsoRef.current.rotation.y, Math.sin(elapsed * baseSpeed * 1.1) * 0.14, 6, delta);
     }
     if (pelvisRef.current) {
-      pelvisRef.current.rotation.z = THREE.MathUtils.damp(pelvisRef.current.rotation.z, -bodyRoll * 0.52, 7, delta);
-      pelvisRef.current.rotation.y = THREE.MathUtils.damp(pelvisRef.current.rotation.y, -Math.sin(elapsed * baseSpeed * 0.9) * 0.05, 6, delta);
+      pelvisRef.current.rotation.z = THREE.MathUtils.damp(pelvisRef.current.rotation.z, -bodyRoll * 0.64, 7, delta);
+      pelvisRef.current.rotation.y = THREE.MathUtils.damp(pelvisRef.current.rotation.y, -Math.sin(elapsed * baseSpeed * 1.1) * 0.1, 6, delta);
     }
 
     const isDeepArm = viewMode === 'deep' && deepDiveFocus === 'armzug';
     const isDeepKick = viewMode === 'deep' && deepDiveFocus === 'beinschlag';
     const isDeepBreath = viewMode === 'deep' && deepDiveFocus === 'atmung';
 
-    let leftArmPose = sampleArmPose(cycle);
-    let rightArmPose = mirrorPose(sampleArmPose(cycle + ARM_PHASES.length / 2));
+    let leftArmPose = scalePose(sampleArmPose(cycle), 1.32, 1.26);
+    let rightArmPose = mirrorPose(scalePose(sampleArmPose(cycle + ARM_PHASES.length / 2), 1.32, 1.26));
 
     if (isDeepArm) {
-      const pulse = Math.sin(elapsed * 2.4) * 0.08;
-      const basePose = getPoseByIndex(selectedPhaseIndex);
+      const pulse = Math.sin(elapsed * 3.1) * 0.16;
+      const basePose = scalePose(getPoseByIndex(selectedPhaseIndex), 1.45, 1.36);
       leftArmPose = {
         shoulder: [basePose.shoulder[0], basePose.shoulder[1] + pulse, basePose.shoulder[2]],
         elbow: [basePose.elbow[0] + pulse * 0.5, basePose.elbow[1], basePose.elbow[2]]
       };
-      rightArmPose = mirrorPose(NEUTRAL_ARM_POSE);
+      rightArmPose = mirrorPose(scalePose(NEUTRAL_ARM_POSE, 0.82, 0.82));
     } else if (isDeepKick || isDeepBreath) {
-      leftArmPose = sampleArmPose(cycle * 0.55);
-      rightArmPose = mirrorPose(sampleArmPose(cycle * 0.55 + ARM_PHASES.length / 2));
+      leftArmPose = scalePose(sampleArmPose(cycle * 0.72), 0.95, 0.9);
+      rightArmPose = mirrorPose(scalePose(sampleArmPose(cycle * 0.72 + ARM_PHASES.length / 2), 0.95, 0.9));
     }
 
     dampEuler(leftShoulderRef, leftArmPose.shoulder, delta, 11);
@@ -379,27 +393,27 @@ function SwimmerRig({
     dampEuler(rightShoulderRef, rightArmPose.shoulder, delta, 11);
     dampEuler(rightElbowRef, rightArmPose.elbow, delta, 11);
 
-    const kickWave = Math.sin(elapsed * baseSpeed * (isDeepKick ? 5.9 : 4.8));
+    const kickWave = Math.sin(elapsed * baseSpeed * (isDeepKick ? 7.2 : 5.7));
     const positive = Math.max(0, kickWave);
     const negative = Math.max(0, -kickWave);
 
-    let activeWeight = selectedKickMode === 'aktiv' ? 1 : 0.62;
-    let passiveWeight = selectedKickMode === 'passiv' ? 1 : 0.62;
+    let activeWeight = selectedKickMode === 'aktiv' ? 1.14 : 0.72;
+    let passiveWeight = selectedKickMode === 'passiv' ? 1.14 : 0.72;
     if (isDeepKick) {
-      activeWeight *= 1.25;
-      passiveWeight *= 1.25;
+      activeWeight *= 1.36;
+      passiveWeight *= 1.36;
     }
     if (isDeepArm) {
-      activeWeight *= 0.42;
-      passiveWeight *= 0.42;
+      activeWeight *= 0.52;
+      passiveWeight *= 0.52;
     }
 
-    const leftHipTarget = -0.14 + (positive * 0.8 * activeWeight) - (negative * 0.55 * passiveWeight);
-    const rightHipTarget = -0.14 + (negative * 0.8 * activeWeight) - (positive * 0.55 * passiveWeight);
-    const leftKneeTarget = 0.24 + (negative * 0.62 * passiveWeight) + (positive * 0.18);
-    const rightKneeTarget = 0.24 + (positive * 0.62 * passiveWeight) + (negative * 0.18);
-    const leftAnkleTarget = -0.05 + (positive * 0.42) - (negative * 0.18);
-    const rightAnkleTarget = -0.05 + (negative * 0.42) - (positive * 0.18);
+    const leftHipTarget = -0.18 + (positive * 1.08 * activeWeight) - (negative * 0.78 * passiveWeight);
+    const rightHipTarget = -0.18 + (negative * 1.08 * activeWeight) - (positive * 0.78 * passiveWeight);
+    const leftKneeTarget = 0.19 + (negative * 0.92 * passiveWeight) + (positive * 0.26);
+    const rightKneeTarget = 0.19 + (positive * 0.92 * passiveWeight) + (negative * 0.26);
+    const leftAnkleTarget = -0.1 + (positive * 0.62) - (negative * 0.32);
+    const rightAnkleTarget = -0.1 + (negative * 0.62) - (positive * 0.32);
 
     dampEuler(leftHipRef, [leftHipTarget, 0, 0], delta, 10);
     dampEuler(rightHipRef, [rightHipTarget, 0, 0], delta, 10);
@@ -414,14 +428,14 @@ function SwimmerRig({
 
       if (selectedBreathingMode === 'zwei_zug') {
         const cyclePhase = ((elapsed * baseSpeed * 0.64) % 1 + 1) % 1;
-        yawTarget = cyclePhase > 0.72 && cyclePhase < 0.9 ? 0.58 : 0;
+        yawTarget = cyclePhase > 0.68 && cyclePhase < 0.92 ? 0.72 : 0;
       } else if (selectedBreathingMode === 'drei_zug') {
         const cyclePhase = ((elapsed * baseSpeed * 0.5) % 1.5 + 1.5) % 1.5;
-        if (cyclePhase > 0.2 && cyclePhase < 0.36) yawTarget = -0.5;
-        if (cyclePhase > 1.02 && cyclePhase < 1.2) yawTarget = 0.5;
+        if (cyclePhase > 0.18 && cyclePhase < 0.38) yawTarget = -0.62;
+        if (cyclePhase > 0.98 && cyclePhase < 1.22) yawTarget = 0.62;
       } else {
-        yawTarget = Math.sin(elapsed * baseSpeed * 2.1) * 0.08;
-        pitchTarget = 0.07 + Math.sin(elapsed * baseSpeed * 2.1) * 0.03;
+        yawTarget = Math.sin(elapsed * baseSpeed * 2.1) * 0.12;
+        pitchTarget = 0.08 + Math.sin(elapsed * baseSpeed * 2.1) * 0.04;
       }
 
       if (isDeepBreath) {
@@ -659,11 +673,11 @@ export default function CrawlTechniqueDeepDiveThree() {
   const { darkMode } = useApp();
   const [viewMode, setViewMode] = useState('full');
   const [deepDiveFocus, setDeepDiveFocus] = useState('armzug');
-  const [cameraPreset, setCameraPreset] = useState('iso');
+  const [cameraPreset, setCameraPreset] = useState('side');
   const [selectedArmPhase, setSelectedArmPhase] = useState(ARM_PHASES[0].id);
   const [selectedKickMode, setSelectedKickMode] = useState(KICK_MODES[0].id);
   const [selectedBreathingMode, setSelectedBreathingMode] = useState(BREATH_MODES[1].id);
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(1.2);
 
   const activeArmPhase = ARM_PHASES.find((phase) => phase.id === selectedArmPhase) || ARM_PHASES[0];
   const activeKickMode = KICK_MODES.find((mode) => mode.id === selectedKickMode) || KICK_MODES[0];
@@ -717,7 +731,7 @@ export default function CrawlTechniqueDeepDiveThree() {
           <input
             type="range"
             min="0.5"
-            max="1.6"
+            max="2.2"
             step="0.05"
             value={speed}
             onChange={(event) => setSpeed(Number(event.target.value))}
