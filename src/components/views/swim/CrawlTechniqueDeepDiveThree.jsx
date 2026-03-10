@@ -59,6 +59,38 @@ const KICK_MODES = [
   }
 ];
 
+const KICK_PHASES = [
+  {
+    id: 'aktiv-einleitung',
+    mode: 'aktiv',
+    label: 'Aktiv 1: Einleitung',
+    details: 'Huefte startet den Abwaertsschlag, Knie bleibt kontrolliert.'
+  },
+  {
+    id: 'aktiv-druck',
+    mode: 'aktiv',
+    label: 'Aktiv 2: Druckphase',
+    details: 'Unterschenkel/Fuss beschleunigen nach hinten-unten.'
+  },
+  {
+    id: 'passiv-rueckfuehrung',
+    mode: 'passiv',
+    label: 'Passiv 3: Rueckfuehrung',
+    details: 'Locker nach oben zurueck, ohne Wasser zu bremsen.'
+  },
+  {
+    id: 'passiv-umschalt',
+    mode: 'passiv',
+    label: 'Passiv 4: Umschaltphase',
+    details: 'Fuss strecken und direkt in den naechsten Aktionskick wechseln.'
+  }
+];
+
+const KICK_MODE_TO_PHASES = {
+  aktiv: ['aktiv-einleitung', 'aktiv-druck'],
+  passiv: ['passiv-rueckfuehrung', 'passiv-umschalt']
+};
+
 const BREATH_MODES = [
   {
     id: 'zwei_zug',
@@ -230,13 +262,16 @@ function SwimmerRig({
     const breathFocus = viewMode === 'deep' && deepDiveFocus === 'atmung';
 
     return {
-      torso: darkMode ? '#38bdf8' : '#0284c7',
-      shoulders: armFocus ? '#22d3ee' : (darkMode ? '#94a3b8' : '#64748b'),
-      forearms: armFocus ? '#67e8f9' : (darkMode ? '#cbd5e1' : '#94a3b8'),
-      legs: kickFocus ? '#fb923c' : (darkMode ? '#94a3b8' : '#64748b'),
-      lowerLegs: kickFocus ? '#fdba74' : (darkMode ? '#cbd5e1' : '#94a3b8'),
-      head: breathFocus ? '#fef08a' : '#f5d7b5',
-      cap: darkMode ? '#0ea5e9' : '#0369a1'
+      torsoPrimary: darkMode ? '#0ea5e9' : '#0284c7',
+      torsoSecondary: darkMode ? '#075985' : '#0e7490',
+      joint: darkMode ? '#e2e8f0' : '#475569',
+      armUpper: armFocus ? '#22d3ee' : (darkMode ? '#94a3b8' : '#64748b'),
+      armLower: armFocus ? '#67e8f9' : (darkMode ? '#cbd5e1' : '#94a3b8'),
+      legUpper: kickFocus ? '#fb923c' : (darkMode ? '#94a3b8' : '#64748b'),
+      legLower: kickFocus ? '#fdba74' : (darkMode ? '#cbd5e1' : '#94a3b8'),
+      headShell: breathFocus ? '#fde68a' : (darkMode ? '#d1d5db' : '#f1f5f9'),
+      visor: breathFocus ? '#facc15' : (darkMode ? '#22d3ee' : '#0ea5e9'),
+      fin: darkMode ? '#38bdf8' : '#0c4a6e'
     };
   }, [darkMode, viewMode, deepDiveFocus]);
 
@@ -244,13 +279,15 @@ function SwimmerRig({
     const elapsed = state.clock.getElapsedTime();
     const baseSpeed = THREE.MathUtils.clamp(speed, 0.4, 1.8);
     const cycle = elapsed * baseSpeed * 0.92;
+    const bodyRoll = Math.sin(elapsed * baseSpeed * 1.35) * 0.2;
 
     if (rootRef.current) {
       const travel = Math.sin(elapsed * baseSpeed * 0.95) * 0.14;
       rootRef.current.position.x = travel;
       rootRef.current.position.y = 0.34 + Math.sin(elapsed * baseSpeed * 1.8) * 0.02;
-      rootRef.current.rotation.z = Math.sin(elapsed * baseSpeed * 1.8) * 0.08;
-      rootRef.current.rotation.y = Math.sin(elapsed * baseSpeed * 0.6) * 0.04;
+      rootRef.current.rotation.z = THREE.MathUtils.damp(rootRef.current.rotation.z, bodyRoll, 7, delta);
+      rootRef.current.rotation.y = Math.sin(elapsed * baseSpeed * 0.5) * 0.035;
+      rootRef.current.rotation.x = -0.04 + Math.sin(elapsed * baseSpeed * 1.6) * 0.015;
     }
 
     if (torsoRef.current) {
@@ -341,87 +378,155 @@ function SwimmerRig({
   return (
     <group ref={rootRef} position={[0, 0.34, 0]}>
       <group ref={torsoRef}>
-        <mesh position={[0, 0.08, 0]}>
-          <capsuleGeometry args={[0.22, 1.5, 8, 16]} />
-          <meshStandardMaterial color={colorPalette.torso} roughness={0.45} metalness={0.06} />
+        <mesh position={[0.08, 0.08, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.27, 1.25, 10, 22]} />
+          <meshStandardMaterial color={colorPalette.torsoPrimary} roughness={0.28} metalness={0.38} />
+        </mesh>
+        <mesh position={[-0.4, 0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.2, 0.58, 8, 18]} />
+          <meshStandardMaterial color={colorPalette.torsoSecondary} roughness={0.3} metalness={0.34} />
+        </mesh>
+        <mesh position={[0.14, 0.24, 0]}>
+          <torusGeometry args={[0.22, 0.028, 14, 28]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.54} />
+        </mesh>
+        <mesh position={[-0.58, 0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.17, 0.17, 0.24, 20]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.28} metalness={0.48} />
         </mesh>
       </group>
 
       <group ref={headRef} position={[0.96, 0.2, 0]}>
         <mesh>
-          <sphereGeometry args={[0.2, 24, 24]} />
-          <meshStandardMaterial color={colorPalette.head} roughness={0.5} />
+          <sphereGeometry args={[0.21, 28, 28]} />
+          <meshStandardMaterial color={colorPalette.headShell} roughness={0.32} metalness={0.28} />
         </mesh>
-        <mesh position={[-0.04, 0.09, 0]}>
-          <sphereGeometry args={[0.21, 24, 24]} />
-          <meshStandardMaterial color={colorPalette.cap} roughness={0.42} />
+        <mesh position={[0.15, 0.01, 0]}>
+          <boxGeometry args={[0.16, 0.09, 0.24]} />
+          <meshStandardMaterial color={colorPalette.visor} roughness={0.18} metalness={0.45} />
+        </mesh>
+        <mesh position={[-0.03, 0.11, 0]}>
+          <boxGeometry args={[0.18, 0.08, 0.2]} />
+          <meshStandardMaterial color={colorPalette.torsoSecondary} roughness={0.3} metalness={0.36} />
+        </mesh>
+        <mesh position={[0.08, -0.16, 0]}>
+          <cylinderGeometry args={[0.03, 0.03, 0.12, 12]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.24} metalness={0.56} />
         </mesh>
       </group>
 
-      <group ref={leftShoulderRef} position={[0.56, 0.17, 0.31]}>
-        <mesh position={[0.37, 0, 0]}>
-          <boxGeometry args={[0.74, 0.12, 0.12]} />
-          <meshStandardMaterial color={colorPalette.shoulders} roughness={0.38} />
+      <group ref={leftShoulderRef} position={[0.44, 0.2, 0.33]}>
+        <mesh>
+          <sphereGeometry args={[0.09, 16, 16]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.2} metalness={0.58} />
         </mesh>
-        <group ref={leftElbowRef} position={[0.74, 0, 0]}>
-          <mesh position={[0.33, 0, 0]}>
-            <boxGeometry args={[0.66, 0.11, 0.11]} />
-            <meshStandardMaterial color={colorPalette.forearms} roughness={0.38} />
+        <mesh position={[0.36, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.08, 0.075, 0.72, 20]} />
+          <meshStandardMaterial color={colorPalette.armUpper} roughness={0.3} metalness={0.34} />
+        </mesh>
+        <mesh position={[0.72, 0, 0]}>
+          <sphereGeometry args={[0.075, 14, 14]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.55} />
+        </mesh>
+        <group ref={leftElbowRef} position={[0.72, 0, 0]}>
+          <mesh position={[0.33, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.06, 0.055, 0.66, 20]} />
+            <meshStandardMaterial color={colorPalette.armLower} roughness={0.28} metalness={0.3} />
           </mesh>
-          <mesh position={[0.68, 0, 0]}>
-            <sphereGeometry args={[0.06, 12, 12]} />
-            <meshStandardMaterial color={colorPalette.forearms} />
+          <mesh position={[0.66, 0, 0]}>
+            <sphereGeometry args={[0.055, 12, 12]} />
+            <meshStandardMaterial color={colorPalette.joint} roughness={0.24} metalness={0.48} />
+          </mesh>
+          <mesh position={[0.82, 0, 0]}>
+            <boxGeometry args={[0.24, 0.04, 0.16]} />
+            <meshStandardMaterial color={colorPalette.fin} roughness={0.36} metalness={0.1} />
           </mesh>
         </group>
       </group>
 
-      <group ref={rightShoulderRef} position={[0.56, 0.17, -0.31]}>
-        <mesh position={[0.37, 0, 0]}>
-          <boxGeometry args={[0.74, 0.12, 0.12]} />
-          <meshStandardMaterial color={colorPalette.shoulders} roughness={0.38} />
+      <group ref={rightShoulderRef} position={[0.44, 0.2, -0.33]}>
+        <mesh>
+          <sphereGeometry args={[0.09, 16, 16]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.2} metalness={0.58} />
         </mesh>
-        <group ref={rightElbowRef} position={[0.74, 0, 0]}>
-          <mesh position={[0.33, 0, 0]}>
-            <boxGeometry args={[0.66, 0.11, 0.11]} />
-            <meshStandardMaterial color={colorPalette.forearms} roughness={0.38} />
+        <mesh position={[0.36, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.08, 0.075, 0.72, 20]} />
+          <meshStandardMaterial color={colorPalette.armUpper} roughness={0.3} metalness={0.34} />
+        </mesh>
+        <mesh position={[0.72, 0, 0]}>
+          <sphereGeometry args={[0.075, 14, 14]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.55} />
+        </mesh>
+        <group ref={rightElbowRef} position={[0.72, 0, 0]}>
+          <mesh position={[0.33, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.06, 0.055, 0.66, 20]} />
+            <meshStandardMaterial color={colorPalette.armLower} roughness={0.28} metalness={0.3} />
           </mesh>
-          <mesh position={[0.68, 0, 0]}>
-            <sphereGeometry args={[0.06, 12, 12]} />
-            <meshStandardMaterial color={colorPalette.forearms} />
+          <mesh position={[0.66, 0, 0]}>
+            <sphereGeometry args={[0.055, 12, 12]} />
+            <meshStandardMaterial color={colorPalette.joint} roughness={0.24} metalness={0.48} />
+          </mesh>
+          <mesh position={[0.82, 0, 0]}>
+            <boxGeometry args={[0.24, 0.04, 0.16]} />
+            <meshStandardMaterial color={colorPalette.fin} roughness={0.36} metalness={0.1} />
           </mesh>
         </group>
       </group>
 
-      <group ref={leftHipRef} position={[-0.64, -0.03, 0.16]}>
-        <mesh position={[-0.36, 0, 0]}>
-          <boxGeometry args={[0.72, 0.14, 0.14]} />
-          <meshStandardMaterial color={colorPalette.legs} roughness={0.38} />
+      <group ref={leftHipRef} position={[-0.56, -0.05, 0.19]}>
+        <mesh>
+          <sphereGeometry args={[0.095, 16, 16]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.24} metalness={0.54} />
         </mesh>
-        <group ref={leftKneeRef} position={[-0.72, 0, 0]}>
-          <mesh position={[-0.34, 0, 0]}>
-            <boxGeometry args={[0.68, 0.12, 0.12]} />
-            <meshStandardMaterial color={colorPalette.lowerLegs} roughness={0.38} />
+        <mesh position={[-0.34, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.09, 0.08, 0.68, 20]} />
+          <meshStandardMaterial color={colorPalette.legUpper} roughness={0.3} metalness={0.3} />
+        </mesh>
+        <mesh position={[-0.68, 0, 0]}>
+          <sphereGeometry args={[0.078, 14, 14]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.24} metalness={0.5} />
+        </mesh>
+        <group ref={leftKneeRef} position={[-0.68, 0, 0]}>
+          <mesh position={[-0.32, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.07, 0.06, 0.64, 20]} />
+            <meshStandardMaterial color={colorPalette.legLower} roughness={0.28} metalness={0.25} />
           </mesh>
-          <mesh position={[-0.72, -0.01, 0]}>
-            <boxGeometry args={[0.24, 0.05, 0.11]} />
-            <meshStandardMaterial color={colorPalette.lowerLegs} roughness={0.4} />
+          <mesh position={[-0.64, 0, 0]}>
+            <sphereGeometry args={[0.055, 12, 12]} />
+            <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.46} />
+          </mesh>
+          <mesh position={[-0.84, -0.01, 0]}>
+            <boxGeometry args={[0.32, 0.04, 0.16]} />
+            <meshStandardMaterial color={colorPalette.fin} roughness={0.38} metalness={0.1} />
           </mesh>
         </group>
       </group>
 
-      <group ref={rightHipRef} position={[-0.64, -0.03, -0.16]}>
-        <mesh position={[-0.36, 0, 0]}>
-          <boxGeometry args={[0.72, 0.14, 0.14]} />
-          <meshStandardMaterial color={colorPalette.legs} roughness={0.38} />
+      <group ref={rightHipRef} position={[-0.56, -0.05, -0.19]}>
+        <mesh>
+          <sphereGeometry args={[0.095, 16, 16]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.24} metalness={0.54} />
         </mesh>
-        <group ref={rightKneeRef} position={[-0.72, 0, 0]}>
-          <mesh position={[-0.34, 0, 0]}>
-            <boxGeometry args={[0.68, 0.12, 0.12]} />
-            <meshStandardMaterial color={colorPalette.lowerLegs} roughness={0.38} />
+        <mesh position={[-0.34, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.09, 0.08, 0.68, 20]} />
+          <meshStandardMaterial color={colorPalette.legUpper} roughness={0.3} metalness={0.3} />
+        </mesh>
+        <mesh position={[-0.68, 0, 0]}>
+          <sphereGeometry args={[0.078, 14, 14]} />
+          <meshStandardMaterial color={colorPalette.joint} roughness={0.24} metalness={0.5} />
+        </mesh>
+        <group ref={rightKneeRef} position={[-0.68, 0, 0]}>
+          <mesh position={[-0.32, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.07, 0.06, 0.64, 20]} />
+            <meshStandardMaterial color={colorPalette.legLower} roughness={0.28} metalness={0.25} />
           </mesh>
-          <mesh position={[-0.72, -0.01, 0]}>
-            <boxGeometry args={[0.24, 0.05, 0.11]} />
-            <meshStandardMaterial color={colorPalette.lowerLegs} roughness={0.4} />
+          <mesh position={[-0.64, 0, 0]}>
+            <sphereGeometry args={[0.055, 12, 12]} />
+            <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.46} />
+          </mesh>
+          <mesh position={[-0.84, -0.01, 0]}>
+            <boxGeometry args={[0.32, 0.04, 0.16]} />
+            <meshStandardMaterial color={colorPalette.fin} roughness={0.38} metalness={0.1} />
           </mesh>
         </group>
       </group>
@@ -486,6 +591,7 @@ export default function CrawlTechniqueDeepDiveThree() {
   const activeArmPhase = ARM_PHASES.find((phase) => phase.id === selectedArmPhase) || ARM_PHASES[0];
   const activeKickMode = KICK_MODES.find((mode) => mode.id === selectedKickMode) || KICK_MODES[0];
   const activeBreathMode = BREATH_MODES.find((mode) => mode.id === selectedBreathingMode) || BREATH_MODES[0];
+  const activeKickPhaseIds = KICK_MODE_TO_PHASES[selectedKickMode] || [];
 
   return (
     <div className="space-y-4">
@@ -544,9 +650,74 @@ export default function CrawlTechniqueDeepDiveThree() {
       </div>
 
       <div
-        className={`rounded-xl border overflow-hidden ${darkMode ? 'border-slate-700 bg-slate-950' : 'border-gray-200 bg-cyan-50'}`}
+        className={`relative rounded-xl border overflow-hidden ${darkMode ? 'border-slate-700 bg-slate-950' : 'border-gray-200 bg-cyan-50'}`}
         style={{ height: MODEL_HEIGHT }}
       >
+        {viewMode === 'deep' && (
+          <div
+            className={`absolute top-3 left-3 z-20 max-w-md rounded-lg border p-2.5 backdrop-blur-sm ${
+              darkMode
+                ? 'bg-slate-900/80 border-slate-700 text-slate-100'
+                : 'bg-white/90 border-gray-200 text-gray-800'
+            }`}
+          >
+            <div>
+              <div className={`text-[11px] font-bold mb-1 ${deepDiveFocus === 'armzug' ? (darkMode ? 'text-cyan-200' : 'text-cyan-700') : (darkMode ? 'text-slate-300' : 'text-gray-700')}`}>
+                Armzugphasen (vollstaendig)
+              </div>
+              <div className="grid sm:grid-cols-2 gap-1">
+                {ARM_PHASES.map((phase, index) => {
+                  const isActive = phase.id === selectedArmPhase;
+                  return (
+                    <div
+                      key={phase.id}
+                      className={`text-[11px] rounded px-2 py-1 border ${
+                        isActive
+                          ? (darkMode ? 'bg-cyan-900/40 border-cyan-500 text-cyan-100' : 'bg-cyan-50 border-cyan-400 text-cyan-800')
+                          : (darkMode ? 'bg-slate-800/70 border-slate-700 text-slate-300' : 'bg-gray-50 border-gray-200 text-gray-600')
+                      }`}
+                    >
+                      {index + 1}. {phase.label}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-2">
+              <div className={`text-[11px] font-bold mb-1 ${deepDiveFocus === 'beinschlag' ? (darkMode ? 'text-orange-200' : 'text-orange-700') : (darkMode ? 'text-slate-300' : 'text-gray-700')}`}>
+                Beinschlagphasen (aktiv + passiv)
+              </div>
+              <div className="grid sm:grid-cols-2 gap-1">
+                {KICK_PHASES.map((phase) => {
+                  const isModePhase = activeKickPhaseIds.includes(phase.id);
+                  return (
+                    <div
+                      key={phase.id}
+                      className={`text-[11px] rounded px-2 py-1 border ${
+                        isModePhase
+                          ? (darkMode ? 'bg-orange-900/35 border-orange-500 text-orange-100' : 'bg-orange-50 border-orange-400 text-orange-800')
+                          : (darkMode ? 'bg-slate-800/70 border-slate-700 text-slate-300' : 'bg-gray-50 border-gray-200 text-gray-600')
+                      }`}
+                    >
+                      {phase.label}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-2 text-[11px]">
+              <div className={`font-bold mb-1 ${deepDiveFocus === 'atmung' ? (darkMode ? 'text-emerald-200' : 'text-emerald-700') : (darkMode ? 'text-slate-300' : 'text-gray-700')}`}>
+                Atemtechnik-Deep-Dive
+              </div>
+              <div className={darkMode ? 'text-slate-300' : 'text-gray-700'}>
+                Aktuell: <span className="font-semibold">{activeBreathMode.label}</span> - Kopfrotation und Ausatemrhythmus werden gezielt hervorgehoben.
+              </div>
+            </div>
+          </div>
+        )}
+
         <Canvas dpr={[1, 1.8]} camera={{ position: [0, 1.35, 5.4], fov: 44 }}>
           <color attach="background" args={[darkMode ? '#020617' : '#e0f7ff']} />
           <fog attach="fog" args={[darkMode ? '#020617' : '#d9f7ff', 5, 12]} />
@@ -668,10 +839,17 @@ export default function CrawlTechniqueDeepDiveThree() {
         </div>
 
         <div className={`rounded-xl border p-3 ${darkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-gray-200'}`}>
-          <h4 className={`text-xs font-bold tracking-wide mb-2 ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>Aktiver Kick</h4>
+          <h4 className={`text-xs font-bold tracking-wide mb-2 ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>Aktueller Kick-Modus</h4>
           <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{activeKickMode.label}</div>
           <p className={`text-xs mt-1 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>{activeKickMode.hint}</p>
           <p className={`text-xs mt-2 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>{activeKickMode.details}</p>
+          <div className="mt-2 space-y-1">
+            {KICK_PHASES.filter((phase) => activeKickPhaseIds.includes(phase.id)).map((phase) => (
+              <div key={phase.id} className={`text-[11px] ${darkMode ? 'text-orange-100' : 'text-orange-800'}`}>
+                • {phase.label}: {phase.details}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className={`rounded-xl border p-3 ${darkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-gray-200'}`}>
