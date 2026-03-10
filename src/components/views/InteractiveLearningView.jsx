@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 
 const LazyWaterCycleView = lazy(() => import('./WaterCycleView'));
 const LazyHeartDeepDiveThree = lazy(() => import('./health/HeartDeepDiveThree'));
+const LazyCrawlTechniqueDeepDiveThree = lazy(() => import('./swim/CrawlTechniqueDeepDiveThree'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -155,7 +156,7 @@ const LEARNING_CATEGORIES = [
         name: 'Schwimmtechniken',
         description: 'Brust, Kraul, Ruecken und Delphin mit Technikschritten',
         icon: '🏊',
-        available: false,
+        available: true,
       },
       {
         id: 'starts-wenden',
@@ -415,6 +416,32 @@ const InteractiveLearningView = () => {
     );
   }
 
+  if (activeModule === 'schwimmtechniken') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurueck zu Schwimmen & Rettung
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade 3D-Kraultechnik...
+            </div>
+          )}
+        >
+          <LazyCrawlTechniqueDeepDiveThree />
+        </Suspense>
+      </div>
+    );
+  }
   if (activeModule === 'herz' || activeModule === 'blutkreislauf-gross-klein') {
     const initialTab = activeModule === 'blutkreislauf-gross-klein' ? 'kreislauf' : 'anatomie';
     const initialScene = activeModule === 'blutkreislauf-gross-klein' ? 'circulation' : 'heart';
