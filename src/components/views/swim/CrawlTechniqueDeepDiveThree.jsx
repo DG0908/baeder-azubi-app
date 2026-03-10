@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useApp } from '../../../context/AppContext';
@@ -118,6 +118,13 @@ const DEEP_DIVE_FOCUS = [
   { id: 'atmung', label: 'Atem-Fokus' }
 ];
 
+const CAMERA_PRESETS = {
+  iso: { label: 'Iso', position: [0, 1.35, 5.4], target: [0, 0.25, 0] },
+  side: { label: 'Seite', position: [0, 0.9, 6.3], target: [0, 0.16, 0] },
+  front: { label: 'Front', position: [5.2, 1.0, 0], target: [0.1, 0.18, 0] },
+  top: { label: 'Top', position: [0, 6.6, 0.01], target: [0, 0.2, 0] }
+};
+
 const ARM_POSES = {
   eintauchen: {
     shoulder: [-0.2, 0.35, -0.15],
@@ -196,6 +203,23 @@ const dampEuler = (targetRef, target, delta, lambda = 10) => {
   targetRef.current.rotation.z = THREE.MathUtils.damp(targetRef.current.rotation.z, target[2], lambda, delta);
 };
 
+function CameraPresetController({ cameraPreset = 'iso' }) {
+  const { camera } = useThree();
+
+  useFrame((_, delta) => {
+    const preset = CAMERA_PRESETS[cameraPreset] || CAMERA_PRESETS.iso;
+    camera.position.x = THREE.MathUtils.damp(camera.position.x, preset.position[0], 5.5, delta);
+    camera.position.y = THREE.MathUtils.damp(camera.position.y, preset.position[1], 5.5, delta);
+    camera.position.z = THREE.MathUtils.damp(camera.position.z, preset.position[2], 5.5, delta);
+
+    const lookAtVector = new THREE.Vector3(preset.target[0], preset.target[1], preset.target[2]);
+    camera.lookAt(lookAtVector);
+    camera.updateProjectionMatrix();
+  });
+
+  return null;
+}
+
 function WaterEnvironment({ darkMode }) {
   const rippleRef = useRef(null);
   useFrame((state, delta) => {
@@ -242,6 +266,8 @@ function SwimmerRig({
 }) {
   const rootRef = useRef(null);
   const torsoRef = useRef(null);
+  const upperTorsoRef = useRef(null);
+  const pelvisRef = useRef(null);
   const headRef = useRef(null);
 
   const leftShoulderRef = useRef(null);
@@ -251,8 +277,10 @@ function SwimmerRig({
 
   const leftHipRef = useRef(null);
   const leftKneeRef = useRef(null);
+  const leftAnkleRef = useRef(null);
   const rightHipRef = useRef(null);
   const rightKneeRef = useRef(null);
+  const rightAnkleRef = useRef(null);
 
   const selectedPhaseIndex = phaseIndexById[selectedArmPhase] ?? 0;
 
@@ -262,16 +290,18 @@ function SwimmerRig({
     const breathFocus = viewMode === 'deep' && deepDiveFocus === 'atmung';
 
     return {
-      torsoPrimary: darkMode ? '#0ea5e9' : '#0284c7',
-      torsoSecondary: darkMode ? '#075985' : '#0e7490',
-      joint: darkMode ? '#e2e8f0' : '#475569',
-      armUpper: armFocus ? '#22d3ee' : (darkMode ? '#94a3b8' : '#64748b'),
-      armLower: armFocus ? '#67e8f9' : (darkMode ? '#cbd5e1' : '#94a3b8'),
-      legUpper: kickFocus ? '#fb923c' : (darkMode ? '#94a3b8' : '#64748b'),
-      legLower: kickFocus ? '#fdba74' : (darkMode ? '#cbd5e1' : '#94a3b8'),
-      headShell: breathFocus ? '#fde68a' : (darkMode ? '#d1d5db' : '#f1f5f9'),
-      visor: breathFocus ? '#facc15' : (darkMode ? '#22d3ee' : '#0ea5e9'),
-      fin: darkMode ? '#38bdf8' : '#0c4a6e'
+      skin: breathFocus ? '#ffd8b8' : '#f2c8a5',
+      skinShade: '#e6b38d',
+      suitMain: darkMode ? '#0ea5e9' : '#0284c7',
+      suitAccent: darkMode ? '#155e75' : '#0369a1',
+      joint: darkMode ? '#aab5c8' : '#8b95a8',
+      armUpper: armFocus ? '#22d3ee' : '#f1c39e',
+      armLower: armFocus ? '#67e8f9' : '#eebd96',
+      legUpper: kickFocus ? '#fb923c' : (darkMode ? '#60a5fa' : '#0ea5e9'),
+      legLower: kickFocus ? '#fdba74' : (darkMode ? '#7dd3fc' : '#38bdf8'),
+      cap: darkMode ? '#1d4ed8' : '#1e40af',
+      goggle: breathFocus ? '#22d3ee' : '#334155',
+      foot: '#f2c8a5'
     };
   }, [darkMode, viewMode, deepDiveFocus]);
 
@@ -297,6 +327,15 @@ function SwimmerRig({
         10,
         delta
       );
+    }
+
+    if (upperTorsoRef.current) {
+      upperTorsoRef.current.rotation.z = THREE.MathUtils.damp(upperTorsoRef.current.rotation.z, bodyRoll * 0.85, 7, delta);
+      upperTorsoRef.current.rotation.y = THREE.MathUtils.damp(upperTorsoRef.current.rotation.y, Math.sin(elapsed * baseSpeed * 0.9) * 0.08, 6, delta);
+    }
+    if (pelvisRef.current) {
+      pelvisRef.current.rotation.z = THREE.MathUtils.damp(pelvisRef.current.rotation.z, -bodyRoll * 0.52, 7, delta);
+      pelvisRef.current.rotation.y = THREE.MathUtils.damp(pelvisRef.current.rotation.y, -Math.sin(elapsed * baseSpeed * 0.9) * 0.05, 6, delta);
     }
 
     const isDeepArm = viewMode === 'deep' && deepDiveFocus === 'armzug';
@@ -343,11 +382,15 @@ function SwimmerRig({
     const rightHipTarget = -0.14 + (negative * 0.8 * activeWeight) - (positive * 0.55 * passiveWeight);
     const leftKneeTarget = 0.24 + (negative * 0.62 * passiveWeight) + (positive * 0.18);
     const rightKneeTarget = 0.24 + (positive * 0.62 * passiveWeight) + (negative * 0.18);
+    const leftAnkleTarget = -0.05 + (positive * 0.42) - (negative * 0.18);
+    const rightAnkleTarget = -0.05 + (negative * 0.42) - (positive * 0.18);
 
     dampEuler(leftHipRef, [leftHipTarget, 0, 0], delta, 10);
     dampEuler(rightHipRef, [rightHipTarget, 0, 0], delta, 10);
     dampEuler(leftKneeRef, [leftKneeTarget, 0, 0], delta, 10);
     dampEuler(rightKneeRef, [rightKneeTarget, 0, 0], delta, 10);
+    dampEuler(leftAnkleRef, [leftAnkleTarget, 0, 0], delta, 10);
+    dampEuler(rightAnkleRef, [rightAnkleTarget, 0, 0], delta, 10);
 
     if (headRef.current) {
       let yawTarget = 0;
@@ -378,40 +421,52 @@ function SwimmerRig({
   return (
     <group ref={rootRef} position={[0, 0.34, 0]}>
       <group ref={torsoRef}>
+        <group ref={upperTorsoRef}>
         <mesh position={[0.08, 0.08, 0]} rotation={[0, 0, Math.PI / 2]}>
           <capsuleGeometry args={[0.27, 1.25, 10, 22]} />
-          <meshStandardMaterial color={colorPalette.torsoPrimary} roughness={0.28} metalness={0.38} />
+          <meshStandardMaterial color={colorPalette.suitMain} roughness={0.42} metalness={0.12} />
+        </mesh>
+        <mesh position={[0.06, 0.08, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.22, 1.05, 10, 20]} />
+          <meshStandardMaterial color={colorPalette.skin} roughness={0.58} metalness={0.02} transparent opacity={0.36} />
         </mesh>
         <mesh position={[-0.4, 0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
           <capsuleGeometry args={[0.2, 0.58, 8, 18]} />
-          <meshStandardMaterial color={colorPalette.torsoSecondary} roughness={0.3} metalness={0.34} />
+          <meshStandardMaterial color={colorPalette.suitAccent} roughness={0.45} metalness={0.14} />
         </mesh>
         <mesh position={[0.14, 0.24, 0]}>
           <torusGeometry args={[0.22, 0.028, 14, 28]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.54} />
+          <meshStandardMaterial color={colorPalette.suitAccent} roughness={0.34} metalness={0.08} />
         </mesh>
         <mesh position={[-0.58, 0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.17, 0.17, 0.24, 20]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.28} metalness={0.48} />
+          <meshStandardMaterial color={colorPalette.suitAccent} roughness={0.36} metalness={0.12} />
         </mesh>
+        </group>
+        <group ref={pelvisRef}>
+          <mesh position={[-0.56, -0.03, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.16, 0.48, 8, 16]} />
+            <meshStandardMaterial color={colorPalette.suitMain} roughness={0.42} metalness={0.12} />
+          </mesh>
+        </group>
       </group>
 
       <group ref={headRef} position={[0.96, 0.2, 0]}>
         <mesh>
           <sphereGeometry args={[0.21, 28, 28]} />
-          <meshStandardMaterial color={colorPalette.headShell} roughness={0.32} metalness={0.28} />
+          <meshStandardMaterial color={colorPalette.skin} roughness={0.58} metalness={0.02} />
         </mesh>
         <mesh position={[0.15, 0.01, 0]}>
           <boxGeometry args={[0.16, 0.09, 0.24]} />
-          <meshStandardMaterial color={colorPalette.visor} roughness={0.18} metalness={0.45} />
+          <meshStandardMaterial color={colorPalette.goggle} roughness={0.24} metalness={0.4} />
         </mesh>
         <mesh position={[-0.03, 0.11, 0]}>
           <boxGeometry args={[0.18, 0.08, 0.2]} />
-          <meshStandardMaterial color={colorPalette.torsoSecondary} roughness={0.3} metalness={0.36} />
+          <meshStandardMaterial color={colorPalette.cap} roughness={0.42} metalness={0.08} />
         </mesh>
         <mesh position={[0.08, -0.16, 0]}>
           <cylinderGeometry args={[0.03, 0.03, 0.12, 12]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.24} metalness={0.56} />
+          <meshStandardMaterial color={colorPalette.skinShade} roughness={0.52} metalness={0.02} />
         </mesh>
       </group>
 
@@ -439,7 +494,7 @@ function SwimmerRig({
           </mesh>
           <mesh position={[0.82, 0, 0]}>
             <boxGeometry args={[0.24, 0.04, 0.16]} />
-            <meshStandardMaterial color={colorPalette.fin} roughness={0.36} metalness={0.1} />
+            <meshStandardMaterial color={colorPalette.skin} roughness={0.5} metalness={0.02} />
           </mesh>
         </group>
       </group>
@@ -468,7 +523,7 @@ function SwimmerRig({
           </mesh>
           <mesh position={[0.82, 0, 0]}>
             <boxGeometry args={[0.24, 0.04, 0.16]} />
-            <meshStandardMaterial color={colorPalette.fin} roughness={0.36} metalness={0.1} />
+            <meshStandardMaterial color={colorPalette.skin} roughness={0.5} metalness={0.02} />
           </mesh>
         </group>
       </group>
@@ -491,14 +546,16 @@ function SwimmerRig({
             <cylinderGeometry args={[0.07, 0.06, 0.64, 20]} />
             <meshStandardMaterial color={colorPalette.legLower} roughness={0.28} metalness={0.25} />
           </mesh>
-          <mesh position={[-0.64, 0, 0]}>
-            <sphereGeometry args={[0.055, 12, 12]} />
-            <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.46} />
-          </mesh>
-          <mesh position={[-0.84, -0.01, 0]}>
-            <boxGeometry args={[0.32, 0.04, 0.16]} />
-            <meshStandardMaterial color={colorPalette.fin} roughness={0.38} metalness={0.1} />
-          </mesh>
+          <group ref={leftAnkleRef} position={[-0.64, 0, 0]}>
+            <mesh>
+              <sphereGeometry args={[0.055, 12, 12]} />
+              <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.46} />
+            </mesh>
+            <mesh position={[-0.22, -0.01, 0]}>
+              <boxGeometry args={[0.32, 0.04, 0.16]} />
+              <meshStandardMaterial color={colorPalette.foot} roughness={0.5} metalness={0.02} />
+            </mesh>
+          </group>
         </group>
       </group>
 
@@ -520,14 +577,16 @@ function SwimmerRig({
             <cylinderGeometry args={[0.07, 0.06, 0.64, 20]} />
             <meshStandardMaterial color={colorPalette.legLower} roughness={0.28} metalness={0.25} />
           </mesh>
-          <mesh position={[-0.64, 0, 0]}>
-            <sphereGeometry args={[0.055, 12, 12]} />
-            <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.46} />
-          </mesh>
-          <mesh position={[-0.84, -0.01, 0]}>
-            <boxGeometry args={[0.32, 0.04, 0.16]} />
-            <meshStandardMaterial color={colorPalette.fin} roughness={0.38} metalness={0.1} />
-          </mesh>
+          <group ref={rightAnkleRef} position={[-0.64, 0, 0]}>
+            <mesh>
+              <sphereGeometry args={[0.055, 12, 12]} />
+              <meshStandardMaterial color={colorPalette.joint} roughness={0.22} metalness={0.46} />
+            </mesh>
+            <mesh position={[-0.22, -0.01, 0]}>
+              <boxGeometry args={[0.32, 0.04, 0.16]} />
+              <meshStandardMaterial color={colorPalette.foot} roughness={0.5} metalness={0.02} />
+            </mesh>
+          </group>
         </group>
       </group>
 
@@ -583,6 +642,7 @@ export default function CrawlTechniqueDeepDiveThree() {
   const { darkMode } = useApp();
   const [viewMode, setViewMode] = useState('full');
   const [deepDiveFocus, setDeepDiveFocus] = useState('armzug');
+  const [cameraPreset, setCameraPreset] = useState('iso');
   const [selectedArmPhase, setSelectedArmPhase] = useState(ARM_PHASES[0].id);
   const [selectedKickMode, setSelectedKickMode] = useState(KICK_MODES[0].id);
   const [selectedBreathingMode, setSelectedBreathingMode] = useState(BREATH_MODES[1].id);
@@ -646,6 +706,28 @@ export default function CrawlTechniqueDeepDiveThree() {
             onChange={(event) => setSpeed(Number(event.target.value))}
             className="w-full mt-1"
           />
+        </div>
+
+        <div className="mt-3">
+          <div className={`text-xs font-semibold mb-1 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
+            Videoanalyse-Perspektive
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(CAMERA_PRESETS).map(([presetKey, preset]) => (
+              <button
+                key={presetKey}
+                type="button"
+                onClick={() => setCameraPreset(presetKey)}
+                className={`px-2.5 py-1.5 rounded-md text-[11px] font-bold transition-colors ${
+                  cameraPreset === presetKey
+                    ? 'bg-cyan-500 text-white'
+                    : (darkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')
+                }`}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -719,6 +801,7 @@ export default function CrawlTechniqueDeepDiveThree() {
         )}
 
         <Canvas dpr={[1, 1.8]} camera={{ position: [0, 1.35, 5.4], fov: 44 }}>
+          <CameraPresetController cameraPreset={cameraPreset} />
           <color attach="background" args={[darkMode ? '#020617' : '#e0f7ff']} />
           <fog attach="fog" args={[darkMode ? '#020617' : '#d9f7ff', 5, 12]} />
           <ambientLight intensity={darkMode ? 0.68 : 0.82} />
@@ -740,9 +823,9 @@ export default function CrawlTechniqueDeepDiveThree() {
             enablePan={false}
             minDistance={3.3}
             maxDistance={8}
-            minPolarAngle={Math.PI * 0.2}
-            maxPolarAngle={Math.PI * 0.48}
-            target={[0.0, 0.25, 0]}
+            minPolarAngle={0.02}
+            maxPolarAngle={Math.PI / 2 - 0.02}
+            target={CAMERA_PRESETS[cameraPreset]?.target || [0.0, 0.25, 0]}
           />
         </Canvas>
       </div>
