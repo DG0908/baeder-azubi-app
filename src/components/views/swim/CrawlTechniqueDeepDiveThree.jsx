@@ -246,6 +246,17 @@ function WaterEnvironment({ darkMode }) {
         <meshBasicMaterial color={darkMode ? '#4cc9ff' : '#22b6ff'} transparent opacity={0.16} />
       </mesh>
 
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.18, 0]}>
+        <planeGeometry args={[22, 16, 1, 1]} />
+        <meshStandardMaterial
+          color={darkMode ? '#67e8f9' : '#d9f5ff'}
+          metalness={0.02}
+          roughness={0.16}
+          transparent
+          opacity={darkMode ? 0.19 : 0.24}
+        />
+      </mesh>
+
       {[-2.4, 0, 2.4].map((zOffset) => (
         <mesh key={zOffset} rotation={[Math.PI / 2, 0, 0]} position={[0, -0.08, zOffset]}>
           <cylinderGeometry args={[0.04, 0.04, 15.5, 20]} />
@@ -290,21 +301,22 @@ function SwimmerRig({
     const armFocus = viewMode === 'deep' && deepDiveFocus === 'armzug';
     const kickFocus = viewMode === 'deep' && deepDiveFocus === 'beinschlag';
     const breathFocus = viewMode === 'deep' && deepDiveFocus === 'atmung';
+    const skinBase = darkMode ? '#eec19c' : '#efc5a4';
 
     return {
-      skin: breathFocus ? '#ffd8b8' : '#f2c8a5',
-      skinShade: '#e6b38d',
-      suitMain: darkMode ? '#0ea5e9' : '#0284c7',
-      suitAccent: darkMode ? '#155e75' : '#0369a1',
-      joint: darkMode ? '#cbd5e1' : '#94a3b8',
-      armUpper: armFocus ? '#22d3ee' : '#f1c39e',
-      armLower: armFocus ? '#67e8f9' : '#eebd96',
-      legUpper: kickFocus ? '#fb923c' : (darkMode ? '#60a5fa' : '#0ea5e9'),
-      legLower: kickFocus ? '#fdba74' : (darkMode ? '#7dd3fc' : '#38bdf8'),
-      cap: darkMode ? '#1d4ed8' : '#1e40af',
-      goggle: breathFocus ? '#22d3ee' : '#334155',
-      foot: '#f2c8a5',
-      seam: darkMode ? '#082f49' : '#164e63'
+      skin: breathFocus ? '#ffd6b6' : skinBase,
+      skinShade: darkMode ? '#d2a17b' : '#d4a37f',
+      suitMain: darkMode ? '#ea580c' : '#dc5d2f',
+      suitAccent: darkMode ? '#c2410c' : '#b94824',
+      joint: darkMode ? '#e3b691' : '#d8ab86',
+      armUpper: armFocus ? '#22d3ee' : skinBase,
+      armLower: armFocus ? '#67e8f9' : (darkMode ? '#e4b28d' : '#e9b894'),
+      legUpper: kickFocus ? '#fb923c' : skinBase,
+      legLower: kickFocus ? '#fdba74' : (darkMode ? '#dfad89' : '#e4b28d'),
+      cap: darkMode ? '#0b1120' : '#111827',
+      goggle: breathFocus ? '#22d3ee' : '#1f2937',
+      foot: darkMode ? '#e8ba95' : '#efc49f',
+      seam: darkMode ? '#7c2d12' : '#8a3417'
     };
   }, [darkMode, viewMode, deepDiveFocus]);
 
@@ -318,7 +330,7 @@ function SwimmerRig({
       const travel = Math.sin(elapsed * baseSpeed * 0.95) * 0.14;
       const cameraYawOffset = cameraPreset === 'front' ? 0.2 : 0;
       rootRef.current.position.x = travel;
-      rootRef.current.position.y = 0.34 + Math.sin(elapsed * baseSpeed * 1.8) * 0.02;
+      rootRef.current.position.y = 0.22 + Math.sin(elapsed * baseSpeed * 1.8) * 0.018;
       rootRef.current.rotation.z = THREE.MathUtils.damp(rootRef.current.rotation.z, bodyRoll, 7, delta);
       rootRef.current.rotation.y = cameraYawOffset + Math.sin(elapsed * baseSpeed * 0.5) * 0.035;
       rootRef.current.rotation.x = -0.04 + Math.sin(elapsed * baseSpeed * 1.6) * 0.015;
@@ -423,161 +435,173 @@ function SwimmerRig({
   });
 
   return (
-    <group ref={rootRef} position={[0, 0.34, 0]}>
+    <group ref={rootRef} position={[0, 0.22, 0]}>
       <group ref={torsoRef}>
         <group ref={upperTorsoRef}>
-          <mesh position={[0.06, 0.12, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.31, 1.16, 14, 28]} />
-            <meshStandardMaterial color={colorPalette.suitMain} roughness={0.58} metalness={0.04} />
+          <mesh position={[0.22, 0.18, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.25, 0.52, 14, 24]} />
+            <meshStandardMaterial color={colorPalette.skin} roughness={0.72} metalness={0.01} />
           </mesh>
-          <mesh position={[0.26, 0.13, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.22, 0.45, 12, 20]} />
-            <meshStandardMaterial color={colorPalette.suitAccent} roughness={0.62} metalness={0.03} />
+          <mesh position={[-0.1, 0.11, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.24, 0.62, 14, 24]} />
+            <meshStandardMaterial color={colorPalette.skin} roughness={0.72} metalness={0.01} />
           </mesh>
-          <mesh position={[-0.14, 0.13, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.24, 0.64, 12, 20]} />
-            <meshStandardMaterial color={colorPalette.suitAccent} roughness={0.62} metalness={0.03} />
+          <mesh position={[-0.44, 0.04, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.2, 0.42, 12, 20]} />
+            <meshStandardMaterial color={colorPalette.skinShade} roughness={0.76} metalness={0.01} />
           </mesh>
-          <mesh position={[0.06, 0.12, 0]}>
-            <torusGeometry args={[0.33, 0.018, 10, 48]} />
-            <meshStandardMaterial color={colorPalette.seam} roughness={0.5} metalness={0.02} />
+          <mesh position={[-0.08, 0.1, 0]}>
+            <torusGeometry args={[0.31, 0.015, 10, 40]} />
+            <meshStandardMaterial color={colorPalette.seam} roughness={0.52} metalness={0.01} />
           </mesh>
         </group>
 
         <group ref={pelvisRef}>
           <mesh position={[-0.62, -0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.2, 0.46, 10, 18]} />
-            <meshStandardMaterial color={colorPalette.suitMain} roughness={0.58} metalness={0.04} />
+            <capsuleGeometry args={[0.22, 0.38, 12, 20]} />
+            <meshStandardMaterial color={colorPalette.suitMain} roughness={0.62} metalness={0.02} />
+          </mesh>
+          <mesh position={[-0.62, -0.09, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.17, 0.16, 10, 16]} />
+            <meshStandardMaterial color={colorPalette.suitAccent} roughness={0.64} metalness={0.02} />
           </mesh>
         </group>
       </group>
 
       <group ref={headRef} position={[0.98, 0.2, 0]}>
-        <mesh>
-          <sphereGeometry args={[0.235, 28, 28]} />
-          <meshStandardMaterial color={colorPalette.skin} roughness={0.68} metalness={0.02} />
+        <mesh scale={[1.08, 0.98, 0.9]}>
+          <sphereGeometry args={[0.22, 28, 28]} />
+          <meshStandardMaterial color={colorPalette.skin} roughness={0.74} metalness={0.01} />
         </mesh>
-        <mesh position={[0.11, 0.01, 0]}>
-          <boxGeometry args={[0.21, 0.1, 0.27]} />
-          <meshStandardMaterial color={colorPalette.goggle} roughness={0.3} metalness={0.2} />
+        <mesh position={[0.09, 0.07, 0]} scale={[1.15, 0.62, 0.94]}>
+          <sphereGeometry args={[0.18, 20, 20]} />
+          <meshStandardMaterial color={colorPalette.cap} roughness={0.46} metalness={0.04} />
         </mesh>
-        <mesh position={[-0.05, 0.12, 0]}>
-          <capsuleGeometry args={[0.1, 0.22, 8, 12]} />
-          <meshStandardMaterial color={colorPalette.cap} roughness={0.5} metalness={0.03} />
+        <mesh position={[0.18, 0.01, 0]}>
+          <boxGeometry args={[0.16, 0.07, 0.24]} />
+          <meshStandardMaterial color={colorPalette.goggle} roughness={0.28} metalness={0.22} />
         </mesh>
-        <mesh position={[0.12, -0.17, 0]}>
-          <capsuleGeometry args={[0.035, 0.08, 6, 10]} />
-          <meshStandardMaterial color={colorPalette.skinShade} roughness={0.7} metalness={0.01} />
+        <mesh position={[0.15, -0.15, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.033, 0.1, 6, 10]} />
+          <meshStandardMaterial color={colorPalette.skinShade} roughness={0.72} metalness={0.01} />
         </mesh>
       </group>
 
-      <group ref={leftShoulderRef} position={[0.42, 0.25, 0.38]}>
+      <group ref={leftShoulderRef} position={[0.43, 0.24, 0.36]}>
         <mesh>
-          <sphereGeometry args={[0.1, 16, 16]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
+          <sphereGeometry args={[0.09, 14, 14]} />
+          <meshStandardMaterial color={colorPalette.skinShade} roughness={0.74} metalness={0.01} />
         </mesh>
-        <mesh position={[0.38, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <capsuleGeometry args={[0.09, 0.6, 10, 18]} />
-          <meshStandardMaterial color={colorPalette.armUpper} roughness={0.63} metalness={0.03} />
+        <mesh position={[0.36, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.086, 0.56, 10, 18]} />
+          <meshStandardMaterial color={colorPalette.armUpper} roughness={0.7} metalness={0.01} />
         </mesh>
-        <mesh position={[0.76, 0, 0]}>
-          <sphereGeometry args={[0.074, 14, 14]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
-        </mesh>
-        <group ref={leftElbowRef} position={[0.76, 0, 0]}>
-          <mesh position={[0.31, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.074, 0.52, 10, 18]} />
-            <meshStandardMaterial color={colorPalette.armLower} roughness={0.63} metalness={0.03} />
+        <group ref={leftElbowRef} position={[0.71, 0, 0]}>
+          <mesh>
+            <sphereGeometry args={[0.073, 12, 12]} />
+            <meshStandardMaterial color={colorPalette.skinShade} roughness={0.74} metalness={0.01} />
           </mesh>
-          <mesh position={[0.64, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.047, 0.18, 6, 12]} />
-            <meshStandardMaterial color={colorPalette.skin} roughness={0.7} metalness={0.01} />
+          <mesh position={[0.31, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.073, 0.5, 10, 18]} />
+            <meshStandardMaterial color={colorPalette.armLower} roughness={0.7} metalness={0.01} />
+          </mesh>
+          <mesh position={[0.62, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.045, 0.16, 8, 12]} />
+            <meshStandardMaterial color={colorPalette.foot} roughness={0.76} metalness={0.01} />
           </mesh>
         </group>
       </group>
 
-      <group ref={rightShoulderRef} position={[0.42, 0.25, -0.38]}>
+      <group ref={rightShoulderRef} position={[0.43, 0.24, -0.36]}>
         <mesh>
-          <sphereGeometry args={[0.1, 16, 16]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
+          <sphereGeometry args={[0.09, 14, 14]} />
+          <meshStandardMaterial color={colorPalette.skinShade} roughness={0.74} metalness={0.01} />
         </mesh>
-        <mesh position={[0.38, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <capsuleGeometry args={[0.09, 0.6, 10, 18]} />
-          <meshStandardMaterial color={colorPalette.armUpper} roughness={0.63} metalness={0.03} />
+        <mesh position={[0.36, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.086, 0.56, 10, 18]} />
+          <meshStandardMaterial color={colorPalette.armUpper} roughness={0.7} metalness={0.01} />
         </mesh>
-        <mesh position={[0.76, 0, 0]}>
-          <sphereGeometry args={[0.074, 14, 14]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
-        </mesh>
-        <group ref={rightElbowRef} position={[0.76, 0, 0]}>
-          <mesh position={[0.31, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.074, 0.52, 10, 18]} />
-            <meshStandardMaterial color={colorPalette.armLower} roughness={0.63} metalness={0.03} />
+        <group ref={rightElbowRef} position={[0.71, 0, 0]}>
+          <mesh>
+            <sphereGeometry args={[0.073, 12, 12]} />
+            <meshStandardMaterial color={colorPalette.skinShade} roughness={0.74} metalness={0.01} />
           </mesh>
-          <mesh position={[0.64, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.047, 0.18, 6, 12]} />
-            <meshStandardMaterial color={colorPalette.skin} roughness={0.7} metalness={0.01} />
+          <mesh position={[0.31, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.073, 0.5, 10, 18]} />
+            <meshStandardMaterial color={colorPalette.armLower} roughness={0.7} metalness={0.01} />
+          </mesh>
+          <mesh position={[0.62, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.045, 0.16, 8, 12]} />
+            <meshStandardMaterial color={colorPalette.foot} roughness={0.76} metalness={0.01} />
           </mesh>
         </group>
       </group>
 
-      <group ref={leftHipRef} position={[-0.62, -0.05, 0.24]}>
+      <group ref={leftHipRef} position={[-0.66, -0.06, 0.24]}>
         <mesh>
-          <sphereGeometry args={[0.1, 16, 16]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
+          <sphereGeometry args={[0.09, 14, 14]} />
+          <meshStandardMaterial color={colorPalette.suitMain} roughness={0.62} metalness={0.02} />
         </mesh>
-        <mesh position={[-0.38, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <capsuleGeometry args={[0.105, 0.62, 10, 18]} />
-          <meshStandardMaterial color={colorPalette.legUpper} roughness={0.63} metalness={0.03} />
+        <mesh position={[-0.36, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.106, 0.62, 10, 18]} />
+          <meshStandardMaterial color={colorPalette.legUpper} roughness={0.7} metalness={0.01} />
         </mesh>
-        <mesh position={[-0.77, 0, 0]}>
-          <sphereGeometry args={[0.082, 14, 14]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
+        <mesh position={[-0.2, -0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.11, 0.12, 8, 14]} />
+          <meshStandardMaterial color={colorPalette.suitMain} roughness={0.62} metalness={0.02} />
         </mesh>
-        <group ref={leftKneeRef} position={[-0.77, 0, 0]}>
-          <mesh position={[-0.35, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.084, 0.58, 10, 18]} />
-            <meshStandardMaterial color={colorPalette.legLower} roughness={0.63} metalness={0.03} />
+        <group ref={leftKneeRef} position={[-0.74, 0, 0]}>
+          <mesh>
+            <sphereGeometry args={[0.078, 12, 12]} />
+            <meshStandardMaterial color={colorPalette.skinShade} roughness={0.74} metalness={0.01} />
           </mesh>
-          <group ref={leftAnkleRef} position={[-0.7, 0, 0]}>
+          <mesh position={[-0.33, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.084, 0.56, 10, 18]} />
+            <meshStandardMaterial color={colorPalette.legLower} roughness={0.7} metalness={0.01} />
+          </mesh>
+          <group ref={leftAnkleRef} position={[-0.67, 0, 0]}>
             <mesh>
-              <sphereGeometry args={[0.06, 12, 12]} />
-              <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
+              <sphereGeometry args={[0.058, 12, 12]} />
+              <meshStandardMaterial color={colorPalette.skinShade} roughness={0.74} metalness={0.01} />
             </mesh>
-            <mesh position={[-0.26, -0.02, 0]} rotation={[0, 0, -0.08]}>
-              <boxGeometry args={[0.38, 0.05, 0.2]} />
-              <meshStandardMaterial color={colorPalette.foot} roughness={0.72} metalness={0.01} />
+            <mesh position={[-0.27, -0.02, 0]} rotation={[0, 0, -0.11]}>
+              <boxGeometry args={[0.39, 0.055, 0.19]} />
+              <meshStandardMaterial color={colorPalette.foot} roughness={0.78} metalness={0.01} />
             </mesh>
           </group>
         </group>
       </group>
 
-      <group ref={rightHipRef} position={[-0.62, -0.05, -0.24]}>
+      <group ref={rightHipRef} position={[-0.66, -0.06, -0.24]}>
         <mesh>
-          <sphereGeometry args={[0.1, 16, 16]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
+          <sphereGeometry args={[0.09, 14, 14]} />
+          <meshStandardMaterial color={colorPalette.suitMain} roughness={0.62} metalness={0.02} />
         </mesh>
-        <mesh position={[-0.38, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <capsuleGeometry args={[0.105, 0.62, 10, 18]} />
-          <meshStandardMaterial color={colorPalette.legUpper} roughness={0.63} metalness={0.03} />
+        <mesh position={[-0.36, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.106, 0.62, 10, 18]} />
+          <meshStandardMaterial color={colorPalette.legUpper} roughness={0.7} metalness={0.01} />
         </mesh>
-        <mesh position={[-0.77, 0, 0]}>
-          <sphereGeometry args={[0.082, 14, 14]} />
-          <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
+        <mesh position={[-0.2, -0.02, 0]} rotation={[0, 0, Math.PI / 2]}>
+          <capsuleGeometry args={[0.11, 0.12, 8, 14]} />
+          <meshStandardMaterial color={colorPalette.suitMain} roughness={0.62} metalness={0.02} />
         </mesh>
-        <group ref={rightKneeRef} position={[-0.77, 0, 0]}>
-          <mesh position={[-0.35, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <capsuleGeometry args={[0.084, 0.58, 10, 18]} />
-            <meshStandardMaterial color={colorPalette.legLower} roughness={0.63} metalness={0.03} />
+        <group ref={rightKneeRef} position={[-0.74, 0, 0]}>
+          <mesh>
+            <sphereGeometry args={[0.078, 12, 12]} />
+            <meshStandardMaterial color={colorPalette.skinShade} roughness={0.74} metalness={0.01} />
           </mesh>
-          <group ref={rightAnkleRef} position={[-0.7, 0, 0]}>
+          <mesh position={[-0.33, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <capsuleGeometry args={[0.084, 0.56, 10, 18]} />
+            <meshStandardMaterial color={colorPalette.legLower} roughness={0.7} metalness={0.01} />
+          </mesh>
+          <group ref={rightAnkleRef} position={[-0.67, 0, 0]}>
             <mesh>
-              <sphereGeometry args={[0.06, 12, 12]} />
-              <meshStandardMaterial color={colorPalette.joint} roughness={0.4} metalness={0.08} />
+              <sphereGeometry args={[0.058, 12, 12]} />
+              <meshStandardMaterial color={colorPalette.skinShade} roughness={0.74} metalness={0.01} />
             </mesh>
-            <mesh position={[-0.26, -0.02, 0]} rotation={[0, 0, -0.08]}>
-              <boxGeometry args={[0.38, 0.05, 0.2]} />
-              <meshStandardMaterial color={colorPalette.foot} roughness={0.72} metalness={0.01} />
+            <mesh position={[-0.27, -0.02, 0]} rotation={[0, 0, -0.11]}>
+              <boxGeometry args={[0.39, 0.055, 0.19]} />
+              <meshStandardMaterial color={colorPalette.foot} roughness={0.78} metalness={0.01} />
             </mesh>
           </group>
         </group>
