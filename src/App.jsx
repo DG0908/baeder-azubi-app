@@ -27,7 +27,7 @@ import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
 import InteractiveLearningView from './components/views/InteractiveLearningView';
 
-import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, AVATARS, MENU_GROUP_LABELS, getLevel, getLevelProgress } from './data/constants';
+import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, MENU_GROUP_LABELS, getAvatarById, getAvatarShortCode, getLevel, getLevelProgress } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
 import { AUSBILDUNGSRAHMENPLAN, WOCHEN_PRO_JAHR } from './data/ausbildungsrahmenplan';
 import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
@@ -8283,7 +8283,7 @@ export default function BaederApp() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="text-3xl bg-white/20 rounded-full w-12 h-12 flex items-center justify-center">
-              {user.avatar ? AVATARS.find(a => a.id === user.avatar)?.emoji || '🏊‍♂️' : '🏊‍♂️'}
+              {user.avatar ? getAvatarShortCode(getAvatarById(user.avatar)) : '3D'}
             </div>
             <div>
               <h1 className="text-2xl font-bold drop-shadow-lg">Bäder-Azubi App</h1>

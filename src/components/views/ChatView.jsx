@@ -1,7 +1,7 @@
 import React from 'react';
 import { MessageCircle, Send } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { AVATARS } from '../../data/constants';
+import { getAvatarById, getAvatarShortCode } from '../../data/constants';
 
 const ChatView = ({ messages, newMessage, setNewMessage, sendMessage }) => {
   const { user } = useAuth();
@@ -22,7 +22,7 @@ const ChatView = ({ messages, newMessage, setNewMessage, sendMessage }) => {
           <div key={msg.id} className={`flex items-end gap-2 ${msg.user === user.name ? 'justify-end' : 'justify-start'}`}>
             {msg.user !== user.name && (
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-lg flex-shrink-0">
-                {msg.avatar ? AVATARS.find(a => a.id === msg.avatar)?.emoji || msg.user.charAt(0).toUpperCase() : msg.user.charAt(0).toUpperCase()}
+                {msg.avatar ? getAvatarShortCode(getAvatarById(msg.avatar)) : msg.user.charAt(0).toUpperCase()}
               </div>
             )}
             <div className={`max-w-xs rounded-xl p-3 ${
@@ -39,7 +39,7 @@ const ChatView = ({ messages, newMessage, setNewMessage, sendMessage }) => {
             </div>
             {msg.user === user.name && (
               <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-lg flex-shrink-0">
-                {user.avatar ? AVATARS.find(a => a.id === user.avatar)?.emoji || user.name.charAt(0).toUpperCase() : user.name.charAt(0).toUpperCase()}
+                {user.avatar ? getAvatarShortCode(getAvatarById(user.avatar)) : user.name.charAt(0).toUpperCase()}
               </div>
             )}
           </div>

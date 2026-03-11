@@ -92,53 +92,34 @@ export const DEMO_ACCOUNTS = {};
 
 // Avatar-Auswahl für Profil
 export const AVATARS = [
-  // Schwimmen & Wassersport
-  { id: 'swimmer', emoji: '🏊', label: 'Schwimmer' },
-  { id: 'swimmer_m', emoji: '🏊‍♂️', label: 'Schwimmer' },
-  { id: 'swimmer_f', emoji: '🏊‍♀️', label: 'Schwimmerin' },
-  { id: 'waterpolo', emoji: '🤽', label: 'Wasserball' },
-  { id: 'diver', emoji: '🤿', label: 'Taucher' },
-  { id: 'surfer', emoji: '🏄', label: 'Surfer' },
-  // Meeresbewohner
-  { id: 'dolphin', emoji: '🐬', label: 'Delfin' },
-  { id: 'whale', emoji: '🐳', label: 'Wal' },
-  { id: 'shark', emoji: '🦈', label: 'Hai' },
-  { id: 'octopus', emoji: '🐙', label: 'Oktopus' },
-  { id: 'turtle', emoji: '🐢', label: 'Schildkröte' },
-  { id: 'fish', emoji: '🐠', label: 'Tropenfisch' },
-  { id: 'blowfish', emoji: '🐡', label: 'Kugelfisch' },
-  { id: 'seal', emoji: '🦭', label: 'Robbe' },
-  { id: 'crab', emoji: '🦀', label: 'Krabbe' },
-  { id: 'lobster', emoji: '🦞', label: 'Hummer' },
-  { id: 'shrimp', emoji: '🦐', label: 'Garnele' },
-  { id: 'squid', emoji: '🦑', label: 'Tintenfisch' },
-  { id: 'shell', emoji: '🐚', label: 'Muschel' },
-  { id: 'coral', emoji: '🪸', label: 'Koralle' },
-  // Strand & Wasser
-  { id: 'wave', emoji: '🌊', label: 'Welle' },
-  { id: 'beach', emoji: '🏖️', label: 'Strand' },
-  { id: 'umbrella', emoji: '⛱️', label: 'Sonnenschirm' },
-  { id: 'goggles', emoji: '🥽', label: 'Schwimmbrille' },
-  { id: 'flamingo', emoji: '🦩', label: 'Flamingo' },
-  { id: 'lifeguard', emoji: '🛟', label: 'Rettungsring' },
-  // Freischaltbare Level-Avatare
-  { id: 'aqua_cadet', emoji: '🧢🏊', label: 'Aqua-Kadett', minLevel: 2 },
-  { id: 'shades_swimmer', emoji: '😎🏊', label: 'Sonnenbrillen-Schwimmer', minLevel: 3 },
-  { id: 'whistle_coach', emoji: '😎📣', label: 'Triller-Profi', minLevel: 4 },
-  { id: 'turbo_dolphin', emoji: '😎🐬', label: 'Turbo-Delfin', minLevel: 5 },
-  { id: 'ring_commander', emoji: '😎🛟', label: 'Rettungsring-Kommandant', minLevel: 6 },
-  { id: 'shark_guard', emoji: '😎🦈', label: 'Hai-Wache', minLevel: 7 },
-  { id: 'trident_master', emoji: '🔱🌊', label: 'Wellenmeister', minLevel: 8 },
-  { id: 'sunset_surfer', emoji: '🌅🏄', label: 'Sunset-Surfer', minLevel: 9 },
-  { id: 'pool_boss', emoji: '👑🏊‍♂️', label: 'Pool-Boss', minLevel: 10 },
-  { id: 'whistle_legend', emoji: '👑📣', label: 'Whistle-Legende', minLevel: 12 },
+  // Start-Avatare (direkt verfuegbar)
+  { id: 'aqua_core', label: 'Aqua Core', shortCode: 'AC', discipline: 'Allround', rarity: 'common', theme: 'ocean', shape: 'orb' },
+  { id: 'flow_sentinel', label: 'Flow Sentinel', shortCode: 'FS', discipline: 'Schwimmen & Rettung', rarity: 'common', theme: 'rescue', shape: 'ring' },
+  { id: 'tech_matrix', label: 'Tech Matrix', shortCode: 'TM', discipline: 'Baedertechnik', rarity: 'common', theme: 'tech', shape: 'prism' },
+  { id: 'hygiene_aegis', label: 'Hygiene Aegis', shortCode: 'HA', discipline: 'Hygiene', rarity: 'common', theme: 'hygiene', shape: 'crystal' },
+  { id: 'aid_beacon', label: 'Aid Beacon', shortCode: 'AB', discipline: 'Erste Hilfe', rarity: 'common', theme: 'firstaid', shape: 'diamond' },
+
+  // Level-basierte 3D-Avatare
+  { id: 'aqua_cadet', label: 'Aqua Kadett', shortCode: 'AK', discipline: 'Allround', rarity: 'bronze', theme: 'ocean', shape: 'orb', minLevel: 2 },
+  { id: 'shades_swimmer', label: 'Current Runner', shortCode: 'CR', discipline: 'Schwimmen & Rettung', rarity: 'bronze', theme: 'rescue', shape: 'ring', minLevel: 3 },
+  { id: 'whistle_coach', label: 'Signal Coach', shortCode: 'SC', discipline: 'Allround', rarity: 'bronze', theme: 'tech', shape: 'prism', minLevel: 4 },
+  { id: 'turbo_dolphin', label: 'Turbo Vector', shortCode: 'TV', discipline: 'Schwimmen & Rettung', rarity: 'silver', theme: 'ocean', shape: 'diamond', minLevel: 5 },
+  { id: 'ring_commander', label: 'Ring Commander', shortCode: 'RC', discipline: 'Schwimmen & Rettung', rarity: 'silver', theme: 'rescue', shape: 'ring', minLevel: 6 },
+  { id: 'shark_guard', label: 'Deep Guard', shortCode: 'DG', discipline: 'Schwimmen & Rettung', rarity: 'silver', theme: 'rescue', shape: 'shield', minLevel: 7 },
+  { id: 'trident_master', label: 'Trident Master', shortCode: 'TR', discipline: 'Allround', rarity: 'gold', theme: 'ocean', shape: 'prism', minLevel: 8 },
+  { id: 'sunset_surfer', label: 'Solar Drift', shortCode: 'SD', discipline: 'Allround', rarity: 'gold', theme: 'elite', shape: 'orb', minLevel: 9 },
+  { id: 'pool_boss', label: 'Pool Boss', shortCode: 'PB', discipline: 'Allround', rarity: 'gold', theme: 'elite', shape: 'crown', minLevel: 10 },
+  { id: 'whistle_legend', label: 'Whistle Legend', shortCode: 'WL', discipline: 'Allround', rarity: 'legendary', theme: 'elite', shape: 'crown', minLevel: 12 },
+
   // Premium-Avatare: Disziplin-basiert freischaltbar
   {
     id: 'technik_scout',
-    emoji: '🔧🧠',
-    label: 'Technik-Scout',
-    discipline: 'Bädertechnik',
+    label: 'Technik Scout',
+    shortCode: 'TS',
+    discipline: 'Baedertechnik',
     rarity: 'bronze',
+    theme: 'tech',
+    shape: 'prism',
     unlock: {
       requirements: [
         { metric: 'techCorrect', target: 35 },
@@ -148,10 +129,12 @@ export const AVATARS = [
   },
   {
     id: 'technik_architekt',
-    emoji: '⚙️👑',
-    label: 'Anlagen-Architekt',
-    discipline: 'Bädertechnik',
+    label: 'Anlagen Architekt',
+    shortCode: 'AA',
+    discipline: 'Baedertechnik',
     rarity: 'gold',
+    theme: 'tech',
+    shape: 'crown',
     unlock: {
       requirements: [
         { metric: 'techCorrect', target: 90 },
@@ -161,10 +144,12 @@ export const AVATARS = [
   },
   {
     id: 'rettung_captain',
-    emoji: '🛟🫡',
-    label: 'Rettungs-Captain',
+    label: 'Rettung Captain',
+    shortCode: 'RT',
     discipline: 'Schwimmen & Rettung',
     rarity: 'silver',
+    theme: 'rescue',
+    shape: 'ring',
     unlock: {
       requirements: [
         { metric: 'swimCorrect', target: 40 },
@@ -174,10 +159,12 @@ export const AVATARS = [
   },
   {
     id: 'arena_champion',
-    emoji: '🏊‍♂️🏅',
-    label: 'Arena-Champion',
+    label: 'Arena Champion',
+    shortCode: 'AR',
     discipline: 'Schwimmen & Rettung',
     rarity: 'gold',
+    theme: 'rescue',
+    shape: 'crown',
     unlock: {
       requirements: [
         { metric: 'swimCorrect', target: 90 },
@@ -187,10 +174,12 @@ export const AVATARS = [
   },
   {
     id: 'hygiene_guardian',
-    emoji: '🧴🛡️',
-    label: 'Hygiene-Guardian',
+    label: 'Hygiene Guardian',
+    shortCode: 'HG',
     discipline: 'Hygiene',
     rarity: 'silver',
+    theme: 'hygiene',
+    shape: 'shield',
     unlock: {
       requirements: [
         { metric: 'hygieneCorrect', target: 35 },
@@ -200,10 +189,12 @@ export const AVATARS = [
   },
   {
     id: 'sterile_oracle',
-    emoji: '🧪✨',
-    label: 'Sterile Orakel',
+    label: 'Sterile Oracle',
+    shortCode: 'SO',
     discipline: 'Hygiene',
     rarity: 'gold',
+    theme: 'hygiene',
+    shape: 'crystal',
     unlock: {
       requirements: [
         { metric: 'hygieneCorrect', target: 80 },
@@ -213,10 +204,12 @@ export const AVATARS = [
   },
   {
     id: 'firstaid_guardian',
-    emoji: '⛑️❤️',
-    label: 'Erste-Hilfe-Wächter',
+    label: 'First Aid Guardian',
+    shortCode: 'FA',
     discipline: 'Erste Hilfe',
     rarity: 'silver',
+    theme: 'firstaid',
+    shape: 'shield',
     unlock: {
       requirements: [
         { metric: 'firstAidCorrect', target: 35 },
@@ -226,10 +219,12 @@ export const AVATARS = [
   },
   {
     id: 'rescue_legend',
-    emoji: '🚑🌟',
-    label: 'Rettungs-Legende',
+    label: 'Rescue Legend',
+    shortCode: 'RL',
     discipline: 'Erste Hilfe',
     rarity: 'legendary',
+    theme: 'firstaid',
+    shape: 'crown',
     unlock: {
       requirements: [
         { metric: 'firstAidCorrect', target: 80 },
@@ -240,10 +235,12 @@ export const AVATARS = [
   },
   {
     id: 'aqua_grandmaster',
-    emoji: '👑🌊',
-    label: 'Aqua-Großmeister',
+    label: 'Aqua Grandmaster',
+    shortCode: 'AG',
     discipline: 'Allround',
     rarity: 'legendary',
+    theme: 'elite',
+    shape: 'crown',
     unlock: {
       requirements: [
         { metric: 'level', target: 16 },
@@ -254,3 +251,14 @@ export const AVATARS = [
     }
   }
 ];
+
+export const getAvatarById = (avatarId) => AVATARS.find((avatar) => avatar.id === avatarId) || null;
+
+export const getAvatarShortCode = (avatarInput) => {
+  if (!avatarInput) return '3D';
+  if (avatarInput.shortCode) return String(avatarInput.shortCode).toUpperCase();
+  const parts = String(avatarInput.label || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return ((parts[0][0] || '') + (parts[1][0] || '')).toUpperCase();
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return '3D';
+};

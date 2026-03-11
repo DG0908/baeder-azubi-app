@@ -1,12 +1,10 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
-import { AVATARS, PERMISSIONS, getLevel } from '../../data/constants';
+import { AVATARS, PERMISSIONS, getAvatarById, getAvatarShortCode, getLevel } from '../../data/constants';
 import { getAgeHandicap } from '../../data/swimming';
-
-const LazyAvatarPreviewThree = lazy(() => import('./profile/AvatarPreviewThree'));
 
 const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) => {
   const { user, setUser, handleLogout } = useAuth();
@@ -20,7 +18,6 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
   const [profileSaving, setProfileSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
-  const [avatarPreviewId, setAvatarPreviewId] = useState(null);
 
   const toSafeInt = (value) => {
     const numeric = Number(value);
@@ -101,6 +98,15 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
       chipClass: darkMode ? 'bg-violet-900/60 text-violet-200' : 'bg-violet-100 text-violet-700'
     }
   };
+  const AVATAR_SHAPE_LABELS = {
+    orb: 'Orb',
+    ring: 'Ring',
+    prism: 'Prisma',
+    crystal: 'Kristall',
+    diamond: 'Diamant',
+    shield: 'Aegis',
+    crown: 'Krone'
+  };
   const formatUnlockValue = (metric, value) => {
     if (metric === 'swimDistance') return `${toSafeInt(value).toLocaleString('de-DE')} m`;
     return toSafeInt(value).toLocaleString('de-DE');
@@ -167,10 +173,8 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
     avatar,
     ...getAvatarUnlockState(avatar)
   }));
-  const equippedAvatar = AVATARS.find((avatar) => avatar.id === user?.avatar) || null;
+  const equippedAvatar = getAvatarById(user?.avatar);
   const fallbackAvatar = avatarStates.find((entry) => entry.unlocked)?.avatar || AVATARS[0] || null;
-  const previewAvatar = AVATARS.find((avatar) => avatar.id === avatarPreviewId) || equippedAvatar || fallbackAvatar;
-  const previewRarityMeta = AVATAR_RARITY_META[String(previewAvatar?.rarity || 'common').toLowerCase()] || AVATAR_RARITY_META.common;
   const unlockedAvatarCount = avatarStates.filter((entry) => entry.unlocked).length;
   const nextLockedAvatar = avatarStates
     .filter((entry) => !entry.unlocked)
@@ -231,7 +235,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
 
   const updateProfileAvatar = async (avatarId) => {
     if (avatarId) {
-      const selectedAvatar = AVATARS.find((avatar) => avatar.id === avatarId) || null;
+      const selectedAvatar = getAvatarById(avatarId);
       const selectedAvatarState = avatarStates.find((entry) => entry.avatar.id === avatarId) || null;
       if (selectedAvatar && selectedAvatarState && !selectedAvatarState.unlocked) {
         const label = selectedAvatar.label || 'Dieser Avatar';
@@ -308,40 +312,15 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl p-8 text-center">
-        <div className="text-6xl mb-3">
-          {user.avatar ? AVATARS.find(a => a.id === user.avatar)?.emoji || '👤' : '👤'}
+        <div className="mb-3 flex justify-center">
+          <div className="w-20 h-20 rounded-2xl border border-white/40 bg-white/10 backdrop-blur-sm flex flex-col items-center justify-center">
+            <span className="text-xs tracking-[0.25em] opacity-80">3D</span>
+            <span className="text-xl font-black">{getAvatarShortCode(equippedAvatar || fallbackAvatar)}</span>
+          </div>
         </div>
         <h2 className="text-3xl font-bold mb-2">{user.name}</h2>
         <p className="opacity-90">{PERMISSIONS[user.role]?.label || user.role}</p>
       </div>
-
-      {previewAvatar && (
-        <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>3D Avatar-Vorschau</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${previewRarityMeta.chipClass}`}>
-              {previewRarityMeta.label}
-            </span>
-            {previewAvatar.discipline && (
-              <span className={`px-2 py-0.5 rounded-full text-[10px] ${darkMode ? 'bg-cyan-900/40 text-cyan-200' : 'bg-cyan-100 text-cyan-700'}`}>
-                {previewAvatar.discipline}
-              </span>
-            )}
-          </div>
-          <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            {previewAvatar.emoji} {previewAvatar.label}
-          </p>
-          <Suspense
-            fallback={(
-              <div className={`h-56 rounded-xl flex items-center justify-center text-sm ${darkMode ? 'bg-slate-900 text-slate-300' : 'bg-cyan-50 text-cyan-700'}`}>
-                3D-Vorschau lädt...
-              </div>
-            )}
-          >
-            <LazyAvatarPreviewThree avatar={previewAvatar} darkMode={darkMode} />
-          </Suspense>
-        </div>
-      )}
 
       {/* Avatar auswählen */}
       <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
@@ -363,7 +342,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           </span>
           {nextLockedAvatar && (
             <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700'}`}>
-              Nächster: {nextLockedAvatar.avatar.emoji} {nextLockedAvatar.avatar.label} · {nextLockedAvatar.nextRequirementText}
+              Nächster: {nextLockedAvatar.avatar.label} · {nextLockedAvatar.nextRequirementText}
             </span>
           )}
           {!nextLockedAvatar && (
@@ -382,10 +361,6 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
               <button
                 key={avatar.id}
                 onClick={() => updateProfileAvatar(avatar.id)}
-                onMouseEnter={() => setAvatarPreviewId(avatar.id)}
-                onMouseLeave={() => setAvatarPreviewId(null)}
-                onFocus={() => setAvatarPreviewId(avatar.id)}
-                onBlur={() => setAvatarPreviewId(null)}
                 disabled={profileSaving}
                 title={avatar.label}
                 className={`relative p-3 rounded-xl border text-left transition-all ${
@@ -399,7 +374,13 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
                 {!unlocked && (
                   <span className="absolute top-2 right-2 text-[10px] bg-black/70 text-white rounded-full px-1">🔒</span>
                 )}
-                <div className="text-3xl mb-2">{avatar.emoji}</div>
+                <div className={`mb-2 rounded-lg border px-3 py-2 ${darkMode ? 'bg-slate-800 border-slate-500' : 'bg-white border-gray-200'}`}>
+                  <div className={`text-[10px] tracking-[0.25em] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>3D</div>
+                  <div className={`text-sm font-black ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>{getAvatarShortCode(avatar)}</div>
+                  <div className={`text-[10px] mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {AVATAR_SHAPE_LABELS[String(avatar.shape || '').toLowerCase()] || 'Core'}
+                  </div>
+                </div>
                 <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   {avatar.label}
                 </div>
