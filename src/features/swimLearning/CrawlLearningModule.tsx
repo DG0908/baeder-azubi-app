@@ -12,7 +12,7 @@ interface CrawlLearningModuleProps {
 export default function CrawlLearningModule({ darkMode = true }: CrawlLearningModuleProps) {
   const styleData = useMemo(() => SWIM_STYLES['freestyle/crawl'], []);
 
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [speedPreset, setSpeedPreset] = useState<SpeedPreset>('normal');
   const [viewPreset, setViewPreset] = useState<ViewPreset>('side');
   const [showTechniqueAreas, setShowTechniqueAreas] = useState(true);
@@ -121,4 +121,3 @@ export default function CrawlLearningModule({ darkMode = true }: CrawlLearningMo
     </div>
   );
 }
-

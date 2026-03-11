@@ -174,7 +174,7 @@ const CIRCULATION_STEPS = [
 
 function CirculationMap({ cycleMode, heartRate }) {
   const [stepIndex, setStepIndex] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(true);
+  const [autoPlay, setAutoPlay] = useState(false);
 
   const visibleSteps = useMemo(() => {
     if (cycleMode === 'beide') return CIRCULATION_STEPS;
@@ -208,7 +208,7 @@ function CirculationMap({ cycleMode, heartRate }) {
   };
 
   const renderFlowDots = (pathId, color, count, duration, visible, emphasized) => {
-    if (!visible) return null;
+    if (!visible || !autoPlay) return null;
     const radius = emphasized ? 5.2 : 3.4;
     const fillOpacity = emphasized ? 1 : 0.4;
     return Array.from({ length: count }, (_, idx) => (
@@ -332,9 +332,9 @@ function CirculationMap({ cycleMode, heartRate }) {
           strokeLinecap="round"
           markerEnd="url(#arrow-blue)"
           opacity={pathOpacity('klein', 'p-small-out')}
-          strokeDasharray={isPathActive('p-small-out') ? '14 10' : undefined}
+          strokeDasharray={autoPlay && isPathActive('p-small-out') ? '14 10' : undefined}
         >
-          {isPathActive('p-small-out') && (
+          {autoPlay && isPathActive('p-small-out') && (
             <animate attributeName="stroke-dashoffset" from="24" to="0" dur="0.9s" repeatCount="indefinite" />
           )}
         </path>
@@ -347,9 +347,9 @@ function CirculationMap({ cycleMode, heartRate }) {
           strokeLinecap="round"
           markerEnd="url(#arrow-red)"
           opacity={pathOpacity('klein', 'p-small-back')}
-          strokeDasharray={isPathActive('p-small-back') ? '14 10' : undefined}
+          strokeDasharray={autoPlay && isPathActive('p-small-back') ? '14 10' : undefined}
         >
-          {isPathActive('p-small-back') && (
+          {autoPlay && isPathActive('p-small-back') && (
             <animate attributeName="stroke-dashoffset" from="24" to="0" dur="0.9s" repeatCount="indefinite" />
           )}
         </path>
@@ -362,9 +362,9 @@ function CirculationMap({ cycleMode, heartRate }) {
           strokeLinecap="round"
           markerEnd="url(#arrow-red)"
           opacity={pathOpacity('gross', 'p-large-out')}
-          strokeDasharray={isPathActive('p-large-out') ? '16 10' : undefined}
+          strokeDasharray={autoPlay && isPathActive('p-large-out') ? '16 10' : undefined}
         >
-          {isPathActive('p-large-out') && (
+          {autoPlay && isPathActive('p-large-out') && (
             <animate attributeName="stroke-dashoffset" from="26" to="0" dur="0.9s" repeatCount="indefinite" />
           )}
         </path>
@@ -377,9 +377,9 @@ function CirculationMap({ cycleMode, heartRate }) {
           strokeLinecap="round"
           markerEnd="url(#arrow-blue)"
           opacity={pathOpacity('gross', 'p-large-back')}
-          strokeDasharray={isPathActive('p-large-back') ? '16 10' : undefined}
+          strokeDasharray={autoPlay && isPathActive('p-large-back') ? '16 10' : undefined}
         >
-          {isPathActive('p-large-back') && (
+          {autoPlay && isPathActive('p-large-back') && (
             <animate attributeName="stroke-dashoffset" from="26" to="0" dur="0.9s" repeatCount="indefinite" />
           )}
         </path>
@@ -531,6 +531,7 @@ function HeartAssembly({
   cycleMode,
   showLabels,
   heartRate,
+  animateHeart,
   showSystemicFlow,
   showPulmonaryFlow,
 }) {
@@ -538,6 +539,10 @@ function HeartAssembly({
 
   useFrame((state) => {
     if (!pulseRef.current) return;
+    if (!animateHeart) {
+      pulseRef.current.scale.setScalar(1);
+      return;
+    }
     const beatsPerSecond = Math.max(0.8, heartRate / 60);
     const wave = Math.max(0, Math.sin(state.clock.elapsedTime * beatsPerSecond * Math.PI * 2));
     const pulseScale = 1 + wave * 0.045;
@@ -741,13 +746,14 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie', initialSce
   const [heartRate, setHeartRate] = useState(74);
   const [activeSpot, setActiveSpot] = useState('linkeKammer');
   const [cycleMode, setCycleMode] = useState(startsInCirculation ? 'beide' : 'klein');
+  const [flowAnimationRunning, setFlowAnimationRunning] = useState(false);
   const [infoTab, setInfoTab] = useState(initialTab === 'kreislauf' ? 'kreislauf' : 'anatomie');
   const [sceneView, setSceneView] = useState(startsInCirculation ? 'circulation' : 'heart');
 
   const activeSpotData = activeSpot ? HEART_SPOT_DATA[activeSpot] : null;
   const cardiacOutput = useMemo(() => ((heartRate * STROKE_VOLUME_ML) / 1000).toFixed(1), [heartRate]);
-  const showSystemicFlow = cycleMode === 'gross' || cycleMode === 'beide';
-  const showPulmonaryFlow = cycleMode === 'klein' || cycleMode === 'beide';
+  const showSystemicFlow = flowAnimationRunning && (cycleMode === 'gross' || cycleMode === 'beide');
+  const showPulmonaryFlow = flowAnimationRunning && (cycleMode === 'klein' || cycleMode === 'beide');
 
   const innerCardStyle = {
     background: '#0a1a2e',
@@ -851,6 +857,20 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie', initialSce
                 {option.label}
               </button>
             ))}
+            {sceneView === 'heart' && (
+              <button
+                type="button"
+                onClick={() => setFlowAnimationRunning((prev) => !prev)}
+                className="rounded-md px-2.5 py-1 text-xs font-semibold"
+                style={{
+                  background: flowAnimationRunning ? '#1e4f76' : '#0c2238',
+                  color: flowAnimationRunning ? '#d7efff' : '#7aa7c8',
+                  border: '1px solid #2a5a90',
+                }}
+              >
+                {flowAnimationRunning ? 'Animation stoppen' : 'Animation starten'}
+              </button>
+            )}
           </div>
 
           {sceneView === 'heart' ? (
@@ -877,6 +897,7 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie', initialSce
                     cycleMode={cycleMode}
                     showLabels={showLabels}
                     heartRate={heartRate}
+                    animateHeart={flowAnimationRunning}
                     showSystemicFlow={showSystemicFlow}
                     showPulmonaryFlow={showPulmonaryFlow}
                   />
