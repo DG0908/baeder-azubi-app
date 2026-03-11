@@ -48,6 +48,8 @@ export default function BaederApp() {
   const WEEKLY_REMINDER_STORAGE_KEY = 'weekly_goals_reminder_v1';
   const QUESTION_REPORTS_STORAGE_KEY = 'question_reports_v1';
   const CHECKLIST_PROGRESS_STORAGE_KEY = 'practical_checklist_progress_v1';
+  const BERICHTSHEFT_DRAFT_STORAGE_KEY = 'berichtsheft_drafts_v1';
+  const BERICHTSHEFT_DAY_KEYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
   const WEEKLY_PROGRESS_TEMPLATE = {
     quizAnswers: 0,
     examAnswers: 0,
@@ -111,6 +113,41 @@ export default function BaederApp() {
     stats: { ...WEEKLY_PROGRESS_TEMPLATE },
     updatedAt: Date.now()
   });
+
+  const createEmptyBerichtsheftEntries = () => BERICHTSHEFT_DAY_KEYS.reduce((acc, day) => {
+    acc[day] = [{ taetigkeit: '', stunden: '', bereich: '' }];
+    return acc;
+  }, {});
+
+  const normalizeBerichtsheftEntries = (value) => {
+    const source = (value && typeof value === 'object' && !Array.isArray(value)) ? value : {};
+    const normalized = {};
+    BERICHTSHEFT_DAY_KEYS.forEach((day) => {
+      const rows = Array.isArray(source[day]) ? source[day] : [];
+      const mapped = rows
+        .filter((row) => row && typeof row === 'object')
+        .map((row) => ({
+          taetigkeit: String(row.taetigkeit || ''),
+          stunden: String(row.stunden || ''),
+          bereich: String(row.bereich || '')
+        }));
+      normalized[day] = mapped.length > 0
+        ? mapped
+        : [{ taetigkeit: '', stunden: '', bereich: '' }];
+    });
+    return normalized;
+  };
+
+  const getBerichtsheftStatus = (entry) => String(entry?.status || 'submitted')
+    .trim()
+    .toLowerCase();
+
+  const isBerichtsheftDraft = (entry) => getBerichtsheftStatus(entry) === 'draft';
+
+  const toTimestampMs = (value) => {
+    const timestamp = Date.parse(String(value || ''));
+    return Number.isFinite(timestamp) ? timestamp : 0;
+  };
 
   const normalizeQuestionText = (value) => String(value ?? '')
     .trim()
@@ -804,24 +841,10 @@ export default function BaederApp() {
 
   // Berichtsheft (Ausbildungsnachweis) State
   const [berichtsheftEntries, setBerichtsheftEntries] = useState([]);
-  const [berichtsheftWeek, setBerichtsheftWeek] = useState(() => {
-    // Aktuelle Woche als Default
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Montag
-    return startOfWeek.toISOString().split('T')[0];
-  });
+  const [berichtsheftWeek, setBerichtsheftWeek] = useState(() => getWeekStartStamp());
   const [berichtsheftYear, setBerichtsheftYear] = useState(1); // Ausbildungsjahr 1-3
   const [berichtsheftNr, setBerichtsheftNr] = useState(1); // Nachweis-Nummer
-  const [currentWeekEntries, setCurrentWeekEntries] = useState({
-    Mo: [{ taetigkeit: '', stunden: '', bereich: '' }],
-    Di: [{ taetigkeit: '', stunden: '', bereich: '' }],
-    Mi: [{ taetigkeit: '', stunden: '', bereich: '' }],
-    Do: [{ taetigkeit: '', stunden: '', bereich: '' }],
-    Fr: [{ taetigkeit: '', stunden: '', bereich: '' }],
-    Sa: [{ taetigkeit: '', stunden: '', bereich: '' }],
-    So: [{ taetigkeit: '', stunden: '', bereich: '' }]
-  });
+  const [currentWeekEntries, setCurrentWeekEntries] = useState(() => createEmptyBerichtsheftEntries());
   const [berichtsheftBemerkungAzubi, setBerichtsheftBemerkungAzubi] = useState('');
   const [berichtsheftBemerkungAusbilder, setBerichtsheftBemerkungAusbilder] = useState('');
   const [berichtsheftSignaturAzubi, setBerichtsheftSignaturAzubi] = useState('');
@@ -832,6 +855,8 @@ export default function BaederApp() {
   const [berichtsheftViewMode, setBerichtsheftViewMode] = useState('edit'); // 'edit', 'list', 'progress', 'profile', 'sign'
   const [berichtsheftPendingSignatures, setBerichtsheftPendingSignatures] = useState([]);
   const [berichtsheftPendingLoading, setBerichtsheftPendingLoading] = useState(false);
+  const [berichtsheftServerDraftsByWeek, setBerichtsheftServerDraftsByWeek] = useState({});
+  const [berichtsheftRemoteDraftsEnabled, setBerichtsheftRemoteDraftsEnabled] = useState(true);
 
   // Schwimmchallenge State
   const [swimChallengeView, setSwimChallengeView] = useState('overview'); // 'overview', 'challenges', 'plans', 'add', 'leaderboard', 'battle'
@@ -897,6 +922,9 @@ export default function BaederApp() {
     };
   });
   const azubiProfileSaveTimerRef = useRef(null);
+  const berichtsheftDraftSaveTimerRef = useRef(null);
+  const berichtsheftRemoteDraftSaveTimerRef = useRef(null);
+  const berichtsheftRemoteDraftWarningShownRef = useRef(false);
   const xpAwardQueueRef = useRef(Promise.resolve(0));
   const canManageBerichtsheftSignatures = Boolean(
     user && (user.role === 'admin' || user.role === 'trainer' || user.canSignReports)
@@ -1416,6 +1444,7 @@ export default function BaederApp() {
     // Load Berichtsheft when view changes
     if (currentView === 'berichtsheft' && user) {
       loadBerichtsheftEntries();
+      void loadBerichtsheftServerDrafts();
       if (canManageBerichtsheftSignatures) {
         loadBerichtsheftPendingSignatures();
       } else {
@@ -1445,6 +1474,13 @@ export default function BaederApp() {
   }, [currentView, user, canManageBerichtsheftSignatures]);
 
   useEffect(() => {
+    if (user) return;
+    setBerichtsheftServerDraftsByWeek({});
+    setBerichtsheftRemoteDraftsEnabled(true);
+    berichtsheftRemoteDraftWarningShownRef.current = false;
+  }, [user]);
+
+  useEffect(() => {
     localStorage.setItem(QUESTION_PERFORMANCE_STORAGE_KEY, JSON.stringify(questionPerformance));
   }, [questionPerformance]);
 
@@ -1467,6 +1503,58 @@ export default function BaederApp() {
   useEffect(() => {
     localStorage.setItem(QUESTION_REPORTS_STORAGE_KEY, JSON.stringify(questionReports));
   }, [questionReports]);
+
+  useEffect(() => {
+    if (!user || currentView !== 'berichtsheft' || selectedBerichtsheft) return;
+    loadBerichtsheftDraftForWeek(berichtsheftWeek);
+  }, [currentView, user?.id, user?.name, selectedBerichtsheft, berichtsheftWeek]);
+
+  useEffect(() => {
+    if (!user || currentView !== 'berichtsheft' || berichtsheftViewMode !== 'edit' || selectedBerichtsheft) return;
+
+    if (berichtsheftDraftSaveTimerRef.current) {
+      clearTimeout(berichtsheftDraftSaveTimerRef.current);
+    }
+    if (berichtsheftRemoteDraftSaveTimerRef.current) {
+      clearTimeout(berichtsheftRemoteDraftSaveTimerRef.current);
+    }
+
+    berichtsheftDraftSaveTimerRef.current = setTimeout(() => {
+      persistBerichtsheftDraft(berichtsheftWeek);
+      berichtsheftDraftSaveTimerRef.current = null;
+    }, 280);
+    berichtsheftRemoteDraftSaveTimerRef.current = setTimeout(() => {
+      void persistBerichtsheftDraftRemote(berichtsheftWeek);
+      berichtsheftRemoteDraftSaveTimerRef.current = null;
+    }, 1500);
+
+    return () => {
+      if (berichtsheftDraftSaveTimerRef.current) {
+        clearTimeout(berichtsheftDraftSaveTimerRef.current);
+        berichtsheftDraftSaveTimerRef.current = null;
+      }
+      if (berichtsheftRemoteDraftSaveTimerRef.current) {
+        clearTimeout(berichtsheftRemoteDraftSaveTimerRef.current);
+        berichtsheftRemoteDraftSaveTimerRef.current = null;
+      }
+    };
+  }, [
+    user?.id,
+    user?.name,
+    currentView,
+    berichtsheftViewMode,
+    selectedBerichtsheft,
+    berichtsheftWeek,
+    berichtsheftYear,
+    berichtsheftNr,
+    currentWeekEntries,
+    berichtsheftBemerkungAzubi,
+    berichtsheftBemerkungAusbilder,
+    berichtsheftSignaturAzubi,
+    berichtsheftSignaturAusbilder,
+    berichtsheftDatumAzubi,
+    berichtsheftDatumAusbilder
+  ]);
 
   useEffect(() => {
     const currentWeek = getWeekStartStamp();
@@ -3117,6 +3205,17 @@ export default function BaederApp() {
 
       setActiveGames([...activeGames, game]);
       setSelectedOpponent(null);
+
+      const effectiveTimeoutMinutes = timerColumnsUnavailable
+        ? DEFAULT_CHALLENGE_TIMEOUT_MINUTES
+        : timeoutMinutes;
+      await sendNotification(
+        opponent,
+        '🎮 Neue Quizduell-Herausforderung',
+        `${user.name} hat dich herausgefordert. Annahmefrist: ${formatDurationMinutesCompact(effectiveTimeoutMinutes)}.`,
+        'info'
+      );
+
       if (timerColumnsUnavailable) {
         showToast('Herausforderung gesendet. Timer-Spalten fehlen in Supabase, aktuell gilt 48h Standard.', 'warning');
       } else {
@@ -5177,12 +5276,16 @@ export default function BaederApp() {
         .order('week_start', { ascending: false });
 
       if (error) throw error;
-      setBerichtsheftEntries(data || []);
+      const allEntries = Array.isArray(data) ? data : [];
+      const submittedEntries = allEntries.filter((entry) => !isBerichtsheftDraft(entry));
+      setBerichtsheftEntries(submittedEntries);
 
       // Setze die Nachweis-Nr auf nächste freie Nummer
-      if (data && data.length > 0) {
-        const maxNr = Math.max(...data.map(e => e.nachweis_nr || 0));
+      if (submittedEntries.length > 0) {
+        const maxNr = Math.max(...submittedEntries.map(e => e.nachweis_nr || 0));
         setBerichtsheftNr(maxNr + 1);
+      } else {
+        setBerichtsheftNr(1);
       }
     } catch (err) {
       console.error('Fehler beim Laden des Berichtshefts:', err);
@@ -5269,6 +5372,8 @@ export default function BaederApp() {
 
       const allEntries = Array.isArray(data) ? data : [];
       let pending = allEntries.filter((entry) =>
+        !isBerichtsheftDraft(entry)
+        &&
         hasEntryContent(entry)
         && isSignedByAzubi(entry)
         && !isSignedByAusbilder(entry)
@@ -5333,6 +5438,389 @@ export default function BaederApp() {
     const end = new Date(start);
     end.setDate(start.getDate() + 6); // Sonntag
     return end.toISOString().split('T')[0];
+  };
+
+  const calculateTotalHoursFromEntries = (entries) => BERICHTSHEFT_DAY_KEYS.reduce((sum, day) => {
+    const rows = Array.isArray(entries?.[day]) ? entries[day] : [];
+    const daySum = rows.reduce((innerSum, row) => innerSum + (parseFloat(row?.stunden) || 0), 0);
+    return sum + daySum;
+  }, 0);
+
+  const getBerichtsheftDraftOwnerKey = () => {
+    if (!user) return '';
+    if (user.id) return `id:${user.id}`;
+    const normalizedName = String(user.name || '').trim().toLowerCase();
+    return normalizedName ? `name:${normalizedName}` : '';
+  };
+
+  const buildBerichtsheftDraftKey = (weekStart) => {
+    const owner = getBerichtsheftDraftOwnerKey();
+    const week = String(weekStart || '').trim();
+    if (!owner || !week) return '';
+    return `${owner}|${week}`;
+  };
+
+  const readBerichtsheftDraftStore = () => {
+    const parsed = parseJsonSafe(localStorage.getItem(BERICHTSHEFT_DRAFT_STORAGE_KEY), {});
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return parsed;
+  };
+
+  const writeBerichtsheftDraftStore = (store) => {
+    localStorage.setItem(BERICHTSHEFT_DRAFT_STORAGE_KEY, JSON.stringify(store));
+  };
+
+  const getBerichtsheftServerDraft = (weekStart) => {
+    const week = String(weekStart || '').trim();
+    if (!week) return null;
+    return berichtsheftServerDraftsByWeek[week] || null;
+  };
+
+  const upsertBerichtsheftServerDraft = (draftRow) => {
+    const week = String(draftRow?.week_start || '').trim();
+    if (!week) return;
+    setBerichtsheftServerDraftsByWeek((prev) => {
+      const current = prev[week];
+      if (!current || toTimestampMs(draftRow.updated_at) >= toTimestampMs(current.updated_at)) {
+        return { ...prev, [week]: draftRow };
+      }
+      return prev;
+    });
+  };
+
+  const removeBerichtsheftServerDraft = (weekStart) => {
+    const week = String(weekStart || '').trim();
+    if (!week) return;
+    setBerichtsheftServerDraftsByWeek((prev) => {
+      if (!prev[week]) return prev;
+      const next = { ...prev };
+      delete next[week];
+      return next;
+    });
+  };
+
+  const isBerichtsheftStatusColumnMissingError = (error) => {
+    if (!error) return false;
+    const code = String(error.code || '').trim();
+    if (code === '42703') return true;
+    const message = String(error.message || '').toLowerCase();
+    const details = String(error.details || '').toLowerCase();
+    return (message.includes('status') && message.includes('column'))
+      || details.includes('status');
+  };
+
+  const disableBerichtsheftRemoteDrafts = (error) => {
+    if (!isBerichtsheftStatusColumnMissingError(error)) return;
+    setBerichtsheftRemoteDraftsEnabled(false);
+    setBerichtsheftServerDraftsByWeek({});
+    if (!berichtsheftRemoteDraftWarningShownRef.current) {
+      showToast('Server-Entwurfs-Sync ist erst nach der Supabase-Migration aktiv.', 'warning');
+      berichtsheftRemoteDraftWarningShownRef.current = true;
+    }
+    console.warn('Berichtsheft Remote-Drafts deaktiviert (status-Spalte fehlt).', error);
+  };
+
+  const buildBerichtsheftDraftSnapshot = (weekStart = berichtsheftWeek) => ({
+    week_start: String(weekStart || '').trim(),
+    ausbildungsjahr: berichtsheftYear,
+    nachweis_nr: berichtsheftNr,
+    entries: normalizeBerichtsheftEntries(currentWeekEntries),
+    bemerkung_azubi: berichtsheftBemerkungAzubi,
+    bemerkung_ausbilder: berichtsheftBemerkungAusbilder,
+    signatur_azubi: berichtsheftSignaturAzubi,
+    signatur_ausbilder: berichtsheftSignaturAusbilder,
+    datum_azubi: berichtsheftDatumAzubi,
+    datum_ausbilder: berichtsheftDatumAusbilder,
+    updated_at: new Date().toISOString()
+  });
+
+  const hasBerichtsheftDraftContent = (snapshot) => {
+    if (!snapshot) return false;
+    const hasDayContent = Object.values(snapshot.entries || {}).some((rows) => Array.isArray(rows)
+      && rows.some((row) => String(row?.taetigkeit || '').trim() !== ''
+        || String(row?.stunden || '').trim() !== ''
+        || String(row?.bereich || '').trim() !== ''));
+    if (hasDayContent) return true;
+    return String(snapshot.bemerkung_azubi || '').trim() !== ''
+      || String(snapshot.bemerkung_ausbilder || '').trim() !== ''
+      || String(snapshot.signatur_azubi || '').trim() !== ''
+      || String(snapshot.signatur_ausbilder || '').trim() !== ''
+      || String(snapshot.datum_azubi || '').trim() !== ''
+      || String(snapshot.datum_ausbilder || '').trim() !== '';
+  };
+
+  const loadBerichtsheftServerDrafts = async () => {
+    if (!user || !berichtsheftRemoteDraftsEnabled) {
+      setBerichtsheftServerDraftsByWeek({});
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('berichtsheft')
+        .select('*')
+        .eq('user_name', user.name)
+        .eq('status', 'draft')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      const map = {};
+      (Array.isArray(data) ? data : []).forEach((row) => {
+        const week = String(row?.week_start || '').trim();
+        if (!week) return;
+        const prev = map[week];
+        if (!prev || toTimestampMs(row.updated_at) >= toTimestampMs(prev.updated_at)) {
+          map[week] = row;
+        }
+      });
+      setBerichtsheftServerDraftsByWeek(map);
+      if (currentView === 'berichtsheft' && !selectedBerichtsheft) {
+        loadBerichtsheftDraftForWeek(berichtsheftWeek, { serverDraftMap: map });
+      }
+    } catch (error) {
+      disableBerichtsheftRemoteDrafts(error);
+      if (!isBerichtsheftStatusColumnMissingError(error)) {
+        console.warn('Berichtsheft-Serverentwuerfe konnten nicht geladen werden:', error);
+      }
+    }
+  };
+
+  const findBerichtsheftServerDraftByWeek = async (weekStart) => {
+    const week = String(weekStart || '').trim();
+    if (!week || !user || !berichtsheftRemoteDraftsEnabled) return null;
+
+    const cached = getBerichtsheftServerDraft(week);
+    if (cached?.id) return cached;
+
+    try {
+      const { data, error } = await supabase
+        .from('berichtsheft')
+        .select('*')
+        .eq('user_name', user.name)
+        .eq('week_start', week)
+        .eq('status', 'draft')
+        .order('updated_at', { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      const row = Array.isArray(data) && data.length > 0 ? data[0] : null;
+      if (row) upsertBerichtsheftServerDraft(row);
+      return row;
+    } catch (error) {
+      disableBerichtsheftRemoteDrafts(error);
+      if (!isBerichtsheftStatusColumnMissingError(error)) {
+        console.warn('Berichtsheft-Serverentwurf konnte nicht abgefragt werden:', error);
+      }
+      return null;
+    }
+  };
+
+  const persistBerichtsheftDraft = (weekStart = berichtsheftWeek) => {
+    if (!user || selectedBerichtsheft) return;
+    const draftKey = buildBerichtsheftDraftKey(weekStart);
+    if (!draftKey) return;
+
+    const snapshot = buildBerichtsheftDraftSnapshot(weekStart);
+
+    const store = readBerichtsheftDraftStore();
+    if (!hasBerichtsheftDraftContent(snapshot)) {
+      if (store[draftKey]) {
+        delete store[draftKey];
+        writeBerichtsheftDraftStore(store);
+      }
+      return;
+    }
+
+    store[draftKey] = snapshot;
+    writeBerichtsheftDraftStore(store);
+  };
+
+  const persistBerichtsheftDraftRemote = async (weekStart = berichtsheftWeek) => {
+    if (!user || selectedBerichtsheft || !berichtsheftRemoteDraftsEnabled) return;
+
+    const snapshot = buildBerichtsheftDraftSnapshot(weekStart);
+    const targetWeek = String(snapshot.week_start || '').trim();
+    if (!targetWeek) return;
+
+    const existingDraft = await findBerichtsheftServerDraftByWeek(targetWeek);
+    const hasContent = hasBerichtsheftDraftContent(snapshot);
+
+    if (!hasContent) {
+      if (existingDraft?.id) {
+        try {
+          const { error } = await supabase
+            .from('berichtsheft')
+            .delete()
+            .eq('id', existingDraft.id);
+          if (error) throw error;
+          removeBerichtsheftServerDraft(targetWeek);
+        } catch (error) {
+          disableBerichtsheftRemoteDrafts(error);
+          if (!isBerichtsheftStatusColumnMissingError(error)) {
+            console.warn('Leerer Berichtsheft-Serverentwurf konnte nicht entfernt werden:', error);
+          }
+        }
+      }
+      return;
+    }
+
+    const payload = {
+      user_name: user.name,
+      week_start: targetWeek,
+      week_end: getWeekEndDate(targetWeek),
+      ausbildungsjahr: snapshot.ausbildungsjahr,
+      nachweis_nr: snapshot.nachweis_nr,
+      entries: snapshot.entries,
+      bemerkung_azubi: snapshot.bemerkung_azubi,
+      bemerkung_ausbilder: snapshot.bemerkung_ausbilder,
+      signatur_azubi: snapshot.signatur_azubi,
+      signatur_ausbilder: snapshot.signatur_ausbilder,
+      datum_azubi: snapshot.datum_azubi || null,
+      datum_ausbilder: snapshot.datum_ausbilder || null,
+      total_hours: calculateTotalHoursFromEntries(snapshot.entries),
+      status: 'draft'
+    };
+
+    try {
+      let savedRow = null;
+      if (existingDraft?.id) {
+        const { data, error } = await supabase
+          .from('berichtsheft')
+          .update(payload)
+          .eq('id', existingDraft.id)
+          .select('*')
+          .single();
+        if (error) throw error;
+        savedRow = data || null;
+      } else {
+        const { data, error } = await supabase
+          .from('berichtsheft')
+          .insert(payload)
+          .select('*')
+          .single();
+        if (error) throw error;
+        savedRow = data || null;
+      }
+
+      if (savedRow) upsertBerichtsheftServerDraft(savedRow);
+    } catch (error) {
+      disableBerichtsheftRemoteDrafts(error);
+      if (!isBerichtsheftStatusColumnMissingError(error)) {
+        console.warn('Berichtsheft-Serverentwurf konnte nicht gespeichert werden:', error);
+      }
+    }
+  };
+
+  const clearBerichtsheftDraft = (weekStart = berichtsheftWeek) => {
+    const draftKey = buildBerichtsheftDraftKey(weekStart);
+    if (!draftKey) return;
+    const store = readBerichtsheftDraftStore();
+    if (!store[draftKey]) return;
+    delete store[draftKey];
+    writeBerichtsheftDraftStore(store);
+  };
+
+  const clearBerichtsheftDraftRemote = async (weekStart = berichtsheftWeek) => {
+    if (!user || !berichtsheftRemoteDraftsEnabled) return;
+    const week = String(weekStart || '').trim();
+    if (!week) return;
+
+    const existingDraft = await findBerichtsheftServerDraftByWeek(week);
+    if (!existingDraft?.id) {
+      removeBerichtsheftServerDraft(week);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('berichtsheft')
+        .delete()
+        .eq('id', existingDraft.id);
+
+      if (error) throw error;
+      removeBerichtsheftServerDraft(week);
+    } catch (error) {
+      disableBerichtsheftRemoteDrafts(error);
+      if (!isBerichtsheftStatusColumnMissingError(error)) {
+        console.warn('Berichtsheft-Serverentwurf konnte nicht geloescht werden:', error);
+      }
+    }
+  };
+
+  const loadBerichtsheftDraftForWeek = (weekStart, options = {}) => {
+    if (!user) return false;
+    const targetWeek = String(weekStart || '').trim();
+    if (!targetWeek) return false;
+
+    const { resetIfMissing = false, serverDraftMap = null } = options;
+    const draftKey = buildBerichtsheftDraftKey(targetWeek);
+    const store = readBerichtsheftDraftStore();
+    const localDraft = draftKey ? store[draftKey] : null;
+    const remoteMap = (serverDraftMap && typeof serverDraftMap === 'object') ? serverDraftMap : berichtsheftServerDraftsByWeek;
+    const remoteDraft = remoteMap[targetWeek] || null;
+
+    let draft = null;
+    if (localDraft && remoteDraft) {
+      draft = toTimestampMs(localDraft.updated_at) >= toTimestampMs(remoteDraft.updated_at)
+        ? localDraft
+        : remoteDraft;
+    } else {
+      draft = localDraft || remoteDraft;
+    }
+
+    if (draft && typeof draft === 'object') {
+      const parsedYear = Number(draft.ausbildungsjahr);
+      const parsedNr = Number(draft.nachweis_nr);
+      setSelectedBerichtsheft(null);
+      setBerichtsheftWeek(targetWeek);
+      setBerichtsheftYear(parsedYear >= 1 && parsedYear <= 3 ? parsedYear : 1);
+      setBerichtsheftNr(Number.isFinite(parsedNr) ? Math.max(1, Math.round(parsedNr)) : 1);
+      setCurrentWeekEntries(normalizeBerichtsheftEntries(draft.entries));
+      setBerichtsheftBemerkungAzubi(String(draft.bemerkung_azubi || ''));
+      setBerichtsheftBemerkungAusbilder(String(draft.bemerkung_ausbilder || ''));
+      setBerichtsheftSignaturAzubi(String(draft.signatur_azubi || ''));
+      setBerichtsheftSignaturAusbilder(String(draft.signatur_ausbilder || ''));
+      setBerichtsheftDatumAzubi(String(draft.datum_azubi || ''));
+      setBerichtsheftDatumAusbilder(String(draft.datum_ausbilder || ''));
+      return true;
+    }
+
+    if (resetIfMissing) {
+      setSelectedBerichtsheft(null);
+      setBerichtsheftWeek(targetWeek);
+      setCurrentWeekEntries(createEmptyBerichtsheftEntries());
+      setBerichtsheftBemerkungAzubi('');
+      setBerichtsheftBemerkungAusbilder('');
+      setBerichtsheftSignaturAzubi('');
+      setBerichtsheftSignaturAusbilder('');
+      setBerichtsheftDatumAzubi('');
+      setBerichtsheftDatumAusbilder('');
+    }
+    return false;
+  };
+
+  const handleBerichtsheftWeekChange = (nextWeek) => {
+    const targetWeek = String(nextWeek || '').trim();
+    if (!targetWeek) return;
+
+    if (!selectedBerichtsheft) {
+      if (berichtsheftDraftSaveTimerRef.current) {
+        clearTimeout(berichtsheftDraftSaveTimerRef.current);
+        berichtsheftDraftSaveTimerRef.current = null;
+      }
+      if (berichtsheftRemoteDraftSaveTimerRef.current) {
+        clearTimeout(berichtsheftRemoteDraftSaveTimerRef.current);
+        berichtsheftRemoteDraftSaveTimerRef.current = null;
+      }
+      persistBerichtsheftDraft(berichtsheftWeek);
+      void persistBerichtsheftDraftRemote(berichtsheftWeek);
+      loadBerichtsheftDraftForWeek(targetWeek, { resetIfMissing: true });
+      return;
+    }
+
+    setBerichtsheftWeek(targetWeek);
   };
 
   // Azubi-Profil speichern (localStorage sofort + Supabase debounced)
@@ -6393,16 +6881,22 @@ export default function BaederApp() {
     });
   }, [allUsers, user?.id]);
 
+  const openBerichtsheftDraftForCurrentWeek = () => {
+    if (berichtsheftDraftSaveTimerRef.current) {
+      clearTimeout(berichtsheftDraftSaveTimerRef.current);
+      berichtsheftDraftSaveTimerRef.current = null;
+    }
+    if (berichtsheftRemoteDraftSaveTimerRef.current) {
+      clearTimeout(berichtsheftRemoteDraftSaveTimerRef.current);
+      berichtsheftRemoteDraftSaveTimerRef.current = null;
+    }
+    const currentWeek = getWeekStartStamp();
+    loadBerichtsheftDraftForWeek(currentWeek, { resetIfMissing: true });
+    setBerichtsheftViewMode('edit');
+  };
+
   const resetBerichtsheftForm = () => {
-    setCurrentWeekEntries({
-      Mo: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Di: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Mi: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Do: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Fr: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Sa: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      So: [{ taetigkeit: '', stunden: '', bereich: '' }]
-    });
+    setCurrentWeekEntries(createEmptyBerichtsheftEntries());
     setBerichtsheftBemerkungAzubi('');
     setBerichtsheftBemerkungAusbilder('');
     setBerichtsheftSignaturAzubi('');
@@ -6498,6 +6992,15 @@ export default function BaederApp() {
   };
 
   const saveBerichtsheft = async () => {
+    if (berichtsheftDraftSaveTimerRef.current) {
+      clearTimeout(berichtsheftDraftSaveTimerRef.current);
+      berichtsheftDraftSaveTimerRef.current = null;
+    }
+    if (berichtsheftRemoteDraftSaveTimerRef.current) {
+      clearTimeout(berichtsheftRemoteDraftSaveTimerRef.current);
+      berichtsheftRemoteDraftSaveTimerRef.current = null;
+    }
+
     // Validierung
     const hasContent = Object.values(currentWeekEntries).some(day =>
       day.some(entry => entry.taetigkeit.trim() !== '')
@@ -6509,8 +7012,12 @@ export default function BaederApp() {
     }
 
     try {
-      const targetUserName = selectedBerichtsheft?.user_name || user.name;
-      const wasReadyForReview = Boolean(selectedBerichtsheft && isBerichtsheftReadyForReview(selectedBerichtsheft));
+      const existingServerDraft = (!selectedBerichtsheft && berichtsheftRemoteDraftsEnabled)
+        ? await findBerichtsheftServerDraftByWeek(berichtsheftWeek)
+        : null;
+      const persistedEntry = selectedBerichtsheft || existingServerDraft;
+      const targetUserName = persistedEntry?.user_name || user.name;
+      const wasReadyForReview = Boolean(persistedEntry && isBerichtsheftReadyForReview(persistedEntry));
       const berichtsheftData = {
         user_name: targetUserName,
         week_start: berichtsheftWeek,
@@ -6526,22 +7033,26 @@ export default function BaederApp() {
         datum_ausbilder: berichtsheftDatumAusbilder || null,
         total_hours: calculateTotalHours()
       };
+      if (berichtsheftRemoteDraftsEnabled) {
+        berichtsheftData.status = 'submitted';
+      }
       const isReadyForReviewNow = isBerichtsheftReadyForReview(berichtsheftData);
 
-      if (selectedBerichtsheft) {
-        berichtsheftData.assigned_trainer_id = selectedBerichtsheft.assigned_trainer_id || null;
-        berichtsheftData.assigned_trainer_name = selectedBerichtsheft.assigned_trainer_name || null;
-        berichtsheftData.assigned_by_id = selectedBerichtsheft.assigned_by_id || null;
-        berichtsheftData.assigned_at = selectedBerichtsheft.assigned_at || null;
+      if (persistedEntry) {
+        berichtsheftData.assigned_trainer_id = persistedEntry.assigned_trainer_id || null;
+        berichtsheftData.assigned_trainer_name = persistedEntry.assigned_trainer_name || null;
+        berichtsheftData.assigned_by_id = persistedEntry.assigned_by_id || null;
+        berichtsheftData.assigned_at = persistedEntry.assigned_at || null;
 
         // Update
         const { error } = await supabase
           .from('berichtsheft')
           .update(berichtsheftData)
-          .eq('id', selectedBerichtsheft.id);
+          .eq('id', persistedEntry.id);
 
         if (error) throw error;
-        showToast('Berichtsheft aktualisiert!', 'success');
+        removeBerichtsheftServerDraft(berichtsheftWeek);
+        showToast(selectedBerichtsheft ? 'Berichtsheft aktualisiert!' : 'Berichtsheft gespeichert!', 'success');
       } else {
         // Insert
         const { error } = await supabase
@@ -6560,6 +7071,8 @@ export default function BaederApp() {
         });
       }
 
+      clearBerichtsheftDraft(berichtsheftWeek);
+      await clearBerichtsheftDraftRemote(berichtsheftWeek);
       resetBerichtsheftForm();
       loadBerichtsheftEntries();
       loadBerichtsheftPendingSignatures();
@@ -6575,15 +7088,7 @@ export default function BaederApp() {
     setBerichtsheftWeek(entry.week_start);
     setBerichtsheftYear(entry.ausbildungsjahr);
     setBerichtsheftNr(entry.nachweis_nr);
-    setCurrentWeekEntries(entry.entries || {
-      Mo: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Di: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Mi: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Do: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Fr: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      Sa: [{ taetigkeit: '', stunden: '', bereich: '' }],
-      So: [{ taetigkeit: '', stunden: '', bereich: '' }]
-    });
+    setCurrentWeekEntries(normalizeBerichtsheftEntries(entry.entries));
     setBerichtsheftBemerkungAzubi(entry.bemerkung_azubi || '');
     setBerichtsheftBemerkungAusbilder(entry.bemerkung_ausbilder || '');
     setBerichtsheftSignaturAzubi(entry.signatur_azubi || '');
@@ -7610,6 +8115,26 @@ export default function BaederApp() {
     }
   };
 
+  const deleteExam = async (examId) => {
+    if (!examId) return;
+    if (!confirm('Klausur wirklich löschen?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('exams')
+        .delete()
+        .eq('id', examId);
+
+      if (error) throw error;
+
+      setExams(prev => prev.filter(exam => exam.id !== examId));
+      showToast('Klausur gelöscht.', 'success');
+    } catch (error) {
+      console.error('Delete exam error:', error);
+      showToast('Fehler beim Löschen der Klausur', 'error');
+    }
+  };
+
   const swimCurrentMonthKey = getSwimMonthKey(new Date());
   const swimCurrentMonthLabel = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }).toUpperCase();
   const swimCurrentMonthSessions = swimSessions.filter((session) => isDateInSwimMonth(session?.date, swimCurrentMonthKey));
@@ -8147,6 +8672,7 @@ export default function BaederApp() {
             examTopics={examTopics}
             setExamTopics={setExamTopics}
             addExam={addExam}
+            deleteExam={deleteExam}
           />
         )}
 
@@ -8422,6 +8948,7 @@ export default function BaederApp() {
             getBerichtsheftYearWeeks={getBerichtsheftYearWeeks}
             getWeekEndDate={getWeekEndDate}
             loadBerichtsheftForEdit={loadBerichtsheftForEdit}
+            openBerichtsheftDraftForCurrentWeek={openBerichtsheftDraftForCurrentWeek}
             removeWeekEntry={removeWeekEntry}
             resetBerichtsheftForm={resetBerichtsheftForm}
             saveAzubiProfile={saveAzubiProfile}
@@ -8435,7 +8962,7 @@ export default function BaederApp() {
             setBerichtsheftSignaturAusbilder={setBerichtsheftSignaturAusbilder}
             setBerichtsheftSignaturAzubi={setBerichtsheftSignaturAzubi}
             setBerichtsheftViewMode={setBerichtsheftViewMode}
-            setBerichtsheftWeek={setBerichtsheftWeek}
+            setBerichtsheftWeek={handleBerichtsheftWeekChange}
             setBerichtsheftYear={setBerichtsheftYear}
             signAssignableUsers={allUsers.filter((account) => account.role === 'trainer' || account.role === 'admin')}
             updateWeekEntry={updateWeekEntry}
