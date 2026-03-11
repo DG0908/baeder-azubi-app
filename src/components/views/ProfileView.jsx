@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
 import { AVATARS, PERMISSIONS, getLevel } from '../../data/constants';
 import { getAgeHandicap } from '../../data/swimming';
+
+const LazyAvatarPreviewThree = lazy(() => import('./profile/AvatarPreviewThree'));
 
 const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) => {
   const { user, setUser, handleLogout } = useAuth();
@@ -18,6 +20,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
   const [profileSaving, setProfileSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [avatarPreviewId, setAvatarPreviewId] = useState(null);
 
   const toSafeInt = (value) => {
     const numeric = Number(value);
@@ -164,6 +167,10 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
     avatar,
     ...getAvatarUnlockState(avatar)
   }));
+  const equippedAvatar = AVATARS.find((avatar) => avatar.id === user?.avatar) || null;
+  const fallbackAvatar = avatarStates.find((entry) => entry.unlocked)?.avatar || AVATARS[0] || null;
+  const previewAvatar = AVATARS.find((avatar) => avatar.id === avatarPreviewId) || equippedAvatar || fallbackAvatar;
+  const previewRarityMeta = AVATAR_RARITY_META[String(previewAvatar?.rarity || 'common').toLowerCase()] || AVATAR_RARITY_META.common;
   const unlockedAvatarCount = avatarStates.filter((entry) => entry.unlocked).length;
   const nextLockedAvatar = avatarStates
     .filter((entry) => !entry.unlocked)
@@ -308,6 +315,34 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
         <p className="opacity-90">{PERMISSIONS[user.role]?.label || user.role}</p>
       </div>
 
+      {previewAvatar && (
+        <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>3D Avatar-Vorschau</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] ${previewRarityMeta.chipClass}`}>
+              {previewRarityMeta.label}
+            </span>
+            {previewAvatar.discipline && (
+              <span className={`px-2 py-0.5 rounded-full text-[10px] ${darkMode ? 'bg-cyan-900/40 text-cyan-200' : 'bg-cyan-100 text-cyan-700'}`}>
+                {previewAvatar.discipline}
+              </span>
+            )}
+          </div>
+          <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            {previewAvatar.emoji} {previewAvatar.label}
+          </p>
+          <Suspense
+            fallback={(
+              <div className={`h-56 rounded-xl flex items-center justify-center text-sm ${darkMode ? 'bg-slate-900 text-slate-300' : 'bg-cyan-50 text-cyan-700'}`}>
+                3D-Vorschau lädt...
+              </div>
+            )}
+          >
+            <LazyAvatarPreviewThree avatar={previewAvatar} darkMode={darkMode} />
+          </Suspense>
+        </div>
+      )}
+
       {/* Avatar auswählen */}
       <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
         <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
@@ -347,6 +382,10 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
               <button
                 key={avatar.id}
                 onClick={() => updateProfileAvatar(avatar.id)}
+                onMouseEnter={() => setAvatarPreviewId(avatar.id)}
+                onMouseLeave={() => setAvatarPreviewId(null)}
+                onFocus={() => setAvatarPreviewId(avatar.id)}
+                onBlur={() => setAvatarPreviewId(null)}
                 disabled={profileSaving}
                 title={avatar.label}
                 className={`relative p-3 rounded-xl border text-left transition-all ${
