@@ -93,29 +93,30 @@ export const DEMO_ACCOUNTS = {};
 // Avatar-Auswahl für Profil
 export const AVATARS = [
   // Start-Avatare (direkt verfuegbar)
-  { id: 'aqua_core', label: 'Aqua Core', shortCode: 'AC', discipline: 'Allround', rarity: 'common', theme: 'ocean', shape: 'orb' },
-  { id: 'flow_sentinel', label: 'Flow Sentinel', shortCode: 'FS', discipline: 'Schwimmen & Rettung', rarity: 'common', theme: 'rescue', shape: 'ring' },
-  { id: 'tech_matrix', label: 'Tech Matrix', shortCode: 'TM', discipline: 'Baedertechnik', rarity: 'common', theme: 'tech', shape: 'prism' },
-  { id: 'hygiene_aegis', label: 'Hygiene Aegis', shortCode: 'HA', discipline: 'Hygiene', rarity: 'common', theme: 'hygiene', shape: 'crystal' },
-  { id: 'aid_beacon', label: 'Aid Beacon', shortCode: 'AB', discipline: 'Erste Hilfe', rarity: 'common', theme: 'firstaid', shape: 'diamond' },
+  { id: 'aqua_core', label: 'Delfin Scout', shortCode: 'AC', animalIcon: '🐬', discipline: 'Allround', rarity: 'common', theme: 'ocean', shape: 'orb' },
+  { id: 'flow_sentinel', label: 'Hai Waechter', shortCode: 'FS', animalIcon: '🦈', discipline: 'Schwimmen & Rettung', rarity: 'common', theme: 'rescue', shape: 'ring' },
+  { id: 'tech_matrix', label: 'Oktopus Tueftler', shortCode: 'TM', animalIcon: '🐙', discipline: 'Baedertechnik', rarity: 'common', theme: 'tech', shape: 'prism' },
+  { id: 'hygiene_aegis', label: 'Schildkroeten Hueter', shortCode: 'HA', animalIcon: '🐢', discipline: 'Hygiene', rarity: 'common', theme: 'hygiene', shape: 'crystal' },
+  { id: 'aid_beacon', label: 'Adler Retter', shortCode: 'AB', animalIcon: '🦅', discipline: 'Erste Hilfe', rarity: 'common', theme: 'firstaid', shape: 'diamond' },
 
   // Level-basierte 3D-Avatare
-  { id: 'aqua_cadet', label: 'Aqua Kadett', shortCode: 'AK', discipline: 'Allround', rarity: 'bronze', theme: 'ocean', shape: 'orb', minLevel: 2 },
-  { id: 'shades_swimmer', label: 'Current Runner', shortCode: 'CR', discipline: 'Schwimmen & Rettung', rarity: 'bronze', theme: 'rescue', shape: 'ring', minLevel: 3 },
-  { id: 'whistle_coach', label: 'Signal Coach', shortCode: 'SC', discipline: 'Allround', rarity: 'bronze', theme: 'tech', shape: 'prism', minLevel: 4 },
-  { id: 'turbo_dolphin', label: 'Turbo Vector', shortCode: 'TV', discipline: 'Schwimmen & Rettung', rarity: 'silver', theme: 'ocean', shape: 'diamond', minLevel: 5 },
-  { id: 'ring_commander', label: 'Ring Commander', shortCode: 'RC', discipline: 'Schwimmen & Rettung', rarity: 'silver', theme: 'rescue', shape: 'ring', minLevel: 6 },
-  { id: 'shark_guard', label: 'Deep Guard', shortCode: 'DG', discipline: 'Schwimmen & Rettung', rarity: 'silver', theme: 'rescue', shape: 'shield', minLevel: 7 },
-  { id: 'trident_master', label: 'Trident Master', shortCode: 'TR', discipline: 'Allround', rarity: 'gold', theme: 'ocean', shape: 'prism', minLevel: 8 },
-  { id: 'sunset_surfer', label: 'Solar Drift', shortCode: 'SD', discipline: 'Allround', rarity: 'gold', theme: 'elite', shape: 'orb', minLevel: 9 },
-  { id: 'pool_boss', label: 'Pool Boss', shortCode: 'PB', discipline: 'Allround', rarity: 'gold', theme: 'elite', shape: 'crown', minLevel: 10 },
-  { id: 'whistle_legend', label: 'Whistle Legend', shortCode: 'WL', discipline: 'Allround', rarity: 'legendary', theme: 'elite', shape: 'crown', minLevel: 12 },
+  { id: 'aqua_cadet', label: 'Panther Kadett', shortCode: 'AK', animalIcon: '🐆', discipline: 'Allround', rarity: 'bronze', theme: 'ocean', shape: 'orb', minLevel: 2 },
+  { id: 'shades_swimmer', label: 'Cooler Delfin', shortCode: 'CR', animalIcon: '🐬', sunglasses: true, discipline: 'Schwimmen & Rettung', rarity: 'bronze', theme: 'rescue', shape: 'ring', minLevel: 3 },
+  { id: 'whistle_coach', label: 'Wolf Coach', shortCode: 'SC', animalIcon: '🐺', discipline: 'Allround', rarity: 'bronze', theme: 'tech', shape: 'prism', minLevel: 4 },
+  { id: 'turbo_dolphin', label: 'Turbo Gepard', shortCode: 'TV', animalIcon: '🐆', discipline: 'Schwimmen & Rettung', rarity: 'silver', theme: 'ocean', shape: 'diamond', minLevel: 5 },
+  { id: 'ring_commander', label: 'Orca Commander', shortCode: 'RC', animalIcon: '🐋', sunglasses: true, discipline: 'Schwimmen & Rettung', rarity: 'silver', theme: 'rescue', shape: 'ring', minLevel: 6 },
+  { id: 'shark_guard', label: 'Alpha Hai', shortCode: 'DG', animalIcon: '🦈', discipline: 'Schwimmen & Rettung', rarity: 'silver', theme: 'rescue', shape: 'shield', minLevel: 7 },
+  { id: 'trident_master', label: 'Loewen Meister', shortCode: 'TR', animalIcon: '🦁', sunglasses: true, discipline: 'Allround', rarity: 'gold', theme: 'ocean', shape: 'prism', minLevel: 8 },
+  { id: 'sunset_surfer', label: 'Adler Surfer', shortCode: 'SD', animalIcon: '🦅', sunglasses: true, discipline: 'Allround', rarity: 'gold', theme: 'elite', shape: 'orb', minLevel: 9 },
+  { id: 'pool_boss', label: 'Baeren Boss', shortCode: 'PB', animalIcon: '🐻', sunglasses: true, discipline: 'Allround', rarity: 'gold', theme: 'elite', shape: 'crown', minLevel: 10 },
+  { id: 'whistle_legend', label: 'Koenigs Adler', shortCode: 'WL', animalIcon: '🦅', sunglasses: true, discipline: 'Allround', rarity: 'legendary', theme: 'elite', shape: 'crown', minLevel: 12 },
 
   // Premium-Avatare: Disziplin-basiert freischaltbar
   {
     id: 'technik_scout',
-    label: 'Technik Scout',
+    label: 'Fuchs Ingenieur',
     shortCode: 'TS',
+    animalIcon: '🦊',
     discipline: 'Baedertechnik',
     rarity: 'bronze',
     theme: 'tech',
@@ -129,8 +130,10 @@ export const AVATARS = [
   },
   {
     id: 'technik_architekt',
-    label: 'Anlagen Architekt',
+    label: 'Eulen Architekt',
     shortCode: 'AA',
+    animalIcon: '🦉',
+    sunglasses: true,
     discipline: 'Baedertechnik',
     rarity: 'gold',
     theme: 'tech',
@@ -144,8 +147,10 @@ export const AVATARS = [
   },
   {
     id: 'rettung_captain',
-    label: 'Rettung Captain',
+    label: 'Orca Captain',
     shortCode: 'RT',
+    animalIcon: '🐋',
+    sunglasses: true,
     discipline: 'Schwimmen & Rettung',
     rarity: 'silver',
     theme: 'rescue',
@@ -159,8 +164,10 @@ export const AVATARS = [
   },
   {
     id: 'arena_champion',
-    label: 'Arena Champion',
+    label: 'Arenahai Champion',
     shortCode: 'AR',
+    animalIcon: '🦈',
+    sunglasses: true,
     discipline: 'Schwimmen & Rettung',
     rarity: 'gold',
     theme: 'rescue',
@@ -174,8 +181,9 @@ export const AVATARS = [
   },
   {
     id: 'hygiene_guardian',
-    label: 'Hygiene Guardian',
+    label: 'Panda Guardian',
     shortCode: 'HG',
+    animalIcon: '🐼',
     discipline: 'Hygiene',
     rarity: 'silver',
     theme: 'hygiene',
@@ -189,8 +197,10 @@ export const AVATARS = [
   },
   {
     id: 'sterile_oracle',
-    label: 'Sterile Oracle',
+    label: 'Schnee-Eule Orakel',
     shortCode: 'SO',
+    animalIcon: '🦉',
+    sunglasses: true,
     discipline: 'Hygiene',
     rarity: 'gold',
     theme: 'hygiene',
@@ -204,8 +214,9 @@ export const AVATARS = [
   },
   {
     id: 'firstaid_guardian',
-    label: 'First Aid Guardian',
+    label: 'Labrador Retter',
     shortCode: 'FA',
+    animalIcon: '🐕',
     discipline: 'Erste Hilfe',
     rarity: 'silver',
     theme: 'firstaid',
@@ -219,8 +230,10 @@ export const AVATARS = [
   },
   {
     id: 'rescue_legend',
-    label: 'Rescue Legend',
+    label: 'Loewen Retter-Legende',
     shortCode: 'RL',
+    animalIcon: '🦁',
+    sunglasses: true,
     discipline: 'Erste Hilfe',
     rarity: 'legendary',
     theme: 'firstaid',
@@ -235,8 +248,10 @@ export const AVATARS = [
   },
   {
     id: 'aqua_grandmaster',
-    label: 'Aqua Grandmaster',
+    label: 'Drachen Grossmeister',
     shortCode: 'AG',
+    animalIcon: '🐉',
+    sunglasses: true,
     discipline: 'Allround',
     rarity: 'legendary',
     theme: 'elite',
@@ -255,6 +270,7 @@ export const AVATARS = [
 export const getAvatarById = (avatarId) => AVATARS.find((avatar) => avatar.id === avatarId) || null;
 
 export const getAvatarShortCode = (avatarInput) => {
+  if (avatarInput?.animalIcon) return avatarInput.animalIcon;
   const shape = String(avatarInput?.shape || '').toLowerCase();
   if (shape === 'orb') return '◉';
   if (shape === 'ring') return '◎';
@@ -264,4 +280,11 @@ export const getAvatarShortCode = (avatarInput) => {
   if (shape === 'shield') return '⬟';
   if (shape === 'crown') return '♛';
   return '◈';
+};
+
+export const avatarHasSunglasses = (avatarInput) => {
+  if (!avatarInput) return false;
+  if (avatarInput.sunglasses) return true;
+  const rarity = String(avatarInput.rarity || '').toLowerCase();
+  return rarity === 'gold' || rarity === 'legendary';
 };
