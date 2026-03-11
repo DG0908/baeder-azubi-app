@@ -255,10 +255,13 @@ export const AVATARS = [
 export const getAvatarById = (avatarId) => AVATARS.find((avatar) => avatar.id === avatarId) || null;
 
 export const getAvatarShortCode = (avatarInput) => {
-  if (!avatarInput) return '3D';
-  if (avatarInput.shortCode) return String(avatarInput.shortCode).toUpperCase();
-  const parts = String(avatarInput.label || '').trim().split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) return ((parts[0][0] || '') + (parts[1][0] || '')).toUpperCase();
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return '3D';
+  const shape = String(avatarInput?.shape || '').toLowerCase();
+  if (shape === 'orb') return '◉';
+  if (shape === 'ring') return '◎';
+  if (shape === 'prism') return '⬢';
+  if (shape === 'crystal') return '✦';
+  if (shape === 'diamond') return '◆';
+  if (shape === 'shield') return '⬟';
+  if (shape === 'crown') return '♛';
+  return '◈';
 };
