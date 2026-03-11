@@ -52,11 +52,11 @@ function CameraRig({ viewPreset }: { viewPreset: ViewPreset }) {
   return null;
 }
 
-function PoolEnvironment() {
+function PoolEnvironment({ isPlaying }: { isPlaying: boolean }) {
   const rippleRef = useRef<THREE.Mesh | null>(null);
 
   useFrame((_, delta) => {
-    if (!rippleRef.current) return;
+    if (!rippleRef.current || !isPlaying) return;
     rippleRef.current.rotation.z += delta * 0.06;
   });
 
@@ -114,7 +114,7 @@ export default function PoolScene({
         <pointLight intensity={0.52} position={[-3, 2, -2]} color="#ffffff" />
         <pointLight intensity={0.28} position={[2, 1.2, -3]} color="#0ea5e9" />
 
-        <PoolEnvironment />
+        <PoolEnvironment isPlaying={isPlaying} />
 
         <SwimmerModel
           styleData={styleData}

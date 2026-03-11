@@ -336,7 +336,7 @@ export const WATER_CYCLE_PIPES = [
 ];
 
 export const WATER_CYCLE_DEFAULT_CONTROLS = {
-  pumpEnabled: true,
+  pumpEnabled: false,
   pumpPower: 72,
   rawValveOpen: true,
   returnValveOpen: true,
