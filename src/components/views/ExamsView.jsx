@@ -1,7 +1,7 @@
 import React from 'react';
-import { ClipboardList, Calendar } from 'lucide-react';
+import { ClipboardList, Calendar, Trash2 } from 'lucide-react';
 
-const ExamsView = ({ exams, examTitle, setExamTitle, examDate, setExamDate, examTopics, setExamTopics, addExam }) => {
+const ExamsView = ({ exams, examTitle, setExamTitle, examDate, setExamDate, examTopics, setExamTopics, addExam, deleteExam }) => {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl p-6 shadow-lg">
@@ -46,12 +46,23 @@ const ExamsView = ({ exams, examTitle, setExamTitle, examDate, setExamDate, exam
             <div key={exam.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-bold">{exam.title}</h3>
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {new Date(exam.date).toLocaleDateString()}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                    {exam.date
+                      ? new Date(exam.date).toLocaleDateString('de-DE')
+                      : 'Ohne Termin'}
+                  </span>
+                  <button
+                    onClick={() => deleteExam(exam.id)}
+                    className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-100 transition-all"
+                    title="Klausur löschen"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
-              <p className="text-gray-700 mb-2">{exam.topics}</p>
-              <p className="text-sm text-gray-500">Eingetragen von {exam.user}</p>
+              <p className="text-gray-700 mb-2">{exam.description || exam.topics}</p>
+              <p className="text-sm text-gray-500">Eingetragen von {exam.createdBy || exam.user}</p>
             </div>
           ))}
           {exams.length === 0 && (

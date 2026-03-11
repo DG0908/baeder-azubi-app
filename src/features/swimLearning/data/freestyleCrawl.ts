@@ -131,84 +131,117 @@ export const freestyleCrawlStyle: SwimStyleData = {
   animation: {
     loopDuration: 2.9,
     kickFrequency: 6,
-    kickAmplitude: 0.2,
+    kickAmplitude: 0.48,
+    // -----------------------------------------------------------------------
+    // Body keyframes — one full stroke cycle (left arm leads).
+    // Coordinates:
+    //   roll  = rotation around longitudinal axis (positive = roll towards right / left-shoulder-up)
+    //   pitch = nose-down tilt (negative = streamlined, slight downhill angle)
+    //   yaw   = lateral wiggle (kept near zero for clean crawl)
+    //   heave = vertical bobbing
+    //   surge = forward pulse per stroke
+    //   headYaw / headPitch = independent head orientation for breathing
+    //   hip / knee / ankle = leg joint angles (positive = downkick direction)
+    // -----------------------------------------------------------------------
     bodyFrames: [
       {
+        // Phase 1 — Strecklage: left arm extended, body nearly flat, slight roll left
         t: 0,
-        roll: -0.1,
-        pitch: -0.065,
+        roll: -0.38,
+        pitch: -0.08,
         yaw: 0,
         heave: 0,
         surge: -0.02,
         headYaw: 0,
-        headPitch: 0.06,
-        leftHip: -0.05,
-        leftKnee: 0.2,
-        leftAnkle: -0.08,
-        rightHip: 0.2,
-        rightKnee: 0.34,
-        rightAnkle: 0.02
+        headPitch: 0.08,
+        leftHip: -0.18,
+        leftKnee: 0.10,
+        leftAnkle: -0.12,
+        rightHip: 0.28,
+        rightKnee: 0.38,
+        rightAnkle: 0.06
       },
       {
+        // Phase 2 — Wasserfassen: left arm catches, body rolls towards center
         t: 0.25,
-        roll: 0.02,
-        pitch: -0.06,
+        roll: -0.08,
+        pitch: -0.07,
+        yaw: 0,
+        heave: 0.01,
+        surge: 0.04,
+        headYaw: 0,
+        headPitch: 0.07,
+        leftHip: 0.26,
+        leftKnee: 0.36,
+        leftAnkle: 0.04,
+        rightHip: -0.20,
+        rightKnee: 0.12,
+        rightAnkle: -0.12
+      },
+      {
+        // Phase 3 — Druckphase: left arm pushes back, body rolls right
+        t: 0.5,
+        roll: 0.42,
+        pitch: -0.07,
         yaw: 0,
         heave: 0.005,
-        surge: 0.02,
-        headYaw: 0,
-        headPitch: 0.06,
-        leftHip: 0.17,
-        leftKnee: 0.31,
-        leftAnkle: 0.01,
-        rightHip: -0.08,
-        rightKnee: 0.22,
-        rightAnkle: -0.08
+        surge: 0.06,
+        headYaw: 0.15,
+        headPitch: 0.07,
+        leftHip: -0.22,
+        leftKnee: 0.12,
+        leftAnkle: -0.12,
+        rightHip: 0.30,
+        rightKnee: 0.40,
+        rightAnkle: 0.06
       },
       {
-        t: 0.5,
-        roll: 0.12,
+        // Phase 4 — Rotation + Atmung: full roll right, head turns to breathe
+        t: 0.75,
+        roll: 0.62,
         pitch: -0.06,
         yaw: 0,
-        heave: 0.002,
-        surge: 0.03,
-        headYaw: 0.04,
-        headPitch: 0.06,
-        leftHip: -0.08,
-        leftKnee: 0.22,
-        leftAnkle: -0.08,
-        rightHip: 0.22,
-        rightKnee: 0.34,
-        rightAnkle: 0.02
-      },
-      {
-        t: 0.75,
-        roll: 0.2,
-        pitch: -0.055,
-        yaw: 0,
-        heave: 0.004,
-        surge: 0.01,
-        headYaw: 0.58,
-        headPitch: 0.08,
-        leftHip: 0.2,
-        leftKnee: 0.34,
-        leftAnkle: 0.02,
-        rightHip: -0.09,
-        rightKnee: 0.2,
-        rightAnkle: -0.08
+        heave: 0.008,
+        surge: 0.02,
+        headYaw: 1.25,
+        headPitch: 0.12,
+        leftHip: 0.28,
+        leftKnee: 0.38,
+        leftAnkle: 0.06,
+        rightHip: -0.22,
+        rightKnee: 0.10,
+        rightAnkle: -0.12
       }
     ],
+    // -----------------------------------------------------------------------
+    // Arm keyframes — shoulder [flexion, abduction, sweep], elbow [flexion, ?, ?]
+    // Left arm leads the cycle; right arm is offset by half a cycle.
+    //
+    // Phase 1 (t=0):    Left arm EXTENDED forward (entry/glide)
+    // Phase 2 (t=0.25): Left arm CATCH (high elbow, forearm drops)
+    // Phase 3 (t=0.5):  Left arm PULL/PUSH (power stroke, elbow extends)
+    // Phase 4 (t=0.75): Left arm RECOVERY (elbow exits water, swings forward)
+    // -----------------------------------------------------------------------
     leftArmFrames: [
-      { t: 0, shoulder: [-0.18, 0.16, -0.12], elbow: [0.35, 0.1, -0.02] },
-      { t: 0.25, shoulder: [0.22, 0.06, -0.58], elbow: [1.08, 0.08, 0.02] },
-      { t: 0.5, shoulder: [0.28, -0.14, -1.08], elbow: [0.76, -0.02, 0.02] },
-      { t: 0.75, shoulder: [-0.14, 0.38, 0.92], elbow: [1.32, 0.12, -0.06] }
+      // Entry/Glide — arm stretched forward, elbow nearly straight
+      { t: 0,    shoulder: [-0.25,  0.20, -0.15], elbow: [0.18, 0.05, -0.02] },
+      // Catch — high elbow, forearm angles down into water
+      { t: 0.25, shoulder: [ 0.65,  0.10, -1.10], elbow: [1.75, 0.10,  0.05] },
+      // Pull/Push — arm sweeps back past hip, elbow extends
+      { t: 0.5,  shoulder: [ 1.20, -0.25, -1.80], elbow: [0.55, -0.05,  0.04] },
+      // Recovery — elbow high out of water, forearm dangles forward
+      { t: 0.75, shoulder: [-0.40,  0.55,  1.40], elbow: [2.10, 0.15, -0.08] }
     ],
+    // Right arm is half a cycle behind left
     rightArmFrames: [
-      { t: 0, shoulder: [0.28, -0.14, -1.08], elbow: [0.76, -0.02, 0.02] },
-      { t: 0.25, shoulder: [-0.14, 0.38, 0.92], elbow: [1.32, 0.12, -0.06] },
-      { t: 0.5, shoulder: [-0.18, 0.16, -0.12], elbow: [0.35, 0.1, -0.02] },
-      { t: 0.75, shoulder: [0.22, 0.06, -0.58], elbow: [1.08, 0.08, 0.02] }
+      // t=0: right arm is in Pull/Push (mirrored from left t=0.5)
+      { t: 0,    shoulder: [ 1.20, -0.25, -1.80], elbow: [0.55, -0.05,  0.04] },
+      // t=0.25: right arm Recovery (mirrored from left t=0.75)
+      { t: 0.25, shoulder: [-0.40,  0.55,  1.40], elbow: [2.10, 0.15, -0.08] },
+      // t=0.5: right arm Entry/Glide (mirrored from left t=0)
+      { t: 0.5,  shoulder: [-0.25,  0.20, -0.15], elbow: [0.18, 0.05, -0.02] },
+      // t=0.75: right arm Catch (mirrored from left t=0.25)
+      { t: 0.75, shoulder: [ 0.65,  0.10, -1.10], elbow: [1.75, 0.10,  0.05] }
     ]
   }
 };

@@ -34,6 +34,7 @@ const {
   getBerichtsheftYearWeeks,
   getWeekEndDate,
   loadBerichtsheftForEdit,
+  openBerichtsheftDraftForCurrentWeek,
   removeWeekEntry,
   resetBerichtsheftForm,
   saveAzubiProfile,
@@ -100,7 +101,7 @@ const {
                 </h2>
                 <div className="flex gap-2 flex-wrap">
                   <button
-                    onClick={() => { resetBerichtsheftForm(); setBerichtsheftViewMode('edit'); }}
+                    onClick={openBerichtsheftDraftForCurrentWeek}
                     className={`px-4 py-2 rounded-lg font-medium transition-all ${berichtsheftViewMode === 'edit' ? 'bg-cyan-500 text-white' : (darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-200 text-gray-700')}`}
                   >
                     ✏️ Neu
@@ -238,7 +239,7 @@ const {
                   )}
 
                   <button
-                    onClick={() => setBerichtsheftViewMode('edit')}
+                    onClick={openBerichtsheftDraftForCurrentWeek}
                     className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-3 rounded-xl font-bold text-lg transition-all shadow-lg"
                   >
                     <Check className="inline mr-2" size={20} />
@@ -581,6 +582,11 @@ const {
                         Abbrechen
                       </button>
                     )}
+                    {!selectedBerichtsheft && (
+                      <p className={`w-full text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Entwurf wird automatisch lokal und auf dem Server gespeichert, bis du den Wochenbericht abschickst.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -594,7 +600,7 @@ const {
                       <p className="text-lg">Noch keine Berichtshefte vorhanden</p>
                       <p className="text-sm mt-2">Erstelle deinen ersten Wochenbericht!</p>
                       <button
-                        onClick={() => setBerichtsheftViewMode('edit')}
+                        onClick={openBerichtsheftDraftForCurrentWeek}
                         className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2 rounded-lg font-medium"
                       >
                         <Plus className="inline mr-2" size={18} />
