@@ -3,7 +3,8 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
-import { AVATARS, PERMISSIONS, getAvatarById, getAvatarShortCode, getLevel } from '../../data/constants';
+import { AVATARS, PERMISSIONS, getAvatarById, getLevel } from '../../data/constants';
+import AvatarBadge from '../ui/AvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
 
 const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) => {
@@ -304,9 +305,11 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl p-8 text-center">
         <div className="mb-3 flex justify-center">
-          <div className="w-20 h-20 rounded-2xl border border-white/40 bg-white/10 backdrop-blur-sm flex flex-col items-center justify-center">
-            <span className="text-4xl leading-none">{getAvatarShortCode(equippedAvatar || fallbackAvatar)}</span>
-          </div>
+          <AvatarBadge
+            avatar={equippedAvatar || fallbackAvatar}
+            size="xl"
+            className="border border-white/40"
+          />
         </div>
         <h2 className="text-3xl font-bold mb-2">{user.name}</h2>
         <p className="opacity-90">{PERMISSIONS[user.role]?.label || user.role}</p>
@@ -364,8 +367,8 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
                 {!unlocked && (
                   <span className="absolute top-2 right-2 text-[10px] bg-black/70 text-white rounded-full px-1">🔒</span>
                 )}
-                <div className={`mb-2 rounded-lg border px-3 py-2 ${darkMode ? 'bg-slate-800 border-slate-500' : 'bg-white border-gray-200'}`}>
-                  <div className={`text-2xl leading-none text-center ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>{getAvatarShortCode(avatar)}</div>
+                <div className={`mb-2 rounded-lg border px-3 py-2 flex items-center justify-center ${darkMode ? 'bg-slate-800 border-slate-500' : 'bg-white border-gray-200'}`}>
+                  <AvatarBadge avatar={avatar} size="md" className="border border-white/40" />
                 </div>
                 <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   {avatar.label}

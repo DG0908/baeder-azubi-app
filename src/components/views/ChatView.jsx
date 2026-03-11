@@ -1,7 +1,8 @@
 import React from 'react';
 import { MessageCircle, Send } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { getAvatarById, getAvatarShortCode } from '../../data/constants';
+import { getAvatarById } from '../../data/constants';
+import AvatarBadge from '../ui/AvatarBadge';
 
 const ChatView = ({ messages, newMessage, setNewMessage, sendMessage }) => {
   const { user } = useAuth();
@@ -21,9 +22,12 @@ const ChatView = ({ messages, newMessage, setNewMessage, sendMessage }) => {
         {messages.map(msg => (
           <div key={msg.id} className={`flex items-end gap-2 ${msg.user === user.name ? 'justify-end' : 'justify-start'}`}>
             {msg.user !== user.name && (
-              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-lg flex-shrink-0">
-                {msg.avatar ? getAvatarShortCode(getAvatarById(msg.avatar)) : msg.user.charAt(0).toUpperCase()}
-              </div>
+              <AvatarBadge
+                avatar={msg.avatar ? getAvatarById(msg.avatar) : null}
+                fallback={msg.user.charAt(0).toUpperCase()}
+                size="sm"
+                className="border border-white/40 flex-shrink-0"
+              />
             )}
             <div className={`max-w-xs rounded-xl p-3 ${
               msg.user === user.name
@@ -38,9 +42,12 @@ const ChatView = ({ messages, newMessage, setNewMessage, sendMessage }) => {
               <p>{msg.text}</p>
             </div>
             {msg.user === user.name && (
-              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-lg flex-shrink-0">
-                {user.avatar ? getAvatarShortCode(getAvatarById(user.avatar)) : user.name.charAt(0).toUpperCase()}
-              </div>
+              <AvatarBadge
+                avatar={user.avatar ? getAvatarById(user.avatar) : null}
+                fallback={user.name.charAt(0).toUpperCase()}
+                size="sm"
+                className="border border-white/40 flex-shrink-0"
+              />
             )}
           </div>
         ))}
