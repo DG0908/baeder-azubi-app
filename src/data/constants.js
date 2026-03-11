@@ -131,5 +131,126 @@ export const AVATARS = [
   { id: 'trident_master', emoji: '🔱🌊', label: 'Wellenmeister', minLevel: 8 },
   { id: 'sunset_surfer', emoji: '🌅🏄', label: 'Sunset-Surfer', minLevel: 9 },
   { id: 'pool_boss', emoji: '👑🏊‍♂️', label: 'Pool-Boss', minLevel: 10 },
-  { id: 'whistle_legend', emoji: '👑📣', label: 'Whistle-Legende', minLevel: 12 }
+  { id: 'whistle_legend', emoji: '👑📣', label: 'Whistle-Legende', minLevel: 12 },
+  // Premium-Avatare: Disziplin-basiert freischaltbar
+  {
+    id: 'technik_scout',
+    emoji: '🔧🧠',
+    label: 'Technik-Scout',
+    discipline: 'Bädertechnik',
+    rarity: 'bronze',
+    unlock: {
+      requirements: [
+        { metric: 'techCorrect', target: 35 },
+        { metric: 'totalXp', target: 600 }
+      ]
+    }
+  },
+  {
+    id: 'technik_architekt',
+    emoji: '⚙️👑',
+    label: 'Anlagen-Architekt',
+    discipline: 'Bädertechnik',
+    rarity: 'gold',
+    unlock: {
+      requirements: [
+        { metric: 'techCorrect', target: 90 },
+        { metric: 'quizWins', target: 25 }
+      ]
+    }
+  },
+  {
+    id: 'rettung_captain',
+    emoji: '🛟🫡',
+    label: 'Rettungs-Captain',
+    discipline: 'Schwimmen & Rettung',
+    rarity: 'silver',
+    unlock: {
+      requirements: [
+        { metric: 'swimCorrect', target: 40 },
+        { metric: 'swimSessions', target: 10 }
+      ]
+    }
+  },
+  {
+    id: 'arena_champion',
+    emoji: '🏊‍♂️🏅',
+    label: 'Arena-Champion',
+    discipline: 'Schwimmen & Rettung',
+    rarity: 'gold',
+    unlock: {
+      requirements: [
+        { metric: 'swimCorrect', target: 90 },
+        { metric: 'swimDistance', target: 8000 }
+      ]
+    }
+  },
+  {
+    id: 'hygiene_guardian',
+    emoji: '🧴🛡️',
+    label: 'Hygiene-Guardian',
+    discipline: 'Hygiene',
+    rarity: 'silver',
+    unlock: {
+      requirements: [
+        { metric: 'hygieneCorrect', target: 35 },
+        { metric: 'totalCorrect', target: 140 }
+      ]
+    }
+  },
+  {
+    id: 'sterile_oracle',
+    emoji: '🧪✨',
+    label: 'Sterile Orakel',
+    discipline: 'Hygiene',
+    rarity: 'gold',
+    unlock: {
+      requirements: [
+        { metric: 'hygieneCorrect', target: 80 },
+        { metric: 'badgeCount', target: 5 }
+      ]
+    }
+  },
+  {
+    id: 'firstaid_guardian',
+    emoji: '⛑️❤️',
+    label: 'Erste-Hilfe-Wächter',
+    discipline: 'Erste Hilfe',
+    rarity: 'silver',
+    unlock: {
+      requirements: [
+        { metric: 'firstAidCorrect', target: 35 },
+        { metric: 'quizWins', target: 14 }
+      ]
+    }
+  },
+  {
+    id: 'rescue_legend',
+    emoji: '🚑🌟',
+    label: 'Rettungs-Legende',
+    discipline: 'Erste Hilfe',
+    rarity: 'legendary',
+    unlock: {
+      requirements: [
+        { metric: 'firstAidCorrect', target: 80 },
+        { metric: 'totalXp', target: 2200 },
+        { metric: 'badgeCount', target: 8 }
+      ]
+    }
+  },
+  {
+    id: 'aqua_grandmaster',
+    emoji: '👑🌊',
+    label: 'Aqua-Großmeister',
+    discipline: 'Allround',
+    rarity: 'legendary',
+    unlock: {
+      requirements: [
+        { metric: 'level', target: 16 },
+        { metric: 'totalCorrect', target: 320 },
+        { metric: 'swimDistance', target: 12000 },
+        { metric: 'badgeCount', target: 12 }
+      ]
+    }
+  }
 ];
