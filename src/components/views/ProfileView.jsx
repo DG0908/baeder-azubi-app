@@ -98,15 +98,6 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
       chipClass: darkMode ? 'bg-violet-900/60 text-violet-200' : 'bg-violet-100 text-violet-700'
     }
   };
-  const AVATAR_SHAPE_LABELS = {
-    orb: 'Orb',
-    ring: 'Ring',
-    prism: 'Prisma',
-    crystal: 'Kristall',
-    diamond: 'Diamant',
-    shield: 'Aegis',
-    crown: 'Krone'
-  };
   const formatUnlockValue = (metric, value) => {
     if (metric === 'swimDistance') return `${toSafeInt(value).toLocaleString('de-DE')} m`;
     return toSafeInt(value).toLocaleString('de-DE');
@@ -314,8 +305,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
       <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl p-8 text-center">
         <div className="mb-3 flex justify-center">
           <div className="w-20 h-20 rounded-2xl border border-white/40 bg-white/10 backdrop-blur-sm flex flex-col items-center justify-center">
-            <span className="text-xs tracking-[0.25em] opacity-80">3D</span>
-            <span className="text-xl font-black">{getAvatarShortCode(equippedAvatar || fallbackAvatar)}</span>
+            <span className="text-4xl leading-none">{getAvatarShortCode(equippedAvatar || fallbackAvatar)}</span>
           </div>
         </div>
         <h2 className="text-3xl font-bold mb-2">{user.name}</h2>
@@ -375,11 +365,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
                   <span className="absolute top-2 right-2 text-[10px] bg-black/70 text-white rounded-full px-1">🔒</span>
                 )}
                 <div className={`mb-2 rounded-lg border px-3 py-2 ${darkMode ? 'bg-slate-800 border-slate-500' : 'bg-white border-gray-200'}`}>
-                  <div className={`text-[10px] tracking-[0.25em] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>3D</div>
-                  <div className={`text-sm font-black ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>{getAvatarShortCode(avatar)}</div>
-                  <div className={`text-[10px] mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {AVATAR_SHAPE_LABELS[String(avatar.shape || '').toLowerCase()] || 'Core'}
-                  </div>
+                  <div className={`text-2xl leading-none text-center ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>{getAvatarShortCode(avatar)}</div>
                 </div>
                 <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   {avatar.label}
