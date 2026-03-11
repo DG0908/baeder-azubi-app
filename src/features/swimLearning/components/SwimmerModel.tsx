@@ -2,8 +2,8 @@ import { useMemo, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import type { ArmKeyframe, BodyKeyframe, SwimStyleData } from '../types';
-import { lerpArmKeyframe, lerpBodyKeyframe, sampleLoopedKeyframes, wrap01 } from '../lib/animation';
+import type { BodyKeyframe, SwimStyleData } from '../types';
+import { lerpBodyKeyframe, sampleLoopedKeyframes, wrap01 } from '../lib/animation';
 import TechniqueHotspotMarker from './TechniqueHotspot';
 
 interface SwimmerModelProps {
@@ -31,18 +31,51 @@ const dampEuler = (
   ref.current.rotation.z = THREE.MathUtils.damp(ref.current.rotation.z, target[2], lambda, delta);
 };
 
-// Data vectors are semantic, then mapped to joint-local Euler axes.
-const toShoulderEuler = (value: [number, number, number]): [number, number, number] => ([
-  value[0] * 0.22,
-  value[1],
-  value[2]
-]);
+// ---------------------------------------------------------------------------
+// Procedural crawl arm: full 360° windmill rotation per stroke cycle.
+// The arm hierarchy: shoulder group → upper arm (extends +X) → elbow group → forearm (+X)
+// Rotating the shoulder group around its local Z sweeps the arm in the XY plane:
+//   angle = 0      → arm forward  (entry)
+//   angle = -π/2   → arm down     (catch / pull)
+//   angle = -π     → arm backward (push / exit)
+//   angle = -3π/2  → arm up       (recovery over water)
+// ---------------------------------------------------------------------------
+const computeCrawlArm = (progress: number, isRight: boolean) => {
+  const windmillZ = -progress * Math.PI * 2;
+  const p = progress;
 
-const toElbowEuler = (value: [number, number, number]): [number, number, number] => ([
-  value[2] * 0.25,
-  value[1] * 0.25,
-  value[0]
-]);
+  // Elbow bend profile through the stroke cycle
+  let elbowBend: number;
+  if (p < 0.10) {
+    // Entry/glide — arm nearly straight ahead
+    elbowBend = 0.10;
+  } else if (p < 0.28) {
+    // Catch — elbow bends into "high elbow" position
+    const t = (p - 0.10) / 0.18;
+    elbowBend = 0.10 + t * 1.50;
+  } else if (p < 0.52) {
+    // Pull — elbow stays bent, gradually extending through the power phase
+    const t = (p - 0.28) / 0.24;
+    elbowBend = 1.60 - t * 0.90;
+  } else if (p < 0.65) {
+    // Push/exit — arm straightens for the hand to leave the water
+    const t = (p - 0.52) / 0.13;
+    elbowBend = 0.70 - t * 0.55;
+  } else {
+    // Recovery — elbow bent, relaxed swing over water back to entry
+    const t = (p - 0.65) / 0.35;
+    elbowBend = 0.15 + Math.sin(t * Math.PI) * 1.30;
+  }
+
+  // Abduction during recovery (arm lifts away from body when over the water)
+  let abductionY = 0;
+  if (p > 0.58 && p < 0.98) {
+    abductionY = Math.sin((p - 0.58) / 0.40 * Math.PI) * 0.30;
+    if (isRight) abductionY = -abductionY;
+  }
+
+  return { windmillZ, abductionY, elbowBend };
+};
 
 export default function SwimmerModel({
   styleData,
@@ -99,7 +132,6 @@ export default function SwimmerModel({
   }, [activeArea, showTechniqueAreas]);
 
   useFrame((_, delta) => {
-    // Loop progress is driven by style config and can be reused for other swim styles.
     if (isPlaying) {
       const phaseSpeed = speedMultiplier / styleData.animation.loopDuration;
       progressRef.current = wrap01(progressRef.current + (delta * phaseSpeed));
@@ -113,28 +145,23 @@ export default function SwimmerModel({
       onPhaseChange(phaseCursor);
     }
 
+    // Body keyframes (roll, pitch, kick, breathing) — still driven by data
     const body = sampleLoopedKeyframes<BodyKeyframe>(
       styleData.animation.bodyFrames,
       phaseProgress,
       (frame) => frame.t,
       lerpBodyKeyframe
     );
-    const leftArm = sampleLoopedKeyframes<ArmKeyframe>(
-      styleData.animation.leftArmFrames,
-      phaseProgress,
-      (frame) => frame.t,
-      lerpArmKeyframe
-    );
-    const rightArm = sampleLoopedKeyframes<ArmKeyframe>(
-      styleData.animation.rightArmFrames,
-      phaseProgress,
-      (frame) => frame.t,
-      lerpArmKeyframe
-    );
 
+    // --- Procedural crawl arms (full windmill) ---
+    const leftArmPose = computeCrawlArm(phaseProgress, false);
+    const rightArmPose = computeCrawlArm(wrap01(phaseProgress + 0.5), true);
+
+    // --- Kick ---
     const kickWave = Math.sin((phaseProgress * Math.PI * 2) * styleData.animation.kickFrequency);
     const kickBlend = styleData.animation.kickAmplitude;
 
+    // ---- Apply body ----
     if (rootRef.current) {
       rootRef.current.position.x = body.surge * 0.5;
       rootRef.current.position.y = 0.22 + body.heave;
@@ -153,17 +180,31 @@ export default function SwimmerModel({
       pelvisRef.current.rotation.z = THREE.MathUtils.damp(pelvisRef.current.rotation.z, -body.roll * 0.58, 8, delta);
     }
 
-    dampEuler(leftShoulderRef, toShoulderEuler(leftArm.shoulder), delta, 14);
-    dampEuler(leftElbowRef, toElbowEuler(leftArm.elbow), delta, 14);
-    dampEuler(rightShoulderRef, toShoulderEuler(rightArm.shoulder), delta, 14);
-    dampEuler(rightElbowRef, toElbowEuler(rightArm.elbow), delta, 14);
+    // ---- Apply arms — set directly to avoid damp wrapping issues on 360° rotation ----
+    if (leftShoulderRef.current) {
+      leftShoulderRef.current.rotation.x = 0;
+      leftShoulderRef.current.rotation.y = leftArmPose.abductionY;
+      leftShoulderRef.current.rotation.z = leftArmPose.windmillZ;
+    }
+    if (leftElbowRef.current) {
+      leftElbowRef.current.rotation.set(0, 0, leftArmPose.elbowBend);
+    }
+    if (rightShoulderRef.current) {
+      rightShoulderRef.current.rotation.x = 0;
+      rightShoulderRef.current.rotation.y = rightArmPose.abductionY;
+      rightShoulderRef.current.rotation.z = rightArmPose.windmillZ;
+    }
+    if (rightElbowRef.current) {
+      rightElbowRef.current.rotation.set(0, 0, rightArmPose.elbowBend);
+    }
 
+    // ---- Kick ----
     const leftHip = body.leftHip + kickWave * kickBlend;
     const rightHip = body.rightHip - kickWave * kickBlend;
-    const leftKnee = body.leftKnee + Math.max(0, -kickWave) * (kickBlend * 0.68);
-    const rightKnee = body.rightKnee + Math.max(0, kickWave) * (kickBlend * 0.68);
-    const leftAnkle = body.leftAnkle + kickWave * (kickBlend * 0.5);
-    const rightAnkle = body.rightAnkle - kickWave * (kickBlend * 0.5);
+    const leftKnee = body.leftKnee + Math.max(0, -kickWave) * (kickBlend * 0.85);
+    const rightKnee = body.rightKnee + Math.max(0, kickWave) * (kickBlend * 0.85);
+    const leftAnkle = body.leftAnkle + kickWave * (kickBlend * 0.7);
+    const rightAnkle = body.rightAnkle - kickWave * (kickBlend * 0.7);
 
     dampEuler(leftHipRef, [leftHip, 0, 0], delta, 10);
     dampEuler(rightHipRef, [rightHip, 0, 0], delta, 10);
@@ -172,8 +213,8 @@ export default function SwimmerModel({
     dampEuler(leftAnkleRef, [leftAnkle, 0, 0], delta, 10);
     dampEuler(rightAnkleRef, [rightAnkle, 0, 0], delta, 10);
 
+    // ---- Head / breathing ----
     if (headRef.current) {
-      // Head pose combines base frame posture + breathing timing from the data profile.
       headRef.current.rotation.y = THREE.MathUtils.damp(headRef.current.rotation.y, body.headYaw, 8, delta);
       headRef.current.rotation.x = THREE.MathUtils.damp(headRef.current.rotation.x, body.headPitch, 8, delta);
     }
