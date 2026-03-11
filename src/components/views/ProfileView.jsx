@@ -3,7 +3,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
-import { AVATARS, PERMISSIONS, getLevel, getXpToNextLevel } from '../../data/constants';
+import { AVATARS, PERMISSIONS, getLevel } from '../../data/constants';
 import { getAgeHandicap } from '../../data/swimming';
 
 const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) => {
@@ -19,23 +19,155 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
+  const toSafeInt = (value) => {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? Math.max(0, Math.round(numeric)) : 0;
+  };
+
   const getTotalXpFromStats = (statsInput) => {
     const rawXp = Number(statsInput?.categoryStats?.__meta?.totalXp);
     return Number.isFinite(rawXp) ? Math.max(0, Math.round(rawXp)) : 0;
   };
 
-  const getAvatarRequiredLevel = (avatarInput) => {
-    const value = Number(avatarInput?.minLevel);
-    if (!Number.isFinite(value)) return 1;
-    return Math.max(1, Math.round(value));
-  };
-
   const totalXp = getTotalXpFromStats(userStats);
   const currentLevel = getLevel(totalXp);
-  const unlockedAvatarCount = AVATARS.filter((avatar) => currentLevel >= getAvatarRequiredLevel(avatar)).length;
-  const nextLockedAvatar = AVATARS
-    .filter((avatar) => currentLevel < getAvatarRequiredLevel(avatar))
-    .sort((a, b) => getAvatarRequiredLevel(a) - getAvatarRequiredLevel(b))[0] || null;
+  const categoryStats = (userStats?.categoryStats && typeof userStats.categoryStats === 'object')
+    ? userStats.categoryStats
+    : {};
+  const getCategoryCorrect = (categoryId) => toSafeInt(categoryStats?.[categoryId]?.correct);
+  const totalCorrectAnswers = Object.entries(categoryStats).reduce((sum, [categoryId, categoryValue]) => {
+    if (categoryId === '__meta') return sum;
+    return sum + toSafeInt(categoryValue?.correct);
+  }, 0);
+  const userNameNormalized = String(user?.name || '').trim().toLowerCase();
+  const mySwimSessions = (Array.isArray(swimSessions) ? swimSessions : []).filter((session) => {
+    const sessionUserId = String(session?.user_id || '').trim();
+    const sessionUserName = String(session?.user_name || '').trim().toLowerCase();
+    const belongsToUser = (user?.id && sessionUserId && sessionUserId === String(user.id))
+      || (userNameNormalized && sessionUserName === userNameNormalized);
+    return belongsToUser && session?.confirmed !== false;
+  });
+  const swimDistanceMeters = mySwimSessions.reduce((sum, session) => sum + toSafeInt(session?.distance), 0);
+  const swimSessionCount = mySwimSessions.length;
+  const badgeCount = Array.isArray(userBadges) ? userBadges.length : 0;
+  const unlockMetrics = {
+    level: currentLevel,
+    totalXp,
+    quizWins: toSafeInt(userStats?.wins),
+    totalCorrect: totalCorrectAnswers,
+    techCorrect: getCategoryCorrect('tech'),
+    swimCorrect: getCategoryCorrect('swim'),
+    hygieneCorrect: getCategoryCorrect('hygiene'),
+    firstAidCorrect: getCategoryCorrect('first') + getCategoryCorrect('health'),
+    swimSessions: swimSessionCount,
+    swimDistance: swimDistanceMeters,
+    badgeCount
+  };
+  const UNLOCK_METRIC_LABELS = {
+    level: 'Level',
+    totalXp: 'XP',
+    quizWins: 'Quiz-Siege',
+    totalCorrect: 'Richtige Antworten',
+    techCorrect: 'Technik-Antworten',
+    swimCorrect: 'Schwimm-Antworten',
+    hygieneCorrect: 'Hygiene-Antworten',
+    firstAidCorrect: 'Erste-Hilfe-Antworten',
+    swimSessions: 'Schwimm-Sessions',
+    swimDistance: 'Schwimm-Meter',
+    badgeCount: 'Badges'
+  };
+  const AVATAR_RARITY_META = {
+    common: {
+      label: 'Standard',
+      chipClass: darkMode ? 'bg-slate-700 text-slate-200' : 'bg-gray-100 text-gray-700'
+    },
+    bronze: {
+      label: 'Bronze',
+      chipClass: darkMode ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-700'
+    },
+    silver: {
+      label: 'Silber',
+      chipClass: darkMode ? 'bg-slate-600 text-slate-100' : 'bg-slate-200 text-slate-700'
+    },
+    gold: {
+      label: 'Gold',
+      chipClass: darkMode ? 'bg-yellow-900/60 text-yellow-200' : 'bg-yellow-100 text-yellow-700'
+    },
+    legendary: {
+      label: 'Legendär',
+      chipClass: darkMode ? 'bg-violet-900/60 text-violet-200' : 'bg-violet-100 text-violet-700'
+    }
+  };
+  const formatUnlockValue = (metric, value) => {
+    if (metric === 'swimDistance') return `${toSafeInt(value).toLocaleString('de-DE')} m`;
+    return toSafeInt(value).toLocaleString('de-DE');
+  };
+  const getAvatarRequirements = (avatarInput) => {
+    if (Array.isArray(avatarInput?.unlock?.requirements) && avatarInput.unlock.requirements.length > 0) {
+      return avatarInput.unlock.requirements.map((requirement) => ({
+        metric: String(requirement?.metric || '').trim(),
+        target: Math.max(1, toSafeInt(requirement?.target)),
+        label: String(requirement?.label || '').trim()
+      })).filter((requirement) => requirement.metric);
+    }
+
+    const legacyLevel = Number(avatarInput?.minLevel);
+    if (Number.isFinite(legacyLevel) && legacyLevel > 1) {
+      return [{ metric: 'level', target: Math.max(1, Math.round(legacyLevel)), label: '' }];
+    }
+
+    return [];
+  };
+  const getRequirementLabel = (requirementInput) => {
+    if (!requirementInput) return '';
+    if (requirementInput.label) return requirementInput.label;
+    const label = UNLOCK_METRIC_LABELS[requirementInput.metric] || requirementInput.metric;
+    return `${label}: ${formatUnlockValue(requirementInput.metric, requirementInput.target)}`;
+  };
+  const getAvatarUnlockState = (avatarInput) => {
+    const requirements = getAvatarRequirements(avatarInput);
+    if (requirements.length === 0) {
+      return {
+        unlocked: true,
+        progress: 1,
+        requirements,
+        nextRequirementText: 'Freigeschaltet'
+      };
+    }
+
+    const requirementStates = requirements.map((requirement) => {
+      const current = toSafeInt(unlockMetrics[requirement.metric]);
+      const target = Math.max(1, toSafeInt(requirement.target));
+      return {
+        requirement,
+        current,
+        target,
+        met: current >= target,
+        ratio: Math.min(1, current / target)
+      };
+    });
+
+    const unlocked = requirementStates.every((state) => state.met);
+    const progress = requirementStates.reduce((sum, state) => sum + state.ratio, 0) / requirementStates.length;
+    const firstMissing = requirementStates.find((state) => !state.met) || null;
+
+    return {
+      unlocked,
+      progress,
+      requirements,
+      nextRequirementText: firstMissing
+        ? `${getRequirementLabel(firstMissing.requirement)} (noch ${formatUnlockValue(firstMissing.requirement.metric, Math.max(0, firstMissing.target - firstMissing.current))})`
+        : 'Freigeschaltet'
+    };
+  };
+  const avatarStates = AVATARS.map((avatar) => ({
+    avatar,
+    ...getAvatarUnlockState(avatar)
+  }));
+  const unlockedAvatarCount = avatarStates.filter((entry) => entry.unlocked).length;
+  const nextLockedAvatar = avatarStates
+    .filter((entry) => !entry.unlocked)
+    .sort((a, b) => b.progress - a.progress)[0] || null;
 
   const updateProfileName = async () => {
     if (!profileEditName.trim()) {
@@ -93,9 +225,10 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
   const updateProfileAvatar = async (avatarId) => {
     if (avatarId) {
       const selectedAvatar = AVATARS.find((avatar) => avatar.id === avatarId) || null;
-      const requiredLevel = getAvatarRequiredLevel(selectedAvatar);
-      if (selectedAvatar && currentLevel < requiredLevel) {
-        showToast(`Dieser Avatar wird ab Level ${requiredLevel} freigeschaltet.`, 'warning');
+      const selectedAvatarState = avatarStates.find((entry) => entry.avatar.id === avatarId) || null;
+      if (selectedAvatar && selectedAvatarState && !selectedAvatarState.unlocked) {
+        const label = selectedAvatar.label || 'Dieser Avatar';
+        showToast(`${label} ist noch gesperrt. ${selectedAvatarState.nextRequirementText}`, 'warning');
         return;
       }
     }
@@ -181,7 +314,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           Avatar auswählen
         </h3>
         <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Sammle Level und schalte exklusive Avatare frei.
+          Verdiene exklusive Avatare über Disziplinen wie Technik, Rettung, Hygiene und Erste Hilfe.
         </p>
         <div className={`mb-4 flex flex-wrap items-center gap-2 text-xs ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
           <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-cyan-900/50' : 'bg-cyan-100'}`}>
@@ -195,7 +328,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           </span>
           {nextLockedAvatar && (
             <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700'}`}>
-              Nächster: {nextLockedAvatar.emoji} ab Level {getAvatarRequiredLevel(nextLockedAvatar)} ({getXpToNextLevel(totalXp)} XP bis Level {currentLevel + 1})
+              Nächster: {nextLockedAvatar.avatar.emoji} {nextLockedAvatar.avatar.label} · {nextLockedAvatar.nextRequirementText}
             </span>
           )}
           {!nextLockedAvatar && (
@@ -204,34 +337,47 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
             </span>
           )}
         </div>
-        <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
-          {AVATARS.map((avatar) => {
-            const requiredLevel = getAvatarRequiredLevel(avatar);
-            const isUnlocked = currentLevel >= requiredLevel;
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {avatarStates.map((entry) => {
+            const { avatar, unlocked, nextRequirementText, requirements } = entry;
             const isSelected = user.avatar === avatar.id;
+            const rarityMeta = AVATAR_RARITY_META[avatar.rarity] || AVATAR_RARITY_META.common;
+            const hasUnlockRules = requirements.length > 0;
             return (
-              <div key={avatar.id} className="relative">
-                <button
-                  onClick={() => updateProfileAvatar(avatar.id)}
-                  disabled={profileSaving || !isUnlocked}
-                  title={isUnlocked ? avatar.label : `${avatar.label} (ab Level ${requiredLevel})`}
-                  className={`text-3xl p-2 rounded-xl transition-all ${
-                    isSelected
-                      ? 'bg-cyan-500 ring-2 ring-cyan-400 ring-offset-2 ' + (darkMode ? 'ring-offset-slate-800' : 'ring-offset-white')
-                      : darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
-                  } ${isUnlocked ? 'hover:scale-110' : 'opacity-45 grayscale cursor-not-allowed'}`}
-                >
-                  {avatar.emoji}
-                </button>
-                {!isUnlocked && (
-                  <>
-                    <span className="absolute top-0 right-0 text-[10px] bg-black/70 text-white rounded-full px-1">🔒</span>
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] bg-black/70 text-white rounded px-1">
-                      Lv.{requiredLevel}
-                    </span>
-                  </>
+              <button
+                key={avatar.id}
+                onClick={() => updateProfileAvatar(avatar.id)}
+                disabled={profileSaving}
+                title={avatar.label}
+                className={`relative p-3 rounded-xl border text-left transition-all ${
+                  isSelected
+                    ? `ring-2 ring-cyan-400 ${darkMode ? 'bg-cyan-900/30 border-cyan-500' : 'bg-cyan-50 border-cyan-300'}`
+                    : darkMode
+                      ? 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                      : 'bg-gray-50 border-gray-200 hover:bg-white'
+                } ${unlocked ? 'hover:-translate-y-0.5' : 'opacity-75'}`}
+              >
+                {!unlocked && (
+                  <span className="absolute top-2 right-2 text-[10px] bg-black/70 text-white rounded-full px-1">🔒</span>
                 )}
-              </div>
+                <div className="text-3xl mb-2">{avatar.emoji}</div>
+                <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  {avatar.label}
+                </div>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] ${rarityMeta.chipClass}`}>
+                    {rarityMeta.label}
+                  </span>
+                  {avatar.discipline && (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] ${darkMode ? 'bg-cyan-900/40 text-cyan-200' : 'bg-cyan-100 text-cyan-700'}`}>
+                      {avatar.discipline}
+                    </span>
+                  )}
+                </div>
+                <div className={`mt-2 text-xs ${unlocked ? (darkMode ? 'text-emerald-300' : 'text-emerald-700') : (darkMode ? 'text-amber-300' : 'text-amber-700')}`}>
+                  {hasUnlockRules ? (unlocked ? 'Freigeschaltet' : nextRequirementText) : 'Standard-Avatar'}
+                </div>
+              </button>
             );
           })}
         </div>
@@ -261,25 +407,25 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           </div>
           <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-blue-900 to-cyan-900' : 'bg-gradient-to-br from-blue-100 to-cyan-100'}`}>
             <div className="text-3xl mb-1">🏊</div>
-            <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-              {swimSessions.filter(s => s.user_id === user.id || s.user_name === user.name).reduce((sum, s) => sum + (s.distance || 0), 0).toLocaleString()}m
-            </div>
-            <div className={`text-xs ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Geschwommen</div>
-          </div>
-          <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-purple-900 to-pink-900' : 'bg-gradient-to-br from-purple-100 to-pink-100'}`}>
-            <div className="text-3xl mb-1">🎖️</div>
-            <div className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-              {userBadges.length}
-            </div>
-            <div className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>Badges</div>
-          </div>
-          <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-orange-900 to-amber-900' : 'bg-gradient-to-br from-orange-100 to-amber-100'}`}>
-            <div className="text-3xl mb-1">✅</div>
-            <div className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
-              {Object.values(userStats?.categoryStats || {}).reduce((sum, cat) => sum + (cat.correct || 0), 0)}
-            </div>
-            <div className={`text-xs ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>Richtige Antworten</div>
-          </div>
+                <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                  {swimDistanceMeters.toLocaleString('de-DE')}m
+                </div>
+                <div className={`text-xs ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Geschwommen</div>
+              </div>
+              <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-purple-900 to-pink-900' : 'bg-gradient-to-br from-purple-100 to-pink-100'}`}>
+                <div className="text-3xl mb-1">🎖️</div>
+                <div className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                  {badgeCount}
+                </div>
+                <div className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>Badges</div>
+              </div>
+              <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-orange-900 to-amber-900' : 'bg-gradient-to-br from-orange-100 to-amber-100'}`}>
+                <div className="text-3xl mb-1">✅</div>
+                <div className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
+                  {totalCorrectAnswers.toLocaleString('de-DE')}
+                </div>
+                <div className={`text-xs ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>Richtige Antworten</div>
+              </div>
         </div>
         <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} grid grid-cols-3 gap-4 text-center`}>
           <div>
@@ -296,7 +442,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           </div>
           <div>
             <div className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              {swimSessions.filter(s => s.user_id === user.id || s.user_name === user.name).length}
+              {swimSessionCount}
             </div>
             <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Schwimm-Einheiten</div>
           </div>
