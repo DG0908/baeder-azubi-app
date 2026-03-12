@@ -5,6 +5,17 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { AppProvider } from './context/AppContext.jsx'
 import './index.css'
 
+// Prevent white-screen after deploy when a stale tab requests an old chunk.
+// Vite emits `vite:preloadError` for failed dynamic imports.
+const VITE_RELOAD_GUARD_KEY = '__vite_preload_reloaded__';
+window.addEventListener('vite:preloadError', (event) => {
+  event.preventDefault();
+  if (sessionStorage.getItem(VITE_RELOAD_GUARD_KEY)) return;
+  sessionStorage.setItem(VITE_RELOAD_GUARD_KEY, '1');
+  window.location.reload();
+});
+window.addEventListener('load', () => sessionStorage.removeItem(VITE_RELOAD_GUARD_KEY));
+
 // LocalStorage wrapper to match window.storage API
 window.storage = {
   set: async (key, value, global = false) => {
