@@ -1,17 +1,21 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-const MODEL_HEIGHT = 'clamp(360px, 62vh, 820px)';
+const MODEL_HEIGHT = 'clamp(380px, 64vh, 840px)';
+
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const avgZ = (pts) => pts.reduce((sum, p) => sum + p[2], 0) / pts.length;
+const toPolyPoints = (pts) => pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
 
 const HOTSPOTS = [
-  { id: 'steuerung', shortLabel: 'CTRL', label: 'Mikroprozessor-Steuerung', x: 146, y: 92, color: '#4a9eff' },
-  { id: 'vorratsbehaelter', shortLabel: 'Vorrat', label: 'Vorratsbehaelter', x: 350, y: 126, color: '#8cbeff' },
-  { id: 'duesensystem', shortLabel: 'Duesen', label: 'Duesensystem', x: 522, y: 108, color: '#34c090' },
-  { id: 'loesetank', shortLabel: 'Loesetank', label: 'Loese-/Sedimentationstank', x: 358, y: 220, color: '#a070ff' },
-  { id: 'sorptionseinheit', shortLabel: 'Sorption', label: 'Sorptionseinheit', x: 522, y: 246, color: '#d8a240' },
-  { id: 'schwenkantrieb', shortLabel: 'Schwenk', label: 'Schwenkantrieb', x: 362, y: 292, color: '#ff7a7a' },
-  { id: 'tauchdruckpumpe', shortLabel: 'Pumpe', label: 'Tauchdruckpumpe', x: 198, y: 350, color: '#34b9ff' },
-  { id: 'produktbehaelter', shortLabel: 'Produkt', label: 'Produktbehaelter', x: 574, y: 350, color: '#4ad097' },
-  { id: 'schwimmerschalter', shortLabel: 'Schwimmer', label: 'Schwimmerschalter', x: 132, y: 276, color: '#f2b15b' },
+  { id: 'steuerung', shortLabel: 'CTRL', label: 'Mikroprozessor-Steuerung', color: '#4a9eff', pos: [-115, -72, -8] },
+  { id: 'vorratsbehaelter', shortLabel: 'VORRAT', label: 'Vorratsbehaelter', color: '#8cbeff', pos: [8, -58, 8] },
+  { id: 'duesensystem', shortLabel: 'DUESE', label: 'Duesensystem', color: '#34c090', pos: [54, -34, 2] },
+  { id: 'loesetank', shortLabel: 'LOESE', label: 'Loese-/Sedimentationstank', color: '#a070ff', pos: [8, 20, 42] },
+  { id: 'sorptionseinheit', shortLabel: 'SORP', label: 'Sorptionseinheit', color: '#d8a240', pos: [100, 16, 5] },
+  { id: 'schwenkantrieb', shortLabel: 'SWENK', label: 'Schwenkantrieb', color: '#ff7a7a', pos: [18, 78, 10] },
+  { id: 'tauchdruckpumpe', shortLabel: 'PUMP', label: 'Tauchdruckpumpe', color: '#34b9ff', pos: [-88, 90, 30] },
+  { id: 'produktbehaelter', shortLabel: 'PROD', label: 'Produktbehaelter', color: '#4ad097', pos: [100, 80, 44] },
+  { id: 'schwimmerschalter', shortLabel: 'LEVEL', label: 'Schwimmerschalter', color: '#f2b15b', pos: [-116, 36, 38] },
 ];
 
 const HOTSPOT_DATA = {
@@ -21,8 +25,8 @@ const HOTSPOT_DATA = {
     color: '#4a9eff',
     items: [
       'Steuert Schwenkzyklen, Ueberlaufzeit und Umschaltung der Ventile.',
-      'Ueberwacht Signale von Schwimmerschaltern und Betriebsstoerungen.',
-      'Verriegelt die Dosierung bei Fehlern im Loeseprozess.',
+      'Verknuepft Anwasserungsdauer, Loesezeit und Dosierfreigabe in Sequenzen.',
+      'Verriegelt die Produktabgabe bei Stoerungen oder Fehlfuellstand.',
     ],
   },
   vorratsbehaelter: {
@@ -30,9 +34,9 @@ const HOTSPOT_DATA = {
     short: 'VORRAT',
     color: '#8cbeff',
     items: [
-      'Enthaelt Calciumhypochlorit-Tabletten oder Granulat im trockenen Bereich.',
-      'Nachfuellung nur trocken und staubarm, niemals mit Saeuren zusammen.',
-      'Ziel ist eine gleichmaessige, bedarfsgerechte Aufgabe in den Loesekreislauf.',
+      'Behaelter fuer Calciumhypochlorit-Feststoff im trockenen Bereich.',
+      'Anwaesserung erfolgt nur getaktet ueber Duesensystem und nie im Dauerstrahl.',
+      'Schuetzt vor Klumpenbildung und unkontrollierten Konzentrationsspitzen.',
     ],
   },
   duesensystem: {
@@ -40,9 +44,9 @@ const HOTSPOT_DATA = {
     short: 'DUESE',
     color: '#34c090',
     items: [
-      'Bespraeht den Feststoff definiert mit Wasser fuer kontrolliertes Anloesen.',
-      'Sorgt fuer homogene Benetzung statt lokaler Ueberkonzentration.',
-      'Verhindert Verkrustungen durch zeitlich getaktete Spuelimpulse.',
+      'Bespraeht den Feststoff gleichmaessig fuer kontrollierte Anwasserung.',
+      'Definierte Tropfen-/Spruehcharakteristik verhindert Aufhaertungen.',
+      'Bei unruhigem Duesenbild: Druck und Vorfilter sofort pruefen.',
     ],
   },
   loesetank: {
@@ -50,9 +54,9 @@ const HOTSPOT_DATA = {
     short: 'LOESE',
     color: '#a070ff',
     items: [
-      'Hier entsteht die rueckstandsarme Produktloesung.',
-      'Unloesliche Nebenbestandteile koennen sedimentieren.',
-      'Die Loesung wird erst nach Beruhigungszeit in den Produktbehaelter weitergegeben.',
+      'Hier entsteht die Produktloesung aus angewassertem Feststoff.',
+      'Unloesliche Nebenbestandteile setzen sich im Sedimentbereich ab.',
+      'Abgabe erfolgt erst nach Beruhigungs-/Ueberlaufphase.',
     ],
   },
   sorptionseinheit: {
@@ -60,9 +64,9 @@ const HOTSPOT_DATA = {
     short: 'SORP',
     color: '#d8a240',
     items: [
-      'Optionale Feinabtrennung fuer Schwebstoffe in der Produktstrecke.',
-      'Schuetzt nachfolgende Dosierkomponenten vor Ablagerungen.',
-      'Bei steigender Druckdifferenz muss die Einheit gereinigt werden.',
+      'Optionale Feinbehandlung in der Produktstrecke.',
+      'Reduziert Schwebstoffe und stabilisiert die Dosierstrecke.',
+      'Druckverlust als Wartungsindikator verwenden.',
     ],
   },
   schwenkantrieb: {
@@ -70,9 +74,9 @@ const HOTSPOT_DATA = {
     short: 'SWENK',
     color: '#ff7a7a',
     items: [
-      'Bewegt den Austragsbereich periodisch, damit Feststoff nicht aufbrueckt.',
-      'Verbessert die Loesungsausbeute und reduziert Totzonen im Behaelter.',
-      'Der Zyklus wird von der Steuerung zeit- oder bedarfsgesteuert gefahren.',
+      'Loest Feststoffbruecken durch mechanische Bewegung.',
+      'Verbessert Benetzung aller Feststoffzonen waehrend der Anwasserung.',
+      'Wird zyklisch von der Steuerung gestartet und gestoppt.',
     ],
   },
   tauchdruckpumpe: {
@@ -80,9 +84,9 @@ const HOTSPOT_DATA = {
     short: 'PUMP',
     color: '#34b9ff',
     items: [
-      'Entnimmt Wasser fuer den Loeseprozess aus dem Wassertank.',
-      'Stellt den benoetigten Druck fuer Duesen und Umwaelzung bereit.',
-      'Trockenlaufschutz ueber Fuellstandssignale zwingend aktivieren.',
+      'Entnimmt Wasser fuer Duesensystem und Loeseprozess.',
+      'Stellt den benoetigten Betriebsdruck fuer gleichmaessige Anwasserung.',
+      'Trockenlaufschutz ueber Schwimmerschalter zwingend.',
     ],
   },
   produktbehaelter: {
@@ -90,9 +94,9 @@ const HOTSPOT_DATA = {
     short: 'PROD',
     color: '#4ad097',
     items: [
-      'Speichert die fertige Calciumhypochlorit-Loesung als Zwischenpuffer.',
-      'Von hier dosiert die Membrandosierpumpe in die Impfstelle.',
-      'Fuellstand und Konzentration regelmaessig pruefen und dokumentieren.',
+      'Puffer fuer rueckstandsarme Calciumhypochlorit-Produktloesung.',
+      'Membrandosierpumpe entnimmt von hier in Richtung Impfstelle.',
+      'Fuellstand und Konzentration regelmaessig dokumentieren.',
     ],
   },
   schwimmerschalter: {
@@ -100,157 +104,468 @@ const HOTSPOT_DATA = {
     short: 'LEVEL',
     color: '#f2b15b',
     items: [
-      'Erfasst Mindest- und Maximalfuellstand im Wassertank.',
-      'Verhindert Trockenlauf der Pumpe und Ueberfuellung.',
-      'Signal wird direkt in der Steuerlogik als Freigabebedingung verwendet.',
+      'Meldet Mindest- und Maximalfuellstand im Wassertank.',
+      'Sichert gegen Trockenlauf und Ueberfuellung.',
+      'Ist Freigabebedingung fuer Pumpe und Anwasserung.',
     ],
   },
 };
 
 const KENNDATEN = [
   { label: 'Wirkstoff', value: 'Calciumhypochlorit Ca(ClO)2 (fest)' },
-  { label: 'Aktivchlor im Produkt', value: 'typisch 65-70 %' },
-  { label: 'Loesungsbildung', value: 'automatisch im 2-Kammer-System' },
-  { label: 'Dosierung', value: 'ueber Membrandosierpumpe zur Impfstelle' },
-  { label: 'Sicherheitsregel', value: 'trocken lagern, nie mit Saeure mischen' },
+  { label: 'Aktivchlor im Produkt', value: 'typisch 65 - 70 %' },
+  { label: 'Anwasserung', value: 'getaktet ueber Duesensystem' },
+  { label: 'Loesungsbildung', value: '2-Kammer-/Sedimentationsprinzip' },
+  { label: 'Dosierung', value: 'ueber Membrandosierpumpe' },
 ];
 
-const PROCESS_STEPS = [
-  '1) Wasser wird aus dem Wassertank per Tauchdruckpumpe entnommen.',
-  '2) Das Duesensystem benetzt den Calciumhypochlorit-Feststoff kontrolliert.',
-  '3) Die gebildete Loesung fliesst in den Loese-/Sedimentationstank.',
-  '4) Rueckstaende bleiben zurueck; die klare Phase wandert in den Produktbehaelter.',
-  '5) Die Dosierpumpe gibt Produkt loesungsproportional ins Kreislaufwasser.',
-  '6) Steuerung + Schwimmerschalter ueberwachen Nachspeisung und Betriebssicherheit.',
+const PROCESS_PHASES = [
+  {
+    id: 'anwaessern',
+    label: '1 Anwaessern',
+    accent: '#34b9ff',
+    focus: ['tauchdruckpumpe', 'duesensystem', 'vorratsbehaelter'],
+    detail: [
+      'Pumpe entnimmt Wasser und baut gleichmaessigen Druck auf.',
+      'Duesen benetzen den Feststoff in kurzen, definierten Pulsen.',
+      'Ziel: vollstaendige Benetzung ohne Ueberflutung des Vorrats.',
+    ],
+    caution: 'Zu lange Anwasserung kann Verkrustungen und unruhige Konzentrationen verursachen.',
+  },
+  {
+    id: 'loesen',
+    label: '2 Loesen',
+    accent: '#7a8fff',
+    focus: ['vorratsbehaelter', 'schwenkantrieb', 'loesetank'],
+    detail: [
+      'Angewasserter Feststoff wird durch Schwenkimpulse gelockert.',
+      'Loesliche Anteile gehen in den Loesetank ueber.',
+      'Zielkonzentration wird ueber Zeitfenster reproduzierbar gehalten.',
+    ],
+    caution: 'Bei Brueckenbildung sinkt Loesungsleistung, deshalb Schwenkzyklen pruefen.',
+  },
+  {
+    id: 'sedimentieren',
+    label: '3 Sedimentieren',
+    accent: '#b779ff',
+    focus: ['loesetank', 'sorptionseinheit', 'produktbehaelter'],
+    detail: [
+      'Im Loesetank setzen sich unloesliche Bestandteile ab.',
+      'Klare Phase wird ueber Ueberlauf/Abgang weitergefuehrt.',
+      'Optionale Sorption stabilisiert die Produktqualitaet.',
+    ],
+    caution: 'Bei zu kurzer Beruhigungszeit gelangen Rueckstaende in die Produktstrecke.',
+  },
+  {
+    id: 'dosieren',
+    label: '4 Dosieren',
+    accent: '#34c090',
+    focus: ['produktbehaelter', 'steuerung', 'schwimmerschalter'],
+    detail: [
+      'Produktloesung wird aus dem Produktbehaelter bedarfsgerecht entnommen.',
+      'Steuerung koppelt Dosierung an Messwerte und Betriebsvorgaben.',
+      'Fuellstandssignale sichern Nachspeisung und Stoerabschaltung.',
+    ],
+    caution: 'Dosierung nur bei stabilem pH-Fenster und freigegebenem Anlagenstatus.',
+  },
+];
+
+const PHASE_FLOW_SEGMENTS = {
+  anwaessern: [
+    [[-88, 90, 30], [-88, 32, 26], [-42, 20, 16], [14, -20, 8], [56, -34, 2]],
+    [[56, -34, 2], [26, -40, 8], [8, -58, 8]],
+  ],
+  loesen: [
+    [[8, -58, 8], [12, -20, 18], [10, 6, 30], [8, 20, 42]],
+    [[18, 78, 10], [16, 44, 18], [12, 22, 30]],
+  ],
+  sedimentieren: [
+    [[8, 20, 42], [38, 22, 32], [70, 18, 22], [100, 16, 5]],
+    [[100, 16, 5], [104, 42, 18], [102, 62, 30], [100, 80, 44]],
+  ],
+  dosieren: [
+    [[100, 80, 44], [112, 78, 24], [126, 76, 6]],
+    [[-116, 36, 38], [-116, -20, 18], [-116, -72, -8]],
+  ],
+};
+
+const STATIC_PIPE_SEGMENTS = [
+  [[-88, 90, 30], [-88, 32, 26], [-42, 20, 16], [14, -20, 8], [56, -34, 2]],
+  [[56, -34, 2], [26, -40, 8], [8, -58, 8]],
+  [[8, -58, 8], [10, 6, 30], [8, 20, 42], [70, 18, 22], [100, 16, 5]],
+  [[100, 16, 5], [102, 62, 30], [100, 80, 44]],
 ];
 
 const BETRIEBSCHECKS = [
   { label: 'Freies Chlor (Becken)', value: '0,3 - 0,6 mg/L', ok: true },
   { label: 'pH-Fenster', value: '7,0 - 7,4', ok: true },
-  { label: 'Produktbehaelter Level', value: 'nicht unter Mindeststand', ok: true },
-  { label: 'Duesenbild', value: 'gleichmaessig, ohne Verstopfung', ok: true },
+  { label: 'Anwasserung', value: 'pulsierend, nicht kontinuierlich', ok: true },
+  { label: 'Produktstrecke', value: 'klar, ohne sichtbare Rueckstaende', ok: true },
 ];
 
-function HotspotMarker({ spot, activeSpot, onToggle, showLabels }) {
-  const active = activeSpot === spot.id;
-  return (
-    <g
-      data-hotspot="1"
-      style={{ cursor: 'pointer' }}
-      onClick={(event) => {
-        event.stopPropagation();
-        onToggle(active ? null : spot.id);
-      }}
-    >
-      <circle
-        cx={spot.x}
-        cy={spot.y}
-        r={active ? 17 : 14}
-        fill={spot.color}
-        fillOpacity={active ? 0.36 : 0.16}
-        stroke={spot.color}
-        strokeWidth={active ? 2.7 : 1.6}
-      >
-        {!active && <animate attributeName="r" values="14;17;14" dur="2.6s" repeatCount="indefinite" />}
-      </circle>
-      <circle cx={spot.x} cy={spot.y} r="3.2" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="0.9" />
-      <text x={spot.x} y={spot.y + 4} fill="white" fontSize="10" fontWeight="700" textAnchor="middle">+</text>
-      {showLabels && (
-        <text
-          x={spot.x}
-          y={spot.y - 18}
-          fill={spot.color}
-          fontSize="7"
-          fontFamily="monospace"
-          textAnchor="middle"
-          style={{ pointerEvents: 'none' }}
-        >
-          {spot.shortLabel}
-        </text>
-      )}
-    </g>
-  );
+function renderCuboidFaces(project, config, xrayMode) {
+  const { id, center, size, colors, stroke = '#2a5a90', strokeWidth = 1 } = config;
+  const [cx, cy, cz] = center;
+  const [sx, sy, sz] = size;
+  const hx = sx / 2;
+  const hy = sy / 2;
+  const hz = sz / 2;
+
+  const c = {
+    p000: project(cx - hx, cy - hy, cz - hz),
+    p100: project(cx + hx, cy - hy, cz - hz),
+    p110: project(cx + hx, cy + hy, cz - hz),
+    p010: project(cx - hx, cy + hy, cz - hz),
+    p001: project(cx - hx, cy - hy, cz + hz),
+    p101: project(cx + hx, cy - hy, cz + hz),
+    p111: project(cx + hx, cy + hy, cz + hz),
+    p011: project(cx - hx, cy + hy, cz + hz),
+  };
+
+  const faces = [
+    { name: 'front', pts: [c.p000, c.p100, c.p110, c.p010], fill: colors.front },
+    { name: 'back', pts: [c.p001, c.p101, c.p111, c.p011], fill: colors.back },
+    { name: 'left', pts: [c.p000, c.p001, c.p011, c.p010], fill: colors.left },
+    { name: 'right', pts: [c.p100, c.p101, c.p111, c.p110], fill: colors.right },
+    { name: 'top', pts: [c.p000, c.p100, c.p101, c.p001], fill: colors.top },
+    { name: 'bottom', pts: [c.p010, c.p110, c.p111, c.p011], fill: colors.bottom },
+  ].map((face) => ({
+    ...face,
+    id: `${id}-${face.name}`,
+    zVal: avgZ(face.pts),
+    stroke,
+    strokeWidth,
+    fillOpacity: xrayMode ? 0.13 : 0.72,
+  }));
+
+  return faces;
 }
 
-function CalciumPlantSchematic({ activeSpot, setActiveSpot, xrayMode, showLabels }) {
-  const shellFill = xrayMode ? 'rgba(32,72,114,0.16)' : 'rgba(26,64,112,0.36)';
-  const wallFill = xrayMode ? 'rgba(20,52,88,0.14)' : 'rgba(16,40,70,0.48)';
-  const tankFill = xrayMode ? 'rgba(72,130,205,0.12)' : 'rgba(54,111,192,0.35)';
-  const stroke = '#2a5a90';
+function CalciumPlantCube3D({
+  activeSpot,
+  setActiveSpot,
+  xrayMode,
+  showLabels,
+  activePhase,
+}) {
+  const [rx, setRx] = useState(-22);
+  const [ry, setRy] = useState(26);
+  const [drag, setDrag] = useState(null);
+
+  const phase = PROCESS_PHASES.find((item) => item.id === activePhase) || PROCESS_PHASES[0];
+
+  const pointFromEvent = (event) => (event.touches ? event.touches[0] : event);
+
+  const onPointerDown = (event) => {
+    if (event.target.closest('[data-hotspot="1"]')) return;
+    const p = pointFromEvent(event);
+    setDrag({ x: p.clientX, y: p.clientY });
+    event.preventDefault();
+  };
+
+  const onPointerMove = (event) => {
+    if (!drag) return;
+    const p = pointFromEvent(event);
+    const dx = p.clientX - drag.x;
+    const dy = p.clientY - drag.y;
+    setRy((current) => current + dx * 0.45);
+    setRx((current) => clamp(current - dy * 0.35, -68, 24));
+    setDrag({ x: p.clientX, y: p.clientY });
+    event.preventDefault();
+  };
+
+  const onPointerUp = () => setDrag(null);
+
+  const project = (x, y, z) => {
+    const cY = Math.cos((ry * Math.PI) / 180);
+    const sY = Math.sin((ry * Math.PI) / 180);
+    const cX = Math.cos((rx * Math.PI) / 180);
+    const sX = Math.sin((rx * Math.PI) / 180);
+
+    const x1 = (x * cY) - (z * sY);
+    const z1 = (x * sY) + (z * cY);
+    const y1 = (y * cX) - (z1 * sX);
+    const z2 = (y * sX) + (z1 * cX);
+    const d = 430 / (430 + z2);
+
+    return [190 + (x1 * d), 166 + (y1 * d), z2];
+  };
+
+  const componentFaces = useMemo(() => {
+    const base = [
+      {
+        id: 'housing',
+        center: [0, 26, 28],
+        size: [272, 188, 138],
+        colors: {
+          front: '#0a2544',
+          back: '#091c34',
+          left: '#0a213d',
+          right: '#0a213d',
+          top: '#10365f',
+          bottom: '#081a30',
+        },
+        stroke: '#2f6aa5',
+        strokeWidth: 1.2,
+      },
+      {
+        id: 'water-tank',
+        center: [-92, 68, 48],
+        size: [70, 98, 72],
+        colors: {
+          front: '#13395f',
+          back: '#0e2e4f',
+          left: '#113452',
+          right: '#123a5f',
+          top: '#1b4f7a',
+          bottom: '#0e253f',
+        },
+      },
+      {
+        id: 'vorrat',
+        center: [8, -54, 14],
+        size: [86, 34, 60],
+        colors: {
+          front: '#2b4f7f',
+          back: '#243f64',
+          left: '#2a466e',
+          right: '#305783',
+          top: '#4678ac',
+          bottom: '#213955',
+        },
+      },
+      {
+        id: 'loesetank',
+        center: [8, 26, 42],
+        size: [102, 84, 86],
+        colors: {
+          front: '#2f3d7a',
+          back: '#27325f',
+          left: '#2b3568',
+          right: '#35458e',
+          top: '#4f5cae',
+          bottom: '#272f58',
+        },
+      },
+      {
+        id: 'produkt',
+        center: [100, 82, 46],
+        size: [64, 102, 74],
+        colors: {
+          front: '#1b4c4f',
+          back: '#153c3d',
+          left: '#184344',
+          right: '#1f5758',
+          top: '#2e7273',
+          bottom: '#153435',
+        },
+      },
+      {
+        id: 'sorption',
+        center: [100, 20, 6],
+        size: [26, 72, 24],
+        colors: {
+          front: '#5c4f21',
+          back: '#4a401a',
+          left: '#56491e',
+          right: '#6e5f27',
+          top: '#8b7a35',
+          bottom: '#473d19',
+        },
+      },
+      {
+        id: 'steuerung',
+        center: [-114, -72, -8],
+        size: [58, 32, 10],
+        colors: {
+          front: '#12345d',
+          back: '#0e2a4b',
+          left: '#102f51',
+          right: '#16406e',
+          top: '#27588e',
+          bottom: '#0f2845',
+        },
+      },
+      {
+        id: 'pumpe',
+        center: [-88, 90, 30],
+        size: [32, 34, 34],
+        colors: {
+          front: '#104066',
+          back: '#0d3556',
+          left: '#103b5f',
+          right: '#14507f',
+          top: '#2a77b5',
+          bottom: '#0c2b45',
+        },
+      },
+      {
+        id: 'schwenkantrieb',
+        center: [18, 78, 10],
+        size: [38, 30, 24],
+        colors: {
+          front: '#6a2f3d',
+          back: '#552633',
+          left: '#5f2b39',
+          right: '#7f384a',
+          top: '#a34a61',
+          bottom: '#4f212b',
+        },
+      },
+      {
+        id: 'duesensystem',
+        center: [56, -34, 2],
+        size: [76, 11, 10],
+        colors: {
+          front: '#145d55',
+          back: '#124c45',
+          left: '#14564f',
+          right: '#1a7169',
+          top: '#2d9f94',
+          bottom: '#113f39',
+        },
+      },
+    ];
+
+    return base
+      .flatMap((item) => renderCuboidFaces(project, item, xrayMode))
+      .sort((a, b) => b.zVal - a.zVal);
+  }, [rx, ry, xrayMode]);
+
+  const hotspotProjections = useMemo(() => (
+    HOTSPOTS.map((spot) => ({ ...spot, proj: project(...spot.pos) }))
+  ), [rx, ry]);
+
+  const drawPhaseLine = (segment, index, active = false) => {
+    const projected = segment.map(([x, y, z]) => project(x, y, z));
+    return (
+      <polyline
+        key={`flow-${index}`}
+        points={toPolyPoints(projected)}
+        fill="none"
+        stroke={active ? phase.accent : '#2c5a82'}
+        strokeWidth={active ? 2.4 : 1.2}
+        opacity={active ? 0.95 : 0.42}
+        strokeDasharray={active ? '7 5' : undefined}
+      >
+        {active && <animate attributeName="stroke-dashoffset" from="0" to="-24" dur="1.7s" repeatCount="indefinite" />}
+      </polyline>
+    );
+  };
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #1a3a5a', background: '#040d1a' }}>
-      <svg viewBox="0 0 760 500" width="100%" height={MODEL_HEIGHT} role="img" aria-label="Schematische Calciumhypochlorit-Feststoff-Chloranlage">
+      <svg
+        viewBox="0 0 380 320"
+        width="100%"
+        height={MODEL_HEIGHT}
+        role="img"
+        aria-label="Bewegbares 3D-Wuerfelmodell der Calciumhypochlorid-Feststoff-Chloranlage"
+        style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
+        onMouseDown={onPointerDown}
+        onMouseMove={onPointerMove}
+        onMouseUp={onPointerUp}
+        onMouseLeave={onPointerUp}
+        onTouchStart={onPointerDown}
+        onTouchMove={onPointerMove}
+        onTouchEnd={onPointerUp}
+      >
         <defs>
-          <pattern id="cal-grid" width="22" height="22" patternUnits="userSpaceOnUse">
-            <path d="M 22 0 L 0 0 0 22" fill="none" stroke="#0b2238" strokeWidth="0.55" />
+          <pattern id="cal-cube-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0a2136" strokeWidth="0.5" />
           </pattern>
-          <linearGradient id="surfaceGlow" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3f8fe0" stopOpacity="0.26" />
-            <stop offset="100%" stopColor="#214c86" stopOpacity="0.08" />
-          </linearGradient>
         </defs>
 
-        <rect width="760" height="500" fill="#040d1a" />
-        <rect width="760" height="500" fill="url(#cal-grid)" />
+        <rect width="380" height="320" fill="#040d1a" />
+        <rect width="380" height="320" fill="url(#cal-cube-grid)" />
 
-        <polygon points="64,182 684,182 640,122 120,122" fill={shellFill} stroke={stroke} strokeWidth="2" />
-        <polygon points="64,182 120,122 120,382 64,442" fill={wallFill} stroke={stroke} strokeWidth="1.6" />
-        <polygon points="684,182 640,122 640,382 684,442" fill={wallFill} stroke={stroke} strokeWidth="1.6" />
-        <rect x="64" y="182" width="620" height="260" fill={shellFill} stroke={stroke} strokeWidth="2" />
-
-        <line x1="260" y1="182" x2="260" y2="442" stroke="#2b5a8c" strokeWidth="1.4" />
-        <line x1="470" y1="182" x2="470" y2="442" stroke="#2b5a8c" strokeWidth="1.4" />
-        <line x1="260" y1="182" x2="300" y2="122" stroke="#2b5a8c" strokeWidth="1.3" />
-        <line x1="470" y1="182" x2="506" y2="122" stroke="#2b5a8c" strokeWidth="1.3" />
-
-        <rect x="96" y="68" width="104" height="66" rx="7" fill="#0a1e33" stroke="#2a5a90" strokeWidth="1.4" />
-        <rect x="210" y="76" width="32" height="50" rx="5" fill="#0a1e33" stroke="#2a5a90" strokeWidth="1.2" />
-        <rect x="142" y="88" width="42" height="26" rx="4" fill="#0f2f4f" stroke="#3b79ba" strokeWidth="1.1" />
-
-        <rect x="286" y="108" width="154" height="78" rx="8" fill={tankFill} stroke="#69aef6" strokeWidth="1.6" />
-        <line x1="335" y1="108" x2="335" y2="186" stroke="#6ea7de" strokeWidth="1.2" />
-        <line x1="385" y1="108" x2="385" y2="186" stroke="#6ea7de" strokeWidth="1.2" />
-
-        <rect x="278" y="168" width="186" height="124" rx="8" fill={tankFill} stroke="#6caef8" strokeWidth="1.8" />
-        <path d="M296 226 C340 206, 402 208, 446 228" fill="none" stroke="#77beff" strokeWidth="2" opacity="0.72" />
-        <path d="M300 242 C342 224, 401 226, 442 243" fill="none" stroke="#77beff" strokeWidth="1.5" opacity="0.56" />
-        <rect x="496" y="264" width="132" height="148" rx="8" fill={tankFill} stroke="#58c9a8" strokeWidth="1.7" />
-        <rect x="532" y="298" width="28" height="98" rx="6" fill="url(#surfaceGlow)" stroke="#3ea88a" strokeWidth="1.1" />
-
-        <path d="M132 94 H286 V124 H520" fill="none" stroke="#8fbef0" strokeWidth="3.2" />
-        <path d="M520 124 V170 H464" fill="none" stroke="#6ec89f" strokeWidth="2.4" />
-        <path d="M462 232 H494 V310" fill="none" stroke="#60c39a" strokeWidth="2.4" />
-        <path d="M198 350 V300 H286" fill="none" stroke="#63a9f0" strokeWidth="2.6" />
-        <path d="M198 350 H118 V282" fill="none" stroke="#63a9f0" strokeWidth="2.1" />
-        <circle cx="198" cy="350" r="20" fill="#0e2842" stroke="#39b9ff" strokeWidth="2" />
-        <circle cx="198" cy="350" r="7" fill="#1c4f7a" stroke="#7ecfff" strokeWidth="1" />
-
-        <path d="M520 124 H558" fill="none" stroke="#34c090" strokeWidth="2.4" strokeDasharray="5 4">
-          <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="1.8s" repeatCount="indefinite" />
-        </path>
-        <path d="M462 232 H532" fill="none" stroke="#55d8aa" strokeWidth="2.2" strokeDasharray="6 4">
-          <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="2.1s" repeatCount="indefinite" />
-        </path>
-        <path d="M544 338 H636" fill="none" stroke="#4ed4b2" strokeWidth="2.2" strokeDasharray="6 4">
-          <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="1.6s" repeatCount="indefinite" />
-        </path>
-
-        <text x="300" y="82" fill="#82acd2" fontFamily="monospace" fontSize="10">Mikroprozessor-Steuerung</text>
-        <text x="503" y="100" fill="#82acd2" fontFamily="monospace" fontSize="10">Duesensystem</text>
-        <text x="286" y="314" fill="#82acd2" fontFamily="monospace" fontSize="10">Loese-/Sedimentationstank</text>
-        <text x="502" y="430" fill="#82acd2" fontFamily="monospace" fontSize="10">Produktbehaelter</text>
-        <text x="98" y="456" fill="#5f86a8" fontFamily="monospace" fontSize="10">ZIEHEN ZUM LESEN - HOTSPOT ANTIPPEN</text>
-
-        {HOTSPOTS.map((spot) => (
-          <HotspotMarker
-            key={spot.id}
-            spot={spot}
-            activeSpot={activeSpot}
-            onToggle={setActiveSpot}
-            showLabels={showLabels}
-          />
+        {componentFaces.map((face) => (
+          <g key={face.id}>
+            <polygon
+              points={toPolyPoints(face.pts)}
+              fill={face.fill}
+              fillOpacity={face.fillOpacity}
+              stroke={face.stroke}
+              strokeWidth={face.strokeWidth}
+            />
+            {xrayMode && (
+              <polygon
+                points={toPolyPoints(face.pts)}
+                fill="none"
+                stroke="#78c7ff"
+                strokeWidth={Math.max(0.7, face.strokeWidth * 0.8)}
+                strokeDasharray="3 2"
+                opacity="0.75"
+              />
+            )}
+          </g>
         ))}
+
+        {STATIC_PIPE_SEGMENTS.map((segment, index) => drawPhaseLine(segment, index, false))}
+        {(PHASE_FLOW_SEGMENTS[phase.id] || []).map((segment, index) => drawPhaseLine(segment, index, true))}
+
+        {hotspotProjections.map((spot) => {
+          const isActive = activeSpot === spot.id;
+          return (
+            <g
+              key={spot.id}
+              data-hotspot="1"
+              style={{ cursor: 'pointer' }}
+              onClick={(event) => {
+                event.stopPropagation();
+                setActiveSpot(isActive ? null : spot.id);
+              }}
+            >
+              <circle
+                cx={spot.proj[0].toFixed(1)}
+                cy={spot.proj[1].toFixed(1)}
+                r={isActive ? 13 : 10.5}
+                fill={spot.color}
+                fillOpacity={isActive ? 0.42 : 0.18}
+                stroke={spot.color}
+                strokeWidth={isActive ? 2.4 : 1.4}
+              >
+                {!isActive && <animate attributeName="r" values="10.5;13;10.5" dur="2.4s" repeatCount="indefinite" />}
+              </circle>
+              <circle
+                cx={spot.proj[0].toFixed(1)}
+                cy={spot.proj[1].toFixed(1)}
+                r="2.4"
+                fill="none"
+                stroke="rgba(255,255,255,0.6)"
+                strokeWidth="0.8"
+              />
+              <text
+                x={spot.proj[0].toFixed(1)}
+                y={(spot.proj[1] + 3.6).toFixed(1)}
+                fill="white"
+                fontSize="9.5"
+                fontWeight="700"
+                textAnchor="middle"
+                style={{ pointerEvents: 'none' }}
+              >
+                +
+              </text>
+              {showLabels && (
+                <text
+                  x={spot.proj[0].toFixed(1)}
+                  y={(spot.proj[1] - 13).toFixed(1)}
+                  fill={spot.color}
+                  fontSize="6.2"
+                  fontFamily="monospace"
+                  textAnchor="middle"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  {spot.shortLabel}
+                </text>
+              )}
+            </g>
+          );
+        })}
+
+        <text x="14" y="306" fill="#6f96b8" fontFamily="monospace" fontSize="8">
+          3D-WUERFEL: ZIEHEN ZUM DREHEN - HOTSPOT ANTIPPEN - PROZESSPHASE WECHSELN
+        </text>
       </svg>
     </div>
   );
@@ -259,7 +574,10 @@ function CalciumPlantSchematic({ activeSpot, setActiveSpot, xrayMode, showLabels
 export default function CalciumHypochloriteDeepDiveView() {
   const [xrayMode, setXrayMode] = useState(false);
   const [showLabels, setShowLabels] = useState(true);
-  const [activeSpot, setActiveSpot] = useState('loesetank');
+  const [activeSpot, setActiveSpot] = useState('duesensystem');
+  const [activePhase, setActivePhase] = useState('anwaessern');
+
+  const phase = PROCESS_PHASES.find((item) => item.id === activePhase) || PROCESS_PHASES[0];
   const activeSpotData = activeSpot ? HOTSPOT_DATA[activeSpot] : null;
 
   const innerCardStyle = {
@@ -269,16 +587,25 @@ export default function CalciumHypochloriteDeepDiveView() {
     padding: '0.9rem',
   };
 
+  const setPhaseWithFocus = (phaseId) => {
+    const target = PROCESS_PHASES.find((item) => item.id === phaseId);
+    if (!target) return;
+    setActivePhase(phaseId);
+    if (!activeSpot || !target.focus.includes(activeSpot)) {
+      setActiveSpot(target.focus[0]);
+    }
+  };
+
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: '#040d1a', border: '1px solid #1a3a5a' }}>
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" style={{ borderBottom: '1px solid #1a3a5a' }}>
         <div>
           <p className="text-xs font-mono tracking-widest" style={{ color: '#4a9eff' }}>
-            DEEP DIVE - KOMPONENTENANALYSE
+            DEEP DIVE PLUS - KOMPONENTEN + PROZESSLOGIK
           </p>
-          <h3 className="text-lg font-black text-white mt-0.5">Feststoff-Chloranlage: Calciumhypochlorid</h3>
+          <h3 className="text-lg font-black text-white mt-0.5">Feststoff-Chloranlage: Calciumhypochlorid (3D Wuerfel)</h3>
           <p className="text-xs font-mono mt-1" style={{ color: '#58789c' }}>
-            Loeseanlage - Sedimentation - Dosierstrecke
+            Anwassern - Loesen - Sedimentieren - Dosieren
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -305,16 +632,38 @@ export default function CalciumHypochloriteDeepDiveView() {
         </div>
       </div>
 
-      <div className="grid xl:grid-cols-[1.55fr_1fr]" style={{ minHeight: 0 }}>
+      <div className="grid xl:grid-cols-[1.6fr_1fr]" style={{ minHeight: 0 }}>
         <div className="p-4 lg:p-5" style={{ borderRight: '1px solid #1a3a5a', background: '#030c18' }}>
-          <CalciumPlantSchematic
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="text-[11px] font-mono tracking-widest" style={{ color: '#5f86a8' }}>
+              PROZESSPHASE
+            </span>
+            {PROCESS_PHASES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setPhaseWithFocus(item.id)}
+                className="rounded-md px-2.5 py-1 text-xs font-semibold"
+                style={{
+                  background: activePhase === item.id ? '#1e4f76' : '#0c2238',
+                  color: activePhase === item.id ? '#d7efff' : '#7aa7c8',
+                  border: `1px solid ${activePhase === item.id ? '#4a89bf' : '#2a5a90'}`,
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <CalciumPlantCube3D
             activeSpot={activeSpot}
             setActiveSpot={setActiveSpot}
             xrayMode={xrayMode}
             showLabels={showLabels}
+            activePhase={activePhase}
           />
           <div className="mt-3 text-[11px] font-mono tracking-widest" style={{ color: '#5f86a8' }}>
-            STEUERUNG PRUEFEN - FUELLSTAENDE UEBERWACHEN - DOSIERSTRECKE SICHERN
+            AKTIVE PHASE: {phase.label.toUpperCase()} - FOKUS: {phase.focus.join(', ').toUpperCase()}
           </div>
         </div>
 
@@ -334,21 +683,24 @@ export default function CalciumHypochloriteDeepDiveView() {
           </div>
 
           <div style={innerCardStyle}>
-            <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#4a9eff' }}>
-              PROZESSABLAUF
+            <p className="text-xs font-mono tracking-widest mb-2" style={{ color: phase.accent }}>
+              PHASENDETAIL: {phase.label.toUpperCase()}
             </p>
             <div className="space-y-1.5">
-              {PROCESS_STEPS.map((step) => (
-                <p key={step} className="text-xs leading-relaxed" style={{ color: '#9ec4de' }}>
-                  - {step}
+              {phase.detail.map((line) => (
+                <p key={line} className="text-xs leading-relaxed" style={{ color: '#9ec4de' }}>
+                  - {line}
                 </p>
               ))}
+              <p className="text-xs mt-2" style={{ color: '#f0b26d' }}>
+                Achtung: {phase.caution}
+              </p>
             </div>
           </div>
 
           <div style={innerCardStyle}>
             <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#4a9eff' }}>
-              HOTSPOT-DETAIL
+              HOTSPOT-FUNKTION
             </p>
             {activeSpotData ? (
               <div className="rounded-lg p-3 mb-2" style={{ background: '#040d1a', border: `1px solid ${activeSpotData.color}` }}>
@@ -363,7 +715,7 @@ export default function CalciumHypochloriteDeepDiveView() {
               </div>
             ) : (
               <p className="text-xs mb-2" style={{ color: '#8ab0c0' }}>
-                Tippe auf einen Hotspot im Schema.
+                Tippe einen Hotspot im 3D-Wuerfel an.
               </p>
             )}
             <div className="grid grid-cols-2 gap-1.5">
@@ -406,15 +758,15 @@ export default function CalciumHypochloriteDeepDiveView() {
               PRUEFUNGSFRAGE
             </p>
             <p className="text-sm font-semibold mb-2" style={{ color: '#c0d8f0' }}>
-              Warum wird bei Feststoff-Calciumhypochlorit zuerst eine Produktloesung erzeugt und nicht direkt ins Becken dosiert?
+              Warum ist die getrennte Phase "Anwaessern + Loesen + Sedimentieren" in Feststoff-Chloranlagen wichtig?
             </p>
             <details>
               <summary className="text-xs cursor-pointer font-mono" style={{ color: '#4a9eff' }}>
                 Antwort einblenden
               </summary>
               <p className="text-sm mt-2 leading-relaxed" style={{ color: '#90b0d0' }}>
-                Die vorgeschaltete Loesung und Sedimentation trennt unloesliche Bestandteile, stabilisiert die Konzentration
-                und schuetzt Dosierarmaturen vor Verstopfung. Dadurch wird die Chlordosierung reproduzierbar und sicher.
+                Die Trennung der Phasen sorgt fuer reproduzierbare Konzentration, kontrollierte Loesungsbildung und
+                Rueckstandsabtrennung vor der Dosierung. Dadurch bleibt die Dosierstrecke stabil und verstopfungsarm.
               </p>
             </details>
           </div>
