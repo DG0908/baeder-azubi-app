@@ -6,6 +6,7 @@ const LazyWaterCycleView = lazy(() => import('./WaterCycleView'));
 const LazyHeartDeepDiveThree = lazy(() => import('./health/HeartDeepDiveThree'));
 const LazyCrawlTechniqueDeepDiveThree = lazy(() => import('./swim/CrawlTechniqueDeepDiveThree'));
 const LazyCalciumHypochloriteDeepDiveView = lazy(() => import('./chlorine/CalciumHypochloriteDeepDiveView'));
+const LazyStartblockDeepDiveView = lazy(() => import('./bauliches/StartblockDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -33,6 +34,13 @@ const LEARNING_CATEGORIES = [
         description: 'Uebersicht zu Beckenformen, Ausstattung und Betriebseinrichtungen',
         icon: '🏗️',
         available: false,
+      },
+      {
+        id: 'startblock-startwand-bauliches',
+        name: 'Startblock & Startwand (Bauliches)',
+        description: 'Deep Dive mit 3D-Modell, Massen, Startwand und Rueckenstart-Funktionen',
+        icon: 'SB',
+        available: true,
       },
       {
         id: 'sprunganlagen',
@@ -439,6 +447,33 @@ const InteractiveLearningView = () => {
           )}
         >
           <LazyCalciumHypochloriteDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'startblock-startwand-bauliches') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurueck zu Baedertechnik
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Startblock Deep Dive...
+            </div>
+          )}
+        >
+          <LazyStartblockDeepDiveView />
         </Suspense>
       </div>
     );
