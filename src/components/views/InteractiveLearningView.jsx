@@ -5,6 +5,7 @@ import { useApp } from '../../context/AppContext';
 const LazyWaterCycleView = lazy(() => import('./WaterCycleView'));
 const LazyHeartDeepDiveThree = lazy(() => import('./health/HeartDeepDiveThree'));
 const LazyCrawlTechniqueDeepDiveThree = lazy(() => import('./swim/CrawlTechniqueDeepDiveThree'));
+const LazyCalciumHypochloriteDeepDiveView = lazy(() => import('./chlorine/CalciumHypochloriteDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -111,11 +112,11 @@ const LEARNING_CATEGORIES = [
         available: false,
       },
       {
-        id: 'chloranlagen',
-        name: 'Chloranlagen',
-        description: 'Anlagentechnik fuer Chlorung und sichere Betriebsweise',
-        icon: '🧯',
-        available: false,
+        id: 'feststoff-chloranlage-calciumhypochlorid',
+        name: 'Feststoff-Chloranlage (Calciumhypochlorid)',
+        description: 'Deep Dive zur Calciumhypochlorit-Anlage mit Komponenten, Prozess und Betriebscheck',
+        icon: '🧪',
+        available: true,
       },
       {
         id: 'chlorgasanlage-raum',
@@ -416,6 +417,33 @@ const InteractiveLearningView = () => {
     );
   }
 
+  if (activeModule === 'feststoff-chloranlage-calciumhypochlorid') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurueck zu Baedertechnik
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Feststoff-Chloranlage...
+            </div>
+          )}
+        >
+          <LazyCalciumHypochloriteDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
   if (activeModule === 'schwimmtechniken') {
     return (
       <div>
@@ -677,3 +705,4 @@ const InteractiveLearningView = () => {
 };
 
 export default InteractiveLearningView;
+
