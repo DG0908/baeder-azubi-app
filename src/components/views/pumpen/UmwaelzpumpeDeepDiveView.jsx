@@ -4,6 +4,7 @@ import { Html, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
 const MODEL_HEIGHT = 'clamp(420px, 66vh, 920px)';
+const PART_MODEL_HEIGHT = 'clamp(220px, 30vh, 340px)';
 
 const DETAIL_MODES = [
   {
@@ -485,6 +486,313 @@ function PumpLeaderCallouts({ activeSpot, setActiveSpot, showLabels }) {
   );
 }
 
+function PreviewImpeller({ xrayMode, color = '#67aef6' }) {
+  const ref = useRef();
+
+  useFrame((_, delta) => {
+    if (!ref.current) return;
+    ref.current.rotation.z += delta * 1.8;
+  });
+
+  return (
+    <group ref={ref} rotation={[0.4, 0.2, 0]}>
+      <mesh>
+        <cylinderGeometry args={[0.32, 0.32, 0.5, 28]} />
+        <meshStandardMaterial color="#8fc8ff" metalness={0.6} roughness={0.22} wireframe={xrayMode} />
+      </mesh>
+      {Array.from({ length: 6 }, (_, index) => {
+        const angle = (index / 6) * Math.PI * 2;
+        return (
+          <mesh key={`preview-blade-${index}`} rotation={[0, 0, angle]}>
+            <boxGeometry args={[0.18, 1.05, 0.07]} />
+            <meshStandardMaterial color={color} metalness={0.44} roughness={0.24} wireframe={xrayMode} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
+function PumpPartFocusModel({ spot, xrayMode }) {
+  if (!spot) return null;
+
+  const shell = {
+    metalness: 0.42,
+    roughness: 0.28,
+    wireframe: xrayMode,
+  };
+
+  switch (spot.id) {
+    case 'beschichtung':
+      return (
+        <group rotation={[0.2, -0.45, 0]}>
+          <mesh>
+            <cylinderGeometry args={[0.95, 0.95, 2.4, 40, 1, true]} />
+            <meshStandardMaterial color="#123250" transparent opacity={0.42} {...shell} />
+          </mesh>
+          <mesh scale={[0.92, 0.92, 0.92]}>
+            <cylinderGeometry args={[0.95, 0.95, 2.4, 40, 1, true]} />
+            <meshStandardMaterial color={spot.color} transparent opacity={0.26} emissive={spot.color} emissiveIntensity={0.2} {...shell} />
+          </mesh>
+        </group>
+      );
+    case 'laufradprotektor':
+      return (
+        <group rotation={[Math.PI / 2, 0.3, 0]}>
+          <mesh>
+            <torusGeometry args={[0.78, 0.12, 18, 40]} />
+            <meshStandardMaterial color={spot.color} {...shell} />
+          </mesh>
+          <mesh>
+            <torusGeometry args={[0.5, 0.06, 18, 34]} />
+            <meshStandardMaterial color="#d5ecff" metalness={0.62} roughness={0.18} wireframe={xrayMode} />
+          </mesh>
+        </group>
+      );
+    case 'gleitringdichtungsprotektor':
+      return (
+        <group rotation={[Math.PI / 2, 0, 0.2]}>
+          <mesh>
+            <torusGeometry args={[0.9, 0.11, 18, 44]} />
+            <meshStandardMaterial color={spot.color} {...shell} />
+          </mesh>
+          <mesh>
+            <torusGeometry args={[0.56, 0.06, 18, 34]} />
+            <meshStandardMaterial color="#fafcff" metalness={0.64} roughness={0.16} wireframe={xrayMode} />
+          </mesh>
+        </group>
+      );
+    case 'service':
+      return (
+        <group rotation={[0.18, -0.35, 0]}>
+          <mesh position={[0, 0, 0.2]}>
+            <cylinderGeometry args={[1.1, 1.1, 0.28, 30]} />
+            <meshStandardMaterial color="#376c80" {...shell} />
+          </mesh>
+          {Array.from({ length: 6 }, (_, index) => {
+            const angle = (index / 6) * Math.PI * 2;
+            return (
+              <mesh key={`service-bolt-${index}`} position={[Math.cos(angle) * 0.82, Math.sin(angle) * 0.82, 0.32]}>
+                <cylinderGeometry args={[0.08, 0.08, 0.18, 12]} />
+                <meshStandardMaterial color="#bfcfe0" metalness={0.68} roughness={0.18} />
+              </mesh>
+            );
+          })}
+        </group>
+      );
+    case 'filtergehaeuse':
+      return (
+        <group rotation={[0.16, -0.52, 0]}>
+          <mesh>
+            <boxGeometry args={[2.1, 2.2, 1.25]} />
+            <meshStandardMaterial color="#1d4a5d" transparent opacity={0.78} {...shell} />
+          </mesh>
+          <mesh scale={[0.72, 0.72, 0.82]}>
+            <boxGeometry args={[2.1, 2.2, 1.25]} />
+            <meshStandardMaterial color="#0a1728" transparent opacity={0.42} />
+          </mesh>
+        </group>
+      );
+    case 'filterdeckel':
+      return (
+        <group rotation={[0.2, -0.35, 0]}>
+          <mesh>
+            <cylinderGeometry args={[1.12, 1.12, 0.24, 30]} />
+            <meshStandardMaterial color="#376c80" {...shell} />
+          </mesh>
+          {Array.from({ length: 6 }, (_, index) => {
+            const angle = (index / 6) * Math.PI * 2;
+            return (
+              <mesh key={`deckel-bolt-${index}`} position={[Math.cos(angle) * 0.84, Math.sin(angle) * 0.84, 0.18]}>
+                <cylinderGeometry args={[0.09, 0.09, 0.16, 12]} />
+                <meshStandardMaterial color="#d4e1f0" metalness={0.62} roughness={0.18} />
+              </mesh>
+            );
+          })}
+        </group>
+      );
+    case 'filterkorb':
+      return (
+        <group rotation={[0.15, -0.2, Math.PI / 2]}>
+          <mesh>
+            <cylinderGeometry args={[0.72, 0.72, 2.6, 26, 1, true]} />
+            <meshStandardMaterial color={spot.color} transparent opacity={0.86} wireframe />
+          </mesh>
+          <mesh position={[0, 0.95, 0]}>
+            <torusGeometry args={[0.72, 0.05, 16, 34]} />
+            <meshStandardMaterial color="#cbe7d7" metalness={0.3} roughness={0.38} wireframe={xrayMode} />
+          </mesh>
+          <mesh position={[0, -0.95, 0]}>
+            <torusGeometry args={[0.72, 0.05, 16, 34]} />
+            <meshStandardMaterial color="#cbe7d7" metalness={0.3} roughness={0.38} wireframe={xrayMode} />
+          </mesh>
+        </group>
+      );
+    case 'sealguard':
+      return (
+        <group rotation={[0.1, -0.3, 0]}>
+          <mesh position={[0, 0.6, 0]}>
+            <cylinderGeometry args={[0.28, 0.28, 1.3, 22]} />
+            <meshStandardMaterial color="#d0edff" transparent opacity={0.58} />
+          </mesh>
+          <mesh position={[0, -0.32, 0]}>
+            <cylinderGeometry args={[0.06, 0.06, 0.78, 14]} />
+            <meshStandardMaterial color="#8fb5cc" metalness={0.44} roughness={0.28} />
+          </mesh>
+          <mesh position={[-0.5, -0.72, 0]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.05, 0.05, 0.9, 14]} />
+            <meshStandardMaterial color="#8fb5cc" metalness={0.44} roughness={0.28} />
+          </mesh>
+        </group>
+      );
+    case 'laufrad':
+      return <PreviewImpeller xrayMode={xrayMode} color={spot.color} />;
+    case 'motorwelle':
+      return (
+        <group rotation={[0.3, 0.15, Math.PI / 2]}>
+          <mesh>
+            <cylinderGeometry args={[0.14, 0.14, 3.4, 24]} />
+            <meshStandardMaterial color="#c7dff7" metalness={0.72} roughness={0.18} wireframe={xrayMode} />
+          </mesh>
+          <mesh position={[0, 0, 1.3]}>
+            <cylinderGeometry args={[0.22, 0.22, 0.48, 18]} />
+            <meshStandardMaterial color="#9bbde0" metalness={0.62} roughness={0.2} />
+          </mesh>
+        </group>
+      );
+    case 'wellenabdichtung':
+      return (
+        <group rotation={[Math.PI / 2, 0, 0.25]}>
+          <mesh>
+            <torusGeometry args={[0.58, 0.08, 18, 36]} />
+            <meshStandardMaterial color={spot.color} {...shell} />
+          </mesh>
+          <mesh>
+            <cylinderGeometry args={[0.12, 0.12, 1.6, 18]} />
+            <meshStandardMaterial color="#dce9f6" metalness={0.68} roughness={0.18} wireframe={xrayMode} />
+          </mesh>
+        </group>
+      );
+    case 'umfuehrungskanal':
+      return (
+        <group rotation={[0.5, -0.3, 0.5]}>
+          <mesh>
+            <torusGeometry args={[0.96, 0.34, 20, 40, Math.PI * 1.1]} />
+            <meshStandardMaterial color={spot.color} transparent opacity={0.9} {...shell} />
+          </mesh>
+          <mesh scale={[0.68, 0.68, 0.68]}>
+            <torusGeometry args={[0.96, 0.34, 20, 40, Math.PI * 1.1]} />
+            <meshStandardMaterial color="#081523" transparent opacity={0.72} />
+          </mesh>
+        </group>
+      );
+    case 'lagerung':
+      return (
+        <group rotation={[Math.PI / 2, 0.2, 0]}>
+          <mesh>
+            <torusGeometry args={[0.96, 0.18, 18, 42]} />
+            <meshStandardMaterial color="#f0cf78" metalness={0.52} roughness={0.2} wireframe={xrayMode} />
+          </mesh>
+          {Array.from({ length: 8 }, (_, index) => {
+            const angle = (index / 8) * Math.PI * 2;
+            return (
+              <mesh key={`bearing-ball-${index}`} position={[Math.cos(angle) * 0.96, Math.sin(angle) * 0.96, 0]}>
+                <sphereGeometry args={[0.12, 12, 12]} />
+                <meshStandardMaterial color="#edf5ff" metalness={0.7} roughness={0.16} />
+              </mesh>
+            );
+          })}
+        </group>
+      );
+    default:
+      return (
+        <mesh>
+          <boxGeometry args={[1.8, 1.1, 0.8]} />
+          <meshStandardMaterial color={spot.color} {...shell} />
+        </mesh>
+      );
+  }
+}
+
+function PumpPartDeepDive({ spot, xrayMode }) {
+  if (!spot) return null;
+
+  const role = spot.items[0] || 'Bauteilfunktion';
+  const inspection = spot.items[1] || 'Bauteilzustand gezielt pruefen.';
+  const risk = spot.items[2] || 'Abweichungen frueh dokumentieren.';
+
+  return (
+    <div className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid #1a3a5a', background: '#061221' }}>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" style={{ borderBottom: '1px solid #1a3a5a' }}>
+        <div>
+          <p className="text-[11px] font-mono tracking-widest" style={{ color: spot.color }}>
+            EINZELTEIL-DEEP-DIVE
+          </p>
+          <h4 className="text-sm font-black text-white mt-0.5">
+            {spot.number} {spot.label}
+          </h4>
+        </div>
+        <span
+          className="rounded-full px-3 py-1 text-[11px] font-mono"
+          style={{ color: '#d7efff', border: `1px solid ${spot.color}`, background: '#081a2e' }}
+        >
+          isoliert betrachtet
+        </span>
+      </div>
+
+      <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="p-4" style={{ borderRight: '1px solid #12314f' }}>
+          <div style={{ width: '100%', height: PART_MODEL_HEIGHT, borderRadius: '0.8rem', overflow: 'hidden' }}>
+            <Canvas camera={{ position: [0, 0.1, 4.6], fov: 34 }}>
+              <color attach="background" args={['#061221']} />
+              <ambientLight intensity={0.42} />
+              <hemisphereLight intensity={0.48} color="#a6d7ff" groundColor="#0b1626" />
+              <directionalLight position={[4, 5, 5]} intensity={1.1} color="#f4fbff" />
+              <pointLight position={[-3, 1.4, 2]} intensity={0.7} color={spot.color} />
+
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.45, 0]}>
+                <circleGeometry args={[3.2, 48]} />
+                <meshStandardMaterial color="#081523" />
+              </mesh>
+
+              <PumpPartFocusModel spot={spot} xrayMode={xrayMode} />
+
+              <OrbitControls enablePan={false} minDistance={3.4} maxDistance={6.2} autoRotate autoRotateSpeed={0.65} />
+            </Canvas>
+          </div>
+        </div>
+
+        <div className="p-4 space-y-2">
+          <div className="rounded-lg p-3" style={{ background: '#040d1a', border: `1px solid ${spot.color}` }}>
+            <p className="text-[11px] font-mono tracking-widest mb-1" style={{ color: spot.color }}>
+              BAUTEILROLLE
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: '#a4c6de' }}>
+              {role}
+            </p>
+          </div>
+          <div className="rounded-lg p-3" style={{ background: '#040d1a', border: '1px solid #14324f' }}>
+            <p className="text-[11px] font-mono tracking-widest mb-1" style={{ color: '#4a9eff' }}>
+              PRUEFBLICK
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: '#a4c6de' }}>
+              {inspection}
+            </p>
+          </div>
+          <div className="rounded-lg p-3" style={{ background: '#040d1a', border: '1px solid #4a2d2d' }}>
+            <p className="text-[11px] font-mono tracking-widest mb-1" style={{ color: '#ff9d9d' }}>
+              STOERUNGSFOLGE
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: '#d7b0b0' }}>
+              {risk}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, showLabels }) {
   const emphasized = (ids) => focusMatch(mode, ids);
 
@@ -824,6 +1132,8 @@ export default function UmwaelzpumpeDeepDiveView() {
           <div className="mt-3 text-[11px] font-mono tracking-widest" style={{ color: '#5f86a8' }}>
             PUMPENSTATUS: {running ? 'LAEUFT' : 'STEHT'} - MODUS: {mode.label.toUpperCase()} - ZIEHEN ZUM DREHEN
           </div>
+
+          <PumpPartDeepDive spot={activeSpotData} xrayMode={xrayMode} />
         </div>
 
         <div className="p-5 space-y-3 overflow-y-auto">
