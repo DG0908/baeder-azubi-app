@@ -1126,7 +1126,7 @@ export default function UmwaelzpumpeDeepDiveView() {
               key={viewVersion}
               dpr={[1, 1.8]}
               onPointerMissed={() => setActiveSpot(null)}
-              camera={{ position: [0.15, 1.42, 10.2], fov: 39 }}
+              camera={{ position: [0.2, 1.3, 11.8], fov: 43 }}
             >
               <color attach="background" args={['#040d1a']} />
               <ambientLight intensity={0.35} />
@@ -1153,13 +1153,13 @@ export default function UmwaelzpumpeDeepDiveView() {
 
               <OrbitControls
                 enablePan={false}
-                minDistance={5.2}
-                maxDistance={11}
+                minDistance={5.8}
+                maxDistance={14.2}
                 minPolarAngle={Math.PI * 0.14}
                 maxPolarAngle={Math.PI * 0.76}
                 minAzimuthAngle={-0.55}
                 maxAzimuthAngle={0.45}
-                target={[0, 0.9, 0]}
+                target={[0, 0.75, 0]}
                 autoRotate={!activeSpot}
                 autoRotateSpeed={0.12}
               />
