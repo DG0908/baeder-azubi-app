@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
 import { CATEGORIES } from '../../data/constants';
+import { getWhoAmIClueCount, getWhoAmIVisibleClues, WHO_AM_I_TIME_LIMIT } from '../../data/whoAmIChallenges';
 
 const FlashcardsView = ({
   flashcards,
@@ -43,8 +44,11 @@ const FlashcardsView = ({
   XP_REWARDS,
   FLASHCARD_CONTENT,
   KEYWORD_FLASHCARD_CONTENT,
+  WHO_AM_I_FLASHCARD_CONTENT,
   keywordFlashcardMode,
   setKeywordFlashcardMode,
+  whoAmIFlashcardMode,
+  setWhoAmIFlashcardMode,
   flashcardFreeTextMode,
   setFlashcardFreeTextMode,
   flashcardKeywordInput,
@@ -56,8 +60,10 @@ const FlashcardsView = ({
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
   const isKeywordFlashcard = currentFlashcard?.type === 'keyword' && Array.isArray(currentFlashcard?.keywordGroups);
-  const showFreeTextInput = Boolean(currentFlashcard && !isKeywordFlashcard && flashcardFreeTextMode);
+  const isWhoAmIFlashcard = currentFlashcard?.type === 'whoami' && Array.isArray(currentFlashcard?.clues);
+  const showFreeTextInput = Boolean(currentFlashcard && (isWhoAmIFlashcard || (!isKeywordFlashcard && flashcardFreeTextMode)));
   const keywordCategoryCount = KEYWORD_FLASHCARD_CONTENT?.[newQuestionCategory]?.length || 0;
+  const whoAmICategoryCount = WHO_AM_I_FLASHCARD_CONTENT?.[newQuestionCategory]?.length || 0;
   const requiredKeywordGroups = Math.max(
     1,
     Math.min(
@@ -65,13 +71,42 @@ const FlashcardsView = ({
       Number(currentFlashcard?.minKeywordGroups) || currentFlashcard?.keywordGroups?.length || 1
     )
   );
+  const [whoAmIDifficulty, setWhoAmIDifficulty] = React.useState('profi');
+  const [whoAmITimeLeft, setWhoAmITimeLeft] = React.useState(WHO_AM_I_TIME_LIMIT);
+  const [whoAmIExpired, setWhoAmIExpired] = React.useState(false);
+  const visibleWhoAmIClues = isWhoAmIFlashcard
+    ? getWhoAmIVisibleClues(currentFlashcard, whoAmIDifficulty)
+    : [];
+  const whoAmIClueCount = isWhoAmIFlashcard
+    ? getWhoAmIClueCount(whoAmIDifficulty, currentFlashcard?.clues?.length || 0)
+    : 0;
+
+  React.useEffect(() => {
+    if (!whoAmIFlashcardMode || !isWhoAmIFlashcard) return;
+    setWhoAmITimeLeft(Number(currentFlashcard?.timeLimit) || WHO_AM_I_TIME_LIMIT);
+    setWhoAmIExpired(false);
+  }, [currentFlashcard?.id, currentFlashcard?.q, whoAmIFlashcardMode, whoAmIDifficulty, isWhoAmIFlashcard]);
+
+  React.useEffect(() => {
+    if (!whoAmIFlashcardMode || !isWhoAmIFlashcard || whoAmIExpired || flashcardKeywordEvaluation) return undefined;
+    if (whoAmITimeLeft <= 0) {
+      setWhoAmIExpired(true);
+      return undefined;
+    }
+    const timerId = window.setTimeout(() => {
+      setWhoAmITimeLeft((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [whoAmIFlashcardMode, isWhoAmIFlashcard, whoAmITimeLeft, whoAmIExpired, flashcardKeywordEvaluation]);
 
   return (
   <div className="max-w-4xl mx-auto">
     {/* Add Flashcard Form */}
     <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg mb-6`}>
       <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-        ➕ Neue Karteikarte erstellen
+        ÃƒÂ¢Ã…Â¾Ã¢â‚¬Â¢ Neue Karteikarte erstellen
       </h3>
       <div className="space-y-3">
         <select
@@ -103,7 +138,7 @@ const FlashcardsView = ({
 
         <div>
           <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-            Rückseite (Antwort):
+            RÃƒÆ’Ã‚Â¼ckseite (Antwort):
           </label>
           <textarea
             value={newFlashcardBack}
@@ -119,7 +154,7 @@ const FlashcardsView = ({
         <button
           onClick={async () => {
             if (!newFlashcardFront.trim() || !newFlashcardBack.trim()) {
-              alert('Bitte Vorder- und Rückseite ausfüllen!');
+              alert('Bitte Vorder- und RÃƒÆ’Ã‚Â¼ckseite ausfÃƒÆ’Ã‚Â¼llen!');
               return;
             }
 
@@ -127,7 +162,7 @@ const FlashcardsView = ({
             if (!moderateContent(newFlashcardFront, 'Vorderseite')) {
               return;
             }
-            if (!moderateContent(newFlashcardBack, 'Rückseite')) {
+            if (!moderateContent(newFlashcardBack, 'RÃƒÆ’Ã‚Â¼ckseite')) {
               return;
             }
 
@@ -158,10 +193,10 @@ const FlashcardsView = ({
 
               if (flashcard.approved) {
                 setUserFlashcards([...userFlashcards, flashcard]);
-                alert('Karteikarte hinzugefügt! 🎴');
+                alert('Karteikarte hinzugefÃƒÆ’Ã‚Â¼gt! ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â´');
               } else {
                 setPendingFlashcards([...pendingFlashcards, flashcard]);
-                alert('Karteikarte eingereicht! Sie wird nach Prüfung freigeschaltet. ⏳');
+                alert('Karteikarte eingereicht! Sie wird nach PrÃƒÆ’Ã‚Â¼fung freigeschaltet. ÃƒÂ¢Ã‚ÂÃ‚Â³');
               }
 
               void queueXpAward('flashcardCreation', XP_REWARDS.FLASHCARD_CREATE, {
@@ -186,7 +221,7 @@ const FlashcardsView = ({
 
         {!user.permissions.canApproveQuestions && (
           <p className={`text-sm text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            ℹ️ Deine Karteikarte wird nach Prüfung durch einen Trainer freigeschaltet
+            ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¹ÃƒÂ¯Ã‚Â¸Ã‚Â Deine Karteikarte wird nach PrÃƒÆ’Ã‚Â¼fung durch einen Trainer freigeschaltet
           </p>
         )}
       </div>
@@ -196,35 +231,56 @@ const FlashcardsView = ({
     <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg mb-6`}>
       <div className="flex justify-between items-center mb-4">
         <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          🎴 Karteikarten
+          ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â´ Karteikarten
         </h2>
         <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          {keywordFlashcardMode
+          {whoAmIFlashcardMode
+            ? `${whoAmICategoryCount} Was-bin-ich-Karten`
+            : keywordFlashcardMode
             ? `${keywordCategoryCount} Schlagwort-Karten`
             : `${FLASHCARD_CONTENT[newQuestionCategory]?.length || 0} Standard + ${userFlashcards.filter(fc => fc.category === newQuestionCategory).length} Custom`}
         </div>
       </div>
 
       {/* Lernmodus Umschalter */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-2 mb-4">
         <button
           onClick={() => {
             setKeywordFlashcardMode(false);
+            setWhoAmIFlashcardMode(false);
             setSpacedRepetitionMode(false);
             resetFlashcardKeywordState();
-            loadFlashcards({ useKeyword: false });
+            loadFlashcards({ useKeyword: false, useWhoAmI: false });
           }}
           className={`py-3 px-4 rounded-lg font-bold transition-all ${
-            !spacedRepetitionMode && !keywordFlashcardMode
+            !spacedRepetitionMode && !keywordFlashcardMode && !whoAmIFlashcardMode
               ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
               : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          📚 Alle Karten
+          Alle Karten
         </button>
         <button
           onClick={() => {
             setKeywordFlashcardMode(false);
+            setWhoAmIFlashcardMode(true);
+            setSpacedRepetitionMode(false);
+            setFlashcardFreeTextMode(false);
+            resetFlashcardKeywordState();
+            loadFlashcards({ useKeyword: false, useWhoAmI: true });
+          }}
+          className={`py-3 px-4 rounded-lg font-bold transition-all ${
+            whoAmIFlashcardMode
+              ? 'bg-gradient-to-r from-slate-700 to-cyan-700 text-white shadow-lg'
+              : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Was bin ich?
+        </button>
+        <button
+          onClick={() => {
+            setKeywordFlashcardMode(false);
+            setWhoAmIFlashcardMode(false);
             setSpacedRepetitionMode(true);
             resetFlashcardKeywordState();
             const due = loadDueCards(newQuestionCategory);
@@ -236,12 +292,12 @@ const FlashcardsView = ({
             }
           }}
           className={`py-3 px-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-            spacedRepetitionMode && !keywordFlashcardMode
+            spacedRepetitionMode && !keywordFlashcardMode && !whoAmIFlashcardMode
               ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
               : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          🧠 Spaced Repetition
+          Spaced Repetition
           {getDueCardCount(newQuestionCategory) > 0 && (
             <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
               {getDueCardCount(newQuestionCategory)}
@@ -251,9 +307,10 @@ const FlashcardsView = ({
         <button
           onClick={() => {
             setKeywordFlashcardMode(true);
+            setWhoAmIFlashcardMode(false);
             setSpacedRepetitionMode(false);
             setFlashcardFreeTextMode(false);
-            loadFlashcards({ useKeyword: true });
+            loadFlashcards({ useKeyword: true, useWhoAmI: false });
           }}
           className={`py-3 px-4 rounded-lg font-bold transition-all ${
             keywordFlashcardMode
@@ -261,24 +318,28 @@ const FlashcardsView = ({
               : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          🧠 Schlagwoerter
+          Schlagwoerter
         </button>
         <button
           onClick={() => {
             setFlashcardFreeTextMode(prev => !prev);
             if (keywordFlashcardMode) {
               setKeywordFlashcardMode(false);
-              loadFlashcards({ useKeyword: false });
+              loadFlashcards({ useKeyword: false, useWhoAmI: false });
+            }
+            if (whoAmIFlashcardMode) {
+              setWhoAmIFlashcardMode(false);
+              loadFlashcards({ useKeyword: false, useWhoAmI: false });
             }
             resetFlashcardKeywordState();
           }}
           className={`py-3 px-4 rounded-lg font-bold transition-all ${
-            flashcardFreeTextMode && !keywordFlashcardMode
+            flashcardFreeTextMode && !keywordFlashcardMode && !whoAmIFlashcardMode
               ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg'
               : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          ✍️ Freitext
+          Freitext
         </button>
       </div>
 
@@ -287,14 +348,14 @@ const FlashcardsView = ({
         <div className={`${darkMode ? 'bg-purple-900/50' : 'bg-purple-100'} rounded-lg p-4 mb-4`}>
           <div className="flex items-center justify-between mb-2">
             <h4 className={`font-bold ${darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
-              🧠 Spaced Repetition Modus
+              ÃƒÂ°Ã…Â¸Ã‚Â§Ã‚Â  Spaced Repetition Modus
             </h4>
             <span className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-              {dueCards.length} Karten fällig
+              {dueCards.length} Karten fÃƒÆ’Ã‚Â¤llig
             </span>
           </div>
           <p className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-700'}`}>
-            Beantworte mit "Gewusst" oder "Nicht gewusst". Karten die du nicht wusstest kommen früher wieder.
+            Beantworte mit "Gewusst" oder "Nicht gewusst". Karten die du nicht wusstest kommen frÃƒÆ’Ã‚Â¼her wieder.
           </p>
           <div className="flex gap-2 mt-3 flex-wrap">
             {[1, 2, 3, 4, 5, 6].map(level => (
@@ -309,7 +370,7 @@ const FlashcardsView = ({
         </div>
       )}
 
-      {/* Kategorien mit fälligen Karten Übersicht */}
+      {/* Kategorien mit fÃƒÆ’Ã‚Â¤lligen Karten ÃƒÆ’Ã…â€œbersicht */}
       {spacedRepetitionMode && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
           {CATEGORIES.map(cat => {
@@ -369,7 +430,8 @@ const FlashcardsView = ({
             setNewQuestionCategory(e.target.value);
             loadFlashcards({
               categoryId: e.target.value,
-              useKeyword: keywordFlashcardMode
+              useKeyword: keywordFlashcardMode,
+              useWhoAmI: whoAmIFlashcardMode
             });
           }}
           className={`w-full px-4 py-3 border rounded-lg mb-6 ${
@@ -396,7 +458,7 @@ const FlashcardsView = ({
                 {getLevelLabel(currentFlashcard.spacedData.level)}
               </span>
               <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                • {currentFlashcard.spacedData.reviewCount || 0}x wiederholt
+                ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {currentFlashcard.spacedData.reviewCount || 0}x wiederholt
               </span>
             </div>
           </div>
@@ -404,12 +466,12 @@ const FlashcardsView = ({
 
         <div
           onClick={() => {
-            if (isKeywordFlashcard || showFreeTextInput) return;
+            if (isKeywordFlashcard || isWhoAmIFlashcard || showFreeTextInput) return;
             setShowFlashcardAnswer(!showFlashcardAnswer);
             playSound('bubble');
           }}
           className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 shadow-2xl min-h-[300px] flex items-center justify-center ${
-            isKeywordFlashcard || showFreeTextInput
+            isKeywordFlashcard || isWhoAmIFlashcard || showFreeTextInput
               ? 'cursor-default'
               : 'cursor-pointer transform transition-all hover:scale-105'
           } ${
@@ -420,36 +482,99 @@ const FlashcardsView = ({
         >
           <div className="text-center">
             <div className={`text-sm font-bold mb-4 ${darkMode ? 'text-cyan-400' : 'text-blue-600'}`}>
-              {isKeywordFlashcard ? 'SCHLAGWORT-CHALLENGE' : showFreeTextInput ? 'FRAGE' : (showFlashcardAnswer ? 'ANTWORT' : 'FRAGE')}
+              {isWhoAmIFlashcard ? 'WAS BIN ICH?' : isKeywordFlashcard ? 'SCHLAGWORT-CHALLENGE' : showFreeTextInput ? 'FRAGE' : (showFlashcardAnswer ? 'ANTWORT' : 'FRAGE')}
             </div>
-            <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              {isKeywordFlashcard
-                ? currentFlashcard.front
-                : (showFlashcardAnswer ? currentFlashcard.back : currentFlashcard.front)}
-            </p>
-            <p className={`text-sm mt-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              {isKeywordFlashcard
-                ? `Treffe mindestens ${requiredKeywordGroups} Schlagwoerter.`
-                : showFreeTextInput
-                  ? 'Tippe deine Antwort unten ein.'
-                  : (showFlashcardAnswer ? '' : 'Klicken zum Umdrehen')}
-            </p>
+            {isWhoAmIFlashcard ? (
+              <div className="space-y-4">
+                <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  {currentFlashcard.prompt || 'Was bin ich?'}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${darkMode ? 'bg-slate-700 text-cyan-200' : 'bg-cyan-100 text-cyan-800'}`}>
+                    60 Sekunden
+                  </span>
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${darkMode ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-800'}`}>
+                    {whoAmIDifficulty} - {whoAmIClueCount}/{currentFlashcard?.clues?.length || 5} Hinweise
+                  </span>
+                </div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {[
+                    ['anfaenger', '5 Hinweise'],
+                    ['profi', '4 Hinweise'],
+                    ['experte', '3 Hinweise'],
+                    ['extra', '2 Hinweise']
+                  ].map(([difficultyId, label]) => (
+                    <button
+                      key={difficultyId}
+                      type="button"
+                      onClick={() => {
+                        setWhoAmIDifficulty(difficultyId);
+                        resetFlashcardKeywordState();
+                        setWhoAmIExpired(false);
+                      }}
+                      className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+                        whoAmIDifficulty === difficultyId
+                          ? 'bg-cyan-600 text-white'
+                          : darkMode ? 'bg-slate-700 text-gray-300' : 'bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div className={`mx-auto h-2 w-full max-w-xl overflow-hidden rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                  <div
+                    className={`h-2 rounded-full transition-all duration-1000 ${whoAmITimeLeft <= 10 ? 'bg-red-500' : 'bg-cyan-500'}`}
+                    style={{ width: `${(whoAmITimeLeft / (Number(currentFlashcard?.timeLimit) || WHO_AM_I_TIME_LIMIT)) * 100}%` }}
+                  />
+                </div>
+                <p className={`text-sm font-semibold ${whoAmITimeLeft <= 10 ? 'text-red-500' : (darkMode ? 'text-cyan-300' : 'text-cyan-700')}`}>
+                  {whoAmITimeLeft}s
+                </p>
+                <div className="space-y-2 text-left">
+                  {visibleWhoAmIClues.map((clue, index) => (
+                    <div
+                      key={`${currentFlashcard?.id || 'whoami'}-${index}`}
+                      className={`rounded-lg px-4 py-3 text-sm ${darkMode ? 'bg-slate-700 text-gray-100' : 'bg-slate-100 text-slate-700'}`}
+                    >
+                      <span className="mr-2 font-bold text-cyan-500">{index + 1}.</span>
+                      {clue}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  {isKeywordFlashcard
+                    ? currentFlashcard.front
+                    : (showFlashcardAnswer ? currentFlashcard.back : currentFlashcard.front)}
+                </p>
+                <p className={`text-sm mt-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {isKeywordFlashcard
+                    ? `Treffe mindestens ${requiredKeywordGroups} Schlagwoerter.`
+                    : showFreeTextInput
+                      ? 'Tippe deine Antwort unten ein.'
+                      : (showFlashcardAnswer ? '' : 'Klicken zum Umdrehen')}
+                </p>
+              </>
+            )}
           </div>
         </div>
 
-        {(isKeywordFlashcard || showFreeTextInput) && (
+        {(isKeywordFlashcard || isWhoAmIFlashcard || showFreeTextInput) && (
           <div className={`${darkMode ? 'bg-slate-800/95 border-slate-700' : 'bg-indigo-50 border-indigo-200'} border rounded-xl p-4 mt-4`}>
             <label className={`block text-sm font-bold mb-1 ${darkMode ? 'text-indigo-200' : 'text-indigo-800'}`}>
               Deine Freitext-Antwort
             </label>
             <p className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              💡 Singular und Plural werden beide erkannt.
+              {isWhoAmIFlashcard ? 'Nutze den gesuchten Begriff moeglichst direkt.' : 'Singular und Plural werden beide erkannt.'}
             </p>
             <textarea
               value={flashcardKeywordInput}
               onChange={(e) => setFlashcardKeywordInput(e.target.value)}
               rows={4}
-              placeholder="Antworte in eigenen Worten und triff die Schlagwoerter..."
+              placeholder={isWhoAmIFlashcard ? 'Welcher Begriff ist gesucht?' : 'Antworte in eigenen Worten und triff die Schlagwoerter...'}
               className={`w-full px-4 py-3 border-2 rounded-lg mb-3 ${
                 darkMode
                   ? 'bg-slate-700 border-slate-600 text-white placeholder:text-gray-400'
@@ -458,18 +583,28 @@ const FlashcardsView = ({
             />
             <button
               onClick={evaluateFlashcardKeywordAnswer}
-              disabled={!flashcardKeywordInput.trim()}
+              disabled={!flashcardKeywordInput.trim() || (isWhoAmIFlashcard && whoAmIExpired)}
               className={`w-full py-3 rounded-lg font-bold transition-all ${
-                flashcardKeywordInput.trim()
+                flashcardKeywordInput.trim() && !(isWhoAmIFlashcard && whoAmIExpired)
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-700 text-white hover:from-indigo-700 hover:to-purple-800'
                   : darkMode
                     ? 'bg-slate-700 text-gray-500 cursor-not-allowed'
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
               }`}
             >
-              Antwort pruefen
+              {isWhoAmIFlashcard ? 'Begriff pruefen' : 'Antwort pruefen'}
             </button>
 
+            {isWhoAmIFlashcard && whoAmIExpired && !flashcardKeywordEvaluation && (
+              <div className={`${darkMode ? 'bg-slate-800/95 border-slate-700' : 'bg-amber-50 border-amber-300'} border rounded-xl p-4 mt-4`}>
+                <p className={`font-bold ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
+                  Zeit abgelaufen.
+                </p>
+                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                  Gesucht war: {currentFlashcard.back}
+                </p>
+              </div>
+            )}
             {flashcardKeywordEvaluation && (
               <div className={`mt-4 rounded-lg border p-3 ${
                 flashcardKeywordEvaluation.isCorrect
@@ -477,7 +612,7 @@ const FlashcardsView = ({
                   : darkMode ? 'bg-amber-900/30 border-amber-600' : 'bg-amber-50 border-amber-300'
               }`}>
                 <p className={`font-bold ${flashcardKeywordEvaluation.isCorrect ? 'text-emerald-500' : 'text-amber-500'}`}>
-                  {flashcardKeywordEvaluation.isCorrect ? '✅ Korrekt' : '⚠️ Noch unvollstaendig'}
+                  {flashcardKeywordEvaluation.isCorrect ? (isWhoAmIFlashcard ? 'Richtig erkannt' : 'Korrekt') : (isWhoAmIFlashcard ? 'Noch nicht der gesuchte Begriff' : 'Noch unvollstaendig')}
                 </p>
                 <p className={`text-sm mt-1 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                   Treffer: {flashcardKeywordEvaluation.matchedCount}/{flashcardKeywordEvaluation.requiredGroups}
@@ -494,7 +629,7 @@ const FlashcardsView = ({
                 )}
                 {currentFlashcard.back && (
                   <p className={`text-sm mt-2 pt-2 border-t ${darkMode ? 'text-gray-300 border-slate-600' : 'text-gray-700 border-gray-200'}`}>
-                    Musterantwort: {currentFlashcard.back}
+                    {isWhoAmIFlashcard ? `Gesucht war: ${currentFlashcard.back}` : `Musterantwort: ${currentFlashcard.back}`}
                   </p>
                 )}
               </div>
@@ -510,7 +645,7 @@ const FlashcardsView = ({
                 const newLevel = updateCardSpacedData(currentFlashcard, newQuestionCategory, false);
                 playSound('wrong');
 
-                // Nächste Karte oder fertig
+                // NÃƒÆ’Ã‚Â¤chste Karte oder fertig
                 if (flashcardIndex < flashcards.length - 1) {
                   const nextIdx = flashcardIndex + 1;
                   setFlashcardIndex(nextIdx);
@@ -535,14 +670,14 @@ const FlashcardsView = ({
               }}
               className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg text-lg"
             >
-              ❌ Nicht gewusst
+              ÃƒÂ¢Ã‚ÂÃ…â€™ Nicht gewusst
             </button>
             <button
               onClick={() => {
                 const newLevel = updateCardSpacedData(currentFlashcard, newQuestionCategory, true);
                 playSound('correct');
 
-                // Nächste Karte oder fertig
+                // NÃƒÆ’Ã‚Â¤chste Karte oder fertig
                 if (flashcardIndex < flashcards.length - 1) {
                   const nextIdx = flashcardIndex + 1;
                   setFlashcardIndex(nextIdx);
@@ -567,7 +702,7 @@ const FlashcardsView = ({
               }}
               className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg text-lg"
             >
-              ✅ Gewusst
+              ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Gewusst
             </button>
           </div>
         )}
@@ -593,7 +728,7 @@ const FlashcardsView = ({
                   : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
               }`}
             >
-              ← Zurück
+              ÃƒÂ¢Ã¢â‚¬Â Ã‚Â ZurÃƒÆ’Ã‚Â¼ck
             </button>
             <div className={darkMode ? 'text-white' : 'text-gray-800'}>
               <span className="font-bold">{flashcardIndex + 1}</span> / {flashcards.length}
@@ -616,7 +751,7 @@ const FlashcardsView = ({
                   : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
               }`}
             >
-              Weiter →
+              Weiter ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢
             </button>
           </div>
         )}
@@ -625,10 +760,12 @@ const FlashcardsView = ({
 
     {(!currentFlashcard || flashcards.length === 0) && (
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 text-center`}>
-        <div className="text-6xl mb-4">{spacedRepetitionMode ? '🎉' : '🎴'}</div>
+        <div className="text-6xl mb-4">{spacedRepetitionMode ? 'ÃƒÂ°Ã…Â¸Ã…Â½Ã¢â‚¬Â°' : 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â´'}</div>
         <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
           {spacedRepetitionMode
             ? 'Alle Karten wiederholt!'
+            : whoAmIFlashcardMode
+              ? 'Keine Was-bin-ich-Karten'
             : keywordFlashcardMode
               ? 'Keine Schlagwort-Karten'
               : 'Keine Karteikarten'}
@@ -636,6 +773,8 @@ const FlashcardsView = ({
         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
           {spacedRepetitionMode
             ? 'Super! Du hast alle faelligen Karten in dieser Kategorie durchgearbeitet. Komm spaeter wieder!'
+            : whoAmIFlashcardMode
+              ? 'In dieser Kategorie gibt es noch keine Was-bin-ich-Karten.'
             : keywordFlashcardMode
               ? 'In dieser Kategorie gibt es noch keine Extra-schwer-Schlagwortkarten.'
               : 'Noch keine Karteikarten in dieser Kategorie. Erstelle die erste!'}
@@ -646,11 +785,12 @@ const FlashcardsView = ({
               setKeywordFlashcardMode(false);
               setSpacedRepetitionMode(false);
               resetFlashcardKeywordState();
-              loadFlashcards({ useKeyword: false });
+              setWhoAmIFlashcardMode(false);
+              loadFlashcards({ useKeyword: false, useWhoAmI: false });
             }}
             className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold"
           >
-            📚 Alle Karten anzeigen
+            ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â¡ Alle Karten anzeigen
           </button>
         )}
       </div>
@@ -660,7 +800,7 @@ const FlashcardsView = ({
     {user.permissions.canApproveQuestions && (
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg mt-6`}>
         <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          ⏳ Wartende Karteikarten genehmigen
+          ÃƒÂ¢Ã‚ÂÃ‚Â³ Wartende Karteikarten genehmigen
         </h3>
         {pendingFlashcards.length > 0 ? (
           <div className="space-y-3">
@@ -692,11 +832,11 @@ const FlashcardsView = ({
                     <p className={darkMode ? 'text-white' : 'text-gray-800'}>{fc.front}</p>
                   </div>
                   <div className={`${darkMode ? 'bg-slate-600' : 'bg-white'} rounded-lg p-3`}>
-                    <p className={`text-sm font-bold mb-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>Rückseite:</p>
+                    <p className={`text-sm font-bold mb-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>RÃƒÆ’Ã‚Â¼ckseite:</p>
                     <p className={darkMode ? 'text-white' : 'text-gray-800'}>{fc.back}</p>
                   </div>
                   <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
-                    Von {fc.createdBy} • {new Date(fc.time).toLocaleString()}
+                    Von {fc.createdBy} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {new Date(fc.time).toLocaleString()}
                   </p>
                 </div>
               );

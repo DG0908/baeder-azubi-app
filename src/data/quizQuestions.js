@@ -2,6 +2,7 @@
 // - correct: number = Single-Choice (Index der richtigen Antwort)
 // - correct: number[] = Multi-Select (Array der richtigen Indizes) - multi: true muss gesetzt sein
 import { ORG_EXPANSION_QUESTIONS, POL_EXPANSION_QUESTIONS, AEVO_QUESTIONS, MATH_QUESTIONS } from './quizQuestionsExpansion.js';
+import { WHO_AM_I_CATEGORY, WHO_AM_I_CHALLENGES } from './whoAmIChallenges.js';
 
 export const SAMPLE_QUESTIONS = {
   // ===== BÄDERORGANISATION (Badebetrieb) =====
@@ -55,6 +56,8 @@ export const SAMPLE_QUESTIONS = {
     { q: 'Was ist eine "Happy Hour" im Schwimmbad?', a: ['Zeitliche Preisdifferenzierung', 'Örtliche Preisdifferenzierung', 'Preisdifferenzierung nach Zielgruppen', 'Quantitative Preisdifferenzierung'], correct: 0 },
     ...ORG_EXPANSION_QUESTIONS
   ],
+
+  [WHO_AM_I_CATEGORY.id]: WHO_AM_I_CHALLENGES[WHO_AM_I_CATEGORY.id] || [],
 
   // ===== BÄDERTECHNIK =====
   tech: [

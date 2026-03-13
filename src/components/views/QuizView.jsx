@@ -3,13 +3,14 @@ import { Target } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES } from '../../data/constants';
+import { getWhoAmIClueCount, getWhoAmIVisibleClues, WHO_AM_I_TIME_LIMIT } from '../../data/whoAmIChallenges';
 import { formatAnswerLabel } from '../../lib/utils';
 
 const DIFFICULTY_SETTINGS = {
-  anfaenger: { time: 45, label: 'Anfaenger', icon: '🟢', color: 'bg-green-500' },
-  profi: { time: 30, label: 'Profi', icon: '🟡', color: 'bg-yellow-500' },
-  experte: { time: 15, label: 'Experte', icon: '🔴', color: 'bg-red-500' },
-  extra: { time: 75, label: 'Extra schwer', icon: '🧠', color: 'bg-indigo-700' }
+  anfaenger: { time: 45, label: 'Anfaenger', icon: '??', color: 'bg-green-500' },
+  profi: { time: 30, label: 'Profi', icon: '??', color: 'bg-yellow-500' },
+  experte: { time: 15, label: 'Experte', icon: '??', color: 'bg-red-500' },
+  extra: { time: 75, label: 'Extra schwer', icon: '??', color: 'bg-indigo-700' }
 };
 
 const CHALLENGE_TIMEOUT_OPTIONS = [
@@ -47,6 +48,7 @@ const QuizView = ({
   selectedAnswers,
   lastSelectedAnswer,
   isKeywordQuestion,
+  isWhoAmIQuestion,
   keywordAnswerText,
   setKeywordAnswerText,
   keywordAnswerEvaluation,
@@ -65,6 +67,8 @@ const QuizView = ({
   const [countdownNow, setCountdownNow] = React.useState(() => Date.now());
   const currentDifficulty = getDifficulty(currentGame?.difficulty);
   const questionIsKeyword = Boolean(currentQuestion && isKeywordQuestion?.(currentQuestion));
+  const questionIsWhoAmI = Boolean(currentQuestion && isWhoAmIQuestion?.(currentQuestion));
+  const questionUsesFreeText = questionIsKeyword || questionIsWhoAmI || quizMCKeywordMode;
   const availableKeywordGroups = Array.isArray(currentQuestion?.keywordGroups)
     ? currentQuestion.keywordGroups.length
     : 0;
@@ -72,6 +76,15 @@ const QuizView = ({
     1,
     Math.min(availableKeywordGroups || 1, Number(currentQuestion?.minKeywordGroups) || availableKeywordGroups || 1)
   );
+  const whoAmIClueCount = questionIsWhoAmI
+    ? getWhoAmIClueCount(currentGame?.difficulty, currentQuestion?.clues?.length || 0)
+    : 0;
+  const visibleWhoAmIClues = questionIsWhoAmI
+    ? getWhoAmIVisibleClues(currentQuestion, currentGame?.difficulty)
+    : [];
+  const questionTimeLimit = questionIsWhoAmI
+    ? Number(currentQuestion?.timeLimit) || WHO_AM_I_TIME_LIMIT
+    : (currentDifficulty.time || 30);
   React.useEffect(() => {
     if (currentGame) return undefined;
     const intervalId = window.setInterval(() => {
@@ -133,15 +146,15 @@ const QuizView = ({
     <div className="max-w-4xl mx-auto">
       {!currentGame && (
         <>
-          <h2 className="text-3xl font-bold mb-6">Quizduell 🏆</h2>
+          <h2 className="text-3xl font-bold mb-6">Quizduell ??</h2>
 
           <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
-            <p className="font-bold text-amber-800 mb-2">⚠️ Spielregeln – Zeitlimit & Strafen</p>
+            <p className="font-bold text-amber-800 mb-2">?? Spielregeln – Zeitlimit & Strafen</p>
             <ul className="space-y-1 text-amber-700">
-              <li>⏰ Für Herausforderungen kannst du eine <strong>Annahmefrist</strong> festlegen.</li>
-              <li>🔔 Laufende Duelle behalten <strong>48 Stunden</strong> Zugfrist mit Erinnerung nach 24h.</li>
-              <li>❌ Wer seinen Zug nicht rechtzeitig macht oder eine Challenge ignoriert, <strong>verliert die Runde</strong>.</li>
-              <li>💥 Zusätzlich werden dem Verlierer <strong>100 XP abgezogen</strong>.</li>
+              <li>? Für Herausforderungen kannst du eine <strong>Annahmefrist</strong> festlegen.</li>
+              <li>?? Laufende Duelle behalten <strong>48 Stunden</strong> Zugfrist mit Erinnerung nach 24h.</li>
+              <li>? Wer seinen Zug nicht rechtzeitig macht oder eine Challenge ignoriert, <strong>verliert die Runde</strong>.</li>
+              <li>?? Zusätzlich werden dem Verlierer <strong>100 XP abgezogen</strong>.</li>
             </ul>
           </div>
 
@@ -344,7 +357,7 @@ const QuizView = ({
                 </p>
               )}
               <p className="text-sm text-gray-600 mt-2">
-                {playerTurn === user.name ? '⚡ Du bist dran!' : `${playerTurn} ist dran...`}
+                {playerTurn === user.name ? '? Du bist dran!' : `${playerTurn} ist dran...`}
               </p>
             </div>
             <div className="text-center flex-1">
@@ -414,7 +427,7 @@ const QuizView = ({
             return myAnswers.length === 0 && currentCatRound.questions.length > 0;
           })() && (
             <div className="text-center py-8">
-              <div className="text-6xl mb-4">🎯</div>
+              <div className="text-6xl mb-4">??</div>
               <p className="text-xl font-bold mb-2">
                 {(() => {
                   const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
@@ -428,14 +441,14 @@ const QuizView = ({
                 onClick={startCategoryAsSecondPlayer}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
               >
-                Los geht's! 🚀
+                Los geht's! ??
               </button>
             </div>
           )}
 
           {!quizCategory && playerTurn !== user.name && (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">⏳</div>
+              <div className="text-6xl mb-4">?</div>
               <p className="text-xl text-gray-600">Warte auf {playerTurn}...</p>
               <p className="text-sm text-gray-400 mt-2">
                 {waitingForOpponent ? 'Dein Gegner spielt jetzt die gleichen Fragen' : 'Dein Gegner waehlt eine Kategorie'}
@@ -464,40 +477,57 @@ const QuizView = ({
                     className={`h-3 rounded-full transition-all duration-1000 ${
                       timeLeft <= 10 ? 'bg-red-500' : 'bg-blue-500'
                     }`}
-                    style={{ width: `${(timeLeft / (currentDifficulty.time || 30)) * 100}%` }}
+                    style={{ width: `${(timeLeft / questionTimeLimit) * 100}%` }}
                   />
                 </div>
               </div>
 
               <div className="bg-gray-100 rounded-xl p-6">
-                <p className="text-xl font-bold text-center">{currentQuestion.q}</p>
-                {currentQuestion.multi && !answered && !questionIsKeyword && !quizMCKeywordMode && (
+                <p className="text-xl font-bold text-center">
+                  {questionIsWhoAmI ? (currentQuestion.prompt || 'Was bin ich?') : currentQuestion.q}
+                </p>
+                {questionIsWhoAmI && (
+                  <div className="mt-4 rounded-xl border border-slate-300 bg-white p-4 text-left">
+                    <p className="text-center text-sm font-medium text-slate-700">
+                      60 Sekunden Zeit. Schwierigkeit <span className="font-bold">{currentDifficulty.label}</span> zeigt dir {whoAmIClueCount} von {currentQuestion?.clues?.length || 5} Eigenschaften.
+                    </p>
+                    <div className="mt-3 space-y-2">
+                      {visibleWhoAmIClues.map((clue, index) => (
+                        <div key={`${currentQuestion?.id || 'whoami'}-${index}`} className="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700">
+                          <span className="mr-2 font-bold text-slate-500">{index + 1}.</span>
+                          {clue}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {currentQuestion.multi && !answered && !questionIsKeyword && !questionIsWhoAmI && !quizMCKeywordMode && (
                   <p className="text-center text-sm text-orange-600 mt-2 font-medium">
-                    ⚠️ Mehrere Antworten sind richtig - waehle alle richtigen aus!
+                    ?? Mehrere Antworten sind richtig - waehle alle richtigen aus!
                   </p>
                 )}
                 {questionIsKeyword && (
                   <p className="text-center text-sm text-indigo-700 mt-2 font-medium">
-                    🧠 Extra schwer: Freitext antworten und mindestens {requiredKeywordGroups} Schlagwoerter treffen.
+                    ?? Extra schwer: Freitext antworten und mindestens {requiredKeywordGroups} Schlagwoerter treffen.
                   </p>
                 )}
-                {quizMCKeywordMode && !questionIsKeyword && (
+                {quizMCKeywordMode && !questionIsKeyword && !questionIsWhoAmI && (
                   <p className="text-center text-sm text-violet-700 mt-2 font-medium">
-                    🧠 Schlagwort-Modus: Antworte frei und triff die Schlüsselbegriffe.
+                    ?? Schlagwort-Modus: Antworte frei und triff die Schluesselbegriffe.
                   </p>
                 )}
               </div>
 
-              {!questionIsKeyword && !quizMCKeywordMode && !answered && (
+              {!questionIsKeyword && !questionIsWhoAmI && !quizMCKeywordMode && !answered && (
                 <button
                   onClick={() => setQuizMCKeywordMode(true)}
                   className="w-full py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-500 hover:bg-violet-50 hover:text-violet-700 transition-all border border-gray-200 hover:border-violet-300"
                 >
-                  🧠 Schlagwort-Modus aktivieren
+                  ?? Schlagwort-Modus aktivieren
                 </button>
               )}
 
-              {!questionIsKeyword && Array.isArray(currentQuestion.a) && !quizMCKeywordMode && (
+              {!questionIsKeyword && !questionIsWhoAmI && Array.isArray(currentQuestion.a) && !quizMCKeywordMode && (
                 <>
                   <div className="grid gap-3">
                     {currentQuestion.a.map((answer, idx) => {
@@ -533,7 +563,7 @@ const QuizView = ({
                           className={`p-4 rounded-xl font-medium transition-all min-h-[4.5rem] ${buttonClass}`}
                         >
                           {isMulti && !answered && (
-                            <span className="mr-2">{isSelectedMulti ? '☑️' : '⬜'}</span>
+                            <span className="mr-2">{isSelectedMulti ? '??' : '?'}</span>
                           )}
                           {answerLabel}
                         </button>
@@ -546,26 +576,32 @@ const QuizView = ({
                       onClick={confirmMultiSelectAnswer}
                       className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
                     >
-                      ✓ Antwort bestaetigen ({selectedAnswers.length} ausgewaehlt)
+                      ? Antwort bestaetigen ({selectedAnswers.length} ausgewaehlt)
                     </button>
                   )}
                 </>
               )}
 
-              {(questionIsKeyword || quizMCKeywordMode) && (
+              {questionUsesFreeText && (
                 <div className="space-y-3">
                   <p className="text-xs text-gray-400">
-                    💡 Singular und Plural werden beide erkannt – schreib, wie es natürlich klingt.
+                    ?? Singular und Plural werden beide erkannt - schreib, wie es natuerlich klingt.
                   </p>
-                  <p className="text-xs font-semibold text-indigo-600">
-                    Wertung: jedes erkannte Schlagwort = 1 Punkt, vollstaendig geloest = +2 Bonus.
-                  </p>
+                  {questionIsWhoAmI ? (
+                    <p className="text-xs font-semibold text-slate-700">
+                      Gesucht ist genau ein Begriff. Im Quizduell zaehlt bei richtiger Loesung ein normaler Punkt.
+                    </p>
+                  ) : (
+                    <p className="text-xs font-semibold text-indigo-600">
+                      Wertung: jedes erkannte Schlagwort = 1 Punkt, vollstaendig geloest = +2 Bonus.
+                    </p>
+                  )}
                   <textarea
                     value={keywordAnswerText}
                     onChange={(e) => setKeywordAnswerText(e.target.value)}
                     disabled={answered}
                     rows={5}
-                    placeholder="Schreibe deine Antwort frei und nenne die wichtigsten Schlagwoerter..."
+                    placeholder={questionIsWhoAmI ? 'Schreibe den gesuchten Begriff...' : 'Schreibe deine Antwort frei und nenne die wichtigsten Schlagwoerter...'}
                     className="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:text-gray-500"
                   />
                   {!answered && (
@@ -578,7 +614,7 @@ const QuizView = ({
                           : 'bg-indigo-300 cursor-not-allowed'
                       }`}
                     >
-                      Antwort pruefen
+                      {questionIsWhoAmI ? 'Begriff pruefen' : 'Antwort pruefen'}
                     </button>
                   )}
 
@@ -589,14 +625,20 @@ const QuizView = ({
                         : 'border-amber-400 bg-amber-50'
                     }`}>
                       <p className={`font-bold ${keywordAnswerEvaluation.isCorrect ? 'text-emerald-700' : 'text-amber-700'}`}>
-                        {keywordAnswerEvaluation.isCorrect ? '✅ Treffer! Antwort ist korrekt.' : '⚠️ Noch nicht ausreichend.'}
+                        {keywordAnswerEvaluation.isCorrect
+                          ? (questionIsWhoAmI ? '? Richtig erkannt.' : '? Treffer! Antwort ist korrekt.')
+                          : (questionIsWhoAmI ? '?? Noch nicht der gesuchte Begriff.' : '?? Noch nicht ausreichend.')}
                       </p>
-                      <p className="text-sm text-gray-700 mt-1">
-                        Treffer: {keywordAnswerEvaluation.matchedCount}/{keywordAnswerEvaluation.requiredGroups} erforderlich
-                      </p>
-                      <p className="text-sm text-gray-700 mt-1">
-                        Punkte: {keywordAnswerEvaluation.basePoints || 0}{Number(keywordAnswerEvaluation.bonusPoints || 0) > 0 ? ` + ${keywordAnswerEvaluation.bonusPoints} Bonus` : ''} = <span className="font-bold">{keywordAnswerEvaluation.awardedPoints || 0}</span>
-                      </p>
+                      {!questionIsWhoAmI && (
+                        <>
+                          <p className="text-sm text-gray-700 mt-1">
+                            Treffer: {keywordAnswerEvaluation.matchedCount}/{keywordAnswerEvaluation.requiredGroups} erforderlich
+                          </p>
+                          <p className="text-sm text-gray-700 mt-1">
+                            Punkte: {keywordAnswerEvaluation.basePoints || 0}{Number(keywordAnswerEvaluation.bonusPoints || 0) > 0 ? ` + ${keywordAnswerEvaluation.bonusPoints} Bonus` : ''} = <span className="font-bold">{keywordAnswerEvaluation.awardedPoints || 0}</span>
+                          </p>
+                        </>
+                      )}
                       {keywordAnswerEvaluation.timedOut && (
                         <p className="text-sm text-red-600 mt-1 font-semibold">Zeit abgelaufen - Antwort wurde als falsch gewertet.</p>
                       )}
@@ -612,10 +654,10 @@ const QuizView = ({
                       )}
                       {currentQuestion.answerGuide && (
                         <p className="text-sm text-gray-700 mt-3 border-t border-gray-300 pt-2">
-                          Musterloesung: {currentQuestion.answerGuide}
+                          {questionIsWhoAmI ? `Gesucht war: ${currentQuestion.answerGuide}` : `Musterloesung: ${currentQuestion.answerGuide}`}
                         </p>
                       )}
-                      {quizMCKeywordMode && !questionIsKeyword && (
+                      {quizMCKeywordMode && !questionIsKeyword && !questionIsWhoAmI && (
                         <p className="text-sm text-gray-700 mt-3 border-t border-gray-300 pt-2">
                           Korrekte Antwort: {
                             currentQuestion.multi && Array.isArray(currentQuestion.correct)
@@ -639,12 +681,12 @@ const QuizView = ({
                 }}
                 className="w-full mt-2 bg-amber-100 hover:bg-amber-200 text-amber-800 py-2 rounded-lg font-semibold border border-amber-300"
               >
-                🚩 Frage melden
+                ?? Frage melden
               </button>
 
               {answered && timeLeft === 0 && (
                 <div className="bg-red-100 border-2 border-red-500 rounded-xl p-4 text-center">
-                  <p className="text-red-700 font-bold">⏰ Zeit abgelaufen!</p>
+                  <p className="text-red-700 font-bold">? Zeit abgelaufen!</p>
                 </div>
               )}
 
@@ -653,7 +695,7 @@ const QuizView = ({
                   onClick={proceedToNextRound}
                   className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg"
                 >
-                  Weiter →
+                  Weiter ?
                 </button>
               )}
             </div>
