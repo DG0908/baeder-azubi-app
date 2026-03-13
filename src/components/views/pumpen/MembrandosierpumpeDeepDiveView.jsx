@@ -777,8 +777,30 @@ function DosingPumpPartDeepDive({ spot, xrayMode }) {
   );
 }
 
-function MembrandosierpumpeAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, hubPercent, showLabels }) {
+function getExplodedPosition(anchor) {
+  const direction = anchor[0] < 0 ? -1 : 1;
+  return [anchor[0] + (direction * 1.65), anchor[1] + 0.16, anchor[2] + 0.42];
+}
+
+function DosingPumpExplodedPart({ spot, xrayMode, explodedMode }) {
+  if (!explodedMode || !spot) return null;
+
+  const anchor = DOSING_PUMP_CALLOUTS[spot.id] || spot.position;
+  const target = getExplodedPosition(anchor);
+
+  return (
+    <group>
+      <CalloutLine start={spot.position} end={target} active />
+      <group position={target} scale={[0.4, 0.4, 0.4]}>
+        <DosingPumpPartFocusModel spot={spot} xrayMode={xrayMode} />
+      </group>
+    </group>
+  );
+}
+
+function MembrandosierpumpeAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, hubPercent, showLabels, explodedMode }) {
   const emphasized = (ids) => focusMatch(mode, ids);
+  const activeSpotData = DOSING_PUMP_SPOTS.find((item) => item.id === activeSpot) || null;
 
   const shellMaterial = (baseColor, ids, opacity = 0.72) => ({
     color: baseColor,
@@ -879,6 +901,7 @@ function MembrandosierpumpeAssembly({ running, xrayMode, activeSpot, setActiveSp
       <FlowParticles running={running} color="#ffaa40" start={[-2.42, 0.12, 0.2]} end={[-3.92, 0.88, 0]} speed={0.34} count={6} />
 
       <DosingPumpLeaderCallouts activeSpot={activeSpot} setActiveSpot={setActiveSpot} showLabels={showLabels} />
+      <DosingPumpExplodedPart spot={activeSpotData} xrayMode={xrayMode} explodedMode={explodedMode} />
       <DosingPumpHotspots activeSpot={activeSpot} setActiveSpot={setActiveSpot} showLabels={showLabels} />
     </group>
   );
@@ -888,6 +911,7 @@ export default function MembrandosierpumpeDeepDiveView() {
   const [xrayMode, setXrayMode] = useState(false);
   const [showLabels, setShowLabels] = useState(true);
   const [running, setRunning] = useState(true);
+  const [explodedMode, setExplodedMode] = useState(false);
   const [hubPercent, setHubPercent] = useState(60);
   const [activeMode, setActiveMode] = useState('dosierhub');
   const [activeSpot, setActiveSpot] = useState('dosiermembran');
@@ -956,6 +980,18 @@ export default function MembrandosierpumpeDeepDiveView() {
             style={{ background: '#0a1a2e', color: '#7ab0d0', border: '1px solid #1a3a5a' }}
           >
             {showLabels ? 'Leitlinien an' : 'Leitlinien aus'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setExplodedMode((prev) => !prev)}
+            className="rounded-lg px-3 py-1.5 text-sm font-semibold"
+            style={{
+              background: explodedMode ? '#2a1d12' : '#0a1a2e',
+              color: explodedMode ? '#ffcf96' : '#7ab0d0',
+              border: '1px solid #1a3a5a',
+            }}
+          >
+            {explodedMode ? 'Explosion an' : 'Explosion aus'}
           </button>
           <button
             type="button"
@@ -1048,6 +1084,7 @@ export default function MembrandosierpumpeDeepDiveView() {
                 mode={mode}
                 hubPercent={hubPercent}
                 showLabels={showLabels}
+                explodedMode={explodedMode}
               />
 
               <OrbitControls
@@ -1066,7 +1103,7 @@ export default function MembrandosierpumpeDeepDiveView() {
           </div>
 
           <div className="mt-3 text-[11px] font-mono tracking-widest" style={{ color: '#5f86a8' }}>
-            STATUS: {running ? 'DOSIERUNG AKTIV' : 'DOSIERUNG AUS'} - HUBLAENGE: {hubPercent}% - ZIEHEN ZUM DREHEN
+            STATUS: {running ? 'DOSIERUNG AKTIV' : 'DOSIERUNG AUS'} - HUBLAENGE: {hubPercent}% - {explodedMode ? 'EXPLOSION AKTIV' : 'STANDARDANSICHT'} - ZIEHEN ZUM DREHEN
           </div>
 
           <DosingPumpPartDeepDive spot={activeSpotData} xrayMode={xrayMode} />

@@ -793,8 +793,30 @@ function PumpPartDeepDive({ spot, xrayMode }) {
   );
 }
 
-function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, showLabels }) {
+function getExplodedPosition(anchor) {
+  const direction = anchor[0] < 0 ? -1 : 1;
+  return [anchor[0] + (direction * 1.75), anchor[1] + 0.18, anchor[2] + 0.46];
+}
+
+function PumpExplodedPart({ spot, xrayMode, explodedMode }) {
+  if (!explodedMode || !spot) return null;
+
+  const anchor = PUMP_CALLOUTS[spot.id] || spot.position;
+  const target = getExplodedPosition(anchor);
+
+  return (
+    <group>
+      <CalloutLine start={spot.position} end={target} active />
+      <group position={target} scale={[0.4, 0.4, 0.4]}>
+        <PumpPartFocusModel spot={spot} xrayMode={xrayMode} />
+      </group>
+    </group>
+  );
+}
+
+function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, showLabels, explodedMode }) {
   const emphasized = (ids) => focusMatch(mode, ids);
+  const activeSpotData = PUMP_SPOTS.find((item) => item.id === activeSpot) || null;
 
   const shellMaterial = (baseColor, ids, opacity = 0.6) => ({
     color: baseColor,
@@ -945,6 +967,7 @@ function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, show
       )}
 
       <PumpLeaderCallouts activeSpot={activeSpot} setActiveSpot={setActiveSpot} showLabels={showLabels} />
+      <PumpExplodedPart spot={activeSpotData} xrayMode={xrayMode} explodedMode={explodedMode} />
       <PumpHotspots activeSpot={activeSpot} setActiveSpot={setActiveSpot} showLabels={showLabels} />
     </group>
   );
@@ -954,6 +977,7 @@ export default function UmwaelzpumpeDeepDiveView() {
   const [xrayMode, setXrayMode] = useState(false);
   const [showLabels, setShowLabels] = useState(true);
   const [running, setRunning] = useState(true);
+  const [explodedMode, setExplodedMode] = useState(false);
   const [activeMode, setActiveMode] = useState('schnittbild');
   const [activeSpot, setActiveSpot] = useState('laufrad');
   const [viewVersion, setViewVersion] = useState(0);
@@ -1021,6 +1045,18 @@ export default function UmwaelzpumpeDeepDiveView() {
             style={{ background: '#0a1a2e', color: '#7ab0d0', border: '1px solid #1a3a5a' }}
           >
             {showLabels ? 'Leitlinien an' : 'Leitlinien aus'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setExplodedMode((prev) => !prev)}
+            className="rounded-lg px-3 py-1.5 text-sm font-semibold"
+            style={{
+              background: explodedMode ? '#2a1d12' : '#0a1a2e',
+              color: explodedMode ? '#ffcf96' : '#7ab0d0',
+              border: '1px solid #1a3a5a',
+            }}
+          >
+            {explodedMode ? 'Explosion an' : 'Explosion aus'}
           </button>
           <button
             type="button"
@@ -1112,6 +1148,7 @@ export default function UmwaelzpumpeDeepDiveView() {
                 setActiveSpot={setActiveSpot}
                 mode={mode}
                 showLabels={showLabels}
+                explodedMode={explodedMode}
               />
 
               <OrbitControls
@@ -1130,7 +1167,7 @@ export default function UmwaelzpumpeDeepDiveView() {
           </div>
 
           <div className="mt-3 text-[11px] font-mono tracking-widest" style={{ color: '#5f86a8' }}>
-            PUMPENSTATUS: {running ? 'LAEUFT' : 'STEHT'} - MODUS: {mode.label.toUpperCase()} - ZIEHEN ZUM DREHEN
+            PUMPENSTATUS: {running ? 'LAEUFT' : 'STEHT'} - MODUS: {mode.label.toUpperCase()} - {explodedMode ? 'EXPLOSION AKTIV' : 'STANDARDANSICHT'} - ZIEHEN ZUM DREHEN
           </div>
 
           <PumpPartDeepDive spot={activeSpotData} xrayMode={xrayMode} />
