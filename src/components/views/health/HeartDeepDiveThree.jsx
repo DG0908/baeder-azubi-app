@@ -13,7 +13,7 @@ const HEART_SPOT_DATA = {
     title: 'Rechter Vorhof',
     items: [
       'Nimmt sauerstoffarmes Blut aus oberer und unterer Hohlvene auf.',
-      'Leitet das Blut ueber die Trikuspidalklappe in die rechte Kammer weiter.',
+      'Leitet das Blut über die Trikuspidalklappe in die rechte Kammer weiter.',
       'Volumen- und Druckschwankungen sind klinisch relevante Belastungsmarker.',
     ],
   },
@@ -23,7 +23,7 @@ const HEART_SPOT_DATA = {
     title: 'Rechte Kammer',
     items: [
       'Pumpt venoeses Blut in den kleinen (pulmonalen) Kreislauf.',
-      'Die Pulmonalklappe verhindert den Rueckfluss aus der Pulmonalarterie.',
+      'Die Pulmonalklappe verhindert den Rückfluss aus der Pulmonalarterie.',
       'Belastet vor allem bei pulmonaler Hypertonie und Lungenproblemen.',
     ],
   },
@@ -33,8 +33,8 @@ const HEART_SPOT_DATA = {
     title: 'Linker Vorhof',
     items: [
       'Erhaelt oxygeniertes Blut aus den Lungenvenen.',
-      'Gibt das Blut ueber die Mitralklappe an die linke Kammer ab.',
-      'Druckanstiege koennen sich direkt auf den Lungenkreislauf auswirken.',
+      'Gibt das Blut über die Mitralklappe an die linke Kammer ab.',
+      'Druckanstiege können sich direkt auf den Lungenkreislauf auswirken.',
     ],
   },
   linkeKammer: {
@@ -42,9 +42,9 @@ const HEART_SPOT_DATA = {
     short: 'LKM',
     title: 'Linke Kammer',
     items: [
-      'Starkste Herzkammer mit hohem Druckaufbau fuer den Koerperkreislauf.',
-      'Auswurf ueber die Aortenklappe in die Aorta.',
-      'Entscheidend fuer Herzzeitvolumen und Organdurchblutung.',
+      'Starkste Herzkammer mit hohem Druckaufbau für den Körperkreislauf.',
+      'Auswurf über die Aortenklappe in die Aorta.',
+      'Entscheidend für Herzzeitvolumen und Organdurchblutung.',
     ],
   },
   trikuspidalklappe: {
@@ -54,7 +54,7 @@ const HEART_SPOT_DATA = {
     items: [
       'Segelklappe zwischen rechtem Vorhof und rechter Kammer.',
       'Oeffnet in der Fuellungsphase, schliesst in der Auswurfphase.',
-      'Insuffizienz fuehrt zu Rueckstrom in den rechten Vorhof.',
+      'Insuffizienz führt zu Rückstrom in den rechten Vorhof.',
     ],
   },
   mitralklappe: {
@@ -72,8 +72,8 @@ const HEART_SPOT_DATA = {
     short: 'AO',
     title: 'Aorta',
     items: [
-      'Groesstes arterielles Gefaess fuer den grossen Kreislauf.',
-      'Verteilt sauerstoffreiches Blut in den gesamten Koerper.',
+      'Größtes arterielles Gefaess für den grossen Kreislauf.',
+      'Verteilt sauerstoffreiches Blut in den gesamten Körper.',
       'Der elastische Windkessel-Effekt glattet Druckschwankungen.',
     ],
   },
@@ -82,7 +82,7 @@ const HEART_SPOT_DATA = {
     short: 'PA',
     title: 'Pulmonalarterie',
     items: [
-      'Fuehrt sauerstoffarmes Blut von der rechten Kammer zur Lunge.',
+      'Führt sauerstoffarmes Blut von der rechten Kammer zur Lunge.',
       'Einzige Arterie mit venoesem Blut.',
       'Im kleinen Kreislauf deutlich niedrigere Druckniveaus als systemisch.',
     ],
@@ -118,12 +118,12 @@ const PULMONARY_SEGMENTS = [
 
 const CYCLE_DETAILS = {
   gross: {
-    title: 'Grosser Blutkreislauf (Koerperkreislauf)',
+    title: 'Grosser Blutkreislauf (Körperkreislauf)',
     accent: '#ff846b',
     steps: [
-      'Linke Kammer pumpt O2-reiches Blut ueber die Aorta in den Koerper.',
+      'Linke Kammer pumpt O2-reiches Blut über die Aorta in den Körper.',
       'Arteriolen und Kapillaren versorgen Gewebe mit Sauerstoff und Naehrstoffen.',
-      'Rueckfluss als O2-armes Blut ueber Venen/Hohlvenen in den rechten Vorhof.',
+      'Rückfluss als O2-armes Blut über Venen/Hohlvenen in den rechten Vorhof.',
     ],
   },
   klein: {
@@ -132,7 +132,7 @@ const CYCLE_DETAILS = {
     steps: [
       'Rechte Kammer presst O2-armes Blut in die Pulmonalarterie.',
       'In den Lungenkapillaren erfolgt Gasaustausch: CO2 raus, O2 rein.',
-      'Ruecktransport als O2-reiches Blut ueber Lungenvenen in den linken Vorhof.',
+      'Rücktransport als O2-reiches Blut über Lungenvenen in den linken Vorhof.',
     ],
   },
 };
@@ -142,7 +142,7 @@ const CIRCULATION_STEPS = [
     id: 'small-out',
     focus: 'klein',
     title: '1) Rechtes Herz -> Lunge',
-    description: 'O2-armes Blut fliesst vom rechten Herz ueber die Pulmonalarterie zur Lunge.',
+    description: 'O2-armes Blut fliesst vom rechten Herz über die Pulmonalarterie zur Lunge.',
     paths: ['p-small-out'],
     nodes: ['node-right', 'node-lungs'],
   },
@@ -150,23 +150,23 @@ const CIRCULATION_STEPS = [
     id: 'small-back',
     focus: 'klein',
     title: '2) Lunge -> Linkes Herz',
-    description: 'Nach dem Gasaustausch kommt O2-reiches Blut ueber die Lungenvenen zum linken Herz zurueck.',
+    description: 'Nach dem Gasaustausch kommt O2-reiches Blut über die Lungenvenen zum linken Herz zurück.',
     paths: ['p-small-back'],
     nodes: ['node-lungs', 'node-left'],
   },
   {
     id: 'large-out',
     focus: 'gross',
-    title: '3) Linkes Herz -> Koerper',
-    description: 'Das linke Herz pumpt O2-reiches Blut ueber Aorta und Arterien in den Koerper.',
+    title: '3) Linkes Herz -> Körper',
+    description: 'Das linke Herz pumpt O2-reiches Blut über Aorta und Arterien in den Körper.',
     paths: ['p-large-out'],
     nodes: ['node-left', 'node-body'],
   },
   {
     id: 'large-back',
     focus: 'gross',
-    title: '4) Koerper -> Rechtes Herz',
-    description: 'O2-armes Blut fliesst ueber Venen und Hohlvenen zur rechten Herzseite zurueck.',
+    title: '4) Körper -> Rechtes Herz',
+    description: 'O2-armes Blut fliesst über Venen und Hohlvenen zur rechten Herzseite zurück.',
     paths: ['p-large-back'],
     nodes: ['node-body', 'node-right'],
   },
@@ -232,7 +232,7 @@ function CirculationMap({ cycleMode, heartRate }) {
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #1a3a5a', background: 'radial-gradient(circle at 50% 20%, #103050, #05111f)' }}>
-      <svg viewBox="0 0 1000 700" width="100%" role="img" aria-label="Schaubild mit Herz, Lunge und Koerper fuer den Blutkreislauf">
+      <svg viewBox="0 0 1000 700" width="100%" role="img" aria-label="Schaubild mit Herz, Lunge und Körper für den Blutkreislauf">
         <defs>
           <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
             <path d="M0,0 L0,6 L9,3 z" fill="#ff7864" />
@@ -319,7 +319,7 @@ function CirculationMap({ cycleMode, heartRate }) {
           <line x1="795" y1="408" x2="772" y2="466" stroke="#9cc9ea" strokeWidth="14" strokeLinecap="round" />
           <line x1="835" y1="408" x2="858" y2="466" stroke="#9cc9ea" strokeWidth="14" strokeLinecap="round" />
           <text x="815" y="486" textAnchor="middle" fontSize="18" fill="#d7efff" fontFamily="monospace" fontWeight="700">
-            Koerper
+            Körper
           </text>
         </g>
 
@@ -411,7 +411,7 @@ function CirculationMap({ cycleMode, heartRate }) {
             className="rounded-md px-2.5 py-1 text-xs font-semibold"
             style={{ background: '#0c2238', color: '#9ac2de', border: '1px solid #2a5a90' }}
           >
-            Schritt zurueck
+            Schritt zurück
           </button>
           <button
             type="button"
@@ -1077,7 +1077,7 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie', initialSce
               className="w-full accent-cyan-500"
             />
             <p className="text-[11px] mt-2 leading-relaxed" style={{ color: '#6d8ca9' }}>
-              Nutze 60-90 bpm fuer Ruhebereich und mehr als 110 bpm fuer Belastung. Beobachte, wie das Herzzeitvolumen reagiert.
+              Nutze 60-90 bpm für Ruhebereich und mehr als 110 bpm für Belastung. Beobachte, wie das Herzzeitvolumen reagiert.
             </p>
           </div>
 
@@ -1086,14 +1086,14 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie', initialSce
               PRUEFUNGSFRAGE
             </p>
             <p className="text-sm font-semibold mb-2" style={{ color: '#c0d8f0' }}>
-              Warum fuehrt die Pulmonalarterie O2-armes Blut, obwohl sie eine Arterie ist?
+              Warum führt die Pulmonalarterie O2-armes Blut, obwohl sie eine Arterie ist?
             </p>
             <details>
               <summary className="text-xs cursor-pointer font-mono" style={{ color: '#4a9eff' }}>
                 Antwort einblenden
               </summary>
               <p className="text-sm mt-2 leading-relaxed" style={{ color: '#90b0d0' }}>
-                Arterien und Venen werden nach Flussrichtung vom bzw. zum Herzen definiert. Die Pulmonalarterie fuehrt
+                Arterien und Venen werden nach Flussrichtung vom bzw. zum Herzen definiert. Die Pulmonalarterie führt
                 Blut vom Herzen weg zur Lunge und ist deshalb eine Arterie, auch wenn das Blut dort noch O2-arm ist.
               </p>
             </details>

@@ -568,7 +568,7 @@ const FlashcardsView = ({
               Deine Freitext-Antwort
             </label>
             <p className={`text-xs mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              {isWhoAmIFlashcard ? 'Nutze den gesuchten Begriff moeglichst direkt.' : 'Singular und Plural werden beide erkannt.'}
+              {isWhoAmIFlashcard ? 'Nutze den gesuchten Begriff möglichst direkt.' : 'Singular und Plural werden beide erkannt.'}
             </p>
             <textarea
               value={flashcardKeywordInput}
@@ -592,7 +592,7 @@ const FlashcardsView = ({
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
               }`}
             >
-              {isWhoAmIFlashcard ? 'Begriff pruefen' : 'Antwort pruefen'}
+              {isWhoAmIFlashcard ? 'Begriff prüfen' : 'Antwort prüfen'}
             </button>
 
             {isWhoAmIFlashcard && whoAmIExpired && !flashcardKeywordEvaluation && (
@@ -772,7 +772,7 @@ const FlashcardsView = ({
         </p>
         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
           {spacedRepetitionMode
-            ? 'Super! Du hast alle faelligen Karten in dieser Kategorie durchgearbeitet. Komm spaeter wieder!'
+            ? 'Super! Du hast alle faelligen Karten in dieser Kategorie durchgearbeitet. Komm später wieder!'
             : whoAmIFlashcardMode
               ? 'In dieser Kategorie gibt es noch keine Was-bin-ich-Karten.'
             : keywordFlashcardMode

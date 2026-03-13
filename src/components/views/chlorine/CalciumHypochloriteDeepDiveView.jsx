@@ -9,7 +9,7 @@ const toPolyPoints = (pts) => pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(
 const HOTSPOTS = [
   { id: 'steuerung', shortLabel: 'CTRL', label: 'Mikroprozessor-Steuerung', color: '#4a9eff', pos: [-115, -72, -8] },
   { id: 'vorratsbehaelter', shortLabel: 'VORRAT', label: 'Vorratsbehaelter', color: '#8cbeff', pos: [8, -58, 8] },
-  { id: 'duesensystem', shortLabel: 'DUESE', label: 'Duesensystem', color: '#34c090', pos: [54, -34, 2] },
+  { id: 'düsensystem', shortLabel: 'DUESE', label: 'Düsensystem', color: '#34c090', pos: [54, -34, 2] },
   { id: 'loesetank', shortLabel: 'LOESE', label: 'Loese-/Sedimentationstank', color: '#a070ff', pos: [8, 20, 42] },
   { id: 'sorptionseinheit', shortLabel: 'SORP', label: 'Sorptionseinheit', color: '#d8a240', pos: [100, 16, 5] },
   { id: 'schwenkantrieb', shortLabel: 'SWENK', label: 'Schwenkantrieb', color: '#ff7a7a', pos: [18, 78, 10] },
@@ -24,9 +24,9 @@ const HOTSPOT_DATA = {
     short: 'CTRL',
     color: '#4a9eff',
     items: [
-      'Steuert Schwenkzyklen, Ueberlaufzeit und Umschaltung der Ventile.',
+      'Steuert Schwenkzyklen, Überlaufzeit und Umschaltung der Ventile.',
       'Verknuepft Anwasserungsdauer, Loesezeit und Dosierfreigabe in Sequenzen.',
-      'Verriegelt die Produktabgabe bei Stoerungen oder Fehlfuellstand.',
+      'Verriegelt die Produktabgabe bei Störungen oder Fehlfuellstand.',
     ],
   },
   vorratsbehaelter: {
@@ -34,19 +34,19 @@ const HOTSPOT_DATA = {
     short: 'VORRAT',
     color: '#8cbeff',
     items: [
-      'Behaelter fuer Calciumhypochlorit-Feststoff im trockenen Bereich.',
-      'Anwaesserung erfolgt nur getaktet ueber Duesensystem und nie im Dauerstrahl.',
-      'Schuetzt vor Klumpenbildung und unkontrollierten Konzentrationsspitzen.',
+      'Behaelter für Calciumhypochlorit-Feststoff im trockenen Bereich.',
+      'Anwaesserung erfolgt nur getaktet über Düsensystem und nie im Dauerstrahl.',
+      'Schützt vor Klumpenbildung und unkontrollierten Konzentrationsspitzen.',
     ],
   },
-  duesensystem: {
-    title: 'Duesensystem',
+  düsensystem: {
+    title: 'Düsensystem',
     short: 'DUESE',
     color: '#34c090',
     items: [
-      'Bespraeht den Feststoff gleichmaessig fuer kontrollierte Anwasserung.',
+      'Bespraeht den Feststoff gleichmaessig für kontrollierte Anwasserung.',
       'Definierte Tropfen-/Spruehcharakteristik verhindert Aufhaertungen.',
-      'Bei unruhigem Duesenbild: Druck und Vorfilter sofort pruefen.',
+      'Bei unruhigem Düsenbild: Druck und Vorfilter sofort prüfen.',
     ],
   },
   loesetank: {
@@ -56,7 +56,7 @@ const HOTSPOT_DATA = {
     items: [
       'Hier entsteht die Produktloesung aus angewassertem Feststoff.',
       'Unloesliche Nebenbestandteile setzen sich im Sedimentbereich ab.',
-      'Abgabe erfolgt erst nach Beruhigungs-/Ueberlaufphase.',
+      'Abgabe erfolgt erst nach Beruhigungs-/Überlaufphase.',
     ],
   },
   sorptionseinheit: {
@@ -84,9 +84,9 @@ const HOTSPOT_DATA = {
     short: 'PUMP',
     color: '#34b9ff',
     items: [
-      'Entnimmt Wasser fuer Duesensystem und Loeseprozess.',
-      'Stellt den benoetigten Betriebsdruck fuer gleichmaessige Anwasserung.',
-      'Trockenlaufschutz ueber Schwimmerschalter zwingend.',
+      'Entnimmt Wasser für Düsensystem und Loeseprozess.',
+      'Stellt den benoetigten Betriebsdruck für gleichmaessige Anwasserung.',
+      'Trockenlaufschutz über Schwimmerschalter zwingend.',
     ],
   },
   produktbehaelter: {
@@ -94,7 +94,7 @@ const HOTSPOT_DATA = {
     short: 'PROD',
     color: '#4ad097',
     items: [
-      'Puffer fuer rueckstandsarme Calciumhypochlorit-Produktloesung.',
+      'Puffer für rückstandsarme Calciumhypochlorit-Produktloesung.',
       'Membrandosierpumpe entnimmt von hier in Richtung Impfstelle.',
       'Fuellstand und Konzentration regelmaessig dokumentieren.',
     ],
@@ -105,8 +105,8 @@ const HOTSPOT_DATA = {
     color: '#f2b15b',
     items: [
       'Meldet Mindest- und Maximalfuellstand im Wassertank.',
-      'Sichert gegen Trockenlauf und Ueberfuellung.',
-      'Ist Freigabebedingung fuer Pumpe und Anwasserung.',
+      'Sichert gegen Trockenlauf und Überfuellung.',
+      'Ist Freigabebedingung für Pumpe und Anwasserung.',
     ],
   },
 };
@@ -114,9 +114,9 @@ const HOTSPOT_DATA = {
 const KENNDATEN = [
   { label: 'Wirkstoff', value: 'Calciumhypochlorit Ca(ClO)2 (fest)' },
   { label: 'Aktivchlor im Produkt', value: 'typisch 65 - 70 %' },
-  { label: 'Anwasserung', value: 'getaktet ueber Duesensystem' },
-  { label: 'Loesungsbildung', value: '2-Kammer-/Sedimentationsprinzip' },
-  { label: 'Dosierung', value: 'ueber Membrandosierpumpe' },
+  { label: 'Anwasserung', value: 'getaktet über Düsensystem' },
+  { label: 'Lösungsbildung', value: '2-Kammer-/Sedimentationsprinzip' },
+  { label: 'Dosierung', value: 'über Membrandosierpumpe' },
 ];
 
 const PROCESS_PHASES = [
@@ -124,25 +124,25 @@ const PROCESS_PHASES = [
     id: 'anwaessern',
     label: '1 Anwaessern',
     accent: '#34b9ff',
-    focus: ['tauchdruckpumpe', 'duesensystem', 'vorratsbehaelter'],
+    focus: ['tauchdruckpumpe', 'düsensystem', 'vorratsbehaelter'],
     detail: [
       'Pumpe entnimmt Wasser und baut gleichmaessigen Druck auf.',
-      'Duesen benetzen den Feststoff in kurzen, definierten Pulsen.',
-      'Ziel: vollstaendige Benetzung ohne Ueberflutung des Vorrats.',
+      'Düsen benetzen den Feststoff in kurzen, definierten Pulsen.',
+      'Ziel: vollstaendige Benetzung ohne Überflutung des Vorrats.',
     ],
     caution: 'Zu lange Anwasserung kann Verkrustungen und unruhige Konzentrationen verursachen.',
   },
   {
-    id: 'loesen',
-    label: '2 Loesen',
+    id: 'lösen',
+    label: '2 Lösen',
     accent: '#7a8fff',
     focus: ['vorratsbehaelter', 'schwenkantrieb', 'loesetank'],
     detail: [
       'Angewasserter Feststoff wird durch Schwenkimpulse gelockert.',
-      'Loesliche Anteile gehen in den Loesetank ueber.',
-      'Zielkonzentration wird ueber Zeitfenster reproduzierbar gehalten.',
+      'Loesliche Anteile gehen in den Loesetank über.',
+      'Zielkonzentration wird über Zeitfenster reproduzierbar gehalten.',
     ],
-    caution: 'Bei Brueckenbildung sinkt Loesungsleistung, deshalb Schwenkzyklen pruefen.',
+    caution: 'Bei Brückenbildung sinkt Lösungsleistung, deshalb Schwenkzyklen prüfen.',
   },
   {
     id: 'sedimentieren',
@@ -151,10 +151,10 @@ const PROCESS_PHASES = [
     focus: ['loesetank', 'sorptionseinheit', 'produktbehaelter'],
     detail: [
       'Im Loesetank setzen sich unloesliche Bestandteile ab.',
-      'Klare Phase wird ueber Ueberlauf/Abgang weitergefuehrt.',
+      'Klare Phase wird über Überlauf/Abgang weitergefuehrt.',
       'Optionale Sorption stabilisiert die Produktqualitaet.',
     ],
-    caution: 'Bei zu kurzer Beruhigungszeit gelangen Rueckstaende in die Produktstrecke.',
+    caution: 'Bei zu kurzer Beruhigungszeit gelangen Rückstaende in die Produktstrecke.',
   },
   {
     id: 'dosieren',
@@ -164,7 +164,7 @@ const PROCESS_PHASES = [
     detail: [
       'Produktloesung wird aus dem Produktbehaelter bedarfsgerecht entnommen.',
       'Steuerung koppelt Dosierung an Messwerte und Betriebsvorgaben.',
-      'Fuellstandssignale sichern Nachspeisung und Stoerabschaltung.',
+      'Fuellstandssignale sichern Nachspeisung und Störabschaltung.',
     ],
     caution: 'Dosierung nur bei stabilem pH-Fenster und freigegebenem Anlagenstatus.',
   },
@@ -175,7 +175,7 @@ const PHASE_FLOW_SEGMENTS = {
     [[-88, 90, 30], [-88, 32, 26], [-42, 20, 16], [14, -20, 8], [56, -34, 2]],
     [[56, -34, 2], [26, -40, 8], [8, -58, 8]],
   ],
-  loesen: [
+  lösen: [
     [[8, -58, 8], [12, -20, 18], [10, 6, 30], [8, 20, 42]],
     [[18, 78, 10], [16, 44, 18], [12, 22, 30]],
   ],
@@ -200,7 +200,7 @@ const BETRIEBSCHECKS = [
   { label: 'Freies Chlor (Becken)', value: '0,3 - 0,6 mg/L', ok: true },
   { label: 'pH-Fenster', value: '7,0 - 7,4', ok: true },
   { label: 'Anwasserung', value: 'pulsierend, nicht kontinuierlich', ok: true },
-  { label: 'Produktstrecke', value: 'klar, ohne sichtbare Rueckstaende', ok: true },
+  { label: 'Produktstrecke', value: 'klar, ohne sichtbare Rückstaende', ok: true },
 ];
 
 function renderCuboidFaces(project, config, xrayMode) {
@@ -413,7 +413,7 @@ function CalciumPlantCube3D({
         },
       },
       {
-        id: 'duesensystem',
+        id: 'düsensystem',
         center: [56, -34, 2],
         size: [76, 11, 10],
         colors: {
@@ -460,7 +460,7 @@ function CalciumPlantCube3D({
         width="100%"
         height={MODEL_HEIGHT}
         role="img"
-        aria-label="Bewegbares 3D-Wuerfelmodell der Calciumhypochlorid-Feststoff-Chloranlage"
+        aria-label="Bewegbares 3D-Würfelmodell der Calciumhypochlorid-Feststoff-Chloranlage"
         style={{ display: 'block', cursor: drag ? 'grabbing' : 'grab', touchAction: 'none' }}
         onMouseDown={onPointerDown}
         onMouseMove={onPointerMove}
@@ -574,7 +574,7 @@ function CalciumPlantCube3D({
 export default function CalciumHypochloriteDeepDiveView() {
   const [xrayMode, setXrayMode] = useState(false);
   const [showLabels, setShowLabels] = useState(true);
-  const [activeSpot, setActiveSpot] = useState('duesensystem');
+  const [activeSpot, setActiveSpot] = useState('düsensystem');
   const [activePhase, setActivePhase] = useState('anwaessern');
 
   const phase = PROCESS_PHASES.find((item) => item.id === activePhase) || PROCESS_PHASES[0];
@@ -603,9 +603,9 @@ export default function CalciumHypochloriteDeepDiveView() {
           <p className="text-xs font-mono tracking-widest" style={{ color: '#4a9eff' }}>
             DEEP DIVE PLUS - KOMPONENTEN + PROZESSLOGIK
           </p>
-          <h3 className="text-lg font-black text-white mt-0.5">Feststoff-Chloranlage: Calciumhypochlorid (3D Wuerfel)</h3>
+          <h3 className="text-lg font-black text-white mt-0.5">Feststoff-Chloranlage: Calciumhypochlorid (3D Würfel)</h3>
           <p className="text-xs font-mono mt-1" style={{ color: '#58789c' }}>
-            Anwassern - Loesen - Sedimentieren - Dosieren
+            Anwassern - Lösen - Sedimentieren - Dosieren
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -715,7 +715,7 @@ export default function CalciumHypochloriteDeepDiveView() {
               </div>
             ) : (
               <p className="text-xs mb-2" style={{ color: '#8ab0c0' }}>
-                Tippe einen Hotspot im 3D-Wuerfel an.
+                Tippe einen Hotspot im 3D-Würfel an.
               </p>
             )}
             <div className="grid grid-cols-2 gap-1.5">
@@ -758,15 +758,15 @@ export default function CalciumHypochloriteDeepDiveView() {
               PRUEFUNGSFRAGE
             </p>
             <p className="text-sm font-semibold mb-2" style={{ color: '#c0d8f0' }}>
-              Warum ist die getrennte Phase "Anwaessern + Loesen + Sedimentieren" in Feststoff-Chloranlagen wichtig?
+              Warum ist die getrennte Phase "Anwaessern + Lösen + Sedimentieren" in Feststoff-Chloranlagen wichtig?
             </p>
             <details>
               <summary className="text-xs cursor-pointer font-mono" style={{ color: '#4a9eff' }}>
                 Antwort einblenden
               </summary>
               <p className="text-sm mt-2 leading-relaxed" style={{ color: '#90b0d0' }}>
-                Die Trennung der Phasen sorgt fuer reproduzierbare Konzentration, kontrollierte Loesungsbildung und
-                Rueckstandsabtrennung vor der Dosierung. Dadurch bleibt die Dosierstrecke stabil und verstopfungsarm.
+                Die Trennung der Phasen sorgt für reproduzierbare Konzentration, kontrollierte Lösungsbildung und
+                Rückstandsabtrennung vor der Dosierung. Dadurch bleibt die Dosierstrecke stabil und verstopfungsarm.
               </p>
             </details>
           </div>

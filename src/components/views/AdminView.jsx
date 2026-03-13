@@ -143,7 +143,7 @@ const AdminView = ({
         </div>
 
         {questionReports.length === 0 ? (
-          <p className="text-gray-500 text-sm">Noch keine Rueckmeldungen zu Fragen vorhanden.</p>
+          <p className="text-gray-500 text-sm">Noch keine Rückmeldungen zu Fragen vorhanden.</p>
         ) : (
           <div className="space-y-3 max-h-[420px] overflow-y-auto">
             {questionReports

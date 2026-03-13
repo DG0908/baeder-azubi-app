@@ -4,25 +4,25 @@ export const KEYWORD_CHALLENGES = {
   org: [
     {
       type: 'keyword',
-      q: 'Nenne mindestens 4 Punkte, die vor Schichtbeginn fuer die Wasseraufsicht geprueft werden muessen.',
+      q: 'Nenne mindestens 4 Punkte, die vor Schichtbeginn für die Wasseraufsicht geprueft werden müssen.',
       keywordGroups: [
-        mkGroup('Rettungsfaehigkeit', ['rettungsfaehigkeit', 'rettungsschwimmnachweis']),
+        mkGroup('Rettungsfähigkeit', ['rettungsfähigkeit', 'rettungsschwimmnachweis']),
         mkGroup('Erste Hilfe', ['erste hilfe', 'ersthelfer', 'hlw']),
         mkGroup('Sichtkontrolle', ['sichtkontrolle', 'sichtkontakt', 'aufsichtsgang']),
         mkGroup('Kommunikation', ['funkgeraet', 'sprechfunk', 'kommunikation']),
         mkGroup('Notfallkette', ['notfallplan', 'meldekette', 'alarmplan'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Vor Schichtbeginn sollten mindestens Rettungsfaehigkeit, Erste-Hilfe-Status, Sicht-/Aufsichtsbereiche, Kommunikationsmittel und Notfallkette geprueft werden.'
+      answerGuide: 'Vor Schichtbeginn sollten mindestens Rettungsfähigkeit, Erste-Hilfe-Status, Sicht-/Aufsichtsbereiche, Kommunikationsmittel und Notfallkette geprueft werden.'
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Inhalte gehoeren in einen sicheren Oeffnungsrundgang im Bad?',
+      q: 'Welche 4 Inhalte gehören in einen sicheren Öffnungsrundgang im Bad?',
       keywordGroups: [
         mkGroup('Rutschgefahren', ['rutschgefahr', 'nassbereich', 'boden']),
         mkGroup('Rettungsgeraete', ['rettungsring', 'wurfleine', 'rettungsgeraet']),
         mkGroup('Fluchtwege', ['fluchtweg', 'notausgang', 'rettungsweg']),
-        mkGroup('Technikstatus', ['technik', 'stoerung', 'anlage']),
+        mkGroup('Technikstatus', ['technik', 'störung', 'anlage']),
         mkGroup('Beckenkontrolle', ['becken', 'wasserstand', 'sichttiefe'])
       ],
       minKeywordGroups: 4,
@@ -30,16 +30,16 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Aspekte, die bei der Dienstplanung im Badebetrieb zwingend beruecksichtigt werden muessen.',
+      q: 'Nenne 4 Aspekte, die bei der Dienstplanung im Badebetrieb zwingend berücksichtigt werden müssen.',
       keywordGroups: [
-        mkGroup('Qualifikation', ['qualifikation', 'rettungsfaehigkeit']),
+        mkGroup('Qualifikation', ['qualifikation', 'rettungsfähigkeit']),
         mkGroup('Arbeitszeitrecht', ['arbeitszeitgesetz', 'ruhezeit', 'schichtdauer']),
         mkGroup('Besucheraufkommen', ['besucherzahlen', 'stosszeiten', 'auslastung']),
         mkGroup('Urlaub/Abwesenheit', ['urlaub', 'krankheit', 'abwesenheit']),
         mkGroup('Mindestbesetzung', ['mindestbesetzung', 'personalstaerke'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Wichtig sind Qualifikation, gesetzliche Zeiten, Auslastung/Stosszeiten, Abwesenheiten und Mindestbesetzung.'
+      answerGuide: 'Wichtig sind Qualifikation, gesetzliche Zeiten, Auslastung/Stoßzeiten, Abwesenheiten und Mindestbesetzung.'
     },
     {
       type: 'keyword',
@@ -49,7 +49,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Hygieneregeln', ['duschen', 'hygiene', 'toiletten']),
         mkGroup('Aufsichtsanweisungen', ['aufsicht', 'anweisung', 'folge leisten']),
         mkGroup('Sanktionen', ['hausverweis', 'ausschluss', 'ordnungsmassnahme']),
-        mkGroup('Nutzungszeiten', ['oeffnungszeit', 'nutzungszeit', 'schliesszeit'])
+        mkGroup('Nutzungszeiten', ['öffnungszeit', 'nutzungszeit', 'schliesszeit'])
       ],
       minKeywordGroups: 4,
       answerGuide: 'Hausordnung: Sicherheits- und Hygieneregeln, Aufsichtsanweisungen, Nutzungszeiten und Sanktionen.'
@@ -59,58 +59,58 @@ export const KEYWORD_CHALLENGES = {
       q: 'Nenne 4 Eintraege, die im Betriebstagebuch regelmaessig dokumentiert werden sollten.',
       keywordGroups: [
         mkGroup('Wasserwerte', ['chlor', 'ph', 'redox']),
-        mkGroup('Filterbetrieb', ['filterspuelung', 'filter', 'rueckspuelung']),
-        mkGroup('Stoerungen', ['stoerung', 'reparatur', 'ausfall']),
+        mkGroup('Filterbetrieb', ['filterspuelung', 'filter', 'rückspuelung']),
+        mkGroup('Störungen', ['störung', 'reparatur', 'ausfall']),
         mkGroup('Chemikalien', ['chemikalienverbrauch', 'dosierung', 'nachfuellung']),
         mkGroup('Besonderheiten', ['zwischenfall', 'vorfall', 'abweichung'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Ins Betriebstagebuch gehoeren u.a. Wasserwerte, Filtervorgaenge, Stoerungen, Chemikalien und Besonderheiten.'
+      answerGuide: 'Ins Betriebstagebuch gehören u.a. Wasserwerte, Filtervorgaenge, Störungen, Chemikalien und Besonderheiten.'
     }
   ],
   tech: [
     {
       type: 'keyword',
-      q: 'Nenne mindestens 4 Punkte fuer eine stabile Beckenwasseraufbereitung.',
+      q: 'Nenne mindestens 4 Punkte für eine stabile Beckenwasseraufbereitung.',
       keywordGroups: [
         mkGroup('Freies Chlor', ['freies chlor', 'chlor']),
         mkGroup('pH-Wert', ['ph', 'ph wert']),
-        mkGroup('Umwaelzung', ['umwaelzung', 'umwaelzpumpe', 'volumenstrom']),
-        mkGroup('Filtration', ['filter', 'filtration', 'rueckspuelung']),
+        mkGroup('Umwälzung', ['umwälzung', 'umwälzpumpe', 'volumenstrom']),
+        mkGroup('Filtration', ['filter', 'filtration', 'rückspuelung']),
         mkGroup('Dokumentation', ['dokumentation', 'protokoll', 'betriebstagebuch'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Stabil wird es durch korrekten Chlor- und pH-Bereich, passende Umwaelzung, Filtration und saubere Dokumentation.'
+      answerGuide: 'Stabil wird es durch korrekten Chlor- und pH-Bereich, passende Umwälzung, Filtration und saubere Dokumentation.'
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Ursachen koennen zu auffaelligen Wasserwerten fuehren?',
+      q: 'Welche 4 Ursachen können zu auffaelligen Wasserwerten führen?',
       keywordGroups: [
         mkGroup('Besucherlast', ['hohe besucherzahl', 'auslastung', 'spitzenlast']),
         mkGroup('Dosierung', ['dosieranlage', 'dosierung', 'chemikalie']),
-        mkGroup('Filterproblem', ['filterproblem', 'verblockung', 'rueckspuelung']),
+        mkGroup('Filterproblem', ['filterproblem', 'verblockung', 'rückspuelung']),
         mkGroup('Messfehler', ['messfehler', 'kuvette', 'reagenz']),
-        mkGroup('Hydraulik', ['umwaelzung', 'hydraulik', 'stromung'])
+        mkGroup('Hydraulik', ['umwälzung', 'hydraulik', 'stromung'])
       ],
       minKeywordGroups: 4,
       answerGuide: 'Hauefig: hohe Last, Dosierfehler, Filterprobleme, Messfehler oder hydrau­lische Abweichungen.'
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Punkte, die bei der Rueckspuelung eines Filters zu beachten sind.',
+      q: 'Nenne 4 Punkte, die bei der Rückspuelung eines Filters zu beachten sind.',
       keywordGroups: [
         mkGroup('Betriebszustand', ['betrieb stoppen', 'anlage sichern', 'umschalten']),
-        mkGroup('Spueldauer', ['spueldauer', 'spuelzeit']),
-        mkGroup('Spuelmenge', ['spuelwasser', 'spuelmenge', 'spuelstrom']),
+        mkGroup('Spüldauer', ['spüldauer', 'spülzeit']),
+        mkGroup('Spülmenge', ['spülwasser', 'spülmenge', 'spülstrom']),
         mkGroup('Nachspuelen', ['nachspuelen', 'klarspuelen']),
         mkGroup('Dokumentation', ['dokumentation', 'eintrag', 'protokoll'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Sicherer Ablauf: umschalten/sichern, passende Spuelzeit/-menge, Nachspuelen und Dokumentation.'
+      answerGuide: 'Sicherer Ablauf: umschalten/sichern, passende Spülzeit/-menge, Nachspuelen und Dokumentation.'
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Aufgaben uebernimmt der Sorptionsfilter im Aufbereitungssystem?',
+      q: 'Welche 4 Aufgaben übernimmt der Sorptionsfilter im Aufbereitungssystem?',
       keywordGroups: [
         mkGroup('Ozonabbau', ['ozonabbau', 'ozon']),
         mkGroup('Organik', ['organische stoffe', 'adsorption', 'organik']),
@@ -123,16 +123,16 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Kernparameter, die bei der taeglichen technischen Betriebskontrolle geprueft werden.',
+      q: 'Nenne 4 Kernparameter, die bei der täglichen technischen Betriebskontrolle geprueft werden.',
       keywordGroups: [
         mkGroup('Desinfektion', ['chlor', 'desinfektion']),
         mkGroup('pH', ['ph', 'ph wert']),
         mkGroup('Temperatur', ['temperatur', 'wassertemperatur']),
-        mkGroup('Umwaelzung', ['umwaelzung', 'volumenstrom', 'pumpe']),
+        mkGroup('Umwälzung', ['umwälzung', 'volumenstrom', 'pumpe']),
         mkGroup('Anlagendruck', ['druck', 'differenzdruck', 'filterdruck'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Zur taeglichen Kontrolle gehoeren u.a. Chlor, pH, Temperatur, Umwaelzung und Druckwerte.'
+      answerGuide: 'Zur täglichen Kontrolle gehören u.a. Chlor, pH, Temperatur, Umwälzung und Druckwerte.'
     }
   ],
   swim: [
@@ -147,11 +147,11 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('HLW', ['wiederbelebung', 'hlw', 'herzdruckmassage'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Ablauf: Eigenschutz, sichere Rettung/Bergung, Atmung pruefen, Notruf 112, ggf. HLW.'
+      answerGuide: 'Ablauf: Eigenschutz, sichere Rettung/Bergung, Atmung prüfen, Notruf 112, ggf. HLW.'
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Punkte gehoeren zu einer sicheren Aufsicht am Sprungbereich?',
+      q: 'Welche 4 Punkte gehören zu einer sicheren Aufsicht am Sprungbereich?',
       keywordGroups: [
         mkGroup('Wassertiefe', ['wassertiefe', 'sprungbereich']),
         mkGroup('Freigabe', ['freigabe', 'einzelsprung', 'abstand']),
@@ -160,11 +160,11 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Notfallbereitschaft', ['rettungsgeraet', 'notfall'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Sprungaufsicht braucht Tiefenkontrolle, Freigabesystem/Abstaende, lueckenloses Sichtfeld und Notfallbereitschaft.'
+      answerGuide: 'Sprungaufsicht braucht Tiefenkontrolle, Freigabesystem/Abstaende, lückenloses Sichtfeld und Notfallbereitschaft.'
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Inhalte einer sauberen Einweisung fuer Schwimmanfaenger.',
+      q: 'Nenne 4 Inhalte einer sauberen Einweisung für Schwimmanfaenger.',
       keywordGroups: [
         mkGroup('Baderegeln', ['baderegel', 'verhalten']),
         mkGroup('Wassergewoehnung', ['wassergewoehnung', 'atmen ins wasser']),
@@ -177,7 +177,7 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Punkte sind fuer einen sicheren Start im Wettkampftraining wichtig?',
+      q: 'Welche 4 Punkte sind für einen sicheren Start im Wettkampftraining wichtig?',
       keywordGroups: [
         mkGroup('Startsignal', ['startsignal', 'kommando']),
         mkGroup('Abstand', ['abstand', 'einzeln starten']),
@@ -207,22 +207,22 @@ export const KEYWORD_CHALLENGES = {
       type: 'keyword',
       q: 'Nenne mindestens 4 Kernschritte der Reanimation bei Erwachsenen.',
       keywordGroups: [
-        mkGroup('Bewusstsein', ['bewusstsein', 'reaktion pruefen']),
-        mkGroup('Atmung', ['atmung pruefen', 'atemkontrolle']),
+        mkGroup('Bewusstsein', ['bewusstsein', 'reaktion prüfen']),
+        mkGroup('Atmung', ['atmung prüfen', 'atemkontrolle']),
         mkGroup('Notruf', ['notruf', '112']),
         mkGroup('Herzdruckmassage', ['herzdruckmassage', '30', 'kompression']),
         mkGroup('Beatmung/AED', ['beatmung', '2', 'aed', 'defibrillator'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Schema: Reaktion/Atmung pruefen, Notruf, 30:2-Reanimation und AED frueh einsetzen.'
+      answerGuide: 'Schema: Reaktion/Atmung prüfen, Notruf, 30:2-Reanimation und AED frueh einsetzen.'
     },
     {
       type: 'keyword',
       q: 'Welche 4 Punkte sind bei einer stabilen Seitenlage wichtig?',
       keywordGroups: [
         mkGroup('Atmung vorhanden', ['atmung', 'bewusstlos aber atmet']),
-        mkGroup('Koerperlage', ['seitenlage', 'stabile lage']),
-        mkGroup('Atemwege', ['atemwege frei', 'kopf ueberstrecken']),
+        mkGroup('Körperlage', ['seitenlage', 'stabile lage']),
+        mkGroup('Atemwege', ['atemwege frei', 'kopf überstrecken']),
         mkGroup('Kontrolle', ['regelmaessig kontrollieren', 'atmung beobachten']),
         mkGroup('Notruf', ['notruf', '112'])
       ],
@@ -244,7 +244,7 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Punkte gehoeren zu einer sauberen AED-Anwendung?',
+      q: 'Welche 4 Punkte gehören zu einer sauberen AED-Anwendung?',
       keywordGroups: [
         mkGroup('Geraet einschalten', ['aed einschalten', 'geraet einschalten']),
         mkGroup('Elektroden', ['elektroden', 'pads']),
@@ -257,22 +257,22 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Angaben fuer einen vernuenftigen Notruf aus dem Bad.',
+      q: 'Nenne 4 Angaben für einen vernuenftigen Notruf aus dem Bad.',
       keywordGroups: [
         mkGroup('Ort', ['wo', 'einsatzort', 'bad']),
         mkGroup('Was passiert', ['was ist passiert', 'notfallart']),
         mkGroup('Wie viele', ['wie viele verletzte', 'anzahl']),
-        mkGroup('Wer meldet', ['wer meldet', 'name', 'rueckrufnummer']),
-        mkGroup('Warten auf Rueckfragen', ['nicht auflegen', 'rueckfragen'])
+        mkGroup('Wer meldet', ['wer meldet', 'name', 'rückrufnummer']),
+        mkGroup('Warten auf Rückfragen', ['nicht auflegen', 'rückfragen'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Notruf: Ort, Ereignis, Anzahl Betroffene, Melderdaten und Leitung fuer Rueckfragen offen halten.'
+      answerGuide: 'Notruf: Ort, Ereignis, Anzahl Betroffene, Melderdaten und Leitung für Rückfragen offen halten.'
     }
   ],
   hygiene: [
     {
       type: 'keyword',
-      q: 'Nenne 4 Massnahmen, um Kreuzkontamination im Nassbereich zu vermeiden.',
+      q: 'Nenne 4 Maßnahmen, um Kreuzkontamination im Nassbereich zu vermeiden.',
       keywordGroups: [
         mkGroup('Bereichstrennung', ['bereichstrennung', 'getrennte utensilien']),
         mkGroup('Handschuhwechsel', ['handschuhwechsel', 'handschuhe wechseln']),
@@ -285,7 +285,7 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Punkte gehoeren zur taeglichen Hygienekontrolle im Badbetrieb?',
+      q: 'Welche 4 Punkte gehören zur täglichen Hygienekontrolle im Badbetrieb?',
       keywordGroups: [
         mkGroup('Wasserparameter', ['wasserparameter', 'chlor', 'ph']),
         mkGroup('Sichtkontrolle', ['sichtkontrolle', 'sauberkeit']),
@@ -294,7 +294,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Lueftung/Feuchte', ['lueftung', 'feuchtigkeit'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Taeglich: Parameter, Sicht-/Flaechenkontrollen, Reinigungsnachweise, Zwischenfaelle und Raumklima.'
+      answerGuide: 'Täglich: Parameter, Sicht-/Flaechenkontrollen, Reinigungsnachweise, Zwischenfaelle und Raumklima.'
     },
     {
       type: 'keyword',
@@ -302,7 +302,7 @@ export const KEYWORD_CHALLENGES = {
       keywordGroups: [
         mkGroup('Bereich sichern', ['bereich absperren', 'sichern']),
         mkGroup('Meldekette', ['meldekette', 'info an team']),
-        mkGroup('Massnahmenplan', ['massnahmenplan', 'desinfektion', 'wasserwechsel']),
+        mkGroup('Maßnahmenplan', ['maßnahmenplan', 'desinfektion', 'wasserwechsel']),
         mkGroup('Dokumentation', ['dokumentation', 'protokoll']),
         mkGroup('Freigabe', ['freigabe', 'wiedereroeffnung'])
       ],
@@ -311,7 +311,7 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Punkte sind fuer eine wirksame Flaechendesinfektion entscheidend?',
+      q: 'Welche 4 Punkte sind für eine wirksame Flaechendesinfektion entscheidend?',
       keywordGroups: [
         mkGroup('Vorreinigung', ['vorreinigung', 'schmutz entfernen']),
         mkGroup('Konzentration', ['konzentration', 'dosierung']),
@@ -324,7 +324,7 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Gaestehinweise, die aus hygienischer Sicht im Bad wichtig sind.',
+      q: 'Nenne 4 Gästehinweise, die aus hygienischer Sicht im Bad wichtig sind.',
       keywordGroups: [
         mkGroup('Duschen', ['duschen']),
         mkGroup('Toilettennutzung', ['toilette', 'wc']),
@@ -355,7 +355,7 @@ export const KEYWORD_CHALLENGES = {
       q: 'Welche 4 Aufgaben hat der Bundestag?',
       keywordGroups: [
         mkGroup('Gesetzgebung', ['gesetze', 'gesetzgebung']),
-        mkGroup('Kanzlerwahl', ['kanzler waehlen', 'bundeskanzler']),
+        mkGroup('Kanzlerwahl', ['kanzler wählen', 'bundeskanzler']),
         mkGroup('Kontrolle Regierung', ['regierung kontrollieren', 'kontrolle']),
         mkGroup('Haushalt', ['haushalt', 'budget']),
         mkGroup('Debatte', ['debatte', 'beratung'])
@@ -378,7 +378,7 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Versicherungen gehoeren zur gesetzlichen Sozialversicherung?',
+      q: 'Welche 4 Versicherungen gehören zur gesetzlichen Sozialversicherung?',
       keywordGroups: [
         mkGroup('Krankenversicherung', ['krankenversicherung']),
         mkGroup('Rentenversicherung', ['rentenversicherung']),
@@ -391,10 +391,10 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Bereiche, die zum betrieblichen Umweltschutz im Schwimmbad gehoeren.',
+      q: 'Nenne 4 Bereiche, die zum betrieblichen Umweltschutz im Schwimmbad gehören.',
       keywordGroups: [
-        mkGroup('Energie', ['energie', 'waermerueckgewinnung', 'led']),
-        mkGroup('Wasser', ['wasser sparen', 'regenwasser', 'umwaelzung']),
+        mkGroup('Energie', ['energie', 'wärmerueckgewinnung', 'led']),
+        mkGroup('Wasser', ['wasser', 'wasser sparen', 'regenwasser', 'umwälzung', 'wassermanagement']),
         mkGroup('Abfall', ['abfall', 'trennung', 'entsorgung']),
         mkGroup('Chemikalien', ['chemikalien', 'dosierung', 'sichere lagerung']),
         mkGroup('Dokumentation', ['dokumentation', 'nachweis'])
@@ -452,11 +452,11 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Vermittlung', ['vermitteln', 'konflikte'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Der Betriebsrat vertritt Beschaeftigteninteressen, wirkt mit, achtet auf Arbeitsbedingungen und wird bei personellen Massnahmen beteiligt.'
+      answerGuide: 'Der Betriebsrat vertritt Beschaeftigteninteressen, wirkt mit, achtet auf Arbeitsbedingungen und wird bei personellen Maßnahmen beteiligt.'
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Punkte gehoeren zur Tarifautonomie?',
+      q: 'Welche 4 Punkte gehören zur Tarifautonomie?',
       keywordGroups: [
         mkGroup('Gewerkschaften', ['gewerkschaft', 'gewerkschaften']),
         mkGroup('Arbeitgeberseite', ['arbeitgeberverband', 'arbeitgeberseite', 'arbeitgeber']),
@@ -469,7 +469,7 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Begriffe, die zu Brutto- und Nettolohn gehoeren.',
+      q: 'Nenne 4 Begriffe, die zu Brutto- und Nettolohn gehören.',
       keywordGroups: [
         mkGroup('Brutto', ['brutto', 'bruttolohn']),
         mkGroup('Netto', ['netto', 'nettolohn']),
@@ -478,7 +478,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Auszahlung', ['auszahlung', 'auszahlungsbetrag'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Zum Unterschied zwischen Brutto und Netto gehoeren Bruttolohn, Abzuege wie Steuern und Sozialbeitraege sowie der Auszahlungsbetrag.'
+      answerGuide: 'Zum Unterschied zwischen Brutto und Netto gehören Bruttolohn, Abzuege wie Steuern und Sozialbeitraege sowie der Auszahlungsbetrag.'
     },
     {
       type: 'keyword',
@@ -491,11 +491,11 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Zugang', ['zugang', 'zugegangen'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Wichtig sind Schriftform, Fristen, Besonderheiten in der Probezeit, ein moeglicher Grund und der nachweisbare Zugang.'
+      answerGuide: 'Wichtig sind Schriftform, Fristen, Besonderheiten in der Probezeit, ein möglicher Grund und der nachweisbare Zugang.'
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Elemente, die zu einem funktionierenden Sozialstaat gehoeren.',
+      q: 'Nenne 4 Elemente, die zu einem funktionierenden Sozialstaat gehören.',
       keywordGroups: [
         mkGroup('Krankenversicherung', ['krankenversicherung']),
         mkGroup('Rentenversicherung', ['rentenversicherung']),
@@ -504,11 +504,11 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Unterstuetzung', ['unterstuetzung', 'sozialhilfe', 'absicherung'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Ein Sozialstaat sichert Menschen ueber Versicherungen und Unterstuetzungssysteme gegen zentrale Lebensrisiken ab.'
+      answerGuide: 'Ein Sozialstaat sichert Menschen über Versicherungen und Unterstuetzungssysteme gegen zentrale Lebensrisiken ab.'
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Punkte sind fuer eine demokratische Gewaltenteilung wichtig?',
+      q: 'Welche 4 Punkte sind für eine demokratische Gewaltenteilung wichtig?',
       keywordGroups: [
         mkGroup('Legislative', ['legislative', 'gesetzgebung']),
         mkGroup('Exekutive', ['exekutive', 'regierung', 'verwaltung']),
@@ -523,55 +523,55 @@ export const KEYWORD_CHALLENGES = {
   math: [
     {
       type: 'keyword',
-      q: 'Nenne 4 Rechenschritte, um einen Dreisatz mit Eintrittspreisen sicher zu loesen.',
+      q: 'Nenne 4 Rechenschritte, um einen Dreisatz mit Eintrittspreisen sicher zu lösen.',
       keywordGroups: [
         mkGroup('Grundwert notieren', ['grundwert', 'ausgangswert', 'gegeben']),
-        mkGroup('Einheitswert bilden', ['einheitswert', 'pro stueck', 'durch teilen']),
+        mkGroup('Einheitswert bilden', ['einheitswert', 'pro stück', 'durch teilen']),
         mkGroup('Hochrechnen', ['hochrechnen', 'multiplizieren', 'zielmenge']),
-        mkGroup('Einheit pruefen', ['einheit', 'euro', 'kontrolle']),
-        mkGroup('Plausibilitaet', ['plausibel', 'schaetzen', 'gegenprobe'])
+        mkGroup('Einheit prüfen', ['einheit', 'euro', 'kontrolle']),
+        mkGroup('Plausibilitaet', ['plausibel', 'schätzen', 'gegenprobe'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Dreisatz: Ausgangsdaten notieren, Einheitswert berechnen, auf Zielmenge hochrechnen und Einheit/Plausibilitaet pruefen.'
+      answerGuide: 'Dreisatz: Ausgangsdaten notieren, Einheitswert berechnen, auf Zielmenge hochrechnen und Einheit/Plausibilitaet prüfen.'
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Groessen brauchst du fuer die Berechnung eines rechteckigen Beckenvolumens?',
+      q: 'Welche 4 Größen brauchst du für die Berechnung eines rechteckigen Beckenvolumens?',
       keywordGroups: [
-        mkGroup('Laenge', ['laenge']),
+        mkGroup('Länge', ['länge']),
         mkGroup('Breite', ['breite']),
         mkGroup('Tiefe', ['tiefe']),
-        mkGroup('Formel', ['volumen', 'laenge mal breite mal tiefe', 'l*b*t']),
+        mkGroup('Formel', ['volumen', 'länge mal breite mal tiefe', 'l*b*t']),
         mkGroup('Einheit', ['kubikmeter', 'm3'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Fuer Rechteckbecken: Laenge, Breite, Tiefe und die Formel V = L * B * T (Ergebnis in m3).'
+      answerGuide: 'Für Rechteckbecken: Länge, Breite, Tiefe und die Formel V = L * B * T (Ergebnis in m3).'
     },
     {
       type: 'keyword',
       q: 'Nenne 4 typische Kopfrechenstrategien, die im Badebetrieb helfen.',
       keywordGroups: [
-        mkGroup('Runden', ['runden', 'ueberschlag']),
+        mkGroup('Runden', ['runden', 'überschlag']),
         mkGroup('Aufteilen', ['aufteilen', 'zerlegen']),
         mkGroup('Prozent', ['prozent', '10 prozent', '1 prozent']),
         mkGroup('Einmaleins', ['einmaleins', 'multiplikation']),
-        mkGroup('Probe', ['gegenprobe', 'kontrolle', 'rueckrechnung'])
+        mkGroup('Probe', ['gegenprobe', 'kontrolle', 'rückrechnung'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Hilfreich sind Ueberschlag/Runden, Zerlegen, Prozent-Ankerwerte, sicheres Einmaleins und Gegenprobe.'
+      answerGuide: 'Hilfreich sind Überschlag/Runden, Zerlegen, Prozent-Ankerwerte, sicheres Einmaleins und Gegenprobe.'
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Schritte sind sinnvoll, wenn du eine Formel nach einer gesuchten Groesse umstellst?',
+      q: 'Welche 4 Schritte sind sinnvoll, wenn du eine Formel nach einer gesuchten Größe umstellst?',
       keywordGroups: [
         mkGroup('Gesuchte markieren', ['gesuchte', 'variable markieren', 'x']),
         mkGroup('Gleiche Operationen', ['beide seiten', 'gleichung', 'operation']),
         mkGroup('Freistellen', ['freistellen', 'isolieren']),
         mkGroup('Einsetzen', ['einsetzen', 'werte einsetzen']),
-        mkGroup('Ergebnis pruefen', ['probe', 'einheit', 'kontrollrechnung'])
+        mkGroup('Ergebnis prüfen', ['probe', 'einheit', 'kontrollrechnung'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Gesuchte Groesse markieren, mit gleichen Operationen freistellen, Werte einsetzen und per Probe/Einheit kontrollieren.'
+      answerGuide: 'Gesuchte Größe markieren, mit gleichen Operationen freistellen, Werte einsetzen und per Probe/Einheit kontrollieren.'
     },
     {
       type: 'keyword',
@@ -590,7 +590,7 @@ export const KEYWORD_CHALLENGES = {
   health: [
     {
       type: 'keyword',
-      q: 'Nenne 4 moegliche Anzeichen einer akuten Kreislaufproblematik bei Badegaesten.',
+      q: 'Nenne 4 mögliche Anzeichen einer akuten Kreislaufproblematik bei Badegaesten.',
       keywordGroups: [
         mkGroup('Schwindel', ['schwindel']),
         mkGroup('Blaesse/kalter Schweiss', ['blaesse', 'kalter schweiss']),
@@ -603,13 +603,13 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Massnahmen helfen bei der Vorbeugung von Hitzebelastung im Sommerbetrieb?',
+      q: 'Welche 4 Maßnahmen helfen bei der Vorbeugung von Hitzebelastung im Sommerbetrieb?',
       keywordGroups: [
-        mkGroup('Trinken', ['trinken', 'fluessigkeit']),
+        mkGroup('Trinken', ['trinken', 'flüssigkeit']),
         mkGroup('Sonnenschutz', ['sonnenschutz', 'schatten', 'kopfbedeckung']),
         mkGroup('Pausen', ['pausen', 'abkuehlung']),
         mkGroup('Arbeitsorganisation', ['arbeitsorganisation', 'schichtplanung']),
-        mkGroup('Fruehwarnzeichen', ['warnzeichen', 'hitzesymptome'])
+        mkGroup('Frühwarnzeichen', ['warnzeichen', 'hitzesymptome'])
       ],
       minKeywordGroups: 4,
       answerGuide: 'Vorbeugung: trinken, Sonnenschutz, Abkuehl-/Pausenmanagement, angepasste Schichtplanung und Symptombeobachtung.'
@@ -629,20 +629,20 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Faktoren sind fuer gesundes Rueckentraining im Wasser wichtig?',
+      q: 'Welche 4 Faktoren sind für gesundes Rückentraining im Wasser wichtig?',
       keywordGroups: [
-        mkGroup('Technik', ['technik', 'koerperhaltung']),
+        mkGroup('Technik', ['technik', 'körperhaltung']),
         mkGroup('Belastungssteuerung', ['belastung', 'intensitaet']),
         mkGroup('Regelmaessigkeit', ['regelmaessig', 'kontinuitaet']),
         mkGroup('Aufwaermen', ['aufwaermen', 'mobilisation']),
-        mkGroup('Schmerzbeachtung', ['schmerz', 'ueberlastung'])
+        mkGroup('Schmerzbeachtung', ['schmerz', 'überlastung'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Rueckentraining profitiert von sauberer Technik, dosierter Belastung, Regelmaessigkeit, Aufwaermen und Schmerzbeachtung.'
+      answerGuide: 'Rückentraining profitiert von sauberer Technik, dosierter Belastung, Regelmaessigkeit, Aufwaermen und Schmerzbeachtung.'
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Punkte fuer einen verantwortungsvollen Umgang mit gesundheitlich eingeschraenkten Badegaesten.',
+      q: 'Nenne 4 Punkte für einen verantwortungsvollen Umgang mit gesundheitlich eingeschraenkten Badegaesten.',
       keywordGroups: [
         mkGroup('Kommunikation', ['kommunikation', 'absprechen']),
         mkGroup('Aufsicht anpassen', ['aufsicht anpassen', 'individuell']),

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { supabase } from './supabase';
 import { useAuth } from './context/AuthContext';
@@ -255,28 +255,28 @@ export default function BaederApp() {
   const FLOCCULANT_PRODUCTS = [
     {
       id: 'pac_liquid_standard',
-      label: 'PAC fluessig (Aluminiumbasis)',
+      label: 'PAC flüssig (Aluminiumbasis)',
       base: 'aluminum',
       continuousDoseMlPerM3: 0.12,
       shockDoseMlPerM3: 0.22
     },
     {
       id: 'aluminum_sulfate_solution',
-      label: 'Aluminiumsulfat-Loesung',
+      label: 'Aluminiumsulfat-Lösung',
       base: 'aluminum',
       continuousDoseMlPerM3: 0.15,
       shockDoseMlPerM3: 0.28
     },
     {
       id: 'ferric_chloride_solution',
-      label: 'Eisen-III-chlorid-Loesung',
+      label: 'Eisen-III-chlorid-Lösung',
       base: 'iron',
       continuousDoseMlPerM3: 0.09,
       shockDoseMlPerM3: 0.18
     },
     {
       id: 'ferric_sulfate_solution',
-      label: 'Eisen-III-sulfat-Loesung',
+      label: 'Eisen-III-sulfat-Lösung',
       base: 'iron',
       continuousDoseMlPerM3: 0.11,
       shockDoseMlPerM3: 0.2
@@ -305,7 +305,7 @@ export default function BaederApp() {
         },
         {
           id: 'green_sk_4_0',
-          color: 'Gruen',
+          color: 'Grün',
           label: 'SK 4,0 mm',
           innerDiameterMm: 4.0,
           minMlH: 40,
@@ -350,7 +350,7 @@ export default function BaederApp() {
         },
         {
           id: 'green_sk_4_0',
-          color: 'Gruen',
+          color: 'Grün',
           label: 'SK 4,0 mm',
           innerDiameterMm: 4.0,
           minMlH: 40,
@@ -434,7 +434,7 @@ export default function BaederApp() {
     },
     {
       id: 'antichlor_solution_38',
-      label: 'Natriumthiosulfat Loesung (38%)',
+      label: 'Natriumthiosulfat Lösung (38%)',
       productType: 'liquid',
       neutralizationFactorKgPerKgActiveChlorine: 4.74,
       densityKgPerL: 1.3
@@ -979,7 +979,7 @@ export default function BaederApp() {
     showToast('Push-Benachrichtigungen aktiviert.', 'success');
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('Push aktiviert', {
-        body: 'Du erhaeltst jetzt Handy-Benachrichtigungen fuer neue Ereignisse.',
+        body: 'Du erhaeltst jetzt Handy-Benachrichtigungen für neue Ereignisse.',
         icon: '/icons/icon-192x192.png',
         badge: '/icons/icon-192x192.png',
         tag: 'push-enabled'
@@ -1116,6 +1116,9 @@ export default function BaederApp() {
   const normalizeKeywordText = (value) => String(value || '')
     .toLowerCase()
     .replace(/ß/g, 'ss')
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9\s]/g, ' ')
@@ -1127,17 +1130,30 @@ export default function BaederApp() {
   // The stem is added alongside the original so `includes(term)` matches either form.
   const getWordVariants = (normalizedWord) => {
     const variants = [normalizedWord];
+    const addVariant = (candidate) => {
+      if (candidate && !variants.includes(candidate)) {
+        variants.push(candidate);
+      }
+    };
+
+    addVariant(
+      normalizedWord
+        .replace(/ae/g, 'a')
+        .replace(/oe/g, 'o')
+        .replace(/ue/g, 'u')
+    );
+
     if (normalizedWord.endsWith('en') && normalizedWord.length - 2 >= 4) {
       const stem = normalizedWord.slice(0, -2);
-      variants.push(stem);
+      addVariant(stem);
       // Two-level strip: Chloriden → Chloride → Chlorid
       if (stem.endsWith('e') && stem.length - 1 >= 4) {
-        variants.push(stem.slice(0, -1));
+        addVariant(stem.slice(0, -1));
       }
     } else if (normalizedWord.endsWith('e') && normalizedWord.length - 1 >= 4) {
-      variants.push(normalizedWord.slice(0, -1));
+      addVariant(normalizedWord.slice(0, -1));
     } else if (normalizedWord.endsWith('s') && normalizedWord.length - 1 >= 4) {
-      variants.push(normalizedWord.slice(0, -1));
+      addVariant(normalizedWord.slice(0, -1));
     }
     return variants;
   };
@@ -1358,7 +1374,7 @@ export default function BaederApp() {
       'aus', 'ausserdem', 'bei', 'beim', 'bereits', 'dann', 'dabei', 'dadurch', 'damit',
       'darf', 'dass', 'dem', 'den', 'denen', 'denn', 'der', 'des', 'deshalb', 'dessen',
       'dies', 'diese', 'diesem', 'diesen', 'dieser', 'dieses', 'doch', 'dort', 'durch',
-      'eine', 'einem', 'einen', 'einer', 'eines', 'erst', 'etwas', 'falls', 'fuer',
+      'eine', 'einem', 'einen', 'einer', 'eines', 'erst', 'etwas', 'falls', 'für',
       'gegen', 'gibt', 'haben', 'hatte', 'hatten', 'hier', 'ihnen', 'ihre', 'ihrem',
       'ihren', 'ihrer', 'ihres', 'immer', 'innen', 'jede', 'jedem', 'jeden', 'jeder',
       'jedes', 'jetzt', 'jedoch', 'kann', 'kein', 'keine', 'keinem', 'keinen', 'keiner',
@@ -1736,7 +1752,7 @@ export default function BaederApp() {
       if (deltaMgPerL <= 0) {
         return {
           result: '0,00 kg',
-          explanation: `Aktueller Wert ${currentChlorine.toFixed(2).replace('.', ',')} mg/L liegt bereits auf/ueber Ziel ${targetChlorine.toFixed(2).replace('.', ',')} mg/L.`,
+          explanation: `Aktueller Wert ${currentChlorine.toFixed(2).replace('.', ',')} mg/L liegt bereits auf/über Ziel ${targetChlorine.toFixed(2).replace('.', ',')} mg/L.`,
           recommendation: 'Kein Aufchloren notwendig.'
         };
       }
@@ -1765,7 +1781,7 @@ export default function BaederApp() {
             ? `${productLitersPerHour.toFixed(3).replace('.', ',')} L/h`
             : `${productKgPerHour.toFixed(3).replace('.', ',')} kg/h`,
           explanation: `Aufchloren von ${currentChlorine.toFixed(2).replace('.', ',')} auf ${targetChlorine.toFixed(2).replace('.', ',')} mg/L bei ${poolVolume.toFixed(1).replace('.', ',')} m3.`,
-          details: `Produkt: ${product.label}. Aktivchlor-Bedarf: ${activeChlorineKg.toFixed(3).replace('.', ',')} kg. Gesamtmenge Produkt: ${productLiters !== null ? `${productLiters.toFixed(3).replace('.', ',')} L` : `${productMassKg.toFixed(3).replace('.', ',')} kg`} fuer ${plantRunHours.toFixed(1).replace('.', ',')} h Anlagenlaufzeit.`,
+          details: `Produkt: ${product.label}. Aktivchlor-Bedarf: ${activeChlorineKg.toFixed(3).replace('.', ',')} kg. Gesamtmenge Produkt: ${productLiters !== null ? `${productLiters.toFixed(3).replace('.', ',')} L` : `${productMassKg.toFixed(3).replace('.', ',')} kg`} für ${plantRunHours.toFixed(1).replace('.', ',')} h Anlagenlaufzeit.`,
           recommendation: `Chloranlage auf etwa ${productLitersPerHour !== null ? `${productLitersPerHour.toFixed(3).replace('.', ',')} L/h` : `${productKgPerHour.toFixed(3).replace('.', ',')} kg/h`} einstellen und nach 30-60 min nachmessen.`
         };
       }
@@ -1809,7 +1825,7 @@ export default function BaederApp() {
         : `${antichlorMassKg.toFixed(3).replace('.', ',')} kg`,
       explanation: `Runterchloren von ${currentChlorine.toFixed(2).replace('.', ',')} auf ${targetChlorine.toFixed(2).replace('.', ',')} mg/L bei ${poolVolume.toFixed(1).replace('.', ',')} m3.`,
       details: `Produkt: ${antichlorProduct.label}. Zu neutralisieren: ${activeChlorineToNeutralizeKg.toFixed(3).replace('.', ',')} kg Aktivchlor.`,
-      recommendation: `${antichlorLiters !== null ? `${antichlorLiters.toFixed(3).replace('.', ',')} L` : `${antichlorMassKg.toFixed(3).replace('.', ',')} kg`} Anti-Chlor in 2-3 Teilgaben dosieren, gut umwaelzen und nach 15-30 min erneut messen.`
+      recommendation: `${antichlorLiters !== null ? `${antichlorLiters.toFixed(3).replace('.', ',')} L` : `${antichlorMassKg.toFixed(3).replace('.', ',')} kg`} Anti-Chlor in 2-3 Teilgaben dosieren, gut umwälzen und nach 15-30 min erneut messen.`
     };
   };
 
@@ -2011,7 +2027,7 @@ export default function BaederApp() {
 
     return {
       result: `${formatLitersFromMl(concentrateTotalMl)} Konzentrat`,
-      explanation: `${ratioText} fuer ${roundedContainerCount} Behaelter a ${containerSize.toString().replace('.', ',')} ${containerUnit === 'l' ? 'L' : 'ml'}. ${modeText}.`,
+      explanation: `${ratioText} für ${roundedContainerCount} Behaelter a ${containerSize.toString().replace('.', ',')} ${containerUnit === 'l' ? 'L' : 'ml'}. ${modeText}.`,
       details: `Pro Behaelter: ${formatMl(concentratePerContainerMl)} Konzentrat + ${formatMl(waterPerContainerMl)} Wasser. Gesamtmenge: ${formatLitersFromMl(totalVolumeMl)}.`,
       recommendation: `Praxiswert je Behaelter (auf 5 ml gerundet): ${concentrateRoundedMl} ml Konzentrat + ${waterRoundedMl} ml Wasser. Gesamt Wasser: ${formatLitersFromMl(waterTotalMl)}.`
     };
@@ -2090,11 +2106,11 @@ export default function BaederApp() {
     if (pumpTypeId === 'manual') {
       recommendation = `Manuell pro Tag dosieren: ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L Produkt.`;
     } else if (!pumpModel || !maxMlH) {
-      recommendation = `Pumpenmodell oder Kapazitaet fehlt. Zielzufuhr: ${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h Dosierloesung.`;
+      recommendation = `Pumpenmodell oder Kapazität fehlt. Zielzufuhr: ${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h Dosierloesung.`;
     } else if (modelCapacityInfo.settingPercent > 100) {
       recommendation = `Pumpe zu klein: benoetigt ${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h, Modell schafft ${(maxMlH / 1000).toFixed(3).replace('.', ',')} L/h.`;
     } else if (modelCapacityInfo.minPercent > 0 && modelCapacityInfo.settingPercent < modelCapacityInfo.minPercent) {
-      recommendation = `Pumpe laeuft unter Mindestbereich. Stellwert waere ${modelCapacityInfo.settingPercent.toFixed(1).replace('.', ',')}%. Groessere Verduennung oder kleineres Modell nutzen.`;
+      recommendation = `Pumpe läuft unter Mindestbereich. Stellwert waere ${modelCapacityInfo.settingPercent.toFixed(1).replace('.', ',')}%. Größere Verduennung oder kleineres Modell nutzen.`;
     } else {
       recommendation = `Pumpeneinstellung: ca. ${modelCapacityInfo.settingPercent.toFixed(1).replace('.', ',')}% (${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h).`;
     }
@@ -2120,8 +2136,8 @@ export default function BaederApp() {
 
     return {
       result: `${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h Dosierloesung`,
-      explanation: `${product.label} (${product.base === 'aluminum' ? 'Aluminiumbasis' : 'Eisenbasis'}) bei ${circulationFlow.toFixed(1).replace('.', ',')} m3/h Umwaelzung. Berechnung fuer ${flocculationMode === 'shock' ? 'Stoss' : 'kontinuierliche'} Flockung.`,
-      details: `Produktbedarf: ${(pureProductMlH / 1000).toFixed(3).replace('.', ',')} L/h bzw. ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag. | Dosierloesung: ${(stockSolutionMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag bei ${stockConcentrationPercent.toFixed(1).replace('.', ',')}% Ansatz. | Modell: ${modelText}${hosePressureText}. | Becken-Umwaelzungen/Tag: ${turnoversPerDay.toFixed(2).replace('.', ',')}. | Ansatz fuer ${stockTankLiters.toFixed(1).replace('.', ',')} L: ${tankProductLiters.toFixed(2).replace('.', ',')} L Produkt + ${tankWaterLiters.toFixed(2).replace('.', ',')} L Wasser. | Tankreichweite: ${tankRuntimeHours ? `${tankRuntimeHours.toFixed(1).replace('.', ',')} h` : '-'}.`,
+      explanation: `${product.label} (${product.base === 'aluminum' ? 'Aluminiumbasis' : 'Eisenbasis'}) bei ${circulationFlow.toFixed(1).replace('.', ',')} m3/h Umwälzung. Berechnung für ${flocculationMode === 'shock' ? 'Stoss' : 'kontinuierliche'} Flockung.`,
+      details: `Produktbedarf: ${(pureProductMlH / 1000).toFixed(3).replace('.', ',')} L/h bzw. ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag. | Dosierloesung: ${(stockSolutionMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag bei ${stockConcentrationPercent.toFixed(1).replace('.', ',')}% Ansatz. | Modell: ${modelText}${hosePressureText}. | Becken-Umwälzungen/Tag: ${turnoversPerDay.toFixed(2).replace('.', ',')}. | Ansatz für ${stockTankLiters.toFixed(1).replace('.', ',')} L: ${tankProductLiters.toFixed(2).replace('.', ',')} L Produkt + ${tankWaterLiters.toFixed(2).replace('.', ',')} L Wasser. | Tankreichweite: ${tankRuntimeHours ? `${tankRuntimeHours.toFixed(1).replace('.', ',')} h` : '-'}.`,
       recommendation
     };
   };
@@ -2339,7 +2355,7 @@ export default function BaederApp() {
 
       if (error) throw error;
 
-      // Trigger Web-Push fuer Zielnutzer (wenn konfiguriert)
+      // Trigger Web-Push für Zielnutzer (wenn konfiguriert)
       try {
         await triggerWebPushNotification({
           supabase,
@@ -3782,8 +3798,8 @@ export default function BaederApp() {
     setQuestionReports((prev) => [payload, ...prev].slice(0, 500));
     showToast(
       savedRemotely
-        ? 'Frage gemeldet. Danke fuer dein Feedback!'
-        : 'Frage lokal gemeldet. Danke fuer dein Feedback!',
+        ? 'Frage gemeldet. Danke für dein Feedback!'
+        : 'Frage lokal gemeldet. Danke für dein Feedback!',
       'success'
     );
   };
@@ -5458,7 +5474,7 @@ export default function BaederApp() {
         await sendNotification(
           reviewerName,
           '📘 Berichtsheft wartet auf Freigabe',
-          `${normalizedAzubiName} hat das Berichtsheft fuer die Woche ab ${weekLabel} abgeschlossen und zur Freigabe eingereicht.`,
+          `${normalizedAzubiName} hat das Berichtsheft für die Woche ab ${weekLabel} abgeschlossen und zur Freigabe eingereicht.`,
           'berichtsheft_pending'
         );
       }
@@ -6147,12 +6163,12 @@ export default function BaederApp() {
       || (assignedUserId === user.id ? { id: user.id, name: user.name, role: user.role } : null);
 
     if (!assignedUserId || !assignedUser) {
-      return { success: false, error: 'Zielperson fuer den Trainingsplan konnte nicht gefunden werden.' };
+      return { success: false, error: 'Zielperson für den Trainingsplan konnte nicht gefunden werden.' };
     }
 
     const name = String(planInput.name || '').trim();
     if (!name) {
-      return { success: false, error: 'Bitte einen Namen fuer den Trainingsplan angeben.' };
+      return { success: false, error: 'Bitte einen Namen für den Trainingsplan angeben.' };
     }
 
     const category = normalizeSwimTrainingPlanCategory(planInput.category);
@@ -6200,13 +6216,13 @@ export default function BaederApp() {
         if (error.code === '42P01' || error.message?.includes('does not exist')) {
           return {
             success: false,
-            error: 'Die Tabelle swim_training_plans_custom fehlt noch in Supabase. Bitte Migration ausfuehren.'
+            error: 'Die Tabelle swim_training_plans_custom fehlt noch in Supabase. Bitte Migration ausführen.'
           };
         }
         if (error.code === '42703' && String(error.message || '').includes('units_json')) {
           return {
             success: false,
-            error: 'Die Spalte units_json fehlt in swim_training_plans_custom. Bitte das aktuelle Supabase-SQL fuer Trainingsplaene ausfuehren.'
+            error: 'Die Spalte units_json fehlt in swim_training_plans_custom. Bitte das aktuelle Supabase-SQL für Trainingsplaene ausführen.'
           };
         }
         throw error;
@@ -6807,7 +6823,7 @@ export default function BaederApp() {
           await sendNotification(
             reviewerName,
             '🏊 Neue Schwimmeinheit wartet auf Freigabe',
-            `${user.name} hat eine Schwimmeinheit eingetragen (${sessionDateLabel}, ${sessionData.distance}m, ${styleLabel}) und wartet auf Bestaetigung.`,
+            `${user.name} hat eine Schwimmeinheit eingetragen (${sessionDateLabel}, ${sessionData.distance}m, ${styleLabel}) und wartet auf Bestätigung.`,
             'swim_pending'
           );
         }

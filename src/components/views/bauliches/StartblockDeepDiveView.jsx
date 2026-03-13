@@ -9,7 +9,7 @@ const toPolyPoints = (pts) => pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(
 const HOTSPOTS = [
   { id: 'plattform', shortLabel: 'TOP', label: 'Startblock-Plattform', color: '#4a9eff', pos: [0, 18, -12] },
   { id: 'neigung', shortLabel: 'WINKEL', label: 'Neigung < 10 Grad', color: '#8dc1ff', pos: [16, 8, -18] },
-  { id: 'rueckenstartbuegel', shortLabel: 'BUEGEL', label: 'Haltebuegel Rueckenstart', color: '#34c090', pos: [-54, 42, 4] },
+  { id: 'rückenstartbuegel', shortLabel: 'BUEGEL', label: 'Haltebuegel Rückenstart', color: '#34c090', pos: [-54, 42, 4] },
   { id: 'standfuesse', shortLabel: 'STUETZE', label: 'Standfuesse / Tragwerk', color: '#ff7a7a', pos: [20, 56, 10] },
   { id: 'anschlagplatte', shortLabel: 'PLATTE', label: 'Anschlagplatte', color: '#a070ff', pos: [0, 74, 66] },
   { id: 'startwand', shortLabel: 'WAND', label: 'Startwand', color: '#f2b15b', pos: [0, 96, 84] },
@@ -25,7 +25,7 @@ const HOTSPOT_DATA = {
     color: '#4a9eff',
     items: [
       'Auftrittsflaeche mindestens 50 x 50 cm.',
-      'Trittsichere Oberflaeche fuer nassen Betrieb.',
+      'Trittsichere Oberflaeche für nassen Betrieb.',
       'Blockkante muss klar und rutscharm anlaufbar sein.',
     ],
   },
@@ -36,17 +36,17 @@ const HOTSPOT_DATA = {
     items: [
       'Neigung der Oberflaeche kleiner als 10 Grad.',
       'Leichte Vorneigung unterstuetzt den Startimpuls.',
-      'Zu steile Neigung erhoeht Rutsch- und Fehlstart-Risiko.',
+      'Zu steile Neigung erhöht Rutsch- und Fehlstart-Risiko.',
     ],
   },
-  rueckenstartbuegel: {
-    title: 'Haltebuegel fuer Rueckenstart',
+  rückenstartbuegel: {
+    title: 'Haltebuegel für Rückenstart',
     short: 'BUEGEL',
     color: '#34c090',
     items: [
-      'Buegel bieten Handgriff und Position fuer Rueckenstart.',
-      'Lage typischerweise etwa 30 bis 60 cm ueber Wasserspiegel.',
-      'Kanten und Radien muessen verletzungsarm ausgefuehrt sein.',
+      'Buegel bieten Handgriff und Position für Rückenstart.',
+      'Lage typischerweise etwa 30 bis 60 cm über Wasserspiegel.',
+      'Kanten und Radien müssen verletzungsarm ausgefuehrt sein.',
     ],
   },
   standfuesse: {
@@ -64,9 +64,9 @@ const HOTSPOT_DATA = {
     short: 'PLATTE',
     color: '#a070ff',
     items: [
-      'Sichtbarer Kontrast fuer Wende und Anschlag am Bahnende.',
-      'Definierte Flaeche als Orientierung fuer Schwimmer.',
-      'Bei Wettkampfbetrieb regelmaessig auf Beschaedigung pruefen.',
+      'Sichtbarer Kontrast für Wende und Anschlag am Bahnende.',
+      'Definierte Flaeche als Orientierung für Schwimmer.',
+      'Bei Wettkampfbetrieb regelmaessig auf Beschaedigung prüfen.',
     ],
   },
   startwand: {
@@ -74,8 +74,8 @@ const HOTSPOT_DATA = {
     short: 'WAND',
     color: '#f2b15b',
     items: [
-      'Tragende Geometrie fuer Startblock und Anschlagbereich.',
-      'Gleichmaessige Fliesenflaeche fuer visuelle Orientierung.',
+      'Tragende Geometrie für Startblock und Anschlagbereich.',
+      'Gleichmaessige Fliesenflaeche für visuelle Orientierung.',
       'Anschluss an Rinne und Beckenkante muss dicht und formstabil sein.',
     ],
   },
@@ -86,7 +86,7 @@ const HOTSPOT_DATA = {
     items: [
       'Rinnenkante nimmt Oberflaechenwasser am Beckenrand auf.',
       'Startwand und Rinnenbereich bilden baulich ein gemeinsames System.',
-      'Rost/Spalt und Abdeckung rutsch- sowie trittsicher ausfuehren.',
+      'Rost/Spalt und Abdeckung rutsch- sowie trittsicher ausführen.',
     ],
   },
   tMarkierung: {
@@ -105,8 +105,8 @@ const HOTSPOT_DATA = {
     color: '#34b9ff',
     items: [
       'Linienbreite typischerweise 0,25 m.',
-      'Mittelachse fuehrt den Schwimmer in die Wandzone.',
-      'Farbe und Kontrast muessen unter Wasser klar erkennbar bleiben.',
+      'Mittelachse führt den Schwimmer in die Wandzone.',
+      'Farbe und Kontrast müssen unter Wasser klar erkennbar bleiben.',
     ],
   },
 };
@@ -114,8 +114,8 @@ const HOTSPOT_DATA = {
 const KENNDATEN = [
   { label: 'Plattformflaeche', value: 'mindestens 50 x 50 cm' },
   { label: 'Neigung', value: '< 10 Grad' },
-  { label: 'Hoehe ueber Wsp', value: 'ca. 60 - 70 cm' },
-  { label: 'Rueckenstartbuegel', value: 'ca. 30 - 60 cm ueber Wsp' },
+  { label: 'Höhe über Wsp', value: 'ca. 60 - 70 cm' },
+  { label: 'Rückenstartbuegel', value: 'ca. 30 - 60 cm über Wsp' },
   { label: 'Bahnlinie', value: '0,25 m Breite' },
   { label: 'T-Markierung', value: 'ca. 2,0 m vor Wand' },
 ];
@@ -128,18 +128,18 @@ const DETAIL_MODES = [
     focus: ['plattform', 'neigung', 'standfuesse'],
     detail: [
       'Plattformflaeche muss ausreichend gross und trittsicher sein.',
-      'Neigungswinkel bleibt unter 10 Grad fuer kontrollierten Abdruck.',
+      'Neigungswinkel bleibt unter 10 Grad für kontrollierten Abdruck.',
       'Tragwerk muss dynamische Startlasten sicher aufnehmen.',
     ],
     caution: 'Lose oder schwingende Befestigungen sind sofort zu sperren.',
   },
   {
-    id: 'rueckenstart',
-    label: 'Rueckenstart',
+    id: 'rückenstart',
+    label: 'Rückenstart',
     accent: '#34c090',
-    focus: ['rueckenstartbuegel', 'anschlagplatte', 'startwand'],
+    focus: ['rückenstartbuegel', 'anschlagplatte', 'startwand'],
     detail: [
-      'Buegelposition muss fuer verschiedene Koerpergroessen erreichbar sein.',
+      'Buegelposition muss für verschiedene Körpergroessen erreichbar sein.',
       'Anschlagplatte bildet visuelle und taktile Orientierung.',
       'Startwandflaeche muss rutscharm und kontrastreich bleiben.',
     ],
@@ -151,7 +151,7 @@ const DETAIL_MODES = [
     accent: '#a070ff',
     focus: ['startwand', 'anschlagplatte', 'finnischeRinne'],
     detail: [
-      'Startwand und Rinnenkante muessen geometrisch sauber anschliessen.',
+      'Startwand und Rinnenkante müssen geometrisch sauber anschliessen.',
       'Anschlagzone darf keine ausstehenden Kanten besitzen.',
       'Rinnenbereich muss Wasser sicher erfassen ohne Stolperkanten.',
     ],
@@ -163,9 +163,9 @@ const DETAIL_MODES = [
     accent: '#d8a240',
     focus: ['bahnlinie', 'tMarkierung', 'anschlagplatte'],
     detail: [
-      'Bahnlinie fuehrt Richtung Startwand entlang der Beckenachse.',
+      'Bahnlinie führt Richtung Startwand entlang der Beckenachse.',
       'T-Markierung warnt rechtzeitig vor Wandkontakt bei Wende.',
-      'Kontrast und Masshaltigkeit sind fuer Wettkampforientierung zentral.',
+      'Kontrast und Masshaltigkeit sind für Wettkampforientierung zentral.',
     ],
     caution: 'Abgenutzte Markierungen sofort nachziehen bzw. erneuern.',
   },
@@ -177,7 +177,7 @@ const MODE_HIGHLIGHT_SEGMENTS = {
     [[-38, 18, -12], [-38, 70, 40]],
     [[28, 14, -16], [28, 6, -26]],
   ],
-  rueckenstart: [
+  rückenstart: [
     [[-60, 42, 4], [-40, 42, 4]],
     [[-50, 42, 4], [-50, 74, 66]],
     [[-24, 74, 66], [24, 74, 66]],
@@ -197,8 +197,8 @@ const MODE_HIGHLIGHT_SEGMENTS = {
 const BAULICHE_CHECKS = [
   { label: 'Plattform', value: '>= 50 x 50 cm, trittsicher', ok: true },
   { label: 'Neigung', value: '< 10 Grad', ok: true },
-  { label: 'Blockhoehe', value: 'ca. 60 - 70 cm ueber Wsp', ok: true },
-  { label: 'Rueckenstartbuegel', value: 'fest, sauber, griffsicher', ok: true },
+  { label: 'Blockhoehe', value: 'ca. 60 - 70 cm über Wsp', ok: true },
+  { label: 'Rückenstartbuegel', value: 'fest, sauber, griffsicher', ok: true },
 ];
 
 function renderCuboidFaces(project, config, xrayMode) {
@@ -405,7 +405,7 @@ function StartblockCube3D({ activeSpot, setActiveSpot, xrayMode, showLabels, act
         },
       },
       {
-        id: 'rueckenstart-left',
+        id: 'rückenstart-left',
         center: [-52, 42, 4],
         size: [24, 8, 8],
         colors: {
@@ -418,7 +418,7 @@ function StartblockCube3D({ activeSpot, setActiveSpot, xrayMode, showLabels, act
         },
       },
       {
-        id: 'rueckenstart-right',
+        id: 'rückenstart-right',
         center: [-20, 42, 6],
         size: [24, 8, 8],
         colors: {
@@ -638,7 +638,7 @@ export default function StartblockDeepDiveView() {
           </p>
           <h3 className="text-lg font-black text-white mt-0.5">Startblock und Startwand (Finnische Rinne)</h3>
           <p className="text-xs font-mono mt-1" style={{ color: '#58789c' }}>
-            Geometrie - Rueckenstart - Startwand - Bahnorientierung
+            Geometrie - Rückenstart - Startwand - Bahnorientierung
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -791,7 +791,7 @@ export default function StartblockDeepDiveView() {
               PRUEFUNGSFRAGE
             </p>
             <p className="text-sm font-semibold mb-2" style={{ color: '#c0d8f0' }}>
-              Warum sind T-Markierung und Bahnlinie fuer die Sicherheit am Start- und Wendeende so wichtig?
+              Warum sind T-Markierung und Bahnlinie für die Sicherheit am Start- und Wendeende so wichtig?
             </p>
             <details>
               <summary className="text-xs cursor-pointer font-mono" style={{ color: '#4a9eff' }}>

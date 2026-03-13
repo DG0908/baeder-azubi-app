@@ -12,9 +12,9 @@ export const WATER_CYCLE_STATIONS = [
     y: 338,
     summary: 'Hier findet der Badebetrieb statt. Organik, Schmutz und Keime werden eingetragen.',
     functionPoints: [
-      'Nutzwasser fuer Gaeste und Kurse.',
-      'Hydraulik verteilt Reinwasser ueber Einstroemdsen.',
-      'Ausgangspunkt fuer Oberflaechenabzug.'
+      'Nutzwasser für Gäste und Kurse.',
+      'Hydraulik verteilt Reinwasser über Einstroemdsen.',
+      'Ausgangspunkt für Oberflaechenabzug.'
     ],
     targetValues: [
       { label: 'Freies Chlor', value: '0.3 bis 0.6 mg/L' },
@@ -23,22 +23,22 @@ export const WATER_CYCLE_STATIONS = [
     ],
     faultSignals: [
       'Truebung, Geruch, Augenreizungen.',
-      'Totzonen durch schwache Umwaelzung.',
+      'Totzonen durch schwache Umwälzung.',
       'Belastungsspitzen in Stoesszeiten.'
     ],
     practiceChecks: [
-      'Sichttiefe und Oberflaeche regelmaessig pruefen.',
+      'Sichttiefe und Oberflaeche regelmaessig prüfen.',
       'Messwerte im Betriebstagebuch festhalten.',
       'Auffaelligkeiten direkt an Technik melden.'
     ]
   },
   {
-    id: 'ueberlauf',
-    title: 'Ueberlaufrinne',
-    shortLabel: 'Ueberlauf',
+    id: 'überlauf',
+    title: 'Überlaufrinne',
+    shortLabel: 'Überlauf',
     x: 345,
     y: 248,
-    summary: 'Nimmt Oberflaechenwasser auf und fuehrt es in den Schwallwasserbehaelter.',
+    summary: 'Nimmt Oberflaechenwasser auf und führt es in den Schwallwasserbehaelter.',
     functionPoints: [
       'Entfernt Oberflaechenschmutz schnell.',
       'Stabilisiert den Wasserstand im Becken.',
@@ -55,7 +55,7 @@ export const WATER_CYCLE_STATIONS = [
       'Geruchsbildung in Rinnenbereichen.'
     ],
     practiceChecks: [
-      'Rinne im Oeffnungsrundgang pruefen.',
+      'Rinne im Öffnungsrundgang prüfen.',
       'Ablagerungen frueh entfernen.',
       'Auffaellige Gerueche dokumentieren.'
     ]
@@ -66,11 +66,11 @@ export const WATER_CYCLE_STATIONS = [
     shortLabel: 'Speicher',
     x: 520,
     y: 218,
-    summary: 'Pufferbehaelter fuer Ueberlaufwasser und Frischwasserzugabe.',
+    summary: 'Pufferbehaelter für Überlaufwasser und Frischwasserzugabe.',
     functionPoints: [
       'Gleicht Lastschwankungen aus.',
-      'Stellt sichere Ansaugung fuer Pumpen bereit.',
-      'Mischpunkt fuer Ruecklauf- und Frischwasser.'
+      'Stellt sichere Ansaugung für Pumpen bereit.',
+      'Mischpunkt für Rücklauf- und Frischwasser.'
     ],
     targetValues: [
       { label: 'Fuellstand', value: 'innerhalb Betriebsfenster' },
@@ -80,7 +80,7 @@ export const WATER_CYCLE_STATIONS = [
     faultSignals: [
       'Zu niedriger Fuellstand verursacht Luftzug.',
       'Stagnation beguenstigt Keimbildung.',
-      'Schaum oder Geruch bei Ueberlastung.'
+      'Schaum oder Geruch bei Überlastung.'
     ],
     practiceChecks: [
       'Fuellstand je Schicht kontrollieren.',
@@ -90,15 +90,15 @@ export const WATER_CYCLE_STATIONS = [
   },
   {
     id: 'pumpe',
-    title: 'Umwaelzpumpe mit Vorfilter',
+    title: 'Umwälzpumpe mit Vorfilter',
     shortLabel: 'Pumpe',
     x: 532,
     y: 430,
-    summary: 'Foerdert Wasser durch die gesamte Aufbereitung. Vorfilter schuetzt Laufrad und Anlage.',
+    summary: 'Fördert Wasser durch die gesamte Aufbereitung. Vorfilter schützt Laufrad und Anlage.',
     functionPoints: [
       'Erzeugt den Volumenstrom Q.',
-      'Haupttreiber fuer hydraulische Versorgung.',
-      'Vorfilter haelt grobe Partikel zurueck.'
+      'Haupttreiber für hydraulische Versorgung.',
+      'Vorfilter haelt grobe Partikel zurück.'
     ],
     targetValues: [
       { label: 'Volumenstrom', value: 'entspricht Auslegung und Last' },
@@ -113,7 +113,7 @@ export const WATER_CYCLE_STATIONS = [
     practiceChecks: [
       'Sichtpruefung Vorfilter auf Luft und Schmutz.',
       'Pumpenwerte mit Sollblatt vergleichen.',
-      'Bei Auffaelligkeit Entlueftung und Dichtheit pruefen.'
+      'Bei Auffaelligkeit Entlueftung und Dichtheit prüfen.'
     ]
   },
   {
@@ -135,12 +135,12 @@ export const WATER_CYCLE_STATIONS = [
     ],
     faultSignals: [
       'Unterdosierung: Truebung steigt.',
-      'Ueberdosierung: Filter belastet.',
+      'Überdosierung: Filter belastet.',
       'Taktbetrieb statt gleichmaessiger Impfung.'
     ],
     practiceChecks: [
       'Kanisterstand und Dosierpumpe kontrollieren.',
-      'Dosierwerte in Relation zum Durchfluss pruefen.',
+      'Dosierwerte in Relation zum Durchfluss prüfen.',
       'Abweichungen direkt nachstellen und dokumentieren.'
     ]
   },
@@ -150,25 +150,25 @@ export const WATER_CYCLE_STATIONS = [
     shortLabel: 'Filter',
     x: 850,
     y: 430,
-    summary: 'Entfernt gebundene Partikel aus dem Wasser. Rueckspuelung regeneriert das Filterbett.',
+    summary: 'Entfernt gebundene Partikel aus dem Wasser. Rückspuelung regeneriert das Filterbett.',
     functionPoints: [
       'Mechanische Abscheidung im Filtermedium.',
       'Differenzdruck zeigt Belastungszustand.',
-      'Rueckspuelung transportiert Schmutz in den Kanal.'
+      'Rückspuelung transportiert Schmutz in den Kanal.'
     ],
     targetValues: [
       { label: 'Differenzdruck', value: 'im freigegebenen Sollfenster' },
       { label: 'Filterlaufzeit', value: 'nach Last und Anlagenplan' },
-      { label: 'Rueckspuelkriterium', value: 'druck- und qualitaetsbasiert' }
+      { label: 'Rückspuelkriterium', value: 'druck- und qualitaetsbasiert' }
     ],
     faultSignals: [
       'Steigender Differenzdruck.',
-      'Truebes Schauglas oder schlechter Spuelabwurf.',
+      'Truebes Schauglas oder schlechter Spülabwurf.',
       'Leistungseinbruch bei verblocktem Bett.'
     ],
     practiceChecks: [
       'Differenzdruck trendbasiert auswerten.',
-      'Rueckspuelung vollstaendig dokumentieren.',
+      'Rückspuelung vollstaendig dokumentieren.',
       'Bei Auffaelligkeit Filtermedium mitpruefen.'
     ]
   },
@@ -178,7 +178,7 @@ export const WATER_CYCLE_STATIONS = [
     shortLabel: 'Desinfektion',
     x: 1020,
     y: 320,
-    summary: 'Sorgt ueber Chlor-Dosierung fuer sichere Keimkontrolle im gesamten Kreislauf.',
+    summary: 'Sorgt über Chlor-Dosierung für sichere Keimkontrolle im gesamten Kreislauf.',
     functionPoints: [
       'Baut Desinfektionsreserve im Reinwasser auf.',
       'Arbeitet im Verbund mit pH-Management.',
@@ -186,8 +186,8 @@ export const WATER_CYCLE_STATIONS = [
     ],
     targetValues: [
       { label: 'Freies Chlor', value: '0.3 bis 0.6 mg/L' },
-      { label: 'Gebundenes Chlor', value: 'moeglichst niedrig halten' },
-      { label: 'Regelverhalten', value: 'stabil ohne Ueberdosierung' }
+      { label: 'Gebundenes Chlor', value: 'möglichst niedrig halten' },
+      { label: 'Regelverhalten', value: 'stabil ohne Überdosierung' }
     ],
     faultSignals: [
       'Zu niedrige Chlorreserve.',
@@ -196,13 +196,13 @@ export const WATER_CYCLE_STATIONS = [
     ],
     practiceChecks: [
       'Onlinewert mit Handmessung gegenpruefen.',
-      'Dosierstrecke auf Leckagen pruefen.',
-      'Stoerungen nach Ursache statt nur nach Wert beheben.'
+      'Dosierstrecke auf Leckagen prüfen.',
+      'Störungen nach Ursache statt nur nach Wert beheben.'
     ]
   },
   {
     id: 'heizung',
-    title: 'Waermetauscher',
+    title: 'Wärmetauscher',
     shortLabel: 'Heizung',
     x: 1020,
     y: 180,
@@ -215,45 +215,45 @@ export const WATER_CYCLE_STATIONS = [
     targetValues: [
       { label: 'Sportbecken', value: 'typisch 26 bis 28 C' },
       { label: 'Lehrbecken', value: 'typisch 30 bis 34 C' },
-      { label: 'Stabilitaet', value: 'moeglichst geringe Schwankungen' }
+      { label: 'Stabilitaet', value: 'möglichst geringe Schwankungen' }
     ],
     faultSignals: [
       'Temperaturspruenge bei Regelproblemen.',
-      'Zu hohe Ruecklauftemperaturen.',
+      'Zu hohe Rücklauftemperaturen.',
       'Unverhaeltnismaessiger Energieeinsatz.'
     ],
     practiceChecks: [
-      'Soll-Ist-Vergleich pro Becken fuehren.',
+      'Soll-Ist-Vergleich pro Becken führen.',
       'Lastzeiten mit Temperaturfuehrung abstimmen.',
       'Abweichungen zeitnah melden.'
     ]
   },
   {
-    id: 'ruecklauf',
-    title: 'Ruecklaufleitung',
-    shortLabel: 'Ruecklauf',
+    id: 'rücklauf',
+    title: 'Rücklaufleitung',
+    shortLabel: 'Rücklauf',
     x: 760,
     y: 158,
-    summary: 'Fuehrt Reinwasser aus Technik in das Becken zurueck und schliesst den Kreislauf.',
+    summary: 'Führt Reinwasser aus Technik in das Becken zurück und schliesst den Kreislauf.',
     functionPoints: [
-      'Verteilung ueber Einstroemdsen.',
+      'Verteilung über Einstroemdsen.',
       'Hydraulische Gleichmaessigkeit im Becken.',
       'Sicherer Abschluss der Aufbereitungskette.'
     ],
     targetValues: [
       { label: 'Stroemungsbild', value: 'gleichmaessig ohne Totzonen' },
-      { label: 'Leitungszustand', value: 'frei von Stoerstellen' },
+      { label: 'Leitungszustand', value: 'frei von Störstellen' },
       { label: 'Verteilung', value: 'zur Beckenhydraulik passend' }
     ],
     faultSignals: [
       'Ungleichmaessige Stroemung.',
-      'Luft in Ruecklaufleitungen.',
+      'Luft in Rücklaufleitungen.',
       'Druckverluste durch Teilverblockung.'
     ],
     practiceChecks: [
       'Oberflaechenbewegung regelmaessig beobachten.',
       'Hydraulik nach Umbauten neu validieren.',
-      'Rueckmeldungen aus Aufsicht und Technik abgleichen.'
+      'Rückmeldungen aus Aufsicht und Technik abgleichen.'
     ]
   }
 ];
@@ -262,15 +262,15 @@ export const WATER_CYCLE_STATION_ORDER = WATER_CYCLE_STATIONS.map((station) => s
 
 export const WATER_CYCLE_PIPES = [
   {
-    id: 'becken-ueberlauf',
+    id: 'becken-überlauf',
     from: 'becken',
-    to: 'ueberlauf',
+    to: 'überlauf',
     path: 'M 282 300 C 306 284 324 264 340 250',
     mode: 'normal'
   },
   {
-    id: 'ueberlauf-schwall',
-    from: 'ueberlauf',
+    id: 'überlauf-schwall',
+    from: 'überlauf',
     to: 'schwall',
     path: 'M 360 248 C 415 238 462 228 500 222',
     mode: 'normal'
@@ -313,15 +313,15 @@ export const WATER_CYCLE_PIPES = [
     mode: 'normal'
   },
   {
-    id: 'heizung-ruecklauf',
+    id: 'heizung-rücklauf',
     from: 'heizung',
-    to: 'ruecklauf',
+    to: 'rücklauf',
     path: 'M 996 180 C 930 160 846 152 782 156',
     mode: 'normal'
   },
   {
-    id: 'ruecklauf-becken',
-    from: 'ruecklauf',
+    id: 'rücklauf-becken',
+    from: 'rücklauf',
     to: 'becken',
     path: 'M 740 156 C 602 168 454 204 302 286',
     mode: 'normal'
@@ -361,17 +361,17 @@ export const WATER_CYCLE_PROFI_SPICKZETTEL = [
   {
     title: 'Betriebskontrolle',
     items: [
-      'Chlor und pH waehrend des Badebetriebs regelmaessig pruefen.',
+      'Chlor und pH waehrend des Badebetriebs regelmaessig prüfen.',
       'Differenzdruck und Filterlaufzeiten trendbasiert bewerten.',
-      'Abweichungen immer mit Ursache und Massnahme dokumentieren.'
+      'Abweichungen immer mit Ursache und Maßnahme dokumentieren.'
     ]
   },
   {
-    title: 'Rueckspuelung',
+    title: 'Rückspuelung',
     items: [
-      'Rueckspuelung nach Druckanstieg oder Qualitaetsanzeichen ausloesen.',
-      'Spuelrichtung gegen Betriebsrichtung, mit klarem Schmutzaustrag.',
-      'Nachspuelen und Rueckkehr in Normalbetrieb sauber absichern.'
+      'Rückspuelung nach Druckanstieg oder Qualitätsanzeichen ausloesen.',
+      'Spülrichtung gegen Betriebsrichtung, mit klarem Schmutzaustrag.',
+      'Nachspuelen und Rückkehr in Normalbetrieb sauber absichern.'
     ]
   }
 ];
@@ -379,5 +379,5 @@ export const WATER_CYCLE_PROFI_SPICKZETTEL = [
 export const WATER_CYCLE_FUTURE_MODULES = [
   { id: 'chlorgasraum', label: 'Chlorgasraum + PSA-Training', status: 'geplant' },
   { id: 'wirtschaft', label: 'Energie- und Kostenanalyse', status: 'geplant' },
-  { id: 'stoerfall', label: 'Stoerfall-Simulator Technikraum', status: 'geplant' }
+  { id: 'störfall', label: 'Störfall-Simulator Technikraum', status: 'geplant' }
 ];

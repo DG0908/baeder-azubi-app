@@ -14,8 +14,8 @@ const DETAIL_MODES = [
     focus: ['dosierkopf', 'dosiermembran', 'kopfscheibe', 'druckstueck'],
     detail: [
       'Die Dosiermembran bewegt das Medium im Dosierkopf pulsierend.',
-      'Beim Rueckhub saugt die Pumpe Chemikalie an, beim Druckhub wird sie ausgetragen.',
-      'Kopfscheibe und Druckstueck uebertragen den Hub reproduzierbar auf die Membran.',
+      'Beim Rückhub saugt die Pumpe Chemikalie an, beim Druckhub wird sie ausgetragen.',
+      'Kopfscheibe und Druckstueck übertragen den Hub reproduzierbar auf die Membran.',
     ],
     caution: 'Luftblasen oder verklebte Ventile veraendern die Dosiermenge sofort.',
   },
@@ -29,7 +29,7 @@ const DETAIL_MODES = [
       'Magnetachse und Druckstueck leiten diese Bewegung in Richtung Membran weiter.',
       'Aus Hubfrequenz und Hublaenge ergibt sich die resultierende Dosierleistung.',
     ],
-    caution: 'Thermische Ueberlast, Schwergang oder Fehlspannung stoeren die Hubbewegung.',
+    caution: 'Thermische Überlast, Schwergang oder Fehlspannung stören die Hubbewegung.',
   },
   {
     id: 'hubverstellung',
@@ -37,11 +37,11 @@ const DETAIL_MODES = [
     accent: '#a070ff',
     focus: ['hubdeckel', 'hubverstellbolzen', 'hubeinstellachse', 'hubeinstellknopf', 'klarsichtabdeckung'],
     detail: [
-      'Ueber Hubeinstellknopf und Hubeinstellachse wird die Hublaenge angepasst.',
+      'Über Hubeinstellknopf und Hubeinstellachse wird die Hublaenge angepasst.',
       'Der Hubverstellbolzen begrenzt mechanisch den Membranhub.',
-      'Die Klarsicht-Abdeckung schuetzt den Einstellbereich und laesst die Kontrolle zu.',
+      'Die Klarsicht-Abdeckung schützt den Einstellbereich und laesst die Kontrolle zu.',
     ],
-    caution: 'Verstellung nur entsprechend Betriebsanleitung und nie mit Gewalt am Anschlag durchfuehren.',
+    caution: 'Verstellung nur entsprechend Betriebsanleitung und nie mit Gewalt am Anschlag durchführen.',
   },
   {
     id: 'steuerung',
@@ -49,11 +49,11 @@ const DETAIL_MODES = [
     accent: '#ffaa40',
     focus: ['gehaeuse', 'magnetspule', 'hubeinstellknopf', 'klarsichtabdeckung'],
     detail: [
-      'Die Pumpe kann intern takten oder extern ueber potentialfreie Kontakte angesteuert werden.',
+      'Die Pumpe kann intern takten oder extern über potentialfreie Kontakte angesteuert werden.',
       'Typische Anwendung ist die messwertabhaengige Chemikaliendosierung in der Badewasseraufbereitung.',
       'Ein zweistufiger Niveauschalter zur Vorratsueberwachung kann zugaenglich eingebunden werden.',
     ],
-    caution: 'Falsche Signalzuordnung oder fehlende Niveauueberwachung fuehren schnell zu Unter- oder Ueberdosierung.',
+    caution: 'Falsche Signalzuordnung oder fehlende Niveauueberwachung führen schnell zu Unter- oder Überdosierung.',
   },
   {
     id: 'wartung',
@@ -79,7 +79,7 @@ const DOSING_PUMP_SPOTS = [
     position: [0.7, -0.7, 1.15],
     items: [
       'Traegt Antrieb, Elektronik und mechanische Einstellkomponenten.',
-      'Schuetzt Innenbauteile gegen Spritzwasser und chemische Umgebung.',
+      'Schützt Innenbauteile gegen Spritzwasser und chemische Umgebung.',
       'Risse, lose Verschraubungen oder Verzug beeinflussen die Betriebssicherheit.',
     ],
   },
@@ -106,7 +106,7 @@ const DOSING_PUMP_SPOTS = [
     items: [
       'Trennt Antriebsseite und Medium hermetisch voneinander.',
       'Verformt sich bei jedem Hub und erzeugt den Dosierstrom.',
-      'Materialermuedung oder chemische Schaeden fuehren zu Leistungsverlust oder Leckage.',
+      'Materialermuedung oder chemische Schäden führen zu Leistungsverlust oder Leckage.',
     ],
   },
   {
@@ -117,7 +117,7 @@ const DOSING_PUMP_SPOTS = [
     color: '#8cd7ff',
     position: [-1.45, -0.12, 0.78],
     items: [
-      'Stabile Uebertragung der Hubbewegung auf die Membran.',
+      'Stabile Übertragung der Hubbewegung auf die Membran.',
       'Sichert die Formgebung und Hubverteilung an der Stirnseite.',
       'Verschleiss oder lose Kopplung wirken sich direkt auf die Dosiermenge aus.',
     ],
@@ -131,8 +131,8 @@ const DOSING_PUMP_SPOTS = [
     position: [-0.4, -0.1, 0.18],
     items: [
       'Beweglicher Anker des Magnetantriebs.',
-      'Wird von der Spule impulsweise angezogen und ueber Feder/Mechanik rueckgestellt.',
-      'Hubweg und Taktung bestimmen die Foerdercharakteristik.',
+      'Wird von der Spule impulsweise angezogen und über Feder/Mechanik rückgestellt.',
+      'Hubweg und Taktung bestimmen die Fördercharakteristik.',
     ],
   },
   {
@@ -143,9 +143,9 @@ const DOSING_PUMP_SPOTS = [
     color: '#ffd166',
     position: [0.35, 0.55, 0.18],
     items: [
-      'Erzeugt das Magnetfeld fuer den Hub des Ankers.',
+      'Erzeugt das Magnetfeld für den Hub des Ankers.',
       'Elektrische Ansteuerung bestimmt die Hubfrequenz.',
-      'Waermeentwicklung und Wicklungszustand beeinflussen die Lebensdauer.',
+      'Wärmeentwicklung und Wicklungszustand beeinflussen die Lebensdauer.',
     ],
   },
   {
@@ -156,9 +156,9 @@ const DOSING_PUMP_SPOTS = [
     color: '#ff9f6c',
     position: [0.18, -0.1, 0.02],
     items: [
-      'Fuehrt die lineare Bewegung im Antriebsteil.',
-      'Sorgt fuer axialen Kraftfluss zwischen Magnethub und Druckstueck.',
-      'Verkantung oder Korrosion stoeren den ruhigen Lauf.',
+      'Führt die lineare Bewegung im Antriebsteil.',
+      'Sorgt für axialen Kraftfluss zwischen Magnethub und Druckstueck.',
+      'Verkantung oder Korrosion stören den ruhigen Lauf.',
     ],
   },
   {
@@ -169,8 +169,8 @@ const DOSING_PUMP_SPOTS = [
     color: '#f38c8c',
     position: [1.05, -0.1, 0.14],
     items: [
-      'Uebertraegt die Hubbewegung auf die nachfolgende Mechanik.',
-      'Ist zentral fuer reproduzierbare Kraftuebertragung.',
+      'Übertraegt die Hubbewegung auf die nachfolgende Mechanik.',
+      'Ist zentral für reproduzierbare Kraftuebertragung.',
       'Spiel oder Materialverschleiss verursachen ungenauen Dosierhub.',
     ],
   },
@@ -197,7 +197,7 @@ const DOSING_PUMP_SPOTS = [
     items: [
       'Begrenzt den maximalen Hub mechanisch.',
       'Verstellt den wirksamen Weg des Antriebs und damit die Dosiermenge.',
-      'Gleichmaessige, definierte Verstellung ist wichtig fuer Reproduzierbarkeit.',
+      'Gleichmaessige, definierte Verstellung ist wichtig für Reproduzierbarkeit.',
     ],
   },
   {
@@ -209,8 +209,8 @@ const DOSING_PUMP_SPOTS = [
     position: [2.3, -0.12, 0.22],
     items: [
       'Verbindet Einstellknopf und innere Verstellmechanik.',
-      'Uebertraegt die Drehbewegung in eine axiale Hubanpassung.',
-      'Axialspiel oder Beschädigung fuehren zu ungenauer Einstellung.',
+      'Übertraegt die Drehbewegung in eine axiale Hubanpassung.',
+      'Axialspiel oder Beschädigung führen zu ungenauer Einstellung.',
     ],
   },
   {
@@ -221,7 +221,7 @@ const DOSING_PUMP_SPOTS = [
     color: '#f5b7ff',
     position: [2.9, -0.12, 0.22],
     items: [
-      'Bedienelement fuer die Hublaengenverstellung.',
+      'Bedienelement für die Hublaengenverstellung.',
       'Wird je nach Pumpentyp in Prozent oder Skalenwerten eingestellt.',
       'Muss gut ablesbar und gegen versehentliche Verstellung geschuetzt sein.',
     ],
@@ -234,7 +234,7 @@ const DOSING_PUMP_SPOTS = [
     color: '#7de7ff',
     position: [2.25, 0.62, 1.15],
     items: [
-      'Transparente Schutzabdeckung fuer den Einstellbereich.',
+      'Transparente Schutzabdeckung für den Einstellbereich.',
       'Erlaubt Sichtkontrolle bei gleichzeitigem Schutz der Mechanik.',
       'Aufgeklappt ist Wartung und Verstellung einfacher, im Betrieb bleibt sie geschlossen.',
     ],
@@ -259,16 +259,16 @@ const DOSING_PUMP_CALLOUTS = {
 
 const KENNDATEN = [
   { label: 'Pumpentyp', value: 'Magnet-Membrandosierpumpe' },
-  { label: 'Foerderprinzip', value: 'pulsierender Membranhub' },
+  { label: 'Förderprinzip', value: 'pulsierender Membranhub' },
   { label: 'Antrieb', value: 'Magnetspule + Magnethub' },
-  { label: 'Hubverstellung', value: 'mechanisch ueber Knopf/Achse/Bolzen' },
+  { label: 'Hubverstellung', value: 'mechanisch über Knopf/Achse/Bolzen' },
   { label: 'Betriebsart', value: 'intern oder extern ansteuerbar' },
   { label: 'Option', value: 'Niveauueberwachung am Vorratsbehaelter' },
 ];
 
 const BETRIEBSCHECKS = [
   { label: 'Dosierkopf', value: 'luftfrei, dicht, ohne Kristalle', ok: true },
-  { label: 'Membran', value: 'elastisch, ohne Schaeden', ok: true },
+  { label: 'Membran', value: 'elastisch, ohne Schäden', ok: true },
   { label: 'Hubeinstellung', value: 'passend zum Sollwert', ok: true },
   { label: 'Signal/Niveau', value: 'Freigabe und Meldung plausibel', ok: true },
 ];
@@ -277,13 +277,13 @@ const ABBILDUNGSLESART = [
   { label: 'Dosierkopf links', value: 'Die Chemikalienseite sitzt links, wie in deiner Schnittdarstellung.' },
   { label: 'Magnetantrieb mittig', value: 'Spule, Magnethub und Achse bilden das dunkle Mittelteil.' },
   { label: 'Verstellung rechts', value: 'Deckel, Bolzen, Achse und Knopf liegen gesammelt auf der rechten Seite.' },
-  { label: 'Abdeckung oben rechts', value: 'Die Klarsichtabdeckung liegt ueber dem Verstellbereich.' },
+  { label: 'Abdeckung oben rechts', value: 'Die Klarsichtabdeckung liegt über dem Verstellbereich.' },
 ];
 
 const DOSIERPFAD = [
-  '1 Rueckhub: Medium wird links in den Dosierkopf eingesaugt',
+  '1 Rückhub: Medium wird links in den Dosierkopf eingesaugt',
   '2 Membranhub: Magnethub bewegt Druckstueck und Kopfscheibe',
-  '3 Druckhub: Medium wird ueber das Druckventil ausgetragen',
+  '3 Druckhub: Medium wird über das Druckventil ausgetragen',
   '4 Hublaenge rechts einstellen, Dosiermenge damit kalibrieren',
 ];
 
@@ -702,7 +702,7 @@ function DosingPumpPartDeepDive({ spot, xrayMode }) {
   if (!spot) return null;
 
   const role = spot.items[0] || 'Bauteilfunktion';
-  const inspection = spot.items[1] || 'Bauteilzustand gezielt pruefen.';
+  const inspection = spot.items[1] || 'Bauteilzustand gezielt prüfen.';
   const risk = spot.items[2] || 'Abweichungen frueh dokumentieren.';
 
   return (
@@ -1175,7 +1175,7 @@ export default function MembrandosierpumpeDeepDiveView() {
               className="w-full accent-cyan-500"
             />
             <p className="text-[11px] mt-2 leading-relaxed" style={{ color: '#6d8ca9' }}>
-              Der Slider simuliert die mechanische Hubverstellung. Groessere Hublaenge bedeutet groesseres Dosiervolumen pro Hub.
+              Der Slider simuliert die mechanische Hubverstellung. Größere Hublaenge bedeutet größeres Dosiervolumen pro Hub.
             </p>
           </div>
 

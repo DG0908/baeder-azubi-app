@@ -3,10 +3,10 @@ export const PRACTICAL_CHECKLISTS = [
     id: 'aufsicht-schichtstart',
     title: 'Schichtstart Wasseraufsicht',
     category: 'org',
-    description: 'Standardablauf vor Oeffnung des Bades.',
+    description: 'Standardablauf vor Öffnung des Bades.',
     items: [
-      'Beckenrundgang auf Sicht und Sicherheit durchfuehren',
-      'Rettungsgeraete auf Vollstaendigkeit und Erreichbarkeit pruefen',
+      'Beckenrundgang auf Sicht und Sicherheit durchführen',
+      'Rettungsgeraete auf Vollstaendigkeit und Erreichbarkeit prüfen',
       'Rutschflaechen, Treppen und Handlaeufe kontrollieren',
       'Notrufkette und Funkgeraete testen',
       'Betriebstagebuch-Eintrag zum Schichtbeginn machen'
@@ -16,13 +16,13 @@ export const PRACTICAL_CHECKLISTS = [
     id: 'wasseraufbereitung-kontrolle',
     title: 'Wasseraufbereitung Kontrolle',
     category: 'tech',
-    description: 'Taegliche Routine fuer stabile Wasserwerte.',
+    description: 'Tägliche Routine für stabile Wasserwerte.',
     items: [
       'Freies Chlor und gebundenes Chlor messen',
       'pH-Wert und Redoxwert dokumentieren',
-      'Filterdruck sowie Pumpenlauf pruefen',
-      'Dosieranlage auf Stoerungen kontrollieren',
-      'Abweichungen mit Massnahme im Betriebstagebuch eintragen'
+      'Filterdruck sowie Pumpenlauf prüfen',
+      'Dosieranlage auf Störungen kontrollieren',
+      'Abweichungen mit Maßnahme im Betriebstagebuch eintragen'
     ]
   },
   {
@@ -33,18 +33,18 @@ export const PRACTICAL_CHECKLISTS = [
     items: [
       'Gefahrenlage abschaetzen und Eigenschutz sichern',
       'Verunfallte Person aus Gefahrenbereich retten',
-      'Bewusstsein und Atmung sofort pruefen',
+      'Bewusstsein und Atmung sofort prüfen',
       'Notruf 112 mit W-Fragen absetzen',
-      'Erste-Hilfe-Massnahmen bis Uebergabe fortsetzen'
+      'Erste-Hilfe-Maßnahmen bis Übergabe fortsetzen'
     ]
   },
   {
     id: 'hygiene-rundgang',
     title: 'Hygiene Rundgang',
     category: 'hygiene',
-    description: 'Wichtige Punkte fuer einen hygienischen Badebetrieb.',
+    description: 'Wichtige Punkte für einen hygienischen Badebetrieb.',
     items: [
-      'Duschen, WC und Umkleiden auf Sauberkeit pruefen',
+      'Duschen, WC und Umkleiden auf Sauberkeit prüfen',
       'Reinigungsplan mit Uhrzeit und Verantwortlichen abgleichen',
       'Desinfektionsmittelbestand und Kennzeichnung kontrollieren',
       'Abfallbehaelter leeren und hygienisch nachreinigen',
@@ -55,9 +55,9 @@ export const PRACTICAL_CHECKLISTS = [
     id: 'schwimmunterricht-vorbereitung',
     title: 'Schwimmunterricht Vorbereitung',
     category: 'swim',
-    description: 'Vorbereitung fuer sichere und strukturierte Kurseinheiten.',
+    description: 'Vorbereitung für sichere und strukturierte Kurseinheiten.',
     items: [
-      'Lernziel und Uebungsablauf fuer die Einheit festlegen',
+      'Lernziel und Übungsablauf für die Einheit festlegen',
       'Hilfsmittel wie Bretter und Pull Buoys bereitstellen',
       'Gruppeneinteilung nach Leistungsstand kontrollieren',
       'Sicherheitsregeln zu Beginn der Einheit wiederholen',

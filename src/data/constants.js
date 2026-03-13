@@ -92,10 +92,10 @@ export const DEMO_ACCOUNTS = {};
 
 // Avatar-Auswahl fÃ¼r Profil
 export const AVATARS = [
-  // Start-Avatare (direkt verfuegbar)
+  // Start-Avatare (direkt verfügbar)
   { id: 'aqua_core', label: 'Delfin Scout', shortCode: 'AC', animalIcon: 'ðŸ¬', discipline: 'Allround', rarity: 'common', theme: 'ocean', shape: 'orb' },
   { id: 'flow_sentinel', label: 'Hai Waechter', shortCode: 'FS', animalIcon: 'ðŸ¦ˆ', discipline: 'Schwimmen & Rettung', rarity: 'common', theme: 'rescue', shape: 'ring' },
-  { id: 'tech_matrix', label: 'Oktopus Tueftler', shortCode: 'TM', animalIcon: 'ðŸ™', discipline: 'Baedertechnik', rarity: 'common', theme: 'tech', shape: 'prism' },
+  { id: 'tech_matrix', label: 'Oktopus Tueftler', shortCode: 'TM', animalIcon: 'ðŸ™', discipline: 'Bädertechnik', rarity: 'common', theme: 'tech', shape: 'prism' },
   { id: 'hygiene_aegis', label: 'Schildkroeten Hueter', shortCode: 'HA', animalIcon: 'ðŸ¢', discipline: 'Hygiene', rarity: 'common', theme: 'hygiene', shape: 'crystal' },
   { id: 'aid_beacon', label: 'Adler Retter', shortCode: 'AB', animalIcon: 'ðŸ¦…', discipline: 'Erste Hilfe', rarity: 'common', theme: 'firstaid', shape: 'diamond' },
 
@@ -117,7 +117,7 @@ export const AVATARS = [
     label: 'Fuchs Ingenieur',
     shortCode: 'TS',
     animalIcon: 'ðŸ¦Š',
-    discipline: 'Baedertechnik',
+    discipline: 'Bädertechnik',
     rarity: 'bronze',
     theme: 'tech',
     shape: 'prism',
@@ -134,7 +134,7 @@ export const AVATARS = [
     shortCode: 'AA',
     animalIcon: 'ðŸ¦‰',
     sunglasses: true,
-    discipline: 'Baedertechnik',
+    discipline: 'Bädertechnik',
     rarity: 'gold',
     theme: 'tech',
     shape: 'crown',

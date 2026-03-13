@@ -9,7 +9,7 @@ const GRADE_LABELS = {
   3: 'befriedigend',
   4: 'ausreichend',
   5: 'mangelhaft',
-  6: 'ungenuegend'
+  6: 'ungenügend'
 };
 
 export const PRACTICAL_SWIM_EXAMS = {
@@ -25,7 +25,7 @@ export const PRACTICAL_SWIM_EXAMS = {
         { maxSeconds: 618.0, grade: 3, noteLabel: 'befriedigend' },   // bis 10:18,0
         { maxSeconds: 720.0, grade: 4, noteLabel: 'ausreichend' },    // bis 12:00,0
         { maxSeconds: 840.0, grade: 5, noteLabel: 'mangelhaft' },     // bis 14:00,0
-        { maxSeconds: null, grade: 6, noteLabel: 'ungenuegend' }
+        { maxSeconds: null, grade: 6, noteLabel: 'ungenügend' }
       ]
     },
     {
@@ -39,7 +39,7 @@ export const PRACTICAL_SWIM_EXAMS = {
         { maxSeconds: 88.7, grade: 3, noteLabel: 'befriedigend' },    // bis 01:28,7
         { maxSeconds: 95.0, grade: 4, noteLabel: 'ausreichend' },     // bis 01:35,0
         { maxSeconds: 102.4, grade: 5, noteLabel: 'mangelhaft' },     // bis 01:42,4
-        { maxSeconds: null, grade: 6, noteLabel: 'ungenuegend' }
+        { maxSeconds: null, grade: 6, noteLabel: 'ungenügend' }
       ]
     },
     {
@@ -53,7 +53,7 @@ export const PRACTICAL_SWIM_EXAMS = {
         { maxSeconds: 79.8, grade: 3, noteLabel: 'befriedigend' },    // bis 01:19,8
         { maxSeconds: 90.0, grade: 4, noteLabel: 'ausreichend' },     // bis 01:30,0
         { maxSeconds: 102.0, grade: 5, noteLabel: 'mangelhaft' },     // bis 01:42,0
-        { maxSeconds: null, grade: 6, noteLabel: 'ungenuegend' }
+        { maxSeconds: null, grade: 6, noteLabel: 'ungenügend' }
       ]
     },
     {
@@ -103,7 +103,7 @@ export const PRACTICAL_SWIM_EXAMS = {
         { maxSeconds: 84.2, grade: 3, noteLabel: 'befriedigend' },
         { maxSeconds: 90.0, grade: 4, noteLabel: 'ausreichend' },
         { maxSeconds: 98.0, grade: 5, noteLabel: 'mangelhaft' },
-        { maxSeconds: null, grade: 6, noteLabel: 'ungenuegend' }
+        { maxSeconds: null, grade: 6, noteLabel: 'ungenügend' }
       ]
     },
     {
@@ -231,7 +231,7 @@ export const toNumericGrade = (value) => {
   if (note.includes('befriedigend') || note.includes('befried')) return 3;
   if (note.includes('ausreichend') || note.includes('ausreich')) return 4;
   if (note.includes('mangelhaft')) return 5;
-  if (note.includes('ungenuegend') || note.includes('ungenugend')) return 6;
+  if (note.includes('ungenügend') || note.includes('ungenugend')) return 6;
 
   return null;
 };
