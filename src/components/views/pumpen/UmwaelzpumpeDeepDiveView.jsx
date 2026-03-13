@@ -394,7 +394,7 @@ function PumpHotspots({ activeSpot, setActiveSpot, showLabels }) {
   );
 }
 
-function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode }) {
+function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, showLabels }) {
   const emphasized = (ids) => focusMatch(mode, ids);
 
   const shellMaterial = (baseColor, ids, opacity = 0.6) => ({
@@ -664,6 +664,7 @@ export default function UmwaelzpumpeDeepDiveView() {
                 activeSpot={activeSpot}
                 setActiveSpot={setActiveSpot}
                 mode={mode}
+                showLabels={showLabels}
               />
 
               <OrbitControls
