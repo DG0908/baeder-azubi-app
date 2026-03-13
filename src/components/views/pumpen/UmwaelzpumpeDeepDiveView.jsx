@@ -722,8 +722,8 @@ function PumpPartDeepDive({ spot, xrayMode }) {
   const risk = spot.items[2] || 'Abweichungen frueh dokumentieren.';
 
   return (
-    <div className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid #1a3a5a', background: '#061221' }}>
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" style={{ borderBottom: '1px solid #1a3a5a' }}>
+    <div className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid #2a5578', background: '#0b1c2e' }}>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" style={{ borderBottom: '1px solid #2a5578' }}>
         <div>
           <p className="text-[11px] font-mono tracking-widest" style={{ color: spot.color }}>
             EINZELTEIL-DEEP-DIVE
@@ -734,25 +734,26 @@ function PumpPartDeepDive({ spot, xrayMode }) {
         </div>
         <span
           className="rounded-full px-3 py-1 text-[11px] font-mono"
-          style={{ color: '#d7efff', border: `1px solid ${spot.color}`, background: '#081a2e' }}
+          style={{ color: '#d7efff', border: `1px solid ${spot.color}`, background: '#13304a' }}
         >
           isoliert betrachtet
         </span>
       </div>
 
       <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="p-4" style={{ borderRight: '1px solid #12314f' }}>
+        <div className="p-4" style={{ borderRight: '1px solid #234b6b' }}>
           <div style={{ width: '100%', height: PART_MODEL_HEIGHT, borderRadius: '0.8rem', overflow: 'hidden' }}>
             <Canvas camera={{ position: [0, 0.1, 4.6], fov: 34 }}>
-              <color attach="background" args={['#061221']} />
-              <ambientLight intensity={0.42} />
-              <hemisphereLight intensity={0.48} color="#a6d7ff" groundColor="#0b1626" />
-              <directionalLight position={[4, 5, 5]} intensity={1.1} color="#f4fbff" />
-              <pointLight position={[-3, 1.4, 2]} intensity={0.7} color={spot.color} />
+              <color attach="background" args={['#0b1c2e']} />
+              <ambientLight intensity={0.58} />
+              <hemisphereLight intensity={0.68} color="#b8e1ff" groundColor="#173149" />
+              <directionalLight position={[4, 5, 5]} intensity={1.28} color="#f7fcff" />
+              <pointLight position={[-3, 1.4, 2]} intensity={0.95} color={spot.color} />
+              <pointLight position={[2.6, 1.8, 2.8]} intensity={0.55} color="#8fd6ff" />
 
               <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.45, 0]}>
                 <circleGeometry args={[3.2, 48]} />
-                <meshStandardMaterial color="#081523" />
+                <meshStandardMaterial color="#12314a" />
               </mesh>
 
               <PumpPartFocusModel spot={spot} xrayMode={xrayMode} />
@@ -763,7 +764,7 @@ function PumpPartDeepDive({ spot, xrayMode }) {
         </div>
 
         <div className="p-4 space-y-2">
-          <div className="rounded-lg p-3" style={{ background: '#040d1a', border: `1px solid ${spot.color}` }}>
+          <div className="rounded-lg p-3" style={{ background: '#0c2135', border: `1px solid ${spot.color}` }}>
             <p className="text-[11px] font-mono tracking-widest mb-1" style={{ color: spot.color }}>
               BAUTEILROLLE
             </p>
@@ -771,7 +772,7 @@ function PumpPartDeepDive({ spot, xrayMode }) {
               {role}
             </p>
           </div>
-          <div className="rounded-lg p-3" style={{ background: '#040d1a', border: '1px solid #14324f' }}>
+          <div className="rounded-lg p-3" style={{ background: '#0c2135', border: '1px solid #234b6b' }}>
             <p className="text-[11px] font-mono tracking-widest mb-1" style={{ color: '#4a9eff' }}>
               PRUEFBLICK
             </p>
@@ -779,7 +780,7 @@ function PumpPartDeepDive({ spot, xrayMode }) {
               {inspection}
             </p>
           </div>
-          <div className="rounded-lg p-3" style={{ background: '#040d1a', border: '1px solid #4a2d2d' }}>
+          <div className="rounded-lg p-3" style={{ background: '#132430', border: '1px solid #6a3434' }}>
             <p className="text-[11px] font-mono tracking-widest mb-1" style={{ color: '#ff9d9d' }}>
               STOERUNGSFOLGE
             </p>
@@ -986,8 +987,8 @@ export default function UmwaelzpumpeDeepDiveView() {
   const activeSpotData = PUMP_SPOTS.find((item) => item.id === activeSpot) || null;
 
   const innerCardStyle = {
-    background: '#0a1a2e',
-    border: '1px solid #1a3a5a',
+    background: '#10273d',
+    border: '1px solid #2a5578',
     borderRadius: '0.9rem',
     padding: '0.9rem',
   };
@@ -1002,8 +1003,8 @@ export default function UmwaelzpumpeDeepDiveView() {
   };
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: '#040d1a', border: '1px solid #1a3a5a' }}>
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" style={{ borderBottom: '1px solid #1a3a5a' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: '#081727', border: '1px solid #2a5578' }}>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" style={{ borderBottom: '1px solid #2a5578' }}>
         <div>
           <p className="text-xs font-mono tracking-widest" style={{ color: '#4a9eff' }}>
             DEEP DIVE PLUS - UMWAELZPUMPE IM SCHNITTBILD
@@ -1070,7 +1071,7 @@ export default function UmwaelzpumpeDeepDiveView() {
       </div>
 
       <div className="grid xl:grid-cols-[1.6fr_1fr]" style={{ minHeight: 0 }}>
-        <div className="p-4 lg:p-5" style={{ borderRight: '1px solid #1a3a5a', background: '#030c18' }}>
+        <div className="p-4 lg:p-5" style={{ borderRight: '1px solid #2a5578', background: '#0a1c2d' }}>
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="text-[11px] font-mono tracking-widest" style={{ color: '#5f86a8' }}>
               DETAILMODUS
@@ -1097,7 +1098,7 @@ export default function UmwaelzpumpeDeepDiveView() {
               <div
                 key={item.label}
                 className="rounded-lg px-3 py-2"
-                style={{ background: '#071426', border: '1px solid #15314f' }}
+                style={{ background: '#11273c', border: '1px solid #234b6b' }}
               >
                 <p className="text-[10px] font-mono tracking-widest" style={{ color: '#4a9eff' }}>
                   {item.label}
@@ -1112,7 +1113,7 @@ export default function UmwaelzpumpeDeepDiveView() {
           <div style={{ width: '100%', height: MODEL_HEIGHT, borderRadius: '0.85rem', overflow: 'hidden', position: 'relative' }}>
             <div
               className="pointer-events-none absolute left-3 top-3 z-10 rounded-lg px-3 py-2"
-              style={{ background: 'rgba(6, 18, 30, 0.82)', border: '1px solid #1a3a5a' }}
+              style={{ background: 'rgba(16, 39, 61, 0.88)', border: '1px solid #2a5578' }}
             >
               <p className="text-[10px] font-mono tracking-[0.25em]" style={{ color: '#4a9eff' }}>
                 BUCHANSICHT
@@ -1128,16 +1129,17 @@ export default function UmwaelzpumpeDeepDiveView() {
               onPointerMissed={() => setActiveSpot(null)}
               camera={{ position: [0.2, 1.3, 11.8], fov: 43 }}
             >
-              <color attach="background" args={['#040d1a']} />
-              <ambientLight intensity={0.35} />
-              <hemisphereLight intensity={0.5} color="#9dd3ff" groundColor="#0c1f31" />
-              <directionalLight position={[5, 7, 5]} intensity={1.15} color="#d8ecff" />
-              <pointLight position={[-4, 2, 2]} intensity={0.72} color="#4a9eff" />
-              <pointLight position={[2, 1, -3]} intensity={0.58} color="#ffaa40" />
+              <color attach="background" args={['#081727']} />
+              <ambientLight intensity={0.54} />
+              <hemisphereLight intensity={0.7} color="#b4deff" groundColor="#16344d" />
+              <directionalLight position={[5, 7, 5]} intensity={1.32} color="#e4f3ff" />
+              <pointLight position={[-4, 2, 2]} intensity={0.95} color="#4a9eff" />
+              <pointLight position={[2, 1, -3]} intensity={0.76} color="#ffaa40" />
+              <pointLight position={[0, 3.2, 4]} intensity={0.5} color="#96e0ff" />
 
               <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.25, 0]} receiveShadow>
                 <planeGeometry args={[18, 18]} />
-                <meshStandardMaterial color="#071426" roughness={0.92} metalness={0.05} />
+                <meshStandardMaterial color="#12314a" roughness={0.92} metalness={0.05} />
               </mesh>
               <gridHelper args={[18, 34, '#12314f', '#0a1e32']} position={[0, -2.24, 0]} />
 
@@ -1210,7 +1212,7 @@ export default function UmwaelzpumpeDeepDiveView() {
             </p>
             <div className="space-y-2">
               {HYDRAULIKPFAD.map((step) => (
-                <div key={step} className="rounded-lg px-3 py-2" style={{ background: '#040d1a', border: '1px solid #14324f' }}>
+                <div key={step} className="rounded-lg px-3 py-2" style={{ background: '#0c2135', border: '1px solid #234b6b' }}>
                   <p className="text-xs leading-relaxed" style={{ color: '#9ec4de' }}>
                     {step}
                   </p>
@@ -1231,7 +1233,7 @@ export default function UmwaelzpumpeDeepDiveView() {
                   onClick={() => setActiveSpot(spot.id)}
                   className="w-full rounded-lg px-3 py-2 text-left"
                   style={{
-                    background: activeSpot === spot.id ? '#10253e' : '#040d1a',
+                    background: activeSpot === spot.id ? '#163652' : '#0c2135',
                     border: `1px solid ${activeSpot === spot.id ? spot.color : '#14324f'}`,
                   }}
                 >
@@ -1251,7 +1253,7 @@ export default function UmwaelzpumpeDeepDiveView() {
               HOTSPOT-FUNKTION
             </p>
             {activeSpotData ? (
-              <div className="rounded-lg p-3 mb-2" style={{ background: '#040d1a', border: `1px solid ${activeSpotData.color}` }}>
+              <div className="rounded-lg p-3 mb-2" style={{ background: '#0c2135', border: `1px solid ${activeSpotData.color}` }}>
                 <p className="text-xs font-mono font-bold mb-2" style={{ color: activeSpotData.color }}>
                   {activeSpotData.number} {activeSpotData.label}
                 </p>
@@ -1274,7 +1276,7 @@ export default function UmwaelzpumpeDeepDiveView() {
                   onClick={() => setActiveSpot(spot.id)}
                   className="text-left rounded-md px-2.5 py-1.5 text-xs font-semibold"
                   style={{
-                    background: activeSpot === spot.id ? '#10253e' : '#071426',
+                    background: activeSpot === spot.id ? '#163652' : '#11273c',
                     color: activeSpot === spot.id ? '#d3ebff' : '#86a7c1',
                     border: `1px solid ${activeSpot === spot.id ? spot.color : '#1a3a5a'}`,
                   }}
@@ -1291,7 +1293,7 @@ export default function UmwaelzpumpeDeepDiveView() {
             </p>
             <div className="grid grid-cols-2 gap-2 text-xs">
               {BETRIEBSCHECKS.map((check) => (
-                <div key={check.label} className="rounded-lg p-2" style={{ background: '#040d1a', border: `1px solid ${check.ok ? '#1a4030' : '#4a1a1a'}` }}>
+                <div key={check.label} className="rounded-lg p-2" style={{ background: '#0c2135', border: `1px solid ${check.ok ? '#2b6a52' : '#6a3434'}` }}>
                   <div style={{ color: '#456080' }}>{check.label}</div>
                   <div className="font-mono font-bold" style={{ color: check.ok ? '#34c090' : '#d04040' }}>
                     {check.value}
@@ -1301,7 +1303,7 @@ export default function UmwaelzpumpeDeepDiveView() {
             </div>
           </div>
 
-          <div style={{ ...innerCardStyle, background: '#0a2038', border: '1px solid #1a5060' }}>
+          <div style={{ ...innerCardStyle, background: '#163652', border: '1px solid #2c6f84' }}>
             <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#34c090' }}>
               PRUEFUNGSFRAGE
             </p>
