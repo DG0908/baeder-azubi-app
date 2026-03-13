@@ -1061,7 +1061,7 @@ export default function MembrandosierpumpeDeepDiveView() {
               key={viewVersion}
               dpr={[1, 1.8]}
               onPointerMissed={() => setActiveSpot(null)}
-              camera={{ position: [0.22, 0.12, 9.8], fov: 40 }}
+              camera={{ position: [0.28, 0.02, 11.2], fov: 44 }}
             >
               <color attach="background" args={['#040d1a']} />
               <ambientLight intensity={0.34} />
@@ -1089,13 +1089,13 @@ export default function MembrandosierpumpeDeepDiveView() {
 
               <OrbitControls
                 enablePan={false}
-                minDistance={4.8}
-                maxDistance={10.5}
+                minDistance={5.4}
+                maxDistance={13.2}
                 minPolarAngle={Math.PI * 0.16}
                 maxPolarAngle={Math.PI * 0.76}
                 minAzimuthAngle={-0.58}
                 maxAzimuthAngle={0.42}
-                target={[0, -0.1, 0]}
+                target={[0, -0.18, 0]}
                 autoRotate={!activeSpot}
                 autoRotateSpeed={0.12}
               />
