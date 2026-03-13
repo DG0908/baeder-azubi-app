@@ -106,7 +106,7 @@ const FlashcardsView = ({
     {/* Add Flashcard Form */}
     <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg mb-6`}>
       <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-        ÃƒÂ¢Ã…Â¾Ã¢â‚¬Â¢ Neue Karteikarte erstellen
+        Neue Karteikarte erstellen
       </h3>
       <div className="space-y-3">
         <select
@@ -138,7 +138,7 @@ const FlashcardsView = ({
 
         <div>
           <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-            RÃƒÆ’Ã‚Â¼ckseite (Antwort):
+            Rueckseite (Antwort):
           </label>
           <textarea
             value={newFlashcardBack}
@@ -154,7 +154,7 @@ const FlashcardsView = ({
         <button
           onClick={async () => {
             if (!newFlashcardFront.trim() || !newFlashcardBack.trim()) {
-              alert('Bitte Vorder- und RÃƒÆ’Ã‚Â¼ckseite ausfÃƒÆ’Ã‚Â¼llen!');
+              alert('Bitte Vorder- und Rueckseite ausfuellen!');
               return;
             }
 
@@ -162,7 +162,7 @@ const FlashcardsView = ({
             if (!moderateContent(newFlashcardFront, 'Vorderseite')) {
               return;
             }
-            if (!moderateContent(newFlashcardBack, 'RÃƒÆ’Ã‚Â¼ckseite')) {
+            if (!moderateContent(newFlashcardBack, 'Rueckseite')) {
               return;
             }
 
@@ -193,10 +193,10 @@ const FlashcardsView = ({
 
               if (flashcard.approved) {
                 setUserFlashcards([...userFlashcards, flashcard]);
-                alert('Karteikarte hinzugefÃƒÆ’Ã‚Â¼gt! ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â´');
+                alert('Karteikarte hinzugefuegt!');
               } else {
                 setPendingFlashcards([...pendingFlashcards, flashcard]);
-                alert('Karteikarte eingereicht! Sie wird nach PrÃƒÆ’Ã‚Â¼fung freigeschaltet. ÃƒÂ¢Ã‚ÂÃ‚Â³');
+                alert('Karteikarte eingereicht! Sie wird nach Pruefung freigeschaltet.');
               }
 
               void queueXpAward('flashcardCreation', XP_REWARDS.FLASHCARD_CREATE, {
@@ -221,7 +221,7 @@ const FlashcardsView = ({
 
         {!user.permissions.canApproveQuestions && (
           <p className={`text-sm text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¹ÃƒÂ¯Ã‚Â¸Ã‚Â Deine Karteikarte wird nach PrÃƒÆ’Ã‚Â¼fung durch einen Trainer freigeschaltet
+            Deine Karteikarte wird nach Pruefung durch einen Trainer freigeschaltet
           </p>
         )}
       </div>
@@ -231,7 +231,7 @@ const FlashcardsView = ({
     <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg mb-6`}>
       <div className="flex justify-between items-center mb-4">
         <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â´ Karteikarten
+          Karteikarten
         </h2>
         <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
           {whoAmIFlashcardMode
@@ -348,14 +348,14 @@ const FlashcardsView = ({
         <div className={`${darkMode ? 'bg-purple-900/50' : 'bg-purple-100'} rounded-lg p-4 mb-4`}>
           <div className="flex items-center justify-between mb-2">
             <h4 className={`font-bold ${darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
-              ÃƒÂ°Ã…Â¸Ã‚Â§Ã‚Â  Spaced Repetition Modus
+              Spaced Repetition Modus
             </h4>
             <span className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-              {dueCards.length} Karten fÃƒÆ’Ã‚Â¤llig
+              {dueCards.length} Karten faellig
             </span>
           </div>
           <p className={`text-sm ${darkMode ? 'text-purple-400' : 'text-purple-700'}`}>
-            Beantworte mit "Gewusst" oder "Nicht gewusst". Karten die du nicht wusstest kommen frÃƒÆ’Ã‚Â¼her wieder.
+            Beantworte mit "Gewusst" oder "Nicht gewusst". Karten, die du nicht wusstest, kommen frueher wieder.
           </p>
           <div className="flex gap-2 mt-3 flex-wrap">
             {[1, 2, 3, 4, 5, 6].map(level => (
@@ -370,7 +370,7 @@ const FlashcardsView = ({
         </div>
       )}
 
-      {/* Kategorien mit fÃƒÆ’Ã‚Â¤lligen Karten ÃƒÆ’Ã…â€œbersicht */}
+      {/* Kategorien mit faelligen Karten Uebersicht */}
       {spacedRepetitionMode && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
           {CATEGORIES.map(cat => {
@@ -458,7 +458,7 @@ const FlashcardsView = ({
                 {getLevelLabel(currentFlashcard.spacedData.level)}
               </span>
               <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {currentFlashcard.spacedData.reviewCount || 0}x wiederholt
+                - {currentFlashcard.spacedData.reviewCount || 0}x wiederholt
               </span>
             </div>
           </div>
@@ -645,7 +645,7 @@ const FlashcardsView = ({
                 const newLevel = updateCardSpacedData(currentFlashcard, newQuestionCategory, false);
                 playSound('wrong');
 
-                // NÃƒÆ’Ã‚Â¤chste Karte oder fertig
+                // Naechste Karte oder fertig
                 if (flashcardIndex < flashcards.length - 1) {
                   const nextIdx = flashcardIndex + 1;
                   setFlashcardIndex(nextIdx);
@@ -670,14 +670,14 @@ const FlashcardsView = ({
               }}
               className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg text-lg"
             >
-              ÃƒÂ¢Ã‚ÂÃ…â€™ Nicht gewusst
+              Nicht gewusst
             </button>
             <button
               onClick={() => {
                 const newLevel = updateCardSpacedData(currentFlashcard, newQuestionCategory, true);
                 playSound('correct');
 
-                // NÃƒÆ’Ã‚Â¤chste Karte oder fertig
+                // Naechste Karte oder fertig
                 if (flashcardIndex < flashcards.length - 1) {
                   const nextIdx = flashcardIndex + 1;
                   setFlashcardIndex(nextIdx);
@@ -702,7 +702,7 @@ const FlashcardsView = ({
               }}
               className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg text-lg"
             >
-              ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Gewusst
+              Gewusst
             </button>
           </div>
         )}
@@ -728,7 +728,7 @@ const FlashcardsView = ({
                   : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
               }`}
             >
-              ÃƒÂ¢Ã¢â‚¬Â Ã‚Â ZurÃƒÆ’Ã‚Â¼ck
+              Zurueck
             </button>
             <div className={darkMode ? 'text-white' : 'text-gray-800'}>
               <span className="font-bold">{flashcardIndex + 1}</span> / {flashcards.length}
@@ -751,7 +751,7 @@ const FlashcardsView = ({
                   : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
               }`}
             >
-              Weiter ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢
+              Weiter
             </button>
           </div>
         )}
@@ -760,7 +760,7 @@ const FlashcardsView = ({
 
     {(!currentFlashcard || flashcards.length === 0) && (
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-12 text-center`}>
-        <div className="text-6xl mb-4">{spacedRepetitionMode ? 'ÃƒÂ°Ã…Â¸Ã…Â½Ã¢â‚¬Â°' : 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â´'}</div>
+        <div className="text-6xl mb-4">{spacedRepetitionMode ? '⏳' : '🎴'}</div>
         <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
           {spacedRepetitionMode
             ? 'Alle Karten wiederholt!'
@@ -790,7 +790,7 @@ const FlashcardsView = ({
             }}
             className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold"
           >
-            ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â¡ Alle Karten anzeigen
+            Alle Karten anzeigen
           </button>
         )}
       </div>
@@ -800,7 +800,7 @@ const FlashcardsView = ({
     {user.permissions.canApproveQuestions && (
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg mt-6`}>
         <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          ÃƒÂ¢Ã‚ÂÃ‚Â³ Wartende Karteikarten genehmigen
+          Wartende Karteikarten genehmigen
         </h3>
         {pendingFlashcards.length > 0 ? (
           <div className="space-y-3">
@@ -832,11 +832,11 @@ const FlashcardsView = ({
                     <p className={darkMode ? 'text-white' : 'text-gray-800'}>{fc.front}</p>
                   </div>
                   <div className={`${darkMode ? 'bg-slate-600' : 'bg-white'} rounded-lg p-3`}>
-                    <p className={`text-sm font-bold mb-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>RÃƒÆ’Ã‚Â¼ckseite:</p>
+                    <p className={`text-sm font-bold mb-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>Rueckseite:</p>
                     <p className={darkMode ? 'text-white' : 'text-gray-800'}>{fc.back}</p>
                   </div>
                   <p className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
-                    Von {fc.createdBy} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {new Date(fc.time).toLocaleString()}
+                    Von {fc.createdBy} - {new Date(fc.time).toLocaleString()}
                   </p>
                 </div>
               );
