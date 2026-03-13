@@ -40,3 +40,9 @@ public/dev-sw.js
 public/sw.js
 public/workbox-*.js
 .vercel
+
+# Local scratch artifacts
+Admin
+immer
+mobile-watercycle-test.png
+supabase/.temp/

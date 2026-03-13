@@ -23,6 +23,7 @@ import FlashcardsView from './components/views/FlashcardsView';
 import CalculatorView from './components/views/CalculatorView';
 import SwimChallengeView from './components/views/SwimChallengeView';
 import BerichtsheftView from './components/views/BerichtsheftView';
+import CollectionView from './components/views/CollectionView';
 import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
 import InteractiveLearningView from './components/views/InteractiveLearningView';
@@ -9139,6 +9140,16 @@ export default function BaederApp() {
         {/* ==================== PROFIL VIEW ==================== */}
         {currentView === 'profile' && (
           <ProfileView
+            userStats={userStats}
+            swimSessions={swimSessions}
+            userBadges={userBadges}
+            setCurrentView={setCurrentView}
+          />
+        )}
+
+        {/* ==================== SAMMLUNG VIEW ==================== */}
+        {currentView === 'collection' && (
+          <CollectionView
             userStats={userStats}
             swimSessions={swimSessions}
             userBadges={userBadges}

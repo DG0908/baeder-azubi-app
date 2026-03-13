@@ -253,6 +253,214 @@ export const AVATARS = [
         { metric: 'badgeCount', target: 12 }
       ]
     }
+  },
+  // ── Premium Collection: Nacht & Gezeiten ──
+  {
+    id: 'midnight_kraken',
+    label: 'Mitternachts-Krake',
+    shortCode: 'MK',
+    animalIcon: '🦑',
+    sunglasses: true,
+    discipline: 'Allround',
+    rarity: 'legendary',
+    theme: 'ocean',
+    shape: 'crown',
+    unlock: {
+      requirements: [
+        { metric: 'totalCorrect', target: 500 },
+        { metric: 'quizWins', target: 50 },
+        { metric: 'badgeCount', target: 15 }
+      ]
+    }
+  },
+  {
+    id: 'neon_jellyfish',
+    label: 'Neon-Qualle',
+    shortCode: 'NQ',
+    animalIcon: '🪼',
+    discipline: 'Bädertechnik',
+    rarity: 'silver',
+    theme: 'tech',
+    shape: 'crystal',
+    unlock: {
+      requirements: [
+        { metric: 'techCorrect', target: 55 },
+        { metric: 'level', target: 6 }
+      ]
+    }
+  },
+  {
+    id: 'glacier_wolf',
+    label: 'Gletscher-Wolf',
+    shortCode: 'GW',
+    animalIcon: '🐺',
+    sunglasses: true,
+    discipline: 'Schwimmen & Rettung',
+    rarity: 'gold',
+    theme: 'rescue',
+    shape: 'shield',
+    unlock: {
+      requirements: [
+        { metric: 'swimDistance', target: 15000 },
+        { metric: 'swimSessions', target: 30 },
+        { metric: 'swimCorrect', target: 60 }
+      ]
+    }
+  },
+  {
+    id: 'coral_phoenix',
+    label: 'Korallen-Phönix',
+    shortCode: 'CP',
+    animalIcon: '🦅',
+    sunglasses: true,
+    discipline: 'Allround',
+    rarity: 'legendary',
+    theme: 'elite',
+    shape: 'crown',
+    unlock: {
+      requirements: [
+        { metric: 'level', target: 20 },
+        { metric: 'totalXp', target: 4000 },
+        { metric: 'quizWins', target: 75 },
+        { metric: 'totalCorrect', target: 600 }
+      ]
+    }
+  },
+  // ── Premium Collection: Spezialisten ──
+  {
+    id: 'chlor_meister',
+    label: 'Chlor-Meister',
+    shortCode: 'CM',
+    animalIcon: '🧪',
+    discipline: 'Hygiene',
+    rarity: 'gold',
+    theme: 'hygiene',
+    shape: 'prism',
+    unlock: {
+      requirements: [
+        { metric: 'hygieneCorrect', target: 100 },
+        { metric: 'totalXp', target: 1800 }
+      ]
+    }
+  },
+  {
+    id: 'turm_falke',
+    label: 'Turmspringer-Falke',
+    shortCode: 'TF',
+    animalIcon: '🦅',
+    discipline: 'Schwimmen & Rettung',
+    rarity: 'bronze',
+    theme: 'rescue',
+    shape: 'diamond',
+    unlock: {
+      requirements: [
+        { metric: 'swimCorrect', target: 25 },
+        { metric: 'totalXp', target: 400 }
+      ]
+    }
+  },
+  {
+    id: 'circuit_otter',
+    label: 'Elektro-Otter',
+    shortCode: 'EO',
+    animalIcon: '🦦',
+    discipline: 'Bädertechnik',
+    rarity: 'gold',
+    theme: 'tech',
+    shape: 'prism',
+    unlock: {
+      requirements: [
+        { metric: 'techCorrect', target: 120 },
+        { metric: 'quizWins', target: 30 },
+        { metric: 'level', target: 10 }
+      ]
+    }
+  },
+  {
+    id: 'frost_pinguin',
+    label: 'Frost-Pinguin',
+    shortCode: 'FP',
+    animalIcon: '🐧',
+    discipline: 'Schwimmen & Rettung',
+    rarity: 'silver',
+    theme: 'ocean',
+    shape: 'orb',
+    unlock: {
+      requirements: [
+        { metric: 'swimDistance', target: 5000 },
+        { metric: 'swimSessions', target: 15 }
+      ]
+    }
+  },
+  {
+    id: 'blitz_gecko',
+    label: 'Blitz-Gecko',
+    shortCode: 'BG',
+    animalIcon: '🦎',
+    discipline: 'Allround',
+    rarity: 'bronze',
+    theme: 'elite',
+    shape: 'ring',
+    unlock: {
+      requirements: [
+        { metric: 'quizWins', target: 8 },
+        { metric: 'totalCorrect', target: 80 }
+      ]
+    }
+  },
+  {
+    id: 'abyssal_leviathan',
+    label: 'Tiefsee-Leviathan',
+    shortCode: 'TL',
+    animalIcon: '🐉',
+    sunglasses: true,
+    discipline: 'Allround',
+    rarity: 'legendary',
+    theme: 'ocean',
+    shape: 'crown',
+    unlock: {
+      requirements: [
+        { metric: 'level', target: 25 },
+        { metric: 'totalCorrect', target: 800 },
+        { metric: 'swimDistance', target: 42195 },
+        { metric: 'badgeCount', target: 18 },
+        { metric: 'quizWins', target: 100 }
+      ]
+    }
+  },
+  {
+    id: 'medic_flamingo',
+    label: 'Sanitäts-Flamingo',
+    shortCode: 'MF',
+    animalIcon: '🦩',
+    discipline: 'Erste Hilfe',
+    rarity: 'silver',
+    theme: 'firstaid',
+    shape: 'shield',
+    unlock: {
+      requirements: [
+        { metric: 'firstAidCorrect', target: 50 },
+        { metric: 'level', target: 5 }
+      ]
+    }
+  },
+  {
+    id: 'golden_seahorse',
+    label: 'Gold-Seepferdchen',
+    shortCode: 'GS',
+    animalIcon: '🐴',
+    sunglasses: true,
+    discipline: 'Schwimmen & Rettung',
+    rarity: 'gold',
+    theme: 'elite',
+    shape: 'crown',
+    unlock: {
+      requirements: [
+        { metric: 'swimDistance', target: 25000 },
+        { metric: 'swimSessions', target: 50 },
+        { metric: 'swimCorrect', target: 80 }
+      ]
+    }
   }
 ];
 

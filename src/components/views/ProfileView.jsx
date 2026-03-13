@@ -5,6 +5,7 @@ import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
 import { AVATARS, PERMISSIONS, getAvatarById, getLevel } from '../../data/constants';
 import AvatarBadge from '../ui/AvatarBadge';
+import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
 
 const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) => {
@@ -305,10 +306,9 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl p-8 text-center">
         <div className="mb-3 flex justify-center">
-          <AvatarBadge
+          <PremiumAvatarBadge
             avatar={equippedAvatar || fallbackAvatar}
             size="xl"
-            className="border border-white/40"
           />
         </div>
         <h2 className="text-3xl font-bold mb-2">{user.name}</h2>
@@ -320,9 +320,17 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
         <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
           Avatar auswählen
         </h3>
-        <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Verdiene exklusive Avatare über Disziplinen wie Technik, Rettung, Hygiene und Erste Hilfe.
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            Verdiene exklusive Avatare über Disziplinen wie Technik, Rettung, Hygiene und Erste Hilfe.
+          </p>
+          <button
+            onClick={() => setCurrentView('collection')}
+            className="ml-4 px-4 py-2 bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-sm font-bold rounded-lg hover:shadow-lg hover:shadow-violet-500/30 transition-all whitespace-nowrap"
+          >
+            Sammlung öffnen
+          </button>
+        </div>
         <div className={`mb-4 flex flex-wrap items-center gap-2 text-xs ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
           <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-cyan-900/50' : 'bg-cyan-100'}`}>
             Level {currentLevel}
