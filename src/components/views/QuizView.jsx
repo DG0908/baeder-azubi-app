@@ -557,6 +557,9 @@ const QuizView = ({
                   <p className="text-xs text-gray-400">
                     💡 Singular und Plural werden beide erkannt – schreib, wie es natürlich klingt.
                   </p>
+                  <p className="text-xs font-semibold text-indigo-600">
+                    Wertung: jedes erkannte Schlagwort = 1 Punkt, vollstaendig geloest = +2 Bonus.
+                  </p>
                   <textarea
                     value={keywordAnswerText}
                     onChange={(e) => setKeywordAnswerText(e.target.value)}
@@ -590,6 +593,9 @@ const QuizView = ({
                       </p>
                       <p className="text-sm text-gray-700 mt-1">
                         Treffer: {keywordAnswerEvaluation.matchedCount}/{keywordAnswerEvaluation.requiredGroups} erforderlich
+                      </p>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Punkte: {keywordAnswerEvaluation.basePoints || 0}{Number(keywordAnswerEvaluation.bonusPoints || 0) > 0 ? ` + ${keywordAnswerEvaluation.bonusPoints} Bonus` : ''} = <span className="font-bold">{keywordAnswerEvaluation.awardedPoints || 0}</span>
                       </p>
                       {keywordAnswerEvaluation.timedOut && (
                         <p className="text-sm text-red-600 mt-1 font-semibold">Zeit abgelaufen - Antwort wurde als falsch gewertet.</p>

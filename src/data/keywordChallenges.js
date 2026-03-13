@@ -401,6 +401,123 @@ export const KEYWORD_CHALLENGES = {
       ],
       minKeywordGroups: 4,
       answerGuide: 'Umweltschutz umfasst Energie, Wasser, Abfall, Chemikalienmanagement und Nachweise.'
+    },
+    {
+      type: 'keyword',
+      q: 'Welche 4 Aufgaben hat der Bundesrat?',
+      keywordGroups: [
+        mkGroup('Laender vertreten', ['laender vertreten', 'laenderinteressen', 'bundeslaender']),
+        mkGroup('Gesetzgebung', ['gesetzgebung', 'gesetze mitwirken', 'mitwirkung']),
+        mkGroup('Verfassungsänderungen', ['verfassungsaenderung', 'grundgesetzaenderung']),
+        mkGroup('Zustimmungsgesetze', ['zustimmungsgesetz', 'zustimmen']),
+        mkGroup('Vermittlung', ['vermittlungsausschuss', 'vermitteln'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Der Bundesrat vertritt die Laender, wirkt an Gesetzen mit, stimmt bei bestimmten Gesetzen und Verfassungsaenderungen zu und wirkt in Vermittlungsverfahren mit.'
+    },
+    {
+      type: 'keyword',
+      q: 'Nenne 4 Merkmale der sozialen Marktwirtschaft.',
+      keywordGroups: [
+        mkGroup('Freier Markt', ['freier markt', 'marktwirtschaft', 'wettbewerb']),
+        mkGroup('Sozialer Ausgleich', ['sozialer ausgleich', 'soziale sicherung']),
+        mkGroup('Staatlicher Rahmen', ['staatlicher rahmen', 'ordnungsrahmen', 'staat']),
+        mkGroup('Eigentum/Freiheit', ['privateigentum', 'wirtschaftsfreiheit', 'freiheit']),
+        mkGroup('Schutz vor Missbrauch', ['kartellrecht', 'missbrauch', 'aufsicht'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Soziale Marktwirtschaft verbindet freien Wettbewerb mit staatlichem Ordnungsrahmen und sozialem Ausgleich.'
+    },
+    {
+      type: 'keyword',
+      q: 'Welche 4 Punkte sollte eine Lohnabrechnung nachvollziehbar zeigen?',
+      keywordGroups: [
+        mkGroup('Bruttolohn', ['bruttolohn', 'brutto']),
+        mkGroup('Abzuege', ['abzuege', 'steuer', 'sozialbeitraege']),
+        mkGroup('Nettolohn', ['nettolohn', 'netto', 'auszahlungsbetrag']),
+        mkGroup('Zeitraum', ['abrechnungszeitraum', 'monat', 'zeitraum']),
+        mkGroup('Personaldaten', ['name', 'steuerklasse', 'sozialversicherungsnummer'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Eine Lohnabrechnung sollte Brutto, Abzuege, Netto, Zeitraum und grundlegende Personaldaten klar ausweisen.'
+    },
+    {
+      type: 'keyword',
+      q: 'Nenne 4 Rechte oder Aufgaben eines Betriebsrats.',
+      keywordGroups: [
+        mkGroup('Interessenvertretung', ['interessen vertreten', 'interessenvertretung']),
+        mkGroup('Mitbestimmung', ['mitbestimmung', 'mitwirken']),
+        mkGroup('Arbeitsbedingungen', ['arbeitsbedingungen', 'arbeitsschutz']),
+        mkGroup('Anhoerung', ['anhoerung', 'kuendigung anhoeren']),
+        mkGroup('Vermittlung', ['vermitteln', 'konflikte'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Der Betriebsrat vertritt Beschaeftigteninteressen, wirkt mit, achtet auf Arbeitsbedingungen und wird bei personellen Massnahmen beteiligt.'
+    },
+    {
+      type: 'keyword',
+      q: 'Welche 4 Punkte gehoeren zur Tarifautonomie?',
+      keywordGroups: [
+        mkGroup('Gewerkschaften', ['gewerkschaft', 'gewerkschaften']),
+        mkGroup('Arbeitgeberseite', ['arbeitgeberverband', 'arbeitgeberseite', 'arbeitgeber']),
+        mkGroup('Tarifvertrag', ['tarifvertrag', 'tarif']),
+        mkGroup('Ohne Staat aushandeln', ['ohne staat', 'eigenstaendig aushandeln', 'selbst aushandeln']),
+        mkGroup('Arbeitsbedingungen', ['arbeitsbedingungen', 'lohn', 'arbeitszeit'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Tarifautonomie bedeutet, dass Gewerkschaften und Arbeitgeber Arbeitsbedingungen eigenstaendig in Tarifvertraegen aushandeln.'
+    },
+    {
+      type: 'keyword',
+      q: 'Nenne 4 Begriffe, die zu Brutto- und Nettolohn gehoeren.',
+      keywordGroups: [
+        mkGroup('Brutto', ['brutto', 'bruttolohn']),
+        mkGroup('Netto', ['netto', 'nettolohn']),
+        mkGroup('Steuern', ['steuer', 'lohnsteuer']),
+        mkGroup('Sozialbeitraege', ['sozialbeitraege', 'versicherung']),
+        mkGroup('Auszahlung', ['auszahlung', 'auszahlungsbetrag'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Zum Unterschied zwischen Brutto und Netto gehoeren Bruttolohn, Abzuege wie Steuern und Sozialbeitraege sowie der Auszahlungsbetrag.'
+    },
+    {
+      type: 'keyword',
+      q: 'Welche 4 Punkte sind bei einer Kuendigung im Arbeitsverhaeltnis wichtig?',
+      keywordGroups: [
+        mkGroup('Schriftform', ['schriftform', 'schriftlich']),
+        mkGroup('Frist', ['frist', 'kuendigungsfrist']),
+        mkGroup('Probezeit', ['probezeit']),
+        mkGroup('Grund', ['grund', 'wichtiger grund']),
+        mkGroup('Zugang', ['zugang', 'zugegangen'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Wichtig sind Schriftform, Fristen, Besonderheiten in der Probezeit, ein moeglicher Grund und der nachweisbare Zugang.'
+    },
+    {
+      type: 'keyword',
+      q: 'Nenne 4 Elemente, die zu einem funktionierenden Sozialstaat gehoeren.',
+      keywordGroups: [
+        mkGroup('Krankenversicherung', ['krankenversicherung']),
+        mkGroup('Rentenversicherung', ['rentenversicherung']),
+        mkGroup('Arbeitslosenversicherung', ['arbeitslosenversicherung']),
+        mkGroup('Pflegeversicherung', ['pflegeversicherung']),
+        mkGroup('Unterstuetzung', ['unterstuetzung', 'sozialhilfe', 'absicherung'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Ein Sozialstaat sichert Menschen ueber Versicherungen und Unterstuetzungssysteme gegen zentrale Lebensrisiken ab.'
+    },
+    {
+      type: 'keyword',
+      q: 'Welche 4 Punkte sind fuer eine demokratische Gewaltenteilung wichtig?',
+      keywordGroups: [
+        mkGroup('Legislative', ['legislative', 'gesetzgebung']),
+        mkGroup('Exekutive', ['exekutive', 'regierung', 'verwaltung']),
+        mkGroup('Judikative', ['judikative', 'gerichte', 'rechtsprechung']),
+        mkGroup('Kontrolle', ['kontrolle', 'macht begrenzen']),
+        mkGroup('Unabhaengigkeit', ['unabhaengigkeit', 'getrennt'])
+      ],
+      minKeywordGroups: 4,
+      answerGuide: 'Gewaltenteilung trennt Gesetzgebung, Regierung und Rechtsprechung und begrenzt Macht durch gegenseitige Kontrolle.'
     }
   ],
   math: [
