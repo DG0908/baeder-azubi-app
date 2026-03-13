@@ -1140,6 +1140,41 @@ export default function BaederApp() {
     return variants;
   };
 
+  const tokenizeKeywordText = (value) => normalizeKeywordText(value)
+    .split(' ')
+    .map((token) => token.trim())
+    .filter(Boolean);
+
+  const buildKeywordTokenVariants = (value) => {
+    const variants = new Set();
+    tokenizeKeywordText(value).forEach((token) => {
+      getWordVariants(token).forEach((variant) => {
+        if (variant) variants.add(variant);
+      });
+    });
+    return variants;
+  };
+
+  const matchesKeywordTerm = (normalizedAnswer, answerVariantTokens, term) => {
+    const normalizedTerm = normalizeKeywordText(term);
+    if (!normalizedTerm) return false;
+    if (normalizedAnswer.includes(normalizedTerm)) return true;
+
+    const termTokens = tokenizeKeywordText(normalizedTerm);
+    if (termTokens.length === 0) return false;
+
+    return termTokens.every((token) => {
+      const tokenVariants = getWordVariants(token);
+      return tokenVariants.some((variant) => {
+        if (!variant) return false;
+        if (answerVariantTokens.has(variant)) return true;
+        return Array.from(answerVariantTokens).some((answerToken) =>
+          answerToken.startsWith(variant) || variant.startsWith(answerToken)
+        );
+      });
+    });
+  };
+
   const normalizeKeywordGroup = (groupInput) => {
     if (typeof groupInput === 'string') {
       return {
@@ -1179,12 +1214,7 @@ export default function BaederApp() {
       .filter((group) => group.terms.length > 0)
       .map((group) => ({
         ...group,
-        normalizedTerms: [...new Set(
-          group.terms
-            .map((term) => normalizeKeywordText(term))
-            .filter(Boolean)
-            .flatMap(getWordVariants)
-        )]
+        normalizedTerms: [...new Set(group.terms.map((term) => normalizeKeywordText(term)).filter(Boolean))]
       }))
       .filter((group) => group.normalizedTerms.length > 0);
   };
@@ -1196,6 +1226,7 @@ export default function BaederApp() {
   const evaluateKeywordAnswer = (question, answerInput) => {
     const groups = getKeywordGroupsFromQuestion(question);
     const normalizedAnswer = normalizeKeywordText(answerInput);
+    const answerVariantTokens = buildKeywordTokenVariants(answerInput);
     const wordCount = normalizedAnswer ? normalizedAnswer.split(' ').filter(Boolean).length : 0;
     const requiredWordCount = Math.max(0, Number(question?.minWords) || 0);
     const requiredGroups = Math.max(
@@ -1210,6 +1241,9 @@ export default function BaederApp() {
         requiredGroups,
         matchedCount: 0,
         scorePercent: 0,
+        basePoints: 0,
+        bonusPoints: 0,
+        awardedPoints: 0,
         matchedLabels: [],
         missingLabels: groups.map((group) => group.label),
         wordCount,
@@ -1220,7 +1254,7 @@ export default function BaederApp() {
     const matchedLabels = [];
     const missingLabels = [];
     groups.forEach((group) => {
-      const matched = group.normalizedTerms.some((term) => normalizedAnswer.includes(term));
+      const matched = group.normalizedTerms.some((term) => matchesKeywordTerm(normalizedAnswer, answerVariantTokens, term));
       if (matched) {
         matchedLabels.push(group.label);
       } else {
@@ -1232,6 +1266,9 @@ export default function BaederApp() {
     const hasEnoughWords = wordCount >= requiredWordCount;
     const isCorrect = matchedCount >= requiredGroups && hasEnoughWords;
     const scorePercent = Math.max(0, Math.min(100, Math.round((matchedCount / requiredGroups) * 100)));
+    const basePoints = matchedCount;
+    const bonusPoints = isCorrect ? 2 : 0;
+    const awardedPoints = basePoints + bonusPoints;
 
     return {
       isCorrect,
@@ -1239,11 +1276,54 @@ export default function BaederApp() {
       requiredGroups,
       matchedCount,
       scorePercent,
+      basePoints,
+      bonusPoints,
+      awardedPoints,
       matchedLabels,
       missingLabels,
       wordCount,
       requiredWordCount
     };
+  };
+
+  const getUsedQuestionTextsForGame = (game, categoryId) => {
+    if (!game || !Array.isArray(game.categoryRounds)) return new Set();
+    return new Set(
+      game.categoryRounds
+        .filter((round) => String(round?.categoryId || '') === String(categoryId || ''))
+        .flatMap((round) => Array.isArray(round?.questions) ? round.questions : [])
+        .map((question) => normalizeQuestionText(question?.q || ''))
+        .filter(Boolean)
+    );
+  };
+
+  const pickBattleQuestions = (questions, count, categoryId, game) => {
+    const source = Array.isArray(questions) ? questions.filter(Boolean) : [];
+    const limit = Math.min(Math.max(0, Number(count) || 0), source.length);
+    if (limit <= 0) return [];
+
+    const usedQuestionTexts = getUsedQuestionTextsForGame(game, categoryId);
+    const freshPool = source.filter((question) => !usedQuestionTexts.has(normalizeQuestionText(question?.q || '')));
+    const freshSelected = pickLearningQuestions(
+      freshPool,
+      Math.min(limit, freshPool.length),
+      () => categoryId
+    );
+
+    const remaining = limit - freshSelected.length;
+    if (remaining <= 0) {
+      return shuffleArray(freshSelected);
+    }
+
+    const selectedTextSet = new Set(freshSelected.map((question) => normalizeQuestionText(question?.q || '')));
+    const fallbackPool = source.filter((question) => !selectedTextSet.has(normalizeQuestionText(question?.q || '')));
+    const fallbackSelected = pickLearningQuestions(
+      fallbackPool,
+      Math.min(remaining, fallbackPool.length),
+      () => categoryId
+    );
+
+    return shuffleArray([...freshSelected, ...fallbackSelected]);
   };
 
   const resetQuizKeywordState = () => {
@@ -3729,11 +3809,7 @@ export default function BaederApp() {
     if (useKeywordQuestions && categoryKeywordQuestions.length === 0) {
       showToast('Für diese Kategorie sind noch keine Extra-schwer-Fragen hinterlegt. Standardfragen werden genutzt.', 'info');
     }
-    const selectedQuestions = pickLearningQuestions(
-      allQuestions,
-      Math.min(5, allQuestions.length),
-      () => catId
-    );
+    const selectedQuestions = pickBattleQuestions(allQuestions, Math.min(5, allQuestions.length), catId, currentGame);
 
     // Mische Antworten nur bei Auswahlfragen
     const preparedQuestions = selectedQuestions.map((question) => {
@@ -3872,7 +3948,10 @@ export default function BaederApp() {
         matchedCount: evaluation.matchedCount,
         matchedLabels: evaluation.matchedLabels,
         missingLabels: evaluation.missingLabels,
-        scorePercent: evaluation.scorePercent
+        scorePercent: evaluation.scorePercent,
+        basePoints: evaluation.basePoints,
+        bonusPoints: evaluation.bonusPoints,
+        awardedPoints: evaluation.awardedPoints
       }
     });
   };
@@ -3894,12 +3973,15 @@ export default function BaederApp() {
     updateWeeklyProgress('quizAnswers', 1);
     trackQuestionPerformance(currentQuestion, quizCategory, isCorrect);
 
-    // Punkte vergeben
-    if (isCorrect) {
+    const answerPoints = answerMeta.answerType === 'keyword'
+      ? Math.max(0, Number(answerMeta?.keywordEvaluation?.awardedPoints) || 0)
+      : (isCorrect ? 1 : 0);
+
+    if (answerPoints > 0) {
       if (isPlayer1) {
-        currentGame.player1Score++;
+        currentGame.player1Score += answerPoints;
       } else {
-        currentGame.player2Score++;
+        currentGame.player2Score += answerPoints;
       }
     }
 
@@ -3908,6 +3990,7 @@ export default function BaederApp() {
       questionIndex: questionInCategory,
       correct: isCorrect,
       timeout: isTimeout,
+      points: answerPoints,
       ...answerMeta
     };
 
