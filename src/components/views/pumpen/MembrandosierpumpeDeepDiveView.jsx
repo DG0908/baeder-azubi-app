@@ -435,7 +435,7 @@ function DosingPumpHotspots({ activeSpot, setActiveSpot, showLabels }) {
   );
 }
 
-function MembrandosierpumpeAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, hubPercent }) {
+function MembrandosierpumpeAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, hubPercent, showLabels }) {
   const emphasized = (ids) => focusMatch(mode, ids);
 
   const shellMaterial = (baseColor, ids, opacity = 0.72) => ({
@@ -657,6 +657,7 @@ export default function MembrandosierpumpeDeepDiveView() {
                 setActiveSpot={setActiveSpot}
                 mode={mode}
                 hubPercent={hubPercent}
+                showLabels={showLabels}
               />
 
               <OrbitControls
