@@ -256,6 +256,20 @@ const BETRIEBSCHECKS = [
   { label: 'Signal/Niveau', value: 'Freigabe und Meldung plausibel', ok: true },
 ];
 
+const ABBILDUNGSLESART = [
+  { label: 'Dosierkopf links', value: 'Die Chemikalienseite sitzt links, wie in deiner Schnittdarstellung.' },
+  { label: 'Magnetantrieb mittig', value: 'Spule, Magnethub und Achse bilden das dunkle Mittelteil.' },
+  { label: 'Verstellung rechts', value: 'Deckel, Bolzen, Achse und Knopf liegen gesammelt auf der rechten Seite.' },
+  { label: 'Abdeckung oben rechts', value: 'Die Klarsichtabdeckung liegt ueber dem Verstellbereich.' },
+];
+
+const DOSIERPFAD = [
+  '1 Rueckhub: Medium wird links in den Dosierkopf eingesaugt',
+  '2 Membranhub: Magnethub bewegt Druckstueck und Kopfscheibe',
+  '3 Druckhub: Medium wird ueber das Druckventil ausgetragen',
+  '4 Hublaenge rechts einstellen, Dosiermenge damit kalibrieren',
+];
+
 function focusMatch(mode, ids) {
   return ids.some((id) => mode.focus.includes(id));
 }
@@ -450,7 +464,11 @@ function MembrandosierpumpeAssembly({ running, xrayMode, activeSpot, setActiveSp
   });
 
   return (
-    <group position={[0, -0.05, 0]}>
+    <group position={[0, -0.05, 0]} rotation={[0, -0.12, 0]} scale={[1, 1, 0.68]}>
+      <mesh position={[0.25, -0.15, -1.1]}>
+        <planeGeometry args={[8.8, 5.8]} />
+        <meshStandardMaterial color="#081523" emissive="#07111d" emissiveIntensity={0.12} transparent opacity={0.95} />
+      </mesh>
       <mesh position={[0.68, -0.72, 0.2]}>
         <boxGeometry args={[5.0, 2.1, 2.2]} />
         <meshStandardMaterial {...shellMaterial('#162f4b', ['gehaeuse'], 0.92)} />
@@ -544,6 +562,7 @@ export default function MembrandosierpumpeDeepDiveView() {
   const [hubPercent, setHubPercent] = useState(60);
   const [activeMode, setActiveMode] = useState('dosierhub');
   const [activeSpot, setActiveSpot] = useState('dosiermembran');
+  const [viewVersion, setViewVersion] = useState(0);
 
   const mode = DETAIL_MODES.find((item) => item.id === activeMode) || DETAIL_MODES[0];
   const activeSpotData = DOSING_PUMP_SPOTS.find((item) => item.id === activeSpot) || null;
@@ -609,6 +628,14 @@ export default function MembrandosierpumpeDeepDiveView() {
           >
             {showLabels ? 'Hotspots an' : 'Hotspots aus'}
           </button>
+          <button
+            type="button"
+            onClick={() => setViewVersion((prev) => prev + 1)}
+            className="rounded-lg px-3 py-1.5 text-sm font-semibold"
+            style={{ background: '#10243a', color: '#d5ebff', border: '1px solid #2a5a90' }}
+          >
+            Buchansicht
+          </button>
         </div>
       </div>
 
@@ -635,8 +662,42 @@ export default function MembrandosierpumpeDeepDiveView() {
             ))}
           </div>
 
-          <div style={{ width: '100%', height: MODEL_HEIGHT, borderRadius: '0.85rem', overflow: 'hidden' }}>
-            <Canvas dpr={[1, 1.8]} onPointerMissed={() => setActiveSpot(null)} camera={{ position: [0, 0.15, 8.6], fov: 46 }}>
+          <div className="grid gap-2 mb-3 sm:grid-cols-4">
+            {ABBILDUNGSLESART.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-lg px-3 py-2"
+                style={{ background: '#071426', border: '1px solid #15314f' }}
+              >
+                <p className="text-[10px] font-mono tracking-widest" style={{ color: '#4a9eff' }}>
+                  {item.label}
+                </p>
+                <p className="text-[11px] leading-relaxed mt-1" style={{ color: '#84a8c6' }}>
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ width: '100%', height: MODEL_HEIGHT, borderRadius: '0.85rem', overflow: 'hidden', position: 'relative' }}>
+            <div
+              className="pointer-events-none absolute left-3 top-3 z-10 rounded-lg px-3 py-2"
+              style={{ background: 'rgba(6, 18, 30, 0.82)', border: '1px solid #1a3a5a' }}
+            >
+              <p className="text-[10px] font-mono tracking-[0.25em]" style={{ color: '#4a9eff' }}>
+                BUCHANSICHT
+              </p>
+              <p className="text-[11px] mt-1" style={{ color: '#8ab0c0' }}>
+                Dosierkopf links, Magnetteil mittig, Verstellung rechts
+              </p>
+            </div>
+
+            <Canvas
+              key={viewVersion}
+              dpr={[1, 1.8]}
+              onPointerMissed={() => setActiveSpot(null)}
+              camera={{ position: [0.22, 0.12, 9.8], fov: 40 }}
+            >
               <color attach="background" args={['#040d1a']} />
               <ambientLight intensity={0.34} />
               <hemisphereLight intensity={0.48} color="#9dd3ff" groundColor="#0c1f31" />
@@ -666,9 +727,11 @@ export default function MembrandosierpumpeDeepDiveView() {
                 maxDistance={10.5}
                 minPolarAngle={Math.PI * 0.16}
                 maxPolarAngle={Math.PI * 0.76}
+                minAzimuthAngle={-0.58}
+                maxAzimuthAngle={0.42}
                 target={[0, -0.1, 0]}
                 autoRotate={!activeSpot}
-                autoRotateSpeed={0.22}
+                autoRotateSpeed={0.12}
               />
             </Canvas>
           </div>
@@ -711,6 +774,21 @@ export default function MembrandosierpumpeDeepDiveView() {
 
           <div style={innerCardStyle}>
             <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#34c090' }}>
+              DOSIERPFAD WIE IM BILD
+            </p>
+            <div className="space-y-2">
+              {DOSIERPFAD.map((step) => (
+                <div key={step} className="rounded-lg px-3 py-2" style={{ background: '#040d1a', border: '1px solid #14324f' }}>
+                  <p className="text-xs leading-relaxed" style={{ color: '#9ec4de' }}>
+                    {step}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={innerCardStyle}>
+            <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#34c090' }}>
               HUBVERSTELLUNG
             </p>
             <label htmlFor="dosing-hub-slider" className="text-xs block mb-2" style={{ color: '#8ab0c0' }}>
@@ -729,6 +807,33 @@ export default function MembrandosierpumpeDeepDiveView() {
             <p className="text-[11px] mt-2 leading-relaxed" style={{ color: '#6d8ca9' }}>
               Der Slider simuliert die mechanische Hubverstellung. Groessere Hublaenge bedeutet groesseres Dosiervolumen pro Hub.
             </p>
+          </div>
+
+          <div style={innerCardStyle}>
+            <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#4a9eff' }}>
+              ERLAEUTERUNG NACH ABBILDUNG
+            </p>
+            <div className="space-y-1.5">
+              {DOSING_PUMP_SPOTS.map((spot) => (
+                <button
+                  key={`legend-${spot.id}`}
+                  type="button"
+                  onClick={() => setActiveSpot(spot.id)}
+                  className="w-full rounded-lg px-3 py-2 text-left"
+                  style={{
+                    background: activeSpot === spot.id ? '#10253e' : '#040d1a',
+                    border: `1px solid ${activeSpot === spot.id ? spot.color : '#14324f'}`,
+                  }}
+                >
+                  <span className="text-xs font-mono" style={{ color: spot.color }}>
+                    {spot.number}
+                  </span>
+                  <span className="text-xs ml-2" style={{ color: '#c0d8f0' }}>
+                    {spot.label}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div style={innerCardStyle}>

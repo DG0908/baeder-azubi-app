@@ -256,6 +256,20 @@ const BETRIEBSCHECKS = [
   { label: 'Lagerlauf', value: 'ruhig, ohne Heisslauf', ok: true },
 ];
 
+const ABBILDUNGSLESART = [
+  { label: 'Motor oben', value: 'Der Rippenmotor steht senkrecht ueber der Hydraulik, wie in deiner Vorlage.' },
+  { label: 'Saugseite links', value: 'Der Vorfilter und das Filtergehaeuse liegen links vor dem Laufrad.' },
+  { label: 'Druckseite rechts', value: 'Der Druckaustritt sitzt rechts am roten Gehaeusestutzen.' },
+  { label: 'Dichtungszone mittig', value: 'Welle, Dichtung und Lager liegen zwischen Motor und Nassraum.' },
+];
+
+const HYDRAULIKPFAD = [
+  '1 Zulauf links durch Vorfilter und Filterkorb',
+  '2 Eintritt in die Laufradzone',
+  '3 Energieuebergabe im Laufrad',
+  '4 Druckaufbau im Umfuehrungskanal nach rechts',
+];
+
 function focusMatch(mode, ids) {
   return ids.some((id) => mode.focus.includes(id));
 }
@@ -409,7 +423,11 @@ function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, show
   });
 
   return (
-    <group position={[0, -0.15, 0]}>
+    <group position={[0, -0.15, 0]} rotation={[0, -0.16, 0]} scale={[1, 1, 0.74]}>
+      <mesh position={[0, 1.2, -1.15]}>
+        <planeGeometry args={[8.4, 8.8]} />
+        <meshStandardMaterial color="#081523" emissive="#07111d" emissiveIntensity={0.12} transparent opacity={0.95} />
+      </mesh>
       <mesh position={[0, 2.95, 0]}>
         <cylinderGeometry args={[0.98, 0.98, 2.45, 48]} />
         <meshStandardMaterial {...shellMaterial('#193455', ['lagerung', 'motorwelle'], 0.92)} />
@@ -552,6 +570,7 @@ export default function UmwaelzpumpeDeepDiveView() {
   const [running, setRunning] = useState(true);
   const [activeMode, setActiveMode] = useState('schnittbild');
   const [activeSpot, setActiveSpot] = useState('laufrad');
+  const [viewVersion, setViewVersion] = useState(0);
 
   const mode = DETAIL_MODES.find((item) => item.id === activeMode) || DETAIL_MODES[0];
   const activeSpotData = PUMP_SPOTS.find((item) => item.id === activeSpot) || null;
@@ -617,6 +636,14 @@ export default function UmwaelzpumpeDeepDiveView() {
           >
             {showLabels ? 'Hotspots an' : 'Hotspots aus'}
           </button>
+          <button
+            type="button"
+            onClick={() => setViewVersion((prev) => prev + 1)}
+            className="rounded-lg px-3 py-1.5 text-sm font-semibold"
+            style={{ background: '#10243a', color: '#d5ebff', border: '1px solid #2a5a90' }}
+          >
+            Buchansicht
+          </button>
         </div>
       </div>
 
@@ -643,8 +670,42 @@ export default function UmwaelzpumpeDeepDiveView() {
             ))}
           </div>
 
-          <div style={{ width: '100%', height: MODEL_HEIGHT, borderRadius: '0.85rem', overflow: 'hidden' }}>
-            <Canvas dpr={[1, 1.8]} onPointerMissed={() => setActiveSpot(null)} camera={{ position: [0, 1.3, 8.8], fov: 45 }}>
+          <div className="grid gap-2 mb-3 sm:grid-cols-4">
+            {ABBILDUNGSLESART.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-lg px-3 py-2"
+                style={{ background: '#071426', border: '1px solid #15314f' }}
+              >
+                <p className="text-[10px] font-mono tracking-widest" style={{ color: '#4a9eff' }}>
+                  {item.label}
+                </p>
+                <p className="text-[11px] leading-relaxed mt-1" style={{ color: '#84a8c6' }}>
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ width: '100%', height: MODEL_HEIGHT, borderRadius: '0.85rem', overflow: 'hidden', position: 'relative' }}>
+            <div
+              className="pointer-events-none absolute left-3 top-3 z-10 rounded-lg px-3 py-2"
+              style={{ background: 'rgba(6, 18, 30, 0.82)', border: '1px solid #1a3a5a' }}
+            >
+              <p className="text-[10px] font-mono tracking-[0.25em]" style={{ color: '#4a9eff' }}>
+                BUCHANSICHT
+              </p>
+              <p className="text-[11px] mt-1" style={{ color: '#8ab0c0' }}>
+                Motor oben, Vorfilter links, Druckseite rechts
+              </p>
+            </div>
+
+            <Canvas
+              key={viewVersion}
+              dpr={[1, 1.8]}
+              onPointerMissed={() => setActiveSpot(null)}
+              camera={{ position: [0.15, 1.42, 10.2], fov: 39 }}
+            >
               <color attach="background" args={['#040d1a']} />
               <ambientLight intensity={0.35} />
               <hemisphereLight intensity={0.5} color="#9dd3ff" groundColor="#0c1f31" />
@@ -673,9 +734,11 @@ export default function UmwaelzpumpeDeepDiveView() {
                 maxDistance={11}
                 minPolarAngle={Math.PI * 0.14}
                 maxPolarAngle={Math.PI * 0.76}
+                minAzimuthAngle={-0.55}
+                maxAzimuthAngle={0.45}
                 target={[0, 0.9, 0]}
                 autoRotate={!activeSpot}
-                autoRotateSpeed={0.22}
+                autoRotateSpeed={0.12}
               />
             </Canvas>
           </div>
@@ -713,6 +776,48 @@ export default function UmwaelzpumpeDeepDiveView() {
               <p className="text-xs mt-2" style={{ color: '#f0b26d' }}>
                 Achtung: {mode.caution}
               </p>
+            </div>
+          </div>
+
+          <div style={innerCardStyle}>
+            <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#34c090' }}>
+              HYDRAULIKPFAD WIE IM BILD
+            </p>
+            <div className="space-y-2">
+              {HYDRAULIKPFAD.map((step) => (
+                <div key={step} className="rounded-lg px-3 py-2" style={{ background: '#040d1a', border: '1px solid #14324f' }}>
+                  <p className="text-xs leading-relaxed" style={{ color: '#9ec4de' }}>
+                    {step}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={innerCardStyle}>
+            <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#4a9eff' }}>
+              ERLAEUTERUNG NACH ABBILDUNG
+            </p>
+            <div className="space-y-1.5">
+              {PUMP_SPOTS.map((spot) => (
+                <button
+                  key={`legend-${spot.id}`}
+                  type="button"
+                  onClick={() => setActiveSpot(spot.id)}
+                  className="w-full rounded-lg px-3 py-2 text-left"
+                  style={{
+                    background: activeSpot === spot.id ? '#10253e' : '#040d1a',
+                    border: `1px solid ${activeSpot === spot.id ? spot.color : '#14324f'}`,
+                  }}
+                >
+                  <span className="text-xs font-mono" style={{ color: spot.color }}>
+                    {spot.number}
+                  </span>
+                  <span className="text-xs ml-2" style={{ color: '#c0d8f0' }}>
+                    {spot.label}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
 
