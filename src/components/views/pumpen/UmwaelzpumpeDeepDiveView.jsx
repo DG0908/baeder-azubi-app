@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -240,6 +240,22 @@ const PUMP_SPOTS = [
   },
 ];
 
+const PUMP_CALLOUTS = {
+  beschichtung: [-2.75, 0.92, 0.98],
+  laufradprotektor: [-2.1, -0.42, 0.82],
+  gleitringdichtungsprotektor: [2.15, 1.15, 0.92],
+  service: [-3.5, -0.92, 1.18],
+  filtergehaeuse: [-3.05, 0.18, 0.95],
+  filterdeckel: [-3.88, 0.36, 1.18],
+  filterkorb: [-2.45, -1.25, 0.22],
+  sealguard: [2.82, 1.98, 1.04],
+  laufrad: [0.95, -1.02, 0.06],
+  motorwelle: [1.55, 2.15, 0.16],
+  wellenabdichtung: [2.08, 0.52, 0.88],
+  umfuehrungskanal: [2.95, 0.28, 0.94],
+  lagerung: [1.68, 2.92, 0.34],
+};
+
 const KENNDATEN = [
   { label: 'Pumpentyp', value: 'Umwaelzpumpe als Kreiselpumpe' },
   { label: 'Einbauart', value: 'Inline / Nass-Trockenteil getrennt' },
@@ -361,7 +377,84 @@ function PumpHotspots({ activeSpot, setActiveSpot, showLabels }) {
                 opacity={0.96}
               />
             </mesh>
-            <Html distanceFactor={10} position={[0, 0.22, 0]} center>
+            {showLabels && isActive && (
+              <Html distanceFactor={10} position={[0, 0.46, 0]} center>
+                <div
+                  style={{
+                    color: '#d7efff',
+                    fontFamily: 'monospace',
+                    fontSize: '9px',
+                    background: 'rgba(8, 26, 46, 0.9)',
+                    padding: '3px 7px',
+                    borderRadius: '999px',
+                    border: `1px solid ${spot.color}`,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {spot.number} {spot.short}
+                </div>
+              </Html>
+            )}
+          </group>
+        );
+      })}
+    </>
+  );
+}
+
+function CalloutLine({ start, end, active }) {
+  const { midpoint, quaternion, length } = useMemo(() => {
+    const startVec = new THREE.Vector3(...start);
+    const endVec = new THREE.Vector3(...end);
+    const direction = endVec.clone().sub(startVec);
+    const safeDirection = direction.lengthSq() > 0 ? direction.clone().normalize() : new THREE.Vector3(0, 1, 0);
+    const rotation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), safeDirection);
+
+    return {
+      midpoint: startVec.clone().lerp(endVec, 0.5),
+      quaternion: rotation,
+      length: Math.max(direction.length(), 0.001),
+    };
+  }, [start, end]);
+
+  return (
+    <group position={[midpoint.x, midpoint.y, midpoint.z]} quaternion={quaternion}>
+      <mesh>
+        <cylinderGeometry args={[active ? 0.028 : 0.018, active ? 0.028 : 0.018, length, 10]} />
+        <meshStandardMaterial
+          color={active ? '#ffb0b0' : '#d84b4b'}
+          emissive={active ? '#ff9d9d' : '#4c1616'}
+          emissiveIntensity={active ? 0.42 : 0.16}
+          metalness={0.1}
+          roughness={0.28}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function PumpLeaderCallouts({ activeSpot, setActiveSpot, showLabels }) {
+  if (!showLabels) return null;
+
+  return (
+    <>
+      {PUMP_SPOTS.map((spot) => {
+        const end = PUMP_CALLOUTS[spot.id];
+        if (!end) return null;
+        const isActive = activeSpot === spot.id;
+
+        return (
+          <group key={`callout-${spot.id}`}>
+            <CalloutLine start={spot.position} end={end} active={isActive} />
+            <mesh position={end}>
+              <sphereGeometry args={[0.08, 14, 14]} />
+              <meshStandardMaterial
+                color={isActive ? '#ffb0b0' : '#d84b4b'}
+                emissive={isActive ? '#ff9d9d' : '#531818'}
+                emissiveIntensity={isActive ? 0.42 : 0.14}
+              />
+            </mesh>
+            <Html distanceFactor={10} position={end} center>
               <button
                 type="button"
                 onClick={(event) => {
@@ -369,38 +462,22 @@ function PumpHotspots({ activeSpot, setActiveSpot, showLabels }) {
                   setActiveSpot(isActive ? null : spot.id);
                 }}
                 style={{
-                  border: `1px solid ${spot.color}`,
-                  color: spot.color,
-                  background: isActive ? '#081a2e' : 'rgba(8, 26, 46, 0.55)',
+                  width: '22px',
+                  height: '22px',
                   borderRadius: '999px',
+                  border: `1px solid ${isActive ? spot.color : '#f9d1d1'}`,
+                  background: '#d84b4b',
+                  color: '#fff',
                   fontSize: '10px',
-                  padding: '2px 7px',
+                  fontWeight: 700,
                   fontFamily: 'monospace',
                   cursor: 'pointer',
-                  whiteSpace: 'nowrap',
+                  boxShadow: isActive ? `0 0 0 2px ${spot.color}55` : '0 0 0 1px rgba(0,0,0,0.15)',
                 }}
               >
                 {spot.number}
               </button>
             </Html>
-            {showLabels && (
-              <Html distanceFactor={10} position={[0, 0.46, 0]} center>
-                <div
-                  style={{
-                    color: spot.color,
-                    fontFamily: 'monospace',
-                    fontSize: '9px',
-                    background: 'rgba(4, 13, 26, 0.82)',
-                    padding: '2px 5px',
-                    borderRadius: '999px',
-                    border: `1px solid ${spot.color}`,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {spot.short}
-                </div>
-              </Html>
-            )}
           </group>
         );
       })}
@@ -559,6 +636,7 @@ function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, show
         <FlowParticles running={running} color="#a070ff" start={[1.28, 1.05, 0.78]} end={[1.72, 1.4, 1.0]} speed={0.26} count={5} />
       )}
 
+      <PumpLeaderCallouts activeSpot={activeSpot} setActiveSpot={setActiveSpot} showLabels={showLabels} />
       <PumpHotspots activeSpot={activeSpot} setActiveSpot={setActiveSpot} showLabels={showLabels} />
     </group>
   );
@@ -634,7 +712,7 @@ export default function UmwaelzpumpeDeepDiveView() {
             className="rounded-lg px-3 py-1.5 text-sm font-semibold"
             style={{ background: '#0a1a2e', color: '#7ab0d0', border: '1px solid #1a3a5a' }}
           >
-            {showLabels ? 'Hotspots an' : 'Hotspots aus'}
+            {showLabels ? 'Leitlinien an' : 'Leitlinien aus'}
           </button>
           <button
             type="button"
