@@ -45,16 +45,16 @@ const buildChallenge = ({
 export const WHO_AM_I_CHALLENGES = {
   [WHO_AM_I_CATEGORY.id]: [
     buildChallenge({
-      id: 'umwaelzpumpe',
+      id: 'umwälzpumpe',
       sourceCategory: 'tech',
-      answer: 'Umwaelzpumpe',
-      terms: ['umwaelzpumpe', 'umwälzpumpe', 'kreiselpumpe'],
+      answer: 'Umwälzpumpe',
+      terms: ['umwälzpumpe', 'umwälzpumpe', 'kreiselpumpe'],
       clues: [
         'Ich halte Beckenwasser in Bewegung und schicke es durch den Filter.',
         'Ich arbeite in der Badewasseraufbereitung meist als Kreiselpumpe.',
         'Mein Laufrad erzeugt den noetigen Volumenstrom.',
         'Vor mir sitzt oft ein Vorfilter mit Filterkorb.',
-        'Wenn ich Luft ziehe, drohen Kavitation und Stoerungen.'
+        'Wenn ich Luft ziehe, drohen Kavitation und Störungen.'
       ]
     }),
     buildChallenge({
@@ -64,9 +64,9 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['membrandosierpumpe', 'magnet membrandosierpumpe', 'magnetmembrandosierpumpe'],
       clues: [
         'Ich dosiere Chemikalien stoossweise und sehr genau.',
-        'Meine Foerdermenge entsteht ueber einzelne Huebe.',
+        'Meine Fördermenge entsteht über einzelne Huebe.',
         'Eine Membran trennt meinen Antrieb vom Medium.',
-        'Meine Hublaenge kann ueber einen Knopf eingestellt werden.',
+        'Meine Hublaenge kann über einen Knopf eingestellt werden.',
         'In eurer App sehe ich als Magnet-Membrandosierpumpe im Schnittbild aus.'
       ]
     }),
@@ -76,10 +76,10 @@ export const WHO_AM_I_CHALLENGES = {
       answer: 'Calciumhypochlorid-Anlage',
       terms: ['calciumhypochlorid anlage', 'calciumhypochloritanlage', 'feststoff chloranlage'],
       clues: [
-        'Ich arbeite mit festem Desinfektionsmittel statt mit Fluessigchlor.',
-        'Mein Produkt wird ueber ein Duesensystem angewaessert.',
-        'Im Loese- und Sedimentationsprinzip trenne ich Rueckstaende ab.',
-        'Meine fertige Loesung wird spaeter mit einer Dosierpumpe ins Beckenwasser gebracht.',
+        'Ich arbeite mit festem Desinfektionsmittel statt mit Flüssigchlor.',
+        'Mein Produkt wird über ein Düsensystem angewaessert.',
+        'Im Loese- und Sedimentationsprinzip trenne ich Rückstaende ab.',
+        'Meine fertige Lösung wird später mit einer Dosierpumpe ins Beckenwasser gebracht.',
         'In euren Deep Dives tauche ich als Feststoff-Chloranlage auf.'
       ]
     }),
@@ -93,7 +93,7 @@ export const WHO_AM_I_CHALLENGES = {
         'Ich entferne Ozonreste und organische Stoffe aus dem Wasser.',
         'Bei mir geht es um Adsorption statt um reines Sieben.',
         'Aktivkohle ist ein typisches Material in mir.',
-        'Ohne mich koennen unerwuenschte Nebenprodukte im Reinwasser bleiben.'
+        'Ohne mich können unerwuenschte Nebenprodukte im Reinwasser bleiben.'
       ]
     }),
     buildChallenge({
@@ -141,23 +141,23 @@ export const WHO_AM_I_CHALLENGES = {
       answer: 'Schwallwasserbehaelter',
       terms: ['schwallwasserbehaelter', 'schwallwasserbehälter'],
       clues: [
-        'Ich sammele Wasser, das ueber die Rinne aus dem Becken ablaeuft.',
+        'Ich sammele Wasser, das über die Rinne aus dem Becken ablaeuft.',
         'Badegaeste und Wellen sorgen dafuer, dass ich gefuellt werde.',
         'Frischwasser wird mir zugegeben, um Verluste auszugleichen.',
         'Von mir aus wird Wasser wieder in den Aufbereitungskreislauf gefoerdert.',
-        'Mein Fuellstand ist fuer die Anlagenfuehrung wichtig.'
+        'Mein Fuellstand ist für die Anlagenfuehrung wichtig.'
       ]
     }),
     buildChallenge({
       id: 'filterspuelung',
       sourceCategory: 'tech',
       answer: 'Filterspuelung',
-      terms: ['filterspuelung', 'filterspülung', 'rueckspuelung', 'rückspülung'],
+      terms: ['filterspuelung', 'filterspülung', 'rückspuelung', 'rückspülung'],
       clues: [
         'Ich reinige das Filterbett, wenn sich Schmutz und Flocken angesammelt haben.',
         'Dabei wird die Stroemungsrichtung im Filter geaendert.',
         'Das Filterbett wird aufgelockert und teilweise fluidisiert.',
-        'Mein Ablauf gehoert ins Betriebstagebuch.',
+        'Mein Ablauf gehört ins Betriebstagebuch.',
         'Ohne mich sinken Filterleistung und Hygiene.'
       ]
     }),
@@ -170,7 +170,7 @@ export const WHO_AM_I_CHALLENGES = {
         'Ich sitze am Beckenrand vor einer Wettkampfbahn.',
         'Meine Plattform soll trittsicher und mindestens 50 mal 50 Zentimeter gross sein.',
         'Meine Oberseite darf nur leicht geneigt sein.',
-        'Fuer den Rueckenstart habe ich oft einen Haltebuegel.',
+        'Für den Rückenstart habe ich oft einen Haltebuegel.',
         'Ich helfe Schwimmern, schnell und sauber ins Rennen zu kommen.'
       ]
     }),
@@ -181,9 +181,9 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['finnische rinne'],
       clues: [
         'Ich laufe direkt an der Beckenkante entlang.',
-        'Ueber mich wird verdraengtes und angeschwapptes Wasser abgefuehrt.',
+        'Über mich wird verdraengtes und angeschwapptes Wasser abgefuehrt.',
         'Im Startwand-Bild liege ich direkt am Rand unter dem Block.',
-        'Ich gehoere zum Ueberlaufbereich des Beckens.',
+        'Ich gehöre zum Überlaufbereich des Beckens.',
         'Ich bin keine Bahnlinie, sondern eine Rinnenkonstruktion.'
       ]
     }),
@@ -197,7 +197,7 @@ export const WHO_AM_I_CHALLENGES = {
         'Mit mir ziehst du eine Person aus einem Gefahrenbereich.',
         'Ich wird oft genutzt, wenn eine Person bewusstlos ist.',
         'Mein Ansatzpunkt liegt an Schultern und Armen der betroffenen Person.',
-        'Ich gehoere in die Erste Hilfe und Rettungslehre.'
+        'Ich gehöre in die Erste Hilfe und Rettungslehre.'
       ]
     }),
     buildChallenge({
@@ -206,8 +206,8 @@ export const WHO_AM_I_CHALLENGES = {
       answer: 'Stabile Seitenlage',
       terms: ['stabile seitenlage'],
       clues: [
-        'Ich bin eine Lagerung fuer bewusstlose Personen mit normaler Atmung.',
-        'Ich halte die Atemwege moeglichst frei.',
+        'Ich bin eine Lagerung für bewusstlose Personen mit normaler Atmung.',
+        'Ich halte die Atemwege möglichst frei.',
         'Durch mich kann Erbrochenes besser abfliessen.',
         'Ich komme vor der HLW zum Einsatz, wenn kein Atemstillstand vorliegt.',
         'Jeder Ersthelfer sollte mich sicher beherrschen.'
@@ -219,8 +219,8 @@ export const WHO_AM_I_CHALLENGES = {
       answer: 'AED',
       terms: ['aed', 'automatisierter externer defibrillator', 'defibrillator'],
       clues: [
-        'Ich bin ein Geraet fuer den Herz-Kreislauf-Notfall.',
-        'Meine Sprachansagen fuehren durch die Anwendung.',
+        'Ich bin ein Geraet für den Herz-Kreislauf-Notfall.',
+        'Meine Sprachansagen führen durch die Anwendung.',
         'Ich analysiere den Herzrhythmus automatisch.',
         'Nur wenn es sinnvoll ist, gebe ich einen Schock frei.',
         'Gemeinsam mit HLW kann ich Leben retten.'
@@ -233,7 +233,7 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['rettungskette'],
       clues: [
         'Ich beschreibe ein geordnetes Vorgehen im Notfall.',
-        'Absichern, melden, retten und versorgen gehoeren zu mir.',
+        'Absichern, melden, retten und versorgen gehören zu mir.',
         'Ich soll verhindern, dass in Stress wichtige Schritte vergessen werden.',
         'Bei Badeunfaellen bin ich besonders wichtig.',
         'Ich bin kein einzelnes Geraet, sondern ein Ablauf.'
@@ -247,8 +247,8 @@ export const WHO_AM_I_CHALLENGES = {
       clues: [
         'Mit mir kann der Betreiber Regeln im Bad durchsetzen.',
         'Wer sich nicht an die Ordnung haelt, kann auf meiner Grundlage verwiesen werden.',
-        'Ich bin wichtig fuer Sicherheit und geordneten Badebetrieb.',
-        'Ich stuetze die Badeordnung in der Praxis.',
+        'Ich bin wichtig für Sicherheit und geordneten Badebetrieb.',
+        'Ich stütze die Badeordnung in der Praxis.',
         'Ich bin ein rechtlicher Begriff und keine technische Anlage.'
       ]
     }),
@@ -258,10 +258,10 @@ export const WHO_AM_I_CHALLENGES = {
       answer: 'Badeordnung',
       terms: ['badeordnung'],
       clues: [
-        'Ich regele das Verhalten der Gaeste im Bad.',
+        'Ich regele das Verhalten der Gäste im Bad.',
         'In mir stehen Gebote, Verbote und Hinweise.',
-        'Ich schaffe einen verbindlichen Rahmen fuer Sicherheit und Ruecksicht.',
-        'Der Betreiber setzt mich ueber sein Hausrecht durch.',
+        'Ich schaffe einen verbindlichen Rahmen für Sicherheit und Rücksicht.',
+        'Der Betreiber setzt mich über sein Hausrecht durch.',
         'Ich haenge oft sichtbar im Eingangs- oder Umkleidebereich.'
       ]
     }),
@@ -272,8 +272,8 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['berufsgenossenschaft', 'gesetzliche unfallversicherung'],
       clues: [
         'Ich bin Traeger der gesetzlichen Unfallversicherung im Betrieb.',
-        'Arbeitsunfaelle und Berufskrankheiten gehoeren zu meinem Bereich.',
-        'Ich gebe auch Regeln und Hinweise fuer sicheres Arbeiten.',
+        'Arbeitsunfaelle und Berufskrankheiten gehören zu meinem Bereich.',
+        'Ich gebe auch Regeln und Hinweise für sicheres Arbeiten.',
         'Arbeitgeber und Beschaeftigte begegnen mir im Arbeitsschutz.',
         'Meine Abkuerzung wird im Alltag oft nur mit zwei Buchstaben genannt.'
       ]
@@ -285,8 +285,8 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['vier stufen methode', '4 stufen methode', 'vier-stufen-methode'],
       clues: [
         'Ich bin eine klassische Unterweisungsmethode in der Ausbildung.',
-        'Vorbereiten, vormachen, nachmachen und ueben gehoeren zu mir.',
-        'Ich strukturiere Lernschritte fuer praktische Taetigkeiten.',
+        'Vorbereiten, vormachen, nachmachen und ueben gehören zu mir.',
+        'Ich strukturiere Lernschritte für praktische Taetigkeiten.',
         'Vor allem bei neuen Arbeitsablaeufen bin ich hilfreich.',
         'Mein Name nennt direkt die Anzahl meiner Schritte.'
       ]
@@ -298,8 +298,8 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['legionellen', 'legionella'],
       clues: [
         'Ich bin ein Bakterium und mag bestimmte warme Wasserbereiche.',
-        'Gefaehrlich werde ich vor allem ueber eingeatmete Aerosole.',
-        'Duschanlagen und Warmwassersysteme muessen wegen mir beachtet werden.',
+        'Gefaehrlich werde ich vor allem über eingeatmete Aerosole.',
+        'Duschanlagen und Warmwassersysteme müssen wegen mir beachtet werden.',
         'Zwischen etwa 25 und 45 Grad Celsius vermehre ich mich besonders gut.',
         'Hygieneplaene und Probenahmen wollen mich im Griff behalten.'
       ]
@@ -310,7 +310,7 @@ export const WHO_AM_I_CHALLENGES = {
       answer: 'Freies Chlor',
       terms: ['freies chlor'],
       clues: [
-        'Ich sorge direkt fuer Desinfektionswirkung im Beckenwasser.',
+        'Ich sorge direkt für Desinfektionswirkung im Beckenwasser.',
         'Mein Richtwert im Schwimmbad liegt oft bei 0,3 bis 0,6 Milligramm pro Liter.',
         'Falle ich zu niedrig aus, steigt das Hygienerisiko.',
         'Mein Verhaeltnis zum pH-Wert ist besonders wichtig.',
@@ -324,9 +324,9 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['anschlagplatte'],
       clues: [
         'Ich sitze an der Startwand unter dem Startblock.',
-        'Rueckenschwimmer stossen sich an mir beim Start ab.',
+        'Rückenschwimmer stossen sich an mir beim Start ab.',
         'Meine Oberflaeche muss griffig und sicher sein.',
-        'Ich gehoere zur Wettkampfbahn und nicht zur Aufbereitung.',
+        'Ich gehöre zur Wettkampfbahn und nicht zur Aufbereitung.',
         'Im Bild vom Startblock bin ich deutlich beschriftet.'
       ]
     }),
@@ -337,9 +337,9 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['betriebstagebuch'],
       clues: [
         'Ich dokumentiere wichtige Betriebsdaten im Bad.',
-        'Wasserwerte, Spuelungen und Stoerungen werden in mir festgehalten.',
+        'Wasserwerte, Spülungen und Störungen werden in mir festgehalten.',
         'Ich helfe beim Nachweis eines ordentlichen Betriebs.',
-        'Bei Rueckfragen und Kontrollen bin ich besonders wertvoll.',
+        'Bei Rückfragen und Kontrollen bin ich besonders wertvoll.',
         'Ich bin keine App-Funktion, sondern ein betrieblicher Nachweis.'
       ]
     }),
@@ -352,7 +352,7 @@ export const WHO_AM_I_CHALLENGES = {
         'Mit mir wird ein elektrisches Potential im Wasser gemessen.',
         'Ich arbeite mit Elektroden.',
         'Mein Messwert hilft bei der Beurteilung der Desinfektionskraft.',
-        'Verschmutzungen an mir koennen die Anzeige verfalschen.',
+        'Verschmutzungen an mir können die Anzeige verfalschen.',
         'Ich liefere den Wert, aus dem das Redoxpotential abgelesen wird.'
       ]
     }),
@@ -363,10 +363,10 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['dienstplan', 'dienstplanung'],
       clues: [
         'Ich ordne Personal, Zeiten und Aufgaben im Betrieb.',
-        'Qualifikation, Ruhezeiten und Stoesszeiten muessen bei mir bedacht werden.',
-        'Urlaub und Verfuegbarkeit spielen fuer mich eine Rolle.',
+        'Qualifikation, Ruhezeiten und Stoesszeiten müssen bei mir bedacht werden.',
+        'Urlaub und Verfügbarkeit spielen für mich eine Rolle.',
         'Ohne mich wird der Badebetrieb schnell chaotisch.',
-        'Ich gehoere zur Organisation und nicht zur Wassertechnik.'
+        'Ich gehöre zur Organisation und nicht zur Wassertechnik.'
       ]
     })
   ]

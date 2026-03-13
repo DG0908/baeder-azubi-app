@@ -367,7 +367,7 @@ const CalculatorView = ({
                     className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border bg-white'}`}
                   >
                     <option value="manual">Manuelle Zugabe</option>
-                    <option value="plant">Dosierung ueber Chloranlage</option>
+                    <option value="plant">Dosierung über Chloranlage</option>
                   </select>
 
                   {(calculatorInputs.chlorineDosingMethod || 'manual') === 'plant' && (
@@ -401,7 +401,7 @@ const CalculatorView = ({
 
             <div className={`${darkMode ? 'bg-slate-600' : 'bg-green-100'} rounded-lg p-3 text-sm`}>
               <p className={darkMode ? 'text-green-200' : 'text-green-900'}>
-                Tipp: Nach jeder Dosierung ausreichend umwaelzen und Kontrollmessung durchfuehren.
+                Tipp: Nach jeder Dosierung ausreichend umwälzen und Kontrollmessung durchführen.
               </p>
             </div>
           </div>
@@ -742,7 +742,7 @@ const CalculatorView = ({
           <div className="grid md:grid-cols-3 gap-3 mb-3">
             <input
               type="text"
-              placeholder="Umwaelzleistung (m3/h)"
+              placeholder="Umwälzleistung (m3/h)"
               value={calculatorInputs.circulationFlow || ''}
               onChange={(e) => setCalculatorInputs({ ...calculatorInputs, circulationFlow: e.target.value })}
               className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-600 text-white border-slate-500' : 'border'}`}
@@ -781,7 +781,7 @@ const CalculatorView = ({
             >
               <option value="clear">Sehr klares Wasser</option>
               <option value="normal">Normales Wasser</option>
-              <option value="turbid">Truebung erhoeht</option>
+              <option value="turbid">Truebung erhöht</option>
               <option value="severe">Stark trueb / Problemfall</option>
             </select>
           </div>
@@ -902,7 +902,7 @@ const CalculatorView = ({
 
           <div className={`${darkMode ? 'bg-slate-600' : 'bg-cyan-100'} rounded-lg p-3 text-sm`}>
             <p className={darkMode ? 'text-cyan-200' : 'text-cyan-900'}>
-              Tipp: Der Rechner liefert dir Sollwerte fuer Produktbedarf, Dosierloesung, Tankreichweite und Pumpeneinstellung.
+              Tipp: Der Rechner liefert dir Sollwerte für Produktbedarf, Dosierloesung, Tankreichweite und Pumpeneinstellung.
               Im Alltag danach Sichtkontrolle, Flockenbild und Filtrationsverhalten gegenpruefen.
             </p>
           </div>

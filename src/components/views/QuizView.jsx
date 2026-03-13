@@ -7,10 +7,10 @@ import { getWhoAmIClueCount, getWhoAmIVisibleClues, WHO_AM_I_TIME_LIMIT } from '
 import { formatAnswerLabel } from '../../lib/utils';
 
 const DIFFICULTY_SETTINGS = {
-  anfaenger: { time: 45, label: 'Anfaenger', icon: '??', color: 'bg-green-500' },
-  profi: { time: 30, label: 'Profi', icon: '??', color: 'bg-yellow-500' },
-  experte: { time: 15, label: 'Experte', icon: '??', color: 'bg-red-500' },
-  extra: { time: 75, label: 'Extra schwer', icon: '??', color: 'bg-indigo-700' }
+  anfaenger: { time: 45, label: 'Anfaenger', icon: 'A', color: 'bg-green-500' },
+  profi: { time: 30, label: 'Profi', icon: 'P', color: 'bg-yellow-500' },
+  experte: { time: 15, label: 'Experte', icon: 'E', color: 'bg-red-500' },
+  extra: { time: 75, label: 'Extra schwer', icon: 'X', color: 'bg-indigo-700' }
 };
 
 const CHALLENGE_TIMEOUT_OPTIONS = [
@@ -146,15 +146,15 @@ const QuizView = ({
     <div className="max-w-4xl mx-auto">
       {!currentGame && (
         <>
-          <h2 className="text-3xl font-bold mb-6">Quizduell ??</h2>
+          <h2 className="text-3xl font-bold mb-6">Quizduell</h2>
 
           <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
-            <p className="font-bold text-amber-800 mb-2">?? Spielregeln – Zeitlimit & Strafen</p>
+            <p className="font-bold text-amber-800 mb-2">Spielregeln - Zeitlimit & Strafen</p>
             <ul className="space-y-1 text-amber-700">
-              <li>? Für Herausforderungen kannst du eine <strong>Annahmefrist</strong> festlegen.</li>
-              <li>?? Laufende Duelle behalten <strong>48 Stunden</strong> Zugfrist mit Erinnerung nach 24h.</li>
-              <li>? Wer seinen Zug nicht rechtzeitig macht oder eine Challenge ignoriert, <strong>verliert die Runde</strong>.</li>
-              <li>?? Zusätzlich werden dem Verlierer <strong>100 XP abgezogen</strong>.</li>
+              <li>Für Herausforderungen kannst du eine <strong>Annahmefrist</strong> festlegen.</li>
+              <li>Laufende Duelle behalten <strong>48 Stunden</strong> Zugfrist mit Erinnerung nach 24h.</li>
+              <li>Wer seinen Zug nicht rechtzeitig macht oder eine Challenge ignoriert, <strong>verliert die Runde</strong>.</li>
+              <li>Zusaetzlich werden dem Verlierer <strong>100 XP abgezogen</strong>.</li>
             </ul>
           </div>
 
@@ -162,7 +162,7 @@ const QuizView = ({
             <h3 className="text-xl font-bold mb-4">Spieler herausfordern</h3>
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Schwierigkeitsgrad waehlen:
+                Schwierigkeitsgrad wählen:
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {Object.entries(DIFFICULTY_SETTINGS).map(([key, diff]) => (
@@ -184,7 +184,7 @@ const QuizView = ({
             </div>
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Timer fuer Herausforderung (Annahmefrist):
+                Timer für Herausforderung (Annahmefrist):
               </label>
               <select
                 value={challengeTimeoutMinutes}
@@ -261,10 +261,10 @@ const QuizView = ({
                         </span>
                         {winrate !== null ? (
                           <span className={`font-medium ${winrate >= 50 ? 'text-green-400' : 'text-red-400'}`}>
-                            · {winrate}% W/R ({totalVs} Sp.)
+                            - {winrate}% W/R ({totalVs} Sp.)
                           </span>
                         ) : (
-                          <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>· Noch nicht gespielt</span>
+                          <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>- Noch nicht gespielt</span>
                         )}
                       </div>
                     </div>
@@ -340,7 +340,7 @@ const QuizView = ({
         <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
           <div className="text-center mb-4">
             <span className={`${currentDifficulty.color} text-white px-6 py-2 rounded-full font-bold inline-flex items-center gap-2`}>
-              {currentDifficulty.icon} {currentDifficulty.label} - {currentDifficulty.time} Sekunden pro Frage
+              {currentDifficulty.icon} {currentDifficulty.label} - {(currentQuestion ? questionTimeLimit : currentDifficulty.time)} Sekunden pro Frage
             </span>
           </div>
 
@@ -357,7 +357,7 @@ const QuizView = ({
                 </p>
               )}
               <p className="text-sm text-gray-600 mt-2">
-                {playerTurn === user.name ? '? Du bist dran!' : `${playerTurn} ist dran...`}
+                {playerTurn === user.name ? 'Du bist dran!' : `${playerTurn} ist dran...`}
               </p>
             </div>
             <div className="text-center flex-1">
@@ -399,7 +399,7 @@ const QuizView = ({
                   {adaptiveLearningEnabled ? 'Aktiv' : 'Aus'}
                 </button>
               </div>
-              <h3 className="text-xl font-bold text-center mb-4">Waehle eine Kategorie:</h3>
+              <h3 className="text-xl font-bold text-center mb-4">Wähle eine Kategorie:</h3>
               <p className="text-center text-gray-500 mb-4">Du waehlst 5 Fragen - danach spielt {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} die gleichen Fragen!</p>
               <div className="grid grid-cols-2 gap-3">
                 {CATEGORIES.filter(cat => {
@@ -427,7 +427,7 @@ const QuizView = ({
             return myAnswers.length === 0 && currentCatRound.questions.length > 0;
           })() && (
             <div className="text-center py-8">
-              <div className="text-6xl mb-4">??</div>
+              <div className="text-4xl font-black mb-4 text-emerald-600">START</div>
               <p className="text-xl font-bold mb-2">
                 {(() => {
                   const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
@@ -441,14 +441,14 @@ const QuizView = ({
                 onClick={startCategoryAsSecondPlayer}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
               >
-                Los geht's! ??
+                Los geht's
               </button>
             </div>
           )}
 
           {!quizCategory && playerTurn !== user.name && (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">?</div>
+              <div className="text-4xl font-black mb-4 text-slate-500">WAIT</div>
               <p className="text-xl text-gray-600">Warte auf {playerTurn}...</p>
               <p className="text-sm text-gray-400 mt-2">
                 {waitingForOpponent ? 'Dein Gegner spielt jetzt die gleichen Fragen' : 'Dein Gegner waehlt eine Kategorie'}
@@ -503,17 +503,17 @@ const QuizView = ({
                 )}
                 {currentQuestion.multi && !answered && !questionIsKeyword && !questionIsWhoAmI && !quizMCKeywordMode && (
                   <p className="text-center text-sm text-orange-600 mt-2 font-medium">
-                    ?? Mehrere Antworten sind richtig - waehle alle richtigen aus!
+                    Mehrere Antworten sind richtig - wähle alle richtigen aus.
                   </p>
                 )}
                 {questionIsKeyword && (
                   <p className="text-center text-sm text-indigo-700 mt-2 font-medium">
-                    ?? Extra schwer: Freitext antworten und mindestens {requiredKeywordGroups} Schlagwoerter treffen.
+                    Extra schwer: Freitext antworten und mindestens {requiredKeywordGroups} Schlagwoerter treffen.
                   </p>
                 )}
                 {quizMCKeywordMode && !questionIsKeyword && !questionIsWhoAmI && (
                   <p className="text-center text-sm text-violet-700 mt-2 font-medium">
-                    ?? Schlagwort-Modus: Antworte frei und triff die Schluesselbegriffe.
+                    Schlagwort-Modus: Antworte frei und triff die Schlüsselbegriffe.
                   </p>
                 )}
               </div>
@@ -523,7 +523,7 @@ const QuizView = ({
                   onClick={() => setQuizMCKeywordMode(true)}
                   className="w-full py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-500 hover:bg-violet-50 hover:text-violet-700 transition-all border border-gray-200 hover:border-violet-300"
                 >
-                  ?? Schlagwort-Modus aktivieren
+                  Schlagwort-Modus aktivieren
                 </button>
               )}
 
@@ -563,7 +563,7 @@ const QuizView = ({
                           className={`p-4 rounded-xl font-medium transition-all min-h-[4.5rem] ${buttonClass}`}
                         >
                           {isMulti && !answered && (
-                            <span className="mr-2">{isSelectedMulti ? '??' : '?'}</span>
+                            <span className="mr-2">{isSelectedMulti ? '[x]' : '[ ]'}</span>
                           )}
                           {answerLabel}
                         </button>
@@ -576,7 +576,7 @@ const QuizView = ({
                       onClick={confirmMultiSelectAnswer}
                       className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
                     >
-                      ? Antwort bestaetigen ({selectedAnswers.length} ausgewaehlt)
+                      Antwort bestätigen ({selectedAnswers.length} ausgewaehlt)
                     </button>
                   )}
                 </>
@@ -585,11 +585,11 @@ const QuizView = ({
               {questionUsesFreeText && (
                 <div className="space-y-3">
                   <p className="text-xs text-gray-400">
-                    ?? Singular und Plural werden beide erkannt - schreib, wie es natuerlich klingt.
+                    Singular und Plural werden beide erkannt. Schreib, wie es natürlich klingt.
                   </p>
                   {questionIsWhoAmI ? (
                     <p className="text-xs font-semibold text-slate-700">
-                      Gesucht ist genau ein Begriff. Im Quizduell zaehlt bei richtiger Loesung ein normaler Punkt.
+                      Gesucht ist genau ein Begriff. Im Quizduell zaehlt bei richtiger Lösung ein normaler Punkt.
                     </p>
                   ) : (
                     <p className="text-xs font-semibold text-indigo-600">
@@ -614,7 +614,7 @@ const QuizView = ({
                           : 'bg-indigo-300 cursor-not-allowed'
                       }`}
                     >
-                      {questionIsWhoAmI ? 'Begriff pruefen' : 'Antwort pruefen'}
+                      {questionIsWhoAmI ? 'Begriff prüfen' : 'Antwort prüfen'}
                     </button>
                   )}
 
@@ -626,8 +626,8 @@ const QuizView = ({
                     }`}>
                       <p className={`font-bold ${keywordAnswerEvaluation.isCorrect ? 'text-emerald-700' : 'text-amber-700'}`}>
                         {keywordAnswerEvaluation.isCorrect
-                          ? (questionIsWhoAmI ? '? Richtig erkannt.' : '? Treffer! Antwort ist korrekt.')
-                          : (questionIsWhoAmI ? '?? Noch nicht der gesuchte Begriff.' : '?? Noch nicht ausreichend.')}
+                          ? (questionIsWhoAmI ? 'Richtig erkannt.' : 'Treffer! Antwort ist korrekt.')
+                          : (questionIsWhoAmI ? 'Noch nicht der gesuchte Begriff.' : 'Noch nicht ausreichend.')}
                       </p>
                       {!questionIsWhoAmI && (
                         <>
@@ -681,12 +681,12 @@ const QuizView = ({
                 }}
                 className="w-full mt-2 bg-amber-100 hover:bg-amber-200 text-amber-800 py-2 rounded-lg font-semibold border border-amber-300"
               >
-                ?? Frage melden
+                Frage melden
               </button>
 
               {answered && timeLeft === 0 && (
                 <div className="bg-red-100 border-2 border-red-500 rounded-xl p-4 text-center">
-                  <p className="text-red-700 font-bold">? Zeit abgelaufen!</p>
+                  <p className="text-red-700 font-bold">Zeit abgelaufen!</p>
                 </div>
               )}
 
@@ -695,7 +695,7 @@ const QuizView = ({
                   onClick={proceedToNextRound}
                   className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg"
                 >
-                  Weiter ?
+                  Weiter
                 </button>
               )}
             </div>

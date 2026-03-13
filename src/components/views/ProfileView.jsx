@@ -186,7 +186,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
       if (error) throw error;
       const updatedUser = { ...user, name: profileEditName.trim() };
       setUser(updatedUser);
-      localStorage.setItem('baeder_user', JSON.stringify(updatedUser));
+      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
       showToast('Name erfolgreich geändert!', 'success');
       setProfileEditName('');
     } catch (error) {
@@ -245,7 +245,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
       if (error) throw error;
       const updatedUser = { ...user, avatar: avatarId };
       setUser(updatedUser);
-      localStorage.setItem('baeder_user', JSON.stringify(updatedUser));
+      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
       showToast(avatarId ? 'Avatar geändert!' : 'Avatar entfernt', 'success');
     } catch (error) {
       console.error('Error updating avatar:', error);
@@ -265,7 +265,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
       if (error) throw error;
       const updatedUser = { ...user, company: profileEditCompany.trim() || null };
       setUser(updatedUser);
-      localStorage.setItem('baeder_user', JSON.stringify(updatedUser));
+      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
       showToast('Betrieb gespeichert!', 'success');
       setProfileEditCompany('');
     } catch (error) {
@@ -290,7 +290,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
       if (error) throw error;
       const updatedUser = { ...user, birthDate: profileEditBirthDate };
       setUser(updatedUser);
-      localStorage.setItem('baeder_user', JSON.stringify(updatedUser));
+      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
       showToast('Geburtsdatum gespeichert!', 'success');
       setProfileEditBirthDate('');
     } catch (error) {
@@ -587,8 +587,8 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
             onClick={async () => {
               const shareData = {
                 title: 'Aqua Pilot',
-                text: 'Hey! Schau dir Aqua Pilot an: Lern-App fuer Fachangestellte fuer Baederbetriebe mit Quiz, Karteikarten, Schwimm-Challenge und mehr.',
-                url: 'https://baeder-azubi-app.vercel.app'
+                text: 'Hey! Schau dir Aqua Pilot an: Lern-App für Fachangestellte für Bäderbetriebe mit Quiz, Karteikarten, Schwimm-Challenge und mehr.',
+                url: 'https://bäder-azubi-app.vercel.app'
               };
               if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                 try {
@@ -599,11 +599,11 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
                 }
               } else {
                 try {
-                  await navigator.clipboard.writeText('https://baeder-azubi-app.vercel.app');
+                  await navigator.clipboard.writeText('https://bäder-azubi-app.vercel.app');
                   showToast('Link kopiert! Teile ihn mit deinen Freunden.', 'success');
                   playSound('splash');
                 } catch (err) {
-                  showToast('Link: https://baeder-azubi-app.vercel.app', 'info');
+                  showToast('Link: https://bäder-azubi-app.vercel.app', 'info');
                 }
               }
             }}
@@ -615,11 +615,11 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           <button
             onClick={async () => {
               try {
-                await navigator.clipboard.writeText('https://baeder-azubi-app.vercel.app');
+                await navigator.clipboard.writeText('https://bäder-azubi-app.vercel.app');
                 showToast('Link kopiert!', 'success');
                 playSound('splash');
               } catch (err) {
-                showToast('Link: https://baeder-azubi-app.vercel.app', 'info');
+                showToast('Link: https://bäder-azubi-app.vercel.app', 'info');
               }
             }}
             className={`px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${

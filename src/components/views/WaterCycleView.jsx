@@ -166,7 +166,7 @@ function BeckenDeepDive({ metrics, xrayMode = false }) {
 
   // Hotspot definitions (3D position)
   const hotDefs = [
-    { id:'ueberlauf',     x:0,    y:-65,  z:-5,  label:'↩ Überlauf',   color:'#4a9eff' },
+    { id:'überlauf',     x:0,    y:-65,  z:-5,  label:'↩ Überlauf',   color:'#4a9eff' },
     { id:'einstroemdüsen',x:0,    y:0,    z:55,  label:'▲ Düsen',      color:'#34c090' },
     { id:'wendewand',     x:-120, y:0,    z:25,  label:'🔲 Wendewand', color:'#ffaa40' },
     { id:'restentleerung',x:0,    y:35,   z:55,  label:'⬇ Entleer.',   color:'#d04040' },
@@ -299,7 +299,7 @@ function BeckenDeepDive({ metrics, xrayMode = false }) {
 }
 
 // ─── Überlaufrinne 3D Deep-Dive ─────────────────────────────────────────────────
-function UeberlaufDeepDive({ xrayMode = false }) {
+function ÜberlaufDeepDive({ xrayMode = false }) {
   const [rx, setRx] = useState(-28);
   const [ry, setRy] = useState(38);
   const [drag, setDrag] = useState(null);
@@ -447,7 +447,7 @@ function UeberlaufDeepDive({ xrayMode = false }) {
 }
 
 // ─── Rücklaufleitung 3D Deep-Dive ──────────────────────────────────────────────
-function RuecklaufDeepDive({ metrics, xrayMode = false }) {
+function RücklaufDeepDive({ metrics, xrayMode = false }) {
   const [rx, setRx] = useState(-32);
   const [ry, setRy] = useState(-18);
   const [drag, setDrag] = useState(null);
@@ -1197,11 +1197,11 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
   const topPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), YT, R * Math.sin(ang(i))));
   const botPts = Array.from({ length: N }, (_, i) => p3(R * Math.cos(ang(i)), YB, R * Math.sin(ang(i))));
 
-  // Corrected layer order: Aktivkohle top, Quarzsand middle, Stuetzkies bottom.
+  // Corrected layer order: Aktivkohle top, Quarzsand middle, Stützkies bottom.
   const layers = [
     { id: 'aktivkohle', y1: -54, y2: -26, fill: '#223646', label: 'AKTIVKOHLE (OBEN)' },
     { id: 'quarzsand', y1: -26, y2: 18, fill: '#5b4b2c', label: 'QUARZSAND' },
-    { id: 'stuetzkies', y1: 18, y2: 48, fill: '#374a2e', label: 'STUETZKIES' },
+    { id: 'stützkies', y1: 18, y2: 48, fill: '#374a2e', label: 'STUETZKIES' },
   ];
 
   const layerFaces = [];
@@ -1276,9 +1276,9 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
   const pipeDefs = [
     { id: 'rohwasser', from: [-12, YT - 8, -R - 8], to: [-12, YT - 8, -R - 34], color: '#4a9eff', label: 'ROH' },
     { id: 'reinwasser', from: [R + 5, -6, 0], to: [R + 32, -6, 0], color: '#34c090', label: 'REIN' },
-    { id: 'spuelwasser', from: [14, YT - 8, -R - 8], to: [14, YT - 8, -R - 32], color: '#66c0ff', label: 'SPUEL' },
+    { id: 'spülwasser', from: [14, YT - 8, -R - 8], to: [14, YT - 8, -R - 32], color: '#66c0ff', label: 'SPUEL' },
     { id: 'schlammwasser', from: [R + 5, YB - 8, 10], to: [R + 30, YB - 8, 10], color: '#d09030', label: 'SCHLAMM' },
-    { id: 'spuelluft', from: [-R - 5, -20, 10], to: [-R - 30, -20, 10], color: '#b0d8ff', label: 'LUFT' },
+    { id: 'spülluft', from: [-R - 5, -20, 10], to: [-R - 30, -20, 10], color: '#b0d8ff', label: 'LUFT' },
     { id: 'absenken', from: [-R - 5, 24, -10], to: [-R - 30, 24, -10], color: '#c090ff', label: 'ABSENK' },
     { id: 'entleerung', from: [0, YB + 5, R - 2], to: [0, YB + 30, R - 2], color: '#ffaa40', label: 'ENTL' },
     { id: 'entlueftung', from: [0, YT - 10, R - 2], to: [0, YT - 30, R - 2], color: '#7ad0ff', label: 'VENT' },
@@ -1296,13 +1296,13 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
   const hotDefs = [
     { id: 'filterglocke', x: 0, y: YT - 7, z: -2, label: 'FG Filterglocke', color: '#4a9eff' },
     { id: 'schichten', x: 0, y: -2, z: 0, label: 'LS Schichten', color: '#34c090' },
-    { id: 'dusenboden', x: 0, y: nozzleY, z: 0, label: 'DB Duesenboden', color: '#ffaa40' },
+    { id: 'dusenboden', x: 0, y: nozzleY, z: 0, label: 'DB Düsenboden', color: '#ffaa40' },
     { id: 'filterkerze', x: 20, y: 24, z: 14, label: 'FK Filterkerze', color: '#c090ff' },
     { id: 'rohwasser', x: -12, y: YT - 8, z: -R - 20, label: 'RW Rohwasser', color: '#4a9eff' },
     { id: 'reinwasser', x: R + 19, y: -6, z: 0, label: 'RE Reinwasser', color: '#34c090' },
-    { id: 'spuelwasser', x: 14, y: YT - 8, z: -R - 20, label: 'SW Spuelwasser', color: '#66c0ff' },
+    { id: 'spülwasser', x: 14, y: YT - 8, z: -R - 20, label: 'SW Spülwasser', color: '#66c0ff' },
     { id: 'schlammwasser', x: R + 18, y: YB - 8, z: 10, label: 'SL Schlammw.', color: '#d09030' },
-    { id: 'spuelluft', x: -R - 18, y: -20, z: 10, label: 'LU Spuelluft', color: '#b0d8ff' },
+    { id: 'spülluft', x: -R - 18, y: -20, z: 10, label: 'LU Spülluft', color: '#b0d8ff' },
     { id: 'absenken', x: -R - 18, y: 24, z: -10, label: 'AB Absenken', color: '#c090ff' },
     { id: 'entleerung', x: 0, y: YB + 18, z: R - 2, label: 'EN Entleerung', color: '#ffaa40' },
     { id: 'entlueftung', x: 0, y: YT - 22, z: R - 2, label: 'VL Entlueftung', color: '#7ad0ff' },
@@ -1312,61 +1312,61 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
   const FIDATA = {
     filterglocke: { color: '#4a9eff', icon: 'FG', title: 'Filterglocke / Verteiler', items: [
       'Rohwasser tritt oben ein und wird gleichmaessig verteilt',
-      'Verhindert Kanalbildung und lokale Ueberstroemung',
+      'Verhindert Kanalbildung und lokale Überstroemung',
       'Austritt in den Filterraum erfolgt radial in den Kopfbereich',
       'Bei defekter Glocke: ungleichmaessige Filtration und Trubdurchbruch',
     ]},
     schichten: { color: '#34c090', icon: 'LS', title: 'Filterschichten (korrigiert)', items: [
       'Oben: Aktivkohle (Adsorption von Organik, Geruch, Chloraminen)',
       'Mitte: Quarzsand (Hauptabscheidung von Flocken und Partikeln)',
-      'Unten: Stuetzkies (Tragschicht zur Lastverteilung)',
+      'Unten: Stützkies (Tragschicht zur Lastverteilung)',
       'Diese Reihenfolge ist im Modell jetzt entsprechend umgesetzt',
-      'Rueckspuelen bei dP > 0,5 bar oder spaetestens nach 72 h',
+      'Rückspuelen bei dP > 0,5 bar oder spaetestens nach 72 h',
     ]},
-    dusenboden: { color: '#ffaa40', icon: 'DB', title: 'Duesenboden', items: [
-      'Duesenboden stuetzt den Filteraufbau mechanisch',
-      'Verteilt Rueckspuelwasser gleichmaessig auf die Flaeche',
+    dusenboden: { color: '#ffaa40', icon: 'DB', title: 'Düsenboden', items: [
+      'Düsenboden stützt den Filteraufbau mechanisch',
+      'Verteilt Rückspuelwasser gleichmaessig auf die Flaeche',
       'Schlitzweite typ. 0,2-0,4 mm',
-      'Verstopfte Duesen fuehren zu Totzonen und unvollstaendiger Spuelung',
+      'Verstopfte Düsen führen zu Totzonen und unvollstaendiger Spülung',
     ]},
     filterkerze: { color: '#c090ff', icon: 'FK', title: 'Filterkerze (Taste im Modell)', items: [
       'Mit Taste "KERZE AN/AUS" wird eine Beispiel-Filterkerze eingeblendet',
-      'Darstellung zeigt Schlitze und Anschluss am Duesenboden',
-      'Hilft beim Verstaendnis von Stroemung und Rueckspuelverteilung',
+      'Darstellung zeigt Schlitze und Anschluss am Düsenboden',
+      'Hilft beim Verstaendnis von Stroemung und Rückspuelverteilung',
       'Kerzenbruch oder Verkalkung verursacht lokale Kurzschlussstroemung',
     ]},
     rohwasser: { color: '#4a9eff', icon: 'RW', title: 'Rohwasserklappe', items: [
       'Eintritt des belasteten Wassers in den Filterkopf',
-      'Armatur fuer Normalbetrieb offen, bei Wartung absperrbar',
+      'Armatur für Normalbetrieb offen, bei Wartung absperrbar',
       'Hydraulik muss ohne Luftsack und mit konstantem Durchsatz laufen',
     ]},
     reinwasser: { color: '#34c090', icon: 'RE', title: 'Reinwasserklappe', items: [
       'Austritt des filtrierten Wassers zur Folgebehandlung',
-      'Bei Trubdurchbruch sofort pruefen: Schichten, dP, Rueckspuelzustand',
+      'Bei Trubdurchbruch sofort prüfen: Schichten, dP, Rückspuelzustand',
       'Im Regelbetrieb stetiger Abfluss ohne Pulsation',
     ]},
-    spuelwasser: { color: '#66c0ff', icon: 'SW', title: 'Spuelwasserklappe', items: [
-      'Rueckspuelbetrieb: Stroemung von unten nach oben',
+    spülwasser: { color: '#66c0ff', icon: 'SW', title: 'Spülwasserklappe', items: [
+      'Rückspuelbetrieb: Stroemung von unten nach oben',
       'Loest Ablagerungen aus den Schichten',
-      'Spuelwasser nie ins Becken zurueckfuehren',
+      'Spülwasser nie ins Becken zurückfuehren',
     ]},
     schlammwasser: { color: '#d09030', icon: 'SL', title: 'Schlammwasserklappe', items: [
-      'Fuehrt verschmutztes Rueckspuelwasser zum Kanal/Abwurf',
+      'Führt verschmutztes Rückspuelwasser zum Kanal/Abwurf',
       'Im Normalbetrieb geschlossen',
-      'Falsche Schaltstellung kann zu hygienischem Risiko fuehren',
+      'Falsche Schaltstellung kann zu hygienischem Risiko führen',
     ]},
-    spuelluft: { color: '#b0d8ff', icon: 'LU', title: 'Spuelluftklappe', items: [
-      'Luft-Wasser-Spuelung lockert das Filterbett vor Rueckspuelung',
+    spülluft: { color: '#b0d8ff', icon: 'LU', title: 'Spülluftklappe', items: [
+      'Luft-Wasser-Spülung lockert das Filterbett vor Rückspuelung',
       'Verbessert Austrag von Biofilm und Partikeln',
       'Nur in dafuer freigegebenen Fahrweisen zuschalten',
     ]},
     absenken: { color: '#c090ff', icon: 'AB', title: 'Klappe zum Absenken', items: [
-      'Absenkfunktion fuer Schichtberuhigung oder Wartungsfahrweise',
+      'Absenkfunktion für Schichtberuhigung oder Wartungsfahrweise',
       'Hydraulik wird kontrolliert reduziert',
       'Nur nach Betriebsanweisung schalten',
     ]},
     entleerung: { color: '#ffaa40', icon: 'EN', title: 'Entleerung', items: [
-      'Vollstaendige Entleerung fuer Revision und Reparatur',
+      'Vollstaendige Entleerung für Revision und Reparatur',
       'Entleerung nur bei gesicherter Absperrung der Zu-/Ablaufe',
       'Entleerungsweg muss in den Kanal gefuehrt sein',
     ]},
@@ -1376,9 +1376,9 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
       'Bei Inbetriebnahme und nach Wartung gezielt entlueften',
     ]},
     druck: { color: dpColor, icon: '?', title: 'Differenzdruck (dP)', items: [
-      `Aktuell: ${dp} bar ${dp > 0.5 ? '-> Rueckspuelen' : dp > 0.35 ? '(erhoeht)' : '(normal)'}`,
+      `Aktuell: ${dp} bar ${dp > 0.5 ? '-> Rückspuelen' : dp > 0.35 ? '(erhöht)' : '(normal)'}`,
       'Richtwert sauber: 0,1-0,2 bar',
-      'Rueckspuelgrenze: > 0,5 bar oder zeitgesteuert',
+      'Rückspuelgrenze: > 0,5 bar oder zeitgesteuert',
       'dP-Anstieg zeigt Beladung und hydraulische Belastung',
     ]},
   };
@@ -1940,12 +1940,12 @@ function DeepDiveSVG({ stationId, metrics, controls, xrayMode }) {
     return <BeckenDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
-  if (stationId === 'ueberlauf') {
-    return <UeberlaufDeepDive xrayMode={xrayMode}/>;
+  if (stationId === 'überlauf') {
+    return <ÜberlaufDeepDive xrayMode={xrayMode}/>;
   }
 
-  if (stationId === 'ruecklauf') {
-    return <RuecklaufDeepDive metrics={metrics} xrayMode={xrayMode}/>;
+  if (stationId === 'rücklauf') {
+    return <RücklaufDeepDive metrics={metrics} xrayMode={xrayMode}/>;
   }
 
   return (
@@ -2471,10 +2471,10 @@ const WaterCycleView = () => {
                 </g>
 
                 {/* ══════════════ RÜCKLAUF label ══════════════ */}
-                <g onClick={() => chooseStation('ruecklauf')} style={{ cursor: 'pointer' }}>
+                <g onClick={() => chooseStation('rücklauf')} style={{ cursor: 'pointer' }}>
                   <rect x="35" y="270" width="82" height="28" rx="4"
                     fill="#060f22"
-                    stroke={selectedStationId === 'ruecklauf' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.2"/>
+                    stroke={selectedStationId === 'rücklauf' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.2"/>
                   <text x="76" y="288" fill="#5a8090" fontSize="7.5" fontFamily="monospace" textAnchor="middle" letterSpacing="0.8">RÜCKLAUF</text>
                 </g>
 
@@ -2621,7 +2621,7 @@ const WaterCycleView = () => {
                       </>}
                     </g>
                   ))}
-                  {/* Return pipe entry glow at pool floor (ruecklauf-becken arrives at 112,525) */}
+                  {/* Return pipe entry glow at pool floor (rücklauf-becken arrives at 112,525) */}
                   <circle cx="112" cy="522" r="8" fill="#4ac8ff"
                     fillOpacity={metrics.flowRate > 0 ? 0.18 : 0.05}
                     filter={metrics.flowRate > 0 ? 'url(#wcGlow)' : undefined}/>
@@ -2674,10 +2674,10 @@ const WaterCycleView = () => {
                 </g>
 
                 {/* ── ÜBERLAUFRINNE (wide channel: x=195→435, directly connected to Schwall) ── */}
-                <g className="wc-station" onClick={() => chooseStation('ueberlauf')} style={{ cursor: 'pointer' }}>
+                <g className="wc-station" onClick={() => chooseStation('überlauf')} style={{ cursor: 'pointer' }}>
                   {/* Channel U-shape: left wall, bottom, right wall (right wall = Schwall left wall) */}
                   <path d="M 195 96 L 195 155 L 435 155 L 435 96" fill="none"
-                    stroke={selectedStationId === 'ueberlauf' ? '#4a9eff' : '#1a4060'} strokeWidth="1.5"/>
+                    stroke={selectedStationId === 'überlauf' ? '#4a9eff' : '#1a4060'} strokeWidth="1.5"/>
                   {/* Channel water fill — bright, clearly visible */}
                   <rect x="197" y="110" width="236" height="43" fill="url(#wcWaterFill)"
                     fillOpacity={metrics.flowRate > 0 ? 0.75 : 0.25} rx="2"/>
@@ -2903,10 +2903,10 @@ const WaterCycleView = () => {
                 )}
 
                 {/* ── RÜCKLAUF (on return pipe, bottom center) ── */}
-                <g className="wc-station" onClick={() => chooseStation('ruecklauf')} style={{ cursor: 'pointer' }}>
-                  <rect x="345" y="662" width="88" height="35" rx="5" fill="#060f22" stroke={selectedStationId === 'ruecklauf' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.2"/>
+                <g className="wc-station" onClick={() => chooseStation('rücklauf')} style={{ cursor: 'pointer' }}>
+                  <rect x="345" y="662" width="88" height="35" rx="5" fill="#060f22" stroke={selectedStationId === 'rücklauf' ? '#4a9eff' : '#1a3a5a'} strokeWidth="1.2"/>
                   {/* Flow-meter symbol: circle with crossing lines */}
-                  <circle cx="389" cy="679" r="12" fill="#040d1a" stroke={selectedStationId === 'ruecklauf' ? '#4a9eff' : '#1a4060'} strokeWidth="1.2"/>
+                  <circle cx="389" cy="679" r="12" fill="#040d1a" stroke={selectedStationId === 'rücklauf' ? '#4a9eff' : '#1a4060'} strokeWidth="1.2"/>
                   <line x1="377" y1="679" x2="401" y2="679" stroke="#4a9eff" strokeWidth="1.8" opacity="0.65"/>
                   <line x1="389" y1="667" x2="389" y2="691" stroke="#4a9eff" strokeWidth="0.8" strokeDasharray="2 2" opacity="0.35"/>
                   <polygon points="396,675 403,679 396,683" fill="#4a9eff" opacity={metrics.flowRate > 0 ? 0.85 : 0.3}/>
@@ -3330,12 +3330,12 @@ const WaterCycleView = () => {
                 <div className="rounded-xl p-3" style={{ background: '#0a2038', border: '1px solid #1a5060' }}>
                   <p className="text-xs font-mono tracking-widest mb-2" style={{ color: '#34c090' }}>PRÜFUNGSFRAGE</p>
                   <p className="text-sm font-semibold mb-2" style={{ color: '#c0d8f0' }}>
-                    {DEEP_DIVE[deepDiveStation.id]?.pruefungsfrage}
+                    {DEEP_DIVE[deepDiveStation.id]?.prüfungsfrage}
                   </p>
                   <details>
                     <summary className="text-xs cursor-pointer font-mono" style={{ color: '#4a9eff' }}>▶ Antwort einblenden</summary>
                     <p className="text-sm mt-2 leading-relaxed" style={{ color: '#90b0d0' }}>
-                      {DEEP_DIVE[deepDiveStation.id]?.pruefungsantwort}
+                      {DEEP_DIVE[deepDiveStation.id]?.prüfungsantwort}
                     </p>
                   </details>
                 </div>

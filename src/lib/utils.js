@@ -26,7 +26,7 @@ const stripNoiseTokens = (value) => normalizeSpace(value)
 const TRAILING_STOP_WORDS = new Set([
   'und',
   'oder',
-  'fuer',
+  'für',
   'fur',
   'im',
   'in',
@@ -89,15 +89,26 @@ const buildDisplayAnswers = (question, answers) => {
     return displayAnswers;
   }
 
-  const compactLevels = [6, 5, 4, 3];
-  for (const level of compactLevels) {
-    const correctWords = countWords(displayAnswers[correctIndex]);
-    const wrongWords = displayAnswers
-      .filter((_, index) => index !== correctIndex)
-      .map(countWords);
-    const maxWrongWords = wrongWords.length > 0 ? Math.max(...wrongWords) : 0;
-    if (correctWords < maxWrongWords + 2) break;
-    displayAnswers[correctIndex] = truncateWords(answers[correctIndex], level);
+  // Equalize answer lengths so no single answer stands out.
+  // Find the median word count of wrong answers and cap the correct answer
+  // to at most median + 1 words.
+  const wrongWordCounts = displayAnswers
+    .map((text, idx) => ({ idx, words: countWords(text) }))
+    .filter((entry) => entry.idx !== correctIndex)
+    .map((entry) => entry.words)
+    .sort((a, b) => a - b);
+
+  const correctWords = countWords(displayAnswers[correctIndex]);
+
+  if (wrongWordCounts.length > 0) {
+    const medianWrong = wrongWordCounts[Math.floor(wrongWordCounts.length / 2)];
+    const maxWrong = wrongWordCounts[wrongWordCounts.length - 1];
+    // Target: correct answer should be at most maxWrong + 1 words
+    const targetMax = Math.max(maxWrong + 1, medianWrong + 2, 3);
+
+    if (correctWords > targetMax) {
+      displayAnswers[correctIndex] = truncateWords(answers[correctIndex], targetMax);
+    }
   }
 
   return displayAnswers;

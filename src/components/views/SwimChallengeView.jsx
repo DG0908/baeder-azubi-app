@@ -233,7 +233,7 @@ const {
     const units = (Array.isArray(customPlanForm.units) ? customPlanForm.units : [])
       .map((unit, index) => normalizePlanUnitForView(unit, index));
     if (units.length === 0) {
-      alert('Bitte mindestens eine Einheit fuer den Trainingsplan hinterlegen.');
+      alert('Bitte mindestens eine Einheit für den Trainingsplan hinterlegen.');
       return;
     }
 
@@ -596,7 +596,7 @@ const {
                     📋 Schwimm-Trainingsplaene
                   </h3>
                   <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Ausdauer, Sprint, Technik und Kombi. Von angenehm bis anspruchsvoll. Bei erfuelltem Plan gibt es XP nach Trainer-Bestaetigung.
+                    Ausdauer, Sprint, Technik und Kombi. Von angenehm bis anspruchsvoll. Bei erfuelltem Plan gibt es XP nach Trainer-Bestätigung.
                   </p>
                 </div>
 
@@ -606,8 +606,8 @@ const {
                   </h4>
                   <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     {isTrainerLike
-                      ? 'Als Ausbilder kannst du Plaene fuer dich oder gezielt fuer Azubis anlegen.'
-                      : 'Stelle dir deinen eigenen Plan zusammen und nutze ihn direkt fuer neue Einheiten.'}
+                      ? 'Als Ausbilder kannst du Plaene für dich oder gezielt für Azubis anlegen.'
+                      : 'Stelle dir deinen eigenen Plan zusammen und nutze ihn direkt für neue Einheiten.'}
                   </p>
                   <form onSubmit={handleCreateCustomPlan} className="grid md:grid-cols-2 gap-3">
                     <div className="md:col-span-2">
@@ -616,7 +616,7 @@ const {
                         type="text"
                         value={customPlanForm.name}
                         onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, name: event.target.value }))}
-                        placeholder={isTrainerLike ? 'z.B. Technikblock fuer Lina' : 'z.B. Mein 1km Abendplan'}
+                        placeholder={isTrainerLike ? 'z.B. Technikblock für Lina' : 'z.B. Mein 1km Abendplan'}
                         required
                         className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-800'}`}
                       />
@@ -631,7 +631,7 @@ const {
                           required
                           className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                         >
-                          {azubiCandidates.length === 0 && <option value="">Keine Azubis verfuegbar</option>}
+                          {azubiCandidates.length === 0 && <option value="">Keine Azubis verfügbar</option>}
                           {azubiCandidates.map((azubi) => (
                             <option key={azubi.id} value={azubi.id}>{azubi.name}</option>
                           ))}
@@ -817,7 +817,7 @@ const {
                                   </span>
                                   {assignedInfo && (
                                     <span className={`text-[11px] px-2 py-1 rounded-full ${darkMode ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700'}`}>
-                                      Fuer {assignedInfo}
+                                      Für {assignedInfo}
                                     </span>
                                   )}
                                   {createdInfo && (
@@ -1044,7 +1044,7 @@ const {
                         )}
                         <div className="text-sm mt-1">
                           {isFulfilled
-                            ? 'Plan mit aktueller Eingabe erfuellt (XP nach Bestaetigung).'
+                            ? 'Plan mit aktueller Eingabe erfuellt (XP nach Bestätigung).'
                             : 'Distanz/Zeit/Stil auf Planziel einstellen, um XP zu erhalten.'}
                         </div>
                       </div>
@@ -2108,7 +2108,7 @@ const {
                         </div>
                       ) : (
                         <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          Noch keine bestaetigten Distanz-Eintraege im aktuellen Monat.
+                          Noch keine bestätigten Distanz-Eintraege im aktuellen Monat.
                         </div>
                       )}
                     </div>
@@ -2249,7 +2249,7 @@ const {
                             onClick={() => confirmSwimSession(session.id)}
                             className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium"
                           >
-                            Bestaetigen
+                            Bestätigen
                           </button>
                           <button
                             onClick={() => rejectSwimSession(session.id)}

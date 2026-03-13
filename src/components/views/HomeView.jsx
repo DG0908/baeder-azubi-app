@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Bell, Calendar, Brain, Trophy, Zap, Target, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
@@ -141,14 +141,14 @@ const HomeView = ({
     {
       id: 'learning',
       title: 'Lernen',
-      description: 'Module fuer Wissensaufbau und Pruefungstraining.',
+      description: 'Module für Wissensaufbau und Prüfungstraining.',
       cards: [
         {
           id: 'exam-simulator',
           icon: '\u{1F4DD}',
-          title: 'Pruefungssimulator',
+          title: 'Prüfungssimulator',
           description: 'Theorie und Praxis im Fokusmodus',
-          meta: nextExam ? `Naechste Klausur in ${nextExam.daysUntil} Tagen` : 'Ideal fuer gezielte Vorbereitung',
+          meta: nextExam ? `Nächste Klausur in ${nextExam.daysUntil} Tagen` : 'Ideal für gezielte Vorbereitung',
           wide: true,
           onClick: openExamSimulator,
           style: {
@@ -176,8 +176,8 @@ const HomeView = ({
           id: 'calculator',
           icon: '\u{1F9EE}',
           title: 'Praxis-Rechner',
-          description: 'Rechenwege fuer den Betriebsalltag',
-          meta: 'inklusive Loesungsweg',
+          description: 'Rechenwege für den Betriebsalltag',
+          meta: 'inklusive Lösungsweg',
           onClick: () => openView('calculator'),
           style: {
             darkCard: 'border-blue-600 hover:border-blue-400',
@@ -211,7 +211,7 @@ const HomeView = ({
           id: 'swim-challenge',
           icon: '\u{1F3CA}',
           title: 'Schwimm-Challenge',
-          description: 'Disziplinen trainieren und bestaetigen',
+          description: 'Disziplinen trainieren und bestätigen',
           meta: 'Azubis und Trainer im Vergleich',
           onClick: () => openView('swim-challenge'),
           style: {
@@ -268,13 +268,13 @@ const HomeView = ({
     },
     {
       id: 'overview',
-      title: 'Uebersicht und Team',
+      title: 'Übersicht und Team',
       description: 'Auswertung, Kommunikation und Wissenstransfer.',
       cards: [
         ...(user.permissions.canViewAllStats ? [{
           id: 'trainer-dashboard',
           icon: '\u{1F468}\u200D\u{1F3EB}',
-          title: 'Azubi-Uebersicht',
+          title: 'Azubi-Übersicht',
           description: 'Fortschritte teamweit einsehen',
           meta: 'Trainer- und Adminbereich',
           onClick: () => openView('trainer-dashboard'),
@@ -331,7 +331,7 @@ const HomeView = ({
           id: 'chat',
           icon: '\u{1F4AC}',
           title: 'Team-Chat',
-          description: 'Abstimmen und Rueckfragen klaeren',
+          description: 'Abstimmen und Rückfragen klaeren',
           meta: `${messages.length} Nachrichten`,
           onClick: () => openView('chat'),
           style: {
@@ -348,7 +348,7 @@ const HomeView = ({
   return (
     <div className="space-y-6">
       <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 via-cyan-800 to-cyan-900' : 'bg-gradient-to-r from-cyan-500 via-cyan-400 to-cyan-500'} text-white rounded-xl p-8 text-center shadow-xl backdrop-blur-sm`}>
-        <h2 className="text-3xl font-bold mb-2 drop-shadow-lg">Willkommen zurueck!</h2>
+        <h2 className="text-3xl font-bold mb-2 drop-shadow-lg">Willkommen zurück!</h2>
         <div className={`${darkMode ? 'bg-white/10 border-white/20' : 'bg-white/20 border-white/30'} border rounded-lg p-3 mb-4 max-w-3xl mx-auto`}>
           <div className="flex items-center justify-between gap-3 mb-1">
             <span className="text-xs font-semibold uppercase tracking-wide opacity-90">Allgemeinbildung</span>
@@ -406,7 +406,7 @@ const HomeView = ({
               onClick={openExamSimulator}
               className={`${darkMode ? 'bg-cyan-500/20 hover:bg-cyan-500/30 border-cyan-500/40 text-cyan-100' : 'bg-cyan-50 hover:bg-cyan-100 border-cyan-200 text-cyan-700'} border rounded-lg px-4 py-2 text-sm font-semibold transition-all`}
             >
-              Pruefungssimulator starten
+              Prüfungssimulator starten
             </button>
             <button
               onClick={openFlashcards}
@@ -430,7 +430,7 @@ const HomeView = ({
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-orange-300' : 'text-orange-800'}`}>
               <Target className="mr-2" />
-              Taegliche Challenges
+              Tägliche Challenges
             </h3>
             <button
               onClick={() => setDailyGoalsExpanded((prev) => !prev)}
@@ -544,7 +544,7 @@ const HomeView = ({
             <div className="grid md:grid-cols-4 gap-3 mb-4">
           {[
             { key: 'quizAnswers', label: 'Quiz', icon: 'Q' },
-            { key: 'examAnswers', label: 'Pruefung', icon: 'P' },
+            { key: 'examAnswers', label: 'Prüfung', icon: 'P' },
             { key: 'flashcards', label: 'Karteikarten', icon: 'K' },
             { key: 'checklistItems', label: 'Praxis', icon: '?' }
           ].map((metric) => {
@@ -579,7 +579,7 @@ const HomeView = ({
             <div className="grid md:grid-cols-4 gap-3">
           {[
             { key: 'quizAnswers', label: 'Quiz/Woche' },
-            { key: 'examAnswers', label: 'Pruefung/Woche' },
+            { key: 'examAnswers', label: 'Prüfung/Woche' },
             { key: 'flashcards', label: 'Karten/Woche' },
             { key: 'checklistItems', label: 'Praxis/Woche' }
           ].map((metric) => (
@@ -630,7 +630,7 @@ const HomeView = ({
               </div>
             </div>
             <div className={`text-right ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              <p className="text-sm">Naechster Meilenstein</p>
+              <p className="text-sm">Nächster Meilenstein</p>
               <p className="font-bold">
                 {(() => {
                   const milestones = [3, 5, 10, 15, 25, 50];

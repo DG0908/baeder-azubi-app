@@ -13,7 +13,7 @@ const LazyMembrandosierpumpeDeepDiveView = lazy(() => import('./pumpen/Membrando
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
   {
-    id: 'baedertechnik',
+    id: 'bädertechnik',
     name: 'Bädertechnik',
     icon: '⚗️',
     lucideIcon: FlaskConical,
@@ -33,21 +33,21 @@ const LEARNING_CATEGORIES = [
       {
         id: 'beckenarten-einrichtungen',
         name: 'Beckenarten & Einrichtungen',
-        description: 'Uebersicht zu Beckenformen, Ausstattung und Betriebseinrichtungen',
+        description: 'Übersicht zu Beckenformen, Ausstattung und Betriebseinrichtungen',
         icon: '🏗️',
         available: false,
       },
       {
         id: 'startblock-startwand-bauliches',
         name: 'Startblock & Startwand (Bauliches)',
-        description: 'Deep Dive mit 3D-Modell, Massen, Startwand und Rueckenstart-Funktionen',
+        description: 'Deep Dive mit 3D-Modell, Massen, Startwand und Rückenstart-Funktionen',
         icon: 'SB',
         available: true,
       },
       {
         id: 'sprunganlagen',
         name: 'Sprunganlagen',
-        description: 'Sprungturm, Bretter, Sicherheitsbereiche und Pruefpunkte',
+        description: 'Sprungturm, Bretter, Sicherheitsbereiche und Prüfpunkte',
         icon: '🏊‍♂️',
         available: false,
       },
@@ -89,7 +89,7 @@ const LEARNING_CATEGORIES = [
       {
         id: 'pumpen',
         name: 'Pumpen',
-        description: 'Umwaelzpumpe im Schnittbild mit Hydraulik, Abdichtung, Service und Effizienz',
+        description: 'Umwälzpumpe im Schnittbild mit Hydraulik, Abdichtung, Service und Effizienz',
         icon: '⚙️',
         available: true,
       },
@@ -117,7 +117,7 @@ const LEARNING_CATEGORIES = [
       {
         id: 'filterspuelung',
         name: 'Filterspuelung',
-        description: 'Rueckspuelablauf, Fahrweisen und Hygienesicherung',
+        description: 'Rückspuelablauf, Fahrweisen und Hygienesicherung',
         icon: '🔄',
         available: false,
       },
@@ -152,7 +152,7 @@ const LEARNING_CATEGORIES = [
       {
         id: 'heizung-lueftung',
         name: 'Heizung & Lueftung',
-        description: 'Waermeuebertragung, Hallenklima und Entfeuchtung',
+        description: 'Wärmeuebertragung, Hallenklima und Entfeuchtung',
         icon: '🌬️',
         available: false,
       },
@@ -172,7 +172,7 @@ const LEARNING_CATEGORIES = [
       {
         id: 'schwimmtechniken',
         name: 'Schwimmtechniken',
-        description: 'Brust, Kraul, Ruecken und Delphin mit Technikschritten',
+        description: 'Brust, Kraul, Rücken und Delphin mit Technikschritten',
         icon: '🏊',
         available: true,
       },
@@ -200,7 +200,7 @@ const LEARNING_CATEGORIES = [
       {
         id: 'rettungskette',
         name: 'Rettungskette',
-        description: 'Erkennen, alarmieren, bergen, uebergeben',
+        description: 'Erkennen, alarmieren, bergen, übergeben',
         icon: '⛑️',
         available: false,
       },
@@ -227,7 +227,7 @@ const LEARNING_CATEGORIES = [
       {
         id: 'blutkreislauf-gross-klein',
         name: 'Großer & kleiner Blutkreislauf',
-        description: 'Weg des Blutes durch Koerper- und Lungenkreislauf',
+        description: 'Weg des Blutes durch Körper- und Lungenkreislauf',
         icon: '🩸',
         available: true,
       },
@@ -269,7 +269,7 @@ const LEARNING_CATEGORIES = [
       {
         id: 'stabile-seitenlage',
         name: 'Stabile Seitenlage',
-        description: 'Sichere Lagerung und kontinuierliche Ueberwachung',
+        description: 'Sichere Lagerung und kontinuierliche Überwachung',
         icon: '🧍',
         available: false,
       },
@@ -283,7 +283,7 @@ const LEARNING_CATEGORIES = [
     ],
   },
   {
-    id: 'baederbetrieb',
+    id: 'bäderbetrieb',
     name: 'Bäderbetrieb',
     icon: '🔧',
     lucideIcon: Wrench,
@@ -310,13 +310,13 @@ const LEARNING_CATEGORIES = [
       {
         id: 'betrieb-checklisten',
         name: 'Betriebs-Checklisten',
-        description: 'Oeffnungs-, Schicht- und Schliessroutinen',
+        description: 'Öffnungs-, Schicht- und Schliessroutinen',
         icon: '📋',
         available: false,
       },
       {
-        id: 'gaestekommunikation',
-        name: 'Gaestekommunikation',
+        id: 'gästekommunikation',
+        name: 'Gästekommunikation',
         description: 'Konfliktmanagement, Deeskalation und Service',
         icon: '🗣️',
         available: false,
@@ -391,7 +391,7 @@ const LEARNING_CATEGORIES = [
       },
       {
         id: 'datenschutz-oea',
-        name: 'Datenschutz & Oeffentlichkeitsarbeit',
+        name: 'Datenschutz & Öffentlichkeitsarbeit',
         description: 'DSGVO-Basics, Kommunikation und Medienarbeit',
         icon: '📣',
         available: false,
@@ -446,7 +446,7 @@ const InteractiveLearningView = () => {
           }`}
         >
           <ArrowLeft size={16} />
-          Zurueck zu Baedertechnik
+          Zurück zu Bädertechnik
         </button>
         <Suspense
           fallback={(
@@ -473,7 +473,7 @@ const InteractiveLearningView = () => {
           }`}
         >
           <ArrowLeft size={16} />
-          Zurueck zu Baedertechnik
+          Zurück zu Bädertechnik
         </button>
         <Suspense
           fallback={(
@@ -500,12 +500,12 @@ const InteractiveLearningView = () => {
           }`}
         >
           <ArrowLeft size={16} />
-          Zurueck zu Baedertechnik
+          Zurück zu Bädertechnik
         </button>
         <Suspense
           fallback={(
             <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
-              Lade Umwaelzpumpe Deep Dive...
+              Lade Umwälzpumpe Deep Dive...
             </div>
           )}
         >
@@ -527,7 +527,7 @@ const InteractiveLearningView = () => {
           }`}
         >
           <ArrowLeft size={16} />
-          Zurueck zu Baedertechnik
+          Zurück zu Bädertechnik
         </button>
         <Suspense
           fallback={(
@@ -554,7 +554,7 @@ const InteractiveLearningView = () => {
           }`}
         >
           <ArrowLeft size={16} />
-          Zurueck zu Schwimmen & Rettung
+          Zurück zu Schwimmen & Rettung
         </button>
         <Suspense
           fallback={(

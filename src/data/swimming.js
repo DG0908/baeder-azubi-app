@@ -3,7 +3,7 @@
 export const SWIM_STYLES = [
   { id: 'kraul', name: 'Kraul/Freistil', icon: '🏊' },
   { id: 'brust', name: 'Brustschwimmen', icon: '🏊‍♂️' },
-  { id: 'ruecken', name: 'Rückenschwimmen', icon: '🔙' },
+  { id: 'rücken', name: 'Rückenschwimmen', icon: '🔙' },
   { id: 'schmetterling', name: 'Schmetterling', icon: '🦋' },
   { id: 'lagen', name: 'Lagenschwimmen', icon: '🔄' },
 ];
@@ -70,7 +70,7 @@ export const SWIM_TRAINING_PLANS = [
     targetDistance: 2000,
     targetTime: 56,
     xpReward: 18,
-    description: 'Stabiler Rhythmus ueber laengere Distanz mit Technikfokus.'
+    description: 'Stabiler Rhythmus über längere Distanz mit Technikfokus.'
   },
   {
     id: 'plan_ausdauer_04',
@@ -81,7 +81,7 @@ export const SWIM_TRAINING_PLANS = [
     targetDistance: 2400,
     targetTime: 68,
     xpReward: 20,
-    description: 'Laengeres Grundlagentraining fuer Becken-Routine und Ausdauer.'
+    description: 'Längeres Grundlagentraining für Becken-Routine und Ausdauer.'
   },
   {
     id: 'plan_ausdauer_05',
@@ -92,7 +92,7 @@ export const SWIM_TRAINING_PLANS = [
     targetDistance: 3000,
     targetTime: 80,
     xpReward: 26,
-    description: 'Fordernde Einheit fuer starke Grundlagenausdauer.'
+    description: 'Fordernde Einheit für starke Grundlagenausdauer.'
   },
 
   // ==================== SPRINT (5) ====================
@@ -127,7 +127,7 @@ export const SWIM_TRAINING_PLANS = [
     targetDistance: 900,
     targetTime: 20,
     xpReward: 18,
-    description: 'Intensiver Mix fuer Starts, Wenden und Endbeschleunigung.'
+    description: 'Intensiver Mix für Starts, Wenden und Endbeschleunigung.'
   },
   {
     id: 'plan_sprint_04',
@@ -149,7 +149,7 @@ export const SWIM_TRAINING_PLANS = [
     targetDistance: 1300,
     targetTime: 27,
     xpReward: 28,
-    description: 'Sehr intensive Serien fuer Tempohaerte und Renndruck.'
+    description: 'Sehr intensive Serien für Tempohaerte und Renndruck.'
   },
 
   // ==================== TECHNIK (5) ====================
@@ -177,14 +177,14 @@ export const SWIM_TRAINING_PLANS = [
   },
   {
     id: 'plan_technik_03',
-    name: 'Ruecken Kontrolle',
+    name: 'Rücken Kontrolle',
     category: 'technik',
     difficulty: 'fokussiert',
-    styleId: 'ruecken',
+    styleId: 'rücken',
     targetDistance: 1000,
     targetTime: 33,
     xpReward: 18,
-    description: 'Koerperspannung und Armzug fuer stabile Wasserlage.'
+    description: 'Körperspannung und Armzug für stabile Wasserlage.'
   },
   {
     id: 'plan_technik_04',
@@ -206,7 +206,7 @@ export const SWIM_TRAINING_PLANS = [
     targetDistance: 1400,
     targetTime: 42,
     xpReward: 28,
-    description: 'Lagenfokus fuer Stilwechsel, Technikuebergaenge und Kontrolle.'
+    description: 'Lagenfokus für Stilwechsel, Technikuebergaenge und Kontrolle.'
   },
 
   // ==================== KOMBI (5) ====================
@@ -263,7 +263,7 @@ export const SWIM_TRAINING_PLANS = [
     targetDistance: 2600,
     targetTime: 68,
     xpReward: 32,
-    description: 'Komplette Belastung fuer Ausdauer, Technik und Tempo.'
+    description: 'Komplette Belastung für Ausdauer, Technik und Tempo.'
   }
 ];
 
@@ -362,7 +362,7 @@ export const calculateChallengeProgress = (challenge, sessions, userId) => {
       return { current: qualifying.length > 0 ? challenge.target : 0, target: challenge.target, percent: qualifying.length > 0 ? 100 : 0 };
     }
     case 'time': {
-      // Schnellste Session fuer definierte Distanz (je kleiner die Zeit, desto besser)
+      // Schnellste Session für definierte Distanz (je kleiner die Zeit, desto besser)
       const matching = confirmedSessions.filter(s =>
         (s.distance || 0) >= (challenge.distance || 0) &&
         (!challenge.style || s.style === challenge.style)
@@ -418,7 +418,7 @@ export const calculateChallengeProgress = (challenge, sessions, userId) => {
     }
     case 'styles_single': {
       // Anzahl unterschiedlicher geschwommener Hauptstile
-      const trackedStyles = ['kraul', 'brust', 'ruecken', 'schmetterling'];
+      const trackedStyles = ['kraul', 'brust', 'rücken', 'schmetterling'];
       const usedStyles = new Set(
         confirmedSessions
           .map(s => s.style)

@@ -12,7 +12,7 @@ const PUMP_SPOT_DATA = {
     title: 'Laufrad (Impeller)',
     items: [
       'Das Laufrad wandelt Drehenergie in Druck und Volumenstrom um.',
-      'Mehr Durchfluss bedeutet weniger Foerderhoehe auf der Pumpenkurve.',
+      'Mehr Durchfluss bedeutet weniger Förderhoehe auf der Pumpenkurve.',
       'Ablagerungen und Abrieb am Schaufelprofil reduzieren den Wirkungsgrad.',
     ],
   },
@@ -22,8 +22,8 @@ const PUMP_SPOT_DATA = {
     title: 'Saugseite',
     items: [
       'Ansaugung aus dem Schwallwasserbehaelter in die Pumpenkammer.',
-      'Saugleitung moeglichst kurz, dicht und strömungsguenstig auslegen.',
-      'Luft in der Saugleitung foerdert Kavitation und Leistungseinbruch.',
+      'Saugleitung möglichst kurz, dicht und strömungsguenstig auslegen.',
+      'Luft in der Saugleitung fördert Kavitation und Leistungseinbruch.',
     ],
   },
   druckseite: {
@@ -41,7 +41,7 @@ const PUMP_SPOT_DATA = {
     icon: 'MO',
     title: 'Antriebsmotor',
     items: [
-      'Drehstrommotor mit stabiler Drehzahl fuer gleichmaessige Foerderung.',
+      'Drehstrommotor mit stabiler Drehzahl für gleichmaessige Förderung.',
       'Lagerzustand und thermischer Schutz sind betriebsentscheidend.',
       'Frequenzumrichter ermoeglicht effiziente Lastanpassung.',
     ],

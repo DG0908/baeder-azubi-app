@@ -17,19 +17,19 @@ export const WATER_CYCLE_MISSIONS = [
         { source: 'metric', key: 'flowRate', min: 120 }
       ]
     },
-    successFeedback: 'Luft wurde abgefuehrt. Die Pumpe laeuft wieder stabil.'
+    successFeedback: 'Luft wurde abgefuehrt. Die Pumpe läuft wieder stabil.'
   },
   {
-    id: 'filter-rueckspuelung',
-    title: 'Mission 2: Filter rueckspuelen',
+    id: 'filter-rückspuelung',
+    title: 'Mission 2: Filter rückspuelen',
     level: 'Fortgeschritten',
     symptom: {
       title: 'Filter stark belastet',
-      description: 'Differenzdruck steigt, das Schauglas wirkt trueb. Rueckspuelung ist faellig.',
+      description: 'Differenzdruck steigt, das Schauglas wirkt trueb. Rückspuelung ist faellig.',
       visualFlags: ['filterTurbidity'],
       audio: 'warning'
     },
-    targetAction: 'Rueckspuelmodus starten, Rueckspuelventil oeffnen und Rueckspuelung bis 100 Prozent durchlaufen lassen.',
+    targetAction: 'Rückspuelmodus starten, Rückspuelventil oeffnen und Rückspuelung bis 100 Prozent durchlaufen lassen.',
     solveWhen: {
       all: [
         { source: 'control', key: 'pumpEnabled', equals: true },
@@ -38,7 +38,7 @@ export const WATER_CYCLE_MISSIONS = [
         { source: 'metric', key: 'backwashProgress', min: 100 }
       ]
     },
-    successFeedback: 'Rueckspuelung abgeschlossen. Das Filterbett ist regeneriert.'
+    successFeedback: 'Rückspuelung abgeschlossen. Das Filterbett ist regeneriert.'
   },
   {
     id: 'chlorunterdosierung',
