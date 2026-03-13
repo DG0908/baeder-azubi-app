@@ -34,6 +34,7 @@ import { AUSBILDUNGSRAHMENPLAN, WOCHEN_PRO_JAHR } from './data/ausbildungsrahmen
 import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
 import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 import { KEYWORD_CHALLENGES, buildKeywordFlashcards } from './data/keywordChallenges';
+import { WHO_AM_I_CATEGORY, WHO_AM_I_CHALLENGES, buildWhoAmIFlashcards, buildWhoAmIStudyFlashcards } from './data/whoAmIChallenges';
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, SWIM_BADGES, SWIM_TRAINING_PLANS, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
 import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel, parseExamTimeToSeconds, formatSecondsAsTime } from './data/practicalExam';
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
@@ -755,6 +756,7 @@ export default function BaederApp() {
   const [newFlashcardBack, setNewFlashcardBack] = useState('');
   const [newFlashcardCategory, setNewFlashcardCategory] = useState('org');
   const [keywordFlashcardMode, setKeywordFlashcardMode] = useState(false);
+  const [whoAmIFlashcardMode, setWhoAmIFlashcardMode] = useState(false);
   const [flashcardKeywordInput, setFlashcardKeywordInput] = useState('');
   const [flashcardKeywordEvaluation, setFlashcardKeywordEvaluation] = useState(null);
   const [flashcardFreeTextMode, setFlashcardFreeTextMode] = useState(false);
@@ -1223,6 +1225,10 @@ export default function BaederApp() {
     return Boolean(question?.type === 'keyword' && getKeywordGroupsFromQuestion(question).length > 0);
   };
 
+  const isWhoAmIQuestion = (question) => {
+    return Boolean(question?.type === 'whoami' && Array.isArray(question?.clues) && getKeywordGroupsFromQuestion(question).length > 0);
+  };
+
   const evaluateKeywordAnswer = (question, answerInput) => {
     const groups = getKeywordGroupsFromQuestion(question);
     const normalizedAnswer = normalizeKeywordText(answerInput);
@@ -1338,6 +1344,14 @@ export default function BaederApp() {
 
   const isKeywordFlashcard = (card) => isKeywordQuestion(card);
 
+  const getQuizTimeLimit = (question, difficultyKey) => {
+    if (isWhoAmIQuestion(question)) {
+      const configuredLimit = Number(question?.timeLimit);
+      return Number.isFinite(configuredLimit) && configuredLimit > 0 ? configuredLimit : 60;
+    }
+    return DIFFICULTY_SETTINGS[difficultyKey]?.time || 30;
+  };
+
   const autoExtractKeywordGroups = (answerText) => {
     const GERMAN_STOPWORDS = new Set([
       'aber', 'alle', 'allem', 'allen', 'aller', 'alles', 'also', 'auch', 'auf', 'auss',
@@ -1373,6 +1387,8 @@ export default function BaederApp() {
     return groups;
   };
 
+  const WHO_AM_I_STUDY_FLASHCARDS = buildWhoAmIStudyFlashcards(WHO_AM_I_CHALLENGES);
+
   const FLASHCARD_CONTENT = {
     org: [
       { front: 'Was ist das Hausrecht?', back: 'Das Recht des Badbetreibers, die Hausordnung durchzusetzen und Personen des Platzes zu verweisen.' },
@@ -1399,6 +1415,7 @@ export default function BaederApp() {
       { front: 'Was regelt das Arbeitsrecht?', back: 'Beziehung zwischen Arbeitgeber und Arbeitnehmer, Rechte und Pflichten.' },
       { front: 'Was ist die Berufsgenossenschaft?', back: 'Träger der gesetzlichen Unfallversicherung für Arbeitsunfälle.' }
     ],
+    [WHO_AM_I_CATEGORY.id]: WHO_AM_I_STUDY_FLASHCARDS[WHO_AM_I_CATEGORY.id] || [],
     aevo: [
       { front: 'Was ist das Ziel der Berufsausbildung nach BBiG?', back: 'Berufliche Handlungsfähigkeit vermitteln.' },
       { front: 'Woraus besteht die Eignung eines Ausbilders?', back: 'Aus persönlicher und fachlicher Eignung.' },
@@ -1415,6 +1432,7 @@ export default function BaederApp() {
     ]
   };
   const KEYWORD_FLASHCARD_CONTENT = buildKeywordFlashcards(KEYWORD_CHALLENGES);
+  const WHO_AM_I_FLASHCARD_CONTENT = buildWhoAmIFlashcards(WHO_AM_I_CHALLENGES);
 
   const BADGES = [
     // Quiz/Lern-Badges
@@ -3806,14 +3824,14 @@ export default function BaederApp() {
     const allQuestions = useKeywordQuestions && categoryKeywordQuestions.length > 0
       ? categoryKeywordQuestions
       : categoryStandardQuestions;
-    if (useKeywordQuestions && categoryKeywordQuestions.length === 0) {
+    if (useKeywordQuestions && categoryKeywordQuestions.length === 0 && catId !== WHO_AM_I_CATEGORY.id) {
       showToast('Für diese Kategorie sind noch keine Extra-schwer-Fragen hinterlegt. Standardfragen werden genutzt.', 'info');
     }
     const selectedQuestions = pickBattleQuestions(allQuestions, Math.min(5, allQuestions.length), catId, currentGame);
 
     // Mische Antworten nur bei Auswahlfragen
     const preparedQuestions = selectedQuestions.map((question) => {
-      if (isKeywordQuestion(question)) {
+      if (isKeywordQuestion(question) || isWhoAmIQuestion(question)) {
         return { ...question, category: catId };
       }
       return { ...shuffleAnswers(question), category: catId };
@@ -3837,7 +3855,7 @@ export default function BaederApp() {
     setSelectedAnswers([]); // Reset für Multi-Select
     setLastSelectedAnswer(null); // Reset für Single-Choice
 
-    const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty]?.time || 30;
+    const timeLimit = getQuizTimeLimit(preparedQuestions[0], currentGame.difficulty);
     setTimeLeft(timeLimit);
     setTimerActive(true);
 
@@ -3849,7 +3867,7 @@ export default function BaederApp() {
     setAnswered(true);
     setTimerActive(false);
 
-    if (isKeywordQuestion(currentQuestion) && keywordAnswerText.trim()) {
+    if ((isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion)) && keywordAnswerText.trim()) {
       const timedOutEvaluation = evaluateKeywordAnswer(currentQuestion, keywordAnswerText);
       setKeywordAnswerEvaluation({
         ...timedOutEvaluation,
@@ -3860,8 +3878,12 @@ export default function BaederApp() {
 
     // Speichere falsche Antwort (Timeout)
     await savePlayerAnswer(false, true, {
-      answerType: isKeywordQuestion(currentQuestion) ? 'keyword' : 'choice',
-      keywordText: isKeywordQuestion(currentQuestion) ? keywordAnswerText.trim() : null
+      answerType: isWhoAmIQuestion(currentQuestion)
+        ? 'whoami'
+        : (isKeywordQuestion(currentQuestion) ? 'keyword' : 'choice'),
+      keywordText: (isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion))
+        ? keywordAnswerText.trim()
+        : null
     });
   };
 
@@ -3898,7 +3920,7 @@ export default function BaederApp() {
 
   const answerQuestion = async (answerIndex) => {
     if (answered || !currentGame) return;
-    if (isKeywordQuestion(currentQuestion)) return;
+    if (isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion)) return;
 
     // Multi-Select: Nur togglen, nicht direkt antworten
     if (currentQuestion.multi) {
@@ -3920,14 +3942,14 @@ export default function BaederApp() {
 
   const submitKeywordAnswer = async () => {
     if (answered || !currentGame || !currentQuestion) return;
-    if (!isKeywordQuestion(currentQuestion) && !quizMCKeywordMode) return;
+    if (!isKeywordQuestion(currentQuestion) && !isWhoAmIQuestion(currentQuestion) && !quizMCKeywordMode) return;
     const trimmedAnswer = keywordAnswerText.trim();
     if (!trimmedAnswer) {
       showToast('Bitte gib zuerst eine Freitext-Antwort ein.', 'error', 1800);
       return;
     }
     let evaluation;
-    if (isKeywordQuestion(currentQuestion)) {
+    if (isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion)) {
       evaluation = evaluateKeywordAnswer(currentQuestion, keywordAnswerText);
     } else {
       const correctText = currentQuestion.multi && Array.isArray(currentQuestion.correct)
@@ -3940,8 +3962,11 @@ export default function BaederApp() {
     setKeywordAnswerEvaluation(evaluation);
     setAnswered(true);
     setTimerActive(false);
+    const answerType = isWhoAmIQuestion(currentQuestion)
+      ? 'whoami'
+      : 'keyword';
     await savePlayerAnswer(evaluation.isCorrect, false, {
-      answerType: 'keyword',
+      answerType,
       keywordText: trimmedAnswer,
       keywordEvaluation: {
         requiredGroups: evaluation.requiredGroups,
@@ -3975,6 +4000,8 @@ export default function BaederApp() {
 
     const answerPoints = answerMeta.answerType === 'keyword'
       ? Math.max(0, Number(answerMeta?.keywordEvaluation?.awardedPoints) || 0)
+      : answerMeta.answerType === 'whoami'
+        ? (isCorrect ? 1 : 0)
       : (isCorrect ? 1 : 0);
 
     if (answerPoints > 0) {
@@ -4036,7 +4063,7 @@ export default function BaederApp() {
       setLastSelectedAnswer(null); // Reset für Single-Choice
       resetQuizKeywordState();
 
-      const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty]?.time || 30;
+      const timeLimit = getQuizTimeLimit(currentCategoryQuestions[nextQuestionIndex], currentGame.difficulty);
       setTimeLeft(timeLimit);
       setTimerActive(true);
       return;
@@ -4147,7 +4174,7 @@ export default function BaederApp() {
     setWaitingForOpponent(false);
     resetQuizKeywordState();
 
-    const timeLimit = DIFFICULTY_SETTINGS[currentGame.difficulty]?.time || 30;
+    const timeLimit = getQuizTimeLimit(currentCategoryRound.questions[0], currentGame.difficulty);
     setTimeLeft(timeLimit);
     setTimerActive(true);
   };
@@ -4535,6 +4562,7 @@ export default function BaederApp() {
     setExamSimulatorMode('theory');
     const allQuestions = [];
     Object.entries(SAMPLE_QUESTIONS).forEach(([catId, questions]) => {
+      if (catId === WHO_AM_I_CATEGORY.id) return;
       questions.forEach(q => { allQuestions.push({ ...q, category: catId }); });
     });
     const selectedQuestions = pickLearningQuestions(
@@ -7429,11 +7457,16 @@ export default function BaederApp() {
     const useKeywordMode = typeof options.useKeyword === 'boolean'
       ? options.useKeyword
       : keywordFlashcardMode;
+    const useWhoAmIMode = typeof options.useWhoAmI === 'boolean'
+      ? options.useWhoAmI
+      : whoAmIFlashcardMode;
 
-    const hardcodedCards = useKeywordMode
-      ? (KEYWORD_FLASHCARD_CONTENT[categoryId] || [])
-      : (FLASHCARD_CONTENT[categoryId] || []);
-    const userCards = useKeywordMode ? [] : userFlashcards.filter(fc => fc.category === categoryId);
+    const hardcodedCards = useWhoAmIMode
+      ? (WHO_AM_I_FLASHCARD_CONTENT[categoryId] || [])
+      : useKeywordMode
+        ? (KEYWORD_FLASHCARD_CONTENT[categoryId] || [])
+        : (FLASHCARD_CONTENT[categoryId] || []);
+    const userCards = (useKeywordMode || useWhoAmIMode) ? [] : userFlashcards.filter(fc => fc.category === categoryId);
     const allCards = [...hardcodedCards, ...userCards];
 
     setFlashcards(allCards);
@@ -7451,7 +7484,7 @@ export default function BaederApp() {
       return null;
     }
     let evaluation;
-    if (isKeywordFlashcard(currentFlashcard)) {
+    if (isKeywordFlashcard(currentFlashcard) || currentFlashcard?.type === 'whoami') {
       evaluation = evaluateKeywordAnswer(currentFlashcard, trimmedInput);
     } else {
       const backText = String(currentFlashcard.back || '');
@@ -8666,6 +8699,7 @@ export default function BaederApp() {
             selectedAnswers={selectedAnswers}
             lastSelectedAnswer={lastSelectedAnswer}
             isKeywordQuestion={isKeywordQuestion}
+            isWhoAmIQuestion={isWhoAmIQuestion}
             keywordAnswerText={keywordAnswerText}
             setKeywordAnswerText={setKeywordAnswerText}
             keywordAnswerEvaluation={keywordAnswerEvaluation}
@@ -8859,8 +8893,11 @@ export default function BaederApp() {
             XP_REWARDS={XP_REWARDS}
             FLASHCARD_CONTENT={FLASHCARD_CONTENT}
             KEYWORD_FLASHCARD_CONTENT={KEYWORD_FLASHCARD_CONTENT}
+            WHO_AM_I_FLASHCARD_CONTENT={WHO_AM_I_FLASHCARD_CONTENT}
             keywordFlashcardMode={keywordFlashcardMode}
             setKeywordFlashcardMode={setKeywordFlashcardMode}
+            whoAmIFlashcardMode={whoAmIFlashcardMode}
+            setWhoAmIFlashcardMode={setWhoAmIFlashcardMode}
             flashcardFreeTextMode={flashcardFreeTextMode}
             setFlashcardFreeTextMode={setFlashcardFreeTextMode}
             flashcardKeywordInput={flashcardKeywordInput}
