@@ -26,8 +26,7 @@ export const DEFAULT_MENU_ITEMS = [
   { id: 'news', icon: '\u{1F4E2}', label: 'News', visible: true, order: 11, requiresPermission: null, group: 'sozial' },
   { id: 'exams', icon: '\u{1F4CB}', label: 'Klausuren', visible: true, order: 12, requiresPermission: null, group: 'dokumentieren' },
   { id: 'questions', icon: '\u{1F4A1}', label: 'Fragen', visible: true, order: 13, requiresPermission: null, group: 'lernen' },
-  { id: 'exam-grades', icon: '\u{1F4DD}', label: 'Klasuren', visible: true, order: 14, requiresPermission: null, group: 'dokumentieren' },
-  { id: 'school-card', icon: '\u{1F393}', label: 'Kontrollkarte', visible: true, order: 15, requiresPermission: null, group: 'dokumentieren' },
+  { id: 'school-card', icon: '\u{1F393}', label: 'Kontrollkarte', visible: true, order: 14, requiresPermission: null, group: 'dokumentieren' },
   { id: 'berichtsheft', icon: '\u{1F4D6}', label: 'Berichtsheft', visible: true, order: 16, requiresPermission: null, group: 'dokumentieren' },
   { id: 'profile', icon: '\u{1F464}', label: 'Profil', visible: true, order: 17, requiresPermission: null, group: 'profil' },
   { id: 'admin', icon: '\u2699\uFE0F', label: 'Verwaltung', visible: true, order: 18, requiresPermission: 'canManageUsers', group: 'verwaltung' }
