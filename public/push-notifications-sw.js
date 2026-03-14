@@ -14,7 +14,7 @@ const parsePushPayload = (event) => {
 
 self.addEventListener('push', (event) => {
   const payload = parsePushPayload(event);
-  const title = payload.title || 'Aqua Pilot';
+  const title = payload.title || 'Bäder Azubi';
   const body = payload.message || payload.body || 'Neue Benachrichtigung';
   const data = payload.data || {};
   const targetUrl = data.url || payload.url || '/';

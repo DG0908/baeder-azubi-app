@@ -21,7 +21,7 @@ const {
                 🔒 Datenschutzerklärung
               </h2>
               <p className={`text-xs mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                Stand: Januar 2025 | Diese Datenschutzerklärung gilt für die Nutzung von Aqua Pilot.
+                Stand: Januar 2025 | Diese Datenschutzerklärung gilt für die Nutzung von Bäder Azubi.
               </p>
 
               <div className={`space-y-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
