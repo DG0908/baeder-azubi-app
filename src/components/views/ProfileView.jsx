@@ -489,7 +489,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Betrieb</p>
             <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              {user.company || <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>Nicht angegeben</span>}
+              {user.organizationName || user.company || <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>Nicht angegeben</span>}
             </p>
           </div>
         </div>

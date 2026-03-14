@@ -1,7 +1,308 @@
 import React from 'react';
-import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound } from 'lucide-react';
+import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound, Building2, Ticket, Copy, Plus, RefreshCw } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
+
+// ─── Betriebe & Einladungscodes Verwaltung (nur Owner) ───
+const OrganizationManager = () => {
+  const { showToast } = useApp();
+  const [orgs, setOrgs] = React.useState([]);
+  const [codes, setCodes] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [showNewOrg, setShowNewOrg] = React.useState(false);
+  const [showNewCode, setShowNewCode] = React.useState(false);
+  const [newOrg, setNewOrg] = React.useState({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
+  const [newCode, setNewCode] = React.useState({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
+
+  const loadOrgs = async () => {
+    setLoading(true);
+    const { data: orgsData } = await supabase
+      .from('organizations')
+      .select('*')
+      .order('created_at', { ascending: true });
+    setOrgs(orgsData || []);
+
+    const { data: codesData } = await supabase
+      .from('invitation_codes')
+      .select('*, organizations(name)')
+      .order('created_at', { ascending: false });
+    setCodes(codesData || []);
+    setLoading(false);
+  };
+
+  React.useEffect(() => { loadOrgs(); }, []);
+
+  const createOrg = async () => {
+    if (!newOrg.name.trim() || !newOrg.slug.trim()) {
+      showToast('Name und Kürzel sind Pflichtfelder!', 'error');
+      return;
+    }
+    const slug = newOrg.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    const { error } = await supabase.from('organizations').insert({
+      ...newOrg,
+      slug,
+      name: newOrg.name.trim()
+    });
+    if (error) {
+      showToast('Fehler: ' + error.message, 'error');
+      return;
+    }
+    showToast(`Betrieb "${newOrg.name}" angelegt!`, 'success');
+    setNewOrg({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
+    setShowNewOrg(false);
+    loadOrgs();
+  };
+
+  const generateCode = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  };
+
+  const createCode = async () => {
+    if (!newCode.organization_id) {
+      showToast('Bitte einen Betrieb auswählen!', 'error');
+      return;
+    }
+    const code = newCode.code.trim().toUpperCase() || generateCode();
+    const { error } = await supabase.from('invitation_codes').insert({
+      organization_id: newCode.organization_id,
+      code,
+      role: newCode.role,
+      max_uses: newCode.max_uses,
+      created_by: null
+    });
+    if (error) {
+      if (error.message.includes('duplicate')) {
+        showToast('Dieser Code existiert bereits!', 'error');
+      } else {
+        showToast('Fehler: ' + error.message, 'error');
+      }
+      return;
+    }
+    showToast(`Code "${code}" erstellt!`, 'success');
+    setNewCode({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
+    setShowNewCode(false);
+    loadOrgs();
+  };
+
+  const toggleCodeActive = async (codeId, currentActive) => {
+    await supabase.from('invitation_codes').update({ is_active: !currentActive }).eq('id', codeId);
+    loadOrgs();
+  };
+
+  const deleteCode = async (codeId, codeText) => {
+    if (!confirm(`Code "${codeText}" wirklich löschen?`)) return;
+    await supabase.from('invitation_codes').delete().eq('id', codeId);
+    showToast('Code gelöscht', 'success');
+    loadOrgs();
+  };
+
+  const copyCode = (code) => {
+    navigator.clipboard.writeText(code);
+    showToast(`Code "${code}" kopiert!`, 'success');
+  };
+
+  if (loading) return <div className="text-center py-8 text-gray-500">Lade Betriebe...</div>;
+
+  return (
+    <div className="space-y-6">
+      {/* Betriebe */}
+      <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold flex items-center">
+            <Building2 className="mr-2 text-indigo-500" />
+            Betriebe ({orgs.length})
+          </h3>
+          <div className="flex gap-2">
+            <button onClick={loadOrgs} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg">
+              <RefreshCw size={18} />
+            </button>
+            <button
+              onClick={() => setShowNewOrg(!showNewOrg)}
+              className="flex items-center gap-1 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium"
+            >
+              <Plus size={16} /> Neuer Betrieb
+            </button>
+          </div>
+        </div>
+
+        {showNewOrg && (
+          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4 space-y-3">
+            <h4 className="font-bold text-indigo-800">Neuen Betrieb anlegen</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Betriebsname *"
+                value={newOrg.name}
+                onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
+                className="px-3 py-2 border border-indigo-300 rounded-lg"
+              />
+              <input
+                type="text"
+                placeholder="Kürzel (z.B. oktopus) *"
+                value={newOrg.slug}
+                onChange={(e) => setNewOrg({ ...newOrg, slug: e.target.value })}
+                className="px-3 py-2 border border-indigo-300 rounded-lg"
+              />
+              <input
+                type="text"
+                placeholder="Ansprechpartner"
+                value={newOrg.contact_name}
+                onChange={(e) => setNewOrg({ ...newOrg, contact_name: e.target.value })}
+                className="px-3 py-2 border border-indigo-300 rounded-lg"
+              />
+              <input
+                type="email"
+                placeholder="Kontakt-E-Mail"
+                value={newOrg.contact_email}
+                onChange={(e) => setNewOrg({ ...newOrg, contact_email: e.target.value })}
+                className="px-3 py-2 border border-indigo-300 rounded-lg"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button onClick={createOrg} className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-medium">
+                Anlegen
+              </button>
+              <button onClick={() => setShowNewOrg(false)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg">
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {orgs.map(org => (
+            <div key={org.id} className={`border rounded-xl p-4 ${org.is_active ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-lg">{org.name}</div>
+                  <div className="text-sm text-gray-600">
+                    Kürzel: <span className="font-mono bg-gray-200 px-1 rounded">{org.slug}</span>
+                    {org.contact_name && <> · Kontakt: {org.contact_name}</>}
+                    {org.contact_email && <> · {org.contact_email}</>}
+                  </div>
+                </div>
+                <div className={`px-3 py-1 rounded-full text-xs font-bold ${org.is_active ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600'}`}>
+                  {org.is_active ? 'Aktiv' : 'Inaktiv'}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Einladungscodes */}
+      <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold flex items-center">
+            <Ticket className="mr-2 text-emerald-500" />
+            Einladungscodes ({codes.length})
+          </h3>
+          <button
+            onClick={() => setShowNewCode(!showNewCode)}
+            className="flex items-center gap-1 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium"
+          >
+            <Plus size={16} /> Neuer Code
+          </button>
+        </div>
+
+        {showNewCode && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4 space-y-3">
+            <h4 className="font-bold text-emerald-800">Neuen Einladungscode erstellen</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <select
+                value={newCode.organization_id}
+                onChange={(e) => setNewCode({ ...newCode, organization_id: e.target.value })}
+                className="px-3 py-2 border border-emerald-300 rounded-lg"
+              >
+                <option value="">Betrieb auswählen *</option>
+                {orgs.filter(o => o.is_active).map(o => (
+                  <option key={o.id} value={o.id}>{o.name}</option>
+                ))}
+              </select>
+              <select
+                value={newCode.role}
+                onChange={(e) => setNewCode({ ...newCode, role: e.target.value })}
+                className="px-3 py-2 border border-emerald-300 rounded-lg"
+              >
+                <option value="azubi">Azubi-Code</option>
+                <option value="trainer">Ausbilder-Code</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Code (leer = automatisch)"
+                value={newCode.code}
+                onChange={(e) => setNewCode({ ...newCode, code: e.target.value.toUpperCase() })}
+                className="px-3 py-2 border border-emerald-300 rounded-lg font-mono"
+              />
+              <input
+                type="number"
+                placeholder="Max. Nutzungen"
+                value={newCode.max_uses}
+                onChange={(e) => setNewCode({ ...newCode, max_uses: parseInt(e.target.value) || 0 })}
+                className="px-3 py-2 border border-emerald-300 rounded-lg"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button onClick={createCode} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium">
+                Code erstellen
+              </button>
+              <button onClick={() => setShowNewCode(false)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg">
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        )}
+
+        {codes.length === 0 ? (
+          <p className="text-gray-500 text-sm">Noch keine Einladungscodes vorhanden.</p>
+        ) : (
+          <div className="space-y-2">
+            {codes.map(c => (
+              <div key={c.id} className={`flex items-center justify-between border rounded-lg p-3 ${c.is_active ? 'border-emerald-200' : 'border-gray-200 opacity-60'}`}>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono font-bold text-lg bg-gray-100 px-3 py-1 rounded-lg">{c.code}</span>
+                  <div className="text-sm">
+                    <div className="font-medium">{c.organizations?.name || '?'}</div>
+                    <div className="text-gray-500">
+                      {c.role === 'azubi' ? 'Azubi' : 'Ausbilder'} · {c.used_count}/{c.max_uses || '\u221e'} genutzt
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => copyCode(c.code)}
+                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                    title="Code kopieren"
+                  >
+                    <Copy size={16} />
+                  </button>
+                  <button
+                    onClick={() => toggleCodeActive(c.id, c.is_active)}
+                    className={`p-2 rounded-lg ${c.is_active ? 'bg-green-100 hover:bg-green-200 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}
+                    title={c.is_active ? 'Deaktivieren' : 'Aktivieren'}
+                  >
+                    {c.is_active ? <Check size={16} /> : <X size={16} />}
+                  </button>
+                  <button
+                    onClick={() => deleteCode(c.id, c.code)}
+                    className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg"
+                    title="Code löschen"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const AdminPasswordReset = ({ userEmail }) => {
   const { showToast } = useApp();
@@ -69,6 +370,7 @@ const AdminView = ({
   resetAppConfig,
 }) => {
   const { darkMode } = useApp();
+  const { user } = useAuth();
 
   return (
     <div className="space-y-6">
@@ -77,6 +379,9 @@ const AdminView = ({
         <p className="opacity-90">Nutzerverwaltung & Datenschutz</p>
         <div className="absolute bottom-2 right-3 text-xs opacity-60">v1.1.0</div>
       </div>
+
+      {/* Betriebe & Einladungscodes — nur für Owner */}
+      {user?.isOwner && <OrganizationManager />}
 
       {/* Admin Statistics Dashboard */}
       <div className="grid md:grid-cols-4 gap-4">
