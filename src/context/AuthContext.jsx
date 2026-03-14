@@ -42,6 +42,14 @@ export function AuthProvider({ children }) {
   // Supabase Session prüfen + Auth-State-Listener
   useEffect(() => {
     const checkSession = async () => {
+      // Prüfe ob es ein Password-Recovery-Link ist (type=recovery in URL)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const urlParams = new URLSearchParams(window.location.search);
+      if (hashParams.get('type') === 'recovery' || urlParams.get('type') === 'recovery') {
+        setAuthView('reset-password');
+        return; // Nicht einloggen, Reset-Formular zeigen
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session?.user) {
