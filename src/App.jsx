@@ -514,6 +514,16 @@ export default function BaederApp() {
     return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed)) : 0;
   };
 
+  const getFirstSafeInt = (...values) => {
+    for (const value of values) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return Math.max(0, Math.round(parsed));
+      }
+    }
+    return null;
+  };
+
   const normalizeChallengeTimeoutMinutes = (value) => {
     const parsed = toSafeInt(value);
     if (!parsed) return DEFAULT_CHALLENGE_TIMEOUT_MINUTES;
@@ -609,18 +619,31 @@ export default function BaederApp() {
     const rawAwardedEvents = (rawMeta.awardedEvents && typeof rawMeta.awardedEvents === 'object')
       ? rawMeta.awardedEvents
       : {};
+    const normalizedBreakdown = {
+      ...XP_BREAKDOWN_DEFAULT,
+      examSimulator: getFirstSafeInt(rawBreakdown.examSimulator, rawMeta.examSimulator) ?? 0,
+      practicalExam: getFirstSafeInt(rawBreakdown.practicalExam, rawMeta.practicalExam) ?? 0,
+      flashcardLearning: getFirstSafeInt(rawBreakdown.flashcardLearning, rawMeta.flashcardLearning) ?? 0,
+      flashcardCreation: getFirstSafeInt(rawBreakdown.flashcardCreation, rawMeta.flashcardCreation) ?? 0,
+      quizWins: getFirstSafeInt(rawBreakdown.quizWins, rawMeta.quizWins) ?? 0,
+      swimTrainingPlans: getFirstSafeInt(rawBreakdown.swimTrainingPlans, rawMeta.swimTrainingPlans) ?? 0
+    };
+    const breakdownTotal = Object.values(normalizedBreakdown).reduce((sum, value) => sum + toSafeInt(value), 0);
+    const explicitTotalXp = getFirstSafeInt(
+      rawMeta.totalXp,
+      rawMeta.total_xp,
+      rawMeta.xp,
+      rawMeta.total,
+      safeCategoryStats.totalXp,
+      safeCategoryStats.total_xp,
+      safeCategoryStats.xp
+    );
 
     return {
-      totalXp: toSafeInt(rawMeta.totalXp),
-      breakdown: {
-        ...XP_BREAKDOWN_DEFAULT,
-        examSimulator: toSafeInt(rawBreakdown.examSimulator),
-        practicalExam: toSafeInt(rawBreakdown.practicalExam),
-        flashcardLearning: toSafeInt(rawBreakdown.flashcardLearning),
-        flashcardCreation: toSafeInt(rawBreakdown.flashcardCreation),
-        quizWins: toSafeInt(rawBreakdown.quizWins),
-        swimTrainingPlans: toSafeInt(rawBreakdown.swimTrainingPlans)
-      },
+      totalXp: explicitTotalXp === null
+        ? breakdownTotal
+        : (explicitTotalXp === 0 && breakdownTotal > 0 ? breakdownTotal : explicitTotalXp),
+      breakdown: normalizedBreakdown,
       awardedEvents: rawAwardedEvents
     };
   };
@@ -651,6 +674,53 @@ export default function BaederApp() {
       winStreak: toSafeInt(base.winStreak),
       bestWinStreak: toSafeInt(base.bestWinStreak)
     };
+  };
+
+  const buildUserStatsFromRow = (row) => ensureUserStatsStructure(row ? {
+    wins: row.wins || 0,
+    losses: row.losses || 0,
+    draws: row.draws || 0,
+    categoryStats: row.category_stats || {},
+    opponents: row.opponents || {},
+    winStreak: row.win_streak || 0,
+    bestWinStreak: row.best_win_streak || 0
+  } : createEmptyUserStats());
+
+  const doesUserStatsRowNeedRepair = (row, normalizedStats) => {
+    if (!row) return false;
+    const rawCategoryStats = (row.category_stats && typeof row.category_stats === 'object')
+      ? row.category_stats
+      : {};
+    const rawMeta = (rawCategoryStats[XP_META_KEY] && typeof rawCategoryStats[XP_META_KEY] === 'object')
+      ? rawCategoryStats[XP_META_KEY]
+      : null;
+    const rawBreakdown = (rawMeta?.breakdown && typeof rawMeta.breakdown === 'object')
+      ? rawMeta.breakdown
+      : null;
+    const normalizedMeta = getXpMetaFromCategoryStats(normalizedStats?.categoryStats || {});
+    const rawTotalXp = getFirstSafeInt(
+      rawMeta?.totalXp,
+      rawMeta?.total_xp,
+      rawMeta?.xp,
+      rawMeta?.total,
+      rawCategoryStats.totalXp,
+      rawCategoryStats.total_xp,
+      rawCategoryStats.xp
+    );
+
+    if (!rawMeta || !rawBreakdown) return true;
+    if (rawMeta.awardedEvents !== undefined && (rawMeta.awardedEvents === null || typeof rawMeta.awardedEvents !== 'object')) {
+      return true;
+    }
+    if (rawTotalXp === null && normalizedMeta.totalXp > 0) {
+      return true;
+    }
+
+    return Object.keys(XP_BREAKDOWN_DEFAULT).some((key) => (
+      rawBreakdown[key] === undefined
+      && rawMeta[key] === undefined
+      && normalizedMeta.breakdown[key] > 0
+    ));
   };
 
   const getTotalXpFromStats = (statsInput) => {
@@ -2730,15 +2800,8 @@ export default function BaederApp() {
             .eq('user_id', user.id)
             .single();
 
-          let stats = ensureUserStatsStructure(statsData ? {
-            wins: statsData.wins || 0,
-            losses: statsData.losses || 0,
-            draws: statsData.draws || 0,
-            categoryStats: statsData.category_stats || {},
-            opponents: statsData.opponents || {},
-            winStreak: statsData.win_streak || 0,
-            bestWinStreak: statsData.best_win_streak || 0
-          } : createEmptyUserStats());
+          let stats = buildUserStatsFromRow(statsData);
+          let shouldPersistStats = doesUserStatsRowNeedRepair(statsData, stats);
 
           // Stats aus beendeten Spielen neu berechnen (behebt inkonsistente lokale Stats)
           const currentUserName = normalizePlayerName(user.name);
@@ -2786,8 +2849,12 @@ export default function BaederApp() {
               stats.losses = syncedLosses;
               stats.draws = syncedDraws;
               stats.opponents = syncedOpponents;
-              await saveUserStatsToSupabase(user.name, stats);
+              shouldPersistStats = true;
             }
+          }
+
+          if (shouldPersistStats) {
+            await saveUserStatsToSupabase(user, stats);
           }
 
           setUserStats(stats);
@@ -3509,87 +3576,86 @@ export default function BaederApp() {
     }
   };
 
+  const resolveUserStatsIdentity = async (userInput) => {
+    if (userInput && typeof userInput === 'object') {
+      const userId = String(userInput.id || '').trim();
+      const userName = String(userInput.name || '').trim();
+      if (userId) {
+        return { userId, userName };
+      }
+      if (userName) {
+        return resolveUserStatsIdentity(userName);
+      }
+      return null;
+    }
+
+    const userName = String(userInput || '').trim();
+    if (!userName) return null;
+
+    const { data: matchingProfiles, error } = await supabase
+      .from('profiles')
+      .select('id, name')
+      .ilike('name', userName)
+      .limit(2);
+
+    if (error) throw error;
+
+    if (!Array.isArray(matchingProfiles) || matchingProfiles.length !== 1) {
+      if (Array.isArray(matchingProfiles) && matchingProfiles.length > 1) {
+        console.warn(`Mehrdeutiger Stats-Lookup für Profilname "${userName}"`);
+      }
+      return null;
+    }
+
+    return {
+      userId: matchingProfiles[0].id,
+      userName: matchingProfiles[0].name || userName
+    };
+  };
+
   // Helper function to save user stats to Supabase
-  const saveUserStatsToSupabase = async (userName, stats) => {
+  const saveUserStatsToSupabase = async (userInput, stats) => {
     try {
       const safeStats = ensureUserStatsStructure(stats);
-
-      // First get user id
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .ilike('name', userName)
-        .single();
-
-      if (userError) throw userError;
-
-      // Check if stats exist
-      const { data: existingStats } = await supabase
-        .from('user_stats')
-        .select('id')
-        .eq('user_id', userData.id)
-        .single();
-
-      if (existingStats) {
-        // Update existing stats
-        const { error } = await supabase
-          .from('user_stats')
-          .update({
-            wins: safeStats.wins,
-            losses: safeStats.losses,
-            draws: safeStats.draws,
-            category_stats: safeStats.categoryStats || {},
-            opponents: safeStats.opponents || {}
-          })
-          .eq('user_id', userData.id);
-        if (error) throw error;
-      } else {
-        // Create new stats
-        const { error } = await supabase
-          .from('user_stats')
-          .insert([{
-            user_id: userData.id,
-            wins: safeStats.wins,
-            losses: safeStats.losses,
-            draws: safeStats.draws,
-            category_stats: safeStats.categoryStats || {},
-            opponents: safeStats.opponents || {}
-          }]);
-        if (error) throw error;
+      const identity = await resolveUserStatsIdentity(userInput);
+      if (!identity?.userId) {
+        return false;
       }
+
+      const { error } = await supabase
+        .from('user_stats')
+        .upsert([{
+          user_id: identity.userId,
+          wins: safeStats.wins,
+          losses: safeStats.losses,
+          draws: safeStats.draws,
+          category_stats: safeStats.categoryStats || {},
+          opponents: safeStats.opponents || {}
+        }], { onConflict: 'user_id' });
+
+      if (error) throw error;
+      return true;
     } catch (error) {
       console.error('Save stats error:', error);
+      return false;
     }
   };
 
   // Helper function to get user stats from Supabase
-  const getUserStatsFromSupabase = async (userName) => {
+  const getUserStatsFromSupabase = async (userInput) => {
     try {
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .ilike('name', userName)
-        .single();
-
-      if (userError) return null;
+      const identity = await resolveUserStatsIdentity(userInput);
+      if (!identity?.userId) return null;
 
       const { data, error } = await supabase
         .from('user_stats')
         .select('*')
-        .eq('user_id', userData.id)
+        .eq('user_id', identity.userId)
         .single();
 
       if (error) return null;
 
-      return ensureUserStatsStructure({
-        wins: data.wins || 0,
-        losses: data.losses || 0,
-        draws: data.draws || 0,
-        categoryStats: data.category_stats || {},
-        opponents: data.opponents || {},
-        winStreak: data.win_streak || 0,
-        bestWinStreak: data.best_win_streak || 0
-      });
+      return buildUserStatsFromRow(data);
     } catch (error) {
       console.error('Get stats error:', error);
       return null;
@@ -3609,14 +3675,14 @@ export default function BaederApp() {
 
     xpAwardQueueRef.current = xpAwardQueueRef.current
       .then(async () => {
-        const currentStats = await getUserStatsFromSupabase(targetUserName);
+        const currentStats = await getUserStatsFromSupabase({ id: targetUserId, name: targetUserName });
         const baseStats = ensureUserStatsStructure(currentStats || createEmptyUserStats());
         const { stats: xpUpdatedStats, addedXp } = addXpToStats(baseStats, sourceKey, xpAmount, eventKey);
         if (addedXp <= 0) {
           return 0;
         }
 
-        await saveUserStatsToSupabase(targetUserName, xpUpdatedStats);
+        await saveUserStatsToSupabase({ id: targetUserId, name: targetUserName }, xpUpdatedStats);
         if (targetUserId === user?.id) {
           setUserStats(xpUpdatedStats);
         }
@@ -4120,7 +4186,7 @@ export default function BaederApp() {
     }
     stats.categoryStats[quizCategory].total++;
 
-    await saveUserStatsToSupabase(user.name, stats);
+    await saveUserStatsToSupabase(user, stats);
     setUserStats(stats);
     await saveGameToSupabase(currentGame);
   };
@@ -4290,7 +4356,7 @@ export default function BaederApp() {
 
       // Nur eigene Stats aktualisieren (RLS erlaubt nur eigene Stats)
       if (user.name === loser || user.name === winner) {
-        const existingStats = await getUserStatsFromSupabase(user.name);
+        const existingStats = await getUserStatsFromSupabase(user);
         let stats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
         const opponentName = user.name === loser ? winner : loser;
         if (!stats.opponents[opponentName]) {
@@ -4312,7 +4378,7 @@ export default function BaederApp() {
             showToast(`-${xpResult.deductedXp} XP Strafe • Quizduell-Aufgabe`, 'error', 3500);
           }
         }
-        await saveUserStatsToSupabase(user.name, stats);
+        await saveUserStatsToSupabase(user, stats);
         setUserStats(stats);
       }
 
@@ -4436,7 +4502,7 @@ export default function BaederApp() {
 
       // Nur eigene Stats aktualisieren (RLS erlaubt nur eigene Stats)
       try {
-        const existingStats = await getUserStatsFromSupabase(user.name);
+        const existingStats = await getUserStatsFromSupabase(user);
         let stats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
 
         const opponent = user.name === currentGame.player1 ? currentGame.player2 : currentGame.player1;
@@ -4473,7 +4539,7 @@ export default function BaederApp() {
           stats.winStreak = 0;
         }
 
-        await saveUserStatsToSupabase(user.name, stats);
+        await saveUserStatsToSupabase(user, stats);
         setUserStats(stats);
         setStatsByUserId(prev => {
           const wins = stats.wins || 0;
