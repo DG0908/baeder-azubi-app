@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext';
 import { useApp } from './context/AppContext';
 import LoginScreen from './components/auth/LoginScreen';
 import ChatView from './components/views/ChatView';
+import ForumView from './components/views/ForumView';
 import NewsView from './components/views/NewsView';
 import ExamsView from './components/views/ExamsView';
 import MaterialsView from './components/views/MaterialsView';
@@ -9106,6 +9107,11 @@ export default function BaederApp() {
             directChatCandidates={directChatCandidates}
             hasChatOrganization={hasChatOrganization}
           />
+        )}
+
+        {/* Forum View */}
+        {currentView === 'forum' && (
+          <ForumView />
         )}
 
         {/* Materials View */}
