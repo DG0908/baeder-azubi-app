@@ -1,6 +1,7 @@
-import React from 'react';
-import { Lock, Shield, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Lock, Shield, AlertTriangle, Mail } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../supabase';
 
 const LoginScreen = () => {
   const {
@@ -15,6 +16,32 @@ const LoginScreen = () => {
     handleLogin,
     handleRegister
   } = useAuth();
+
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [newPasswordLoading, setNewPasswordLoading] = useState(false);
+
+  const handlePasswordReset = async () => {
+    if (!resetEmail.trim()) {
+      alert('Bitte gib deine E-Mail-Adresse ein.');
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim().toLowerCase(), {
+        redirectTo: window.location.origin
+      });
+      if (error) throw error;
+      setResetSent(true);
+    } catch (error) {
+      alert('Fehler: ' + error.message);
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
   // Impressum
   if (authView === 'impressum') {
@@ -158,6 +185,139 @@ const LoginScreen = () => {
     );
   }
 
+  // Neues Passwort setzen (nach Klick auf Reset-Link)
+  if (authView === 'reset-password') {
+    const handleSetNewPassword = async () => {
+      if (!newPassword || !newPasswordConfirm) {
+        alert('Bitte beide Felder ausfüllen.');
+        return;
+      }
+      if (newPassword !== newPasswordConfirm) {
+        alert('Die Passwörter stimmen nicht überein!');
+        return;
+      }
+      if (newPassword.length < 6) {
+        alert('Das Passwort muss mindestens 6 Zeichen lang sein.');
+        return;
+      }
+      setNewPasswordLoading(true);
+      try {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        alert('Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.');
+        setNewPassword('');
+        setNewPasswordConfirm('');
+        await supabase.auth.signOut();
+        setAuthView('login');
+      } catch (error) {
+        alert('Fehler: ' + error.message);
+      } finally {
+        setNewPasswordLoading(false);
+      }
+    };
+
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
+      }}>
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="text-cyan-600" size={28} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Neues Passwort setzen</h2>
+            <p className="text-gray-500 text-sm">Gib dein neues Passwort ein (mindestens 6 Zeichen).</p>
+          </div>
+          <div className="space-y-4">
+            <input
+              type="password"
+              placeholder="Neues Passwort"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+            <input
+              type="password"
+              placeholder="Passwort wiederholen"
+              value={newPasswordConfirm}
+              onChange={(e) => setNewPasswordConfirm(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSetNewPassword()}
+              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+            <button
+              onClick={handleSetNewPassword}
+              disabled={newPasswordLoading}
+              className="w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors"
+            >
+              {newPasswordLoading ? 'Wird gespeichert...' : 'Passwort ändern'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Passwort vergessen
+  if (authView === 'forgot') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
+      }}>
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+          <button
+            onClick={() => { setAuthView('login'); setResetSent(false); setResetEmail(''); }}
+            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
+          >
+            ← Zurück zum Login
+          </button>
+
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Mail className="text-cyan-600" size={28} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Passwort zurücksetzen</h2>
+            <p className="text-gray-500 text-sm">Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen.</p>
+          </div>
+
+          {resetSent ? (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+              <div className="text-4xl mb-3">✅</div>
+              <h3 className="font-bold text-green-800 mb-2">E-Mail gesendet!</h3>
+              <p className="text-sm text-green-700">
+                Prüfe dein Postfach (auch den Spam-Ordner) nach einer E-Mail von Supabase.
+                Klicke auf den Link in der E-Mail, um ein neues Passwort zu setzen.
+              </p>
+              <button
+                onClick={() => { setAuthView('login'); setResetSent(false); setResetEmail(''); }}
+                className="mt-4 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-lg transition-colors"
+              >
+                Zurück zum Login
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <input
+                type="email"
+                placeholder="Deine E-Mail-Adresse"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handlePasswordReset()}
+                className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+              <button
+                onClick={handlePasswordReset}
+                disabled={resetLoading}
+                className="w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors"
+              >
+                {resetLoading ? 'Wird gesendet...' : 'Reset-Link senden'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // Login / Registrierung
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{
@@ -265,6 +425,14 @@ const LoginScreen = () => {
               <Lock className="inline mr-2" size={20} />
               Anmelden
             </button>
+            <div className="text-center">
+              <button
+                onClick={() => setAuthView('forgot')}
+                className="text-sm text-cyan-600 hover:text-cyan-700 transition-colors"
+              >
+                Passwort vergessen?
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
