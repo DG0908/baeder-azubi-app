@@ -337,6 +337,48 @@ const AdminPasswordReset = ({ userEmail }) => {
 };
 import { CATEGORIES, PERMISSIONS, MENU_GROUP_LABELS } from '../../data/constants';
 
+// ─── Org-Zuordnung Dropdown für einzelne User ───
+const UserOrgAssign = ({ userId, currentOrgId, onChanged }) => {
+  const { showToast } = useApp();
+  const [orgs, setOrgs] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    supabase.from('organizations').select('id, name').eq('is_active', true).order('name')
+      .then(({ data }) => setOrgs(data || []));
+  }, []);
+
+  const handleChange = async (newOrgId) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ organization_id: newOrgId || null })
+      .eq('id', userId);
+    if (error) {
+      showToast('Fehler: ' + error.message, 'error');
+    } else {
+      showToast('Betrieb zugewiesen!', 'success');
+      if (onChanged) onChanged();
+    }
+    setLoading(false);
+  };
+
+  return (
+    <select
+      value={currentOrgId || ''}
+      onChange={(e) => handleChange(e.target.value || null)}
+      disabled={loading}
+      className="px-2 py-1.5 border border-indigo-300 rounded text-sm bg-indigo-50"
+      title="Betrieb zuweisen"
+    >
+      <option value="">Kein Betrieb</option>
+      {orgs.map(o => (
+        <option key={o.id} value={o.id}>{o.name}</option>
+      ))}
+    </select>
+  );
+};
+
 const AdminView = ({
   currentUserEmail,
   canManageRoles = false,
@@ -541,14 +583,15 @@ const AdminView = ({
           </h3>
           <div className="space-y-3">
             {pendingUsers.map(acc => (
-              <div key={acc.email} className="bg-white rounded-lg p-4 flex justify-between items-center">
-                <div>
-                  <p className="font-bold">{acc.name}</p>
-                  <p className="text-sm text-gray-600">{acc.email} • {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}</p>
-                  {acc.role === 'azubi' && acc.trainingEnd && (
-                    <p className="text-xs text-gray-500">Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}</p>
-                  )}
-                </div>
+              <div key={acc.email} className="bg-white rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-bold">{acc.name}</p>
+                    <p className="text-sm text-gray-600">{acc.email} • {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}</p>
+                    {acc.role === 'azubi' && acc.trainingEnd && (
+                      <p className="text-xs text-gray-500">Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}</p>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => approveUser(acc.email)}
@@ -569,6 +612,12 @@ const AdminView = ({
                       <X size={20} />
                     </button>
                   </div>
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <Building2 size={14} className="text-indigo-500" />
+                  <span className="text-xs text-gray-500">Betrieb:</span>
+                  <UserOrgAssign userId={acc.id} currentOrgId={acc.organization_id} onChanged={loadData} />
+                </div>
               </div>
             ))}
           </div>
@@ -623,7 +672,7 @@ const AdminView = ({
                       : 'Löschung steht bevor'}
                   </div>
                 )}
-                <div className="flex gap-2 mt-3 flex-wrap">
+                <div className="flex gap-2 mt-3 flex-wrap items-center">
                   <select
                     value={acc.role}
                     onChange={(e) => changeUserRole(acc.email, e.target.value)}
@@ -641,6 +690,9 @@ const AdminView = ({
                     <option value="trainer">Ausbilder</option>
                     <option value="admin">Admin</option>
                   </select>
+                  {user?.isOwner && (
+                    <UserOrgAssign userId={acc.id} currentOrgId={acc.organization_id} onChanged={loadData} />
+                  )}
                   <button
                     onClick={() => exportUserData(acc.email, acc.name)}
                     className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg"

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Lock, Shield, AlertTriangle, Mail } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
 
@@ -23,6 +23,54 @@ const LoginScreen = () => {
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [newPasswordLoading, setNewPasswordLoading] = useState(false);
+
+  // Live-Validierung des Einladungscodes
+  const [codeStatus, setCodeStatus] = useState(null); // null | 'checking' | { valid: true, orgName, role } | { valid: false }
+  const codeTimerRef = useRef(null);
+
+  useEffect(() => {
+    const code = registerData.invitationCode?.trim();
+    if (!code || code.length < 4) {
+      setCodeStatus(null);
+      return;
+    }
+
+    // Debounce: 500ms nach letztem Tippen
+    if (codeTimerRef.current) clearTimeout(codeTimerRef.current);
+    setCodeStatus('checking');
+
+    codeTimerRef.current = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('invitation_codes')
+          .select('role, is_active, used_count, max_uses, expires_at, organizations(name)')
+          .eq('code', code.toUpperCase())
+          .single();
+
+        if (error || !data) {
+          setCodeStatus({ valid: false });
+          return;
+        }
+
+        const expired = data.expires_at && new Date(data.expires_at) < new Date();
+        const maxReached = data.max_uses > 0 && data.used_count >= data.max_uses;
+
+        if (!data.is_active || expired || maxReached) {
+          setCodeStatus({ valid: false, reason: expired ? 'Code abgelaufen' : maxReached ? 'Code vollständig genutzt' : 'Code deaktiviert' });
+        } else {
+          setCodeStatus({
+            valid: true,
+            orgName: data.organizations?.name || 'Unbekannt',
+            role: data.role
+          });
+        }
+      } catch {
+        setCodeStatus({ valid: false });
+      }
+    }, 500);
+
+    return () => { if (codeTimerRef.current) clearTimeout(codeTimerRef.current); };
+  }, [registerData.invitationCode]);
 
   const handlePasswordReset = async () => {
     if (!resetEmail.trim()) {
@@ -441,13 +489,38 @@ const LoginScreen = () => {
               placeholder="Einladungscode"
               value={registerData.invitationCode}
               onChange={(e) => setRegisterData({...registerData, invitationCode: e.target.value.toUpperCase()})}
-              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono tracking-wider text-center text-lg"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono tracking-wider text-center text-lg ${
+                codeStatus?.valid === true ? 'border-green-400 bg-green-50' :
+                codeStatus?.valid === false ? 'border-red-400 bg-red-50' :
+                'border-cyan-300'
+              }`}
               style={{ letterSpacing: '0.15em' }}
             />
-            <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
-              <Shield className="inline mr-2" size={16} />
-              Du brauchst einen Einladungscode von deinem Ausbilder oder Betrieb.
-            </div>
+            {codeStatus === 'checking' && (
+              <div className="text-sm text-gray-500 text-center animate-pulse">Code wird geprüft...</div>
+            )}
+            {codeStatus?.valid === true && (
+              <div className="bg-green-50 border border-green-300 rounded-lg p-3 text-sm text-green-800 flex items-center gap-2">
+                <CheckCircle size={18} className="text-green-600 flex-shrink-0" />
+                <div>
+                  <div className="font-bold flex items-center gap-1">
+                    <Building2 size={14} /> {codeStatus.orgName}
+                  </div>
+                  <div>Registrierung als: {codeStatus.role === 'azubi' ? 'Azubi' : 'Ausbilder'}</div>
+                </div>
+              </div>
+            )}
+            {codeStatus?.valid === false && (
+              <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm text-red-800">
+                {codeStatus.reason || 'Ungültiger Einladungscode'}
+              </div>
+            )}
+            {!codeStatus && (
+              <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
+                <Shield className="inline mr-2" size={16} />
+                Du brauchst einen Einladungscode von deinem Ausbilder oder Betrieb.
+              </div>
+            )}
             <input
               type="text"
               placeholder="Vollständiger Name"

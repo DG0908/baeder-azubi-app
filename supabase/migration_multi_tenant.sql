@@ -148,39 +148,44 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- ============================================================
--- STEP 5: Update RLS on profiles — Trainer sieht nur eigene Org
--- Run this block fifth (CAREFULLY — drops existing policies)
+-- STEP 5: Helper functions + RLS on profiles
+-- Run this block fifth
 -- ============================================================
 
--- Alte SELECT Policy droppen und neue erstellen
+-- Hilfsfunktionen (SECURITY DEFINER umgeht RLS-Selbstreferenz)
+CREATE OR REPLACE FUNCTION public.get_my_org_id()
+RETURNS UUID AS $$
+  SELECT organization_id FROM public.profiles WHERE id = auth.uid();
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+CREATE OR REPLACE FUNCTION public.is_owner()
+RETURNS BOOLEAN AS $$
+  SELECT COALESCE(
+    (SELECT is_owner FROM public.profiles WHERE id = auth.uid()),
+    false
+  );
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+-- Policies mit Funktionen statt Subqueries
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_select" ON public.profiles;
 
 CREATE POLICY "profiles_select" ON public.profiles FOR SELECT
 USING (
-  -- Eigenes Profil immer sichtbar
   id = auth.uid()
-  -- Owner sieht alle
-  OR EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.is_owner = true)
-  -- Trainer/Admin sieht nur eigene Organisation
-  OR (
-    organization_id = (SELECT organization_id FROM public.profiles p WHERE p.id = auth.uid())
-    AND EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('admin', 'trainer'))
-  )
-  -- Azubis sehen andere Azubis ihrer Org (für Leaderboard etc.)
-  OR organization_id = (SELECT organization_id FROM public.profiles p WHERE p.id = auth.uid())
+  OR public.is_owner()
+  OR organization_id = public.get_my_org_id()
 );
 
--- Update Policy: User eigenes Profil ODER Owner/Admin
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_update" ON public.profiles;
 
 CREATE POLICY "profiles_update" ON public.profiles FOR UPDATE
 USING (
   id = auth.uid()
-  OR EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.is_owner = true)
+  OR public.is_owner()
   OR (
-    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('admin', 'trainer'))
-    AND organization_id = (SELECT organization_id FROM public.profiles p WHERE p.id = auth.uid())
+    organization_id = public.get_my_org_id()
+    AND EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('admin', 'trainer'))
   )
 );
