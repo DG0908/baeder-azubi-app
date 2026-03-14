@@ -9,6 +9,8 @@ const LazyCalciumHypochloriteDeepDiveView = lazy(() => import('./chlorine/Calciu
 const LazyStartblockDeepDiveView = lazy(() => import('./bauliches/StartblockDeepDiveView'));
 const LazyUmwaelzpumpeDeepDiveView = lazy(() => import('./pumpen/UmwaelzpumpeDeepDiveView'));
 const LazyMembrandosierpumpeDeepDiveView = lazy(() => import('./pumpen/MembrandosierpumpeDeepDiveView'));
+const LazyClosedFilterDeepDiveView = lazy(() => import('./filter/ClosedFilterDeepDiveView'));
+const LazyFilterSpuelungDeepDiveView = lazy(() => import('./filter/FilterSpuelungDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -101,6 +103,13 @@ const LEARNING_CATEGORIES = [
         available: true,
       },
       {
+        id: 'geschlossener-filter',
+        name: 'Geschlossener Filter',
+        description: 'Festbettfilter im Schnittbild mit Filterbett, Luftspuelung, Rueckspuelung und Wiederanfahren',
+        icon: 'GF',
+        available: true,
+      },
+      {
         id: 'flockungsmittel',
         name: 'Flockungsmittel',
         description: 'Dosierung, Wirkung und Einbindung in den Prozess',
@@ -117,9 +126,9 @@ const LEARNING_CATEGORIES = [
       {
         id: 'filterspuelung',
         name: 'Filterspuelung',
-        description: 'Rückspuelablauf, Fahrweisen und Hygienesicherung',
-        icon: '🔄',
-        available: false,
+        description: 'Rueckspuelablauf mit Klappenstellungen fuer Filterspuelung, Ausserbetriebnahme und Inbetriebnahme',
+        icon: 'FS',
+        available: true,
       },
       {
         id: 'desinfektionsverfahren',
@@ -542,6 +551,60 @@ const InteractiveLearningView = () => {
     );
   }
 
+  if (activeModule === 'geschlossener-filter') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurueck zu Baedertechnik
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade geschlossenen Filter Deep Dive...
+            </div>
+          )}
+        >
+          <LazyClosedFilterDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'filterspuelung') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurueck zu Baedertechnik
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Filterspuelung Deep Dive...
+            </div>
+          )}
+        >
+          <LazyFilterSpuelungDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
   if (activeModule === 'schwimmtechniken') {
     return (
       <div>
@@ -803,4 +866,3 @@ const InteractiveLearningView = () => {
 };
 
 export default InteractiveLearningView;
-
