@@ -1,5 +1,5 @@
 import { Suspense, lazy, useState } from 'react';
-import { ArrowLeft, BookOpen, ChevronRight, Clock, Droplets, FlaskConical, Heart, Lock, ShieldCheck, Wrench } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calculator, ChevronRight, Clock, Droplets, FlaskConical, Heart, Lock, ShieldCheck, Wrench } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 const LazyWaterCycleView = lazy(() => import('./WaterCycleView'));
@@ -11,6 +11,8 @@ const LazyUmwaelzpumpeDeepDiveView = lazy(() => import('./pumpen/UmwaelzpumpeDee
 const LazyMembrandosierpumpeDeepDiveView = lazy(() => import('./pumpen/MembrandosierpumpeDeepDiveView'));
 const LazyClosedFilterDeepDiveView = lazy(() => import('./filter/ClosedFilterDeepDiveView'));
 const LazyFilterSpuelungDeepDiveView = lazy(() => import('./filter/FilterSpuelungDeepDiveView'));
+const LazyMathBasicsDeepDiveView = lazy(() => import('./mathematik/MathBasicsDeepDiveView'));
+const LazyChemicalFormulasDeepDiveView = lazy(() => import('./chemie/ChemicalFormulasDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -367,6 +369,95 @@ const LEARNING_CATEGORIES = [
     ],
   },
   {
+    id: 'mathematik',
+    name: 'Mathematik',
+    icon: '123',
+    lucideIcon: Calculator,
+    description: 'Dreisatz, Prozentrechnung, Volumen und Zeit in einfachen Schritten',
+    longDescription: 'Rechenwege werden hier ganz einfach und ohne Spruenge erklaert. Jeder Schritt zeigt erst, was gegeben ist, dann die Rechnung auf 1 oder 100 und am Ende das saubere Ergebnis mit Einheit.',
+    paragraphs: 'Lernhilfe · Grundlagen',
+    color: '#0f766e',
+    colorLight: '#0f766e20',
+    modules: [
+      {
+        id: 'mathe-dreisatz',
+        name: 'Dreisatz einfach',
+        description: 'Vom bekannten Wert ueber 1 Einheit zum Zielwert',
+        icon: '3S',
+        available: true,
+      },
+      {
+        id: 'mathe-prozent',
+        name: 'Prozentrechnung',
+        description: 'Anteile von 100 schnell und sauber berechnen',
+        icon: '%',
+        available: true,
+      },
+      {
+        id: 'mathe-volumen',
+        name: 'Beckenvolumen',
+        description: 'Laenge, Breite, Tiefe und Literumrechnung',
+        icon: 'm3',
+        available: true,
+      },
+      {
+        id: 'mathe-zeit',
+        name: 'Zeit & Industriestunden',
+        description: 'Normale Zeit sicher in Industriestunden umrechnen',
+        icon: 'T',
+        available: true,
+      },
+      {
+        id: 'mathe-mischung',
+        name: 'Mischung & Verduennung',
+        description: 'Verhaeltnisse und Mischen von Loesungen einfach erklaert',
+        icon: '1:',
+        available: false,
+      },
+    ],
+  },
+  {
+    id: 'chemie',
+    name: 'Chemie-Grundlagen',
+    icon: 'H2O',
+    lucideIcon: FlaskConical,
+    description: 'Formeln lesen, Elemente erkennen und Stoffe aus dem Baederbetrieb verstehen',
+    longDescription: 'Hier lernst du chemische Formeln wirklich von Grund auf. Du erkennst Elementsymbole, liest Zahlen und Klammern richtig und zerlegst typische Stoffe aus der Badewasseraufbereitung Schritt fuer Schritt.',
+    paragraphs: 'Lernhilfe · Chemie',
+    color: '#2563eb',
+    colorLight: '#2563eb20',
+    modules: [
+      {
+        id: 'chemische-formeln',
+        name: 'Chemische Formeln verstehen',
+        description: 'Buchstaben, Zahlen und Klammern in Formeln ganz einfach lesen',
+        icon: 'CF',
+        available: true,
+      },
+      {
+        id: 'stoffnamen-formeln',
+        name: 'Stoffnamen & Formeln',
+        description: 'Wie Stoffname, Formel und Einsatz zusammengehoeren',
+        icon: 'SF',
+        available: false,
+      },
+      {
+        id: 'saeuren-basen-grundlagen',
+        name: 'Saeuren & Basen',
+        description: 'Einfache Grundlagen zu pH, Saeuren und Basen',
+        icon: 'pH',
+        available: false,
+      },
+      {
+        id: 'redox-grundlagen',
+        name: 'Redox-Grundlagen',
+        description: 'Oxidation und Reduktion ohne Fachchinesisch',
+        icon: 'Rx',
+        available: false,
+      },
+    ],
+  },
+  {
     id: 'verwaltung',
     name: 'Verwaltung & Recht',
     icon: '📝',
@@ -631,6 +722,68 @@ const InteractiveLearningView = () => {
       </div>
     );
   }
+
+  if (['mathe-dreisatz', 'mathe-prozent', 'mathe-volumen', 'mathe-zeit'].includes(activeModule)) {
+    const initialTopicMap = {
+      'mathe-dreisatz': 'dreisatz',
+      'mathe-prozent': 'prozent',
+      'mathe-volumen': 'volumen',
+      'mathe-zeit': 'zeit'
+    };
+
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurueck zu Mathematik
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Mathematik-Modul...
+            </div>
+          )}
+        >
+          <LazyMathBasicsDeepDiveView initialTopic={initialTopicMap[activeModule]} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'chemische-formeln') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurueck zu Chemie-Grundlagen
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Chemie-Modul...
+            </div>
+          )}
+        >
+          <LazyChemicalFormulasDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
   if (activeModule === 'herz' || activeModule === 'blutkreislauf-gross-klein') {
     const initialTab = activeModule === 'blutkreislauf-gross-klein' ? 'kreislauf' : 'anatomie';
     const initialScene = activeModule === 'blutkreislauf-gross-klein' ? 'circulation' : 'heart';
