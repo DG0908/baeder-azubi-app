@@ -1607,10 +1607,11 @@ export default function BaederApp() {
       loadData();
       loadNotifications();
       loadTheoryExamHistory();
+      // Polling: nur leichte Daten (Notifications, Games, Messages) alle 30s
       const interval = setInterval(() => {
-        loadData();
+        loadLightData();
         loadNotifications();
-      }, 3000);
+      }, 30000);
       return () => clearInterval(interval);
     }
   }, [user]);
@@ -1685,10 +1686,12 @@ export default function BaederApp() {
     }
   }, [timeLeft, timerActive, answered]);
 
-  // Check for users to delete on load
+  // Check data retention only once on login (not on every view change)
   useEffect(() => {
-    checkDataRetention();
+    if (user) checkDataRetention();
+  }, [user]);
 
+  useEffect(() => {
     // Load school attendance when view changes
     if (currentView === 'school-card' && user) {
       loadSchoolAttendance();
@@ -2323,7 +2326,8 @@ export default function BaederApp() {
     try {
       const { data: users, error } = await supabase
         .from('profiles')
-        .select('*');
+        .select('id, name, email, role, training_end, last_login')
+        .in('role', ['azubi', 'trainer']);
 
       if (error || !users) {
         console.log('No users found or Supabase error');
@@ -2468,9 +2472,10 @@ export default function BaederApp() {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*')
+        .select('id, title, message, type, created_at, read')
         .eq('user_name', user.name)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
 
@@ -2760,6 +2765,57 @@ export default function BaederApp() {
 
   // handleLogin, handleRegister, handleLogout werden vom AuthContext bereitgestellt
 
+  // Leichte Daten für Polling (alle 30s) — nur schnell ändernde Tabellen
+  const loadLightData = async () => {
+    try {
+      // Games aktualisieren
+      const { data: gamesData } = await supabase
+        .from('games')
+        .select('id, player1, player2, player1_score, player2_score, current_turn, round, status, difficulty, rounds_data, winner, updated_at, created_at, challenge_timeout_minutes, challenge_expires_at')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (gamesData) {
+        const games = gamesData.map(g => {
+          let winner = g.winner || null;
+          if (!winner && g.status === 'finished') {
+            if (g.player1_score > g.player2_score) winner = g.player1;
+            else if (g.player2_score > g.player1_score) winner = g.player2;
+          }
+          return {
+            id: g.id, player1: g.player1, player2: g.player2,
+            player1Score: g.player1_score, player2Score: g.player2_score,
+            currentTurn: g.current_turn, categoryRound: g.round || 0, round: g.round || 0,
+            status: g.status, difficulty: g.difficulty, categoryRounds: g.rounds_data || [],
+            winner, questionHistory: [], updatedAt: g.updated_at, createdAt: g.created_at,
+            challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challenge_timeout_minutes),
+            challengeExpiresAt: g.challenge_expires_at || null
+          };
+        });
+        setAllGames(games);
+        setActiveGames(games.filter(g => g.status !== 'finished'));
+        updateLeaderboard(games, allUsers);
+      }
+
+      // Messages aktualisieren
+      const { data: messagesData } = await supabase
+        .from('messages')
+        .select('id, text, user_name, user_id, created_at, scope, recipient_id, recipient_name, avatar')
+        .order('created_at', { ascending: true })
+        .limit(100);
+
+      if (messagesData) {
+        const userDirectory = Object.fromEntries(
+          (allUsers || []).filter(a => a?.id).map(a => [a.id, a])
+        );
+        const msgs = messagesData.map((row) => normalizeChatMessageRow(row, userDirectory));
+        setMessages(msgs);
+      }
+    } catch (error) {
+      console.log('Light data refresh error:', error.message);
+    }
+  };
+
   const loadData = async () => {
     try {
       let visibleUsers = [];
@@ -2768,7 +2824,7 @@ export default function BaederApp() {
       try {
         const { data: configData, error: configError } = await supabase
           .from('app_config')
-          .select('*')
+          .select('id, menu_items, theme_colors')
           .eq('id', 'main')
           .single();
 
@@ -2824,8 +2880,9 @@ export default function BaederApp() {
       // Load games from Supabase
       const { data: gamesData } = await supabase
         .from('games')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, player1, player2, player1_score, player2_score, current_turn, round, status, difficulty, rounds_data, winner, updated_at, created_at, challenge_timeout_minutes, challenge_expires_at')
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (gamesData) {
         const games = gamesData.map(g => {
@@ -2964,7 +3021,7 @@ export default function BaederApp() {
       // Load messages from Supabase
       const { data: messagesData } = await supabase
         .from('messages')
-        .select('*')
+        .select('id, text, user_name, user_id, created_at, scope, recipient_id, recipient_name, avatar')
         .order('created_at', { ascending: true })
         .limit(100);
 
@@ -2981,8 +3038,9 @@ export default function BaederApp() {
       // Load custom questions from Supabase
       const { data: questionsData } = await supabase
         .from('custom_questions')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, question, category, answers, correct, created_by, approved, created_at')
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (questionsData) {
         const qs = questionsData.map(q => ({
@@ -3003,8 +3061,9 @@ export default function BaederApp() {
         try {
           const { data: reportsData, error: reportsError } = await supabase
             .from('question_reports')
-            .select('*')
-            .order('created_at', { ascending: false });
+            .select('id, question_text, question, category, question_key, source, note, answers, reported_by, user_name, reported_by_id, status, created_at')
+            .order('created_at', { ascending: false })
+            .limit(200);
 
           if (!reportsError && Array.isArray(reportsData)) {
             const remoteReports = reportsData.map((row) => {
@@ -3048,8 +3107,9 @@ export default function BaederApp() {
       // Load materials from Supabase
       const { data: materialsData } = await supabase
         .from('materials')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, title, content, category, type, url, created_by, created_at')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (materialsData) {
         const mats = materialsData.map(m => ({
@@ -3069,8 +3129,9 @@ export default function BaederApp() {
       try {
         const { data: resourcesData, error: resourcesError } = await supabase
           .from('resources')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .select('id, title, description, url, category, created_by, created_at')
+          .order('created_at', { ascending: false })
+          .limit(100);
 
         if (resourcesError) {
           console.error('Resources load error:', resourcesError);
@@ -3093,8 +3154,9 @@ export default function BaederApp() {
       // Load news from Supabase
       const { data: newsData } = await supabase
         .from('news')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, title, content, author, created_at')
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (newsData) {
         const newsItems = newsData.map(n => ({
@@ -3110,8 +3172,9 @@ export default function BaederApp() {
       // Load exams from Supabase
       const { data: examsData } = await supabase
         .from('exams')
-        .select('*')
-        .order('exam_date', { ascending: true });
+        .select('id, title, description, exam_date, location, created_by, created_at')
+        .order('exam_date', { ascending: true })
+        .limit(50);
 
       if (examsData) {
         const exs = examsData.map(e => ({
@@ -3129,8 +3192,9 @@ export default function BaederApp() {
       // Load flashcards from Supabase
       const { data: flashcardsData } = await supabase
         .from('flashcards')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, category, question, answer, approved, user_id, created_at')
+        .order('created_at', { ascending: false })
+        .limit(500);
 
       if (flashcardsData) {
         const fcs = [];
@@ -3160,7 +3224,7 @@ export default function BaederApp() {
         let badgesData = null;
         const { data: byId } = await supabase
           .from('user_badges')
-          .select('*')
+          .select('badge_id, earned_at')
           .eq('user_id', user.id);
 
         if (byId && byId.length > 0) {
@@ -3169,7 +3233,7 @@ export default function BaederApp() {
           // Fallback für alte Einträge ohne user_id
           const { data: byName } = await supabase
             .from('user_badges')
-            .select('*')
+            .select('badge_id, earned_at')
             .eq('user_name', user.name);
           badgesData = byName;
         }
