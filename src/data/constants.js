@@ -20,6 +20,7 @@ export const DEFAULT_MENU_ITEMS = [
   { id: 'stats', icon: '\u{1F3C5}', label: 'Statistiken', visible: true, order: 6, requiresPermission: null, group: 'sozial' },
   { id: 'trainer-dashboard', icon: '\u{1F468}\u200D\u{1F3EB}', label: 'Azubi-\u00dcbersicht', visible: true, order: 7, requiresPermission: 'canViewAllStats', group: 'verwaltung' },
   { id: 'chat', icon: '\u{1F4AC}', label: 'Chat', visible: true, order: 8, requiresPermission: null, group: 'sozial' },
+  { id: 'forum', icon: '\u{1F4DD}', label: 'Forum', visible: true, order: 8.5, requiresPermission: null, group: 'sozial' },
   { id: 'materials', icon: '\u{1F4DA}', label: 'Lernen', visible: true, order: 9, requiresPermission: null, group: 'lernen' },
   { id: 'interactive-learning', icon: '\u{1F393}', label: 'Interaktives Lernen', visible: true, order: 9.5, requiresPermission: null, group: 'lernen' },
   { id: 'resources', icon: '\u{1F517}', label: 'Ressourcen', visible: true, order: 10, requiresPermission: null, group: 'lernen' },
