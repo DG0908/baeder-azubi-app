@@ -258,6 +258,28 @@ export default function BaederApp() {
     if (!na || !nb) return false;
     return na === nb || na.includes(nb) || nb.includes(na);
   };
+  const STAFF_CHAT_ROLES = new Set(['trainer', 'ausbilder', 'admin']);
+  const CHAT_SCOPE_META = {
+    azubi_room: {
+      label: 'Azubi-Chat',
+      description: 'Nur Azubis aus deinem Betrieb'
+    },
+    staff_room: {
+      label: 'Azubi & Ausbilder',
+      description: 'Gemeinsamer Betriebschat'
+    },
+    direct_staff: {
+      label: 'Direktchat',
+      description: '1:1 zwischen Azubi und Ausbilder'
+    }
+  };
+  const getRoleKey = (value) => String(value || '').trim().toLowerCase();
+  const isStaffRole = (value) => STAFF_CHAT_ROLES.has(getRoleKey(value));
+  const getAccountOrganizationId = (account) => account?.organizationId || account?.organization_id || null;
+  const getChatScopeKey = (value, fallback = 'staff_room') => {
+    const normalized = String(value || '').trim().toLowerCase();
+    return CHAT_SCOPE_META[normalized] ? normalized : fallback;
+  };
   const isFinishedGameStatus = (status) => {
     const normalized = String(status || '').trim().toLowerCase();
     return normalized === 'finished' || normalized === 'completed' || normalized === 'done';
@@ -782,6 +804,8 @@ export default function BaederApp() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [chatScope, setChatScope] = useState('staff_room');
+  const [selectedChatRecipientId, setSelectedChatRecipientId] = useState('');
   const [submittedQuestions, setSubmittedQuestions] = useState([]);
   const [newQuestionText, setNewQuestionText] = useState('');
   const [newQuestionCategory, setNewQuestionCategory] = useState('org');
@@ -1589,6 +1613,31 @@ export default function BaederApp() {
       return () => clearInterval(interval);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const allowedScopes = getRoleKey(user.role) === 'azubi'
+      ? ['azubi_room', 'staff_room', 'direct_staff']
+      : ['staff_room', 'direct_staff'];
+
+    if (!allowedScopes.includes(chatScope)) {
+      setChatScope(allowedScopes[0]);
+    }
+  }, [user?.id, user?.role, chatScope]);
+
+  useEffect(() => {
+    if (chatScope !== 'direct_staff') {
+      if (selectedChatRecipientId) {
+        setSelectedChatRecipientId('');
+      }
+      return;
+    }
+
+    if (!directChatCandidates.some((account) => account.id === selectedChatRecipientId)) {
+      setSelectedChatRecipientId(directChatCandidates[0]?.id || '');
+    }
+  }, [chatScope, selectedChatRecipientId, directChatCandidates]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -2596,6 +2645,30 @@ export default function BaederApp() {
     return stats;
   };
 
+  const hasChatOrganization = Boolean(user?.organizationId);
+  const chatUsersInOrganization = hasChatOrganization
+    ? allUsers.filter((account) => (
+      account?.id
+      && account.approved !== false
+      && getAccountOrganizationId(account) === user.organizationId
+    ))
+    : [];
+  const directChatCandidates = chatUsersInOrganization.filter((account) => {
+    if (!user?.id || account.id === user.id) return false;
+    const accountRole = getRoleKey(account.role);
+    if (!accountRole) return false;
+
+    if (getRoleKey(user?.role) === 'azubi') {
+      return isStaffRole(accountRole);
+    }
+
+    if (isStaffRole(user?.role)) {
+      return accountRole === 'azubi';
+    }
+
+    return false;
+  });
+
   const getTodayStamp = (input = Date.now()) => {
     const date = new Date(input);
     if (Number.isNaN(date.getTime())) return '';
@@ -2665,10 +2738,31 @@ export default function BaederApp() {
     }
   };
 
+  const normalizeChatMessageRow = (row, userDirectory = {}) => {
+    const senderProfile = row?.sender_id ? userDirectory[row.sender_id] : null;
+    const senderRole = getRoleKey(row?.user_role || senderProfile?.role || 'azubi') || 'azubi';
+    const fallbackScope = senderRole === 'azubi' ? 'azubi_room' : 'staff_room';
+
+    return {
+      id: row?.id || `${row?.created_at || Date.now()}-${row?.user_name || 'chat'}`,
+      user: String(row?.user_name || senderProfile?.name || 'Unbekannt'),
+      text: String(row?.content || ''),
+      time: new Date(row?.created_at || Date.now()).getTime(),
+      avatar: row?.user_avatar || senderProfile?.avatar || null,
+      senderId: row?.sender_id || senderProfile?.id || null,
+      senderRole,
+      scope: getChatScopeKey(row?.chat_scope, fallbackScope),
+      organizationId: row?.organization_id || getAccountOrganizationId(senderProfile) || null,
+      recipientId: row?.recipient_id || null
+    };
+  };
+
   // handleLogin, handleRegister, handleLogout werden vom AuthContext bereitgestellt
 
   const loadData = async () => {
     try {
+      let visibleUsers = [];
+
       // Load App Config from Supabase (for all users)
       try {
         const { data: configData, error: configError } = await supabase
@@ -2707,6 +2801,7 @@ export default function BaederApp() {
         if (allUsersData) {
           const approved = allUsersData.filter(u => u.approved);
           const pending = allUsersData.filter(u => !u.approved);
+          visibleUsers = approved;
           setAllUsers(approved);
           setPendingUsers(pending);
         }
@@ -2718,6 +2813,7 @@ export default function BaederApp() {
           .eq('approved', true);
 
         if (approvedUsers) {
+          visibleUsers = approvedUsers;
           setAllUsers(approvedUsers);
         }
       }
@@ -2872,14 +2968,12 @@ export default function BaederApp() {
         .limit(100);
 
       if (messagesData) {
-        const msgs = messagesData.map(m => ({
-          id: m.id,
-          user: m.user_name,
-          text: m.content,
-          time: new Date(m.created_at).getTime(),
-          isTrainer: false, // Will be updated when we have role info
-          avatar: m.user_avatar || null
-        }));
+        const userDirectory = Object.fromEntries(
+          (visibleUsers || [])
+            .filter((account) => account?.id)
+            .map((account) => [account.id, account])
+        );
+        const msgs = messagesData.map((messageRow) => normalizeChatMessageRow(messageRow, userDirectory));
         setMessages(msgs);
       }
 
@@ -4599,10 +4693,34 @@ export default function BaederApp() {
   const sendMessage = async () => {
     if (!newMessage.trim() || !user) return;
 
+    if (!hasChatOrganization) {
+      showToast('Chat ist erst verfuegbar, wenn dein Betrieb zugewiesen ist.', 'warning');
+      return;
+    }
+
     // Content moderation
     if (!moderateContent(newMessage, 'Nachricht')) {
       setNewMessage('');
       return;
+    }
+
+    const activeScope = getChatScopeKey(
+      chatScope,
+      getRoleKey(user.role) === 'azubi' ? 'azubi_room' : 'staff_room'
+    );
+
+    if (activeScope === 'azubi_room' && getRoleKey(user.role) !== 'azubi') {
+      showToast('Der Azubi-Chat ist nur fuer Azubis gedacht.', 'warning');
+      return;
+    }
+
+    let recipient = null;
+    if (activeScope === 'direct_staff') {
+      recipient = directChatCandidates.find((account) => account.id === selectedChatRecipientId) || null;
+      if (!recipient) {
+        showToast('Bitte zuerst einen passenden Chatpartner auswaehlen.', 'warning');
+        return;
+      }
     }
 
     try {
@@ -4610,28 +4728,36 @@ export default function BaederApp() {
         .from('messages')
         .insert([{
           user_name: user.name,
-          content: newMessage.trim(),
-          user_avatar: user.avatar || null
+          user_avatar: user.avatar || null,
+          user_role: user.role,
+          sender_id: user.id,
+          organization_id: user.organizationId,
+          chat_scope: activeScope,
+          recipient_id: recipient?.id || null,
+          content: newMessage.trim()
         }])
-        .select()
+        .select('*')
         .single();
 
       if (error) throw error;
 
-      // Add to local state with compatible format
-      const msg = {
-        id: data.id,
-        user: data.user_name,
-        text: data.content,
-        time: new Date(data.created_at).getTime(),
-        isTrainer: user.role === 'trainer' || user.role === 'admin',
-        avatar: data.user_avatar
-      };
+      const msg = normalizeChatMessageRow(data);
 
-      setMessages([...messages, msg]);
+      setMessages((prev) => [...prev, msg]);
       setNewMessage('');
+
+      if (recipient?.name) {
+        const preview = newMessage.trim().slice(0, 80);
+        await sendNotification(
+          recipient.name,
+          'Neue Chatnachricht',
+          `${user.name}: ${preview}${newMessage.trim().length > 80 ? '...' : ''}`,
+          'info'
+        );
+      }
     } catch (error) {
       console.error('Message error:', error);
+      showToast('Nachricht konnte nicht gesendet werden. Pruefe ggf. die Chat-Migration in Supabase.', 'error');
     }
   };
 
@@ -8973,6 +9099,12 @@ export default function BaederApp() {
             newMessage={newMessage}
             setNewMessage={setNewMessage}
             sendMessage={sendMessage}
+            chatScope={chatScope}
+            setChatScope={setChatScope}
+            selectedChatRecipientId={selectedChatRecipientId}
+            setSelectedChatRecipientId={setSelectedChatRecipientId}
+            directChatCandidates={directChatCandidates}
+            hasChatOrganization={hasChatOrganization}
           />
         )}
 
