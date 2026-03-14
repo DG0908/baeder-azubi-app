@@ -53,6 +53,7 @@ const AdminView = ({
   deleteUser,
   toggleSchoolCardPermission,
   toggleSignReportsPermission,
+  toggleExamGradesPermission,
   editingMenuItems,
   setEditingMenuItems,
   appConfig,
@@ -375,6 +376,17 @@ const AdminView = ({
                         title={acc.can_sign_reports ? 'Berichtsheft-Unterschrift entziehen' : 'Berichtsheft-Unterschrift erteilen'}
                       >
                         Berichte {acc.can_sign_reports ? '✓' : '○'}
+                      </button>
+                      <button
+                        onClick={() => toggleExamGradesPermission(acc.id, acc.can_view_exam_grades)}
+                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                          acc.can_view_exam_grades
+                            ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                        title={acc.can_view_exam_grades ? 'Klasuren-Zugriff entziehen' : 'Klasuren-Zugriff erteilen'}
+                      >
+                        Klasuren {acc.can_view_exam_grades ? '✓' : '○'}
                       </button>
                     </>
                   )}

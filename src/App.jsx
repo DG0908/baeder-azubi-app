@@ -24,6 +24,7 @@ import CalculatorView from './components/views/CalculatorView';
 import SwimChallengeView from './components/views/SwimChallengeView';
 import BerichtsheftView from './components/views/BerichtsheftView';
 import CollectionView from './components/views/CollectionView';
+import ExamGradesView from './components/views/ExamGradesView';
 import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
 import InteractiveLearningView from './components/views/InteractiveLearningView';
@@ -871,6 +872,11 @@ export default function BaederApp() {
   const [selectedSchoolCardUser, setSelectedSchoolCardUser] = useState(null); // Ausgewählter Azubi für Kontrollkarten-Ansicht
   const [allAzubisForSchoolCard, setAllAzubisForSchoolCard] = useState([]); // Liste aller Azubis für Auswahl
 
+  // Klasuren/Noten State
+  const [examGrades, setExamGrades] = useState([]);
+  const [selectedExamGradesUser, setSelectedExamGradesUser] = useState(null);
+  const [allAzubisForExamGrades, setAllAzubisForExamGrades] = useState([]);
+
   // Berichtsheft (Ausbildungsnachweis) State
   const [berichtsheftEntries, setBerichtsheftEntries] = useState([]);
   const [berichtsheftWeek, setBerichtsheftWeek] = useState(() => getWeekStartStamp());
@@ -1582,6 +1588,14 @@ export default function BaederApp() {
       loadSchoolAttendance();
       if (canViewAllSchoolCards()) {
         loadAzubisForSchoolCard();
+      }
+    }
+
+    // Load Klasuren when view changes
+    if (currentView === 'exam-grades' && user) {
+      loadExamGrades();
+      if (canViewAllExamGrades()) {
+        loadAzubisForExamGrades();
       }
     }
 
@@ -3230,6 +3244,27 @@ export default function BaederApp() {
       );
     } catch (error) {
       console.error('Error toggling sign reports permission:', error);
+      showToast('Fehler beim Ändern der Berechtigung', 'error');
+    }
+  };
+
+  // Klasuren-Berechtigung für Trainer ändern
+  const toggleExamGradesPermission = async (userId, currentValue) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ can_view_exam_grades: !currentValue })
+        .eq('id', userId);
+      if (error) throw error;
+      loadData();
+      showToast(
+        !currentValue
+          ? 'Klasuren-Berechtigung erteilt'
+          : 'Klasuren-Berechtigung entzogen',
+        'success'
+      );
+    } catch (error) {
+      console.error('Error toggling exam grades permission:', error);
       showToast('Fehler beim Ändern der Berechtigung', 'error');
     }
   };
@@ -5418,6 +5453,102 @@ export default function BaederApp() {
       loadSchoolAttendance();
     } catch (err) {
       console.error('Fehler beim Löschen:', err);
+    }
+  };
+
+  // ==================== KLASUREN/NOTEN FUNKTIONEN ====================
+
+  const canViewAllExamGrades = () => {
+    return user?.role === 'admin' || user?.canViewExamGrades;
+  };
+
+  const loadAzubisForExamGrades = async () => {
+    if (!canViewAllExamGrades()) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .eq('role', 'azubi')
+        .eq('approved', true)
+        .order('name');
+      if (error) throw error;
+      setAllAzubisForExamGrades(data || []);
+    } catch (err) {
+      console.error('Fehler beim Laden der Azubis für Klasuren:', err);
+    }
+  };
+
+  const loadExamGrades = async (targetUserId = null) => {
+    if (!user) return;
+    try {
+      const userIdToLoad = targetUserId || selectedExamGradesUser?.id || user.id;
+      const { data, error } = await supabase
+        .from('exam_grades')
+        .select('*')
+        .eq('user_id', userIdToLoad)
+        .order('date', { ascending: false });
+      if (error) throw error;
+      setExamGrades(data || []);
+    } catch (err) {
+      console.error('Fehler beim Laden der Klasuren:', err);
+    }
+  };
+
+  const addExamGrade = async ({ date, subject, topic, grade, notes }) => {
+    try {
+      const { error } = await supabase
+        .from('exam_grades')
+        .insert({
+          user_id: user.id,
+          user_name: user.name,
+          date,
+          subject,
+          topic,
+          grade,
+          notes
+        });
+      if (error) throw error;
+
+      // Benachrichtigung an berechtigte Trainer/Admins
+      const { data: authorizedUsers } = await supabase
+        .from('profiles')
+        .select('id,name')
+        .or('role.eq.admin,can_view_exam_grades.eq.true');
+
+      if (authorizedUsers) {
+        for (const authUser of authorizedUsers) {
+          if (authUser.id !== user.id && authUser.name) {
+            await sendNotification(
+              authUser.name,
+              '📝 Neue Klasur eingetragen',
+              `${user.name} hat eine ${subject}-Klasur vom ${new Date(date).toLocaleDateString('de-DE')} eingetragen: Note ${grade.toFixed(1).replace('.', ',')}`,
+              'exam_grade'
+            );
+          }
+        }
+      }
+
+      showToast('Klasur gespeichert!', 'success');
+      loadExamGrades();
+    } catch (err) {
+      console.error('Fehler beim Speichern der Klasur:', err);
+      showToast('Fehler beim Speichern', 'error');
+    }
+  };
+
+  const deleteExamGrade = async (id) => {
+    if (!confirm('Klasur wirklich löschen?')) return;
+    try {
+      const { error } = await supabase
+        .from('exam_grades')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      showToast('Klasur gelöscht', 'success');
+      loadExamGrades();
+    } catch (err) {
+      console.error('Fehler beim Löschen:', err);
+      showToast('Fehler beim Löschen', 'error');
     }
   };
 
@@ -8667,6 +8798,7 @@ export default function BaederApp() {
             deleteUser={deleteUser}
             toggleSchoolCardPermission={toggleSchoolCardPermission}
             toggleSignReportsPermission={toggleSignReportsPermission}
+            toggleExamGradesPermission={toggleExamGradesPermission}
             editingMenuItems={editingMenuItems}
             setEditingMenuItems={setEditingMenuItems}
             appConfig={appConfig}
@@ -9029,6 +9161,20 @@ export default function BaederApp() {
             allAzubisForSchoolCard={allAzubisForSchoolCard}
             loadSchoolAttendance={loadSchoolAttendance}
             canViewAllSchoolCards={canViewAllSchoolCards}
+          />
+        )}
+
+        {/* ==================== KLASUREN/NOTEN VIEW ==================== */}
+        {currentView === 'exam-grades' && (
+          <ExamGradesView
+            examGrades={examGrades}
+            allAzubisForExamGrades={allAzubisForExamGrades}
+            selectedExamGradesUser={selectedExamGradesUser}
+            setSelectedExamGradesUser={setSelectedExamGradesUser}
+            addExamGrade={addExamGrade}
+            deleteExamGrade={deleteExamGrade}
+            loadExamGrades={loadExamGrades}
+            canViewAllExamGrades={canViewAllExamGrades}
           />
         )}
 
