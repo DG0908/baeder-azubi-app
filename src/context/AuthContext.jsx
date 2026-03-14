@@ -15,6 +15,7 @@ const buildUserSession = (userId, profile) => ({
   company: profile.company || null,
   birthDate: profile.birth_date || null,
   canViewSchoolCards: profile.can_view_school_cards || false,
+  canViewExamGrades: profile.can_view_exam_grades || false,
   canSignReports: profile.can_sign_reports || false,
   permissions: PERMISSIONS[profile.role] || PERMISSIONS.azubi
 });

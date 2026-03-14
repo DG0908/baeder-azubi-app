@@ -251,6 +251,20 @@ const HomeView = ({
           }
         },
         {
+          id: 'exam-grades',
+          icon: '\u{1F4DD}',
+          title: 'Klasuren',
+          description: 'Noten eintragen und Durchschnitt berechnen',
+          meta: 'Erwartete Zeugnisnoten',
+          onClick: () => openView('exam-grades'),
+          style: {
+            darkCard: 'border-indigo-600 hover:border-indigo-400',
+            lightCard: 'border-indigo-200 hover:border-indigo-400',
+            darkTitle: 'text-indigo-400',
+            lightTitle: 'text-indigo-700',
+          }
+        },
+        {
           id: 'questions',
           icon: '\u{1F4A1}',
           title: 'Fragen',
