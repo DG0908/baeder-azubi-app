@@ -5,7 +5,7 @@ import { triggerWebPushNotification } from '../lib/pushNotifications';
 
 const AuthContext = createContext(null);
 
-const buildUserSession = (userId, profile) => ({
+const buildUserSession = (userId, profile, orgName) => ({
   id: userId,
   name: profile.name,
   email: profile.email,
@@ -14,6 +14,8 @@ const buildUserSession = (userId, profile) => ({
   avatar: profile.avatar || null,
   company: profile.company || null,
   birthDate: profile.birth_date || null,
+  organizationId: profile.organization_id || null,
+  organizationName: orgName || null,
   canViewSchoolCards: profile.can_view_school_cards || false,
   canViewExamGrades: profile.can_view_exam_grades || false,
   canSignReports: profile.can_sign_reports || false,
@@ -33,7 +35,8 @@ export function AuthProvider({ children }) {
     email: '',
     password: '',
     role: 'azubi',
-    trainingEnd: ''
+    trainingEnd: '',
+    invitationCode: ''
   });
 
   // Supabase Session prüfen + Auth-State-Listener
@@ -49,7 +52,16 @@ export function AuthProvider({ children }) {
           .single();
 
         if (profile && profile.approved) {
-          const userSession = buildUserSession(session.user.id, profile);
+          let orgName = null;
+          if (profile.organization_id) {
+            const { data: org } = await supabase
+              .from('organizations')
+              .select('name')
+              .eq('id', profile.organization_id)
+              .single();
+            orgName = org?.name || null;
+          }
+          const userSession = buildUserSession(session.user.id, profile, orgName);
           setUser(userSession);
           localStorage.setItem('baeder_user', JSON.stringify(userSession));
 
@@ -146,6 +158,10 @@ export function AuthProvider({ children }) {
       alert('Bitte alle Felder ausfüllen!');
       return;
     }
+    if (!registerData.invitationCode.trim()) {
+      alert('Bitte gib deinen Einladungscode ein!');
+      return;
+    }
     if (registerData.password.length < 6) {
       alert('Das Passwort muss mindestens 6 Zeichen lang sein!');
       return;
@@ -153,15 +169,35 @@ export function AuthProvider({ children }) {
 
     const trimmedEmail = registerData.email.trim().toLowerCase();
     const trimmedName = registerData.name.trim();
+    const trimmedCode = registerData.invitationCode.trim().toUpperCase();
 
     try {
+      // 1. Einladungscode validieren
+      const { data: codeResult, error: codeError } = await supabase
+        .rpc('use_invitation_code', { p_code: trimmedCode });
+
+      if (codeError) {
+        alert('Ungültiger oder abgelaufener Einladungscode!');
+        return;
+      }
+
+      const invitation = codeResult?.[0];
+      if (!invitation) {
+        alert('Ungültiger oder abgelaufener Einladungscode!');
+        return;
+      }
+
+      const assignedRole = invitation.assigned_role || 'azubi';
+      const orgId = invitation.org_id;
+
+      // 2. Auth-User erstellen
       const { data, error } = await supabase.auth.signUp({
         email: trimmedEmail,
         password: registerData.password,
         options: {
           data: {
             name: trimmedName,
-            role: registerData.role,
+            role: assignedRole,
             training_end: registerData.trainingEnd || null
           }
         }
@@ -184,7 +220,7 @@ export function AuthProvider({ children }) {
             user_id: data.user.id,
             user_name: trimmedName,
             user_email: trimmedEmail,
-            user_role: registerData.role,
+            user_role: assignedRole,
             user_training_end: registerData.trainingEnd || null
           });
 
@@ -196,9 +232,10 @@ export function AuthProvider({ children }) {
                 id: data.user.id,
                 name: trimmedName,
                 email: trimmedEmail,
-                role: registerData.role,
+                role: assignedRole,
                 training_end: registerData.trainingEnd || null,
-                approved: false
+                approved: false,
+                organization_id: orgId
               }, { onConflict: 'id' });
 
             if (profileError) {
@@ -207,6 +244,13 @@ export function AuthProvider({ children }) {
           } else {
             console.log('Profil erfolgreich via RPC erstellt');
           }
+
+          // Organization zuweisen (falls RPC das nicht macht)
+          await supabase
+            .from('profiles')
+            .update({ organization_id: orgId })
+            .eq('id', data.user.id);
+
         } catch (e) {
           console.warn('Profil-Erstellung fehlgeschlagen:', e);
         }
@@ -214,7 +258,7 @@ export function AuthProvider({ children }) {
         await notifyAdminsAboutPendingRegistration({
           name: trimmedName,
           email: trimmedEmail,
-          role: registerData.role
+          role: assignedRole
         });
       }
 
@@ -222,13 +266,13 @@ export function AuthProvider({ children }) {
 
       const emailConfirmRequired = data?.user && !data?.session;
       if (emailConfirmRequired) {
-        alert('✅ Registrierung erfolgreich!\n\n📧 Bitte bestätige zuerst deine E-Mail-Adresse (prüfe auch den Spam-Ordner).\n\n⏳ Danach muss dein Account noch von einem Administrator freigeschaltet werden.');
+        alert(`✅ Registrierung erfolgreich!\n\n🏢 Betrieb: ${invitation.org_name}\n👤 Rolle: ${assignedRole === 'azubi' ? 'Azubi' : 'Ausbilder'}\n\n📧 Bitte bestätige zuerst deine E-Mail-Adresse (prüfe auch den Spam-Ordner).\n\n⏳ Danach muss dein Account noch von einem Administrator freigeschaltet werden.`);
       } else {
-        alert('✅ Registrierung erfolgreich!\n\n⏳ Dein Account muss von einem Administrator freigeschaltet werden.\n\nDu erhältst eine Benachrichtigung, sobald dein Account aktiviert wurde.');
+        alert(`✅ Registrierung erfolgreich!\n\n🏢 Betrieb: ${invitation.org_name}\n👤 Rolle: ${assignedRole === 'azubi' ? 'Azubi' : 'Ausbilder'}\n\n⏳ Dein Account muss von einem Administrator freigeschaltet werden.`);
       }
 
       setAuthView('login');
-      setRegisterData({ name: '', email: '', password: '', role: 'azubi', trainingEnd: '' });
+      setRegisterData({ name: '', email: '', password: '', role: 'azubi', trainingEnd: '', invitationCode: '' });
     } catch (error) {
       alert('Fehler bei der Registrierung: ' + error.message);
       console.error('Registration error:', error);
@@ -282,7 +326,16 @@ export function AuthProvider({ children }) {
         .update({ last_login: new Date().toISOString() })
         .eq('id', authData.user.id);
 
-      const userSession = buildUserSession(authData.user.id, profile);
+      let orgName = null;
+      if (profile.organization_id) {
+        const { data: org } = await supabase
+          .from('organizations')
+          .select('name')
+          .eq('id', profile.organization_id)
+          .single();
+        orgName = org?.name || null;
+      }
+      const userSession = buildUserSession(authData.user.id, profile, orgName);
       setUser(userSession);
       localStorage.setItem('baeder_user', JSON.stringify(userSession));
 

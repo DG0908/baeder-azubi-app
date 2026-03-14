@@ -438,6 +438,18 @@ const LoginScreen = () => {
           <div className="space-y-4">
             <input
               type="text"
+              placeholder="Einladungscode"
+              value={registerData.invitationCode}
+              onChange={(e) => setRegisterData({...registerData, invitationCode: e.target.value.toUpperCase()})}
+              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono tracking-wider text-center text-lg"
+              style={{ letterSpacing: '0.15em' }}
+            />
+            <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
+              <Shield className="inline mr-2" size={16} />
+              Du brauchst einen Einladungscode von deinem Ausbilder oder Betrieb.
+            </div>
+            <input
+              type="text"
               placeholder="Vollständiger Name"
               value={registerData.name}
               onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
@@ -452,36 +464,25 @@ const LoginScreen = () => {
             />
             <input
               type="password"
-              placeholder="Passwort"
+              placeholder="Passwort (mind. 6 Zeichen)"
               value={registerData.password}
               onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
-            <select
-              value={registerData.role}
-              onChange={(e) => setRegisterData({...registerData, role: e.target.value})}
-              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-            >
-              <option value="azubi">Azubi</option>
-              <option value="trainer">Ausbilder</option>
-              <option value="admin">Administrator</option>
-            </select>
-            {registerData.role === 'azubi' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Voraussichtliches Ausbildungsende:
-                </label>
-                <input
-                  type="date"
-                  value={registerData.trainingEnd}
-                  onChange={(e) => setRegisterData({...registerData, trainingEnd: e.target.value})}
-                  className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  <AlertTriangle className="inline" size={12} /> Deine Daten werden nach Ausbildungsende automatisch gelöscht.
-                </p>
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Voraussichtliches Ausbildungsende:
+              </label>
+              <input
+                type="date"
+                value={registerData.trainingEnd}
+                onChange={(e) => setRegisterData({...registerData, trainingEnd: e.target.value})}
+                className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                <AlertTriangle className="inline" size={12} /> Deine Daten werden nach Ausbildungsende automatisch gelöscht.
+              </p>
+            </div>
 
             <button
               onClick={handleRegister}
@@ -490,9 +491,9 @@ const LoginScreen = () => {
               <Shield className="inline mr-2" size={20} />
               Registrierung beantragen
             </button>
-            <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
-              <Shield className="inline mr-2" size={16} />
-              Nach der Registrierung muss dein Account von einem Administrator freigeschaltet werden.
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+              <AlertTriangle className="inline mr-2" size={16} />
+              Nach der Registrierung muss dein Account noch freigeschaltet werden.
             </div>
           </div>
         )}
