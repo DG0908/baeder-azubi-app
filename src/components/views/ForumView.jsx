@@ -7,8 +7,9 @@ import { supabase } from '../../supabase';
 const FORUM_CATEGORIES = [
   { id: 'updates', label: 'Aktualisierungen', icon: '📢', color: 'bg-blue-500', description: 'Neuigkeiten zur App', canPost: ['admin'], canRead: ['all'] },
   { id: 'wuensche', label: 'Wünsche & Anregungen', icon: '💡', color: 'bg-amber-500', description: 'Feedback und Ideen', canPost: ['all'], canRead: ['all'] },
+  { id: 'fragen', label: 'Fragen', icon: '❓', color: 'bg-orange-500', description: 'Fragen stellen und beantworten', canPost: ['all'], canRead: ['all'] },
   { id: 'ausbilder', label: 'Ausbilderaustausch', icon: '🎓', color: 'bg-purple-500', description: 'Nur für Ausbilder & Admins', canPost: ['trainer', 'admin'], canRead: ['trainer', 'admin'] },
-  { id: 'azubi', label: 'Azubiaustausch', icon: '🏊', color: 'bg-cyan-500', description: 'Nur für Azubis', canPost: ['azubi'], canRead: ['azubi'] },
+  { id: 'azubi', label: 'Azubiaustausch', icon: '🏊', color: 'bg-cyan-500', description: 'Azubis & Ausbilder', canPost: ['all'], canRead: ['all'] },
   { id: 'nuetzliches', label: 'Interessantes & Nützliches', icon: '⭐', color: 'bg-emerald-500', description: 'Tipps, Links, Wissenswertes', canPost: ['all'], canRead: ['all'] },
 ];
 
