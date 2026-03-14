@@ -77,6 +77,9 @@ export function AuthProvider({ children }) {
         setUser(null);
         localStorage.removeItem('baeder_user');
       }
+      if (event === 'PASSWORD_RECOVERY') {
+        setAuthView('reset-password');
+      }
     });
 
     return () => subscription.unsubscribe();

@@ -1,7 +1,39 @@
 import React from 'react';
-import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download } from 'lucide-react';
+import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
+
+const AdminPasswordReset = ({ userEmail }) => {
+  const { showToast } = useApp();
+  const [loading, setLoading] = React.useState(false);
+
+  const handleReset = async () => {
+    if (!confirm(`Passwort-Reset-Link an ${userEmail} senden?`)) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+        redirectTo: window.location.origin
+      });
+      if (error) throw error;
+      showToast(`Reset-Link an ${userEmail} gesendet!`, 'success');
+    } catch (err) {
+      showToast('Fehler: ' + err.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleReset}
+      disabled={loading}
+      className="bg-amber-500 hover:bg-amber-600 disabled:bg-gray-400 text-white p-2 rounded-lg"
+      title="Passwort-Reset-Link senden"
+    >
+      <KeyRound size={18} />
+    </button>
+  );
+};
 import { CATEGORIES, PERMISSIONS, MENU_GROUP_LABELS } from '../../data/constants';
 
 const AdminView = ({
@@ -310,6 +342,7 @@ const AdminView = ({
                   >
                     <Download size={18} />
                   </button>
+                  <AdminPasswordReset userEmail={acc.email} />
                   {acc.role !== 'admin' && (
                     <button
                       onClick={() => deleteUser(acc.email)}
