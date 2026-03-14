@@ -1627,19 +1627,6 @@ export default function BaederApp() {
   }, [user?.id, user?.role, chatScope]);
 
   useEffect(() => {
-    if (chatScope !== 'direct_staff') {
-      if (selectedChatRecipientId) {
-        setSelectedChatRecipientId('');
-      }
-      return;
-    }
-
-    if (!directChatCandidates.some((account) => account.id === selectedChatRecipientId)) {
-      setSelectedChatRecipientId(directChatCandidates[0]?.id || '');
-    }
-  }, [chatScope, selectedChatRecipientId, directChatCandidates]);
-
-  useEffect(() => {
     if (!user?.id) return;
     if (!isWebPushConfigured()) return;
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -2668,6 +2655,19 @@ export default function BaederApp() {
 
     return false;
   });
+
+  useEffect(() => {
+    if (chatScope !== 'direct_staff') {
+      if (selectedChatRecipientId) {
+        setSelectedChatRecipientId('');
+      }
+      return;
+    }
+
+    if (!directChatCandidates.some((account) => account.id === selectedChatRecipientId)) {
+      setSelectedChatRecipientId(directChatCandidates[0]?.id || '');
+    }
+  }, [chatScope, selectedChatRecipientId, directChatCandidates]);
 
   const getTodayStamp = (input = Date.now()) => {
     const date = new Date(input);
