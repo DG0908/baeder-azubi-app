@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../../../context/AppContext';
+import { PRACTICE_SETS } from './MathPracticeSets';
 
 const makeTopic = (chip, title, intro, motto, formula, steps, exampleRows, pitfalls, quiz, sheetSections) => ({
   chip, title, intro, motto, formula, steps, exampleRows, pitfalls, quiz, sheetSections
@@ -28,6 +29,41 @@ const TOPICS = {
 
 const TOPIC_ORDER = ['grundrechenarten', 'brueche', 'dreisatz', 'prozent', 'formeln', 'pythagoras', 'flaechen', 'volumen', 'zeit', 'auftrieb', 'druck', 'bewegung', 'waerme', 'mechanik', 'pumpen', 'filtration', 'chlor', 'formelsammlung'];
 
+const KNOWN_UNITS = ['m3/h', 'm/s2', 'm/s', 'kwh', 'bar', 'm2', 'm3', 'kg', 'eur', 'sek', 'min', 'std', 'h', 's', 'w', 'j', 'g', 'm'];
+
+const normalizeAnswer = (value = '') => value
+  .toLowerCase()
+  .replace(/ca\.?/g, '')
+  .replace(/,/g, '.')
+  .replace(/\s+/g, '')
+  .trim();
+
+const stripKnownUnit = (value = '') => {
+  let normalized = normalizeAnswer(value);
+
+  KNOWN_UNITS.forEach((unit) => {
+    if (normalized.endsWith(unit)) {
+      normalized = normalized.slice(0, -unit.length);
+    }
+  });
+
+  return normalized;
+};
+
+const answersMatch = (userValue, expectedValue) => {
+  const normalizedUser = normalizeAnswer(userValue);
+  const normalizedExpected = normalizeAnswer(expectedValue);
+
+  if (!normalizedUser) {
+    return false;
+  }
+
+  return (
+    normalizedUser === normalizedExpected
+    || stripKnownUnit(normalizedUser) === stripKnownUnit(normalizedExpected)
+  );
+};
+
 function InfoCard({ darkMode, title, children }) {
   return (
     <div className={`rounded-2xl border p-4 ${darkMode ? 'bg-slate-900/75 border-slate-800' : 'bg-white border-gray-200'}`}>
@@ -42,14 +78,31 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
   const [activeTopicId, setActiveTopicId] = useState(TOPICS[initialTopic] ? initialTopic : 'grundrechenarten');
   const [revealedAnswer, setRevealedAnswer] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [practiceInputs, setPracticeInputs] = useState({});
+  const [revealedExercises, setRevealedExercises] = useState({});
 
   const topic = TOPICS[activeTopicId] || TOPICS.grundrechenarten;
+  const practiceSet = PRACTICE_SETS[activeTopicId] || [];
   const isCorrect = selectedAnswer === topic.quiz.correctIndex;
 
   const handleTopicChange = (topicId) => {
     setActiveTopicId(topicId);
     setRevealedAnswer(false);
     setSelectedAnswer(null);
+  };
+
+  const updatePracticeInput = (exerciseKey, value) => {
+    setPracticeInputs((current) => ({
+      ...current,
+      [exerciseKey]: value
+    }));
+  };
+
+  const revealExercise = (exerciseKey) => {
+    setRevealedExercises((current) => ({
+      ...current,
+      [exerciseKey]: true
+    }));
   };
 
   return (
@@ -71,7 +124,7 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-3 xl:grid-cols-4">
         {TOPIC_ORDER.map((topicId) => {
           const entry = TOPICS[topicId];
           const active = topicId === activeTopicId;
@@ -80,47 +133,134 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
               key={topicId}
               type="button"
               onClick={() => handleTopicChange(topicId)}
-              className={`rounded-2xl border p-4 text-left transition-all ${active ? 'border-cyan-400 bg-cyan-500/10 shadow-md' : darkMode ? 'border-slate-800 bg-slate-900/60 hover:border-slate-700' : 'border-gray-200 bg-white hover:border-cyan-200 hover:shadow-sm'}`}
+              className={`rounded-2xl border p-4 text-left transition-all ${
+                active
+                  ? darkMode
+                    ? 'border-cyan-400 bg-cyan-500/10 shadow-lg shadow-cyan-900/20'
+                    : 'border-cyan-300 bg-cyan-50 shadow-sm'
+                  : darkMode
+                    ? 'border-slate-800 bg-slate-900/70 hover:border-slate-700'
+                    : 'border-gray-200 bg-white hover:border-cyan-200'
+              }`}
             >
-              <div className={`text-xs font-bold uppercase tracking-wide ${active ? 'text-cyan-400' : darkMode ? 'text-slate-500' : 'text-gray-400'}`}>{entry.chip}</div>
-              <div className={`text-sm font-semibold mt-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{entry.title}</div>
+              <div className={`text-xs font-bold uppercase tracking-wide ${active ? (darkMode ? 'text-cyan-300' : 'text-cyan-700') : (darkMode ? 'text-slate-400' : 'text-gray-500')}`}>{entry.chip}</div>
+              <div className={`text-base font-semibold mt-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{entry.title}</div>
             </button>
           );
         })}
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-        <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
-          <div className="space-y-3">
-            {topic.steps.map(([stepTitle, stepText], index) => (
-              <div key={stepTitle} className={`rounded-2xl p-4 ${darkMode ? 'bg-slate-800/70' : 'bg-slate-50'}`}>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500 text-white flex items-center justify-center text-sm font-bold shrink-0">{index + 1}</div>
-                  <div>
-                    <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{stepTitle}</div>
-                    <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>{stepText}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </InfoCard>
-
+      <div className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
         <div className="space-y-5">
-          <InfoCard darkMode={darkMode} title="Formelbox">
-            <div className="space-y-2">
+          <InfoCard darkMode={darkMode} title="Regeln auf einen Blick">
+            <ul className={`space-y-2 text-sm leading-7 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
               {topic.formula.map((line) => (
-                <div key={line} className={`rounded-xl px-3 py-2 text-sm ${darkMode ? 'bg-slate-800 text-slate-200' : 'bg-cyan-50 text-cyan-900'}`}>{line}</div>
+                <li key={line} className="flex gap-2">
+                  <span className={`mt-2 h-2 w-2 rounded-full ${darkMode ? 'bg-cyan-400' : 'bg-cyan-500'}`} />
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          </InfoCard>
+
+          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+            <div className="grid gap-3 md:grid-cols-2">
+              {topic.steps.map(([stepTitle, stepText]) => (
+                <div key={stepTitle} className={`rounded-2xl border p-4 ${darkMode ? 'border-slate-800 bg-slate-950/70' : 'border-cyan-100 bg-cyan-50/60'}`}>
+                  <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{stepTitle}</div>
+                  <p className={`text-sm mt-2 leading-7 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>{stepText}</p>
+                </div>
               ))}
             </div>
           </InfoCard>
 
+          <InfoCard darkMode={darkMode} title="Beispielrechnung">
+            <div className="overflow-hidden rounded-2xl border border-transparent">
+              <table className="min-w-full text-sm">
+                <tbody>
+                  {topic.exampleRows.map(([left, right]) => (
+                    <tr key={`${left}-${right}`} className={`${darkMode ? 'border-slate-800' : 'border-gray-200'} border-b last:border-b-0`}>
+                      <td className={`px-4 py-3 font-semibold ${darkMode ? 'bg-slate-950/50 text-white' : 'bg-gray-50 text-gray-900'}`}>
+                        {left}
+                      </td>
+                      <td className={`px-4 py-3 ${darkMode ? 'bg-slate-900/40 text-slate-300' : 'bg-white text-gray-700'}`}>
+                        {right}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </InfoCard>
+        </div>
+
+        <div className="space-y-5">
           <InfoCard darkMode={darkMode} title="Typische Fehler">
-            <ul className={`space-y-2 text-sm leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>
+            <ul className={`space-y-2 text-sm leading-7 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
               {topic.pitfalls.map((item) => (
-                <li key={item} className="flex gap-2"><span className="text-rose-400">-</span><span>{item}</span></li>
+                <li key={item} className="flex gap-2">
+                  <span className={`mt-2 h-2 w-2 rounded-full ${darkMode ? 'bg-amber-400' : 'bg-amber-500'}`} />
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
+          </InfoCard>
+
+          <InfoCard darkMode={darkMode} title="Mini-Quiz">
+            <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              {topic.quiz.question}
+            </div>
+            <div className="mt-4 space-y-2">
+              {topic.quiz.options.map((option, index) => {
+                const active = selectedAnswer === index;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setSelectedAnswer(index)}
+                    className={`w-full rounded-xl border px-4 py-3 text-left text-sm transition-all ${
+                      active
+                        ? darkMode
+                          ? 'border-cyan-400 bg-cyan-500/10 text-white'
+                          : 'border-cyan-300 bg-cyan-50 text-gray-900'
+                        : darkMode
+                          ? 'border-slate-800 bg-slate-950/60 text-slate-300 hover:border-slate-700'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-cyan-200'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => setRevealedAnswer(true)}
+              disabled={selectedAnswer === null}
+              className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${
+                selectedAnswer === null
+                  ? 'cursor-not-allowed bg-gray-200 text-gray-400'
+                  : darkMode
+                    ? 'bg-cyan-500 text-white hover:bg-cyan-400'
+                    : 'bg-cyan-600 text-white hover:bg-cyan-500'
+              }`}
+            >
+              Antwort pruefen
+            </button>
+            {revealedAnswer && (
+              <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${
+                isCorrect
+                  ? darkMode
+                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  : darkMode
+                    ? 'border-amber-500/40 bg-amber-500/10 text-amber-100'
+                    : 'border-amber-200 bg-amber-50 text-amber-800'
+              }`}>
+                <div className="font-semibold">{isCorrect ? 'Richtig.' : 'Noch nicht ganz.'}</div>
+                <div>{topic.quiz.explanation}</div>
+              </div>
+            )}
           </InfoCard>
         </div>
       </div>
@@ -157,41 +297,101 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
         </InfoCard>
       )}
 
-      <InfoCard darkMode={darkMode} title="Kurze Lernkontrolle">
+      <InfoCard darkMode={darkMode} title="5 Uebungsrechnungen">
         <div className="space-y-4">
-          <h4 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{topic.quiz.question}</h4>
-          <div className="grid gap-3 md:grid-cols-3">
-            {topic.quiz.options.map((option, index) => {
-              const showState = revealedAnswer;
-              const isAnswerCorrect = index === topic.quiz.correctIndex;
-              const isPicked = index === selectedAnswer;
-              let className = darkMode ? 'border-slate-800 bg-slate-900/70 text-slate-200' : 'border-gray-200 bg-white text-gray-700';
-              if (showState && isAnswerCorrect) className = 'border-emerald-400 bg-emerald-500/10 text-emerald-700';
-              else if (showState && isPicked && !isAnswerCorrect) className = 'border-rose-400 bg-rose-500/10 text-rose-700';
-              else if (!showState && isPicked) className = 'border-cyan-400 bg-cyan-500/10 text-cyan-700';
-              return (
-                <button key={option} type="button" onClick={() => setSelectedAnswer(index)} className={`rounded-2xl border px-4 py-3 text-left text-sm transition-all ${className}`}>
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => setRevealedAnswer(true)} disabled={selectedAnswer === null} className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-400">
-              Antwort pruefen
-            </button>
-            <button type="button" onClick={() => { setSelectedAnswer(null); setRevealedAnswer(false); }} className={`rounded-xl px-4 py-2 text-sm font-semibold ${darkMode ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-gray-700'}`}>
-              Neu starten
-            </button>
-          </div>
-          {revealedAnswer && (
-            <div className={`rounded-2xl border p-4 text-sm ${isCorrect ? 'border-emerald-400 bg-emerald-500/10 text-emerald-700' : darkMode ? 'border-slate-700 bg-slate-900 text-slate-200' : 'border-gray-200 bg-slate-50 text-gray-700'}`}>
-              <div className="font-semibold mb-1">{isCorrect ? 'Richtig.' : 'Loesung'}</div>
-              <div>{topic.quiz.explanation}</div>
-            </div>
-          )}
+          {practiceSet.map((exercise, index) => {
+            const exerciseKey = `${activeTopicId}-${index}`;
+            const userInput = practiceInputs[exerciseKey] || '';
+            const isRevealed = Boolean(revealedExercises[exerciseKey]);
+            const matches = answersMatch(userInput, exercise.answer);
+
+            return (
+              <div
+                key={exerciseKey}
+                className={`rounded-2xl border p-4 ${darkMode ? 'border-slate-800 bg-slate-950/60' : 'border-cyan-100 bg-cyan-50/40'}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className={`text-xs font-bold uppercase tracking-wide ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                      Aufgabe {index + 1}
+                    </div>
+                    <div className={`text-sm font-semibold mt-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                      {exercise.prompt}
+                    </div>
+                  </div>
+                  <div className={`rounded-full px-3 py-1 text-xs font-semibold ${darkMode ? 'bg-slate-900 text-slate-300' : 'bg-white text-gray-600'}`}>
+                    Erst rechnen, dann loesen
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
+                  <input
+                    type="text"
+                    value={userInput}
+                    onChange={(event) => updatePracticeInput(exerciseKey, event.target.value)}
+                    placeholder="Dein Ergebnis eingeben"
+                    className={`rounded-xl border px-4 py-3 text-sm outline-none transition-colors ${
+                      darkMode
+                        ? 'border-slate-700 bg-slate-900 text-white placeholder:text-slate-500 focus:border-cyan-400'
+                        : 'border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-cyan-500'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => revealExercise(exerciseKey)}
+                    disabled={!userInput.trim()}
+                    className={`rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${
+                      userInput.trim()
+                        ? darkMode
+                          ? 'bg-cyan-500 text-white hover:bg-cyan-400'
+                          : 'bg-cyan-600 text-white hover:bg-cyan-500'
+                        : 'cursor-not-allowed bg-gray-200 text-gray-400'
+                    }`}
+                  >
+                    Loesung vergleichen
+                  </button>
+                </div>
+
+                {isRevealed && (
+                  <div className={`mt-4 rounded-2xl border p-4 ${
+                    matches
+                      ? darkMode
+                        ? 'border-emerald-500/40 bg-emerald-500/10'
+                        : 'border-emerald-200 bg-emerald-50'
+                      : darkMode
+                        ? 'border-amber-500/40 bg-amber-500/10'
+                        : 'border-amber-200 bg-amber-50'
+                  }`}>
+                    <div className={`text-sm font-semibold ${matches ? (darkMode ? 'text-emerald-200' : 'text-emerald-800') : (darkMode ? 'text-amber-100' : 'text-amber-800')}`}>
+                      {matches ? 'Das passt gut.' : 'Vergleiche dein Ergebnis mit dem Loesungsweg.'}
+                    </div>
+                    <div className={`mt-2 text-sm ${darkMode ? 'text-slate-200' : 'text-gray-700'}`}>
+                      Dein Ergebnis: <span className="font-semibold">{userInput}</span>
+                    </div>
+                    <div className={`text-sm ${darkMode ? 'text-slate-200' : 'text-gray-700'}`}>
+                      Soll-Ergebnis: <span className="font-semibold">{exercise.answer}</span>
+                    </div>
+                    <div className="mt-3">
+                      <div className={`text-xs font-bold uppercase tracking-wide ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                        Loesungsweg
+                      </div>
+                      <ol className={`mt-2 space-y-2 text-sm leading-6 ${darkMode ? 'text-slate-200' : 'text-gray-700'}`}>
+                        {exercise.steps.map((step) => (
+                          <li key={step} className="flex gap-2">
+                            <span className={`mt-1 h-2 w-2 rounded-full ${darkMode ? 'bg-cyan-400' : 'bg-cyan-500'}`} />
+                            <span>{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </InfoCard>
+
     </div>
   );
 }
