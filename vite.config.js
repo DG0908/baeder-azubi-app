@@ -76,7 +76,9 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         importScripts: ['push-notifications-sw.js'],
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Do not precache index.html. A stale HTML shell can reference removed hashed bundles
+        // after deployment and lead to a white screen until site data is cleared.
+        globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
