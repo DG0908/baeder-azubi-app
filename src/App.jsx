@@ -24,7 +24,6 @@ import CalculatorView from './components/views/CalculatorView';
 import SwimChallengeView from './components/views/SwimChallengeView';
 import BerichtsheftView from './components/views/BerichtsheftView';
 import CollectionView from './components/views/CollectionView';
-import ExamGradesView from './components/views/ExamGradesView';
 import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
 import InteractiveLearningView from './components/views/InteractiveLearningView';
@@ -1591,8 +1590,8 @@ export default function BaederApp() {
       }
     }
 
-    // Load Klasuren when view changes
-    if (currentView === 'exam-grades' && user) {
+    // Load Klasuren when view changes (both standalone and within exams view)
+    if ((currentView === 'exam-grades' || currentView === 'exams') && user) {
       loadExamGrades();
       if (canViewAllExamGrades()) {
         loadAzubisForExamGrades();
@@ -8970,6 +8969,14 @@ export default function BaederApp() {
             setExamTopics={setExamTopics}
             addExam={addExam}
             deleteExam={deleteExam}
+            examGrades={examGrades}
+            allAzubisForExamGrades={allAzubisForExamGrades}
+            selectedExamGradesUser={selectedExamGradesUser}
+            setSelectedExamGradesUser={setSelectedExamGradesUser}
+            addExamGrade={addExamGrade}
+            deleteExamGrade={deleteExamGrade}
+            loadExamGrades={loadExamGrades}
+            canViewAllExamGrades={canViewAllExamGrades}
           />
         )}
 
@@ -9161,20 +9168,6 @@ export default function BaederApp() {
             allAzubisForSchoolCard={allAzubisForSchoolCard}
             loadSchoolAttendance={loadSchoolAttendance}
             canViewAllSchoolCards={canViewAllSchoolCards}
-          />
-        )}
-
-        {/* ==================== KLASUREN/NOTEN VIEW ==================== */}
-        {currentView === 'exam-grades' && (
-          <ExamGradesView
-            examGrades={examGrades}
-            allAzubisForExamGrades={allAzubisForExamGrades}
-            selectedExamGradesUser={selectedExamGradesUser}
-            setSelectedExamGradesUser={setSelectedExamGradesUser}
-            addExamGrade={addExamGrade}
-            deleteExamGrade={deleteExamGrade}
-            loadExamGrades={loadExamGrades}
-            canViewAllExamGrades={canViewAllExamGrades}
           />
         )}
 
