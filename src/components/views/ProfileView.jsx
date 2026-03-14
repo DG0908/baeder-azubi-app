@@ -588,15 +588,15 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
           🎉 Freunde einladen
         </h3>
         <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-          Teile Aqua Pilot mit deinem Team und lernt gemeinsam!
+          Teile Bäder Azubi mit deinem Team und lernt gemeinsam!
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={async () => {
               const shareData = {
-                title: 'Aqua Pilot',
-                text: 'Hey! Schau dir Aqua Pilot an: Lern-App für Fachangestellte für Bäderbetriebe mit Quiz, Karteikarten, Schwimm-Challenge und mehr.',
-                url: 'https://bäder-azubi-app.vercel.app'
+                title: 'Bäder Azubi',
+                text: 'Hey! Schau dir Bäder Azubi an: Lern-App für Fachangestellte für Bäderbetriebe mit Quiz, Karteikarten, Schwimm-Challenge und mehr.',
+                url: 'https://azubi.smartbaden.de'
               };
               if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                 try {
