@@ -38,6 +38,7 @@ const LazySaeurekapazitaetDeepDiveView = lazy(() => import('./chemie/Saeurekapaz
 const LazyBeckenwasserdesinfektionDeepDiveView = lazy(() => import('./chemie/BeckenwasserdesinfektionDeepDiveView'));
 const LazyElektrolyseDeepDiveView = lazy(() => import('./chemie/ElektrolyseDeepDiveView'));
 const LazyKorrosionDeepDiveView = lazy(() => import('./chemie/KorrosionDeepDiveView'));
+const LazyElektrolyseAnlageDeepDiveView = lazy(() => import('./chemie/ElektrolyseAnlageDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -593,6 +594,13 @@ const LEARNING_CATEGORIES = [
         available: true,
       },
       {
+        id: 'elektrolyse-3d',
+        name: 'Elektrolysezelle (3D)',
+        description: 'Interaktives 3D-Schnittbild einer Membranzellenelektrolyse mit Hotspots',
+        icon: '⚡',
+        available: true,
+      },
+      {
         id: 'korrosion',
         name: 'Korrosion & Korrosionsschutz',
         description: 'Korrosionsarten erkennen und Metalle im Schwimmbad schuetzen',
@@ -953,6 +961,7 @@ const InteractiveLearningView = () => {
     'beckenwasserdesinfektion': LazyBeckenwasserdesinfektionDeepDiveView,
     'elektrolyse': LazyElektrolyseDeepDiveView,
     'korrosion': LazyKorrosionDeepDiveView,
+    'elektrolyse-3d': LazyElektrolyseAnlageDeepDiveView,
   };
 
   if (CHEMIE_MODULE_MAP[activeModule]) {
