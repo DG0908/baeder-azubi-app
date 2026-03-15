@@ -31,6 +31,9 @@ const LazyFiltrationDeepDiveView = lazy(() => import('./mathematik/FiltrationDee
 const LazyChlorDeepDiveView = lazy(() => import('./mathematik/ChlorDeepDiveView'));
 const LazyFormelsammlungDeepDiveView = lazy(() => import('./mathematik/FormelsammlungDeepDiveView'));
 const LazyChemicalFormulasDeepDiveView = lazy(() => import('./chemie/ChemicalFormulasDeepDiveView'));
+const LazyStoffnamenFormelnDeepDiveView = lazy(() => import('./chemie/StoffnamenFormelnDeepDiveView'));
+const LazySaeurenBasenDeepDiveView = lazy(() => import('./chemie/SaeurenBasenDeepDiveView'));
+const LazyRedoxDeepDiveView = lazy(() => import('./chemie/RedoxDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -548,21 +551,21 @@ const LEARNING_CATEGORIES = [
         name: 'Stoffnamen & Formeln',
         description: 'Wie Stoffname, Formel und Einsatz zusammengehoeren',
         icon: 'SF',
-        available: false,
+        available: true,
       },
       {
         id: 'saeuren-basen-grundlagen',
         name: 'Saeuren & Basen',
         description: 'Einfache Grundlagen zu pH, Saeuren und Basen',
         icon: 'pH',
-        available: false,
+        available: true,
       },
       {
         id: 'redox-grundlagen',
         name: 'Redox-Grundlagen',
         description: 'Oxidation und Reduktion ohne Fachchinesisch',
         icon: 'Rx',
-        available: false,
+        available: true,
       },
     ],
   },
@@ -908,7 +911,16 @@ const InteractiveLearningView = () => {
     );
   }
 
-  if (activeModule === 'chemische-formeln') {
+  // ─── Individual Chemistry Deep Dive Modules ────────────────────────
+  const CHEMIE_MODULE_MAP = {
+    'chemische-formeln': LazyChemicalFormulasDeepDiveView,
+    'stoffnamen-formeln': LazyStoffnamenFormelnDeepDiveView,
+    'saeuren-basen-grundlagen': LazySaeurenBasenDeepDiveView,
+    'redox-grundlagen': LazyRedoxDeepDiveView,
+  };
+
+  if (CHEMIE_MODULE_MAP[activeModule]) {
+    const ChemieComponent = CHEMIE_MODULE_MAP[activeModule];
     return (
       <div>
         <button
@@ -929,7 +941,7 @@ const InteractiveLearningView = () => {
             </div>
           )}
         >
-          <LazyChemicalFormulasDeepDiveView />
+          <ChemieComponent />
         </Suspense>
       </div>
     );
