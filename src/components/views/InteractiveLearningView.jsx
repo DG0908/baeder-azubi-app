@@ -13,6 +13,23 @@ const LazyClosedFilterDeepDiveView = lazy(() => import('./filter/ClosedFilterDee
 const LazyFilterSpuelungDeepDiveView = lazy(() => import('./filter/FilterSpuelungDeepDiveView'));
 const LazyMathBasicsDeepDiveView = lazy(() => import('./mathematik/MathBasicsDeepDiveView'));
 const LazyDreisatzDeepDiveView = lazy(() => import('./mathematik/DreisatzDeepDiveView'));
+const LazyGrundrechenartenDeepDiveView = lazy(() => import('./mathematik/GrundrechenartenDeepDiveView'));
+const LazyBruecheDeepDiveView = lazy(() => import('./mathematik/BruecheDeepDiveView'));
+const LazyProzentDeepDiveView = lazy(() => import('./mathematik/ProzentDeepDiveView'));
+const LazyFormelnDeepDiveView = lazy(() => import('./mathematik/FormelnDeepDiveView'));
+const LazyPythagorasDeepDiveView = lazy(() => import('./mathematik/PythagorasDeepDiveView'));
+const LazyFlaechenDeepDiveView = lazy(() => import('./mathematik/FlaechenDeepDiveView'));
+const LazyVolumenDeepDiveView = lazy(() => import('./mathematik/VolumenDeepDiveView'));
+const LazyZeitDeepDiveView = lazy(() => import('./mathematik/ZeitDeepDiveView'));
+const LazyAuftriebDeepDiveView = lazy(() => import('./mathematik/AuftriebDeepDiveView'));
+const LazyDruckDeepDiveView = lazy(() => import('./mathematik/DruckDeepDiveView'));
+const LazyBewegungDeepDiveView = lazy(() => import('./mathematik/BewegungDeepDiveView'));
+const LazyWaermeDeepDiveView = lazy(() => import('./mathematik/WaermeDeepDiveView'));
+const LazyMechanikDeepDiveView = lazy(() => import('./mathematik/MechanikDeepDiveView'));
+const LazyPumpenDeepDiveView = lazy(() => import('./mathematik/PumpenDeepDiveView'));
+const LazyFiltrationDeepDiveView = lazy(() => import('./mathematik/FiltrationDeepDiveView'));
+const LazyChlorDeepDiveView = lazy(() => import('./mathematik/ChlorDeepDiveView'));
+const LazyFormelsammlungDeepDiveView = lazy(() => import('./mathematik/FormelsammlungDeepDiveView'));
 const LazyChemicalFormulasDeepDiveView = lazy(() => import('./chemie/ChemicalFormulasDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
@@ -842,45 +859,29 @@ const InteractiveLearningView = () => {
     );
   }
 
-  if ([
-    'mathe-grundrechenarten',
-    'mathe-brueche',
-    'mathe-prozent',
-    'mathe-formeln',
-    'mathe-pythagoras',
-    'mathe-flaechen',
-    'mathe-volumen',
-    'mathe-zeit',
-    'mathe-auftrieb',
-    'mathe-druck',
-    'mathe-bewegung',
-    'mathe-waerme',
-    'mathe-mechanik',
-    'mathe-pumpen',
-    'mathe-filtration',
-    'mathe-chlor',
-    'mathe-formelsammlung'
-  ].includes(activeModule)) {
-    const initialTopicMap = {
-      'mathe-grundrechenarten': 'grundrechenarten',
-      'mathe-brueche': 'brueche',
-      'mathe-prozent': 'prozent',
-      'mathe-formeln': 'formeln',
-      'mathe-pythagoras': 'pythagoras',
-      'mathe-flaechen': 'flaechen',
-      'mathe-volumen': 'volumen',
-      'mathe-zeit': 'zeit',
-      'mathe-auftrieb': 'auftrieb',
-      'mathe-druck': 'druck',
-      'mathe-bewegung': 'bewegung',
-      'mathe-waerme': 'waerme',
-      'mathe-mechanik': 'mechanik',
-      'mathe-pumpen': 'pumpen',
-      'mathe-filtration': 'filtration',
-      'mathe-chlor': 'chlor',
-      'mathe-formelsammlung': 'formelsammlung'
-    };
+  // ─── Individual Math Deep Dive Modules ──────────────────────────────
+  const MATH_MODULE_MAP = {
+    'mathe-grundrechenarten': LazyGrundrechenartenDeepDiveView,
+    'mathe-brueche': LazyBruecheDeepDiveView,
+    'mathe-prozent': LazyProzentDeepDiveView,
+    'mathe-formeln': LazyFormelnDeepDiveView,
+    'mathe-pythagoras': LazyPythagorasDeepDiveView,
+    'mathe-flaechen': LazyFlaechenDeepDiveView,
+    'mathe-volumen': LazyVolumenDeepDiveView,
+    'mathe-zeit': LazyZeitDeepDiveView,
+    'mathe-auftrieb': LazyAuftriebDeepDiveView,
+    'mathe-druck': LazyDruckDeepDiveView,
+    'mathe-bewegung': LazyBewegungDeepDiveView,
+    'mathe-waerme': LazyWaermeDeepDiveView,
+    'mathe-mechanik': LazyMechanikDeepDiveView,
+    'mathe-pumpen': LazyPumpenDeepDiveView,
+    'mathe-filtration': LazyFiltrationDeepDiveView,
+    'mathe-chlor': LazyChlorDeepDiveView,
+    'mathe-formelsammlung': LazyFormelsammlungDeepDiveView,
+  };
 
+  if (MATH_MODULE_MAP[activeModule]) {
+    const MathComponent = MATH_MODULE_MAP[activeModule];
     return (
       <div>
         <button
@@ -901,7 +902,7 @@ const InteractiveLearningView = () => {
             </div>
           )}
         >
-          <LazyMathBasicsDeepDiveView initialTopic={initialTopicMap[activeModule]} />
+          <MathComponent />
         </Suspense>
       </div>
     );
