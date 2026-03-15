@@ -34,6 +34,10 @@ const LazyChemicalFormulasDeepDiveView = lazy(() => import('./chemie/ChemicalFor
 const LazyStoffnamenFormelnDeepDiveView = lazy(() => import('./chemie/StoffnamenFormelnDeepDiveView'));
 const LazySaeurenBasenDeepDiveView = lazy(() => import('./chemie/SaeurenBasenDeepDiveView'));
 const LazyRedoxDeepDiveView = lazy(() => import('./chemie/RedoxDeepDiveView'));
+const LazySaeurekapazitaetDeepDiveView = lazy(() => import('./chemie/SaeurekapazitaetDeepDiveView'));
+const LazyBeckenwasserdesinfektionDeepDiveView = lazy(() => import('./chemie/BeckenwasserdesinfektionDeepDiveView'));
+const LazyElektrolyseDeepDiveView = lazy(() => import('./chemie/ElektrolyseDeepDiveView'));
+const LazyKorrosionDeepDiveView = lazy(() => import('./chemie/KorrosionDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -567,6 +571,34 @@ const LEARNING_CATEGORIES = [
         icon: 'Rx',
         available: true,
       },
+      {
+        id: 'saeurekapazitaet',
+        name: 'Säurekapazität & Wasserhärte',
+        description: 'KS4,3-Wert, Härtegrade und Pufferwirkung im Beckenwasser',
+        icon: 'KS',
+        available: true,
+      },
+      {
+        id: 'beckenwasserdesinfektion',
+        name: 'Beckenwasserdesinfektion',
+        description: 'Chlor, UV, Ozon und Kombinationsverfahren nach DIN 19643',
+        icon: 'Cl',
+        available: true,
+      },
+      {
+        id: 'elektrolyse',
+        name: 'Elektrolyse',
+        description: 'Chlor aus Salz erzeugen — Inline, Side-Stream und Membranzelle',
+        icon: 'El',
+        available: true,
+      },
+      {
+        id: 'korrosion',
+        name: 'Korrosion & Korrosionsschutz',
+        description: 'Korrosionsarten erkennen und Metalle im Schwimmbad schuetzen',
+        icon: 'Fe',
+        available: true,
+      },
     ],
   },
   {
@@ -917,6 +949,10 @@ const InteractiveLearningView = () => {
     'stoffnamen-formeln': LazyStoffnamenFormelnDeepDiveView,
     'saeuren-basen-grundlagen': LazySaeurenBasenDeepDiveView,
     'redox-grundlagen': LazyRedoxDeepDiveView,
+    'saeurekapazitaet': LazySaeurekapazitaetDeepDiveView,
+    'beckenwasserdesinfektion': LazyBeckenwasserdesinfektionDeepDiveView,
+    'elektrolyse': LazyElektrolyseDeepDiveView,
+    'korrosion': LazyKorrosionDeepDiveView,
   };
 
   if (CHEMIE_MODULE_MAP[activeModule]) {
