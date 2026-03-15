@@ -2800,7 +2800,7 @@ export default function BaederApp() {
       // Messages aktualisieren
       const { data: messagesData } = await supabase
         .from('messages')
-        .select('id, text, user_name, user_id, created_at, scope, recipient_id, recipient_name, avatar')
+        .select('id, content, user_name, sender_id, created_at, chat_scope, recipient_id, user_avatar')
         .order('created_at', { ascending: true })
         .limit(100);
 
@@ -3021,7 +3021,7 @@ export default function BaederApp() {
       // Load messages from Supabase
       const { data: messagesData } = await supabase
         .from('messages')
-        .select('id, text, user_name, user_id, created_at, scope, recipient_id, recipient_name, avatar')
+        .select('id, content, user_name, sender_id, created_at, chat_scope, recipient_id, user_avatar')
         .order('created_at', { ascending: true })
         .limit(100);
 
