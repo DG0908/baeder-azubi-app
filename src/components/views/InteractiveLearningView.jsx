@@ -12,6 +12,7 @@ const LazyMembrandosierpumpeDeepDiveView = lazy(() => import('./pumpen/Membrando
 const LazyClosedFilterDeepDiveView = lazy(() => import('./filter/ClosedFilterDeepDiveView'));
 const LazyFilterSpuelungDeepDiveView = lazy(() => import('./filter/FilterSpuelungDeepDiveView'));
 const LazyMathBasicsDeepDiveView = lazy(() => import('./mathematik/MathBasicsDeepDiveView'));
+const LazyDreisatzDeepDiveView = lazy(() => import('./mathematik/DreisatzDeepDiveView'));
 const LazyChemicalFormulasDeepDiveView = lazy(() => import('./chemie/ChemicalFormulasDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
@@ -395,8 +396,8 @@ const LEARNING_CATEGORIES = [
       },
       {
         id: 'mathe-dreisatz',
-        name: 'Dreisatz einfach',
-        description: 'Vom bekannten Wert ueber 1 Einheit zum Zielwert',
+        name: 'Dreisatz',
+        description: 'Proportional und antiproportional — mit Baeder-Beispielen ausfuehrlich erklaert',
         icon: '3S',
         available: true,
       },
@@ -814,10 +815,36 @@ const InteractiveLearningView = () => {
     );
   }
 
+  if (activeModule === 'mathe-dreisatz') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurueck zu Mathematik
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Dreisatz-Modul...
+            </div>
+          )}
+        >
+          <LazyDreisatzDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
   if ([
     'mathe-grundrechenarten',
     'mathe-brueche',
-    'mathe-dreisatz',
     'mathe-prozent',
     'mathe-formeln',
     'mathe-pythagoras',
@@ -837,7 +864,6 @@ const InteractiveLearningView = () => {
     const initialTopicMap = {
       'mathe-grundrechenarten': 'grundrechenarten',
       'mathe-brueche': 'brueche',
-      'mathe-dreisatz': 'dreisatz',
       'mathe-prozent': 'prozent',
       'mathe-formeln': 'formeln',
       'mathe-pythagoras': 'pythagoras',
