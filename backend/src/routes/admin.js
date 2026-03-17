@@ -111,15 +111,16 @@ router.post('/repair-quiz-stats', async (req, res) => {
     const adminClient = createClient(env.supabaseUrl, env.serviceRoleKey);
     const { data: callerProfile, error: callerProfileError } = await adminClient
       .from('profiles')
-      .select('id, role, approved, is_owner')
+      .select('id, role, approved')
       .eq('id', authData.user.id)
       .single();
 
     if (callerProfileError || !callerProfile) {
+      console.error('Admin profile lookup failed:', callerProfileError);
       return res.status(403).json({ error: 'Admin profile not found.' });
     }
 
-    const isAdmin = callerProfile.role === 'admin' || Boolean(callerProfile.is_owner);
+    const isAdmin = callerProfile.role === 'admin';
     if (!callerProfile.approved || !isAdmin) {
       return res.status(403).json({ error: 'Insufficient permissions.' });
     }
