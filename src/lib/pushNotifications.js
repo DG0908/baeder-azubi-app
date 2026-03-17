@@ -4,7 +4,8 @@ const SMARTBADEN_PUSH_BACKEND_URL = 'https://push.smartbaden.de/api/push/send';
 
 export const getPushBackendUrl = () => {
   const configuredUrl = String(import.meta.env.VITE_PUSH_BACKEND_URL || '').trim();
-  if (configuredUrl) return configuredUrl;
+  const hasAbsoluteConfiguredUrl = /^https?:\/\//i.test(configuredUrl);
+  if (hasAbsoluteConfiguredUrl) return configuredUrl;
 
   if (typeof window !== 'undefined') {
     const hostname = String(window.location.hostname || '').trim().toLowerCase();
@@ -13,6 +14,7 @@ export const getPushBackendUrl = () => {
     }
   }
 
+  if (configuredUrl) return configuredUrl;
   return '/api/push/send';
 };
 
