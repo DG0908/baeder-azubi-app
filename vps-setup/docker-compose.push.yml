@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  push-backend:
+    image: node:20-alpine
+    container_name: azubi-push-backend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: sh -c "cd /app && npm install --production && node src/server.js"
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3001:3001"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.azubi-push.rule=Host(`push.smartbaden.de`)"
+      - "traefik.http.routers.azubi-push.entrypoints=https"
+      - "traefik.http.routers.azubi-push.tls=true"
+      - "traefik.http.routers.azubi-push.tls.certresolver=letsencrypt"
+      - "traefik.http.services.azubi-push.loadbalancer.server.port=3001"
+    networks:
+      - coolify
+
+networks:
+  coolify:
+    external: true
