@@ -17,20 +17,43 @@ const allowedOrigins = [...new Set(
     .filter(Boolean)
 )];
 
+const allowedOriginPatterns = [
+  /^https:\/\/([a-z0-9-]+\.)*smartbaden\.de$/i,
+  /^https:\/\/([a-z0-9-]+\.)*vercel\.app$/i,
+  /^http:\/\/localhost(?::\d+)?$/i,
+  /^http:\/\/127\.0\.0\.1(?::\d+)?$/i
+];
+
+const isAllowedOrigin = (origin) => (
+  !origin
+  || allowedOrigins.includes(origin)
+  || allowedOriginPatterns.some((pattern) => pattern.test(origin))
+);
+
 const corsOptions = allowedOrigins.length > 0
   ? {
       origin(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (isAllowedOrigin(origin)) {
           callback(null, true);
           return;
         }
         callback(new Error('Origin not allowed by CORS'));
       },
-      credentials: true
+      credentials: true,
+      methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      optionsSuccessStatus: 204
     }
-  : { origin: true, credentials: true };
+  : {
+      origin: true,
+      credentials: true,
+      methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      optionsSuccessStatus: 204
+    };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_req, res) => {
