@@ -76,6 +76,18 @@ export default function BaederApp() {
     }
   };
 
+  const buildBackendApiUrl = (pathname) => {
+    const configuredPushUrl = String(import.meta.env.VITE_PUSH_BACKEND_URL || '').trim();
+    if (!configuredPushUrl) return '';
+
+    const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+    const url = new URL(configuredPushUrl, fallbackOrigin);
+    url.pathname = pathname;
+    url.search = '';
+    url.hash = '';
+    return url.toString();
+  };
+
   const repairLegacyText = (value) => {
     if (typeof value !== 'string') return value;
     let repaired = value;
@@ -3601,6 +3613,47 @@ export default function BaederApp() {
       console.error('Error toggling exam grades permission:', error);
       showToast('Fehler beim Ändern der Berechtigung', 'error');
     }
+  };
+
+  const repairQuizStats = async () => {
+    if (!user?.permissions?.canManageUsers) {
+      throw new Error('Keine Berechtigung für den Statistik-Repair.');
+    }
+
+    const repairUrl = buildBackendApiUrl('/api/admin/repair-quiz-stats');
+    if (!repairUrl) {
+      throw new Error('Push-/Backend-URL ist nicht konfiguriert.');
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) {
+      throw new Error('Keine aktive Sitzung für den Admin-Repair gefunden.');
+    }
+
+    const response = await fetch(repairUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({})
+    });
+
+    const contentType = response.headers.get('content-type') || '';
+    const responseData = contentType.includes('application/json')
+      ? await response.json()
+      : await response.text();
+
+    if (!response.ok) {
+      const messageText = typeof responseData === 'string'
+        ? responseData
+        : responseData?.error || `Admin-Repair fehlgeschlagen (${response.status}).`;
+      throw new Error(messageText);
+    }
+
+    await loadData();
+    return responseData;
   };
 
   // Profil-Bearbeitung: Name ändern
@@ -9201,6 +9254,7 @@ export default function BaederApp() {
             toggleSchoolCardPermission={toggleSchoolCardPermission}
             toggleSignReportsPermission={toggleSignReportsPermission}
             toggleExamGradesPermission={toggleExamGradesPermission}
+            repairQuizStats={repairQuizStats}
             editingMenuItems={editingMenuItems}
             setEditingMenuItems={setEditingMenuItems}
             appConfig={appConfig}

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+const adminRouter = require('./routes/admin');
 const pushRouter = require('./routes/push');
 
 const app = express();
@@ -36,6 +37,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'baeder-azubi-backend' });
 });
 
+app.use('/api/admin', adminRouter);
 app.use('/api/push', pushRouter);
 
 app.use((err, _req, res, _next) => {
