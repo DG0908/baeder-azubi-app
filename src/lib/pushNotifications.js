@@ -1,5 +1,6 @@
 const WEB_PUSH_PUBLIC_KEY = import.meta.env.VITE_WEB_PUSH_PUBLIC_KEY || '';
 const PUSH_FUNCTION_NAME = import.meta.env.VITE_PUSH_FUNCTION_NAME || 'send-web-push';
+const PUSH_BACKEND_URL = import.meta.env.VITE_PUSH_BACKEND_URL || '/api/push/send';
 
 const urlBase64ToUint8Array = (value) => {
   const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
@@ -80,7 +81,6 @@ export const triggerWebPushNotification = async ({
   notificationId
 }) => {
   if (!supabase || !userName || !title) return { sent: false, reason: 'missing-input' };
-  if (!isWebPushConfigured()) return { sent: false, reason: 'missing-vapid-key' };
 
   const body = {
     userName,
@@ -90,7 +90,59 @@ export const triggerWebPushNotification = async ({
   };
   if (notificationId) body.notificationId = notificationId;
 
-  const { data, error } = await supabase.functions.invoke(PUSH_FUNCTION_NAME, { body });
-  if (error) throw error;
-  return { sent: true, data };
+  let backendError = null;
+  if (String(PUSH_BACKEND_URL || '').trim()) {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) {
+        backendError = new Error('Missing access token for push backend request.');
+      } else {
+        const backendUrl = typeof window !== 'undefined'
+          ? new URL(PUSH_BACKEND_URL, window.location.origin).toString()
+          : PUSH_BACKEND_URL;
+        const response = await fetch(backendUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+        const responseData = contentType.includes('application/json')
+          ? await response.json()
+          : await response.text();
+
+        if (!response.ok) {
+          const messageText = typeof responseData === 'string'
+            ? responseData
+            : responseData?.error || `Push backend request failed (${response.status}).`;
+          throw new Error(messageText);
+        }
+
+        return { sent: true, data: responseData };
+      }
+    } catch (error) {
+      backendError = error;
+      console.warn('Push backend dispatch failed:', error);
+    }
+  }
+
+  if (!isWebPushConfigured()) {
+    if (backendError) throw backendError;
+    return { sent: false, reason: 'missing-vapid-key' };
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke(PUSH_FUNCTION_NAME, { body });
+    if (error) throw error;
+    return { sent: true, data };
+  } catch (error) {
+    if (backendError) {
+      throw backendError;
+    }
+    throw error;
+  }
 };

@@ -1058,6 +1058,12 @@ export default function BaederApp() {
   const berichtsheftRemoteDraftSaveTimerRef = useRef(null);
   const berichtsheftRemoteDraftWarningShownRef = useRef(false);
   const xpAwardQueueRef = useRef(Promise.resolve(0));
+  const notificationTrackerRef = useRef({
+    userId: null,
+    initialized: false,
+    knownIds: new Set(),
+    announcedIds: new Set()
+  });
   const canManageBerichtsheftSignatures = Boolean(
     user && (user.role === 'admin' || user.role === 'trainer' || user.canSignReports)
   );
@@ -1178,6 +1184,52 @@ export default function BaederApp() {
     }
   };
 
+  const announceNotificationLocally = useCallback(async (notification) => {
+    const notificationId = String(notification?.id || '').trim();
+    if (!notificationId) return;
+
+    const tracker = notificationTrackerRef.current;
+    if (tracker.announcedIds.has(notificationId)) return;
+    tracker.announcedIds.add(notificationId);
+
+    if (user?.name === notification?.userName) {
+      playSound('whistle');
+    }
+
+    const toastType = notification?.type === 'error' || notification?.type === 'warning'
+      ? notification.type
+      : 'info';
+
+    try {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        const notificationOptions = {
+          body: notification.message,
+          icon: '/icons/icon-192x192.png',
+          badge: '/icons/icon-192x192.png',
+          tag: `notif-${notificationId}`,
+          data: { url: '/' }
+        };
+
+        if ('serviceWorker' in navigator) {
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration?.showNotification) {
+            await registration.showNotification(notification.title, notificationOptions);
+            return;
+          }
+        }
+
+        new Notification(notification.title, notificationOptions);
+        return;
+      }
+    } catch (error) {
+      console.warn('Local notification fallback failed:', error);
+    }
+
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      showToast(`${notification.title}: ${notification.message}`, toastType, 4500);
+    }
+  }, [playSound, showToast, user?.name]);
+
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return undefined;
 
@@ -1214,6 +1266,15 @@ export default function BaederApp() {
       localStorage.setItem('lastView', currentView);
     }
   }, [currentView]);
+
+  useEffect(() => {
+    notificationTrackerRef.current = {
+      userId: user?.id || null,
+      initialized: false,
+      knownIds: new Set(),
+      announcedIds: new Set()
+    };
+  }, [user?.id]);
 
   // Content moderation
   const BANNED_WORDS = [
@@ -2484,10 +2545,28 @@ export default function BaederApp() {
         title: n.title,
         message: n.message,
         type: n.type,
+        userName: user.name,
         time: new Date(n.created_at).getTime(),
         read: n.read
       }));
+
+      const tracker = notificationTrackerRef.current;
+      const knownIds = tracker.knownIds || new Set();
+      const freshNotifications = tracker.initialized
+        ? notifs.filter((notif) => !knownIds.has(String(notif.id || '')))
+        : [];
+
+      tracker.userId = user.id;
+      tracker.initialized = true;
+      tracker.knownIds = new Set(notifs.map((notif) => String(notif.id || '')));
+
       setNotifications(notifs);
+
+      for (const notif of [...freshNotifications].reverse()) {
+        if (!notif.read) {
+          void announceNotificationLocally(notif);
+        }
+      }
     } catch (error) {
       console.log('Loading notifications...');
     }
@@ -2524,19 +2603,6 @@ export default function BaederApp() {
       }
 
       // Lokale Notification nur dann, wenn die Nachricht den aktuellen User betrifft
-      if (
-        userName === user?.name
-        && 'Notification' in window
-        && Notification.permission === 'granted'
-      ) {
-        new Notification(title, {
-          body: message,
-          icon: '/icons/icon-192x192.png',
-          badge: '/icons/icon-192x192.png',
-          tag: `notif-${data.id}`
-        });
-      }
-
       if (userName === user?.name) {
         playSound('whistle');
       }
@@ -3644,9 +3710,13 @@ export default function BaederApp() {
     }
 
     try {
+      const acceptedAt = new Date().toISOString();
       const { error } = await supabase
         .from('games')
-        .update({ status: 'active' })
+        .update({
+          status: 'active',
+          updated_at: acceptedAt
+        })
         .eq('id', gameId);
 
       if (error) throw error;
@@ -3654,6 +3724,39 @@ export default function BaederApp() {
       game.status = 'active';
       game.categoryRound = 0;
       game.categoryRounds = [];
+      game.updatedAt = acceptedAt;
+      setActiveGames(prev => prev.map((entry) => (
+        entry.id === gameId
+          ? {
+              ...entry,
+              status: 'active',
+              categoryRound: 0,
+              categoryRounds: [],
+              updatedAt: acceptedAt
+            }
+          : entry
+      )));
+      setAllGames(prev => prev.map((entry) => (
+        entry.id === gameId
+          ? {
+              ...entry,
+              status: 'active',
+              categoryRound: 0,
+              categoryRounds: [],
+              updatedAt: acceptedAt
+            }
+          : entry
+      )));
+
+      if (game.player1 && game.player1 !== user.name) {
+        await sendNotification(
+          game.player1,
+          '⚡ Herausforderung angenommen - du bist dran!',
+          `${user.name} hat deine Quizduell-Herausforderung angenommen. Du darfst die erste Kategorie wählen.`,
+          'info'
+        );
+      }
+
       setCurrentGame(game);
       setCategoryRound(0);
       setQuestionInCategory(0);
