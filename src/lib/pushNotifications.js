@@ -1,6 +1,31 @@
 const WEB_PUSH_PUBLIC_KEY = import.meta.env.VITE_WEB_PUSH_PUBLIC_KEY || '';
 const PUSH_FUNCTION_NAME = import.meta.env.VITE_PUSH_FUNCTION_NAME || 'send-web-push';
-const PUSH_BACKEND_URL = import.meta.env.VITE_PUSH_BACKEND_URL || '/api/push/send';
+const SMARTBADEN_PUSH_BACKEND_URL = 'https://push.smartbaden.de/api/push/send';
+
+export const getPushBackendUrl = () => {
+  const configuredUrl = String(import.meta.env.VITE_PUSH_BACKEND_URL || '').trim();
+  if (configuredUrl) return configuredUrl;
+
+  if (typeof window !== 'undefined') {
+    const hostname = String(window.location.hostname || '').trim().toLowerCase();
+    if (hostname === 'smartbaden.de' || hostname.endsWith('.smartbaden.de')) {
+      return SMARTBADEN_PUSH_BACKEND_URL;
+    }
+  }
+
+  return '/api/push/send';
+};
+
+export const buildPushBackendApiUrl = (pathname = '/api/push/send') => {
+  const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+  const url = new URL(getPushBackendUrl(), fallbackOrigin);
+  if (pathname) {
+    url.pathname = pathname;
+  }
+  url.search = '';
+  url.hash = '';
+  return url.toString();
+};
 
 const urlBase64ToUint8Array = (value) => {
   const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
@@ -91,16 +116,15 @@ export const triggerWebPushNotification = async ({
   if (notificationId) body.notificationId = notificationId;
 
   let backendError = null;
-  if (String(PUSH_BACKEND_URL || '').trim()) {
+  const pushBackendUrl = getPushBackendUrl();
+  if (String(pushBackendUrl || '').trim()) {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
       if (!accessToken) {
         backendError = new Error('Missing access token for push backend request.');
       } else {
-        const backendUrl = typeof window !== 'undefined'
-          ? new URL(PUSH_BACKEND_URL, window.location.origin).toString()
-          : PUSH_BACKEND_URL;
+        const backendUrl = buildPushBackendApiUrl('/api/push/send');
         const response = await fetch(backendUrl, {
           method: 'POST',
           headers: {

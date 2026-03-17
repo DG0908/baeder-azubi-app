@@ -42,7 +42,7 @@ import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineR
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
-import { ensureUserPushSubscription, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
+import { buildPushBackendApiUrl, ensureUserPushSubscription, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -74,18 +74,6 @@ export default function BaederApp() {
     } catch {
       return fallback;
     }
-  };
-
-  const buildBackendApiUrl = (pathname) => {
-    const configuredPushUrl = String(import.meta.env.VITE_PUSH_BACKEND_URL || '').trim();
-    if (!configuredPushUrl) return '';
-
-    const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
-    const url = new URL(configuredPushUrl, fallbackOrigin);
-    url.pathname = pathname;
-    url.search = '';
-    url.hash = '';
-    return url.toString();
   };
 
   const repairLegacyText = (value) => {
@@ -3620,7 +3608,7 @@ export default function BaederApp() {
       throw new Error('Keine Berechtigung für den Statistik-Repair.');
     }
 
-    const repairUrl = buildBackendApiUrl('/api/admin/repair-quiz-stats');
+    const repairUrl = buildPushBackendApiUrl('/api/admin/repair-quiz-stats');
     if (!repairUrl) {
       throw new Error('Push-/Backend-URL ist nicht konfiguriert.');
     }
