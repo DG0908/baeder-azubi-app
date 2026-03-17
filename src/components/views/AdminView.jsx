@@ -397,6 +397,7 @@ const AdminView = ({
   toggleSchoolCardPermission,
   toggleSignReportsPermission,
   toggleExamGradesPermission,
+  repairQuizStats,
   editingMenuItems,
   setEditingMenuItems,
   appConfig,
@@ -411,8 +412,33 @@ const AdminView = ({
   saveAppConfig,
   resetAppConfig,
 }) => {
-  const { darkMode } = useApp();
+  const { darkMode, showToast } = useApp();
   const { user } = useAuth();
+  const [repairingQuizStats, setRepairingQuizStats] = React.useState(false);
+  const [lastQuizRepairResult, setLastQuizRepairResult] = React.useState(null);
+
+  const handleRepairQuizStats = async () => {
+    if (typeof repairQuizStats !== 'function' || repairingQuizStats) return;
+    if (!confirm('Quiz-Statistiken jetzt für alle Nutzer reparieren? Vorhandene höhere Werte bleiben erhalten.')) {
+      return;
+    }
+
+    setRepairingQuizStats(true);
+    try {
+      const result = await repairQuizStats();
+      setLastQuizRepairResult(result);
+      showToast(
+        `Quiz-Stats geprüft: ${result.updatedUsers || 0} Nutzer aktualisiert.`,
+        'success',
+        3500
+      );
+    } catch (error) {
+      console.error('Quiz stats repair failed:', error);
+      showToast(error?.message || 'Quiz-Statistiken konnten nicht repariert werden.', 'error');
+    } finally {
+      setRepairingQuizStats(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -509,6 +535,47 @@ const AdminView = ({
             </>
           );
         })()}
+      </div>
+
+      <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div>
+            <h3 className="text-xl font-bold flex items-center">
+              <RefreshCw className="mr-2 text-cyan-500" />
+              Quiz-Statistiken reparieren
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Stellt Siege, Niederlagen und Unentschieden aus beendeten Quizduellen wieder her, ohne vorhandene höhere Werte zu senken.
+            </p>
+          </div>
+          <button
+            onClick={handleRepairQuizStats}
+            disabled={repairingQuizStats}
+            className={`px-4 py-2 rounded-lg font-bold text-white ${
+              repairingQuizStats
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-cyan-500 hover:bg-cyan-600'
+            }`}
+          >
+            {repairingQuizStats ? 'Repair läuft...' : 'Quiz-Stats reparieren'}
+          </button>
+        </div>
+
+        {lastQuizRepairResult && (
+          <div className="mt-4 rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-900">
+            <div className="font-bold mb-2">Letzter Repair-Lauf</div>
+            <div>{lastQuizRepairResult.updatedUsers || 0} Nutzer aktualisiert</div>
+            <div>{lastQuizRepairResult.scannedFinishedGames || 0} beendete Spiele geprüft</div>
+            <div>{lastQuizRepairResult.scannedProfiles || 0} Profile geprüft</div>
+            <div>{lastQuizRepairResult.skippedGamesMissingProfiles || 0} Spiele ohne passendes Profil übersprungen</div>
+            <div>{lastQuizRepairResult.ambiguousNames || 0} doppelte Nutzernamen übersprungen</div>
+            {Array.isArray(lastQuizRepairResult.updatedPreview) && lastQuizRepairResult.updatedPreview.length > 0 && (
+              <div className="mt-3 text-xs text-cyan-800">
+                Beispiele: {lastQuizRepairResult.updatedPreview.map((entry) => `${entry.name} (${entry.wins}/${entry.losses}/${entry.draws})`).join(', ')}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl p-6 shadow-lg">
