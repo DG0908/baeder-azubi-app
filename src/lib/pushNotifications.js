@@ -29,6 +29,88 @@ export const buildPushBackendApiUrl = (pathname = '/api/push/send') => {
   return url.toString();
 };
 
+const parseBackendResponse = async (response) => {
+  const contentType = response.headers.get('content-type') || '';
+  return contentType.includes('application/json')
+    ? response.json()
+    : response.text();
+};
+
+const getAccessTokenForBackendRequest = async (supabase, { forceRefresh = false } = {}) => {
+  if (!supabase?.auth) return '';
+
+  if (forceRefresh && typeof supabase.auth.refreshSession === 'function') {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (!error && data?.session?.access_token) {
+      return data.session.access_token;
+    }
+  }
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const sessionToken = String(sessionData?.session?.access_token || '').trim();
+  if (sessionToken) return sessionToken;
+
+  if (typeof supabase.auth.refreshSession === 'function') {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (!error && data?.session?.access_token) {
+      return data.session.access_token;
+    }
+  }
+
+  return '';
+};
+
+export const fetchPushBackendWithAuth = async ({
+  supabase,
+  pathname,
+  method = 'POST',
+  body
+}) => {
+  const backendUrl = buildPushBackendApiUrl(pathname);
+  if (!backendUrl) {
+    throw new Error('Push-/Backend-URL ist nicht konfiguriert.');
+  }
+
+  const doRequest = async (accessToken) => fetch(backendUrl, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: body === undefined ? undefined : JSON.stringify(body)
+  });
+
+  let accessToken = await getAccessTokenForBackendRequest(supabase);
+  if (!accessToken) {
+    throw new Error('Keine aktive Sitzung für den Backend-Request gefunden.');
+  }
+
+  let response = await doRequest(accessToken);
+  if (response.status === 401) {
+    accessToken = await getAccessTokenForBackendRequest(supabase, { forceRefresh: true });
+    if (!accessToken) {
+      throw new Error('Sitzung auf diesem Gerät abgelaufen. Bitte einmal neu einloggen.');
+    }
+    response = await doRequest(accessToken);
+  }
+
+  const responseData = await parseBackendResponse(response);
+
+  if (!response.ok) {
+    let messageText = typeof responseData === 'string'
+      ? responseData
+      : responseData?.error || `Push backend request failed (${response.status}).`;
+
+    if (response.status === 401 && /unauthorized request/i.test(String(messageText || ''))) {
+      messageText = 'Sitzung auf diesem Gerät abgelaufen. Bitte einmal neu einloggen.';
+    }
+
+    throw new Error(messageText);
+  }
+
+  return responseData;
+};
+
 const urlBase64ToUint8Array = (value) => {
   const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
   const padding = '='.repeat((4 - (normalized.length % 4)) % 4);
@@ -184,35 +266,13 @@ export const triggerWebPushNotification = async ({
   const pushBackendUrl = getPushBackendUrl();
   if (String(pushBackendUrl || '').trim()) {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
-      if (!accessToken) {
-        backendError = new Error('Missing access token for push backend request.');
-      } else {
-        const backendUrl = buildPushBackendApiUrl('/api/push/send');
-        const response = await fetch(backendUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`
-          },
-          body: JSON.stringify(body)
-        });
-
-        const contentType = response.headers.get('content-type') || '';
-        const responseData = contentType.includes('application/json')
-          ? await response.json()
-          : await response.text();
-
-        if (!response.ok) {
-          const messageText = typeof responseData === 'string'
-            ? responseData
-            : responseData?.error || `Push backend request failed (${response.status}).`;
-          throw new Error(messageText);
-        }
-
-        return { sent: true, data: responseData };
-      }
+      const responseData = await fetchPushBackendWithAuth({
+        supabase,
+        pathname: '/api/push/send',
+        method: 'POST',
+        body
+      });
+      return { sent: true, data: responseData };
     } catch (error) {
       backendError = error;
       console.warn('Push backend dispatch failed:', error);
