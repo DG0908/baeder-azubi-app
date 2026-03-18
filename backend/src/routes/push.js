@@ -297,6 +297,11 @@ router.post('/test', async (req, res) => {
   const requestedDelay = Number(body.delaySeconds);
   const requestedScope = String(body.targetScope || 'self').trim().toLowerCase();
   const targetScope = requestedScope === 'organization' ? 'organization' : 'self';
+  const requestedTargetUserNames = [...new Set(
+    (Array.isArray(body.targetUserNames) ? body.targetUserNames : [])
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+  )];
   const delaySeconds = Number.isFinite(requestedDelay)
     ? Math.max(0, Math.min(MAX_TEST_DELAY_SECONDS, Math.round(requestedDelay)))
     : 15;
@@ -340,7 +345,9 @@ router.post('/test', async (req, res) => {
 
       if (orgProfilesError) {
         console.error('Push test organization lookup failed:', orgProfilesError);
-        return res.status(500).json({ error: 'Organisation konnte nicht fuer den Test-Push geladen werden.' });
+        if (!requestedTargetUserNames.length) {
+          return res.status(500).json({ error: 'Organisation konnte nicht fuer den Test-Push geladen werden.' });
+        }
       }
 
       targetNames = [...new Set(
@@ -348,6 +355,10 @@ router.post('/test', async (req, res) => {
           .map((entry) => String(entry?.name || '').trim())
           .filter(Boolean)
       )];
+
+      if (!targetNames.length && requestedTargetUserNames.length) {
+        targetNames = requestedTargetUserNames;
+      }
     }
 
     const { subscriptions, error: subscriptionsError } = await loadSubscriptionsByUserNames(adminClient, targetNames);
