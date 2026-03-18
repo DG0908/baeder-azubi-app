@@ -398,6 +398,7 @@ const AdminView = ({
   toggleSignReportsPermission,
   toggleExamGradesPermission,
   repairQuizStats,
+  sendTestPush,
   editingMenuItems,
   setEditingMenuItems,
   appConfig,
@@ -416,6 +417,8 @@ const AdminView = ({
   const { user } = useAuth();
   const [repairingQuizStats, setRepairingQuizStats] = React.useState(false);
   const [lastQuizRepairResult, setLastQuizRepairResult] = React.useState(null);
+  const [sendingTestPush, setSendingTestPush] = React.useState(false);
+  const [lastTestPushResult, setLastTestPushResult] = React.useState(null);
 
   const handleRepairQuizStats = async () => {
     if (typeof repairQuizStats !== 'function' || repairingQuizStats) return;
@@ -437,6 +440,28 @@ const AdminView = ({
       showToast(error?.message || 'Quiz-Statistiken konnten nicht repariert werden.', 'error');
     } finally {
       setRepairingQuizStats(false);
+    }
+  };
+
+  const handleSendTestPush = async () => {
+    if (typeof sendTestPush !== 'function' || sendingTestPush) return;
+
+    setSendingTestPush(true);
+    try {
+      const result = await sendTestPush();
+      setLastTestPushResult(result);
+      showToast(
+        result?.scheduled
+          ? `Test-Push geplant. App jetzt fuer ${result.delaySeconds || 15}s schliessen.`
+          : `Test-Push gesendet: ${result?.sent || 0} Endgeraete erreicht.`,
+        'success',
+        4500
+      );
+    } catch (error) {
+      console.error('Test push failed:', error);
+      showToast(error?.message || 'Test-Push konnte nicht geplant werden.', 'error');
+    } finally {
+      setSendingTestPush(false);
     }
   };
 
@@ -574,6 +599,48 @@ const AdminView = ({
                 Beispiele: {lastQuizRepairResult.updatedPreview.map((entry) => `${entry.name} (${entry.wins}/${entry.losses}/${entry.draws})`).join(', ')}
               </div>
             )}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div>
+            <h3 className="text-xl font-bold flex items-center">
+              <MessageCircle className="mr-2 text-indigo-500" />
+              Hintergrund-Push testen
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Plant einen Test-Push in 15 Sekunden an dein aktuelles Benutzerkonto. Danach die App direkt schliessen.
+            </p>
+          </div>
+          <button
+            onClick={handleSendTestPush}
+            disabled={sendingTestPush}
+            className={`px-4 py-2 rounded-lg font-bold text-white ${
+              sendingTestPush
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-indigo-500 hover:bg-indigo-600'
+            }`}
+          >
+            {sendingTestPush ? 'Plane Test-Push...' : 'Test-Push in 15s'}
+          </button>
+        </div>
+
+        <div className="text-xs text-gray-500">
+          News nutzen denselben Push-Kanal. Wenn dieser Test bei geschlossener App ankommt, kommen auch News-Pushs im Hintergrund an.
+        </div>
+
+        {lastTestPushResult && (
+          <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+            <div className="font-bold mb-2">Letzter Test</div>
+            <div>Nutzer: {lastTestPushResult.userName || 'Unbekannt'}</div>
+            <div>{lastTestPushResult.subscriptionCount || 0} aktive Push-Abos gefunden</div>
+            <div>
+              {lastTestPushResult.scheduled
+                ? `Versand geplant in ${lastTestPushResult.delaySeconds || 15} Sekunden`
+                : `Sofort versendet: ${lastTestPushResult.sent || 0} erfolgreich, ${lastTestPushResult.failed || 0} fehlgeschlagen`}
+            </div>
           </div>
         )}
       </div>

@@ -3644,6 +3644,46 @@ export default function BaederApp() {
     return responseData;
   };
 
+  const sendTestPush = async () => {
+    if (!user?.id) {
+      throw new Error('Keine aktive Sitzung für den Test-Push gefunden.');
+    }
+
+    const testUrl = buildPushBackendApiUrl('/api/push/test');
+    if (!testUrl) {
+      throw new Error('Push-/Backend-URL ist nicht konfiguriert.');
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) {
+      throw new Error('Keine aktive Sitzung für den Test-Push gefunden.');
+    }
+
+    const response = await fetch(testUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({ delaySeconds: 15 })
+    });
+
+    const contentType = response.headers.get('content-type') || '';
+    const responseData = contentType.includes('application/json')
+      ? await response.json()
+      : await response.text();
+
+    if (!response.ok) {
+      const messageText = typeof responseData === 'string'
+        ? responseData
+        : responseData?.error || `Test-Push fehlgeschlagen (${response.status}).`;
+      throw new Error(messageText);
+    }
+
+    return responseData;
+  };
+
   // Profil-Bearbeitung: Name ändern
 
   const getDaysUntilDeletion = (account) => {
@@ -9243,6 +9283,7 @@ export default function BaederApp() {
             toggleSignReportsPermission={toggleSignReportsPermission}
             toggleExamGradesPermission={toggleExamGradesPermission}
             repairQuizStats={repairQuizStats}
+            sendTestPush={sendTestPush}
             editingMenuItems={editingMenuItems}
             setEditingMenuItems={setEditingMenuItems}
             appConfig={appConfig}
