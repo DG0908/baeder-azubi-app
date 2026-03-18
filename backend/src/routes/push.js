@@ -81,6 +81,42 @@ const loadSubscriptionsByUserNames = async (adminClient, userNames) => {
   };
 };
 
+const loadOwnSubscriptions = async (authClient, userId) => {
+  const normalizedUserId = String(userId || '').trim();
+  if (!normalizedUserId) {
+    return { subscriptions: [], error: null };
+  }
+
+  const { data: subscriptions, error } = await authClient
+    .from('push_subscriptions')
+    .select('id, endpoint, p256dh, auth')
+    .eq('user_id', normalizedUserId);
+
+  return {
+    subscriptions: Array.isArray(subscriptions) ? subscriptions : [],
+    error
+  };
+};
+
+const describeSupabaseQueryError = (error, fallbackMessage) => {
+  const message = String(error?.message || '').trim();
+  if (!message) return fallbackMessage;
+
+  if (/invalid authentication credentials/i.test(message)) {
+    return 'Der VPS benutzt noch ungueltige Supabase-Zugangsdaten.';
+  }
+
+  if (/push_subscriptions/i.test(message) && /does not exist|not exist|relation/i.test(message)) {
+    return 'Die Tabelle push_subscriptions fehlt noch in Supabase.';
+  }
+
+  if (/organization_id/i.test(message) && /does not exist|not exist|column/i.test(message)) {
+    return 'Im VPS-Schema fehlt noch die organization_id-Spalte auf profiles.';
+  }
+
+  return fallbackMessage;
+};
+
 const resolveCallerProfile = async (adminClient, authUser, fallbackInput = {}) => {
   const authUserId = String(authUser?.id || '').trim();
   const authEmail = String(authUser?.email || fallbackInput.email || '').trim().toLowerCase();
@@ -307,6 +343,7 @@ router.post('/test', async (req, res) => {
     : 15;
 
   try {
+    const authClient = createAuthClient(env, authHeader);
     const { user, error: authError } = await authenticateRequest(env, authHeader);
     if (authError || !user?.id) {
       return res.status(401).json({ error: 'Unauthorized request.' });
@@ -332,6 +369,15 @@ router.post('/test', async (req, res) => {
     }
 
     let targetNames = [callerName];
+    let subscriptions = [];
+    let subscriptionsError = null;
+
+    if (targetScope === 'self') {
+      const ownSubscriptionsResult = await loadOwnSubscriptions(authClient, user.id);
+      subscriptions = ownSubscriptionsResult.subscriptions;
+      subscriptionsError = ownSubscriptionsResult.error;
+    }
+
     if (targetScope === 'organization') {
       if (!organizationId) {
         return res.status(400).json({ error: 'Keine Organisation fuer den Test-Push gefunden.' });
@@ -359,12 +405,17 @@ router.post('/test', async (req, res) => {
       if (!targetNames.length && requestedTargetUserNames.length) {
         targetNames = requestedTargetUserNames;
       }
+
+      const multiSubscriptionsResult = await loadSubscriptionsByUserNames(adminClient, targetNames);
+      subscriptions = multiSubscriptionsResult.subscriptions;
+      subscriptionsError = multiSubscriptionsResult.error;
     }
 
-    const { subscriptions, error: subscriptionsError } = await loadSubscriptionsByUserNames(adminClient, targetNames);
     if (subscriptionsError) {
       console.error('Push test subscription lookup failed:', subscriptionsError);
-      return res.status(500).json({ error: 'Push-Abos konnten nicht geladen werden.' });
+      return res.status(500).json({
+        error: describeSupabaseQueryError(subscriptionsError, 'Push-Abos konnten nicht geladen werden.')
+      });
     }
 
     if (!subscriptions.length) {
