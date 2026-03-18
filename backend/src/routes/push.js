@@ -309,19 +309,22 @@ router.post('/test', async (req, res) => {
 
     const adminClient = createAdminClient(env);
     const { profile, error: profileError } = await resolveCallerProfile(adminClient, user, body);
-
-    if (profileError || !profile?.name) {
+    if (profileError) {
       console.error('Push test profile lookup failed:', profileError);
-      return res.status(404).json({ error: 'Kein passendes Profil fuer den Test-Push gefunden.' });
     }
 
-    if (!profile.approved) {
+    const fallbackUserName = String(body.userName || user?.user_metadata?.name || '').trim();
+    const callerName = String(profile?.name || fallbackUserName).trim();
+    const fallbackOrganizationId = String(body.organizationId || '').trim() || null;
+    const organizationId = profile?.organization_id || fallbackOrganizationId;
+
+    if (profile?.approved === false) {
       return res.status(403).json({ error: 'Nur freigeschaltete Nutzer koennen Test-Push verwenden.' });
     }
 
-    const callerName = String(profile.name || '').trim();
-    const fallbackOrganizationId = String(body.organizationId || '').trim() || null;
-    const organizationId = profile.organization_id || fallbackOrganizationId;
+    if (targetScope === 'self' && !callerName) {
+      return res.status(404).json({ error: 'Kein passendes Profil fuer den Test-Push gefunden.' });
+    }
 
     let targetNames = [callerName];
     if (targetScope === 'organization') {
