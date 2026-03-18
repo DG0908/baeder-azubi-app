@@ -8,7 +8,16 @@ import AvatarBadge from '../ui/AvatarBadge';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
 
-const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) => {
+const ProfileView = ({
+  userStats,
+  swimSessions,
+  userBadges,
+  setCurrentView,
+  pushDeviceState,
+  enablePushNotifications,
+  syncPushSubscription,
+  disablePushNotifications
+}) => {
   const { user, setUser, handleLogout } = useAuth();
   const { darkMode, showToast, playSound } = useApp();
 
@@ -20,6 +29,7 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
   const [profileSaving, setProfileSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [pushActionLoading, setPushActionLoading] = useState(false);
 
   const toSafeInt = (value) => {
     const numeric = Number(value);
@@ -302,6 +312,60 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
     }
   };
 
+  const handleEnablePushOnDevice = async () => {
+    if (typeof enablePushNotifications !== 'function') return;
+    setPushActionLoading(true);
+    try {
+      await enablePushNotifications();
+    } finally {
+      setPushActionLoading(false);
+    }
+  };
+
+  const handleResyncPushOnDevice = async () => {
+    if (typeof syncPushSubscription !== 'function') return;
+    setPushActionLoading(true);
+    try {
+      const enabled = await syncPushSubscription(false);
+      if (enabled) {
+        showToast('Push-Abo auf diesem Gerät neu synchronisiert.', 'success');
+      } else {
+        showToast('Auf diesem Gerät ist noch kein aktives Push-Abo vorhanden.', 'warning');
+      }
+    } catch (error) {
+      console.error('Push resync failed:', error);
+      showToast('Push-Abo konnte nicht synchronisiert werden.', 'error');
+    } finally {
+      setPushActionLoading(false);
+    }
+  };
+
+  const handleDisablePushOnDevice = async () => {
+    if (typeof disablePushNotifications !== 'function') return;
+    setPushActionLoading(true);
+    try {
+      const result = await disablePushNotifications();
+      if (result?.hadSubscription) {
+        showToast('Push-Abo auf diesem Gerät entfernt.', 'success');
+      } else {
+        showToast('Auf diesem Gerät war kein aktives Push-Abo gespeichert.', 'info');
+      }
+    } catch (error) {
+      console.error('Push disable failed:', error);
+      showToast('Push-Abo konnte auf diesem Gerät nicht entfernt werden.', 'error');
+    } finally {
+      setPushActionLoading(false);
+    }
+  };
+
+  const pushPermissionLabel = pushDeviceState?.permission === 'granted'
+    ? 'Erlaubt'
+    : pushDeviceState?.permission === 'denied'
+      ? 'Blockiert'
+      : pushDeviceState?.permission === 'default'
+        ? 'Noch nicht erlaubt'
+        : 'Nicht verfügbar';
+
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl p-8 text-center">
@@ -496,6 +560,113 @@ const ProfileView = ({ userStats, swimSessions, userBadges, setCurrentView }) =>
       </div>
 
       {/* Betrieb ändern */}
+      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+          <div>
+            <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              Handy-Benachrichtigungen
+            </h3>
+            <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Aktiviere oder repariere das Push-Abo fuer dieses Geraet direkt in der App.
+            </p>
+          </div>
+          <div className={`px-3 py-2 rounded-lg text-sm font-semibold ${
+            pushDeviceState?.hasSubscription
+              ? darkMode
+                ? 'bg-emerald-900/50 text-emerald-300'
+                : 'bg-emerald-100 text-emerald-700'
+              : darkMode
+                ? 'bg-amber-900/50 text-amber-300'
+                : 'bg-amber-100 text-amber-700'
+          }`}>
+            {pushDeviceState?.hasSubscription ? 'Dieses Geraet ist gekoppelt' : 'Auf diesem Geraet ist noch kein aktives Push-Abo gespeichert'}
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4 mb-4">
+          <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Geraete-Status</p>
+            <p className={`mt-1 text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              {pushDeviceState?.checking
+                ? 'Wird geprueft...'
+                : pushDeviceState?.hasSubscription
+                  ? 'Abo vorhanden'
+                  : 'Kein Abo'}
+            </p>
+          </div>
+          <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Berechtigung</p>
+            <p className={`mt-1 text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              {pushPermissionLabel}
+            </p>
+          </div>
+          <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Push-System</p>
+            <p className={`mt-1 text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              {!pushDeviceState?.supported
+                ? 'Nicht unterstuetzt'
+                : !pushDeviceState?.configured
+                  ? 'Nicht konfiguriert'
+                  : 'Bereit'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-3">
+          <button
+            onClick={handleEnablePushOnDevice}
+            disabled={
+              pushActionLoading
+              || !pushDeviceState?.supported
+              || !pushDeviceState?.configured
+            }
+            className="px-5 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
+          >
+            {pushActionLoading ? 'Bitte warten...' : 'Auf diesem Geraet aktivieren'}
+          </button>
+          <button
+            onClick={handleResyncPushOnDevice}
+            disabled={
+              pushActionLoading
+              || !pushDeviceState?.supported
+              || !pushDeviceState?.configured
+            }
+            className={`px-5 py-3 rounded-lg font-bold transition-all ${
+              darkMode
+                ? 'bg-slate-700 hover:bg-slate-600 disabled:bg-slate-700/50 text-white'
+                : 'bg-gray-100 hover:bg-gray-200 disabled:bg-gray-100 text-gray-800 border border-gray-300'
+            }`}
+          >
+            Abo neu synchronisieren
+          </button>
+          <button
+            onClick={handleDisablePushOnDevice}
+            disabled={pushActionLoading || !pushDeviceState?.supported}
+            className="px-5 py-3 bg-rose-500 hover:bg-rose-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
+          >
+            Abo auf diesem Geraet loeschen
+          </button>
+        </div>
+
+        <div className={`mt-4 text-sm space-y-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          <p>
+            Wenn nach dem Aktivieren nichts ankommt, oeffne die App auf diesem Handy einmal neu und tippe danach auf{' '}
+            <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Abo neu synchronisieren</span>.
+          </p>
+          {pushDeviceState?.permission === 'denied' && (
+            <p className={darkMode ? 'text-amber-300' : 'text-amber-700'}>
+              Benachrichtigungen sind fuer diese Web-App aktuell blockiert. Bitte erlaube sie in den Browser- oder App-Einstellungen.
+            </p>
+          )}
+          {!pushDeviceState?.supported && (
+            <p className={darkMode ? 'text-amber-300' : 'text-amber-700'}>
+              Dieses Geraet oder dieser Browser unterstuetzt Web-Push in der aktuellen Form nicht.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Betrieb aendern */}
       <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
         <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
           Betrieb angeben

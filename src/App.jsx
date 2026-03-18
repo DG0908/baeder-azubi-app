@@ -42,7 +42,7 @@ import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineR
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
-import { buildPushBackendApiUrl, ensureUserPushSubscription, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
+import { buildPushBackendApiUrl, clearUserPushSubscription, ensureUserPushSubscription, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -1147,6 +1147,38 @@ export default function BaederApp() {
   // Toast-Benachrichtigungen (Zustand + showToast vom AppContext)
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [updatingApp, setUpdatingApp] = useState(false);
+  const [pushDeviceState, setPushDeviceState] = useState({
+    supported: false,
+    configured: false,
+    permission: 'default',
+    hasSubscription: false,
+    endpoint: '',
+    checking: false
+  });
+
+  const refreshPushDeviceState = useCallback(async () => {
+    setPushDeviceState((previous) => ({ ...previous, checking: true }));
+    try {
+      const nextState = await getCurrentPushDeviceState();
+      setPushDeviceState({ ...nextState, checking: false });
+      return nextState;
+    } catch (error) {
+      console.warn('Push device state check failed:', error);
+      const permission = typeof window !== 'undefined' && 'Notification' in window
+        ? Notification.permission
+        : 'unsupported';
+      const fallbackState = {
+        supported: false,
+        configured: isWebPushConfigured(),
+        permission,
+        hasSubscription: false,
+        endpoint: '',
+        checking: false
+      };
+      setPushDeviceState(fallbackState);
+      return fallbackState;
+    }
+  }, []);
 
   const syncPushSubscription = useCallback(async (requestPermission = false) => {
     try {
@@ -1155,12 +1187,29 @@ export default function BaederApp() {
         user,
         requestPermission
       });
+      await refreshPushDeviceState();
       return result.enabled;
     } catch (error) {
       console.warn('Push subscription sync failed:', error);
+      await refreshPushDeviceState();
       return false;
     }
-  }, [user]);
+  }, [refreshPushDeviceState, user]);
+
+  const disablePushNotifications = useCallback(async () => {
+    try {
+      const result = await clearUserPushSubscription({
+        supabase,
+        user
+      });
+      await refreshPushDeviceState();
+      return result;
+    } catch (error) {
+      console.warn('Push disable failed:', error);
+      await refreshPushDeviceState();
+      throw error;
+    }
+  }, [refreshPushDeviceState, user]);
 
   const enablePushNotifications = async () => {
     if (!isWebPushConfigured()) {
@@ -1755,6 +1804,24 @@ export default function BaederApp() {
       setChatScope(allowedScopes[0]);
     }
   }, [user?.id, user?.role, chatScope]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setPushDeviceState({
+        supported: false,
+        configured: isWebPushConfigured(),
+        permission: typeof window !== 'undefined' && 'Notification' in window
+          ? Notification.permission
+          : 'default',
+        hasSubscription: false,
+        endpoint: '',
+        checking: false
+      });
+      return;
+    }
+
+    void refreshPushDeviceState();
+  }, [refreshPushDeviceState, user?.id]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -9797,6 +9864,10 @@ export default function BaederApp() {
             swimSessions={swimSessions}
             userBadges={userBadges}
             setCurrentView={setCurrentView}
+            pushDeviceState={pushDeviceState}
+            enablePushNotifications={enablePushNotifications}
+            syncPushSubscription={syncPushSubscription}
+            disablePushNotifications={disablePushNotifications}
           />
         )}
 

@@ -50,6 +50,36 @@ export const isWebPushSupported = () => (
   && 'PushManager' in window
 );
 
+export const getCurrentPushDeviceState = async () => {
+  const supported = isWebPushSupported();
+  const configured = isWebPushConfigured();
+  const permission = typeof window !== 'undefined' && 'Notification' in window
+    ? Notification.permission
+    : 'unsupported';
+
+  if (!supported || !configured) {
+    return {
+      supported,
+      configured,
+      permission,
+      hasSubscription: false,
+      endpoint: ''
+    };
+  }
+
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+  const serialized = subscription?.toJSON?.() || {};
+
+  return {
+    supported,
+    configured,
+    permission,
+    hasSubscription: Boolean(serialized?.endpoint),
+    endpoint: String(serialized?.endpoint || '')
+  };
+};
+
 export const ensureUserPushSubscription = async ({
   supabase,
   user,
@@ -97,6 +127,39 @@ export const ensureUserPushSubscription = async ({
 
   if (error) throw error;
   return { enabled: true, subscription: serialized };
+};
+
+export const clearUserPushSubscription = async ({
+  supabase,
+  user
+}) => {
+  if (!supabase || !user?.id) return { cleared: false, reason: 'missing-user' };
+  if (!isWebPushSupported()) return { cleared: false, reason: 'unsupported' };
+
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+  const serialized = subscription?.toJSON?.() || {};
+  const endpoint = String(serialized?.endpoint || '').trim();
+
+  if (endpoint) {
+    const { error } = await supabase
+      .from('push_subscriptions')
+      .delete()
+      .eq('endpoint', endpoint)
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+  }
+
+  if (subscription) {
+    await subscription.unsubscribe();
+  }
+
+  return {
+    cleared: true,
+    removedEndpoint: endpoint,
+    hadSubscription: Boolean(endpoint)
+  };
 };
 
 export const triggerWebPushNotification = async ({
