@@ -419,6 +419,7 @@ const AdminView = ({
   const [lastQuizRepairResult, setLastQuizRepairResult] = React.useState(null);
   const [sendingTestPush, setSendingTestPush] = React.useState(false);
   const [lastTestPushResult, setLastTestPushResult] = React.useState(null);
+  const [testPushTargetScope, setTestPushTargetScope] = React.useState('self');
 
   const handleRepairQuizStats = async () => {
     if (typeof repairQuizStats !== 'function' || repairingQuizStats) return;
@@ -448,11 +449,11 @@ const AdminView = ({
 
     setSendingTestPush(true);
     try {
-      const result = await sendTestPush();
+      const result = await sendTestPush(testPushTargetScope);
       setLastTestPushResult(result);
       showToast(
         result?.scheduled
-          ? `Test-Push geplant. App jetzt fuer ${result.delaySeconds || 15}s schliessen.`
+          ? `${result?.targetScope === 'organization' ? 'Org-' : ''}Test-Push geplant. App jetzt fuer ${result.delaySeconds || 15}s schliessen.`
           : `Test-Push gesendet: ${result?.sent || 0} Endgeraete erreicht.`,
         'success',
         4500
@@ -611,20 +612,30 @@ const AdminView = ({
               Hintergrund-Push testen
             </h3>
             <p className="text-sm text-gray-600 mt-1">
-              Plant einen Test-Push in 15 Sekunden an dein aktuelles Benutzerkonto. Danach die App direkt schliessen.
+              Plant einen Test-Push in 15 Sekunden an dich selbst oder an alle Nutzer deiner Organisation. Danach die App direkt schliessen.
             </p>
           </div>
-          <button
-            onClick={handleSendTestPush}
-            disabled={sendingTestPush}
-            className={`px-4 py-2 rounded-lg font-bold text-white ${
-              sendingTestPush
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-indigo-500 hover:bg-indigo-600'
-            }`}
-          >
-            {sendingTestPush ? 'Plane Test-Push...' : 'Test-Push in 15s'}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={testPushTargetScope}
+              onChange={(event) => setTestPushTargetScope(event.target.value)}
+              className="px-3 py-2 border border-indigo-200 rounded-lg text-sm bg-indigo-50"
+            >
+              <option value="self">An mich</option>
+              <option value="organization">An meine Organisation</option>
+            </select>
+            <button
+              onClick={handleSendTestPush}
+              disabled={sendingTestPush}
+              className={`px-4 py-2 rounded-lg font-bold text-white ${
+                sendingTestPush
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-indigo-500 hover:bg-indigo-600'
+              }`}
+            >
+              {sendingTestPush ? 'Plane Test-Push...' : 'Test-Push in 15s'}
+            </button>
+          </div>
         </div>
 
         <div className="text-xs text-gray-500">
@@ -635,6 +646,8 @@ const AdminView = ({
           <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
             <div className="font-bold mb-2">Letzter Test</div>
             <div>Nutzer: {lastTestPushResult.userName || 'Unbekannt'}</div>
+            <div>Ziel: {lastTestPushResult.targetScope === 'organization' ? 'Organisation' : 'Ich selbst'}</div>
+            <div>{lastTestPushResult.targetCount || 0} Zielnutzer</div>
             <div>{lastTestPushResult.subscriptionCount || 0} aktive Push-Abos gefunden</div>
             <div>
               {lastTestPushResult.scheduled

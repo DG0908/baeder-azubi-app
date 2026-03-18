@@ -3644,7 +3644,7 @@ export default function BaederApp() {
     return responseData;
   };
 
-  const sendTestPush = async () => {
+  const sendTestPush = async (targetScope = 'self') => {
     if (!user?.id) {
       throw new Error('Keine aktive Sitzung für den Test-Push gefunden.');
     }
@@ -3666,7 +3666,13 @@ export default function BaederApp() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`
       },
-      body: JSON.stringify({ delaySeconds: 15 })
+      body: JSON.stringify({
+        delaySeconds: 15,
+        targetScope,
+        userName: user.name || '',
+        email: user.email || '',
+        organizationId: user.organizationId || null
+      })
     });
 
     const contentType = response.headers.get('content-type') || '';
