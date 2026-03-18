@@ -27,6 +27,117 @@ const getEnv = () => {
 };
 
 const getJsonBody = (input) => (input && typeof input === 'object' ? input : {});
+const DEFAULT_ICON = '/icons/icon-192x192.png';
+const MAX_TEST_DELAY_SECONDS = 120;
+
+const createAuthClient = (env, authHeader) => createClient(env.supabaseUrl, env.anonKey, {
+  global: { headers: { Authorization: authHeader } }
+});
+
+const createAdminClient = (env) => createClient(env.supabaseUrl, env.serviceRoleKey);
+
+const authenticateRequest = async (env, authHeader) => {
+  const authClient = createAuthClient(env, authHeader);
+  const { data: authData, error: authError } = await authClient.auth.getUser();
+  if (authError || !authData?.user) {
+    return { user: null, error: authError || new Error('Unauthorized request.') };
+  }
+
+  return { user: authData.user, error: null };
+};
+
+const loadSubscriptionsByUserName = async (adminClient, userName) => {
+  const { data: subscriptions, error } = await adminClient
+    .from('push_subscriptions')
+    .select('id, endpoint, p256dh, auth')
+    .eq('user_name', userName);
+
+  return {
+    subscriptions: Array.isArray(subscriptions) ? subscriptions : [],
+    error
+  };
+};
+
+const dispatchPushToSubscriptions = async ({
+  env,
+  adminClient,
+  subscriptions,
+  title,
+  message,
+  type = 'info',
+  notificationId = null,
+  targetUrl = '/',
+  icon = DEFAULT_ICON,
+  badge = DEFAULT_ICON,
+  data = {}
+}) => {
+  if (!Array.isArray(subscriptions) || subscriptions.length === 0) {
+    return { sent: 0, failed: 0, removed: 0 };
+  }
+
+  webpush.setVapidDetails(env.vapidSubject, env.vapidPublicKey, env.vapidPrivateKey);
+
+  const payload = JSON.stringify({
+    title,
+    message,
+    type,
+    notificationId,
+    icon,
+    badge,
+    url: targetUrl,
+    data,
+    timestamp: new Date().toISOString()
+  });
+
+  let sent = 0;
+  let failed = 0;
+  const staleIds = [];
+
+  for (const subscription of subscriptions) {
+    try {
+      await webpush.sendNotification(
+        {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: subscription.p256dh,
+            auth: subscription.auth
+          }
+        },
+        payload
+      );
+      sent += 1;
+    } catch (error) {
+      const statusCode = Number(error?.statusCode || error?.status || 0);
+      if (statusCode === 404 || statusCode === 410) {
+        staleIds.push(subscription.id);
+      } else {
+        failed += 1;
+      }
+
+      console.error('Push send error:', {
+        subscriptionId: subscription.id,
+        statusCode,
+        message: String(error)
+      });
+    }
+  }
+
+  let removed = 0;
+  if (staleIds.length > 0) {
+    const { error: deleteError } = await adminClient
+      .from('push_subscriptions')
+      .delete()
+      .in('id', staleIds);
+
+    if (deleteError) {
+      console.error('Failed deleting stale subscriptions:', deleteError);
+    } else {
+      removed = staleIds.length;
+    }
+  }
+
+  return { sent, failed, removed };
+};
 
 router.get('/health', (_req, res) => {
   const env = getEnv();
@@ -57,8 +168,8 @@ router.post('/send', async (req, res) => {
   const type = String(body.type || 'info').trim() || 'info';
   const notificationId = body.notificationId ?? null;
   const targetUrl = String(body.url || '/').trim() || '/';
-  const icon = String(body.icon || '/icons/icon-192x192.png').trim() || '/icons/icon-192x192.png';
-  const badge = String(body.badge || '/icons/icon-192x192.png').trim() || '/icons/icon-192x192.png';
+  const icon = String(body.icon || DEFAULT_ICON).trim() || DEFAULT_ICON;
+  const badge = String(body.badge || DEFAULT_ICON).trim() || DEFAULT_ICON;
   const data = body.data && typeof body.data === 'object' ? body.data : {};
 
   if (!userName || !title || !message) {
@@ -66,94 +177,139 @@ router.post('/send', async (req, res) => {
   }
 
   try {
-    const authClient = createClient(env.supabaseUrl, env.anonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-    const { data: authData, error: authError } = await authClient.auth.getUser();
-    if (authError || !authData?.user) {
+    const { user, error: authError } = await authenticateRequest(env, authHeader);
+    if (authError || !user) {
       return res.status(401).json({ error: 'Unauthorized request.' });
     }
 
-    const adminClient = createClient(env.supabaseUrl, env.serviceRoleKey);
-    const { data: subscriptions, error: subscriptionsError } = await adminClient
-      .from('push_subscriptions')
-      .select('id, endpoint, p256dh, auth')
-      .eq('user_name', userName);
+    const adminClient = createAdminClient(env);
+    const { subscriptions, error: subscriptionsError } = await loadSubscriptionsByUserName(adminClient, userName);
 
     if (subscriptionsError) {
       console.error('Failed loading push subscriptions:', subscriptionsError);
       return res.status(500).json({ error: 'Failed loading push subscriptions.' });
     }
 
-    if (!subscriptions?.length) {
+    if (!subscriptions.length) {
       return res.json({ ok: true, sent: 0, failed: 0, removed: 0 });
     }
 
-    webpush.setVapidDetails(env.vapidSubject, env.vapidPublicKey, env.vapidPrivateKey);
-
-    const payload = JSON.stringify({
+    const { sent, failed, removed } = await dispatchPushToSubscriptions({
+      env,
+      adminClient,
+      subscriptions,
       title,
       message,
       type,
       notificationId,
+      targetUrl,
       icon,
       badge,
-      url: targetUrl,
-      data,
-      timestamp: new Date().toISOString()
+      data
     });
-
-    let sent = 0;
-    let failed = 0;
-    const staleIds = [];
-
-    for (const subscription of subscriptions) {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: subscription.endpoint,
-            keys: {
-              p256dh: subscription.p256dh,
-              auth: subscription.auth
-            }
-          },
-          payload
-        );
-        sent += 1;
-      } catch (error) {
-        const statusCode = Number(error?.statusCode || error?.status || 0);
-        if (statusCode === 404 || statusCode === 410) {
-          staleIds.push(subscription.id);
-        } else {
-          failed += 1;
-        }
-
-        console.error('Push send error:', {
-          subscriptionId: subscription.id,
-          statusCode,
-          message: String(error)
-        });
-      }
-    }
-
-    let removed = 0;
-    if (staleIds.length > 0) {
-      const { error: deleteError } = await adminClient
-        .from('push_subscriptions')
-        .delete()
-        .in('id', staleIds);
-
-      if (deleteError) {
-        console.error('Failed deleting stale subscriptions:', deleteError);
-      } else {
-        removed = staleIds.length;
-      }
-    }
 
     return res.json({ ok: true, sent, failed, removed });
   } catch (error) {
     console.error('Push route error:', error);
     return res.status(500).json({ error: 'Push dispatch failed.' });
+  }
+});
+
+router.post('/test', async (req, res) => {
+  const env = getEnv();
+  if (env.missing.length > 0) {
+    return res.status(500).json({
+      error: 'Missing required environment variables.',
+      missing: env.missing
+    });
+  }
+
+  const authHeader = req.get('authorization');
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Missing Authorization header.' });
+  }
+
+  const body = getJsonBody(req.body);
+  const requestedDelay = Number(body.delaySeconds);
+  const delaySeconds = Number.isFinite(requestedDelay)
+    ? Math.max(0, Math.min(MAX_TEST_DELAY_SECONDS, Math.round(requestedDelay)))
+    : 15;
+
+  try {
+    const { user, error: authError } = await authenticateRequest(env, authHeader);
+    if (authError || !user?.id) {
+      return res.status(401).json({ error: 'Unauthorized request.' });
+    }
+
+    const adminClient = createAdminClient(env);
+    const { data: profile, error: profileError } = await adminClient
+      .from('profiles')
+      .select('id, name, approved')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile?.name) {
+      console.error('Push test profile lookup failed:', profileError);
+      return res.status(404).json({ error: 'Kein passendes Profil fuer den Test-Push gefunden.' });
+    }
+
+    const userName = String(profile.name || '').trim();
+    const { subscriptions, error: subscriptionsError } = await loadSubscriptionsByUserName(adminClient, userName);
+    if (subscriptionsError) {
+      console.error('Push test subscription lookup failed:', subscriptionsError);
+      return res.status(500).json({ error: 'Push-Abos konnten nicht geladen werden.' });
+    }
+
+    if (!subscriptions.length) {
+      return res.status(409).json({
+        error: 'Kein aktives Push-Abo fuer diesen Nutzer gefunden. Bitte App einmal offen lassen und Benachrichtigungen erlauben.'
+      });
+    }
+
+    const sendPayload = async () => dispatchPushToSubscriptions({
+      env,
+      adminClient: createAdminClient(env),
+      subscriptions,
+      title: 'Test-Push',
+      message: 'Wenn du diese Nachricht bei geschlossener App siehst, funktioniert Hintergrund-Push.',
+      type: 'info',
+      targetUrl: '/',
+      icon: DEFAULT_ICON,
+      badge: DEFAULT_ICON,
+      data: {
+        kind: 'test-push',
+        userId: user.id
+      }
+    });
+
+    if (delaySeconds > 0) {
+      setTimeout(() => {
+        void sendPayload().catch((error) => {
+          console.error('Delayed test push failed:', error);
+        });
+      }, delaySeconds * 1000);
+
+      return res.json({
+        ok: true,
+        scheduled: true,
+        delaySeconds,
+        subscriptionCount: subscriptions.length,
+        userName
+      });
+    }
+
+    const result = await sendPayload();
+    return res.json({
+      ok: true,
+      scheduled: false,
+      delaySeconds: 0,
+      subscriptionCount: subscriptions.length,
+      userName,
+      ...result
+    });
+  } catch (error) {
+    console.error('Push test route error:', error);
+    return res.status(500).json({ error: 'Test-Push fehlgeschlagen.' });
   }
 });
 
