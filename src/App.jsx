@@ -3649,6 +3649,16 @@ export default function BaederApp() {
       throw new Error('Keine aktive Sitzung für den Test-Push gefunden.');
     }
 
+    const requestedTargetUserNames = targetScope === 'organization'
+      ? [...new Set(
+          (allUsers || [])
+            .filter((account) => account?.approved !== false)
+            .filter((account) => (account?.organization_id || account?.organizationId || null) === (user.organizationId || null))
+            .map((account) => String(account?.name || '').trim())
+            .filter(Boolean)
+        )]
+      : [String(user.name || '').trim()].filter(Boolean);
+
     const testUrl = buildPushBackendApiUrl('/api/push/test');
     if (!testUrl) {
       throw new Error('Push-/Backend-URL ist nicht konfiguriert.');
@@ -3671,7 +3681,8 @@ export default function BaederApp() {
         targetScope,
         userName: user.name || '',
         email: user.email || '',
-        organizationId: user.organizationId || null
+        organizationId: user.organizationId || null,
+        targetUserNames: requestedTargetUserNames
       })
     });
 
