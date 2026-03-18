@@ -42,7 +42,7 @@ import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineR
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
-import { buildPushBackendApiUrl, clearUserPushSubscription, ensureUserPushSubscription, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
+import { clearUserPushSubscription, ensureUserPushSubscription, fetchPushBackendWithAuth, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -3675,37 +3675,12 @@ export default function BaederApp() {
       throw new Error('Keine Berechtigung für den Statistik-Repair.');
     }
 
-    const repairUrl = buildPushBackendApiUrl('/api/admin/repair-quiz-stats');
-    if (!repairUrl) {
-      throw new Error('Push-/Backend-URL ist nicht konfiguriert.');
-    }
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const accessToken = sessionData?.session?.access_token;
-    if (!accessToken) {
-      throw new Error('Keine aktive Sitzung für den Admin-Repair gefunden.');
-    }
-
-    const response = await fetch(repairUrl, {
+    const responseData = await fetchPushBackendWithAuth({
+      supabase,
+      pathname: '/api/admin/repair-quiz-stats',
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`
-      },
-      body: JSON.stringify({})
+      body: {}
     });
-
-    const contentType = response.headers.get('content-type') || '';
-    const responseData = contentType.includes('application/json')
-      ? await response.json()
-      : await response.text();
-
-    if (!response.ok) {
-      const messageText = typeof responseData === 'string'
-        ? responseData
-        : responseData?.error || `Admin-Repair fehlgeschlagen (${response.status}).`;
-      throw new Error(messageText);
-    }
 
     await loadData();
     return responseData;
@@ -3726,44 +3701,19 @@ export default function BaederApp() {
         )]
       : [String(user.name || '').trim()].filter(Boolean);
 
-    const testUrl = buildPushBackendApiUrl('/api/push/test');
-    if (!testUrl) {
-      throw new Error('Push-/Backend-URL ist nicht konfiguriert.');
-    }
-
-    const { data: sessionData } = await supabase.auth.getSession();
-    const accessToken = sessionData?.session?.access_token;
-    if (!accessToken) {
-      throw new Error('Keine aktive Sitzung für den Test-Push gefunden.');
-    }
-
-    const response = await fetch(testUrl, {
+    const responseData = await fetchPushBackendWithAuth({
+      supabase,
+      pathname: '/api/push/test',
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`
-      },
-      body: JSON.stringify({
+      body: {
         delaySeconds: 15,
         targetScope,
         userName: user.name || '',
         email: user.email || '',
         organizationId: user.organizationId || null,
         targetUserNames: requestedTargetUserNames
-      })
+      }
     });
-
-    const contentType = response.headers.get('content-type') || '';
-    const responseData = contentType.includes('application/json')
-      ? await response.json()
-      : await response.text();
-
-    if (!response.ok) {
-      const messageText = typeof responseData === 'string'
-        ? responseData
-        : responseData?.error || `Test-Push fehlgeschlagen (${response.status}).`;
-      throw new Error(messageText);
-    }
 
     return responseData;
   };
