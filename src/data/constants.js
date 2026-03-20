@@ -73,15 +73,6 @@ export const PERMISSIONS = {
     canViewAllStats: true,
     canDeleteData: false
   },
-  rettungsschwimmer_azubi: {
-    label: 'Rettungsschwimmer-Azubi',
-    canManageUsers: false,
-    canApproveQuestions: false,
-    canUploadMaterials: false,
-    canPostNews: false,
-    canViewAllStats: false,
-    canDeleteData: false
-  },
   azubi: {
     label: 'Azubi',
     canManageUsers: false,
