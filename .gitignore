@@ -45,4 +45,6 @@ public/workbox-*.js
 Admin
 immer
 mobile-watercycle-test.png
+backups/
+ops/backups/
 supabase/.temp/

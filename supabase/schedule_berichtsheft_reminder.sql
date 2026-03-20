@@ -4,6 +4,9 @@
 -- Anleitung:
 -- 1) Platzhalter unten ersetzen:
 --    - REPLACE_WITH_BERICHTSHEFT_REMINDER_SECRET
+-- 2) Dieser Legacy-Pfad ist nicht mehr der fuehrende Produktivweg.
+--    Falls er voruebergehend weiter genutzt wird, muss die Function JWT-pruefend
+--    betrieben und der Aufruf entsprechend autorisiert werden.
 -- 2) Im Supabase SQL Editor ausfuehren.
 --
 -- Warum stündlich?
