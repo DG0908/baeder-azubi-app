@@ -2,9 +2,6 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const adminRouter = require('./routes/admin');
-const pushRouter = require('./routes/push');
-
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
 
@@ -60,8 +57,16 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: 'baeder-azubi-backend' });
 });
 
-app.use('/api/admin', adminRouter);
-app.use('/api/push', pushRouter);
+app.use('/api/admin', (_req, res) => {
+  res.status(410).json({
+    error: 'Legacy /api/admin has been decommissioned. Use the NestJS API instead.'
+  });
+});
+app.use('/api/push', (_req, res) => {
+  res.status(410).json({
+    error: 'Legacy /api/push has been decommissioned. Use the NestJS /api/notifications push endpoints instead.'
+  });
+});
 
 app.use((err, _req, res, _next) => {
   if (err?.message === 'Origin not allowed by CORS') {

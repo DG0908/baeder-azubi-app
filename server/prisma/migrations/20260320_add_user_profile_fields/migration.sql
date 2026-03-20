@@ -1,0 +1,4 @@
+ALTER TABLE "User"
+ADD COLUMN "avatar" TEXT,
+ADD COLUMN "company" TEXT,
+ADD COLUMN "birthDate" TIMESTAMP(3);
