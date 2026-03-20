@@ -25,7 +25,10 @@ const CHAT_SCOPE_META = {
 
 const STAFF_ROLES = new Set(['trainer', 'ausbilder', 'admin']);
 
-const getRoleKey = (value) => String(value || '').trim().toLowerCase();
+const getRoleKey = (value) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  return normalized === 'rettungsschwimmer_azubi' ? 'azubi' : normalized;
+};
 
 const formatChatTime = (timeInput) => {
   const date = new Date(timeInput);

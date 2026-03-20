@@ -1,8 +1,33 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
-import { supabase } from './supabase';
+import {
+  supabase,
+  LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED,
+  LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE
+} from './supabase';
 import { useAuth } from './context/AuthContext';
 import { useApp } from './context/AppContext';
+import {
+  secureAppConfigApi,
+  isSecureBackendApiEnabled,
+  mapBackendRoleToFrontendRole,
+  mapBackendUserToFrontendUser,
+  secureContentApi,
+  secureExamSimulatorApi,
+  secureExamGradesApi,
+  mapFrontendRoleToBackendRole,
+  secureChatApi,
+  secureDuelsApi,
+  secureFlashcardsApi,
+  secureNotificationsApi,
+  secureQuestionWorkflowsApi,
+  secureReportBooksApi,
+  secureSchoolAttendanceApi,
+  secureSwimSessionsApi,
+  secureSwimTrainingPlansApi,
+  secureUserStatsApi,
+  secureUsersApi
+} from './lib/secureApi';
 import LoginScreen from './components/auth/LoginScreen';
 import ChatView from './components/views/ChatView';
 import ForumView from './components/views/ForumView';
@@ -42,7 +67,7 @@ import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineR
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
-import { clearUserPushSubscription, ensureUserPushSubscription, fetchPushBackendWithAuth, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
+import { clearUserPushSubscription, ensureUserPushSubscription, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -80,7 +105,7 @@ export default function BaederApp() {
     if (typeof value !== 'string') return value;
     let repaired = value;
     for (let i = 0; i < 3; i += 1) {
-      if (!/[ÃÂâð]/.test(repaired)) break;
+      if (!/[ÃƒÃ‚Ã¢Ã°]/.test(repaired)) break;
       try {
         const next = decodeURIComponent(escape(repaired));
         if (!next || next === repaired) break;
@@ -176,6 +201,190 @@ export default function BaederApp() {
 
   const isBerichtsheftDraft = (entry) => getBerichtsheftStatus(entry) === 'draft';
 
+  const normalizeSecureBerichtsheftEntry = (entryInput = {}) => {
+    const entry = (entryInput && typeof entryInput === 'object') ? entryInput : {};
+    return {
+      id: String(entry.id || ''),
+      user_id: entry.userId || null,
+      user_name: String(entry.userName || '').trim() || 'Unbekannt',
+      assigned_trainer_id: entry.assignedTrainerId || null,
+      assigned_trainer_name: String(entry.assignedTrainerName || '').trim() || null,
+      assigned_by_id: entry.assignedById || null,
+      week_start: String(entry.weekStart || '').trim(),
+      week_end: String(entry.weekEnd || '').trim(),
+      ausbildungsjahr: Number(entry.trainingYear || 1),
+      nachweis_nr: Number(entry.evidenceNumber || 1),
+      entries: normalizeBerichtsheftEntries(entry.entries),
+      bemerkung_azubi: String(entry.apprenticeNote || ''),
+      bemerkung_ausbilder: String(entry.trainerNote || ''),
+      signatur_azubi: String(entry.apprenticeSignature || ''),
+      signatur_ausbilder: String(entry.trainerSignature || ''),
+      datum_azubi: String(entry.apprenticeSignatureDate || ''),
+      datum_ausbilder: String(entry.trainerSignatureDate || ''),
+      total_hours: Number(entry.totalHours || 0),
+      status: String(entry.status || 'SUBMITTED').toLowerCase(),
+      submitted_at: entry.submittedAt || null,
+      assigned_at: entry.assignedAt || null,
+      created_at: entry.createdAt || null,
+      updated_at: entry.updatedAt || null
+    };
+  };
+
+  const normalizeSecureSwimSession = (sessionInput = {}) => {
+    const session = (sessionInput && typeof sessionInput === 'object') ? sessionInput : {};
+    const normalizedRole = getRoleKey(session.user_role || session.userRole || 'azubi') || 'azubi';
+    return {
+      id: String(session.id || ''),
+      user_id: session.user_id || session.userId || null,
+      user_name: String(session.user_name || session.userName || '').trim() || 'Unbekannt',
+      user_role: normalizedRole,
+      date: String(session.date || '').trim(),
+      distance: toSafeInt(session.distance ?? session.distanceMeters),
+      time_minutes: toSafeInt(session.time_minutes ?? session.timeMinutes),
+      style: String(session.style || session.styleId || '').trim(),
+      notes: String(session.notes || ''),
+      challenge_id: session.challenge_id || session.challengeId || null,
+      status: String(session.status || (session.confirmed ? 'confirmed' : 'pending')).trim().toLowerCase(),
+      confirmed: Boolean(session.confirmed),
+      confirmed_by: session.confirmed_by || session.confirmedBy || null,
+      confirmed_at: session.confirmed_at || session.confirmedAt || null,
+      reviewed_by: session.reviewed_by || session.reviewedBy || null,
+      reviewed_at: session.reviewed_at || session.reviewedAt || null,
+      created_at: session.created_at || session.createdAt || null,
+      updated_at: session.updated_at || session.updatedAt || null
+    };
+  };
+
+  const normalizeSecureFlashcard = (flashcardInput = {}) => {
+    const flashcard = (flashcardInput && typeof flashcardInput === 'object') ? flashcardInput : {};
+    return {
+      id: String(flashcard.id || ''),
+      category: String(flashcard.category || '').trim(),
+      front: String(flashcard.question || flashcard.front || '').trim(),
+      back: String(flashcard.answer || flashcard.back || '').trim(),
+      approved: Boolean(flashcard.approved),
+      userId: flashcard.user_id || flashcard.userId || null,
+      createdBy: String(flashcard.created_by || flashcard.createdBy || '').trim() || 'Unbekannt',
+      time: flashcard.created_at
+        ? new Date(flashcard.created_at).getTime()
+        : (toSafeInt(flashcard.time) || Date.now())
+    };
+  };
+
+  const normalizeSecureSubmittedQuestion = (questionInput = {}) => {
+    const question = (questionInput && typeof questionInput === 'object') ? questionInput : {};
+    return {
+      id: String(question.id || ''),
+      text: String(question.question || question.text || '').trim(),
+      category: String(question.category || '').trim(),
+      answers: Array.isArray(question.answers) ? question.answers.map((entry) => String(entry || '')) : [],
+      correct: toSafeInt(question.correct),
+      submittedBy: String(question.created_by || question.submittedBy || '').trim() || 'Unbekannt',
+      submittedById: question.created_by_id || question.submittedById || null,
+      approved: Boolean(question.approved),
+      approvedAt: question.approved_at || question.approvedAt || null,
+      approvedBy: String(question.approved_by || question.approvedBy || '').trim() || null,
+      time: question.created_at
+        ? new Date(question.created_at).getTime()
+        : (toSafeInt(question.time) || Date.now())
+    };
+  };
+
+  const normalizeSecureQuestionReport = (reportInput = {}) => {
+    const report = (reportInput && typeof reportInput === 'object') ? reportInput : {};
+    return {
+      id: String(report.id || ''),
+      questionKey: String(report.question_key || report.questionKey || '').trim(),
+      questionText: String(report.question_text || report.questionText || '').trim(),
+      category: String(report.category || '').trim() || 'unknown',
+      source: String(report.source || '').trim() || 'unknown',
+      note: String(report.note || '').trim(),
+      answers: Array.isArray(report.answers) ? report.answers.map((entry) => String(entry || '')) : [],
+      reportedBy: String(report.reported_by || report.reportedBy || '').trim() || 'Unbekannt',
+      reportedById: report.reported_by_id || report.reportedById || null,
+      status: String(report.status || 'open').trim().toLowerCase() === 'resolved' ? 'resolved' : 'open',
+      resolvedAt: report.resolved_at || report.resolvedAt || null,
+      resolvedBy: String(report.resolved_by || report.resolvedBy || '').trim() || null,
+      createdAt: String(report.created_at || report.createdAt || new Date().toISOString())
+    };
+  };
+
+  const normalizeSecureMaterial = (materialInput = {}) => {
+    const material = (materialInput && typeof materialInput === 'object') ? materialInput : {};
+    return {
+      id: String(material.id || ''),
+      title: String(material.title || '').trim(),
+      content: String(material.content || '').trim(),
+      category: String(material.category || '').trim() || 'org',
+      type: String(material.type || 'text').trim() || 'text',
+      url: material.url || null,
+      createdBy: String(material.created_by || material.createdBy || '').trim() || 'Unbekannt',
+      time: material.created_at
+        ? new Date(material.created_at).getTime()
+        : (toSafeInt(material.time) || Date.now())
+    };
+  };
+
+  const normalizeResourceCategory = (value) => {
+    const normalized = String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[ä]/g, 'ae')
+      .replace(/[ö]/g, 'oe')
+      .replace(/[ü]/g, 'ue')
+      .replace(/[ß]/g, 'ss');
+
+    if (normalized.includes('youtube')) return 'youtube';
+    if (normalized.includes('website')) return 'website';
+    if (normalized.includes('document')) return 'document';
+    if (normalized.includes('tool')) return 'tool';
+    if (normalized.includes('beh')) return 'behoerde';
+    return 'website';
+  };
+
+  const normalizeSecureResource = (resourceInput = {}) => {
+    const resource = (resourceInput && typeof resourceInput === 'object') ? resourceInput : {};
+    return {
+      id: String(resource.id || ''),
+      title: String(resource.title || '').trim(),
+      description: String(resource.description || '').trim(),
+      url: String(resource.url || '').trim(),
+      type: normalizeResourceCategory(resource.category || resource.type),
+      addedBy: String(resource.created_by || resource.createdBy || resource.addedBy || '').trim() || 'Unbekannt',
+      time: resource.created_at
+        ? new Date(resource.created_at).getTime()
+        : (toSafeInt(resource.time) || Date.now())
+    };
+  };
+
+  const normalizeSecureNewsItem = (newsInput = {}) => {
+    const newsItem = (newsInput && typeof newsInput === 'object') ? newsInput : {};
+    return {
+      id: String(newsItem.id || ''),
+      title: String(newsItem.title || '').trim(),
+      content: String(newsItem.content || '').trim(),
+      author: String(newsItem.author || '').trim() || 'Unbekannt',
+      time: newsItem.created_at
+        ? new Date(newsItem.created_at).getTime()
+        : (toSafeInt(newsItem.time) || Date.now())
+    };
+  };
+
+  const normalizeSecureScheduledExam = (examInput = {}) => {
+    const exam = (examInput && typeof examInput === 'object') ? examInput : {};
+    return {
+      id: String(exam.id || ''),
+      title: String(exam.title || '').trim(),
+      description: String(exam.description || '').trim(),
+      date: exam.exam_date || exam.date || null,
+      location: exam.location || null,
+      createdBy: String(exam.created_by || exam.createdBy || '').trim() || 'Unbekannt',
+      time: exam.created_at
+        ? new Date(exam.created_at).getTime()
+        : (toSafeInt(exam.time) || Date.now())
+    };
+  };
+
   const toTimestampMs = (value) => {
     const timestamp = Date.parse(String(value || ''));
     return Number.isFinite(timestamp) ? timestamp : 0;
@@ -220,23 +429,23 @@ export default function BaederApp() {
   const [questionInCategory, setQuestionInCategory] = useState(0); // 0-4 (5 Fragen pro Kategorie)
   const [quizCategory, setQuizCategory] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [currentCategoryQuestions, setCurrentCategoryQuestions] = useState([]); // 5 Fragen für aktuelle Kategorie
+  const [currentCategoryQuestions, setCurrentCategoryQuestions] = useState([]); // 5 Fragen fÃ¼r aktuelle Kategorie
   const [answered, setAnswered] = useState(false);
   const [playerTurn, setPlayerTurn] = useState(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
-  const [selectedAnswers, setSelectedAnswers] = useState([]); // Für Multi-Select Fragen
-  const [lastSelectedAnswer, setLastSelectedAnswer] = useState(null); // Für Single-Choice Feedback
+  const [selectedAnswers, setSelectedAnswers] = useState([]); // FÃ¼r Multi-Select Fragen
+  const [lastSelectedAnswer, setLastSelectedAnswer] = useState(null); // FÃ¼r Single-Choice Feedback
   const [keywordAnswerText, setKeywordAnswerText] = useState('');
   const [keywordAnswerEvaluation, setKeywordAnswerEvaluation] = useState(null);
   const [quizMCKeywordMode, setQuizMCKeywordMode] = useState(false);
   
   const DIFFICULTY_SETTINGS = {
-    anfaenger: { time: 45, label: 'Anfänger', icon: '🟢', color: 'bg-green-500' },
-    profi: { time: 30, label: 'Profi', icon: '🟡', color: 'bg-yellow-500' },
-    experte: { time: 15, label: 'Experte', icon: '🔴', color: 'bg-red-500' },
-    extra: { time: 75, label: 'Extra schwer', icon: '🧠', color: 'bg-indigo-700' }
+    anfaenger: { time: 45, label: 'AnfÃ¤nger', icon: 'ðŸŸ¢', color: 'bg-green-500' },
+    profi: { time: 30, label: 'Profi', icon: 'ðŸŸ¡', color: 'bg-yellow-500' },
+    experte: { time: 15, label: 'Experte', icon: 'ðŸ”´', color: 'bg-red-500' },
+    extra: { time: 75, label: 'Extra schwer', icon: 'ðŸ§ ', color: 'bg-indigo-700' }
   };
   const DEFAULT_CHALLENGE_TIMEOUT_MINUTES = 48 * 60;
   const CHALLENGE_TIMEOUT_BOUNDS = { min: 15, max: 7 * 24 * 60 };
@@ -274,16 +483,157 @@ export default function BaederApp() {
       description: '1:1 zwischen Azubi und Ausbilder'
     }
   };
-  const getRoleKey = (value) => String(value || '').trim().toLowerCase();
+  const FRONTEND_CHAT_SCOPE_TO_BACKEND = {
+    azubi_room: 'AZUBI_ROOM',
+    staff_room: 'STAFF_ROOM',
+    direct_staff: 'DIRECT_STAFF'
+  };
+  const getRoleKey = (value) => {
+    const normalized = String(value || '').trim().toLowerCase();
+    return normalized === 'rettungsschwimmer_azubi' ? 'azubi' : normalized;
+  };
   const isStaffRole = (value) => STAFF_CHAT_ROLES.has(getRoleKey(value));
   const getAccountOrganizationId = (account) => account?.organizationId || account?.organization_id || null;
   const getChatScopeKey = (value, fallback = 'staff_room') => {
     const normalized = String(value || '').trim().toLowerCase();
     return CHAT_SCOPE_META[normalized] ? normalized : fallback;
   };
+  const mapFrontendChatScopeToBackendScope = (value) => (
+    FRONTEND_CHAT_SCOPE_TO_BACKEND[getChatScopeKey(value)] || 'STAFF_ROOM'
+  );
   const isFinishedGameStatus = (status) => {
     const normalized = String(status || '').trim().toLowerCase();
     return normalized === 'finished' || normalized === 'completed' || normalized === 'done';
+  };
+  const SECURE_DUEL_STATUS_TO_LEGACY_STATUS = {
+    PENDING: 'waiting',
+    ACTIVE: 'active',
+    COMPLETED: 'finished',
+    EXPIRED: 'finished'
+  };
+
+  const mapSecureLeaderboardEntry = (entry) => ({
+    userId: entry?.userId || null,
+    name: String(entry?.displayName || 'Unbekannt'),
+    wins: toSafeInt(entry?.wins),
+    losses: toSafeInt(entry?.losses),
+    draws: toSafeInt(entry?.draws),
+    points: (toSafeInt(entry?.wins) * 3) + toSafeInt(entry?.draws),
+    role: mapBackendRoleToFrontendRole(entry?.role)
+  });
+
+  const mergeSecureLeaderboardIntoUserStats = (statsInput, leaderboardInput, actor) => {
+    const safeStats = ensureUserStatsStructure(statsInput || createEmptyUserStats());
+    const actorEntry = (Array.isArray(leaderboardInput) ? leaderboardInput : []).find((entry) => (
+      (entry?.userId && actor?.id && entry.userId === actor.id)
+      || namesMatch(entry?.name, actor?.name)
+    ));
+
+    if (!actorEntry) {
+      return safeStats;
+    }
+
+    return {
+      ...safeStats,
+      wins: toSafeInt(actorEntry.wins),
+      losses: toSafeInt(actorEntry.losses),
+      draws: toSafeInt(actorEntry.draws)
+    };
+  };
+
+  const mapSecureDuelToLegacyGame = (duel, actor) => {
+    const challengerName = String(duel?.challenger?.displayName || duel?.player1 || 'Unbekannt');
+    const opponentName = String(duel?.opponent?.displayName || duel?.player2 || 'Unbekannt');
+    const actorName = String(actor?.name || '').trim();
+    const actorId = String(actor?.id || '').trim();
+    const actorIsChallenger = actorId
+      ? String(duel?.challenger?.id || duel?.player1Id || '') === actorId
+      : namesMatch(actorName, challengerName);
+    const hasRelativeScore = duel?.myScore !== undefined || duel?.opponentScore !== undefined;
+    const myScore = toSafeInt(duel?.myScore);
+    const opponentScore = toSafeInt(duel?.opponentScore);
+    const challengerScore = hasRelativeScore
+      ? (actorIsChallenger ? myScore : opponentScore)
+      : toSafeInt(duel?.player1Score);
+    const opponentUserScore = hasRelativeScore
+      ? (actorIsChallenger ? opponentScore : myScore)
+      : toSafeInt(duel?.player2Score);
+    const questionCount = Math.max(1, toSafeInt(duel?.questionCount || duel?.secureQuestionCount) || 10);
+    const myAnsweredCount = Math.max(0, toSafeInt(duel?.myAnsweredCount || duel?.secureMyAnsweredCount));
+    const rawStatus = String(duel?.status || duel?.secureDuelStatus || '').trim().toUpperCase();
+    const mappedStatus = SECURE_DUEL_STATUS_TO_LEGACY_STATUS[rawStatus] || 'waiting';
+    const actorCanAnswer = duel?.secureCanAnswer !== undefined
+      ? Boolean(duel.secureCanAnswer)
+      : (rawStatus === 'ACTIVE' && myAnsweredCount < questionCount);
+    const currentTurn = actorCanAnswer
+      ? actorName
+      : (namesMatch(actorName, challengerName) ? opponentName : challengerName);
+
+    return {
+      id: duel?.id || '',
+      player1: challengerName,
+      player2: opponentName,
+      player1Id: duel?.challenger?.id || duel?.player1Id || null,
+      player2Id: duel?.opponent?.id || duel?.player2Id || null,
+      player1Score: challengerScore,
+      player2Score: opponentUserScore,
+      currentTurn,
+      categoryRound: Math.min(3, Math.floor(myAnsweredCount / 5)),
+      round: Math.min(3, Math.floor(myAnsweredCount / 5)),
+      status: mappedStatus,
+      difficulty: String(duel?.difficulty || 'profi'),
+      categoryRounds: [],
+      winner: duel?.winnerUser?.displayName || duel?.winner || null,
+      questionHistory: [],
+      updatedAt: duel?.updatedAt || duel?.startedAt || duel?.completedAt || duel?.expiresAt || duel?.createdAt || new Date().toISOString(),
+      createdAt: duel?.createdAt || duel?.updatedAt || duel?.startedAt || new Date().toISOString(),
+      challengeTimeoutMinutes: DEFAULT_CHALLENGE_TIMEOUT_MINUTES,
+      challengeExpiresAt: duel?.expiresAt || duel?.challengeExpiresAt || null,
+      secureDuel: true,
+      secureDuelStatus: rawStatus,
+      secureMyAnsweredCount: myAnsweredCount,
+      secureQuestionCount: questionCount,
+      secureCanAnswer: actorCanAnswer,
+      challenger: duel?.challenger || null,
+      opponent: duel?.opponent || null,
+      winnerUser: duel?.winnerUser || null,
+      questions: Array.isArray(duel?.questions) ? duel.questions : []
+    };
+  };
+
+  const buildSecureDuelSessionState = (duelPayload, actor, preferredQuestionId = null) => {
+    const questions = Array.isArray(duelPayload?.questions) ? duelPayload.questions : [];
+    const openQuestion = questions.find((assignment) => !assignment?.myAnswer) || null;
+    const selectedQuestion = preferredQuestionId
+      ? (questions.find((assignment) => assignment?.id === preferredQuestionId) || openQuestion)
+      : openQuestion;
+    const selectedQuestionIndex = selectedQuestion
+      ? questions.findIndex((assignment) => assignment?.id === selectedQuestion.id)
+      : -1;
+
+    return {
+      game: {
+        ...mapSecureDuelToLegacyGame(duelPayload, actor),
+        questions
+      },
+      openQuestion,
+      selectedQuestion,
+      selectedQuestionIndex,
+      selectedQuestionUi: selectedQuestion
+        ? {
+            id: selectedQuestion.id,
+            q: String(selectedQuestion?.question?.prompt || ''),
+            a: Array.isArray(selectedQuestion?.question?.options)
+              ? selectedQuestion.question.options.map((option) => String(option))
+              : [],
+            category: selectedQuestion?.question?.category || 'org',
+            explanation: selectedQuestion?.question?.explanation || null,
+            secureDuelQuestionId: selectedQuestion.id,
+            myAnswer: selectedQuestion?.myAnswer || null,
+            isSecureDuelQuestion: true
+          }
+        : null
+    };
   };
 
   const XP_REWARDS = {
@@ -307,28 +657,28 @@ export default function BaederApp() {
   const FLOCCULANT_PRODUCTS = [
     {
       id: 'pac_liquid_standard',
-      label: 'PAC flüssig (Aluminiumbasis)',
+      label: 'PAC flÃ¼ssig (Aluminiumbasis)',
       base: 'aluminum',
       continuousDoseMlPerM3: 0.12,
       shockDoseMlPerM3: 0.22
     },
     {
       id: 'aluminum_sulfate_solution',
-      label: 'Aluminiumsulfat-Lösung',
+      label: 'Aluminiumsulfat-LÃ¶sung',
       base: 'aluminum',
       continuousDoseMlPerM3: 0.15,
       shockDoseMlPerM3: 0.28
     },
     {
       id: 'ferric_chloride_solution',
-      label: 'Eisen-III-chlorid-Lösung',
+      label: 'Eisen-III-chlorid-LÃ¶sung',
       base: 'iron',
       continuousDoseMlPerM3: 0.09,
       shockDoseMlPerM3: 0.18
     },
     {
       id: 'ferric_sulfate_solution',
-      label: 'Eisen-III-sulfat-Lösung',
+      label: 'Eisen-III-sulfat-LÃ¶sung',
       base: 'iron',
       continuousDoseMlPerM3: 0.11,
       shockDoseMlPerM3: 0.2
@@ -357,7 +707,7 @@ export default function BaederApp() {
         },
         {
           id: 'green_sk_4_0',
-          color: 'Grün',
+          color: 'GrÃ¼n',
           label: 'SK 4,0 mm',
           innerDiameterMm: 4.0,
           minMlH: 40,
@@ -402,7 +752,7 @@ export default function BaederApp() {
         },
         {
           id: 'green_sk_4_0',
-          color: 'Grün',
+          color: 'GrÃ¼n',
           label: 'SK 4,0 mm',
           innerDiameterMm: 4.0,
           minMlH: 40,
@@ -486,7 +836,7 @@ export default function BaederApp() {
     },
     {
       id: 'antichlor_solution_38',
-      label: 'Natriumthiosulfat Lösung (38%)',
+      label: 'Natriumthiosulfat LÃ¶sung (38%)',
       productType: 'liquid',
       neutralizationFactorKgPerKgActiveChlorine: 4.74,
       densityKgPerL: 1.3
@@ -502,15 +852,15 @@ export default function BaederApp() {
     { id: '400m', label: '400m Ausdauer' },
   ];
   const SEA_CREATURE_TIERS = [
-    { minWins: 0, emoji: '🐚', name: 'Muschel' },
-    { minWins: 2, emoji: '🪼', name: 'Qualle' },
-    { minWins: 4, emoji: '🐢', name: 'Meeresschildkröte' },
-    { minWins: 7, emoji: '🐬', name: 'Delfin' },
-    { minWins: 10, emoji: '🦑', name: 'Tintenfisch' },
-    { minWins: 14, emoji: '🦈', name: 'Hai' },
-    { minWins: 18, emoji: '🐋', name: 'Orca' },
+    { minWins: 0, emoji: 'ðŸš', name: 'Muschel' },
+    { minWins: 2, emoji: 'ðŸª¼', name: 'Qualle' },
+    { minWins: 4, emoji: 'ðŸ¢', name: 'MeeresschildkrÃ¶te' },
+    { minWins: 7, emoji: 'ðŸ¬', name: 'Delfin' },
+    { minWins: 10, emoji: 'ðŸ¦‘', name: 'Tintenfisch' },
+    { minWins: 14, emoji: 'ðŸ¦ˆ', name: 'Hai' },
+    { minWins: 18, emoji: 'ðŸ‹', name: 'Orca' },
   ];
-  const ARENA_LOSER_CREATURE = { emoji: '🪼', name: 'Langsame Qualle' };
+  const ARENA_LOSER_CREATURE = { emoji: 'ðŸª¼', name: 'Langsame Qualle' };
 
   const XP_META_KEY = '__meta';
   const XP_BREAKDOWN_DEFAULT = {
@@ -904,8 +1254,8 @@ export default function BaederApp() {
   const [examQuestionIndex, setExamQuestionIndex] = useState(0);
   const [examAnswered, setExamAnswered] = useState(false);
   const [userExamProgress, setUserExamProgress] = useState(null);
-  const [examSelectedAnswers, setExamSelectedAnswers] = useState([]); // Für Multi-Select im Prüfungssimulator
-  const [examSelectedAnswer, setExamSelectedAnswer] = useState(null); // Für Single-Choice Feedback
+  const [examSelectedAnswers, setExamSelectedAnswers] = useState([]); // FÃ¼r Multi-Select im PrÃ¼fungssimulator
+  const [examSelectedAnswer, setExamSelectedAnswer] = useState(null); // FÃ¼r Single-Choice Feedback
   const [examSimulatorMode, setExamSimulatorMode] = useState('theory');
   const [examKeywordMode, setExamKeywordMode] = useState(false);
   const [examKeywordInput, setExamKeywordInput] = useState('');
@@ -922,9 +1272,19 @@ export default function BaederApp() {
   const [practicalExamHistoryUserFilter, setPracticalExamHistoryUserFilter] = useState('all');
   const [practicalExamComparisonType, setPracticalExamComparisonType] = useState('alle');
   
-  // UI State – darkMode, soundEnabled, toasts, showToast, playSound vom AppContext
+  // UI State â€“ darkMode, soundEnabled, toasts, showToast, playSound vom AppContext
   const { darkMode, setDarkMode, soundEnabled, setSoundEnabled, toasts, setToasts, showToast, playSound } = useApp();
   const [devMode, setDevMode] = useState(false);
+
+  const showLegacyWriteProtectionToast = (actionLabel = 'Diese Aktion') => {
+    showToast(
+      `${actionLabel} ist im Sicherheitsmodus deaktiviert. ${LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE}`,
+      'error',
+      4200
+    );
+  };
+
+  const secureBackendApiEnabled = isSecureBackendApiEnabled();
 
   // App Config State (Admin UI Editor)
   const [appConfig, setAppConfig] = useState({
@@ -1029,9 +1389,9 @@ export default function BaederApp() {
   const [newAttendanceTeacherSig, setNewAttendanceTeacherSig] = useState('');
   const [newAttendanceTrainerSig, setNewAttendanceTrainerSig] = useState('');
   const [signatureModal, setSignatureModal] = useState(null); // { id, field, currentValue }
-  const [tempSignature, setTempSignature] = useState(null); // Temporäre Unterschrift im Modal
-  const [selectedSchoolCardUser, setSelectedSchoolCardUser] = useState(null); // Ausgewählter Azubi für Kontrollkarten-Ansicht
-  const [allAzubisForSchoolCard, setAllAzubisForSchoolCard] = useState([]); // Liste aller Azubis für Auswahl
+  const [tempSignature, setTempSignature] = useState(null); // TemporÃ¤re Unterschrift im Modal
+  const [selectedSchoolCardUser, setSelectedSchoolCardUser] = useState(null); // AusgewÃ¤hlter Azubi fÃ¼r Kontrollkarten-Ansicht
+  const [allAzubisForSchoolCard, setAllAzubisForSchoolCard] = useState([]); // Liste aller Azubis fÃ¼r Auswahl
 
   // Klasuren/Noten State
   const [examGrades, setExamGrades] = useState([]);
@@ -1050,7 +1410,7 @@ export default function BaederApp() {
   const [berichtsheftSignaturAusbilder, setBerichtsheftSignaturAusbilder] = useState('');
   const [berichtsheftDatumAzubi, setBerichtsheftDatumAzubi] = useState('');
   const [berichtsheftDatumAusbilder, setBerichtsheftDatumAusbilder] = useState('');
-  const [selectedBerichtsheft, setSelectedBerichtsheft] = useState(null); // Für Bearbeitung
+  const [selectedBerichtsheft, setSelectedBerichtsheft] = useState(null); // FÃ¼r Bearbeitung
   const [berichtsheftViewMode, setBerichtsheftViewMode] = useState('edit'); // 'edit', 'list', 'progress', 'profile', 'sign'
   const [berichtsheftPendingSignatures, setBerichtsheftPendingSignatures] = useState([]);
   const [berichtsheftPendingLoading, setBerichtsheftPendingLoading] = useState(false);
@@ -1077,8 +1437,8 @@ export default function BaederApp() {
     trainingPlanId: '',
     trainingPlanUnitId: ''
   });
-  const [pendingSwimConfirmations, setPendingSwimConfirmations] = useState([]); // Für Trainer: Zu bestätigende Einheiten
-  const [swimChallengeFilter, setSwimChallengeFilter] = useState('alle'); // Filter für Challenge-Kategorien
+  const [pendingSwimConfirmations, setPendingSwimConfirmations] = useState([]); // FÃ¼r Trainer: Zu bestÃ¤tigende Einheiten
+  const [swimChallengeFilter, setSwimChallengeFilter] = useState('alle'); // Filter fÃ¼r Challenge-Kategorien
   const [swimArenaMode, setSwimArenaMode] = useState('duel');
   const [swimBattleHistory, setSwimBattleHistory] = useState(() => {
     const saved = localStorage.getItem('swim_battle_history');
@@ -1107,14 +1467,14 @@ export default function BaederApp() {
     azubiSeconds: ''
   });
 
-  // Azubi-Profildaten für Berichtsheft
+  // Azubi-Profildaten fÃ¼r Berichtsheft
   const [azubiProfile, setAzubiProfile] = useState(() => {
     const saved = localStorage.getItem('azubi_profile');
     return saved ? JSON.parse(saved) : {
       vorname: '',
       nachname: '',
       ausbildungsbetrieb: '',
-      ausbildungsberuf: 'Fachangestellte/r für Bäderbetriebe',
+      ausbildungsberuf: 'Fachangestellte/r fÃ¼r BÃ¤derbetriebe',
       ausbilder: '',
       ausbildungsbeginn: '',
       ausbildungsende: ''
@@ -1142,7 +1502,7 @@ export default function BaederApp() {
   const [selectedChemical, setSelectedChemical] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
 
-  // Profil-Bearbeitung State: vollständig in ProfileView ausgelagert
+  // Profil-Bearbeitung State: vollstÃ¤ndig in ProfileView ausgelagert
 
   // Toast-Benachrichtigungen (Zustand + showToast vom AppContext)
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -1178,7 +1538,7 @@ export default function BaederApp() {
       setPushDeviceState(fallbackState);
       return fallbackState;
     }
-  }, []);
+  }, [buildSecureSwimMonthlyResults, secureBackendApiEnabled]);
 
   const syncPushSubscription = useCallback(async (requestPermission = false) => {
     try {
@@ -1212,6 +1572,11 @@ export default function BaederApp() {
   }, [refreshPushDeviceState, user]);
 
   const enablePushNotifications = async () => {
+    if (!secureBackendApiEnabled) {
+      showToast('Push ist nur noch im sicheren Backend-Modus verfuegbar.', 'warning');
+      return;
+    }
+
     if (!isWebPushConfigured()) {
       showToast('Push ist noch nicht konfiguriert (VAPID Public Key fehlt).', 'warning');
       return;
@@ -1230,7 +1595,7 @@ export default function BaederApp() {
     showToast('Push-Benachrichtigungen aktiviert.', 'success');
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('Push aktiviert', {
-        body: 'Du erhaeltst jetzt Handy-Benachrichtigungen für neue Ereignisse.',
+        body: 'Du erhaeltst jetzt Handy-Benachrichtigungen fÃ¼r neue Ereignisse.',
         icon: '/icons/icon-192x192.png',
         badge: '/icons/icon-192x192.png',
         tag: 'push-enabled'
@@ -1397,7 +1762,7 @@ export default function BaederApp() {
     // Explizite Inhalte
     'porn', 'sex', 'xxx', 'nackt', 'nude',
     // Beleidigungen
-    'arschloch', 'idiot', 'scheiße', 'fuck', 'shit', 'bastard', 'bitch',
+    'arschloch', 'idiot', 'scheiÃŸe', 'fuck', 'shit', 'bastard', 'bitch',
     // Rassismus & Rechtsradikalismus
     'nazi', 'hitler', 'rassist', 'hure', 'schwuchtel', 'neger',
     // Weitere problematische Begriffe
@@ -1412,7 +1777,7 @@ export default function BaederApp() {
 
   const moderateContent = (text, context = 'Text') => {
     if (containsBannedContent(text)) {
-      alert(`⚠️ ${context} enthält unangemessene Inhalte und wurde blockiert.\n\nBitte achte auf einen respektvollen Umgang.`);
+      alert(`âš ï¸ ${context} enthÃ¤lt unangemessene Inhalte und wurde blockiert.\n\nBitte achte auf einen respektvollen Umgang.`);
       playSound('wrong');
       return false;
     }
@@ -1421,10 +1786,10 @@ export default function BaederApp() {
 
   const normalizeKeywordText = (value) => String(value || '')
     .toLowerCase()
-    .replace(/ß/g, 'ss')
-    .replace(/ä/g, 'ae')
-    .replace(/ö/g, 'oe')
-    .replace(/ü/g, 'ue')
+    .replace(/ÃŸ/g, 'ss')
+    .replace(/Ã¤/g, 'ae')
+    .replace(/Ã¶/g, 'oe')
+    .replace(/Ã¼/g, 'ue')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9\s]/g, ' ')
@@ -1452,7 +1817,7 @@ export default function BaederApp() {
     if (normalizedWord.endsWith('en') && normalizedWord.length - 2 >= 4) {
       const stem = normalizedWord.slice(0, -2);
       addVariant(stem);
-      // Two-level strip: Chloriden → Chloride → Chlorid
+      // Two-level strip: Chloriden â†’ Chloride â†’ Chlorid
       if (stem.endsWith('e') && stem.length - 1 >= 4) {
         addVariant(stem.slice(0, -1));
       }
@@ -1659,6 +2024,91 @@ export default function BaederApp() {
     setKeywordAnswerEvaluation(null);
   };
 
+  const resetQuizPlayState = ({ clearCurrentGame = true } = {}) => {
+    if (clearCurrentGame) {
+      setCurrentGame(null);
+    }
+    setCategoryRound(0);
+    setQuestionInCategory(0);
+    setQuizCategory(null);
+    setCurrentQuestion(null);
+    setCurrentCategoryQuestions([]);
+    setAnswered(false);
+    setPlayerTurn(null);
+    setTimeLeft(30);
+    setTimerActive(false);
+    setWaitingForOpponent(false);
+    setSelectedAnswers([]);
+    setLastSelectedAnswer(null);
+    setQuizMCKeywordMode(false);
+    resetQuizKeywordState();
+  };
+
+  const applySecureDuelState = async (actor = user) => {
+    const [duelsData, leaderboardData] = await Promise.all([
+      secureDuelsApi.list(),
+      secureDuelsApi.leaderboard()
+    ]);
+
+    const mappedGames = (Array.isArray(duelsData) ? duelsData : [])
+      .map((duel) => mapSecureDuelToLegacyGame(duel, actor))
+      .filter((game) => game.id);
+    const mappedLeaderboard = (Array.isArray(leaderboardData) ? leaderboardData : [])
+      .map(mapSecureLeaderboardEntry);
+
+    setAllGames(mappedGames);
+    setActiveGames(mappedGames.filter((game) => !isFinishedGameStatus(game.status)));
+    setLeaderboard(mappedLeaderboard);
+
+    return {
+      duels: duelsData,
+      leaderboard: mappedLeaderboard
+    };
+  };
+
+  const openSecureDuelSession = (duelPayload, preferredQuestionId = null) => {
+    const session = buildSecureDuelSessionState(duelPayload, user, preferredQuestionId);
+
+    if (!session.openQuestion && !preferredQuestionId) {
+      resetQuizPlayState();
+      setCurrentView('quiz');
+
+      if (String(duelPayload?.status || '').trim().toUpperCase() === 'COMPLETED') {
+        const winnerName = duelPayload?.winnerUser?.displayName || null;
+        if (!winnerName) {
+          showToast('Das Duell ist abgeschlossen und endete unentschieden.', 'info');
+        } else if (namesMatch(winnerName, user?.name)) {
+          showToast('Das Duell ist abgeschlossen. Du hast gewonnen.', 'success');
+        } else {
+          showToast(`Das Duell ist abgeschlossen. ${winnerName} hat gewonnen.`, 'info');
+        }
+      } else {
+        showToast('Deine Antworten sind gespeichert. Warte jetzt auf den Gegner.', 'info');
+      }
+
+      return false;
+    }
+
+    setCurrentGame(session.game);
+    setCategoryRound(Math.min(3, Math.floor(Math.max(0, session.selectedQuestionIndex) / 5)));
+    setQuestionInCategory(session.selectedQuestionIndex >= 0 ? session.selectedQuestionIndex : 0);
+    setQuizCategory(session.selectedQuestion?.question?.category || null);
+    setCurrentCategoryQuestions(session.game.questions || []);
+    setCurrentQuestion(session.selectedQuestionUi);
+    setAnswered(Boolean(session.selectedQuestion?.myAnswer));
+    setPlayerTurn(session.game.currentTurn);
+    setTimeLeft(0);
+    setTimerActive(false);
+    setWaitingForOpponent(false);
+    setSelectedAnswers([]);
+    setLastSelectedAnswer(session.selectedQuestion?.myAnswer?.selectedOptionIndex ?? null);
+    setQuizMCKeywordMode(false);
+    resetQuizKeywordState();
+    setCurrentView('quiz');
+
+    return true;
+  };
+
   const resetFlashcardKeywordState = () => {
     setFlashcardKeywordInput('');
     setFlashcardKeywordEvaluation(null);
@@ -1680,7 +2130,7 @@ export default function BaederApp() {
       'aus', 'ausserdem', 'bei', 'beim', 'bereits', 'dann', 'dabei', 'dadurch', 'damit',
       'darf', 'dass', 'dem', 'den', 'denen', 'denn', 'der', 'des', 'deshalb', 'dessen',
       'dies', 'diese', 'diesem', 'diesen', 'dieser', 'dieses', 'doch', 'dort', 'durch',
-      'eine', 'einem', 'einen', 'einer', 'eines', 'erst', 'etwas', 'falls', 'für',
+      'eine', 'einem', 'einen', 'einer', 'eines', 'erst', 'etwas', 'falls', 'fÃ¼r',
       'gegen', 'gibt', 'haben', 'hatte', 'hatten', 'hier', 'ihnen', 'ihre', 'ihrem',
       'ihren', 'ihrer', 'ihres', 'immer', 'innen', 'jede', 'jedem', 'jeden', 'jeder',
       'jedes', 'jetzt', 'jedoch', 'kann', 'kein', 'keine', 'keinem', 'keinen', 'keiner',
@@ -1714,43 +2164,43 @@ export default function BaederApp() {
   const FLASHCARD_CONTENT = {
     org: [
       { front: 'Was ist das Hausrecht?', back: 'Das Recht des Badbetreibers, die Hausordnung durchzusetzen und Personen des Platzes zu verweisen.' },
-      { front: 'Wer ist für die Aufsicht verantwortlich?', back: 'Die Aufsichtsperson während der kompletten Öffnungszeiten.' }
+      { front: 'Wer ist fÃ¼r die Aufsicht verantwortlich?', back: 'Die Aufsichtsperson wÃ¤hrend der kompletten Ã–ffnungszeiten.' }
     ],
     tech: [
       { front: 'Optimaler pH-Wert im Schwimmbad?', back: '7,0 - 7,4 (neutral bis leicht basisch)' },
-      { front: 'Was macht eine Umwälzpumpe?', back: 'Sie pumpt das Wasser durch die Filteranlage zur Reinigung.' },
+      { front: 'Was macht eine UmwÃ¤lzpumpe?', back: 'Sie pumpt das Wasser durch die Filteranlage zur Reinigung.' },
       { front: 'Chlor-Richtwert im Becken?', back: '0,3 - 0,6 mg/L freies Chlor' }
     ],
     swim: [
       { front: 'Was ist der Rautek-Griff?', back: 'Rettungsgriff zum Bergen bewusstloser Personen aus dem Gefahrenbereich.' },
-      { front: 'Wie funktioniert die Mund-zu-Mund-Beatmung?', back: 'Kopf überstrecken, Nase zuhalten, 2-mal beatmen, dann Herzdruckmassage.' }
+      { front: 'Wie funktioniert die Mund-zu-Mund-Beatmung?', back: 'Kopf Ã¼berstrecken, Nase zuhalten, 2-mal beatmen, dann Herzdruckmassage.' }
     ],
     first: [
-      { front: 'Verhältnis Herzdruckmassage zu Beatmung?', back: '30:2 - 30 Kompressionen, dann 2 Beatmungen.' },
-      { front: 'Wo drückt man bei der Herzdruckmassage?', back: 'Unteres Drittel des Brustbeins, 5-6 cm tief.' }
+      { front: 'VerhÃ¤ltnis Herzdruckmassage zu Beatmung?', back: '30:2 - 30 Kompressionen, dann 2 Beatmungen.' },
+      { front: 'Wo drÃ¼ckt man bei der Herzdruckmassage?', back: 'Unteres Drittel des Brustbeins, 5-6 cm tief.' }
     ],
     hygiene: [
-      { front: 'Warum Duschpflicht vor dem Schwimmen?', back: 'Entfernung von Schmutz, Schweiß und Kosmetik für bessere Wasserqualität.' },
-      { front: 'Was sind Legionellen?', back: 'Bakterien im Wasser, gefährlich bei Inhalation, vermehren sich bei 25-45 °C.' }
+      { front: 'Warum Duschpflicht vor dem Schwimmen?', back: 'Entfernung von Schmutz, SchweiÃŸ und Kosmetik fÃ¼r bessere WasserqualitÃ¤t.' },
+      { front: 'Was sind Legionellen?', back: 'Bakterien im Wasser, gefÃ¤hrlich bei Inhalation, vermehren sich bei 25-45 Â°C.' }
     ],
     pol: [
       { front: 'Was regelt das Arbeitsrecht?', back: 'Beziehung zwischen Arbeitgeber und Arbeitnehmer, Rechte und Pflichten.' },
-      { front: 'Was ist die Berufsgenossenschaft?', back: 'Träger der gesetzlichen Unfallversicherung für Arbeitsunfälle.' }
+      { front: 'Was ist die Berufsgenossenschaft?', back: 'TrÃ¤ger der gesetzlichen Unfallversicherung fÃ¼r ArbeitsunfÃ¤lle.' }
     ],
     [WHO_AM_I_CATEGORY.id]: WHO_AM_I_STUDY_FLASHCARDS[WHO_AM_I_CATEGORY.id] || [],
     aevo: [
-      { front: 'Was ist das Ziel der Berufsausbildung nach BBiG?', back: 'Berufliche Handlungsfähigkeit vermitteln.' },
-      { front: 'Woraus besteht die Eignung eines Ausbilders?', back: 'Aus persönlicher und fachlicher Eignung.' },
-      { front: 'Wie lange darf die Probezeit in der Ausbildung sein?', back: 'Mindestens 1 Monat, höchstens 4 Monate.' },
-      { front: 'Welche Methode hat 4 feste Schritte in der Unterweisung?', back: 'Die Vier-Stufen-Methode: vorbereiten, vormachen, nachmachen, üben.' },
+      { front: 'Was ist das Ziel der Berufsausbildung nach BBiG?', back: 'Berufliche HandlungsfÃ¤higkeit vermitteln.' },
+      { front: 'Woraus besteht die Eignung eines Ausbilders?', back: 'Aus persÃ¶nlicher und fachlicher Eignung.' },
+      { front: 'Wie lange darf die Probezeit in der Ausbildung sein?', back: 'Mindestens 1 Monat, hÃ¶chstens 4 Monate.' },
+      { front: 'Welche Methode hat 4 feste Schritte in der Unterweisung?', back: 'Die Vier-Stufen-Methode: vorbereiten, vormachen, nachmachen, Ã¼ben.' },
       { front: 'Was bedeutet SMART bei Lernzielen?', back: 'Spezifisch, messbar, attraktiv, realistisch und terminiert.' },
-      { front: 'Wofür ist der betriebliche Ausbildungsplan da?', back: 'Er konkretisiert den Ausbildungsrahmenplan für den Betrieb.' },
+      { front: 'WofÃ¼r ist der betriebliche Ausbildungsplan da?', back: 'Er konkretisiert den Ausbildungsrahmenplan fÃ¼r den Betrieb.' },
       { front: 'Was ist bei Feedback an Azubis wichtig?', back: 'Zeitnah, konkret, respektvoll und nachvollziehbar.' },
-      { front: 'Was muss der Betrieb für Azubis bereitstellen?', back: 'Alle erforderlichen Ausbildungsmittel und Anleitung.' },
-      { front: 'Wann endet die Ausbildung regulär?', back: 'Mit dem Bestehen der Abschlussprüfung.' },
-      { front: 'Was gilt bei nicht bestandener Abschlussprüfung?', back: 'Auf Verlangen Verlängerung bis zur nächsten Wiederholungsprüfung.' },
-      { front: 'Wofür muss ein Azubi freigestellt werden?', back: 'Für Berufsschule, Prüfungen und angeordnete Ausbildungsmaßnahmen.' },
-      { front: 'Warum sind Beurteilungsgespräche wichtig?', back: 'Sie machen Lernfortschritt transparent und helfen beim Nachsteuern.' }
+      { front: 'Was muss der Betrieb fÃ¼r Azubis bereitstellen?', back: 'Alle erforderlichen Ausbildungsmittel und Anleitung.' },
+      { front: 'Wann endet die Ausbildung regulÃ¤r?', back: 'Mit dem Bestehen der AbschlussprÃ¼fung.' },
+      { front: 'Was gilt bei nicht bestandener AbschlussprÃ¼fung?', back: 'Auf Verlangen VerlÃ¤ngerung bis zur nÃ¤chsten WiederholungsprÃ¼fung.' },
+      { front: 'WofÃ¼r muss ein Azubi freigestellt werden?', back: 'FÃ¼r Berufsschule, PrÃ¼fungen und angeordnete AusbildungsmaÃŸnahmen.' },
+      { front: 'Warum sind BeurteilungsgesprÃ¤che wichtig?', back: 'Sie machen Lernfortschritt transparent und helfen beim Nachsteuern.' }
     ]
   };
   const KEYWORD_FLASHCARD_CONTENT = buildKeywordFlashcards(KEYWORD_CHALLENGES);
@@ -1758,26 +2208,26 @@ export default function BaederApp() {
 
   const BADGES = [
     // Quiz/Lern-Badges
-    { id: 'streak_7', name: '7 Tage Streak', icon: '🔥', description: '7 Tage hintereinander gelernt', requirement: 'streak', value: 7, category: 'quiz' },
-    { id: 'streak_30', name: '30 Tage Streak', icon: '🔥🔥', description: '30 Tage hintereinander gelernt', requirement: 'streak', value: 30, category: 'quiz' },
-    { id: 'questions_50', name: 'Lernmaschine', icon: '💯', description: '50 Fragen richtig beantwortet', requirement: 'questions', value: 50, category: 'quiz' },
-    { id: 'questions_100', name: 'Wissensmeister', icon: '🎓', description: '100 Fragen richtig beantwortet', requirement: 'questions', value: 100, category: 'quiz' },
-    { id: 'quiz_winner_10', name: 'Quiz-Champion', icon: '👑', description: '10 Quizduell-Siege', requirement: 'quiz_wins', value: 10, category: 'quiz' },
-    { id: 'perfectionist', name: 'Perfektionist', icon: '⭐', description: 'Alle Fragen gemeistert', requirement: 'all_mastered', value: 1, category: 'quiz' },
-    { id: 'early_bird', name: 'Frühaufsteher', icon: '🌅', description: 'Vor 7 Uhr morgens gelernt', requirement: 'early', value: 1, category: 'quiz' },
-    { id: 'night_owl', name: 'Nachteule', icon: '🦉', description: 'Nach 22 Uhr gelernt', requirement: 'night', value: 1, category: 'quiz' },
+    { id: 'streak_7', name: '7 Tage Streak', icon: 'ðŸ”¥', description: '7 Tage hintereinander gelernt', requirement: 'streak', value: 7, category: 'quiz' },
+    { id: 'streak_30', name: '30 Tage Streak', icon: 'ðŸ”¥ðŸ”¥', description: '30 Tage hintereinander gelernt', requirement: 'streak', value: 30, category: 'quiz' },
+    { id: 'questions_50', name: 'Lernmaschine', icon: 'ðŸ’¯', description: '50 Fragen richtig beantwortet', requirement: 'questions', value: 50, category: 'quiz' },
+    { id: 'questions_100', name: 'Wissensmeister', icon: 'ðŸŽ“', description: '100 Fragen richtig beantwortet', requirement: 'questions', value: 100, category: 'quiz' },
+    { id: 'quiz_winner_10', name: 'Quiz-Champion', icon: 'ðŸ‘‘', description: '10 Quizduell-Siege', requirement: 'quiz_wins', value: 10, category: 'quiz' },
+    { id: 'perfectionist', name: 'Perfektionist', icon: 'â­', description: 'Alle Fragen gemeistert', requirement: 'all_mastered', value: 1, category: 'quiz' },
+    { id: 'early_bird', name: 'FrÃ¼haufsteher', icon: 'ðŸŒ…', description: 'Vor 7 Uhr morgens gelernt', requirement: 'early', value: 1, category: 'quiz' },
+    { id: 'night_owl', name: 'Nachteule', icon: 'ðŸ¦‰', description: 'Nach 22 Uhr gelernt', requirement: 'night', value: 1, category: 'quiz' },
     // Win Streak Badges - Ungeschlagenen-Serie
-    { id: 'win_streak_3', name: 'Aufsteiger', icon: '🥉', description: '3 Siege in Folge', requirement: 'win_streak', value: 3, category: 'quiz' },
-    { id: 'win_streak_5', name: 'Durchstarter', icon: '🥈', description: '5 Siege in Folge', requirement: 'win_streak', value: 5, category: 'quiz' },
-    { id: 'win_streak_10', name: 'Unaufhaltsam', icon: '🥇', description: '10 Siege in Folge', requirement: 'win_streak', value: 10, category: 'quiz' },
-    { id: 'win_streak_15', name: 'Dominanz', icon: '🏅', description: '15 Siege in Folge', requirement: 'win_streak', value: 15, category: 'quiz' },
-    { id: 'win_streak_25', name: 'Legende', icon: '🏆', description: '25 Siege in Folge', requirement: 'win_streak', value: 25, category: 'quiz' },
-    { id: 'win_streak_50', name: 'Unbesiegbar', icon: '💎', description: '50 Siege in Folge', requirement: 'win_streak', value: 50, category: 'quiz' },
+    { id: 'win_streak_3', name: 'Aufsteiger', icon: 'ðŸ¥‰', description: '3 Siege in Folge', requirement: 'win_streak', value: 3, category: 'quiz' },
+    { id: 'win_streak_5', name: 'Durchstarter', icon: 'ðŸ¥ˆ', description: '5 Siege in Folge', requirement: 'win_streak', value: 5, category: 'quiz' },
+    { id: 'win_streak_10', name: 'Unaufhaltsam', icon: 'ðŸ¥‡', description: '10 Siege in Folge', requirement: 'win_streak', value: 10, category: 'quiz' },
+    { id: 'win_streak_15', name: 'Dominanz', icon: 'ðŸ…', description: '15 Siege in Folge', requirement: 'win_streak', value: 15, category: 'quiz' },
+    { id: 'win_streak_25', name: 'Legende', icon: 'ðŸ†', description: '25 Siege in Folge', requirement: 'win_streak', value: 25, category: 'quiz' },
+    { id: 'win_streak_50', name: 'Unbesiegbar', icon: 'ðŸ’Ž', description: '50 Siege in Folge', requirement: 'win_streak', value: 50, category: 'quiz' },
     // Schwimm-Badges (aus SWIM_BADGES)
     ...SWIM_BADGES.map(b => ({ ...b, requirement: b.requirement.type, value: b.requirement.value }))
   ];
 
-  // Auth wird vollständig vom AuthContext verwaltet (src/context/AuthContext.jsx)
+  // Auth wird vollstÃ¤ndig vom AuthContext verwaltet (src/context/AuthContext.jsx)
 
   useEffect(() => {
     if (user) {
@@ -1851,6 +2301,7 @@ export default function BaederApp() {
       if (!account?.id) return false;
       const role = String(account.role || '').toLowerCase();
       return role === 'azubi'
+        || role === 'rettungsschwimmer_azubi'
         || role === 'trainer'
         || role === 'ausbilder'
         || role === 'admin'
@@ -1881,10 +2332,7 @@ export default function BaederApp() {
     }
   }, [timeLeft, timerActive, answered]);
 
-  // Check data retention only once on login (not on every view change)
-  useEffect(() => {
-    if (user) checkDataRetention();
-  }, [user]);
+  // Data retention is enforced server-side during the backend migration.
 
   useEffect(() => {
     // Load school attendance when view changes
@@ -1917,6 +2365,15 @@ export default function BaederApp() {
       if (user.id && (!azubiProfile.vorname || !azubiProfile.nachname)) {
         (async () => {
           try {
+            if (secureBackendApiEnabled) {
+              const profile = await secureReportBooksApi.getProfile();
+              if (profile && typeof profile === 'object') {
+                setAzubiProfile(profile);
+                localStorage.setItem('azubi_profile', JSON.stringify(profile));
+              }
+              return;
+            }
+
             const { data } = await supabase
               .from('profiles')
               .select('berichtsheft_profile')
@@ -1963,8 +2420,12 @@ export default function BaederApp() {
   }, [practicalChecklistProgress]);
 
   useEffect(() => {
+    if (secureBackendApiEnabled) {
+      localStorage.removeItem(QUESTION_REPORTS_STORAGE_KEY);
+      return;
+    }
     localStorage.setItem(QUESTION_REPORTS_STORAGE_KEY, JSON.stringify(questionReports));
-  }, [questionReports]);
+  }, [questionReports, secureBackendApiEnabled]);
 
   useEffect(() => {
     if (!user || currentView !== 'berichtsheft' || selectedBerichtsheft) return;
@@ -2063,16 +2524,16 @@ export default function BaederApp() {
     
     let ph = 7.5 + (parseFloat(chlorine) - 0.5) * 0.2 + (parseFloat(alkalinity) - 120) * 0.01;
     
-    // Säurekapazität berücksichtigen
+    // SÃ¤urekapazitÃ¤t berÃ¼cksichtigen
     if (acidCapacity) {
       ph = ph - (parseFloat(acidCapacity) - 2.5) * 0.15;
     }
     
     return {
       result: ph.toFixed(2),
-      explanation: `Bei ${chlorine} mg/L Chlor, ${alkalinity} mg/L Alkalinität${acidCapacity ? ` und ${acidCapacity} mmol/L Säurekapazität` : ''} ergibt sich ein pH-Wert von ${ph.toFixed(2)}. Optimal: 7,0-7,4`,
-      recommendation: ph < 7.0 ? 'pH-Heber (Na₂CO₃) zugeben' : ph > 7.4 ? 'pH-Senker (NaHSO₄) zugeben' : 'pH-Wert optimal!',
-      details: acidCapacity ? `Die Säurekapazität von ${acidCapacity} mmol/L zeigt die Pufferfähigkeit des Wassers an.` : null
+      explanation: `Bei ${chlorine} mg/L Chlor, ${alkalinity} mg/L AlkalinitÃ¤t${acidCapacity ? ` und ${acidCapacity} mmol/L SÃ¤urekapazitÃ¤t` : ''} ergibt sich ein pH-Wert von ${ph.toFixed(2)}. Optimal: 7,0-7,4`,
+      recommendation: ph < 7.0 ? 'pH-Heber (Naâ‚‚COâ‚ƒ) zugeben' : ph > 7.4 ? 'pH-Senker (NaHSOâ‚„) zugeben' : 'pH-Wert optimal!',
+      details: acidCapacity ? `Die SÃ¤urekapazitÃ¤t von ${acidCapacity} mmol/L zeigt die PufferfÃ¤higkeit des Wassers an.` : null
     };
   };
 
@@ -2099,7 +2560,7 @@ export default function BaederApp() {
       if (deltaMgPerL <= 0) {
         return {
           result: '0,00 kg',
-          explanation: `Aktueller Wert ${currentChlorine.toFixed(2).replace('.', ',')} mg/L liegt bereits auf/über Ziel ${targetChlorine.toFixed(2).replace('.', ',')} mg/L.`,
+          explanation: `Aktueller Wert ${currentChlorine.toFixed(2).replace('.', ',')} mg/L liegt bereits auf/Ã¼ber Ziel ${targetChlorine.toFixed(2).replace('.', ',')} mg/L.`,
           recommendation: 'Kein Aufchloren notwendig.'
         };
       }
@@ -2128,7 +2589,7 @@ export default function BaederApp() {
             ? `${productLitersPerHour.toFixed(3).replace('.', ',')} L/h`
             : `${productKgPerHour.toFixed(3).replace('.', ',')} kg/h`,
           explanation: `Aufchloren von ${currentChlorine.toFixed(2).replace('.', ',')} auf ${targetChlorine.toFixed(2).replace('.', ',')} mg/L bei ${poolVolume.toFixed(1).replace('.', ',')} m3.`,
-          details: `Produkt: ${product.label}. Aktivchlor-Bedarf: ${activeChlorineKg.toFixed(3).replace('.', ',')} kg. Gesamtmenge Produkt: ${productLiters !== null ? `${productLiters.toFixed(3).replace('.', ',')} L` : `${productMassKg.toFixed(3).replace('.', ',')} kg`} für ${plantRunHours.toFixed(1).replace('.', ',')} h Anlagenlaufzeit.`,
+          details: `Produkt: ${product.label}. Aktivchlor-Bedarf: ${activeChlorineKg.toFixed(3).replace('.', ',')} kg. Gesamtmenge Produkt: ${productLiters !== null ? `${productLiters.toFixed(3).replace('.', ',')} L` : `${productMassKg.toFixed(3).replace('.', ',')} kg`} fÃ¼r ${plantRunHours.toFixed(1).replace('.', ',')} h Anlagenlaufzeit.`,
           recommendation: `Chloranlage auf etwa ${productLitersPerHour !== null ? `${productLitersPerHour.toFixed(3).replace('.', ',')} L/h` : `${productKgPerHour.toFixed(3).replace('.', ',')} kg/h`} einstellen und nach 30-60 min nachmessen.`
         };
       }
@@ -2172,7 +2633,7 @@ export default function BaederApp() {
         : `${antichlorMassKg.toFixed(3).replace('.', ',')} kg`,
       explanation: `Runterchloren von ${currentChlorine.toFixed(2).replace('.', ',')} auf ${targetChlorine.toFixed(2).replace('.', ',')} mg/L bei ${poolVolume.toFixed(1).replace('.', ',')} m3.`,
       details: `Produkt: ${antichlorProduct.label}. Zu neutralisieren: ${activeChlorineToNeutralizeKg.toFixed(3).replace('.', ',')} kg Aktivchlor.`,
-      recommendation: `${antichlorLiters !== null ? `${antichlorLiters.toFixed(3).replace('.', ',')} L` : `${antichlorMassKg.toFixed(3).replace('.', ',')} kg`} Anti-Chlor in 2-3 Teilgaben dosieren, gut umwälzen und nach 15-30 min erneut messen.`
+      recommendation: `${antichlorLiters !== null ? `${antichlorLiters.toFixed(3).replace('.', ',')} L` : `${antichlorMassKg.toFixed(3).replace('.', ',')} kg`} Anti-Chlor in 2-3 Teilgaben dosieren, gut umwÃ¤lzen und nach 15-30 min erneut messen.`
     };
   };
 
@@ -2184,9 +2645,9 @@ export default function BaederApp() {
     const liters = volume * 1000;
     
     return {
-      result: volume.toFixed(2) + ' m³',
-      explanation: `${length}m × ${width}m × ${depth}m = ${volume.toFixed(2)} m³ (${liters.toFixed(0)} Liter)`,
-      recommendation: `Bei ${volume.toFixed(0)} m³ beträgt die empfohlene Umwälzrate 4-6 Stunden`
+      result: volume.toFixed(2) + ' mÂ³',
+      explanation: `${length}m Ã— ${width}m Ã— ${depth}m = ${volume.toFixed(2)} mÂ³ (${liters.toFixed(0)} Liter)`,
+      recommendation: `Bei ${volume.toFixed(0)} mÂ³ betrÃ¤gt die empfohlene UmwÃ¤lzrate 4-6 Stunden`
     };
   };
 
@@ -2374,7 +2835,7 @@ export default function BaederApp() {
 
     return {
       result: `${formatLitersFromMl(concentrateTotalMl)} Konzentrat`,
-      explanation: `${ratioText} für ${roundedContainerCount} Behaelter a ${containerSize.toString().replace('.', ',')} ${containerUnit === 'l' ? 'L' : 'ml'}. ${modeText}.`,
+      explanation: `${ratioText} fÃ¼r ${roundedContainerCount} Behaelter a ${containerSize.toString().replace('.', ',')} ${containerUnit === 'l' ? 'L' : 'ml'}. ${modeText}.`,
       details: `Pro Behaelter: ${formatMl(concentratePerContainerMl)} Konzentrat + ${formatMl(waterPerContainerMl)} Wasser. Gesamtmenge: ${formatLitersFromMl(totalVolumeMl)}.`,
       recommendation: `Praxiswert je Behaelter (auf 5 ml gerundet): ${concentrateRoundedMl} ml Konzentrat + ${waterRoundedMl} ml Wasser. Gesamt Wasser: ${formatLitersFromMl(waterTotalMl)}.`
     };
@@ -2453,11 +2914,11 @@ export default function BaederApp() {
     if (pumpTypeId === 'manual') {
       recommendation = `Manuell pro Tag dosieren: ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L Produkt.`;
     } else if (!pumpModel || !maxMlH) {
-      recommendation = `Pumpenmodell oder Kapazität fehlt. Zielzufuhr: ${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h Dosierloesung.`;
+      recommendation = `Pumpenmodell oder KapazitÃ¤t fehlt. Zielzufuhr: ${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h Dosierloesung.`;
     } else if (modelCapacityInfo.settingPercent > 100) {
       recommendation = `Pumpe zu klein: benoetigt ${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h, Modell schafft ${(maxMlH / 1000).toFixed(3).replace('.', ',')} L/h.`;
     } else if (modelCapacityInfo.minPercent > 0 && modelCapacityInfo.settingPercent < modelCapacityInfo.minPercent) {
-      recommendation = `Pumpe läuft unter Mindestbereich. Stellwert waere ${modelCapacityInfo.settingPercent.toFixed(1).replace('.', ',')}%. Größere Verduennung oder kleineres Modell nutzen.`;
+      recommendation = `Pumpe lÃ¤uft unter Mindestbereich. Stellwert waere ${modelCapacityInfo.settingPercent.toFixed(1).replace('.', ',')}%. GrÃ¶ÃŸere Verduennung oder kleineres Modell nutzen.`;
     } else {
       recommendation = `Pumpeneinstellung: ca. ${modelCapacityInfo.settingPercent.toFixed(1).replace('.', ',')}% (${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h).`;
     }
@@ -2483,8 +2944,8 @@ export default function BaederApp() {
 
     return {
       result: `${(stockSolutionMlH / 1000).toFixed(3).replace('.', ',')} L/h Dosierloesung`,
-      explanation: `${product.label} (${product.base === 'aluminum' ? 'Aluminiumbasis' : 'Eisenbasis'}) bei ${circulationFlow.toFixed(1).replace('.', ',')} m3/h Umwälzung. Berechnung für ${flocculationMode === 'shock' ? 'Stoss' : 'kontinuierliche'} Flockung.`,
-      details: `Produktbedarf: ${(pureProductMlH / 1000).toFixed(3).replace('.', ',')} L/h bzw. ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag. | Dosierloesung: ${(stockSolutionMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag bei ${stockConcentrationPercent.toFixed(1).replace('.', ',')}% Ansatz. | Modell: ${modelText}${hosePressureText}. | Becken-Umwälzungen/Tag: ${turnoversPerDay.toFixed(2).replace('.', ',')}. | Ansatz für ${stockTankLiters.toFixed(1).replace('.', ',')} L: ${tankProductLiters.toFixed(2).replace('.', ',')} L Produkt + ${tankWaterLiters.toFixed(2).replace('.', ',')} L Wasser. | Tankreichweite: ${tankRuntimeHours ? `${tankRuntimeHours.toFixed(1).replace('.', ',')} h` : '-'}.`,
+      explanation: `${product.label} (${product.base === 'aluminum' ? 'Aluminiumbasis' : 'Eisenbasis'}) bei ${circulationFlow.toFixed(1).replace('.', ',')} m3/h UmwÃ¤lzung. Berechnung fÃ¼r ${flocculationMode === 'shock' ? 'Stoss' : 'kontinuierliche'} Flockung.`,
+      details: `Produktbedarf: ${(pureProductMlH / 1000).toFixed(3).replace('.', ',')} L/h bzw. ${(pureProductMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag. | Dosierloesung: ${(stockSolutionMlDay / 1000).toFixed(2).replace('.', ',')} L/Tag bei ${stockConcentrationPercent.toFixed(1).replace('.', ',')}% Ansatz. | Modell: ${modelText}${hosePressureText}. | Becken-UmwÃ¤lzungen/Tag: ${turnoversPerDay.toFixed(2).replace('.', ',')}. | Ansatz fÃ¼r ${stockTankLiters.toFixed(1).replace('.', ',')} L: ${tankProductLiters.toFixed(2).replace('.', ',')} L Produkt + ${tankWaterLiters.toFixed(2).replace('.', ',')} L Wasser. | Tankreichweite: ${tankRuntimeHours ? `${tankRuntimeHours.toFixed(1).replace('.', ',')} h` : '-'}.`,
       recommendation
     };
   };
@@ -2518,6 +2979,9 @@ export default function BaederApp() {
   };
 
   const checkDataRetention = async () => {
+    console.warn('Client-side retention is disabled. Use documented backend retention jobs instead.');
+    return;
+
     try {
       const { data: users, error } = await supabase
         .from('profiles')
@@ -2543,7 +3007,7 @@ export default function BaederApp() {
           if (account.role === 'azubi' && account.training_end) {
             const endDate = new Date(account.training_end).getTime();
             if (now > endDate) {
-              console.log(`Azubi ${account.name} Ausbildung beendet - Daten werden gelöscht`);
+              console.log(`Azubi ${account.name} Ausbildung beendet - Daten werden gelÃ¶scht`);
               await deleteUserData(account.id, account.email, account.name);
             }
           }
@@ -2552,7 +3016,7 @@ export default function BaederApp() {
           if (account.role === 'trainer' && account.last_login) {
             const lastLoginDate = new Date(account.last_login).getTime();
             if (now - lastLoginDate > sixMonthsMs) {
-              console.log(`Ausbilder ${account.name} 6 Monate inaktiv - Daten werden gelöscht`);
+              console.log(`Ausbilder ${account.name} 6 Monate inaktiv - Daten werden gelÃ¶scht`);
               await deleteUserData(account.id, account.email, account.name);
             }
           }
@@ -2566,6 +3030,9 @@ export default function BaederApp() {
   };
 
   const deleteUserData = async (userId, email, userName) => {
+    console.warn('Client-side account deletion is disabled. Use the backend API and audit log instead.');
+    return;
+
     try {
       // Delete related data first
       await supabase.from('user_stats').delete().eq('user_id', userId);
@@ -2575,7 +3042,7 @@ export default function BaederApp() {
       // Delete user
       await supabase.from('profiles').delete().eq('id', userId);
 
-      console.log(`Alle Daten für ${email} gelöscht`);
+      console.log(`Alle Daten fÃ¼r ${email} gelÃ¶scht`);
     } catch (error) {
       console.error('Error deleting user data:', error);
     }
@@ -2619,20 +3086,49 @@ export default function BaederApp() {
       exportData.data.games = gamesData || [];
 
       // Get user exams
-      const { data: examsData } = await supabase
-        .from('exams')
-        .select('*')
-        .eq('created_by', userName);
+      if (secureBackendApiEnabled) {
+        exportData.data.exams = exams
+          .filter((entry) => entry?.createdBy === userName)
+          .map((entry) => ({
+            id: entry.id,
+            title: entry.title,
+            description: entry.description,
+            exam_date: entry.date,
+            location: entry.location,
+            created_by: entry.createdBy,
+            created_at: entry.time ? new Date(entry.time).toISOString() : null
+          }));
+      } else {
+        const { data: examsData } = await supabase
+          .from('exams')
+          .select('*')
+          .eq('created_by', userName);
 
-      exportData.data.exams = examsData || [];
+        exportData.data.exams = examsData || [];
+      }
 
       // Get submitted questions
-      const { data: questionsData } = await supabase
-        .from('custom_questions')
-        .select('*')
-        .eq('created_by', userName);
+      if (secureBackendApiEnabled) {
+        exportData.data.questions = submittedQuestions
+          .filter((entry) => entry?.submittedBy === userName)
+          .map((entry) => ({
+            id: entry.id,
+            question: entry.text,
+            category: entry.category,
+            answers: Array.isArray(entry.answers) ? entry.answers : [],
+            correct: entry.correct,
+            created_by: entry.submittedBy,
+            approved: Boolean(entry.approved),
+            created_at: entry.time ? new Date(entry.time).toISOString() : null
+          }));
+      } else {
+        const { data: questionsData } = await supabase
+          .from('custom_questions')
+          .select('*')
+          .eq('created_by', userName);
 
-      exportData.data.questions = questionsData || [];
+        exportData.data.questions = questionsData || [];
+      }
 
       // Get badges
       const { data: badgesData } = await supabase
@@ -2654,7 +3150,7 @@ export default function BaederApp() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      alert(`Datenexport für ${userName} erfolgreich heruntergeladen!`);
+      alert(`Datenexport fÃ¼r ${userName} erfolgreich heruntergeladen!`);
     } catch (error) {
       console.error('Export error:', error);
       alert('Fehler beim Datenexport!');
@@ -2665,24 +3161,41 @@ export default function BaederApp() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('id, title, message, type, created_at, read')
-        .eq('user_name', user.name)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      let notifs = [];
 
-      if (error) throw error;
+      if (secureBackendApiEnabled) {
+        const apiNotifications = await secureNotificationsApi.list();
+        notifs = (apiNotifications || []).map((notification) => ({
+          id: notification.id,
+          title: notification.title,
+          message: notification.message,
+          type: notification.type,
+          userName: user.name,
+          time: new Date(notification.createdAt).getTime(),
+          read: Boolean(notification.read),
+          source: 'secure-api'
+        }));
+      } else {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('id, title, message, type, created_at, read')
+          .eq('user_name', user.name)
+          .order('created_at', { ascending: false })
+          .limit(50);
 
-      const notifs = (data || []).map(n => ({
-        id: n.id,
-        title: n.title,
-        message: n.message,
-        type: n.type,
-        userName: user.name,
-        time: new Date(n.created_at).getTime(),
-        read: n.read
-      }));
+        if (error) throw error;
+
+        notifs = (data || []).map(n => ({
+          id: n.id,
+          title: n.title,
+          message: n.message,
+          type: n.type,
+          userName: user.name,
+          time: new Date(n.created_at).getTime(),
+          read: n.read,
+          source: 'supabase'
+        }));
+      }
 
       const tracker = notificationTrackerRef.current;
       const knownIds = tracker.knownIds || new Set();
@@ -2707,6 +3220,15 @@ export default function BaederApp() {
   };
 
   const sendNotification = async (userName, title, message, type = 'info') => {
+    if (secureBackendApiEnabled) {
+      console.warn('Legacy sendNotification is blocked in secure mode.', {
+        userName,
+        title,
+        type
+      });
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('notifications')
@@ -2722,7 +3244,7 @@ export default function BaederApp() {
 
       if (error) throw error;
 
-      // Trigger Web-Push für Zielnutzer (wenn konfiguriert)
+      // Trigger Web-Push fÃ¼r Zielnutzer (wenn konfiguriert)
       try {
         await triggerWebPushNotification({
           supabase,
@@ -2751,6 +3273,15 @@ export default function BaederApp() {
     type = 'info',
     excludeUserNames = []
   }) => {
+    if (secureBackendApiEnabled) {
+      console.warn('Legacy broadcast notifications are blocked in secure mode.', {
+        title,
+        type,
+        excludeUserNames
+      });
+      return 0;
+    }
+
     try {
       const excluded = new Set(
         (excludeUserNames || [])
@@ -2784,12 +3315,19 @@ export default function BaederApp() {
 
   const markNotificationAsRead = async (notifId) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', notifId);
+      const targetNotification = notifications.find((notification) => notification.id === notifId);
+      if (!targetNotification) return;
 
-      if (error) throw error;
+      if (targetNotification.source === 'secure-api') {
+        await secureNotificationsApi.markRead(notifId);
+      } else {
+        const { error } = await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('id', notifId);
+
+        if (error) throw error;
+      }
 
       setNotifications(notifications.map(n => n.id === notifId ? { ...n, read: true } : n));
     } catch (error) {
@@ -2799,12 +3337,16 @@ export default function BaederApp() {
 
   const clearAllNotifications = async () => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('user_name', user.name);
+      if (secureBackendApiEnabled) {
+        await secureNotificationsApi.clear();
+      } else {
+        const { error } = await supabase
+          .from('notifications')
+          .delete()
+          .eq('user_name', user.name);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       setNotifications([]);
     } catch (error) {
@@ -2816,7 +3358,9 @@ export default function BaederApp() {
     const stats = {
       totalUsers: allUsers.length,
       pendingApprovals: pendingUsers.length,
-      azubis: allUsers.filter(u => u.role === 'azubi').length,
+      azubis: allUsers.filter(
+        (u) => u.role === 'azubi' || u.role === 'rettungsschwimmer_azubi'
+      ).length,
       trainers: allUsers.filter(u => u.role === 'trainer').length,
       admins: allUsers.filter(u => u.role === 'admin').length,
       usersToDeleteSoon: allUsers.filter(u => {
@@ -2874,6 +3418,44 @@ export default function BaederApp() {
       setSelectedChatRecipientId(directChatCandidates[0]?.id || '');
     }
   }, [chatScope, selectedChatRecipientId, directChatCandidates]);
+
+  useEffect(() => {
+    if (!secureBackendApiEnabled || !user?.id) return;
+
+    let active = true;
+
+    const syncSecureChatMessages = async () => {
+      try {
+        const currentScope = getChatScopeKey(
+          chatScope,
+          getRoleKey(user.role) === 'azubi' ? 'azubi_room' : 'staff_room'
+        );
+
+        if (!user.organizationId) {
+          if (active) setMessages([]);
+          return;
+        }
+
+        if (currentScope === 'direct_staff' && !selectedChatRecipientId) {
+          if (active) setMessages([]);
+          return;
+        }
+
+        const normalizedMessages = await loadSecureChatMessages(undefined, { applyResult: false });
+        if (!active) return;
+        setMessages(normalizedMessages);
+      } catch (error) {
+        if (!active) return;
+        console.error('Secure chat sync failed:', error);
+      }
+    };
+
+    void syncSecureChatMessages();
+
+    return () => {
+      active = false;
+    };
+  }, [secureBackendApiEnabled, user?.id, user?.organizationId, user?.role, chatScope, selectedChatRecipientId]);
 
   const getTodayStamp = (input = Date.now()) => {
     const date = new Date(input);
@@ -2963,53 +3545,138 @@ export default function BaederApp() {
     };
   };
 
+  const normalizeSecureChatMessage = (message, userDirectory = {}) => {
+    const senderId = message?.sender?.id || null;
+    const senderProfile = senderId
+      ? (senderId === user?.id ? user : userDirectory[senderId] || null)
+      : null;
+    const senderRole = mapBackendRoleToFrontendRole(message?.sender?.role || senderProfile?.role || 'AZUBI');
+    const fallbackScope = senderRole === 'azubi' ? 'azubi_room' : 'staff_room';
+
+    return {
+      id: message?.id || `${message?.createdAt || Date.now()}-${senderId || 'chat'}`,
+      user: String(message?.sender?.displayName || senderProfile?.name || 'Unbekannt'),
+      text: String(message?.content || ''),
+      time: new Date(message?.createdAt || Date.now()).getTime(),
+      avatar: senderProfile?.avatar || null,
+      senderId,
+      senderRole,
+      scope: getChatScopeKey(String(message?.scope || '').toLowerCase(), fallbackScope),
+      organizationId: user?.organizationId || null,
+      recipientId: message?.recipient?.id || null
+    };
+  };
+
+  const loadSecureChatMessages = async (userDirectoryInput = allUsers, options = {}) => {
+    const applyResult = options?.applyResult !== false;
+
+    if (!secureBackendApiEnabled || !user?.id) {
+      return [];
+    }
+
+    if (!user.organizationId) {
+      if (applyResult) {
+        setMessages([]);
+      }
+      return [];
+    }
+
+    const activeScope = getChatScopeKey(
+      chatScope,
+      getRoleKey(user.role) === 'azubi' ? 'azubi_room' : 'staff_room'
+    );
+
+    if (activeScope === 'direct_staff' && !selectedChatRecipientId) {
+      if (applyResult) {
+        setMessages([]);
+      }
+      return [];
+    }
+
+    const userDirectory = Object.fromEntries(
+      (Array.isArray(userDirectoryInput) ? userDirectoryInput : allUsers)
+        .filter((account) => account?.id)
+        .map((account) => [account.id, account])
+    );
+
+    const apiMessages = await secureChatApi.list({
+      scope: mapFrontendChatScopeToBackendScope(activeScope),
+      recipientId: activeScope === 'direct_staff' ? selectedChatRecipientId : undefined,
+      limit: 100
+    });
+
+    const normalizedMessages = (apiMessages || []).map((message) => (
+      normalizeSecureChatMessage(message, userDirectory)
+    ));
+
+    if (applyResult) {
+      setMessages(normalizedMessages);
+    }
+
+    return normalizedMessages;
+  };
+
   // handleLogin, handleRegister, handleLogout werden vom AuthContext bereitgestellt
 
-  // Leichte Daten für Polling (alle 30s) — nur schnell ändernde Tabellen
+  // Leichte Daten fÃ¼r Polling (alle 30s) â€” nur schnell Ã¤ndernde Tabellen
   const loadLightData = async () => {
     try {
-      // Games aktualisieren
-      const { data: gamesData } = await supabase
-        .from('games')
-        .select('id, player1, player2, player1_score, player2_score, current_turn, round, status, difficulty, rounds_data, winner, updated_at, created_at, challenge_timeout_minutes, challenge_expires_at')
-        .order('created_at', { ascending: false })
-        .limit(100);
+      if (secureBackendApiEnabled) {
+        try {
+          await applySecureDuelState(user);
+        } catch (secureDuelLoadError) {
+          console.error('Secure duel refresh failed:', secureDuelLoadError);
+        }
 
-      if (gamesData) {
-        const games = gamesData.map(g => {
-          let winner = g.winner || null;
-          if (!winner && g.status === 'finished') {
-            if (g.player1_score > g.player2_score) winner = g.player1;
-            else if (g.player2_score > g.player1_score) winner = g.player2;
-          }
-          return {
-            id: g.id, player1: g.player1, player2: g.player2,
-            player1Score: g.player1_score, player2Score: g.player2_score,
-            currentTurn: g.current_turn, categoryRound: g.round || 0, round: g.round || 0,
-            status: g.status, difficulty: g.difficulty, categoryRounds: g.rounds_data || [],
-            winner, questionHistory: [], updatedAt: g.updated_at, createdAt: g.created_at,
-            challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challenge_timeout_minutes),
-            challengeExpiresAt: g.challenge_expires_at || null
-          };
-        });
-        setAllGames(games);
-        setActiveGames(games.filter(g => g.status !== 'finished'));
-        updateLeaderboard(games, allUsers);
-      }
+        try {
+          await loadSecureChatMessages();
+        } catch (secureChatLoadError) {
+          console.error('Secure chat refresh failed:', secureChatLoadError);
+        }
+      } else {
+        // Games aktualisieren
+        const { data: gamesData } = await supabase
+          .from('games')
+          .select('id, player1, player2, player1_score, player2_score, current_turn, round, status, difficulty, rounds_data, winner, updated_at, created_at, challenge_timeout_minutes, challenge_expires_at')
+          .order('created_at', { ascending: false })
+          .limit(100);
 
-      // Messages aktualisieren
-      const { data: messagesData } = await supabase
-        .from('messages')
-        .select('id, content, user_name, sender_id, created_at, chat_scope, recipient_id, user_avatar')
-        .order('created_at', { ascending: true })
-        .limit(100);
+        if (gamesData) {
+          const games = gamesData.map(g => {
+            let winner = g.winner || null;
+            if (!winner && g.status === 'finished') {
+              if (g.player1_score > g.player2_score) winner = g.player1;
+              else if (g.player2_score > g.player1_score) winner = g.player2;
+            }
+            return {
+              id: g.id, player1: g.player1, player2: g.player2,
+              player1Score: g.player1_score, player2Score: g.player2_score,
+              currentTurn: g.current_turn, categoryRound: g.round || 0, round: g.round || 0,
+              status: g.status, difficulty: g.difficulty, categoryRounds: g.rounds_data || [],
+              winner, questionHistory: [], updatedAt: g.updated_at, createdAt: g.created_at,
+              challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challenge_timeout_minutes),
+              challengeExpiresAt: g.challenge_expires_at || null
+            };
+          });
+          setAllGames(games);
+          setActiveGames(games.filter(g => g.status !== 'finished'));
+          updateLeaderboard(games, allUsers);
+        }
 
-      if (messagesData) {
-        const userDirectory = Object.fromEntries(
-          (allUsers || []).filter(a => a?.id).map(a => [a.id, a])
-        );
-        const msgs = messagesData.map((row) => normalizeChatMessageRow(row, userDirectory));
-        setMessages(msgs);
+        // Messages aktualisieren
+        const { data: messagesData } = await supabase
+          .from('messages')
+          .select('id, content, user_name, sender_id, created_at, chat_scope, recipient_id, user_avatar')
+          .order('created_at', { ascending: true })
+          .limit(100);
+
+        if (messagesData) {
+          const userDirectory = Object.fromEntries(
+            (allUsers || []).filter(a => a?.id).map(a => [a.id, a])
+          );
+          const msgs = messagesData.map((row) => normalizeChatMessageRow(row, userDirectory));
+          setMessages(msgs);
+        }
       }
     } catch (error) {
       console.log('Light data refresh error:', error.message);
@@ -3019,384 +3686,575 @@ export default function BaederApp() {
   const loadData = async () => {
     try {
       let visibleUsers = [];
+      let secureLeaderboardData = [];
+      let gamesData = null;
 
-      // Load App Config from Supabase (for all users)
       try {
-        const { data: configData, error: configError } = await supabase
-          .from('app_config')
-          .select('id, menu_items, theme_colors')
-          .eq('id', 'main')
-          .single();
-
-        if (configError) {
-          console.log('No custom config found, using defaults');
-        } else if (configData) {
-          const loadedMenuItems = mergeMenuItemsWithDefaults(configData.menu_items);
-          const loadedThemeColors = configData.theme_colors && Object.keys(configData.theme_colors).length > 0
-            ? configData.theme_colors
+        if (secureBackendApiEnabled) {
+          const configData = await secureAppConfigApi.get();
+          const loadedMenuItems = mergeMenuItemsWithDefaults(configData?.menuItems);
+          const loadedThemeColors = configData?.themeColors && Object.keys(configData.themeColors).length > 0
+            ? configData.themeColors
             : DEFAULT_THEME_COLORS;
 
           setAppConfig({
             menuItems: loadedMenuItems,
             themeColors: loadedThemeColors
           });
+        } else {
+          // Load App Config from Supabase (for all users)
+          const { data: configData, error: configError } = await supabase
+            .from('app_config')
+            .select('id, menu_items, theme_colors')
+            .eq('id', 'main')
+            .single();
+
+          if (configError) {
+            console.log('No custom config found, using defaults');
+          } else if (configData) {
+            const loadedMenuItems = mergeMenuItemsWithDefaults(configData.menu_items);
+            const loadedThemeColors = configData.theme_colors && Object.keys(configData.theme_colors).length > 0
+              ? configData.theme_colors
+              : DEFAULT_THEME_COLORS;
+
+            setAppConfig({
+              menuItems: loadedMenuItems,
+              themeColors: loadedThemeColors
+            });
+          }
         }
+
         setConfigLoaded(true);
       } catch (err) {
         console.error('Config load error:', err);
         setConfigLoaded(true);
       }
 
-      // Load users from Supabase
+      // Load users
       if (user && user.permissions.canManageUsers) {
-        // Admin sees all users
-        const { data: allUsersData } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false });
+        try {
+          if (secureBackendApiEnabled) {
+            const apiUsers = await secureUsersApi.list();
+            const mappedUsers = (apiUsers || [])
+              .map(mapBackendUserToFrontendUser)
+              .filter(Boolean);
+            const approved = mappedUsers.filter((account) => account.approved);
+            const pending = mappedUsers.filter((account) => !account.approved);
+            visibleUsers = approved;
+            setAllUsers(approved);
+            setPendingUsers(pending);
+          } else {
+            // Admin sees all users
+            const { data: allUsersData } = await supabase
+              .from('profiles')
+              .select('*')
+              .order('created_at', { ascending: false });
 
-        if (allUsersData) {
-          const approved = allUsersData.filter(u => u.approved);
-          const pending = allUsersData.filter(u => !u.approved);
-          visibleUsers = approved;
-          setAllUsers(approved);
-          setPendingUsers(pending);
+            if (allUsersData) {
+              const approved = allUsersData.filter(u => u.approved);
+              const pending = allUsersData.filter(u => !u.approved);
+              visibleUsers = approved;
+              setAllUsers(approved);
+              setPendingUsers(pending);
+            }
+          }
+        } catch (userLoadError) {
+          console.error('Admin user list could not be loaded:', userLoadError);
+          setAllUsers([]);
+          setPendingUsers([]);
         }
       } else {
         // Normal users see only approved users
-        const { data: approvedUsers } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('approved', true);
+        setPendingUsers([]);
+        if (secureBackendApiEnabled) {
+          try {
+            const apiContacts = await secureUsersApi.contacts();
+            const mappedContacts = (apiContacts || [])
+              .map((contact) => mapBackendUserToFrontendUser({
+                ...contact,
+                status: 'APPROVED'
+              }))
+              .filter(Boolean);
+            visibleUsers = mappedContacts;
+            setAllUsers(mappedContacts);
+          } catch (contactLoadError) {
+            console.error('Secure contacts could not be loaded:', contactLoadError);
+            setAllUsers([]);
+          }
+        } else {
+          const { data: approvedUsers } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('approved', true);
 
-        if (approvedUsers) {
-          visibleUsers = approvedUsers;
-          setAllUsers(approvedUsers);
+          if (approvedUsers) {
+            visibleUsers = approvedUsers;
+            setAllUsers(approvedUsers);
+          }
         }
       }
 
       await loadCustomSwimTrainingPlans();
 
-      // Load games from Supabase
-      const { data: gamesData } = await supabase
-        .from('games')
-        .select('id, player1, player2, player1_score, player2_score, current_turn, round, status, difficulty, rounds_data, winner, updated_at, created_at, challenge_timeout_minutes, challenge_expires_at')
-        .order('created_at', { ascending: false })
-        .limit(200);
+      if (secureBackendApiEnabled) {
+        try {
+          const secureDuelState = await applySecureDuelState(user);
+          secureLeaderboardData = secureDuelState.leaderboard || [];
+        } catch (secureDuelLoadError) {
+          console.error('Secure duel load failed:', secureDuelLoadError);
+          setAllGames([]);
+          setActiveGames([]);
+          setLeaderboard([]);
+        }
+      } else {
+        // Load games from Supabase
+        const gamesResponse = await supabase
+          .from('games')
+          .select('id, player1, player2, player1_score, player2_score, current_turn, round, status, difficulty, rounds_data, winner, updated_at, created_at, challenge_timeout_minutes, challenge_expires_at')
+          .order('created_at', { ascending: false })
+          .limit(200);
 
-      if (gamesData) {
-        const games = gamesData.map(g => {
-          // Winner aus DB laden, oder aus Scores berechnen (Fallback)
-          let winner = g.winner || null;
-          if (!winner && g.status === 'finished') {
-            if (g.player1_score > g.player2_score) winner = g.player1;
-            else if (g.player2_score > g.player1_score) winner = g.player2;
-          }
-          return {
-            id: g.id,
-            player1: g.player1,
-            player2: g.player2,
-            player1Score: g.player1_score,
-            player2Score: g.player2_score,
-            currentTurn: g.current_turn,
-            categoryRound: g.round || 0,
-            round: g.round || 0,
-            status: g.status,
-            difficulty: g.difficulty,
-            categoryRounds: g.rounds_data || [],
-            winner: winner,
-            questionHistory: [],
-            updatedAt: g.updated_at,
-            createdAt: g.created_at,
-            challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challenge_timeout_minutes),
-            challengeExpiresAt: g.challenge_expires_at || null
-          };
-        });
-        setAllGames(games);
-        setActiveGames(games.filter(g => g.status !== 'finished'));
-        updateLeaderboard(games, allUsers);
-        await checkExpiredAndRemindGames(games);
+        gamesData = gamesResponse.data;
+
+        if (gamesData) {
+          const games = gamesData.map(g => {
+            // Winner aus DB laden, oder aus Scores berechnen (Fallback)
+            let winner = g.winner || null;
+            if (!winner && g.status === 'finished') {
+              if (g.player1_score > g.player2_score) winner = g.player1;
+              else if (g.player2_score > g.player1_score) winner = g.player2;
+            }
+            return {
+              id: g.id,
+              player1: g.player1,
+              player2: g.player2,
+              player1Score: g.player1_score,
+              player2Score: g.player2_score,
+              currentTurn: g.current_turn,
+              categoryRound: g.round || 0,
+              round: g.round || 0,
+              status: g.status,
+              difficulty: g.difficulty,
+              categoryRounds: g.rounds_data || [],
+              winner: winner,
+              questionHistory: [],
+              updatedAt: g.updated_at,
+              createdAt: g.created_at,
+              challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challenge_timeout_minutes),
+              challengeExpiresAt: g.challenge_expires_at || null
+            };
+          });
+          setAllGames(games);
+          setActiveGames(games.filter(g => g.status !== 'finished'));
+          updateLeaderboard(games, allUsers);
+          await checkExpiredAndRemindGames(games);
+        }
       }
 
       // Load all user stats for trainer dashboard cards
-      const { data: allStatsData, error: allStatsError } = await supabase
-        .from('user_stats')
-        .select('user_id, wins, losses, draws, category_stats');
+      if (secureBackendApiEnabled) {
+        try {
+          const secureStatsSummary = await secureUserStatsApi.summary();
+          const nextStatsByUserId = {};
+          (Array.isArray(secureStatsSummary) ? secureStatsSummary : []).forEach((row) => {
+            const leaderboardEntry = secureLeaderboardData.find((entry) => entry?.userId === row.userId);
+            const wins = leaderboardEntry ? toSafeInt(leaderboardEntry.wins) : toSafeInt(row.wins);
+            const losses = leaderboardEntry ? toSafeInt(leaderboardEntry.losses) : toSafeInt(row.losses);
+            const draws = leaderboardEntry ? toSafeInt(leaderboardEntry.draws) : toSafeInt(row.draws);
 
-      if (allStatsError) {
-        console.log('All stats load error:', allStatsError.message);
-        setStatsByUserId({});
-      } else if (allStatsData) {
-        const nextStatsByUserId = {};
-        allStatsData.forEach(row => {
-          const wins = row.wins || 0;
-          const losses = row.losses || 0;
-          const draws = row.draws || 0;
-          const xpMeta = getXpMetaFromCategoryStats(row.category_stats || {});
-          nextStatsByUserId[row.user_id] = {
-            wins,
-            losses,
-            draws,
-            total: wins + losses + draws,
-            totalXp: xpMeta.totalXp,
-            xpBreakdown: xpMeta.breakdown
-          };
-        });
-        setStatsByUserId(nextStatsByUserId);
+            nextStatsByUserId[row.userId] = {
+              wins,
+              losses,
+              draws,
+              total: wins + losses + draws,
+              totalXp: toSafeInt(row.totalXp),
+              xpBreakdown: row.xpBreakdown || {}
+            };
+          });
+          setStatsByUserId(nextStatsByUserId);
+        } catch (secureStatsError) {
+          console.error('Secure stats summary could not be loaded:', secureStatsError);
+          setStatsByUserId({});
+        }
+      } else {
+        const { data: allStatsData, error: allStatsError } = await supabase
+          .from('user_stats')
+          .select('user_id, wins, losses, draws, category_stats');
+
+        if (allStatsError) {
+          console.log('All stats load error:', allStatsError.message);
+          setStatsByUserId({});
+        } else if (allStatsData) {
+          const nextStatsByUserId = {};
+          allStatsData.forEach(row => {
+            const wins = row.wins || 0;
+            const losses = row.losses || 0;
+            const draws = row.draws || 0;
+            const xpMeta = getXpMetaFromCategoryStats(row.category_stats || {});
+            nextStatsByUserId[row.user_id] = {
+              wins,
+              losses,
+              draws,
+              total: wins + losses + draws,
+              totalXp: xpMeta.totalXp,
+              xpBreakdown: xpMeta.breakdown
+            };
+          });
+          setStatsByUserId(nextStatsByUserId);
+        }
       }
 
       // Load user stats from Supabase.
       // Existing aggregate stats are authoritative; we only restore from finished
       // games when the stored quiz totals are missing/empty.
-      if (user && user.id && gamesData) {
+      if (user && user.id) {
         try {
-          const { data: statsData } = await supabase
-            .from('user_stats')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
+          if (secureBackendApiEnabled) {
+            const statsData = await secureUserStatsApi.me();
+            const stats = mergeSecureLeaderboardIntoUserStats(
+              ensureUserStatsStructure(statsData || createEmptyUserStats()),
+              secureLeaderboardData,
+              user
+            );
+            setUserStats(stats);
+          } else {
+            const { data: statsData } = await supabase
+              .from('user_stats')
+              .select('*')
+              .eq('user_id', user.id)
+              .single();
 
-          let stats = buildUserStatsFromRow(statsData);
-          let shouldPersistStats = doesUserStatsRowNeedRepair(statsData, stats);
-          const currentUserName = normalizePlayerName(user.name);
-          const finishedGames = (gamesData || []).filter(g => {
-            if (!isFinishedGameStatus(g.status)) return false;
-            const p1 = normalizePlayerName(g.player1);
-            const p2 = normalizePlayerName(g.player2);
-            return p1 === currentUserName || p2 === currentUserName;
-          });
-          const syncedStats = buildQuizTotalsFromFinishedGames(finishedGames, currentUserName, stats);
-          const storedTotalGames = stats.wins + stats.losses + stats.draws;
-          const syncedTotalGames = syncedStats.wins + syncedStats.losses + syncedStats.draws;
-          const shouldRestoreQuizTotals =
-            (storedTotalGames === 0 && syncedTotalGames > 0) ||
-            syncedTotalGames > storedTotalGames;
+            let stats = buildUserStatsFromRow(statsData);
+            let shouldPersistStats = doesUserStatsRowNeedRepair(statsData, stats);
+            if (gamesData) {
+              const currentUserName = normalizePlayerName(user.name);
+              const finishedGames = (gamesData || []).filter(g => {
+                if (!isFinishedGameStatus(g.status)) return false;
+                const p1 = normalizePlayerName(g.player1);
+                const p2 = normalizePlayerName(g.player2);
+                return p1 === currentUserName || p2 === currentUserName;
+              });
+              const syncedStats = buildQuizTotalsFromFinishedGames(finishedGames, currentUserName, stats);
+              const storedTotalGames = stats.wins + stats.losses + stats.draws;
+              const syncedTotalGames = syncedStats.wins + syncedStats.losses + syncedStats.draws;
+              const shouldRestoreQuizTotals =
+                (storedTotalGames === 0 && syncedTotalGames > 0) ||
+                syncedTotalGames > storedTotalGames;
 
-          if (shouldRestoreQuizTotals) {
-            stats = {
-              ...stats,
-              wins: Math.max(stats.wins, syncedStats.wins),
-              losses: Math.max(stats.losses, syncedStats.losses),
-              draws: Math.max(stats.draws, syncedStats.draws),
-              opponents: mergeOpponentStatsByMax(stats.opponents, syncedStats.opponents)
-            };
-            shouldPersistStats = true;
+              if (shouldRestoreQuizTotals) {
+                stats = {
+                  ...stats,
+                  wins: Math.max(stats.wins, syncedStats.wins),
+                  losses: Math.max(stats.losses, syncedStats.losses),
+                  draws: Math.max(stats.draws, syncedStats.draws),
+                  opponents: mergeOpponentStatsByMax(stats.opponents, syncedStats.opponents)
+                };
+                shouldPersistStats = true;
+              }
+            }
+
+            if (shouldPersistStats) {
+              await saveUserStatsToSupabase(user, stats);
+            }
+
+            setUserStats(stats);
           }
-
-          if (shouldPersistStats) {
-            await saveUserStatsToSupabase(user, stats);
-          }
-
-          setUserStats(stats);
         } catch (e) {
           console.log('Stats load:', e);
           setUserStats(ensureUserStatsStructure(createEmptyUserStats()));
         }
       }
 
-      // Load messages from Supabase
-      const { data: messagesData } = await supabase
-        .from('messages')
-        .select('id, content, user_name, sender_id, created_at, chat_scope, recipient_id, user_avatar')
-        .order('created_at', { ascending: true })
-        .limit(100);
-
-      if (messagesData) {
-        const userDirectory = Object.fromEntries(
-          (visibleUsers || [])
-            .filter((account) => account?.id)
-            .map((account) => [account.id, account])
-        );
-        const msgs = messagesData.map((messageRow) => normalizeChatMessageRow(messageRow, userDirectory));
-        setMessages(msgs);
-      }
-
-      // Load custom questions from Supabase
-      const { data: questionsData } = await supabase
-        .from('custom_questions')
-        .select('id, question, category, answers, correct, created_by, approved, created_at')
-        .order('created_at', { ascending: false })
-        .limit(200);
-
-      if (questionsData) {
-        const qs = questionsData.map(q => ({
-          id: q.id,
-          text: q.question,
-          category: q.category,
-          answers: q.answers,
-          correct: q.correct,
-          submittedBy: q.created_by,
-          approved: q.approved,
-          time: new Date(q.created_at).getTime()
-        }));
-        setSubmittedQuestions(qs);
-      }
-
-      // Load reported question feedback (if table exists)
-      if (user?.permissions?.canManageUsers) {
+      if (secureBackendApiEnabled) {
         try {
-          const { data: reportsData, error: reportsError } = await supabase
-            .from('question_reports')
-            .select('id, question_text, question, category, question_key, source, note, answers, reported_by, user_name, reported_by_id, status, created_at')
-            .order('created_at', { ascending: false })
-            .limit(200);
+          await loadSecureChatMessages(visibleUsers);
+        } catch (secureChatLoadError) {
+          console.error('Secure chat load failed:', secureChatLoadError);
+          setMessages([]);
+        }
+      } else {
+        // Load messages from Supabase
+        const { data: messagesData } = await supabase
+          .from('messages')
+          .select('id, content, user_name, sender_id, created_at, chat_scope, recipient_id, user_avatar')
+          .order('created_at', { ascending: true })
+          .limit(100);
 
-          if (!reportsError && Array.isArray(reportsData)) {
-            const remoteReports = reportsData.map((row) => {
-              const questionText = String(row.question_text || row.question || '').trim();
-              const category = String(row.category || 'unknown');
-              return {
-                id: row.id ? String(row.id) : `remote-${Date.parse(row.created_at || '') || Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                questionKey: String(
-                  row.question_key
-                  || getQuestionPerformanceKey({ q: questionText, category }, category)
-                ),
-                questionText,
-                category,
-                source: String(row.source || 'unknown'),
-                note: String(row.note || ''),
-                answers: Array.isArray(row.answers) ? row.answers : [],
-                reportedBy: String(row.reported_by || row.user_name || 'Unbekannt'),
-                reportedById: row.reported_by_id || null,
-                status: String(row.status || 'open'),
-                createdAt: row.created_at || new Date().toISOString()
-              };
-            });
-
-            const localReports = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
-            const safeLocalReports = Array.isArray(localReports) ? localReports : [];
-            const merged = [...remoteReports];
-            const seen = new Set(remoteReports.map((entry) => `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`));
-            safeLocalReports.forEach((entry) => {
-              const dedupeKey = `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`;
-              if (seen.has(dedupeKey)) return;
-              seen.add(dedupeKey);
-              merged.push(entry);
-            });
-            setQuestionReports(merged.slice(0, 500));
-          }
-        } catch (error) {
-          console.log('question_reports load skipped');
+        if (messagesData) {
+          const userDirectory = Object.fromEntries(
+            (visibleUsers || [])
+              .filter((account) => account?.id)
+              .map((account) => [account.id, account])
+          );
+          const msgs = messagesData.map((messageRow) => normalizeChatMessageRow(messageRow, userDirectory));
+          setMessages(msgs);
         }
       }
 
-      // Load materials from Supabase
-      const { data: materialsData } = await supabase
-        .from('materials')
-        .select('id, title, content, category, type, url, created_by, created_at')
-        .order('created_at', { ascending: false })
-        .limit(100);
+      if (secureBackendApiEnabled) {
+        try {
+          const secureSubmissions = await secureQuestionWorkflowsApi.listSubmissions();
+          setSubmittedQuestions((Array.isArray(secureSubmissions) ? secureSubmissions : []).map(normalizeSecureSubmittedQuestion));
+        } catch (questionLoadError) {
+          console.error('Secure submitted questions could not be loaded:', questionLoadError);
+          setSubmittedQuestions([]);
+        }
 
-      if (materialsData) {
-        const mats = materialsData.map(m => ({
-          id: m.id,
-          title: m.title,
-          content: m.content,
-          category: m.category,
-          type: m.type,
-          url: m.url,
-          createdBy: m.created_by,
-          time: new Date(m.created_at).getTime()
-        }));
-        setMaterials(mats);
+        if (user?.permissions?.canApproveQuestions) {
+          try {
+            const secureReports = await secureQuestionWorkflowsApi.listReports();
+            setQuestionReports((Array.isArray(secureReports) ? secureReports : []).map(normalizeSecureQuestionReport));
+          } catch (reportLoadError) {
+            console.error('Secure question reports could not be loaded:', reportLoadError);
+            setQuestionReports([]);
+          }
+        } else {
+          setQuestionReports([]);
+        }
+      } else {
+        // Load custom questions from Supabase
+        const { data: questionsData } = await supabase
+          .from('custom_questions')
+          .select('id, question, category, answers, correct, created_by, approved, created_at')
+          .order('created_at', { ascending: false })
+          .limit(200);
+
+        if (questionsData) {
+          const qs = questionsData.map(q => ({
+            id: q.id,
+            text: q.question,
+            category: q.category,
+            answers: q.answers,
+            correct: q.correct,
+            submittedBy: q.created_by,
+            approved: q.approved,
+            time: new Date(q.created_at).getTime()
+          }));
+          setSubmittedQuestions(qs);
+        }
+
+        // Load reported question feedback (if table exists)
+        if (user?.permissions?.canManageUsers) {
+          try {
+            const { data: reportsData, error: reportsError } = await supabase
+              .from('question_reports')
+              .select('id, question_text, question, category, question_key, source, note, answers, reported_by, user_name, reported_by_id, status, created_at')
+              .order('created_at', { ascending: false })
+              .limit(200);
+
+            if (!reportsError && Array.isArray(reportsData)) {
+              const remoteReports = reportsData.map((row) => {
+                const questionText = String(row.question_text || row.question || '').trim();
+                const category = String(row.category || 'unknown');
+                return {
+                  id: row.id ? String(row.id) : `remote-${Date.parse(row.created_at || '') || Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                  questionKey: String(
+                    row.question_key
+                    || getQuestionPerformanceKey({ q: questionText, category }, category)
+                  ),
+                  questionText,
+                  category,
+                  source: String(row.source || 'unknown'),
+                  note: String(row.note || ''),
+                  answers: Array.isArray(row.answers) ? row.answers : [],
+                  reportedBy: String(row.reported_by || row.user_name || 'Unbekannt'),
+                  reportedById: row.reported_by_id || null,
+                  status: String(row.status || 'open'),
+                  createdAt: row.created_at || new Date().toISOString()
+                };
+              });
+
+              const localReports = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
+              const safeLocalReports = Array.isArray(localReports) ? localReports : [];
+              const merged = [...remoteReports];
+              const seen = new Set(remoteReports.map((entry) => `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`));
+              safeLocalReports.forEach((entry) => {
+                const dedupeKey = `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`;
+                if (seen.has(dedupeKey)) return;
+                seen.add(dedupeKey);
+                merged.push(entry);
+              });
+              setQuestionReports(merged.slice(0, 500));
+            }
+          } catch (error) {
+            console.log('question_reports load skipped');
+          }
+        }
       }
 
-      // Load resources from Supabase
-      try {
-        const { data: resourcesData, error: resourcesError } = await supabase
-          .from('resources')
-          .select('id, title, description, url, category, created_by, created_at')
+      if (secureBackendApiEnabled) {
+        try {
+          const secureMaterials = await secureContentApi.listMaterials();
+          setMaterials((Array.isArray(secureMaterials) ? secureMaterials : []).map(normalizeSecureMaterial));
+        } catch (materialsLoadError) {
+          console.error('Secure materials could not be loaded:', materialsLoadError);
+          setMaterials([]);
+        }
+      } else {
+        // Load materials from Supabase
+        const { data: materialsData } = await supabase
+          .from('materials')
+          .select('id, title, content, category, type, url, created_by, created_at')
           .order('created_at', { ascending: false })
           .limit(100);
 
-        if (resourcesError) {
-          console.error('Resources load error:', resourcesError);
-        } else if (resourcesData) {
-          const ress = resourcesData.map(r => ({
-            id: r.id,
-            title: r.title,
-            description: r.description,
-            url: r.url,
-            type: r.category,
-            addedBy: r.created_by,
-            time: new Date(r.created_at).getTime()
+        if (materialsData) {
+          const mats = materialsData.map(m => ({
+            id: m.id,
+            title: m.title,
+            content: m.content,
+            category: m.category,
+            type: m.type,
+            url: m.url,
+            createdBy: m.created_by,
+            time: new Date(m.created_at).getTime()
           }));
-          setResources(ress);
+          setMaterials(mats);
         }
-      } catch (err) {
-        console.error('Resources fetch failed:', err);
       }
 
-      // Load news from Supabase
-      const { data: newsData } = await supabase
-        .from('news')
-        .select('id, title, content, author, created_at')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      if (secureBackendApiEnabled) {
+        try {
+          const secureResources = await secureContentApi.listResources();
+          setResources((Array.isArray(secureResources) ? secureResources : []).map(normalizeSecureResource));
+        } catch (resourcesLoadError) {
+          console.error('Secure resources could not be loaded:', resourcesLoadError);
+          setResources([]);
+        }
+      } else {
+        // Load resources from Supabase
+        try {
+          const { data: resourcesData, error: resourcesError } = await supabase
+            .from('resources')
+            .select('id, title, description, url, category, created_by, created_at')
+            .order('created_at', { ascending: false })
+            .limit(100);
 
-      if (newsData) {
-        const newsItems = newsData.map(n => ({
-          id: n.id,
-          title: n.title,
-          content: n.content,
-          author: n.author,
-          time: new Date(n.created_at).getTime()
-        }));
-        setNews(newsItems);
-      }
-
-      // Load exams from Supabase
-      const { data: examsData } = await supabase
-        .from('exams')
-        .select('id, title, description, exam_date, location, created_by, created_at')
-        .order('exam_date', { ascending: true })
-        .limit(50);
-
-      if (examsData) {
-        const exs = examsData.map(e => ({
-          id: e.id,
-          title: e.title,
-          description: e.description,
-          date: e.exam_date,
-          location: e.location,
-          createdBy: e.created_by,
-          time: new Date(e.created_at).getTime()
-        }));
-        setExams(exs);
-      }
-
-      // Load flashcards from Supabase
-      const { data: flashcardsData } = await supabase
-        .from('flashcards')
-        .select('id, category, question, answer, approved, user_id, created_at')
-        .order('created_at', { ascending: false })
-        .limit(500);
-
-      if (flashcardsData) {
-        const fcs = [];
-        const pendingFcs = [];
-        flashcardsData.forEach(fc => {
-          const card = {
-            id: fc.id,
-            category: fc.category,
-            front: fc.question,
-            back: fc.answer,
-            approved: fc.approved,
-            userId: fc.user_id
-          };
-          if (fc.approved) {
-            fcs.push(card);
-          } else {
-            pendingFcs.push(card);
+          if (resourcesError) {
+            console.error('Resources load error:', resourcesError);
+          } else if (resourcesData) {
+            const ress = resourcesData.map((resource) => normalizeSecureResource({
+              id: resource.id,
+              title: resource.title,
+              description: resource.description,
+              url: resource.url,
+              category: resource.category,
+              created_by: resource.created_by,
+              created_at: resource.created_at
+            }));
+            setResources(ress);
           }
-        });
-        setUserFlashcards(fcs);
-        setPendingFlashcards(pendingFcs);
+        } catch (err) {
+          console.error('Resources fetch failed:', err);
+        }
+      }
+
+      if (secureBackendApiEnabled) {
+        try {
+          const secureNews = await secureContentApi.listNews();
+          setNews((Array.isArray(secureNews) ? secureNews : []).map(normalizeSecureNewsItem));
+        } catch (newsLoadError) {
+          console.error('Secure news could not be loaded:', newsLoadError);
+          setNews([]);
+        }
+
+        try {
+          const secureExams = await secureContentApi.listExams();
+          setExams((Array.isArray(secureExams) ? secureExams : []).map(normalizeSecureScheduledExam));
+        } catch (examLoadError) {
+          console.error('Secure exams could not be loaded:', examLoadError);
+          setExams([]);
+        }
+      } else {
+        // Load news from Supabase
+        const { data: newsData } = await supabase
+          .from('news')
+          .select('id, title, content, author, created_at')
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        if (newsData) {
+          const newsItems = newsData.map(n => ({
+            id: n.id,
+            title: n.title,
+            content: n.content,
+            author: n.author,
+            time: new Date(n.created_at).getTime()
+          }));
+          setNews(newsItems);
+        }
+
+        // Load exams from Supabase
+        const { data: examsData } = await supabase
+          .from('exams')
+          .select('id, title, description, exam_date, location, created_by, created_at')
+          .order('exam_date', { ascending: true })
+          .limit(50);
+
+        if (examsData) {
+          const exs = examsData.map(e => ({
+            id: e.id,
+            title: e.title,
+            description: e.description,
+            date: e.exam_date,
+            location: e.location,
+            createdBy: e.created_by,
+            time: new Date(e.created_at).getTime()
+          }));
+          setExams(exs);
+        }
+      }
+
+      // Load flashcards
+      if (secureBackendApiEnabled) {
+        try {
+          const approvedFlashcards = await secureFlashcardsApi.list();
+          setUserFlashcards((Array.isArray(approvedFlashcards) ? approvedFlashcards : []).map(normalizeSecureFlashcard));
+
+          if (user?.permissions?.canApproveQuestions) {
+            const pendingFlashcardsResponse = await secureFlashcardsApi.listPending();
+            setPendingFlashcards((Array.isArray(pendingFlashcardsResponse) ? pendingFlashcardsResponse : []).map(normalizeSecureFlashcard));
+          } else {
+            setPendingFlashcards([]);
+          }
+        } catch (flashcardLoadError) {
+          console.error('Secure flashcards could not be loaded:', flashcardLoadError);
+          setUserFlashcards([]);
+          setPendingFlashcards([]);
+        }
+      } else {
+        const { data: flashcardsData } = await supabase
+          .from('flashcards')
+          .select('id, category, question, answer, approved, user_id, created_at')
+          .order('created_at', { ascending: false })
+          .limit(500);
+
+        if (flashcardsData) {
+          const fcs = [];
+          const pendingFcs = [];
+          flashcardsData.forEach(fc => {
+            const card = {
+              id: fc.id,
+              category: fc.category,
+              front: fc.question,
+              back: fc.answer,
+              approved: fc.approved,
+              userId: fc.user_id
+            };
+            if (fc.approved) {
+              fcs.push(card);
+            } else {
+              pendingFcs.push(card);
+            }
+          });
+          setUserFlashcards(fcs);
+          setPendingFlashcards(pendingFcs);
+        }
       }
 
       // Load user badges from Supabase
       if (user?.id) {
-        // Versuche zuerst nach user_id zu suchen, dann nach user_name (Abwärtskompatibilität)
+        // Versuche zuerst nach user_id zu suchen, dann nach user_name (AbwÃ¤rtskompatibilitÃ¤t)
         let badgesData = null;
         const { data: byId } = await supabase
           .from('user_badges')
@@ -3406,7 +4264,7 @@ export default function BaederApp() {
         if (byId && byId.length > 0) {
           badgesData = byId;
         } else if (user.name) {
-          // Fallback für alte Einträge ohne user_id
+          // Fallback fÃ¼r alte EintrÃ¤ge ohne user_id
           const { data: byName } = await supabase
             .from('user_badges')
             .select('badge_id, earned_at')
@@ -3430,7 +4288,7 @@ export default function BaederApp() {
   const updateLeaderboard = (games, users) => {
     const stats = {};
 
-    // Nur vollständig gespielte Spiele zählen
+    // Nur vollstÃ¤ndig gespielte Spiele zÃ¤hlen
     games.filter(g => {
       if (g.status !== 'finished') return false;
       const rounds = g.categoryRounds || [];
@@ -3467,6 +4325,37 @@ export default function BaederApp() {
   };
 
   const approveUser = async (email) => {
+    if (secureBackendApiEnabled) {
+      try {
+        const targetAccount = [...pendingUsers, ...allUsers].find(
+          (account) => String(account?.email || '').trim().toLowerCase() === String(email || '').trim().toLowerCase()
+        );
+
+        if (!targetAccount?.id) {
+          showToast('User nicht gefunden', 'error');
+          return;
+        }
+
+        await secureUsersApi.updateApproval(targetAccount.id, {
+          status: 'APPROVED',
+          reason: 'Approved by admin UI'
+        });
+
+        await loadData();
+        playSound('whistle');
+        showToast(`${targetAccount.name} wurde freigeschaltet!`, 'success');
+      } catch (error) {
+        console.error('Error approving user via secure API:', error);
+        showToast(error?.message || 'Fehler beim Freischalten', 'error');
+      }
+      return;
+    }
+
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('Freischaltungen');
+      return;
+    }
+
     try {
       // Update user in Supabase
       const { data: account, error } = await supabase
@@ -3508,6 +4397,46 @@ export default function BaederApp() {
   };
 
   const deleteUser = async (email) => {
+    if (secureBackendApiEnabled) {
+      try {
+        const targetEmail = String(email || '').trim().toLowerCase();
+        const targetUser = allUsers.find(
+          (account) => String(account?.email || '').trim().toLowerCase() === targetEmail
+        );
+
+        if (!targetUser?.id) {
+          showToast('User nicht gefunden', 'error');
+          return;
+        }
+
+        if (targetUser.role === 'admin') {
+          showToast('Administratorkonten koennen hier nicht deaktiviert werden.', 'error');
+          return;
+        }
+
+        if (!confirm(`Account von ${targetUser.name} wirklich sperren? Der Zugang wird sofort deaktiviert.`)) {
+          return;
+        }
+
+        await secureUsersApi.updateApproval(targetUser.id, {
+          status: 'DISABLED',
+          reason: 'Disabled by admin UI'
+        });
+
+        await loadData();
+        showToast(`${targetUser.name} wurde gesperrt.`, 'success');
+      } catch (error) {
+        console.error('Error disabling user via secure API:', error);
+        showToast(error?.message || 'Fehler beim Sperren des Accounts', 'error');
+      }
+      return;
+    }
+
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('Nutzerloeschungen');
+      return;
+    }
+
     try {
       // Get user from Supabase
       const { data: account, error: fetchError } = await supabase
@@ -3523,18 +4452,18 @@ export default function BaederApp() {
 
       // NEVER allow deletion of admin accounts
       if (account.role === 'admin') {
-        showToast('Administratoren können nicht gelöscht werden!', 'error');
+        showToast('Administratoren kÃ¶nnen nicht gelÃ¶scht werden!', 'error');
         return;
       }
 
-      if (!confirm('Möchtest du diesen Nutzer wirklich löschen? Alle Daten werden unwiderruflich gelöscht!')) {
+      if (!confirm('MÃ¶chtest du diesen Nutzer wirklich lÃ¶schen? Alle Daten werden unwiderruflich gelÃ¶scht!')) {
         return;
       }
 
       // Delete profile from Supabase
-      // HINWEIS: Der Supabase Auth User bleibt erhalten und muss über
-      // eine Edge Function oder manuell im Dashboard gelöscht werden.
-      // Für vollständige Löschung: supabase.auth.admin.deleteUser(userId)
+      // HINWEIS: Der Supabase Auth User bleibt erhalten und muss Ã¼ber
+      // eine Edge Function oder manuell im Dashboard gelÃ¶scht werden.
+      // FÃ¼r vollstÃ¤ndige LÃ¶schung: supabase.auth.admin.deleteUser(userId)
       const { error: deleteError } = await supabase
         .from('profiles')
         .delete()
@@ -3543,37 +4472,72 @@ export default function BaederApp() {
       if (deleteError) throw deleteError;
 
       loadData();
-      showToast('Nutzerprofil und Daten wurden gelöscht', 'success');
+      showToast('Nutzerprofil und Daten wurden gelÃ¶scht', 'success');
     } catch (error) {
       console.error('Delete user error:', error);
-      showToast('Fehler beim Löschen', 'error');
+      showToast('Fehler beim LÃ¶schen', 'error');
     }
   };
 
   const changeUserRole = async (email, newRole) => {
+    if (secureBackendApiEnabled) {
+      try {
+        if (!user?.permissions?.canManageUsers) {
+          showToast('Keine Berechtigung fuer RollenÃ¤nderungen.', 'error');
+          return;
+        }
+
+        const targetEmail = String(email || '').trim().toLowerCase();
+        const targetUser = allUsers.find(
+          (account) => String(account?.email || '').trim().toLowerCase() === targetEmail
+        );
+
+        if (!targetUser?.id) {
+          showToast('User nicht gefunden', 'error');
+          return;
+        }
+
+        await secureUsersApi.updateRole(targetUser.id, {
+          role: mapFrontendRoleToBackendRole(newRole)
+        });
+
+        await loadData();
+        showToast(`Rolle geaendert zu: ${PERMISSIONS[newRole].label}`, 'success');
+      } catch (error) {
+        console.error('Error changing role via secure API:', error);
+        showToast(error?.message || 'Fehler beim Aendern der Rolle', 'error');
+      }
+      return;
+    }
+
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('RollenÃ¤nderungen');
+      return;
+    }
+
     try {
       if (!user?.permissions?.canManageUsers) {
-        showToast('Keine Berechtigung für Rollenänderungen.', 'error');
+        showToast('Keine Berechtigung fÃ¼r RollenÃ¤nderungen.', 'error');
         return;
       }
       const hasOwnerAccount = allUsers.some((account) => Boolean(account?.is_owner));
       const canManageSecurity = Boolean(user?.isOwner) || (user?.role === 'admin' && !hasOwnerAccount);
       if (!canManageSecurity) {
-        showToast('Nur der Hauptadmin darf Rollen ändern.', 'error');
+        showToast('Nur der Hauptadmin darf Rollen Ã¤ndern.', 'error');
         return;
       }
 
       const targetEmail = String(email || '').trim().toLowerCase();
       const ownEmail = String(user?.email || '').trim().toLowerCase();
-      const allowedRoles = ['azubi', 'trainer', 'admin'];
+      const allowedRoles = ['azubi', 'rettungsschwimmer_azubi', 'trainer', 'admin'];
       if (!allowedRoles.includes(newRole)) {
-        showToast('Ungültige Rolle ausgewählt', 'error');
+        showToast('UngÃ¼ltige Rolle ausgewÃ¤hlt', 'error');
         return;
       }
 
       // Protect against locking yourself out of the admin area.
       if (targetEmail && targetEmail === ownEmail && newRole !== 'admin') {
-        showToast('Deine eigene Admin-Rolle kann nicht geändert werden.', 'error');
+        showToast('Deine eigene Admin-Rolle kann nicht geÃ¤ndert werden.', 'error');
         return;
       }
 
@@ -3596,15 +4560,25 @@ export default function BaederApp() {
       if (error) throw error;
 
       loadData();
-      showToast(`Rolle geändert zu: ${PERMISSIONS[newRole].label}`, 'success');
+      showToast(`Rolle geÃ¤ndert zu: ${PERMISSIONS[newRole].label}`, 'success');
     } catch (error) {
       console.error('Error changing role:', error);
-      showToast('Fehler beim Ändern der Rolle', 'error');
+      showToast('Fehler beim Ã„ndern der Rolle', 'error');
     }
   };
 
-  // Kontrollkarten-Berechtigung für Trainer ändern
+  // Kontrollkarten-Berechtigung fÃ¼r Trainer Ã¤ndern
   const toggleSchoolCardPermission = async (userId, currentValue) => {
+    if (secureBackendApiEnabled) {
+      showToast('Trainer-Berechtigungen sind im sicheren API-Pfad noch nicht migriert.', 'warning');
+      return;
+    }
+
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('BerechtigungsÃ¤nderungen');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('profiles')
@@ -3622,12 +4596,22 @@ export default function BaederApp() {
       );
     } catch (error) {
       console.error('Error toggling school card permission:', error);
-      showToast('Fehler beim Ändern der Berechtigung', 'error');
+      showToast('Fehler beim Ã„ndern der Berechtigung', 'error');
     }
   };
 
-  // Berichtsheft-Unterschrift-Berechtigung für Trainer ändern
+  // Berichtsheft-Unterschrift-Berechtigung fÃ¼r Trainer Ã¤ndern
   const toggleSignReportsPermission = async (userId, currentValue) => {
+    if (secureBackendApiEnabled) {
+      showToast('Trainer-Berechtigungen sind im sicheren API-Pfad noch nicht migriert.', 'warning');
+      return;
+    }
+
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('BerechtigungsÃ¤nderungen');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('profiles')
@@ -3645,12 +4629,22 @@ export default function BaederApp() {
       );
     } catch (error) {
       console.error('Error toggling sign reports permission:', error);
-      showToast('Fehler beim Ändern der Berechtigung', 'error');
+      showToast('Fehler beim Ã„ndern der Berechtigung', 'error');
     }
   };
 
-  // Klasuren-Berechtigung für Trainer ändern
+  // Klasuren-Berechtigung fÃ¼r Trainer Ã¤ndern
   const toggleExamGradesPermission = async (userId, currentValue) => {
+    if (secureBackendApiEnabled) {
+      showToast('Trainer-Berechtigungen sind im sicheren API-Pfad noch nicht migriert.', 'warning');
+      return;
+    }
+
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('BerechtigungsÃ¤nderungen');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('profiles')
@@ -3666,21 +4660,20 @@ export default function BaederApp() {
       );
     } catch (error) {
       console.error('Error toggling exam grades permission:', error);
-      showToast('Fehler beim Ändern der Berechtigung', 'error');
+      showToast('Fehler beim Ã„ndern der Berechtigung', 'error');
     }
   };
 
   const repairQuizStats = async () => {
     if (!user?.permissions?.canManageUsers) {
-      throw new Error('Keine Berechtigung für den Statistik-Repair.');
+      throw new Error('Keine Berechtigung fÃ¼r den Statistik-Repair.');
     }
 
-    const responseData = await fetchPushBackendWithAuth({
-      supabase,
-      pathname: '/api/admin/repair-quiz-stats',
-      method: 'POST',
-      body: {}
-    });
+    if (!secureBackendApiEnabled) {
+      throw new Error('Quiz-Statistik-Reparatur ist nur noch im sicheren Backend-Modus verfuegbar.');
+    }
+
+    const responseData = await secureUserStatsApi.repairQuizStats();
 
     await loadData();
     return responseData;
@@ -3688,47 +4681,29 @@ export default function BaederApp() {
 
   const sendTestPush = async (targetScope = 'self') => {
     if (!user?.id) {
-      throw new Error('Keine aktive Sitzung für den Test-Push gefunden.');
+      throw new Error('Keine aktive Sitzung fÃ¼r den Test-Push gefunden.');
     }
 
-    const requestedTargetUserNames = targetScope === 'organization'
-      ? [...new Set(
-          (allUsers || [])
-            .filter((account) => account?.approved !== false)
-            .filter((account) => (account?.organization_id || account?.organizationId || null) === (user.organizationId || null))
-            .map((account) => String(account?.name || '').trim())
-            .filter(Boolean)
-        )]
-      : [String(user.name || '').trim()].filter(Boolean);
+    if (!secureBackendApiEnabled) {
+      throw new Error('Test-Push ist nur noch im sicheren Backend-Modus verfuegbar.');
+    }
 
-    const responseData = await fetchPushBackendWithAuth({
-      supabase,
-      pathname: '/api/push/test',
-      method: 'POST',
-      body: {
-        delaySeconds: 15,
-        targetScope,
-        userName: user.name || '',
-        email: user.email || '',
-        organizationId: user.organizationId || null,
-        targetUserNames: requestedTargetUserNames
-      }
+    return secureNotificationsApi.sendTestPush({
+      targetScope
     });
-
-    return responseData;
   };
 
-  // Profil-Bearbeitung: Name ändern
+  // Profil-Bearbeitung: Name Ã¤ndern
 
   const getDaysUntilDeletion = (account) => {
-    // Admins are NEVER deleted
+    // This is only an operational retention review helper for admins.
     if (account.role === 'admin') {
       return null;
     }
     
     const now = Date.now();
     
-    if (account.role === 'azubi' && account.trainingEnd) {
+    if ((account.role === 'azubi' || account.role === 'rettungsschwimmer_azubi') && account.trainingEnd) {
       const endDate = new Date(account.trainingEnd).getTime();
       const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
       return daysLeft;
@@ -3736,7 +4711,7 @@ export default function BaederApp() {
     
     if (account.role === 'trainer' && account.lastLogin) {
       const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
-      const deleteDate = account.lastLogin + sixMonthsMs;
+      const deleteDate = new Date(account.lastLogin).getTime() + sixMonthsMs;
       const daysLeft = Math.ceil((deleteDate - now) / (1000 * 60 * 60 * 24));
       return daysLeft;
     }
@@ -3746,11 +4721,42 @@ export default function BaederApp() {
 
   // Quiz functions with Supabase
   const challengePlayer = async (opponent, timeoutMinutesInput = DEFAULT_CHALLENGE_TIMEOUT_MINUTES) => {
+    if (secureBackendApiEnabled) {
+      const targetUser = (opponent && typeof opponent === 'object')
+        ? opponent
+        : allUsers.find((account) => namesMatch(account?.name, opponent));
+
+      if (!targetUser?.id) {
+        showToast('Gegner nicht gefunden.', 'error');
+        return;
+      }
+
+      try {
+        await secureDuelsApi.create({
+          opponentId: targetUser.id,
+          questionCount: 10,
+          requestTimeoutMinutes: normalizeChallengeTimeoutMinutes(timeoutMinutesInput)
+        });
+        await loadLightData();
+        setSelectedOpponent(null);
+        showToast(`Sicheres Quizduell an ${targetUser.name} gesendet. Wertung und Ranking laufen jetzt serverseitig.`, 'success');
+      } catch (error) {
+        console.error('Secure challenge error:', error);
+        showToast(error?.message || 'Fehler beim Senden der Herausforderung', 'error');
+      }
+      return;
+    }
+
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('Quizduelle');
+      return;
+    }
+
     const now = Date.now();
     const timeoutMinutes = normalizeChallengeTimeoutMinutes(timeoutMinutesInput);
     const challengeExpiresAt = new Date(now + timeoutMinutes * 60 * 1000).toISOString();
 
-    // Prüfe ob bereits ein laufendes Spiel gegen diesen Gegner existiert
+    // PrÃ¼fe ob bereits ein laufendes Spiel gegen diesen Gegner existiert
     const existingGame = activeGames.find(g =>
       g.status !== 'finished' &&
       !isWaitingChallengeExpired(g, now) &&
@@ -3839,7 +4845,7 @@ export default function BaederApp() {
         : timeoutMinutes;
       await sendNotification(
         opponent,
-        '🎮 Neue Quizduell-Herausforderung',
+        'ðŸŽ® Neue Quizduell-Herausforderung',
         `${user.name} hat dich herausgefordert. Annahmefrist: ${formatDurationMinutesCompact(effectiveTimeoutMinutes)}.`,
         'info'
       );
@@ -3856,6 +4862,23 @@ export default function BaederApp() {
   };
 
   const acceptChallenge = async (gameId) => {
+    if (secureBackendApiEnabled) {
+      try {
+        const duel = await secureDuelsApi.accept(gameId);
+        await loadLightData();
+        openSecureDuelSession(duel);
+      } catch (error) {
+        console.error('Secure accept error:', error);
+        showToast(error?.message || 'Fehler beim Annehmen der Herausforderung', 'error');
+      }
+      return;
+    }
+
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('Quizduelle');
+      return;
+    }
+
     const game = activeGames.find(g => g.id === gameId);
     if (!game) return;
 
@@ -3909,8 +4932,8 @@ export default function BaederApp() {
       if (game.player1 && game.player1 !== user.name) {
         await sendNotification(
           game.player1,
-          '⚡ Herausforderung angenommen - du bist dran!',
-          `${user.name} hat deine Quizduell-Herausforderung angenommen. Du darfst die erste Kategorie wählen.`,
+          'âš¡ Herausforderung angenommen - du bist dran!',
+          `${user.name} hat deine Quizduell-Herausforderung angenommen. Du darfst die erste Kategorie wÃ¤hlen.`,
           'info'
         );
       }
@@ -3935,6 +4958,17 @@ export default function BaederApp() {
   };
 
   const continueGame = async (gameId) => {
+    if (secureBackendApiEnabled) {
+      try {
+        const duel = await secureDuelsApi.getById(gameId);
+        openSecureDuelSession(duel);
+      } catch (error) {
+        console.error('Secure continue error:', error);
+        showToast(error?.message || 'Fehler beim Laden des Duells', 'error');
+      }
+      return;
+    }
+
     const game = activeGames.find(g => g.id === gameId);
     if (!game) return;
 
@@ -3949,7 +4983,7 @@ export default function BaederApp() {
     setTimerActive(false);
     resetQuizKeywordState();
 
-    // Prüfe ob der Spieler die gespeicherten Fragen spielen muss
+    // PrÃ¼fe ob der Spieler die gespeicherten Fragen spielen muss
     if (game.categoryRounds && game.categoryRounds.length > 0) {
       const currentCatRound = game.categoryRounds[game.categoryRound || 0];
       if (currentCatRound) {
@@ -3969,6 +5003,14 @@ export default function BaederApp() {
 
   // Helper function to save game state to Supabase
   const saveGameToSupabase = async (game) => {
+    if (game?.secureDuel) {
+      return;
+    }
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('SpielstÃ¤nde');
+      return;
+    }
+
     try {
       const updateData = {
         player1_score: game.player1Score,
@@ -4022,7 +5064,7 @@ export default function BaederApp() {
 
     if (!Array.isArray(matchingProfiles) || matchingProfiles.length !== 1) {
       if (Array.isArray(matchingProfiles) && matchingProfiles.length > 1) {
-        console.warn(`Mehrdeutiger Stats-Lookup für Profilname "${userName}"`);
+        console.warn(`Mehrdeutiger Stats-Lookup fÃ¼r Profilname "${userName}"`);
       }
       return null;
     }
@@ -4036,6 +5078,10 @@ export default function BaederApp() {
   // Helper function to save user stats to Supabase
   const saveUserStatsToSupabase = async (userInput, stats) => {
     try {
+      if (secureBackendApiEnabled) {
+        return false;
+      }
+
       const safeStats = ensureUserStatsStructure(stats);
       const identity = await resolveUserStatsIdentity(userInput);
       if (!identity?.userId) {
@@ -4064,6 +5110,10 @@ export default function BaederApp() {
   // Helper function to get user stats from Supabase
   const getUserStatsFromSupabase = async (userInput) => {
     try {
+      if (secureBackendApiEnabled) {
+        return null;
+      }
+
       const identity = await resolveUserStatsIdentity(userInput);
       if (!identity?.userId) return null;
 
@@ -4083,6 +5133,10 @@ export default function BaederApp() {
   };
 
   const queueXpAwardForUser = (targetUserInput, sourceKey, amount, options = {}) => {
+    if (secureBackendApiEnabled) {
+      return Promise.resolve(0);
+    }
+
     const xpAmount = toSafeInt(amount);
     const targetUserId = targetUserInput?.id || null;
     const targetUserName = targetUserInput?.name || null;
@@ -4127,7 +5181,7 @@ export default function BaederApp() {
         if (showXpToast) {
           const isCurrentUserTarget = targetUserId === user?.id;
           const toastPrefix = isCurrentUserTarget ? `+${addedXp} XP` : `${targetUserName}: +${addedXp} XP`;
-          showToast(`${toastPrefix}${reason ? ` • ${reason}` : ''}`, 'success', 2500);
+          showToast(`${toastPrefix}${reason ? ` â€¢ ${reason}` : ''}`, 'success', 2500);
         }
         return addedXp;
       })
@@ -4146,7 +5200,7 @@ export default function BaederApp() {
     return queueXpAwardForUser({ id: user.id, name: user.name }, sourceKey, amount, options);
   };
 
-  // Fisher-Yates Shuffle für zufällige Fragenreihenfolge
+  // Fisher-Yates Shuffle fÃ¼r zufÃ¤llige Fragenreihenfolge
   const shuffleArray = (array) => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -4158,7 +5212,7 @@ export default function BaederApp() {
 
   const getQuestionPerformanceKey = (question, categoryHint = null) => {
     const categoryId = String(categoryHint || question?.category || 'unknown').trim() || 'unknown';
-    const normalizedText = normalizeQuestionText(question?.q || '');
+    const normalizedText = normalizeQuestionText(question?.q || question?.prompt || question?.question || '');
     return `${categoryId}::${normalizedText}`;
   };
 
@@ -4311,16 +5365,41 @@ export default function BaederApp() {
     const payload = {
       id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       questionKey: key,
-      questionText: String(question.q || ''),
+      questionText: String(question.q || question.prompt || question.question || ''),
       category,
       source: String(source || 'unknown'),
       note,
-      answers: Array.isArray(question.a) ? [...question.a] : [],
+      answers: Array.isArray(question.a)
+        ? [...question.a]
+        : (Array.isArray(question.answers) ? [...question.answers] : []),
       reportedBy: user.name,
       reportedById: user.id || null,
       status: 'open',
       createdAt: new Date().toISOString()
     };
+
+    if (secureBackendApiEnabled) {
+      try {
+        const response = await secureQuestionWorkflowsApi.createReport({
+          questionKey: payload.questionKey,
+          questionText: payload.questionText,
+          category: payload.category,
+          source: payload.source,
+          note: payload.note || undefined,
+          answers: payload.answers
+        });
+        const normalizedReport = normalizeSecureQuestionReport(response);
+        setQuestionReports((prev) => {
+          const remaining = prev.filter((entry) => entry.id !== normalizedReport.id);
+          return [normalizedReport, ...remaining].slice(0, 500);
+        });
+        showToast('Frage gemeldet. Danke fuer dein Feedback!', 'success');
+      } catch (error) {
+        console.error('Secure question report error:', error);
+        showToast(error?.message || 'Frage konnte nicht ueber die sichere API gemeldet werden.', 'error');
+      }
+      return;
+    }
 
     let savedRemotely = false;
     try {
@@ -4347,8 +5426,8 @@ export default function BaederApp() {
     setQuestionReports((prev) => [payload, ...prev].slice(0, 500));
     showToast(
       savedRemotely
-        ? 'Frage gemeldet. Danke für dein Feedback!'
-        : 'Frage lokal gemeldet. Danke für dein Feedback!',
+        ? 'Frage gemeldet. Danke fÃ¼r dein Feedback!'
+        : 'Frage lokal gemeldet. Danke fÃ¼r dein Feedback!',
       'success'
     );
   };
@@ -4357,6 +5436,23 @@ export default function BaederApp() {
     const existing = questionReports.find((entry) => entry.id === reportId);
     if (!existing) return;
     const nextStatus = existing.status === 'resolved' ? 'open' : 'resolved';
+
+    if (secureBackendApiEnabled) {
+      try {
+        const response = await secureQuestionWorkflowsApi.updateReportStatus(reportId, {
+          status: nextStatus
+        });
+        const normalizedReport = normalizeSecureQuestionReport(response);
+        setQuestionReports((prev) => prev.map((entry) => (
+          entry.id === reportId ? normalizedReport : entry
+        )));
+        showToast(nextStatus === 'resolved' ? 'Meldung als erledigt markiert.' : 'Meldung wieder geoeffnet.', 'info', 1800);
+      } catch (error) {
+        console.error('Secure question report status error:', error);
+        showToast(error?.message || 'Status konnte nicht ueber die sichere API aktualisiert werden.', 'error');
+      }
+      return;
+    }
 
     setQuestionReports((prev) => prev.map((entry) => (
       entry.id === reportId
@@ -4376,7 +5472,7 @@ export default function BaederApp() {
     showToast(nextStatus === 'resolved' ? 'Meldung als erledigt markiert.' : 'Meldung wieder geoeffnet.', 'info', 1800);
   };
 
-  // Spieler wählt Kategorie → 5 zufällige Fragen werden für BEIDE Spieler gespeichert
+  // Spieler wÃ¤hlt Kategorie â†’ 5 zufÃ¤llige Fragen werden fÃ¼r BEIDE Spieler gespeichert
   const selectCategory = async (catId) => {
     if (!currentGame || currentGame.currentTurn !== user.name) return;
 
@@ -4390,7 +5486,7 @@ export default function BaederApp() {
       ? categoryKeywordQuestions
       : categoryStandardQuestions;
     if (useKeywordQuestions && categoryKeywordQuestions.length === 0 && catId !== WHO_AM_I_CATEGORY.id) {
-      showToast('Für diese Kategorie sind noch keine Extra-schwer-Fragen hinterlegt. Standardfragen werden genutzt.', 'info');
+      showToast('FÃ¼r diese Kategorie sind noch keine Extra-schwer-Fragen hinterlegt. Standardfragen werden genutzt.', 'info');
     }
     const selectedQuestions = pickBattleQuestions(allQuestions, Math.min(5, allQuestions.length), catId, currentGame);
 
@@ -4402,7 +5498,7 @@ export default function BaederApp() {
       return { ...shuffleAnswers(question), category: catId };
     });
 
-    // Speichere die Fragen im Game für beide Spieler
+    // Speichere die Fragen im Game fÃ¼r beide Spieler
     if (!currentGame.categoryRounds) currentGame.categoryRounds = [];
     currentGame.categoryRounds.push({
       categoryId: catId,
@@ -4410,15 +5506,15 @@ export default function BaederApp() {
       questions: preparedQuestions,
       player1Answers: [], // Antworten von Spieler 1
       player2Answers: [], // Antworten von Spieler 2
-      chooser: user.name  // Wer hat die Kategorie gewählt
+      chooser: user.name  // Wer hat die Kategorie gewÃ¤hlt
     });
 
     setCurrentCategoryQuestions(preparedQuestions);
     setQuestionInCategory(0);
     setCurrentQuestion(preparedQuestions[0]);
     setAnswered(false);
-    setSelectedAnswers([]); // Reset für Multi-Select
-    setLastSelectedAnswer(null); // Reset für Single-Choice
+    setSelectedAnswers([]); // Reset fÃ¼r Multi-Select
+    setLastSelectedAnswer(null); // Reset fÃ¼r Single-Choice
 
     const timeLimit = getQuizTimeLimit(preparedQuestions[0], currentGame.difficulty);
     setTimeLeft(timeLimit);
@@ -4429,6 +5525,10 @@ export default function BaederApp() {
 
   const handleTimeUp = async () => {
     if (answered || !currentGame) return;
+    if (currentGame.secureDuel) {
+      setTimerActive(false);
+      return;
+    }
     setAnswered(true);
     setTimerActive(false);
 
@@ -4452,7 +5552,7 @@ export default function BaederApp() {
     });
   };
 
-  // Toggle Antwort für Multi-Select Fragen
+  // Toggle Antwort fÃ¼r Multi-Select Fragen
   const toggleAnswer = (answerIndex) => {
     if (answered || !currentGame) return;
 
@@ -4465,13 +5565,13 @@ export default function BaederApp() {
     });
   };
 
-  // Bestätigen der Multi-Select Antwort
+  // BestÃ¤tigen der Multi-Select Antwort
   const confirmMultiSelectAnswer = async () => {
     if (answered || !currentGame || !currentQuestion.multi) return;
     setAnswered(true);
     setTimerActive(false);
 
-    // Prüfe ob alle richtigen Antworten ausgewählt wurden (und keine falschen)
+    // PrÃ¼fe ob alle richtigen Antworten ausgewÃ¤hlt wurden (und keine falschen)
     const correctAnswers = currentQuestion.correct;
     const isCorrect =
       selectedAnswers.length === correctAnswers.length &&
@@ -4485,6 +5585,40 @@ export default function BaederApp() {
 
   const answerQuestion = async (answerIndex) => {
     if (answered || !currentGame) return;
+
+    if (currentGame.secureDuel) {
+      const duelQuestionId = currentQuestion?.secureDuelQuestionId || currentQuestion?.id;
+      if (!duelQuestionId) return;
+
+      setAnswered(true);
+      setTimerActive(false);
+      setLastSelectedAnswer(answerIndex);
+
+      try {
+        const updatedDuel = await secureDuelsApi.submitAnswer(currentGame.id, {
+          duelQuestionId,
+          selectedOptionIndex: answerIndex,
+          durationMs: 0
+        });
+        const session = buildSecureDuelSessionState(updatedDuel, user, duelQuestionId);
+        setCurrentGame(session.game);
+        setCategoryRound(Math.min(3, Math.floor(Math.max(0, session.selectedQuestionIndex) / 5)));
+        setQuestionInCategory(session.selectedQuestionIndex >= 0 ? session.selectedQuestionIndex : 0);
+        setQuizCategory(session.selectedQuestion?.question?.category || null);
+        setCurrentCategoryQuestions(session.game.questions || []);
+        setCurrentQuestion(session.selectedQuestionUi);
+        setPlayerTurn(session.game.currentTurn);
+        setWaitingForOpponent(false);
+        await loadLightData();
+      } catch (error) {
+        console.error('Secure duel answer error:', error);
+        setAnswered(false);
+        setLastSelectedAnswer(null);
+        showToast(error?.message || 'Antwort konnte nicht gespeichert werden.', 'error');
+      }
+      return;
+    }
+
     if (isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion)) return;
 
     // Multi-Select: Nur togglen, nicht direkt antworten
@@ -4496,7 +5630,7 @@ export default function BaederApp() {
     // Single-Choice: Direkt antworten
     setAnswered(true);
     setTimerActive(false);
-    setLastSelectedAnswer(answerIndex); // Speichere gewählte Antwort für Feedback
+    setLastSelectedAnswer(answerIndex); // Speichere gewÃ¤hlte Antwort fÃ¼r Feedback
 
     const isCorrect = answerIndex === currentQuestion.correct;
     await savePlayerAnswer(isCorrect, false, {
@@ -4611,21 +5745,69 @@ export default function BaederApp() {
     await saveGameToSupabase(currentGame);
   };
 
-  // Funktion zum Weitergehen zur nächsten Frage/Runde
+  // Funktion zum Weitergehen zur nÃ¤chsten Frage/Runde
   const proceedToNextRound = async () => {
+    if (!currentGame) return;
+
+    if (currentGame.secureDuel) {
+      const secureQuestions = Array.isArray(currentGame.questions) ? currentGame.questions : [];
+      const currentQuestionId = currentQuestion?.secureDuelQuestionId || currentQuestion?.id || null;
+      const currentSecureIndex = secureQuestions.findIndex((assignment) => assignment?.id === currentQuestionId);
+      const nextQuestion = secureQuestions.find((assignment, index) => (
+        index > currentSecureIndex && !assignment?.myAnswer
+      )) || secureQuestions.find((assignment) => !assignment?.myAnswer) || null;
+
+      if (nextQuestion) {
+        const session = buildSecureDuelSessionState(currentGame, user, nextQuestion.id);
+        setCurrentGame(session.game);
+        setCategoryRound(Math.min(3, Math.floor(Math.max(0, session.selectedQuestionIndex) / 5)));
+        setQuestionInCategory(session.selectedQuestionIndex >= 0 ? session.selectedQuestionIndex : 0);
+        setQuizCategory(session.selectedQuestion?.question?.category || null);
+        setCurrentCategoryQuestions(session.game.questions || []);
+        setCurrentQuestion(session.selectedQuestionUi);
+        setAnswered(false);
+        setSelectedAnswers([]);
+        setLastSelectedAnswer(null);
+        setPlayerTurn(session.game.currentTurn);
+        setWaitingForOpponent(false);
+        setQuizMCKeywordMode(false);
+        resetQuizKeywordState();
+        return;
+      }
+
+      const duelWasCompleted = String(currentGame.secureDuelStatus || '').toUpperCase() === 'COMPLETED'
+        || isFinishedGameStatus(currentGame.status);
+      resetQuizPlayState();
+      await loadLightData();
+
+      if (duelWasCompleted) {
+        const winnerName = currentGame.winnerUser?.displayName || currentGame.winner || null;
+        if (!winnerName) {
+          showToast('Das Duell ist abgeschlossen und endete unentschieden.', 'info');
+        } else if (namesMatch(winnerName, user?.name)) {
+          showToast('Das Duell ist abgeschlossen. Du hast gewonnen.', 'success');
+        } else {
+          showToast(`Das Duell ist abgeschlossen. ${winnerName} hat gewonnen.`, 'info');
+        }
+      } else {
+        showToast('Deine Antworten sind gespeichert. Warte jetzt auf den Gegner.', 'info');
+      }
+      return;
+    }
+
     const isPlayer1 = user.name === currentGame.player1;
     const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
     const questionsInCurrentCategory = currentCategoryRound.questions.length;
 
-    // Nächste Frage in der aktuellen Kategorie?
+    // NÃ¤chste Frage in der aktuellen Kategorie?
     if (questionInCategory < questionsInCurrentCategory - 1) {
       // Noch mehr Fragen in dieser Kategorie
       const nextQuestionIndex = questionInCategory + 1;
       setQuestionInCategory(nextQuestionIndex);
       setCurrentQuestion(currentCategoryQuestions[nextQuestionIndex]);
       setAnswered(false);
-      setSelectedAnswers([]); // Reset für Multi-Select
-      setLastSelectedAnswer(null); // Reset für Single-Choice
+      setSelectedAnswers([]); // Reset fÃ¼r Multi-Select
+      setLastSelectedAnswer(null); // Reset fÃ¼r Single-Choice
       resetQuizKeywordState();
 
       const timeLimit = getQuizTimeLimit(currentCategoryQuestions[nextQuestionIndex], currentGame.difficulty);
@@ -4635,7 +5817,7 @@ export default function BaederApp() {
     }
 
     // Alle 5 Fragen dieser Kategorie beantwortet
-    // Prüfe ob der andere Spieler auch schon dran war
+    // PrÃ¼fe ob der andere Spieler auch schon dran war
     const player1Done = currentCategoryRound.player1Answers.length >= questionsInCurrentCategory;
     const player2Done = currentCategoryRound.player2Answers.length >= questionsInCurrentCategory;
 
@@ -4653,7 +5835,7 @@ export default function BaederApp() {
       // Benachrichtigung an Spieler 2
       await sendNotification(
         currentGame.player2,
-        '⚡ Du bist dran!',
+        'âš¡ Du bist dran!',
         `${user.name} hat die Kategorie "${currentCategoryRound.categoryName}" gespielt. Jetzt bist du dran mit den gleichen Fragen!`,
         'info'
       );
@@ -4661,7 +5843,7 @@ export default function BaederApp() {
     }
 
     if (!isPlayer1 && !player1Done) {
-      // Spieler 2 fertig (hat Kategorie gewählt), Spieler 1 muss noch
+      // Spieler 2 fertig (hat Kategorie gewÃ¤hlt), Spieler 1 muss noch
       currentGame.currentTurn = currentGame.player1;
       setWaitingForOpponent(true);
       setQuizCategory(null);
@@ -4673,7 +5855,7 @@ export default function BaederApp() {
 
       await sendNotification(
         currentGame.player1,
-        '⚡ Du bist dran!',
+        'âš¡ Du bist dran!',
         `${user.name} hat die Kategorie "${currentCategoryRound.categoryName}" gespielt. Jetzt bist du dran mit den gleichen Fragen!`,
         'info'
       );
@@ -4681,12 +5863,12 @@ export default function BaederApp() {
     }
 
     // Beide Spieler haben diese Kategorie abgeschlossen
-    // Nächste Kategorie oder Spielende?
+    // NÃ¤chste Kategorie oder Spielende?
     if (currentGame.categoryRound < 3) {
-      // Nächste Kategorie-Runde (insgesamt 4)
+      // NÃ¤chste Kategorie-Runde (insgesamt 4)
       currentGame.categoryRound++;
 
-      // Der Spieler der NICHT die letzte Kategorie gewählt hat, wählt jetzt
+      // Der Spieler der NICHT die letzte Kategorie gewÃ¤hlt hat, wÃ¤hlt jetzt
       const nextChooser = currentCategoryRound.chooser === currentGame.player1
         ? currentGame.player2
         : currentGame.player1;
@@ -4711,8 +5893,8 @@ export default function BaederApp() {
       if (nextChooser !== user.name) {
         await sendNotification(
           nextChooser,
-          '🎯 Wähle eine Kategorie!',
-          `Runde ${currentGame.categoryRound + 1}/4 - Du darfst die nächste Kategorie wählen!`,
+          'ðŸŽ¯ WÃ¤hle eine Kategorie!',
+          `Runde ${currentGame.categoryRound + 1}/4 - Du darfst die nÃ¤chste Kategorie wÃ¤hlen!`,
           'info'
         );
       }
@@ -4734,8 +5916,8 @@ export default function BaederApp() {
     setQuestionInCategory(0);
     setCurrentQuestion(currentCategoryRound.questions[0]);
     setAnswered(false);
-    setSelectedAnswers([]); // Reset für Multi-Select
-    setLastSelectedAnswer(null); // Reset für Single-Choice
+    setSelectedAnswers([]); // Reset fÃ¼r Multi-Select
+    setLastSelectedAnswer(null); // Reset fÃ¼r Single-Choice
     setWaitingForOpponent(false);
     resetQuizKeywordState();
 
@@ -4745,6 +5927,11 @@ export default function BaederApp() {
   };
 
   const autoForfeitGame = async (game, loser, winner, reason = 'turn_timeout') => {
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      showLegacyWriteProtectionToast('Quizduelle');
+      return;
+    }
+
     try {
       await supabase.from('games').update({
         status: 'finished',
@@ -4756,20 +5943,20 @@ export default function BaederApp() {
       const timeoutLabel = formatDurationMinutesCompact(game.challengeTimeoutMinutes || DEFAULT_CHALLENGE_TIMEOUT_MINUTES);
       const loserMessage = reason === 'challenge_expired'
         ? `Die Herausforderung gegen ${opponent} ist abgelaufen (${timeoutLabel}) und wurde als Niederlage gewertet.`
-        : `Dein Quizduell gegen ${opponent} wurde nach 48h Inaktivität als Niederlage gewertet.`;
+        : `Dein Quizduell gegen ${opponent} wurde nach 48h InaktivitÃ¤t als Niederlage gewertet.`;
       const winnerMessage = reason === 'challenge_expired'
         ? `${loser} hat die Herausforderung (${timeoutLabel}) nicht rechtzeitig angenommen. Du gewinnst das Quizduell!`
         : `${loser} hat 48 Stunden nicht gespielt. Du gewinnst das Quizduell!`;
 
       await sendNotification(
         loser,
-        '⏰ Zeit abgelaufen – Niederlage',
+        'â° Zeit abgelaufen â€“ Niederlage',
         loserMessage,
         'error'
       );
       await sendNotification(
         winner,
-        '🏆 Sieg durch Aufgabe',
+        'ðŸ† Sieg durch Aufgabe',
         winnerMessage,
         'success'
       );
@@ -4791,11 +5978,11 @@ export default function BaederApp() {
           stats.losses++;
           stats.opponents[opponentName].losses++;
           stats.winStreak = 0;
-          // 100 XP Strafe für den Verlierer
+          // 100 XP Strafe fÃ¼r den Verlierer
           const xpResult = deductXpFromStats(stats, 100);
           stats = xpResult.stats;
           if (xpResult.deductedXp > 0) {
-            showToast(`-${xpResult.deductedXp} XP Strafe • Quizduell-Aufgabe`, 'error', 3500);
+            showToast(`-${xpResult.deductedXp} XP Strafe â€¢ Quizduell-Aufgabe`, 'error', 3500);
           }
         }
         await saveUserStatsToSupabase(user, stats);
@@ -4852,7 +6039,7 @@ export default function BaederApp() {
         const minutesLeft = Math.max(1, Math.ceil(remainingMs / 60000));
         await sendNotification(
           reminderTarget,
-          '⏰ Herausforderung läuft bald ab',
+          'â° Herausforderung lÃ¤uft bald ab',
           `Du hast noch ca. ${formatDurationMinutesCompact(minutesLeft)} um die Herausforderung von ${opponent} anzunehmen.`,
           'warning'
         );
@@ -4879,8 +6066,8 @@ export default function BaederApp() {
         const hoursLeft = Math.round((H48 - elapsed) / 3600000);
         await sendNotification(
           reminderTarget,
-          '⏰ Quizduell-Erinnerung',
-          `Du hast noch ca. ${hoursLeft}h für deinen Zug gegen ${opponent} – danach zählt es als Niederlage!`,
+          'â° Quizduell-Erinnerung',
+          `Du hast noch ca. ${hoursLeft}h fÃ¼r deinen Zug gegen ${opponent} â€“ danach zÃ¤hlt es als Niederlage!`,
           'warning'
         );
         localStorage.setItem(reminderKey, now.toString());
@@ -4903,17 +6090,17 @@ export default function BaederApp() {
       await saveGameToSupabase(currentGame);
       const opponentName = user.name === currentGame.player1 ? currentGame.player2 : currentGame.player1;
       if (opponentName) {
-        let opponentTitle = '🏁 Quizduell beendet';
+        let opponentTitle = 'ðŸ Quizduell beendet';
         let opponentMessage = `Quizduell gegen ${user.name} ist beendet.`;
 
         if (winner === null) {
-          opponentTitle = '🤝 Quizduell unentschieden';
+          opponentTitle = 'ðŸ¤ Quizduell unentschieden';
           opponentMessage = `Dein Quizduell gegen ${user.name} endete unentschieden.`;
         } else if (winner === opponentName) {
-          opponentTitle = '🏆 Quizduell gewonnen';
+          opponentTitle = 'ðŸ† Quizduell gewonnen';
           opponentMessage = `Du hast das Quizduell gegen ${user.name} gewonnen!`;
         } else {
-          opponentTitle = '😔 Quizduell verloren';
+          opponentTitle = 'ðŸ˜” Quizduell verloren';
           opponentMessage = `Du hast das Quizduell gegen ${user.name} verloren.`;
         }
 
@@ -4948,7 +6135,7 @@ export default function BaederApp() {
           stats = xpResult.stats;
 
           if (xpResult.addedXp > 0) {
-            showToast(`+${xpResult.addedXp} XP • Quizduell-Sieg`, 'success', 2500);
+            showToast(`+${xpResult.addedXp} XP â€¢ Quizduell-Sieg`, 'success', 2500);
           }
         } else if (winner === null) {
           stats.draws++;
@@ -4982,7 +6169,7 @@ export default function BaederApp() {
         console.error('Stats update error:', error);
       }
 
-      // Spiel-State komplett zurücksetzen
+      // Spiel-State komplett zurÃ¼cksetzen
       setCurrentGame(null);
       setQuizCategory(null);
       setCurrentQuestion(null);
@@ -5002,10 +6189,10 @@ export default function BaederApp() {
 
       showToast(
         winner === user.name
-          ? '🎉 Glückwunsch, du hast gewonnen!'
+          ? 'ðŸŽ‰ GlÃ¼ckwunsch, du hast gewonnen!'
           : winner === null
-            ? '🤝 Unentschieden!'
-            : '😔 Leider verloren!',
+            ? 'ðŸ¤ Unentschieden!'
+            : 'ðŸ˜” Leider verloren!',
         winner === user.name ? 'success' : 'info'
       );
 
@@ -5050,40 +6237,62 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .insert([{
-          user_name: user.name,
-          user_avatar: user.avatar || null,
-          user_role: user.role,
-          sender_id: user.id,
-          organization_id: user.organizationId,
-          chat_scope: activeScope,
-          recipient_id: recipient?.id || null,
-          content: newMessage.trim()
-        }])
-        .select('*')
-        .single();
+      const messageText = newMessage.trim();
+      let msg = null;
 
-      if (error) throw error;
+      if (secureBackendApiEnabled) {
+        const data = await secureChatApi.create({
+          scope: mapFrontendChatScopeToBackendScope(activeScope),
+          recipientId: recipient?.id || undefined,
+          content: messageText
+        });
 
-      const msg = normalizeChatMessageRow(data);
+        const userDirectory = Object.fromEntries(
+          (allUsers || [])
+            .filter((account) => account?.id)
+            .map((account) => [account.id, account])
+        );
+        msg = normalizeSecureChatMessage(data, userDirectory);
+      } else {
+        const { data, error } = await supabase
+          .from('messages')
+          .insert([{
+            user_name: user.name,
+            user_avatar: user.avatar || null,
+            user_role: user.role,
+            sender_id: user.id,
+            organization_id: user.organizationId,
+            chat_scope: activeScope,
+            recipient_id: recipient?.id || null,
+            content: messageText
+          }])
+          .select('*')
+          .single();
+
+        if (error) throw error;
+        msg = normalizeChatMessageRow(data);
+      }
 
       setMessages((prev) => [...prev, msg]);
       setNewMessage('');
 
-      if (recipient?.name) {
-        const preview = newMessage.trim().slice(0, 80);
+      if (!secureBackendApiEnabled && recipient?.name) {
+        const preview = messageText.slice(0, 80);
         await sendNotification(
           recipient.name,
           'Neue Chatnachricht',
-          `${user.name}: ${preview}${newMessage.trim().length > 80 ? '...' : ''}`,
+          `${user.name}: ${preview}${messageText.length > 80 ? '...' : ''}`,
           'info'
         );
       }
     } catch (error) {
       console.error('Message error:', error);
-      showToast('Nachricht konnte nicht gesendet werden. Pruefe ggf. die Chat-Migration in Supabase.', 'error');
+      showToast(
+        secureBackendApiEnabled
+          ? 'Nachricht konnte ueber die sichere API nicht gesendet werden.'
+          : 'Nachricht konnte nicht gesendet werden. Pruefe ggf. die Chat-Migration in Supabase.',
+        'error'
+      );
     }
   };
 
@@ -5102,44 +6311,66 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('custom_questions')
-        .insert([{
+      if (secureBackendApiEnabled) {
+        const response = await secureQuestionWorkflowsApi.createSubmission({
           category: newQuestionCategory,
           question: newQuestionText,
           answers: newQuestionAnswers,
-          correct: newQuestionCorrect,
-          created_by: user.name,
-          approved: false
-        }])
-        .select()
-        .single();
+          correct: newQuestionCorrect
+        });
+        const normalizedQuestion = normalizeSecureSubmittedQuestion(response);
+        setSubmittedQuestions((prev) => [normalizedQuestion, ...prev]);
+      } else {
+        const { data, error } = await supabase
+          .from('custom_questions')
+          .insert([{
+            category: newQuestionCategory,
+            question: newQuestionText,
+            answers: newQuestionAnswers,
+            correct: newQuestionCorrect,
+            created_by: user.name,
+            approved: false
+          }])
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      const q = {
-        id: data.id,
-        text: data.question,
-        category: data.category,
-        answers: data.answers,
-        correct: data.correct,
-        submittedBy: data.created_by,
-        approved: data.approved,
-        time: new Date(data.created_at).getTime()
-      };
+        const q = {
+          id: data.id,
+          text: data.question,
+          category: data.category,
+          answers: data.answers,
+          correct: data.correct,
+          submittedBy: data.created_by,
+          approved: data.approved,
+          time: new Date(data.created_at).getTime()
+        };
 
-      setSubmittedQuestions([...submittedQuestions, q]);
+        setSubmittedQuestions((prev) => [...prev, q]);
+      }
+
       setNewQuestionText('');
       setNewQuestionAnswers(['', '', '', '']);
+      setNewQuestionCorrect(0);
       showToast('Frage eingereicht!', 'success');
     } catch (error) {
       console.error('Question error:', error);
-      showToast('Fehler beim Einreichen der Frage', 'error');
+      showToast(error?.message || 'Fehler beim Einreichen der Frage', 'error');
     }
   };
 
   const approveQuestion = async (qId) => {
     try {
+      if (secureBackendApiEnabled) {
+        const response = await secureQuestionWorkflowsApi.approveSubmission(qId);
+        const normalizedQuestion = normalizeSecureSubmittedQuestion(response);
+        setSubmittedQuestions((prev) => prev.map((entry) => (
+          entry.id === qId ? normalizedQuestion : entry
+        )));
+        return;
+      }
+
       const { error } = await supabase
         .from('custom_questions')
         .update({ approved: true })
@@ -5147,16 +6378,55 @@ export default function BaederApp() {
 
       if (error) throw error;
 
-      setSubmittedQuestions(submittedQuestions.map(sq => sq.id === qId ? { ...sq, approved: true } : sq));
+      setSubmittedQuestions((prev) => prev.map(sq => sq.id === qId ? { ...sq, approved: true } : sq));
     } catch (error) {
       console.error('Approve error:', error);
+      showToast(error?.message || 'Frage konnte nicht freigegeben werden.', 'error');
     }
   };
 
   
   // Exam Simulator Functions
-  const loadExamProgress = () => {
+  const loadExamProgress = async () => {
     setExamSimulatorMode('theory');
+
+    if (secureBackendApiEnabled) {
+      try {
+        const session = await secureExamSimulatorApi.startTheorySession({
+          keywordMode: Boolean(examKeywordMode)
+        });
+        const examQuestions = Array.isArray(session?.questions)
+          ? session.questions.map((question) => ({
+              ...question,
+              category: question?.category || 'org'
+            }))
+          : [];
+
+        if (examQuestions.length === 0) {
+          throw new Error('Keine sicheren Theoriefragen verfuegbar.');
+        }
+
+        setExamSimulator({
+          sessionId: session.sessionId,
+          secureSession: true,
+          questions: examQuestions,
+          answers: [],
+          startTime: Date.now()
+        });
+        setExamQuestionIndex(0);
+        setExamCurrentQuestion(examQuestions[0]);
+        setExamAnswered(false);
+        setExamSelectedAnswers([]);
+        setExamSelectedAnswer(null);
+        setUserExamProgress(null);
+        return;
+      } catch (error) {
+        console.error('Secure theory exam start error:', error);
+        showToast(error?.message || 'Pruefung konnte nicht gestartet werden.', 'error');
+        return;
+      }
+    }
+
     const allQuestions = [];
     Object.entries(SAMPLE_QUESTIONS).forEach(([catId, questions]) => {
       if (catId === WHO_AM_I_CATEGORY.id) return;
@@ -5167,14 +6437,13 @@ export default function BaederApp() {
       Math.min(30, allQuestions.length),
       (question) => question.category
     );
-    // Mische die Antworten jeder Frage, damit die richtige Antwort nicht immer an der gleichen Stelle ist
     const examQuestions = selectedQuestions.map(q => shuffleAnswers(q));
     setExamSimulator({ questions: examQuestions, answers: [], startTime: Date.now() });
     setExamQuestionIndex(0);
     setExamCurrentQuestion(examQuestions[0]);
     setExamAnswered(false);
-    setExamSelectedAnswers([]); // Reset Multi-Select
-    setExamSelectedAnswer(null); // Reset Single-Choice
+    setExamSelectedAnswers([]);
+    setExamSelectedAnswer(null);
     setUserExamProgress(null);
   };
 
@@ -5274,6 +6543,28 @@ export default function BaederApp() {
     };
   };
 
+  const normalizeSecureTheoryExamAttempt = (rawAttempt) => {
+    if (!rawAttempt || typeof rawAttempt !== 'object') return null;
+
+    const correct = Number(rawAttempt.correct);
+    const total = Number(rawAttempt.total);
+    const percentage = Number(rawAttempt.percentage);
+    const timeMs = Number(rawAttempt.timeMs ?? rawAttempt.time_ms);
+
+    return {
+      id: rawAttempt.id || `theory-${Date.now()}`,
+      user_id: rawAttempt.userId || rawAttempt.user_id || user?.id || '',
+      user_name: rawAttempt.userName || rawAttempt.user_name || user?.name || 'Unbekannt',
+      correct: Number.isFinite(correct) ? correct : 0,
+      total: Number.isFinite(total) ? total : 0,
+      percentage: Number.isFinite(percentage) ? percentage : 0,
+      passed: Boolean(rawAttempt.passed),
+      time_ms: Number.isFinite(timeMs) ? timeMs : 0,
+      keyword_mode: Boolean(rawAttempt.keywordMode ?? rawAttempt.keyword_mode),
+      created_at: toIsoDateTime(rawAttempt.createdAt || rawAttempt.created_at)
+    };
+  };
+
   const loadLocalPracticalAttempts = () => {
     try {
       const raw = localStorage.getItem(PRACTICAL_ATTEMPTS_LOCAL_KEY);
@@ -5298,6 +6589,7 @@ export default function BaederApp() {
       if (!account?.id) return false;
       const role = String(account.role || '').toLowerCase();
       return role === 'azubi'
+        || role === 'rettungsschwimmer_azubi'
         || role === 'trainer'
         || role === 'ausbilder'
         || role === 'admin'
@@ -5331,6 +6623,23 @@ export default function BaederApp() {
   const loadPracticalExamHistory = async () => {
     if (!user?.id) return;
     setPracticalExamHistoryLoading(true);
+
+    if (secureBackendApiEnabled) {
+      try {
+        const apiAttempts = await secureExamSimulatorApi.listPracticalAttempts();
+        setPracticalExamHistory(
+          (apiAttempts || [])
+            .map(normalizePracticalAttempt)
+            .filter(Boolean)
+        );
+      } catch (error) {
+        console.error('Secure practical exam history error:', error);
+        showToast(error?.message || 'Praktische Pruefungshistorie konnte nicht geladen werden.', 'error');
+      } finally {
+        setPracticalExamHistoryLoading(false);
+      }
+      return;
+    }
 
     const localAttempts = loadLocalPracticalAttempts();
     const canManageAll = Boolean(user?.permissions?.canViewAllStats);
@@ -5388,6 +6697,19 @@ export default function BaederApp() {
     const targetUser = getPracticalExamTargetUser();
     if (!targetUser?.id || !resultPayload) return;
 
+    if (secureBackendApiEnabled) {
+      const savedAttempt = await secureExamSimulatorApi.createPracticalAttempt({
+        examType: practicalExamType,
+        userId: targetUser.id,
+        inputValues: { ...practicalExamInputs }
+      });
+      const normalizedAttempt = normalizePracticalAttempt(savedAttempt);
+      if (normalizedAttempt) {
+        setPracticalExamHistory(prev => [normalizedAttempt, ...prev.filter(entry => entry.id !== normalizedAttempt.id)]);
+      }
+      return savedAttempt;
+    }
+
     const normalizedResultRows = Array.isArray(resultPayload.rows)
       ? resultPayload.rows.map((row) => ({ ...row }))
       : [];
@@ -5442,13 +6764,25 @@ export default function BaederApp() {
         setPracticalExamHistory(prev => [localAttempt, ...prev.filter(entry => entry.id !== localAttempt.id)]);
       }
       if (!(error.code === '42P01' || error.message?.includes('does not exist'))) {
-        showToast('Versuch lokal gespeichert (Cloud-Speicherung nicht verfügbar).', 'info');
+        showToast('Versuch lokal gespeichert (Cloud-Speicherung nicht verfÃ¼gbar).', 'info');
       }
     }
   };
 
   const deletePracticalExamAttempt = async (attemptId) => {
     if (!attemptId) return;
+
+    if (secureBackendApiEnabled) {
+      try {
+        await secureExamSimulatorApi.removePracticalAttempt(attemptId);
+        setPracticalExamHistory(prev => prev.filter(entry => entry.id !== attemptId));
+      } catch (error) {
+        console.error('Secure practical delete error:', error);
+        showToast(error?.message || 'Praktische Pruefung konnte nicht geloescht werden.', 'error');
+      }
+      return;
+    }
+
     // Remove from local state immediately
     setPracticalExamHistory(prev => prev.filter(entry => entry.id !== attemptId));
     // Remove from localStorage
@@ -5517,7 +6851,7 @@ export default function BaederApp() {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Praktische Prüfung ${escapeHtml(examTypeLabel)} - ${escapeHtml(attempt.user_name)}</title>
+        <title>Praktische PrÃ¼fung ${escapeHtml(examTypeLabel)} - ${escapeHtml(attempt.user_name)}</title>
         <style>
           @page { size: A4; margin: 14mm; }
           @media print { .no-print { display: none !important; } }
@@ -5535,7 +6869,7 @@ export default function BaederApp() {
       </head>
       <body>
         <div class="wrap">
-          <h1>Praktische Prüfung - ${escapeHtml(examTypeLabel)}</h1>
+          <h1>Praktische PrÃ¼fung - ${escapeHtml(examTypeLabel)}</h1>
           <div class="meta">
             <div><strong>Teilnehmer:</strong> ${escapeHtml(attempt.user_name || '-')}</div>
             <div><strong>Datum:</strong> ${escapeHtml(createdLabel)}</div>
@@ -5591,12 +6925,57 @@ export default function BaederApp() {
   const evaluatePracticalExam = () => {
     const disciplines = PRACTICAL_SWIM_EXAMS[practicalExamType] || [];
     if (disciplines.length === 0) {
-      showToast('Keine Disziplinen für diese Prüfung gefunden.', 'warning');
+      showToast('Keine Disziplinen fÃ¼r diese PrÃ¼fung gefunden.', 'warning');
       return;
     }
     const targetUser = getPracticalExamTargetUser();
     if (!targetUser?.id) {
-      showToast('Bitte zuerst einen Teilnehmer auswählen.', 'warning');
+      showToast('Bitte zuerst einen Teilnehmer auswÃ¤hlen.', 'warning');
+      return;
+    }
+
+    if (secureBackendApiEnabled) {
+      void (async () => {
+        try {
+          const savedAttempt = await secureExamSimulatorApi.createPracticalAttempt({
+            examType: practicalExamType,
+            userId: targetUser.id,
+            inputValues: { ...practicalExamInputs }
+          });
+          const normalizedAttempt = normalizePracticalAttempt(savedAttempt);
+          if (!normalizedAttempt) {
+            throw new Error('Praktische Pruefung konnte nicht verarbeitet werden.');
+          }
+
+          const resultPayload = {
+            type: normalizedAttempt.exam_type,
+            userId: normalizedAttempt.user_id,
+            userName: normalizedAttempt.user_name,
+            rows: normalizedAttempt.rows || [],
+            averageGrade: normalizedAttempt.average_grade,
+            gradedCount: normalizedAttempt.graded_count,
+            passed: normalizedAttempt.passed,
+            missingTables: Number(savedAttempt?.missingTables ?? 0),
+            createdAt: normalizedAttempt.created_at
+          };
+          setPracticalExamResult(resultPayload);
+          setPracticalExamHistory(prev => [normalizedAttempt, ...prev.filter(entry => entry.id !== normalizedAttempt.id)]);
+
+          const addedXp = Number(savedAttempt?.xpAward?.addedXp || 0);
+          if (addedXp > 0 && targetUser.id === user?.id) {
+            showToast(`+${addedXp} XP - Praxis bestanden`, 'success');
+          }
+
+          if (resultPayload.missingTables > 0) {
+            showToast('Wertungstabellen fehlen noch teilweise. Bitte nachreichen.', 'info');
+          } else {
+            showToast('Praktische Pruefung ausgewertet.', 'success');
+          }
+        } catch (error) {
+          console.error('Secure practical evaluation error:', error);
+          showToast(error?.message || 'Praktische Pruefung konnte nicht ausgewertet werden.', 'error');
+        }
+      })();
       return;
     }
 
@@ -5615,7 +6994,7 @@ export default function BaederApp() {
     });
 
     if (missingRequiredInputs.length > 0) {
-      showToast(`Bitte gültige Eingaben ergänzen: ${missingRequiredInputs.join(', ')}`, 'warning');
+      showToast(`Bitte gÃ¼ltige Eingaben ergÃ¤nzen: ${missingRequiredInputs.join(', ')}`, 'warning');
       return;
     }
 
@@ -5651,7 +7030,7 @@ export default function BaederApp() {
           xp,
           {
             eventKey: `practical_pass_${targetUser.id}_${resultPayload.type}_${resultPayload.createdAt}`,
-            reason: gradeBucket ? `Praxis bestanden • Note ${gradeBucket}` : 'Praxis bestanden',
+            reason: gradeBucket ? `Praxis bestanden â€¢ Note ${gradeBucket}` : 'Praxis bestanden',
             showXpToast: targetUser.id === user?.id
           }
         );
@@ -5661,11 +7040,11 @@ export default function BaederApp() {
     if (missingTables > 0) {
       showToast('Wertungstabellen fehlen noch teilweise. Bitte nachreichen.', 'info');
     } else {
-      showToast('Praktische Prüfung ausgewertet.', 'success');
+      showToast('Praktische PrÃ¼fung ausgewertet.', 'success');
     }
   };
 
-  // Toggle für Multi-Select im Prüfungssimulator
+  // Toggle fÃ¼r Multi-Select im PrÃ¼fungssimulator
   const toggleExamAnswer = (answerIndex) => {
     if (examAnswered || !examSimulator) return;
     setExamSelectedAnswers(prev => {
@@ -5677,7 +7056,7 @@ export default function BaederApp() {
     });
   };
 
-  // Bestätigen der Multi-Select Antwort im Prüfungssimulator
+  // BestÃ¤tigen der Multi-Select Antwort im PrÃ¼fungssimulator
   const confirmExamMultiSelectAnswer = () => {
     if (examAnswered || !examSimulator || !examCurrentQuestion.multi) return;
     setExamAnswered(true);
@@ -5730,7 +7109,13 @@ export default function BaederApp() {
     if (examCurrentQuestion.category) updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
     updateWeeklyProgress('examAnswers', 1);
     trackQuestionPerformance(examCurrentQuestion, examCurrentQuestion.category, isCorrect);
-    const newAnswers = [...examSimulator.answers, { question: examCurrentQuestion, selectedAnswer: -1, correct: isCorrect, answerType: 'keyword' }];
+    const newAnswers = [...examSimulator.answers, {
+      question: examCurrentQuestion,
+      selectedAnswer: -1,
+      correct: isCorrect,
+      answerType: 'keyword',
+      keywordText: examKeywordInput.trim()
+    }];
     setExamSimulator({ ...examSimulator, answers: newAnswers });
     setTimeout(() => {
       setExamKeywordInput('');
@@ -5779,24 +7164,81 @@ export default function BaederApp() {
       setExamAnswered(false);
       setExamSelectedAnswers([]);
       setExamSelectedAnswer(null);
-    } else {
-      const correctAnswers = newAnswers.filter(a => a.correct).length;
-      const percentage = Math.round((correctAnswers / newAnswers.length) * 100);
-      const examProgress = { correct: correctAnswers, total: newAnswers.length, percentage, passed: percentage >= 50, timeMs: Date.now() - examSimulator.startTime };
-      setUserExamProgress(examProgress);
-      void saveTheoryExamAttempt(examProgress);
-      if (percentage >= 50) playSound('whistle');
-
-      const earnedXp =
-        XP_REWARDS.EXAM_COMPLETION +
-        (correctAnswers * XP_REWARDS.EXAM_CORRECT_ANSWER) +
-        (percentage >= 50 ? XP_REWARDS.EXAM_PASS_BONUS : 0);
-      void queueXpAward('examSimulator', earnedXp, {
-        eventKey: `exam_run_${examSimulator.startTime}`,
-        reason: 'Prüfungssimulator',
-        showXpToast: true
-      });
+      return;
     }
+
+    const correctAnswers = newAnswers.filter(a => a.correct).length;
+    const percentage = Math.round((correctAnswers / newAnswers.length) * 100);
+    const examProgress = {
+      correct: correctAnswers,
+      total: newAnswers.length,
+      percentage,
+      passed: percentage >= 50,
+      timeMs: Date.now() - examSimulator.startTime
+    };
+
+    if (secureBackendApiEnabled && examSimulator?.sessionId) {
+      const answersPayload = newAnswers
+        .map((answer) => ({
+          questionId: answer?.question?.id,
+          selectedAnswerIndex: Number.isInteger(answer?.selectedAnswer) ? answer.selectedAnswer : undefined,
+          selectedAnswerIndices: Array.isArray(answer?.selectedAnswers) ? answer.selectedAnswers : undefined,
+          keywordText: typeof answer?.keywordText === 'string' ? answer.keywordText : undefined
+        }))
+        .filter((answer) => answer.questionId);
+
+      void (async () => {
+        try {
+          const savedAttempt = await secureExamSimulatorApi.submitTheorySession(examSimulator.sessionId, {
+            answers: answersPayload,
+            timeMs: examProgress.timeMs
+          });
+          const normalizedAttempt = normalizeSecureTheoryExamAttempt(savedAttempt);
+          if (normalizedAttempt) {
+            setUserExamProgress({
+              correct: normalizedAttempt.correct,
+              total: normalizedAttempt.total,
+              percentage: normalizedAttempt.percentage,
+              passed: normalizedAttempt.passed,
+              timeMs: normalizedAttempt.time_ms
+            });
+            setTheoryExamHistory(prev => [
+              normalizedAttempt,
+              ...prev.filter((entry) => entry.id !== normalizedAttempt.id)
+            ]);
+          } else {
+            setUserExamProgress(examProgress);
+          }
+
+          const addedXp = Number(savedAttempt?.xpAward?.addedXp || 0);
+          if (addedXp > 0) {
+            showToast(`+${addedXp} XP - Pruefungssimulator`, 'success');
+          }
+          if ((savedAttempt?.passed ?? examProgress.passed)) {
+            playSound('whistle');
+          }
+        } catch (error) {
+          console.error('Secure theory exam submit error:', error);
+          setUserExamProgress(examProgress);
+          showToast(error?.message || 'Pruefung konnte nicht gespeichert werden.', 'error');
+        }
+      })();
+      return;
+    }
+
+    setUserExamProgress(examProgress);
+    void saveTheoryExamAttempt(examProgress);
+    if (percentage >= 50) playSound('whistle');
+
+    const earnedXp =
+      XP_REWARDS.EXAM_COMPLETION +
+      (correctAnswers * XP_REWARDS.EXAM_CORRECT_ANSWER) +
+      (percentage >= 50 ? XP_REWARDS.EXAM_PASS_BONUS : 0);
+    void queueXpAward('examSimulator', earnedXp, {
+      eventKey: `exam_run_${examSimulator.startTime}`,
+      reason: 'PrÃ¼fungssimulator',
+      showXpToast: true
+    });
   };
 
   const resetExam = () => {
@@ -5813,6 +7255,35 @@ export default function BaederApp() {
 
   const saveTheoryExamAttempt = async (progress) => {
     if (!user?.id) return;
+
+    if (secureBackendApiEnabled) {
+      try {
+        const sessionId = examSimulator?.sessionId;
+        if (!sessionId) {
+          throw new Error('Keine sichere Theorie-Session vorhanden.');
+        }
+
+        const answersPayload = Array.isArray(examSimulator?.answers)
+          ? examSimulator.answers
+              .map((answer) => ({
+                questionId: answer?.question?.id,
+                selectedAnswerIndex: Number.isInteger(answer?.selectedAnswer) ? answer.selectedAnswer : undefined,
+                selectedAnswerIndices: Array.isArray(answer?.selectedAnswers) ? answer.selectedAnswers : undefined,
+                keywordText: typeof answer?.keywordText === 'string' ? answer.keywordText : undefined
+              }))
+              .filter((answer) => answer.questionId)
+          : [];
+
+        return await secureExamSimulatorApi.submitTheorySession(sessionId, {
+          answers: answersPayload,
+          timeMs: progress?.timeMs || 0
+        });
+      } catch (error) {
+        console.error('Secure theory exam save error:', error);
+        throw error;
+      }
+    }
+
     try {
       await supabase.from('theory_exam_attempts').insert([{
         user_id: user.id,
@@ -5825,7 +7296,7 @@ export default function BaederApp() {
         keyword_mode: examKeywordMode,
       }]);
     } catch (e) {
-      console.warn('Fehler beim Speichern des Prüfungsergebnisses:', e);
+      console.warn('Fehler beim Speichern des PrÃ¼fungsergebnisses:', e);
     }
   };
 
@@ -5833,6 +7304,12 @@ export default function BaederApp() {
     if (!user?.id) return;
     setTheoryExamHistoryLoading(true);
     try {
+      if (secureBackendApiEnabled) {
+        const data = await secureExamSimulatorApi.listTheoryAttempts();
+        setTheoryExamHistory((data || []).map(normalizeSecureTheoryExamAttempt).filter(Boolean));
+        return;
+      }
+
       let query = supabase.from('theory_exam_attempts').select('*').order('created_at', { ascending: false });
       if (!user.permissions?.canViewAllStats) {
         query = query.eq('user_id', user.id);
@@ -5840,20 +7317,62 @@ export default function BaederApp() {
       const { data } = await query;
       setTheoryExamHistory(data || []);
     } catch (e) {
-      console.warn('Fehler beim Laden der Prüfungshistorie:', e);
+      console.warn('Fehler beim Laden der PrÃ¼fungshistorie:', e);
     } finally {
       setTheoryExamHistoryLoading(false);
     }
   };
 
+  const normalizeSecureSchoolAttendanceEntry = (entry) => ({
+    id: entry?.id || '',
+    user_id: entry?.userId || user?.id || '',
+    date: entry?.date || null,
+    start_time: entry?.startTime || '',
+    end_time: entry?.endTime || '',
+    teacher_signature: entry?.teacherSignature || '',
+    trainer_signature: entry?.trainerSignature || '',
+    created_at: entry?.createdAt || null,
+    updated_at: entry?.updatedAt || null
+  });
+
+  const normalizeSecureExamGrade = (grade) => ({
+    id: grade?.id || '',
+    user_id: grade?.userId || user?.id || '',
+    date: grade?.date || null,
+    subject: grade?.subject || '',
+    topic: grade?.topic || '',
+    grade: Number(grade?.grade || 0),
+    notes: grade?.notes || null,
+    created_at: grade?.createdAt || null,
+    updated_at: grade?.updatedAt || null
+  });
+
+  const mapSecureContactsToAzubiCandidates = (contactsInput) => (
+    (contactsInput || [])
+      .map((contact) => mapBackendUserToFrontendUser({
+        ...contact,
+        status: 'APPROVED'
+      }))
+      .filter((account) => account && (account.role === 'azubi' || account.role === 'rettungsschwimmer_azubi'))
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de-DE'))
+  );
+
   // Kontrollkarte Berufsschule Funktionen
   const canViewAllSchoolCards = () => {
-    return user?.role === 'admin' || user?.canViewSchoolCards;
+    return user?.role === 'admin'
+      || user?.role === 'trainer'
+      || user?.canViewSchoolCards;
   };
 
   const loadAzubisForSchoolCard = async () => {
     if (!canViewAllSchoolCards()) return;
     try {
+      if (secureBackendApiEnabled) {
+        const apiContacts = await secureUsersApi.contacts();
+        setAllAzubisForSchoolCard(mapSecureContactsToAzubiCandidates(apiContacts));
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('id, name, email')
@@ -5874,6 +7393,14 @@ export default function BaederApp() {
       // Bestimme welche User-ID geladen werden soll
       const userIdToLoad = targetUserId || selectedSchoolCardUser?.id || user.id;
 
+      if (secureBackendApiEnabled) {
+        const apiEntries = await secureSchoolAttendanceApi.list({
+          userId: canViewAllSchoolCards() ? userIdToLoad : undefined
+        });
+        setSchoolAttendance((apiEntries || []).map(normalizeSecureSchoolAttendanceEntry));
+        return;
+      }
+
       const { data, error } = await supabase
         .from('school_attendance')
         .select('*')
@@ -5889,11 +7416,27 @@ export default function BaederApp() {
 
   const addSchoolAttendance = async () => {
     if (!newAttendanceDate || !newAttendanceStart || !newAttendanceEnd) {
-      alert('Bitte alle Felder ausfüllen');
+      alert('Bitte alle Felder ausfÃ¼llen');
       return;
     }
 
     try {
+      if (secureBackendApiEnabled) {
+        await secureSchoolAttendanceApi.create({
+          date: newAttendanceDate,
+          startTime: newAttendanceStart,
+          endTime: newAttendanceEnd
+        });
+        setNewAttendanceDate('');
+        setNewAttendanceStart('');
+        setNewAttendanceEnd('');
+        setNewAttendanceTeacherSig('');
+        setNewAttendanceTrainerSig('');
+        showToast('Eintrag gespeichert!', 'success');
+        await loadSchoolAttendance();
+        return;
+      }
+
       const { error } = await supabase
         .from('school_attendance')
         .insert({
@@ -5915,14 +7458,24 @@ export default function BaederApp() {
         .or('role.eq.admin,can_view_school_cards.eq.true');
 
       if (authorizedUsers) {
-        for (const authUser of authorizedUsers) {
-          if (authUser.id !== user.id && authUser.name) {
+        const targetUsers = authorizedUsers.filter((authUser) => authUser.id && authUser.id !== user.id);
+
+        if (secureBackendApiEnabled) {
+          await secureNotificationsApi.emitEvent({
+            eventType: 'SCHOOL_ATTENDANCE_CREATED',
+            targetUserIds: targetUsers.map((authUser) => authUser.id),
+            schoolDate: newAttendanceDate
+          });
+        } else {
+          for (const authUser of authorizedUsers) {
+            if (authUser.id !== user.id && authUser.name) {
             await sendNotification(
               authUser.name,
-              '📝 Neuer Kontrollkarten-Eintrag',
+              'ðŸ“ Neuer Kontrollkarten-Eintrag',
               `${user.name} hat einen neuen Berufsschul-Eintrag vom ${new Date(newAttendanceDate).toLocaleDateString('de-DE')} hinzugefuegt.`,
               'school_card'
             );
+            }
           }
         }
       }
@@ -5946,6 +7499,15 @@ export default function BaederApp() {
 
   const updateAttendanceSignature = async (id, field, value) => {
     try {
+      if (secureBackendApiEnabled) {
+        await secureSchoolAttendanceApi.updateSignature(id, {
+          field: field === 'teacher_signature' ? 'teacherSignature' : 'trainerSignature',
+          value: value || null
+        });
+        await loadSchoolAttendance();
+        return;
+      }
+
       const { error } = await supabase
         .from('school_attendance')
         .update({ [field]: value })
@@ -5959,8 +7521,14 @@ export default function BaederApp() {
   };
 
   const deleteSchoolAttendance = async (id) => {
-    if (!confirm('Eintrag wirklich löschen?')) return;
+    if (!confirm('Eintrag wirklich lÃ¶schen?')) return;
     try {
+      if (secureBackendApiEnabled) {
+        await secureSchoolAttendanceApi.remove(id);
+        await loadSchoolAttendance();
+        return;
+      }
+
       const { error } = await supabase
         .from('school_attendance')
         .delete()
@@ -5969,19 +7537,27 @@ export default function BaederApp() {
       if (error) throw error;
       loadSchoolAttendance();
     } catch (err) {
-      console.error('Fehler beim Löschen:', err);
+      console.error('Fehler beim LÃ¶schen:', err);
     }
   };
 
   // ==================== KLASUREN/NOTEN FUNKTIONEN ====================
 
   const canViewAllExamGrades = () => {
-    return user?.role === 'admin' || user?.canViewExamGrades;
+    return user?.role === 'admin'
+      || user?.role === 'trainer'
+      || user?.canViewExamGrades;
   };
 
   const loadAzubisForExamGrades = async () => {
     if (!canViewAllExamGrades()) return;
     try {
+      if (secureBackendApiEnabled) {
+        const apiContacts = await secureUsersApi.contacts();
+        setAllAzubisForExamGrades(mapSecureContactsToAzubiCandidates(apiContacts));
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('id, name, email')
@@ -5991,7 +7567,7 @@ export default function BaederApp() {
       if (error) throw error;
       setAllAzubisForExamGrades(data || []);
     } catch (err) {
-      console.error('Fehler beim Laden der Azubis für Klasuren:', err);
+      console.error('Fehler beim Laden der Azubis fÃ¼r Klasuren:', err);
     }
   };
 
@@ -5999,6 +7575,14 @@ export default function BaederApp() {
     if (!user) return;
     try {
       const userIdToLoad = targetUserId || selectedExamGradesUser?.id || user.id;
+      if (secureBackendApiEnabled) {
+        const apiGrades = await secureExamGradesApi.list({
+          userId: canViewAllExamGrades() ? userIdToLoad : undefined
+        });
+        setExamGrades((apiGrades || []).map(normalizeSecureExamGrade));
+        return;
+      }
+
       const { data, error } = await supabase
         .from('exam_grades')
         .select('*')
@@ -6013,6 +7597,19 @@ export default function BaederApp() {
 
   const addExamGrade = async ({ date, subject, topic, grade, notes }) => {
     try {
+      if (secureBackendApiEnabled) {
+        await secureExamGradesApi.create({
+          date,
+          subject,
+          topic,
+          grade,
+          notes
+        });
+        showToast('Klasur gespeichert!', 'success');
+        await loadExamGrades();
+        return;
+      }
+
       const { error } = await supabase
         .from('exam_grades')
         .insert({
@@ -6033,14 +7630,26 @@ export default function BaederApp() {
         .or('role.eq.admin,can_view_exam_grades.eq.true');
 
       if (authorizedUsers) {
-        for (const authUser of authorizedUsers) {
-          if (authUser.id !== user.id && authUser.name) {
+        const targetUsers = authorizedUsers.filter((authUser) => authUser.id && authUser.id !== user.id);
+
+        if (secureBackendApiEnabled) {
+          await secureNotificationsApi.emitEvent({
+            eventType: 'EXAM_GRADE_CREATED',
+            targetUserIds: targetUsers.map((authUser) => authUser.id),
+            subject,
+            examDate: date,
+            gradeLabel: Number(grade).toFixed(1).replace('.', ',')
+          });
+        } else {
+          for (const authUser of authorizedUsers) {
+            if (authUser.id !== user.id && authUser.name) {
             await sendNotification(
               authUser.name,
-              '📝 Neue Klasur eingetragen',
+              'ðŸ“ Neue Klasur eingetragen',
               `${user.name} hat eine ${subject}-Klasur vom ${new Date(date).toLocaleDateString('de-DE')} eingetragen: Note ${grade.toFixed(1).replace('.', ',')}`,
               'exam_grade'
             );
+            }
           }
         }
       }
@@ -6054,18 +7663,25 @@ export default function BaederApp() {
   };
 
   const deleteExamGrade = async (id) => {
-    if (!confirm('Klasur wirklich löschen?')) return;
+    if (!confirm('Klasur wirklich lÃ¶schen?')) return;
     try {
+      if (secureBackendApiEnabled) {
+        await secureExamGradesApi.remove(id);
+        showToast('Klasur geloescht', 'success');
+        await loadExamGrades();
+        return;
+      }
+
       const { error } = await supabase
         .from('exam_grades')
         .delete()
         .eq('id', id);
       if (error) throw error;
-      showToast('Klasur gelöscht', 'success');
+      showToast('Klasur gelÃ¶scht', 'success');
       loadExamGrades();
     } catch (err) {
-      console.error('Fehler beim Löschen:', err);
-      showToast('Fehler beim Löschen', 'error');
+      console.error('Fehler beim LÃ¶schen:', err);
+      showToast('Fehler beim LÃ¶schen', 'error');
     }
   };
 
@@ -6074,6 +7690,21 @@ export default function BaederApp() {
   const loadBerichtsheftEntries = async () => {
     if (!user) return;
     try {
+      if (secureBackendApiEnabled) {
+        const response = await secureReportBooksApi.list({ status: 'SUBMITTED' });
+        const allEntries = (Array.isArray(response) ? response : []).map(normalizeSecureBerichtsheftEntry);
+        const submittedEntries = allEntries.filter((entry) => !isBerichtsheftDraft(entry));
+        setBerichtsheftEntries(submittedEntries);
+
+        if (submittedEntries.length > 0) {
+          const maxNr = Math.max(...submittedEntries.map((entry) => entry.nachweis_nr || 0));
+          setBerichtsheftNr(maxNr + 1);
+        } else {
+          setBerichtsheftNr(1);
+        }
+        return;
+      }
+
       const { data, error } = await supabase
         .from('berichtsheft')
         .select('*')
@@ -6085,7 +7716,7 @@ export default function BaederApp() {
       const submittedEntries = allEntries.filter((entry) => !isBerichtsheftDraft(entry));
       setBerichtsheftEntries(submittedEntries);
 
-      // Setze die Nachweis-Nr auf nächste freie Nummer
+      // Setze die Nachweis-Nr auf nÃ¤chste freie Nummer
       if (submittedEntries.length > 0) {
         const maxNr = Math.max(...submittedEntries.map(e => e.nachweis_nr || 0));
         setBerichtsheftNr(maxNr + 1);
@@ -6117,7 +7748,7 @@ export default function BaederApp() {
     try {
       const { data: reviewers, error: reviewersError } = await supabase
         .from('profiles')
-        .select('name,role,approved,can_sign_reports')
+        .select('id,name,role,approved,can_sign_reports')
         .eq('approved', true);
 
       if (reviewersError) {
@@ -6125,17 +7756,20 @@ export default function BaederApp() {
         return;
       }
 
-      const reviewerNames = [...new Set(
+      const reviewerTargets = [...new Map(
         (reviewers || [])
           .filter((profile) => {
             const role = String(profile?.role || '').trim().toLowerCase();
             return role === 'admin' || role === 'trainer' || role === 'ausbilder' || Boolean(profile?.can_sign_reports);
           })
-          .map((profile) => String(profile?.name || '').trim())
-          .filter(Boolean)
-      )].filter((name) => name !== normalizedAzubiName);
+          .map((profile) => [String(profile?.id || '').trim(), {
+            id: String(profile?.id || '').trim(),
+            name: String(profile?.name || '').trim()
+          }])
+          .filter(([id, profile]) => id && profile.name && profile.name !== normalizedAzubiName)
+      ).values()];
 
-      if (reviewerNames.length === 0) return;
+      if (reviewerTargets.length === 0) return;
 
       let weekLabel = String(weekStart || '').trim();
       if (weekLabel) {
@@ -6147,13 +7781,21 @@ export default function BaederApp() {
         weekLabel = 'unbekannt';
       }
 
-      for (const reviewerName of reviewerNames) {
-        await sendNotification(
-          reviewerName,
-          '📘 Berichtsheft wartet auf Freigabe',
-          `${normalizedAzubiName} hat das Berichtsheft für die Woche ab ${weekLabel} abgeschlossen und zur Freigabe eingereicht.`,
+      if (secureBackendApiEnabled) {
+        await secureNotificationsApi.emitEvent({
+          eventType: 'BERICHTSHEFT_READY_FOR_REVIEW',
+          targetUserIds: reviewerTargets.map((reviewer) => reviewer.id),
+          weekStart
+        });
+      } else {
+        for (const reviewer of reviewerTargets) {
+          await sendNotification(
+          reviewer.name,
+          'ðŸ“˜ Berichtsheft wartet auf Freigabe',
+          `${normalizedAzubiName} hat das Berichtsheft fÃ¼r die Woche ab ${weekLabel} abgeschlossen und zur Freigabe eingereicht.`,
           'berichtsheft_pending'
-        );
+          );
+        }
       }
     } catch (error) {
       console.warn('Berichtsheft ready notification failed:', error);
@@ -6168,6 +7810,13 @@ export default function BaederApp() {
 
     setBerichtsheftPendingLoading(true);
     try {
+      if (secureBackendApiEnabled) {
+        const response = await secureReportBooksApi.listPendingReview();
+        const pending = (Array.isArray(response) ? response : []).map(normalizeSecureBerichtsheftEntry);
+        setBerichtsheftPendingSignatures(pending);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('berichtsheft')
         .select('*')
@@ -6212,6 +7861,19 @@ export default function BaederApp() {
     }
 
     try {
+      if (secureBackendApiEnabled) {
+        const updatedEntry = await secureReportBooksApi.assignTrainer(entryId, { trainerId });
+        const normalizedEntry = normalizeSecureBerichtsheftEntry(updatedEntry);
+        setBerichtsheftPendingSignatures((prev) => prev.map((entry) => (
+          entry.id === entryId
+            ? normalizedEntry
+            : entry
+        )));
+        setSelectedBerichtsheft((prev) => (prev?.id === entryId ? normalizedEntry : prev));
+        showToast(`Berichtsheft wurde ${trainer.name} zugewiesen.`, 'success');
+        return;
+      }
+
       const payload = {
         assigned_trainer_id: trainerId,
         assigned_trainer_name: trainer.name || null,
@@ -6234,7 +7896,7 @@ export default function BaederApp() {
       showToast(`Berichtsheft wurde ${trainer.name} zugewiesen.`, 'success');
     } catch (err) {
       console.error('Fehler beim Zuweisen des Berichtshefts:', err);
-      showToast('Zuweisung fehlgeschlagen. Bitte Supabase-Migration prüfen.', 'error');
+      showToast('Zuweisung fehlgeschlagen. Bitte Supabase-Migration prÃ¼fen.', 'error');
     }
   };
 
@@ -6361,6 +8023,27 @@ export default function BaederApp() {
     }
 
     try {
+      if (secureBackendApiEnabled) {
+        const response = await secureReportBooksApi.list({ status: 'DRAFT' });
+        const map = {};
+        (Array.isArray(response) ? response : [])
+          .map(normalizeSecureBerichtsheftEntry)
+          .forEach((row) => {
+            const week = String(row?.week_start || '').trim();
+            if (!week) return;
+            const prev = map[week];
+            if (!prev || toTimestampMs(row.updated_at) >= toTimestampMs(prev.updated_at)) {
+              map[week] = row;
+            }
+          });
+
+        setBerichtsheftServerDraftsByWeek(map);
+        if (currentView === 'berichtsheft' && !selectedBerichtsheft) {
+          loadBerichtsheftDraftForWeek(berichtsheftWeek, { serverDraftMap: map });
+        }
+        return;
+      }
+
       const { data, error } = await supabase
         .from('berichtsheft')
         .select('*')
@@ -6399,6 +8082,15 @@ export default function BaederApp() {
     if (cached?.id) return cached;
 
     try {
+      if (secureBackendApiEnabled) {
+        const response = await secureReportBooksApi.list({ status: 'DRAFT', weekStart: week });
+        const row = Array.isArray(response) && response.length > 0
+          ? normalizeSecureBerichtsheftEntry(response[0])
+          : null;
+        if (row) upsertBerichtsheftServerDraft(row);
+        return row;
+      }
+
       const { data, error } = await supabase
         .from('berichtsheft')
         .select('*')
@@ -6455,6 +8147,12 @@ export default function BaederApp() {
     if (!hasContent) {
       if (existingDraft?.id) {
         try {
+          if (secureBackendApiEnabled) {
+            await secureReportBooksApi.deleteDraftByWeek(targetWeek);
+            removeBerichtsheftServerDraft(targetWeek);
+            return;
+          }
+
           const { error } = await supabase
             .from('berichtsheft')
             .delete()
@@ -6472,28 +8170,48 @@ export default function BaederApp() {
     }
 
     const payload = {
-      user_name: user.name,
-      week_start: targetWeek,
-      week_end: getWeekEndDate(targetWeek),
-      ausbildungsjahr: snapshot.ausbildungsjahr,
-      nachweis_nr: snapshot.nachweis_nr,
+      weekStart: targetWeek,
+      trainingYear: snapshot.ausbildungsjahr,
+      evidenceNumber: snapshot.nachweis_nr,
       entries: snapshot.entries,
-      bemerkung_azubi: snapshot.bemerkung_azubi,
-      bemerkung_ausbilder: snapshot.bemerkung_ausbilder,
-      signatur_azubi: snapshot.signatur_azubi,
-      signatur_ausbilder: snapshot.signatur_ausbilder,
-      datum_azubi: snapshot.datum_azubi || null,
-      datum_ausbilder: snapshot.datum_ausbilder || null,
-      total_hours: calculateTotalHoursFromEntries(snapshot.entries),
-      status: 'draft'
+      apprenticeNote: snapshot.bemerkung_azubi,
+      apprenticeSignature: snapshot.signatur_azubi,
+      apprenticeSignatureDate: snapshot.datum_azubi || ''
     };
 
     try {
+      if (secureBackendApiEnabled) {
+        const result = await secureReportBooksApi.upsertDraft(payload);
+        if (result?.entry) {
+          upsertBerichtsheftServerDraft(normalizeSecureBerichtsheftEntry(result.entry));
+        } else if (result?.deleted) {
+          removeBerichtsheftServerDraft(targetWeek);
+        }
+        return;
+      }
+
+      const legacyPayload = {
+        user_name: user.name,
+        week_start: targetWeek,
+        week_end: getWeekEndDate(targetWeek),
+        ausbildungsjahr: snapshot.ausbildungsjahr,
+        nachweis_nr: snapshot.nachweis_nr,
+        entries: snapshot.entries,
+        bemerkung_azubi: snapshot.bemerkung_azubi,
+        bemerkung_ausbilder: snapshot.bemerkung_ausbilder,
+        signatur_azubi: snapshot.signatur_azubi,
+        signatur_ausbilder: snapshot.signatur_ausbilder,
+        datum_azubi: snapshot.datum_azubi || null,
+        datum_ausbilder: snapshot.datum_ausbilder || null,
+        total_hours: calculateTotalHoursFromEntries(snapshot.entries),
+        status: 'draft'
+      };
+
       let savedRow = null;
       if (existingDraft?.id) {
         const { data, error } = await supabase
           .from('berichtsheft')
-          .update(payload)
+          .update(legacyPayload)
           .eq('id', existingDraft.id)
           .select('*')
           .single();
@@ -6502,7 +8220,7 @@ export default function BaederApp() {
       } else {
         const { data, error } = await supabase
           .from('berichtsheft')
-          .insert(payload)
+          .insert(legacyPayload)
           .select('*')
           .single();
         if (error) throw error;
@@ -6539,6 +8257,12 @@ export default function BaederApp() {
     }
 
     try {
+      if (secureBackendApiEnabled) {
+        await secureReportBooksApi.deleteDraftByWeek(week);
+        removeBerichtsheftServerDraft(week);
+        return;
+      }
+
       const { error } = await supabase
         .from('berichtsheft')
         .delete()
@@ -6633,13 +8357,18 @@ export default function BaederApp() {
     setAzubiProfile(newProfile);
     localStorage.setItem('azubi_profile', JSON.stringify(newProfile));
 
-    // Debounced Supabase-Speicherung (1 Sekunde nach letzter Änderung)
+    // Debounced Supabase-Speicherung (1 Sekunde nach letzter Ã„nderung)
     if (azubiProfileSaveTimerRef.current) {
       clearTimeout(azubiProfileSaveTimerRef.current);
     }
     azubiProfileSaveTimerRef.current = setTimeout(async () => {
       if (user?.id) {
         try {
+          if (secureBackendApiEnabled) {
+            await secureReportBooksApi.updateProfile(newProfile);
+            return;
+          }
+
           const { error } = await supabase
             .from('profiles')
             .update({ berichtsheft_profile: newProfile })
@@ -6780,6 +8509,13 @@ export default function BaederApp() {
     }
 
     try {
+      if (secureBackendApiEnabled) {
+        const response = await secureSwimTrainingPlansApi.list();
+        const normalizedPlans = (Array.isArray(response) ? response : []).map(normalizeCustomSwimTrainingPlan);
+        setCustomSwimTrainingPlans(normalizedPlans);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('swim_training_plans_custom')
         .select('*')
@@ -6826,7 +8562,11 @@ export default function BaederApp() {
       || user?.role === 'trainer'
       || user?.role === 'ausbilder'
     );
-    const availableAzubis = allUsers.filter((account) => account?.id && String(account.role || '').toLowerCase() === 'azubi');
+    const availableAzubis = allUsers.filter((account) => {
+      if (!account?.id) return false;
+      const role = String(account.role || '').toLowerCase();
+      return role === 'azubi' || role === 'rettungsschwimmer_azubi';
+    });
     const requestedAssignedUserId = String(planInput.assignedUserId || '').trim();
     const fallbackAssignedUserId = isTrainerLike
       ? (availableAzubis[0]?.id || user.id)
@@ -6840,12 +8580,12 @@ export default function BaederApp() {
       || (assignedUserId === user.id ? { id: user.id, name: user.name, role: user.role } : null);
 
     if (!assignedUserId || !assignedUser) {
-      return { success: false, error: 'Zielperson für den Trainingsplan konnte nicht gefunden werden.' };
+      return { success: false, error: 'Zielperson fÃ¼r den Trainingsplan konnte nicht gefunden werden.' };
     }
 
     const name = String(planInput.name || '').trim();
     if (!name) {
-      return { success: false, error: 'Bitte einen Namen für den Trainingsplan angeben.' };
+      return { success: false, error: 'Bitte einen Namen fÃ¼r den Trainingsplan angeben.' };
     }
 
     const category = normalizeSwimTrainingPlanCategory(planInput.category);
@@ -6883,6 +8623,27 @@ export default function BaederApp() {
     };
 
     try {
+      if (secureBackendApiEnabled) {
+        const data = await secureSwimTrainingPlansApi.create({
+          name,
+          category,
+          difficulty,
+          units: normalizedUnits.map((unit) => ({
+            id: unit.id,
+            styleId: unit.styleId,
+            targetDistance: unit.targetDistance,
+            targetTime: unit.targetTime
+          })),
+          xpReward,
+          description,
+          assignedUserId
+        });
+
+        const normalized = normalizeCustomSwimTrainingPlan(data);
+        setCustomSwimTrainingPlans((prev) => [normalized, ...prev]);
+        return { success: true, data: normalized };
+      }
+
       const { data, error } = await supabase
         .from('swim_training_plans_custom')
         .insert([insertPayload])
@@ -6893,13 +8654,13 @@ export default function BaederApp() {
         if (error.code === '42P01' || error.message?.includes('does not exist')) {
           return {
             success: false,
-            error: 'Die Tabelle swim_training_plans_custom fehlt noch in Supabase. Bitte Migration ausführen.'
+            error: 'Die Tabelle swim_training_plans_custom fehlt noch in Supabase. Bitte Migration ausfÃ¼hren.'
           };
         }
         if (error.code === '42703' && String(error.message || '').includes('units_json')) {
           return {
             success: false,
-            error: 'Die Spalte units_json fehlt in swim_training_plans_custom. Bitte das aktuelle Supabase-SQL für Trainingsplaene ausführen.'
+            error: 'Die Spalte units_json fehlt in swim_training_plans_custom. Bitte das aktuelle Supabase-SQL fÃ¼r Trainingsplaene ausfÃ¼hren.'
           };
         }
         throw error;
@@ -6912,12 +8673,21 @@ export default function BaederApp() {
         const unitLabel = normalizedUnits.length > 1
           ? `${normalizedUnits.length} Einheiten (Start: ${targetDistance}m in ${targetTime} Min)`
           : `${targetDistance}m in ${targetTime} Min`;
-        await sendNotification(
+        if (secureBackendApiEnabled) {
+          await secureNotificationsApi.emitEvent({
+            eventType: 'SWIM_PLAN_ASSIGNED',
+            targetUserIds: [assignedUserId],
+            planName: name,
+            planUnitLabel: unitLabel
+          });
+        } else {
+          await sendNotification(
           assignedUser.name,
-          '🏊 Neuer Trainingsplan',
+          'ðŸŠ Neuer Trainingsplan',
           `${user.name} hat dir den Plan "${name}" zugewiesen (${unitLabel}).`,
           'swim_plan'
-        );
+          );
+        }
       }
 
       return { success: true, data: normalized };
@@ -7034,8 +8804,38 @@ export default function BaederApp() {
     };
   }, [allUsers, buildSwimmerDistanceRankingForMonth, swimSessions]);
 
+  const buildSecureSwimMonthlyResults = useCallback((yearInput = new Date().getFullYear()) => {
+    const parsedYear = Number(yearInput);
+    const year = Number.isFinite(parsedYear) ? Math.max(0, Math.round(parsedYear)) : new Date().getFullYear();
+    const results = [];
+
+    for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
+      const monthDate = new Date(year, monthIndex, 1);
+      const monthKey = getSwimMonthKey(monthDate);
+      const hasConfirmedSessions = swimSessions.some((session) => (
+        session?.confirmed && isDateInSwimMonth(session?.date, monthKey)
+      ));
+
+      if (!hasConfirmedSessions) {
+        continue;
+      }
+
+      const payload = buildSwimMonthlyResultPayload(monthDate);
+      if (payload) {
+        results.push(payload);
+      }
+    }
+
+    return results;
+  }, [buildSwimMonthlyResultPayload, swimSessions]);
+
   const loadSwimMonthlyResults = useCallback(async (yearInput = new Date().getFullYear()) => {
     try {
+      if (secureBackendApiEnabled) {
+        setSwimMonthlyResults(buildSecureSwimMonthlyResults(yearInput));
+        return;
+      }
+
       const parsedYear = Number(yearInput);
       const year = Number.isFinite(parsedYear) ? Math.max(0, Math.round(parsedYear)) : new Date().getFullYear();
       const { data, error } = await supabase
@@ -7060,6 +8860,10 @@ export default function BaederApp() {
   }, []);
 
   const upsertSwimMonthlyResult = useCallback(async (monthDateInput) => {
+    if (secureBackendApiEnabled) {
+      return;
+    }
+
     const payload = buildSwimMonthlyResultPayload(monthDateInput);
     if (!payload) return;
 
@@ -7077,7 +8881,7 @@ export default function BaederApp() {
     } catch (err) {
       console.warn('Monatsergebnis konnte nicht gespeichert werden:', err);
     }
-  }, [buildSwimMonthlyResultPayload]);
+  }, [buildSwimMonthlyResultPayload, secureBackendApiEnabled]);
 
   const getSeaCreatureTier = (winsInput) => {
     const wins = toSafeInt(winsInput);
@@ -7180,7 +8984,7 @@ export default function BaederApp() {
     const challengerId = swimDuelForm.challengerId;
     const opponentId = swimDuelForm.opponentId;
     if (!challengerId || !opponentId) {
-      showToast('Bitte zwei Teilnehmer auswählen.', 'warning');
+      showToast('Bitte zwei Teilnehmer auswÃ¤hlen.', 'warning');
       return;
     }
     if (challengerId === opponentId) {
@@ -7191,7 +8995,7 @@ export default function BaederApp() {
     const challengerSeconds = parseSwimSeconds(swimDuelForm.challengerSeconds);
     const opponentSeconds = parseSwimSeconds(swimDuelForm.opponentSeconds);
     if (!challengerSeconds || !opponentSeconds) {
-      showToast('Bitte gültige Zeiten in Sekunden eintragen.', 'warning');
+      showToast('Bitte gÃ¼ltige Zeiten in Sekunden eintragen.', 'warning');
       return;
     }
 
@@ -7240,18 +9044,18 @@ export default function BaederApp() {
 
     const trainerId = swimBossForm.trainerId;
     if (!trainerId) {
-      showToast('Bitte einen Ausbilder auswählen.', 'warning');
+      showToast('Bitte einen Ausbilder auswÃ¤hlen.', 'warning');
       return;
     }
     if (!Array.isArray(swimBossForm.azubiIds) || swimBossForm.azubiIds.length === 0) {
-      showToast('Bitte mindestens einen Azubi auswählen.', 'warning');
+      showToast('Bitte mindestens einen Azubi auswÃ¤hlen.', 'warning');
       return;
     }
 
     const trainerSeconds = parseSwimSeconds(swimBossForm.trainerSeconds);
     const azubiSeconds = parseSwimSeconds(swimBossForm.azubiSeconds);
     if (!trainerSeconds || !azubiSeconds) {
-      showToast('Bitte gültige Zeiten in Sekunden eintragen.', 'warning');
+      showToast('Bitte gÃ¼ltige Zeiten in Sekunden eintragen.', 'warning');
       return;
     }
 
@@ -7393,6 +9197,29 @@ export default function BaederApp() {
   const loadSwimSessions = async () => {
     setSwimSessionsLoaded(false);
     try {
+      if (secureBackendApiEnabled) {
+        const sessionsResponse = await secureSwimSessionsApi.list();
+        const normalizedSessions = (Array.isArray(sessionsResponse) ? sessionsResponse : []).map(normalizeSecureSwimSession);
+        setSwimSessions(normalizedSessions);
+
+        const canReviewSwimSessions = Boolean(
+          user?.permissions?.canViewAllStats
+          || user?.role === 'admin'
+          || user?.role === 'trainer'
+          || user?.role === 'ausbilder'
+        );
+
+        if (canReviewSwimSessions) {
+          const pendingResponse = await secureSwimSessionsApi.listPending();
+          setPendingSwimConfirmations((Array.isArray(pendingResponse) ? pendingResponse : []).map(normalizeSecureSwimSession));
+        } else {
+          setPendingSwimConfirmations([]);
+        }
+
+        setSwimSessionsLoaded(true);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('swim_sessions')
         .select('*')
@@ -7412,7 +9239,7 @@ export default function BaederApp() {
       console.log('Schwimm-Sessions geladen:', data?.length || 0);
       setSwimSessions(data || []);
 
-      // Filtere unbestätigte Einheiten für Trainer
+      // Filtere unbestÃ¤tigte Einheiten fÃ¼r Trainer
       if (user?.permissions?.canViewAllStats) {
         const pending = (data || []).filter(s => !s.confirmed);
         setPendingSwimConfirmations(pending);
@@ -7421,6 +9248,7 @@ export default function BaederApp() {
     } catch (err) {
       console.error('Fehler beim Laden der Schwimm-Einheiten:', err);
       setSwimSessions([]);
+      setPendingSwimConfirmations([]);
       setSwimSessionsLoaded(true);
     }
   };
@@ -7428,10 +9256,28 @@ export default function BaederApp() {
   // Trainingseinheit speichern
   const saveSwimSession = async (sessionData) => {
     try {
-      // Prüfe ob User eingeloggt ist und eine ID hat
+      // PrÃ¼fe ob User eingeloggt ist und eine ID hat
       if (!user || !user.id) {
         console.error('Kein User oder User-ID vorhanden:', user);
         return { success: false, error: 'Bitte melde dich erneut an.' };
+      }
+
+      if (secureBackendApiEnabled) {
+        const created = await secureSwimSessionsApi.create({
+          date: sessionData.date,
+          distanceMeters: parseInt(sessionData.distance, 10) || 0,
+          timeMinutes: parseInt(sessionData.time, 10) || 0,
+          styleId: sessionData.style,
+          notes: encodeSwimTrainingPlanInNotes(
+            sessionData.notes,
+            sessionData.trainingPlanId,
+            sessionData.trainingPlanUnitId
+          ),
+          challengeId: sessionData.challengeId || undefined
+        });
+
+        await loadSwimSessions();
+        return { success: true, data: normalizeSecureSwimSession(created) };
       }
 
       const newSession = {
@@ -7462,7 +9308,7 @@ export default function BaederApp() {
 
       if (error) {
         console.error('Supabase Fehler:', error);
-        // Prüfe ob Tabelle nicht existiert
+        // PrÃ¼fe ob Tabelle nicht existiert
         if (error.code === '42P01' || error.message?.includes('does not exist')) {
           return { success: false, error: 'Die Tabelle swim_sessions existiert nicht in Supabase. Bitte erstellen!' };
         }
@@ -7482,27 +9328,39 @@ export default function BaederApp() {
 
       const { data: reviewers, error: reviewersError } = await supabase
         .from('profiles')
-        .select('name,role,approved')
+        .select('id,name,role,approved')
         .eq('approved', true)
         .in('role', ['admin', 'trainer']);
 
       if (reviewersError) {
         console.warn('Reviewer lookup for swim notification failed:', reviewersError);
       } else {
-        const reviewerNames = [...new Set(
+        const reviewerTargets = [...new Map(
           (reviewers || [])
-            .map(profile => String(profile.name || '').trim())
-            .filter(Boolean)
-        )];
+            .map((profile) => [String(profile.id || '').trim(), {
+              id: String(profile.id || '').trim(),
+              name: String(profile.name || '').trim()
+            }])
+            .filter(([id, profile]) => id && profile.name && profile.name !== user.name)
+        ).values()];
 
-        for (const reviewerName of reviewerNames) {
-          if (reviewerName === user.name) continue;
-          await sendNotification(
-            reviewerName,
-            '🏊 Neue Schwimmeinheit wartet auf Freigabe',
-            `${user.name} hat eine Schwimmeinheit eingetragen (${sessionDateLabel}, ${sessionData.distance}m, ${styleLabel}) und wartet auf Bestätigung.`,
+        if (secureBackendApiEnabled) {
+          await secureNotificationsApi.emitEvent({
+            eventType: 'SWIM_SESSION_PENDING',
+            targetUserIds: reviewerTargets.map((reviewer) => reviewer.id),
+            sessionDate: sessionData.date,
+            sessionDistanceMeters: String(sessionData.distance || ''),
+            sessionStyleName: styleLabel
+          });
+        } else {
+          for (const reviewer of reviewerTargets) {
+            await sendNotification(
+            reviewer.name,
+            'ðŸŠ Neue Schwimmeinheit wartet auf Freigabe',
+            `${user.name} hat eine Schwimmeinheit eingetragen (${sessionDateLabel}, ${sessionData.distance}m, ${styleLabel}) und wartet auf BestÃ¤tigung.`,
             'swim_pending'
-          );
+            );
+          }
         }
       }
 
@@ -7513,9 +9371,22 @@ export default function BaederApp() {
     }
   };
 
-  // Trainingseinheit bestätigen (Trainer)
+  // Trainingseinheit bestÃ¤tigen (Trainer)
   const confirmSwimSession = async (sessionId) => {
     try {
+      if (secureBackendApiEnabled) {
+        const confirmationResult = await secureSwimSessionsApi.confirm(sessionId);
+        await loadData();
+        if (confirmationResult?.xpAward?.addedXp > 0) {
+          const sessionOwner = swimSessions.find((entry) => entry?.id === sessionId)?.user_name || 'Azubi';
+          const planLabel = confirmationResult?.xpAward?.planName
+            ? ` â€¢ Trainingsplan: ${confirmationResult.xpAward.planName}`
+            : '';
+          showToast(`${sessionOwner}: +${confirmationResult.xpAward.addedXp} XP${planLabel}`, 'success', 3000);
+        }
+        return { success: true };
+      }
+
       const sessionToConfirm = swimSessions.find(s => s.id === sessionId) || null;
 
       const { error } = await supabase
@@ -7559,7 +9430,7 @@ export default function BaederApp() {
 
       return { success: true };
     } catch (err) {
-      console.error('Fehler beim Bestätigen:', err);
+      console.error('Fehler beim BestÃ¤tigen:', err);
       return { success: false, error: err.message };
     }
   };
@@ -7567,6 +9438,12 @@ export default function BaederApp() {
   // Trainingseinheit ablehnen (Trainer)
   const rejectSwimSession = async (sessionId) => {
     try {
+      if (secureBackendApiEnabled) {
+        await secureSwimSessionsApi.reject(sessionId);
+        await loadSwimSessions();
+        return { success: true };
+      }
+
       const { error } = await supabase
         .from('swim_sessions')
         .delete()
@@ -7619,7 +9496,7 @@ export default function BaederApp() {
     };
   }, [allUsers, loadSwimMonthlyResults, swimSessions, swimSessionsLoaded, upsertSwimMonthlyResult, user]);
 
-  // Prüfe Schwimm-Badges wenn sich Sessions ändern
+  // PrÃ¼fe Schwimm-Badges wenn sich Sessions Ã¤ndern
   useEffect(() => {
     if (user && swimSessions.length > 0) {
       checkBadges();
@@ -7812,11 +9689,42 @@ export default function BaederApp() {
     );
 
     if (!hasContent) {
-      alert('Bitte mindestens eine Tätigkeit eintragen');
+      alert('Bitte mindestens eine TÃ¤tigkeit eintragen');
       return;
     }
 
     try {
+      if (secureBackendApiEnabled) {
+        const existingSecureDraft = !selectedBerichtsheft
+          ? await findBerichtsheftServerDraftByWeek(berichtsheftWeek)
+          : null;
+        const payload = {
+          entryId: selectedBerichtsheft?.id || existingSecureDraft?.id || undefined,
+          weekStart: berichtsheftWeek,
+          trainingYear: berichtsheftYear,
+          evidenceNumber: berichtsheftNr,
+          entries: currentWeekEntries,
+          apprenticeNote: berichtsheftBemerkungAzubi,
+          trainerNote: berichtsheftBemerkungAusbilder,
+          apprenticeSignature: berichtsheftSignaturAzubi,
+          trainerSignature: berichtsheftSignaturAusbilder,
+          apprenticeSignatureDate: berichtsheftDatumAzubi || '',
+          trainerSignatureDate: berichtsheftDatumAusbilder || ''
+        };
+
+        await secureReportBooksApi.submit(payload);
+        clearBerichtsheftDraft(berichtsheftWeek);
+        removeBerichtsheftServerDraft(berichtsheftWeek);
+        resetBerichtsheftForm();
+        await loadBerichtsheftEntries();
+        if (canManageBerichtsheftSignatures) {
+          await loadBerichtsheftPendingSignatures();
+        }
+        showToast(selectedBerichtsheft ? 'Berichtsheft aktualisiert!' : 'Berichtsheft gespeichert!', 'success');
+        setBerichtsheftViewMode('list');
+        return;
+      }
+
       const existingServerDraft = (!selectedBerichtsheft && berichtsheftRemoteDraftsEnabled)
         ? await findBerichtsheftServerDraftByWeek(berichtsheftWeek)
         : null;
@@ -7904,8 +9812,21 @@ export default function BaederApp() {
   };
 
   const deleteBerichtsheft = async (id) => {
-    if (!confirm('Berichtsheft wirklich löschen?')) return;
+    if (!confirm('Berichtsheft wirklich lÃ¶schen?')) return;
     try {
+      if (secureBackendApiEnabled) {
+        await secureReportBooksApi.remove(id);
+        await loadBerichtsheftEntries();
+        if (canManageBerichtsheftSignatures) {
+          await loadBerichtsheftPendingSignatures();
+        }
+        if (selectedBerichtsheft?.id === id) {
+          resetBerichtsheftForm();
+        }
+        showToast('Berichtsheft geloescht', 'success');
+        return;
+      }
+
       const { error } = await supabase
         .from('berichtsheft')
         .delete()
@@ -7915,7 +9836,7 @@ export default function BaederApp() {
       loadBerichtsheftEntries();
       loadBerichtsheftPendingSignatures();
     } catch (err) {
-      console.error('Fehler beim Löschen:', err);
+      console.error('Fehler beim LÃ¶schen:', err);
     }
   };
 
@@ -8061,7 +9982,7 @@ export default function BaederApp() {
           <div><strong>Name:</strong> ${profileName}</div>
           <div><strong>Nachweis Nr.:</strong> ${entry.nachweis_nr}</div>
           <div><strong>Ausbildungsbetrieb:</strong> ${azubiProfile.ausbildungsbetrieb || ''}</div>
-          <div><strong>Ausbildungsberuf:</strong> ${azubiProfile.ausbildungsberuf || 'Fachangestellte/r für Bäderbetriebe'}</div>
+          <div><strong>Ausbildungsberuf:</strong> ${azubiProfile.ausbildungsberuf || 'Fachangestellte/r fÃ¼r BÃ¤derbetriebe'}</div>
           <div><strong>Ausbilder/in:</strong> ${azubiProfile.ausbilder || ''}</div>
           <div><strong>Ausbildungsbeginn:</strong> ${azubiProfile.ausbildungsbeginn ? new Date(azubiProfile.ausbildungsbeginn).toLocaleDateString('de-DE') : ''}</div>
           <div><strong>Woche vom:</strong> ${formatDate(entry.week_start)} bis ${formatDate(entry.week_end)} ${weekEnd.getFullYear()}</div>
@@ -8072,7 +9993,7 @@ export default function BaederApp() {
           <thead>
             <tr>
               <th>Tag</th>
-              <th>Ausgeführte Arbeiten, Unterricht usw.</th>
+              <th>AusgefÃ¼hrte Arbeiten, Unterricht usw.</th>
               <th>Einzel-std.</th>
               <th>Gesamt-std.</th>
               <th>Abteilung</th>
@@ -8104,7 +10025,7 @@ export default function BaederApp() {
         </div>
 
         <div style="margin-top: 20px; page-break-inside: avoid;">
-          <strong>Für die Richtigkeit</strong>
+          <strong>FÃ¼r die Richtigkeit</strong>
           <div style="display: flex; gap: 40px; margin-top: 10px;">
             <div style="flex: 1;">
               <div style="margin-bottom: 5px;">Datum: ${entry.datum_azubi ? new Date(entry.datum_azubi).toLocaleDateString('de-DE') : '________________'}</div>
@@ -8191,7 +10112,7 @@ export default function BaederApp() {
 
   // ==================== SPACED REPETITION SYSTEM ====================
 
-  // Intervalle in Tagen basierend auf Level (SM-2 ähnlich)
+  // Intervalle in Tagen basierend auf Level (SM-2 Ã¤hnlich)
   const SPACED_INTERVALS = {
     1: 1,    // Level 1: 1 Tag
     2: 3,    // Level 2: 3 Tage
@@ -8306,25 +10227,25 @@ export default function BaederApp() {
   // ==================== DAILY CHALLENGES SYSTEM ====================
 
   const CHALLENGE_TYPES = [
-    { id: 'answer_questions', name: 'Fragen beantworten', icon: '❓', unit: 'Fragen', baseTarget: 10 },
-    { id: 'correct_answers', name: 'Richtige Antworten', icon: '✅', unit: 'richtige', baseTarget: 7 },
-    { id: 'flashcards_reviewed', name: 'Lernkarten wiederholen', icon: '🎴', unit: 'Karten', baseTarget: 15 },
-    { id: 'category_master', name: 'Kategorie üben', icon: '📚', unit: 'Fragen aus', baseTarget: 5, hasCategory: true },
-    { id: 'quiz_play', name: 'Quiz spielen', icon: '🎮', unit: 'Runde', baseTarget: 1 },
-    { id: 'streak_keep', name: 'Lernstreak halten', icon: '🔥', unit: 'Tag', baseTarget: 1 }
+    { id: 'answer_questions', name: 'Fragen beantworten', icon: 'â“', unit: 'Fragen', baseTarget: 10 },
+    { id: 'correct_answers', name: 'Richtige Antworten', icon: 'âœ…', unit: 'richtige', baseTarget: 7 },
+    { id: 'flashcards_reviewed', name: 'Lernkarten wiederholen', icon: 'ðŸŽ´', unit: 'Karten', baseTarget: 15 },
+    { id: 'category_master', name: 'Kategorie Ã¼ben', icon: 'ðŸ“š', unit: 'Fragen aus', baseTarget: 5, hasCategory: true },
+    { id: 'quiz_play', name: 'Quiz spielen', icon: 'ðŸŽ®', unit: 'Runde', baseTarget: 1 },
+    { id: 'streak_keep', name: 'Lernstreak halten', icon: 'ðŸ”¥', unit: 'Tag', baseTarget: 1 }
   ];
 
   const generateDailyChallenges = () => {
     const today = new Date();
     const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
 
-    // Pseudo-random basierend auf Datum (gleiche Challenges für alle Nutzer am selben Tag)
+    // Pseudo-random basierend auf Datum (gleiche Challenges fÃ¼r alle Nutzer am selben Tag)
     const seededRandom = (index) => {
       const x = Math.sin(seed + index) * 10000;
       return x - Math.floor(x);
     };
 
-    // Wähle 3 Challenges für heute
+    // WÃ¤hle 3 Challenges fÃ¼r heute
     const shuffled = [...CHALLENGE_TYPES].sort((a, b) => seededRandom(CHALLENGE_TYPES.indexOf(a)) - seededRandom(CHALLENGE_TYPES.indexOf(b)));
     const selectedChallenges = shuffled.slice(0, 3);
 
@@ -8407,8 +10328,97 @@ export default function BaederApp() {
     setDailyChallenges(challenges);
   }, []);
 
+  const createFlashcard = async ({ category, front, back }) => {
+    if (!user?.id) {
+      return { success: false, error: 'Bitte melde dich erneut an.' };
+    }
+
+    if (secureBackendApiEnabled) {
+      try {
+        const response = await secureFlashcardsApi.create({
+          category,
+          question: front,
+          answer: back
+        });
+
+        const card = normalizeSecureFlashcard(response?.flashcard || {});
+        if (card.approved) {
+          setUserFlashcards((prev) => [card, ...prev]);
+        } else {
+          setPendingFlashcards((prev) => [card, ...prev]);
+        }
+
+        if (response?.xpAward?.addedXp > 0) {
+          showToast(`+${response.xpAward.addedXp} XP â€¢ Karteikarte freigegeben`, 'success', 2500);
+        }
+
+        return {
+          success: true,
+          flashcard: card
+        };
+      } catch (error) {
+        return { success: false, error: error?.message || 'Fehler beim Erstellen der Karteikarte.' };
+      }
+    }
+
+    try {
+      const isApproved = user.permissions.canApproveQuestions;
+      const { data, error } = await supabase
+        .from('flashcards')
+        .insert([{
+          user_id: user.id,
+          category,
+          question: front,
+          answer: back,
+          approved: isApproved
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const flashcard = {
+        id: data.id,
+        front: data.question,
+        back: data.answer,
+        category: data.category,
+        approved: data.approved,
+        userId: data.user_id
+      };
+
+      if (flashcard.approved) {
+        setUserFlashcards((prev) => [...prev, flashcard]);
+      } else {
+        setPendingFlashcards((prev) => [...prev, flashcard]);
+      }
+
+      void queueXpAward('flashcardCreation', XP_REWARDS.FLASHCARD_CREATE, {
+        eventKey: `flashcard_create_${data.id}`,
+        reason: 'Karteikarte erstellt',
+        showXpToast: true
+      });
+
+      return { success: true, flashcard };
+    } catch (error) {
+      console.error('Flashcard error:', error);
+      return { success: false, error: 'Fehler beim Erstellen der Karteikarte' };
+    }
+  };
+
   const approveFlashcard = async (fcId) => {
     try {
+      if (secureBackendApiEnabled) {
+        const response = await secureFlashcardsApi.approve(fcId);
+        const approvedCard = normalizeSecureFlashcard(response?.flashcard || {});
+        setPendingFlashcards((prev) => prev.filter((f) => f.id !== fcId));
+        setUserFlashcards((prev) => [approvedCard, ...prev.filter((f) => f.id !== fcId)]);
+        if (response?.xpAward?.addedXp > 0 && approvedCard.createdBy) {
+          showToast(`${approvedCard.createdBy}: +${response.xpAward.addedXp} XP â€¢ Karteikarte freigegeben`, 'success', 3000);
+        }
+        playSound('correct');
+        return;
+      }
+
       const { error } = await supabase
         .from('flashcards')
         .update({ approved: true })
@@ -8430,6 +10440,13 @@ export default function BaederApp() {
 
   const deleteFlashcard = async (fcId) => {
     try {
+      if (secureBackendApiEnabled) {
+        await secureFlashcardsApi.remove(fcId);
+        setPendingFlashcards((prev) => prev.filter((f) => f.id !== fcId));
+        setUserFlashcards((prev) => prev.filter((f) => f.id !== fcId));
+        return;
+      }
+
       const { error } = await supabase
         .from('flashcards')
         .delete()
@@ -8478,7 +10495,7 @@ export default function BaederApp() {
       newBadges.push(badge);
     }
 
-    // Win Streak Badges - basierend auf bestWinStreak (höchste erreichte Serie)
+    // Win Streak Badges - basierend auf bestWinStreak (hÃ¶chste erreichte Serie)
     const bestStreak = userStats.bestWinStreak || 0;
     const winStreakMilestones = [
       { id: 'win_streak_3', value: 3 },
@@ -8594,32 +10611,42 @@ export default function BaederApp() {
     if (!materialTitle.trim() || !user?.permissions.canUploadMaterials) return;
 
     try {
-      const { data, error } = await supabase
-        .from('materials')
-        .insert([{
-          title: materialTitle,
-          category: materialCategory,
-          created_by: user.name
-        }])
-        .select()
-        .single();
+      if (secureBackendApiEnabled) {
+        const response = await secureContentApi.createMaterial({
+          title: materialTitle.trim(),
+          category: materialCategory
+        });
+        const mat = normalizeSecureMaterial(response);
+        setMaterials((prev) => [mat, ...prev]);
+      } else {
+        const { data, error } = await supabase
+          .from('materials')
+          .insert([{
+            title: materialTitle,
+            category: materialCategory,
+            created_by: user.name
+          }])
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      const mat = {
-        id: data.id,
-        title: data.title,
-        category: data.category,
-        createdBy: data.created_by,
-        time: new Date(data.created_at).getTime()
-      };
+        const mat = {
+          id: data.id,
+          title: data.title,
+          category: data.category,
+          createdBy: data.created_by,
+          time: new Date(data.created_at).getTime()
+        };
 
-      setMaterials([...materials, mat]);
+        setMaterials((prev) => [mat, ...prev]);
+      }
+
       setMaterialTitle('');
-      showToast('Material hinzugefügt!', 'success');
+      showToast('Material hinzugefÃ¼gt!', 'success');
     } catch (error) {
       console.error('Material error:', error);
-      showToast('Fehler beim Hinzufügen', 'error');
+      showToast(error?.message || 'Fehler beim HinzufÃ¼gen', 'error');
     }
   };
 
@@ -8628,29 +10655,48 @@ export default function BaederApp() {
     const hasOwnerAccount = allUsers.some((account) => Boolean(account?.is_owner));
     const canManageSecurity = Boolean(user?.isOwner) || (user?.role === 'admin' && !hasOwnerAccount);
     if (!canManageSecurity) {
-      showToast('Nur der Hauptadmin kann die Konfiguration ändern.', 'warning');
+      showToast('Nur der Hauptadmin kann die Konfiguration Ã¤ndern.', 'warning');
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from('app_config')
-        .upsert({
-          id: 'main',
-          menu_items: editingMenuItems,
-          theme_colors: editingThemeColors,
-          updated_at: new Date().toISOString(),
-          updated_by: user.name
+      if (secureBackendApiEnabled) {
+        const updatedConfig = await secureAppConfigApi.update({
+          menuItems: editingMenuItems,
+          themeColors: editingThemeColors
         });
 
-      if (error) throw error;
+        const loadedMenuItems = mergeMenuItemsWithDefaults(updatedConfig?.menuItems);
+        const loadedThemeColors = updatedConfig?.themeColors && Object.keys(updatedConfig.themeColors).length > 0
+          ? updatedConfig.themeColors
+          : DEFAULT_THEME_COLORS;
 
-      setAppConfig({
-        menuItems: editingMenuItems,
-        themeColors: editingThemeColors
-      });
+        setAppConfig({
+          menuItems: loadedMenuItems,
+          themeColors: loadedThemeColors
+        });
+        setEditingMenuItems(loadedMenuItems);
+        setEditingThemeColors(loadedThemeColors);
+      } else {
+        const { error } = await supabase
+          .from('app_config')
+          .upsert({
+            id: 'main',
+            menu_items: editingMenuItems,
+            theme_colors: editingThemeColors,
+            updated_at: new Date().toISOString(),
+            updated_by: user.name
+          });
 
-      showToast('Konfiguration gespeichert! Alle Nutzer sehen jetzt die Änderungen.', 'success');
+        if (error) throw error;
+
+        setAppConfig({
+          menuItems: editingMenuItems,
+          themeColors: editingThemeColors
+        });
+      }
+
+      showToast('Konfiguration gespeichert! Alle Nutzer sehen jetzt die Ã„nderungen.', 'success');
       playSound('splash');
     } catch (error) {
       console.error('Config save error:', error);
@@ -8662,7 +10708,7 @@ export default function BaederApp() {
   const resetAppConfig = () => {
     setEditingMenuItems([...DEFAULT_MENU_ITEMS]);
     setEditingThemeColors({...DEFAULT_THEME_COLORS});
-    showToast('Zurückgesetzt auf Standardwerte. Klicke Speichern um zu übernehmen.', 'info');
+    showToast('ZurÃ¼ckgesetzt auf Standardwerte. Klicke Speichern um zu Ã¼bernehmen.', 'info');
   };
 
   // Move menu item up/down
@@ -8727,7 +10773,7 @@ export default function BaederApp() {
 
     // Only admins can add resources
     if (user.role !== 'admin') {
-      showToast('Nur Administratoren können Ressourcen hinzufügen', 'warning');
+      showToast('Nur Administratoren kÃ¶nnen Ressourcen hinzufÃ¼gen', 'warning');
       return;
     }
 
@@ -8748,67 +10794,86 @@ export default function BaederApp() {
     try {
       new URL(resourceUrl);
     } catch (e) {
-      showToast('Bitte gib eine gültige URL ein (mit https://)', 'warning');
+      showToast('Bitte gib eine gÃ¼ltige URL ein (mit https://)', 'warning');
       return;
     }
 
     try {
-      const { data, error } = await supabase
-        .from('resources')
-        .insert([{
-          title: resourceTitle,
-          url: resourceUrl,
+      if (secureBackendApiEnabled) {
+        const response = await secureContentApi.createResource({
+          title: resourceTitle.trim(),
+          url: resourceUrl.trim(),
           category: resourceType,
-          description: resourceDescription,
-          created_by: user.name
-        }])
-        .select()
-        .single();
+          description: resourceDescription.trim()
+        });
+        const resource = normalizeSecureResource(response);
+        setResources((prev) => [resource, ...prev]);
+      } else {
+        const { data, error } = await supabase
+          .from('resources')
+          .insert([{
+            title: resourceTitle,
+            url: resourceUrl,
+            category: resourceType,
+            description: resourceDescription,
+            created_by: user.name
+          }])
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      const resource = {
-        id: data.id,
-        title: data.title,
-        url: data.url,
-        type: data.category,
-        description: data.description,
-        addedBy: data.created_by,
-        time: new Date(data.created_at).getTime()
-      };
+        const resource = normalizeSecureResource({
+          id: data.id,
+          title: data.title,
+          url: data.url,
+          category: data.category,
+          description: data.description,
+          created_by: data.created_by,
+          created_at: data.created_at
+        });
 
-      setResources([resource, ...resources]);
+        setResources((prev) => [resource, ...prev]);
+      }
+
       setResourceTitle('');
       setResourceUrl('');
+      setResourceType('youtube');
       setResourceDescription('');
       playSound('splash');
-      showToast('Ressource hinzugefügt!', 'success');
+      showToast('Ressource hinzugefÃ¼gt!', 'success');
     } catch (error) {
       console.error('Resource error:', error);
-      showToast('Fehler beim Hinzufügen', 'error');
+      showToast(error?.message || 'Fehler beim HinzufÃ¼gen', 'error');
     }
   };
 
   const deleteResource = async (resourceId) => {
     // Only admins can delete resources
     if (user.role !== 'admin') {
-      showToast('Nur Administratoren können Ressourcen löschen', 'warning');
+      showToast('Nur Administratoren kÃ¶nnen Ressourcen lÃ¶schen', 'warning');
       return;
     }
 
-    if (!confirm('Ressource wirklich löschen?')) return;
+    if (!confirm('Ressource wirklich lÃ¶schen?')) return;
 
     try {
-      const { error } = await supabase
-        .from('resources')
-        .delete()
-        .eq('id', resourceId);
+      if (secureBackendApiEnabled) {
+        await secureContentApi.removeResource(resourceId);
+      } else {
+        const { error } = await supabase
+          .from('resources')
+          .delete()
+          .eq('id', resourceId);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
-      setResources(resources.filter(r => r.id !== resourceId));
+      setResources((prev) => prev.filter((resource) => resource.id !== resourceId));
+      showToast('Ressource geloescht', 'success');
     } catch (error) {
       console.error('Delete resource error:', error);
+      showToast(error?.message || 'Fehler beim Loeschen', 'error');
     }
   };
 
@@ -8825,123 +10890,163 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('news')
-        .insert([{
+      if (secureBackendApiEnabled) {
+        const response = await secureContentApi.createNews({
           title: newsTitle.trim(),
-          content: newsContent.trim(),
-          author: user.name
-        }])
-        .select()
-        .single();
+          content: newsContent.trim()
+        });
+        const newsItem = normalizeSecureNewsItem(response);
+        setNews((prev) => [newsItem, ...prev]);
+      } else {
+        const { data, error } = await supabase
+          .from('news')
+          .insert([{
+            title: newsTitle.trim(),
+            content: newsContent.trim(),
+            author: user.name
+          }])
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      const newsItem = {
-        id: data.id,
-        title: data.title,
-        content: data.content,
-        author: data.author,
-        time: new Date(data.created_at).getTime()
-      };
+        const newsItem = {
+          id: data.id,
+          title: data.title,
+          content: data.content,
+          author: data.author,
+          time: new Date(data.created_at).getTime()
+        };
 
-      await sendNotificationToApprovedUsers({
-        title: '📰 Neue News',
-        message: `${user.name} hat eine neue News veroeffentlicht: "${data.title}"`,
-        type: 'news',
-        excludeUserNames: [user.name]
-      });
+        await sendNotificationToApprovedUsers({
+          title: 'ðŸ“° Neue News',
+          message: `${user.name} hat eine neue News veroeffentlicht: "${data.title}"`,
+          type: 'news',
+          excludeUserNames: [user.name]
+        });
 
-      setNews([newsItem, ...news]);
+        setNews((prev) => [newsItem, ...prev]);
+      }
+
       setNewsTitle('');
       setNewsContent('');
     } catch (error) {
       console.error('News error:', error);
+      showToast(error?.message || 'Fehler beim VerÃ¶ffentlichen der News', 'error');
     }
   };
 
   const deleteNews = async (newsId) => {
     if (!user?.permissions.canPostNews) return;
-    if (!confirm('Diese Ankündigung wirklich löschen?')) return;
+    if (!confirm('Diese AnkÃ¼ndigung wirklich lÃ¶schen?')) return;
 
     try {
-      const { error } = await supabase
-        .from('news')
-        .delete()
-        .eq('id', newsId);
+      if (secureBackendApiEnabled) {
+        await secureContentApi.removeNews(newsId);
+      } else {
+        const { error } = await supabase
+          .from('news')
+          .delete()
+          .eq('id', newsId);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
-      setNews(news.filter(n => n.id !== newsId));
+      setNews((prev) => prev.filter((n) => n.id !== newsId));
     } catch (error) {
       console.error('Delete news error:', error);
-      alert('Fehler beim Löschen der Ankündigung');
+      showToast(error?.message || 'Fehler beim LÃ¶schen der AnkÃ¼ndigung', 'error');
     }
   };
 
   const addExam = async () => {
-    if (!examTitle.trim() || !user) return;
+    if (!examTitle.trim() || !user?.permissions.canPostNews) return;
 
     try {
-      const { data, error } = await supabase
-        .from('exams')
-        .insert([{
-          title: examTitle,
-          description: examTopics,
-          exam_date: examDate || null,
-          created_by: user.name
-        }])
-        .select()
-        .single();
+      if (secureBackendApiEnabled) {
+        const response = await secureContentApi.createExam({
+          title: examTitle.trim(),
+          description: examTopics.trim() || undefined,
+          examDate: examDate || undefined
+        });
+        const exam = normalizeSecureScheduledExam(response);
+        setExams((prev) => [...prev, exam].sort((a, b) => {
+          const leftTime = a?.date ? new Date(a.date).getTime() : Number.MAX_SAFE_INTEGER;
+          const rightTime = b?.date ? new Date(b.date).getTime() : Number.MAX_SAFE_INTEGER;
+          return leftTime - rightTime;
+        }));
+      } else {
+        const { data, error } = await supabase
+          .from('exams')
+          .insert([{
+            title: examTitle,
+            description: examTopics,
+            exam_date: examDate || null,
+            created_by: user.name
+          }])
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      const exam = {
-        id: data.id,
-        title: data.title,
-        description: data.description,
-        date: data.exam_date,
-        createdBy: data.created_by,
-        time: new Date(data.created_at).getTime()
-      };
+        const exam = {
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          date: data.exam_date,
+          createdBy: data.created_by,
+          time: new Date(data.created_at).getTime()
+        };
 
-      const examDateLabel = data.exam_date
-        ? new Date(data.exam_date).toLocaleDateString('de-DE')
-        : 'ohne Termin';
+        const examDateLabel = data.exam_date
+          ? new Date(data.exam_date).toLocaleDateString('de-DE')
+          : 'ohne Termin';
 
-      await sendNotificationToApprovedUsers({
-        title: '📝 Neue Klausur',
-        message: `${user.name} hat eine neue Klausur eingetragen: "${data.title}" (${examDateLabel}).`,
-        type: 'exam',
-        excludeUserNames: [user.name]
-      });
+        await sendNotificationToApprovedUsers({
+          title: 'ðŸ“ Neue Klausur',
+          message: `${user.name} hat eine neue Klausur eingetragen: "${data.title}" (${examDateLabel}).`,
+          type: 'exam',
+          excludeUserNames: [user.name]
+        });
 
-      setExams([...exams, exam].sort((a, b) => new Date(a.date) - new Date(b.date)));
+        setExams((prev) => [...prev, exam].sort((a, b) => {
+          const leftTime = a?.date ? new Date(a.date).getTime() : Number.MAX_SAFE_INTEGER;
+          const rightTime = b?.date ? new Date(b.date).getTime() : Number.MAX_SAFE_INTEGER;
+          return leftTime - rightTime;
+        }));
+      }
+
       setExamTitle('');
       setExamDate('');
       setExamTopics('');
     } catch (error) {
       console.error('Exam error:', error);
+      showToast(error?.message || 'Fehler beim Eintragen der Klausur', 'error');
     }
   };
 
   const deleteExam = async (examId) => {
     if (!examId) return;
-    if (!confirm('Klausur wirklich löschen?')) return;
+    if (!user?.permissions.canPostNews) return;
+    if (!confirm('Klausur wirklich lÃ¶schen?')) return;
 
     try {
-      const { error } = await supabase
-        .from('exams')
-        .delete()
-        .eq('id', examId);
+      if (secureBackendApiEnabled) {
+        await secureContentApi.removeExam(examId);
+      } else {
+        const { error } = await supabase
+          .from('exams')
+          .delete()
+          .eq('id', examId);
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       setExams(prev => prev.filter(exam => exam.id !== examId));
-      showToast('Klausur gelöscht.', 'success');
+      showToast('Klausur gelÃ¶scht.', 'success');
     } catch (error) {
       console.error('Delete exam error:', error);
-      showToast('Fehler beim Löschen der Klausur', 'error');
+      showToast('Fehler beim LÃ¶schen der Klausur', 'error');
     }
   };
 
@@ -8980,7 +11085,7 @@ export default function BaederApp() {
     || String(a.swimmer_name || '').localeCompare(String(b.swimmer_name || ''), 'de-DE')
   );
 
-  // Login/Register/Impressum/Datenschutz – ausgelagert in LoginScreen
+  // Login/Register/Impressum/Datenschutz â€“ ausgelagert in LoginScreen
   if (!user) {
     return <LoginScreen />;
   }
@@ -8991,10 +11096,17 @@ export default function BaederApp() {
         ? 'linear-gradient(135deg, #0c4a6e 0%, #075985 25%, #0e7490 50%, #164e63 75%, #0f172a 100%)'
         : 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
     }}>
+      {LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED && (
+        <div className="relative z-30 mx-4 mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 shadow-md">
+          <AlertTriangle className="mr-2 inline" size={16} />
+          Sicherheitsmodus aktiv. Legacy-Schreibzugriffe auf Supabase sind gesperrt, bis die Backend-API uebernommen ist.
+        </div>
+      )}
+
       {/* Animated Swimmer */}
       <div className="absolute top-20 left-0 w-full h-32 overflow-hidden pointer-events-none z-0">
         <div className="swimmer animate-swim">
-          <span className="text-6xl">🏊‍♂️</span>
+          <span className="text-6xl">ðŸŠâ€â™‚ï¸</span>
         </div>
       </div>
 
@@ -9076,7 +11188,7 @@ export default function BaederApp() {
               onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
               className="ml-2 opacity-70 hover:opacity-100"
             >
-              ✕
+              âœ•
             </button>
           </div>
         ))}
@@ -9098,11 +11210,11 @@ export default function BaederApp() {
               className="border border-white/40"
             />
             <div>
-              <h1 className="text-2xl font-bold drop-shadow-lg">Bäder-Azubi App</h1>
+              <h1 className="text-2xl font-bold drop-shadow-lg">BÃ¤der-Azubi App</h1>
               <p className="text-sm opacity-90">
-                {user.name} • {(PERMISSIONS[user.role] || PERMISSIONS.azubi).label}
-                {user.role === 'admin' && ' 👑'}
-                {user.role === 'trainer' && ' 👨‍🏫'}
+                {user.name} â€¢ {(PERMISSIONS[user.role] || PERMISSIONS.azubi).label}
+                {user.role === 'admin' && ' ðŸ‘‘'}
+                {user.role === 'trainer' && ' ðŸ‘¨â€ðŸ«'}
               </p>
               {/* Level Badge */}
               <div className="flex items-center gap-1.5 mt-1">
@@ -9129,7 +11241,7 @@ export default function BaederApp() {
               className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors backdrop-blur-sm"
               title={darkMode ? 'Tag-Modus' : 'Nacht-Modus'}
             >
-              {darkMode ? '☀️' : '🌙'}
+              {darkMode ? 'â˜€ï¸' : 'ðŸŒ™'}
             </button>
 
             {/* Sound Toggle */}
@@ -9141,10 +11253,10 @@ export default function BaederApp() {
               className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors backdrop-blur-sm"
               title={soundEnabled ? 'Sound aus' : 'Sound an'}
             >
-              {soundEnabled ? '🔊' : '🔇'}
+              {soundEnabled ? 'ðŸ”Š' : 'ðŸ”‡'}
             </button>
 
-            {/* App Update (nur wenn neue Version verfügbar) */}
+            {/* App Update (nur wenn neue Version verfÃ¼gbar) */}
             {(updateAvailable || updatingApp) && (
               <button
                 onClick={() => { void applyPwaUpdate(); }}
@@ -9154,7 +11266,7 @@ export default function BaederApp() {
                 }`}
                 title="Neue Version installieren"
               >
-                <span>{updatingApp ? '⏳' : '⬆️'}</span>
+                <span>{updatingApp ? 'â³' : 'â¬†ï¸'}</span>
                 <span className="hidden sm:inline text-sm font-medium">
                   {updatingApp ? 'Update...' : 'Update'}
                 </span>
@@ -9168,7 +11280,7 @@ export default function BaederApp() {
                 className="bg-yellow-500/80 hover:bg-yellow-600/80 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm font-bold text-sm flex items-center gap-2 animate-pulse"
                 title="Benachrichtigungen erlauben"
               >
-                🔔 Erlauben
+                ðŸ”” Erlauben
               </button>
             )}
 
@@ -9218,7 +11330,7 @@ export default function BaederApp() {
                   onClick={clearAllNotifications}
                   className={`text-sm ${darkMode ? 'text-cyan-300 hover:text-cyan-100' : 'text-cyan-600 hover:text-cyan-800'}`}
                 >
-                  Alle löschen
+                  Alle lÃ¶schen
                 </button>
               )}
             </div>
@@ -9373,6 +11485,7 @@ export default function BaederApp() {
         {/* Quiz View */}
         {currentView === 'quiz' && (
           <QuizView
+            secureBackendApiEnabled={secureBackendApiEnabled}
             selectedDifficulty={selectedDifficulty}
             setSelectedDifficulty={setSelectedDifficulty}
             allUsers={allUsers}
@@ -9589,9 +11702,8 @@ export default function BaederApp() {
             newFlashcardBack={newFlashcardBack}
             setNewFlashcardBack={setNewFlashcardBack}
             pendingFlashcards={pendingFlashcards}
-            setPendingFlashcards={setPendingFlashcards}
             userFlashcards={userFlashcards}
-            setUserFlashcards={setUserFlashcards}
+            createFlashcard={createFlashcard}
             newQuestionCategory={newQuestionCategory}
             setNewQuestionCategory={setNewQuestionCategory}
             deleteFlashcard={deleteFlashcard}
@@ -9604,8 +11716,6 @@ export default function BaederApp() {
             moderateContent={moderateContent}
             getCardSpacedData={getCardSpacedData}
             updateCardSpacedData={updateCardSpacedData}
-            queueXpAward={queueXpAward}
-            XP_REWARDS={XP_REWARDS}
             FLASHCARD_CONTENT={FLASHCARD_CONTENT}
             KEYWORD_FLASHCARD_CONTENT={KEYWORD_FLASHCARD_CONTENT}
             WHO_AM_I_FLASHCARD_CONTENT={WHO_AM_I_FLASHCARD_CONTENT}
@@ -9847,15 +11957,15 @@ export default function BaederApp() {
 
       </div>
 
-      {/* Bottom Navigation Bar — mobile only */}
+      {/* Bottom Navigation Bar â€” mobile only */}
       <div className={`fixed bottom-0 left-0 right-0 z-50 md:hidden ${darkMode ? 'bg-slate-900/97 border-slate-700' : 'bg-white/97 border-gray-200'} border-t backdrop-blur-sm flex`}
            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {[
-          { id: 'home', icon: '🏠', label: 'Start' },
-          { id: 'exam-simulator', icon: '📝', label: 'Prüfung' },
-          { id: 'quiz', icon: '🎮', label: 'Quiz' },
-          { id: 'berichtsheft', icon: '📖', label: 'Bericht' },
-          { id: '__mehr', icon: '☰', label: 'Mehr' },
+          { id: 'home', icon: 'ðŸ ', label: 'Start' },
+          { id: 'exam-simulator', icon: 'ðŸ“', label: 'PrÃ¼fung' },
+          { id: 'quiz', icon: 'ðŸŽ®', label: 'Quiz' },
+          { id: 'berichtsheft', icon: 'ðŸ“–', label: 'Bericht' },
+          { id: '__mehr', icon: 'â˜°', label: 'Mehr' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -9882,7 +11992,7 @@ export default function BaederApp() {
         ))}
       </div>
 
-      {/* "Mehr"-Drawer — grouped menu items */}
+      {/* "Mehr"-Drawer â€” grouped menu items */}
       {showMehrDrawer && (
         <div
           className="fixed inset-0 z-[100]"
@@ -9895,8 +12005,8 @@ export default function BaederApp() {
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             <div className={`flex justify-between items-center p-4 border-b ${darkMode ? 'border-slate-700' : 'border-gray-100'}`}>
-              <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>Alle Menüpunkte</h3>
-              <button onClick={() => setShowMehrDrawer(false)} className={`p-2 rounded-lg ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-800'}`}>✕</button>
+              <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>Alle MenÃ¼punkte</h3>
+              <button onClick={() => setShowMehrDrawer(false)} className={`p-2 rounded-lg ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-800'}`}>âœ•</button>
             </div>
             <div className="p-4 space-y-4">
               {Object.entries(MENU_GROUP_LABELS)
@@ -9946,3 +12056,4 @@ export default function BaederApp() {
     </div>
   );
 }
+

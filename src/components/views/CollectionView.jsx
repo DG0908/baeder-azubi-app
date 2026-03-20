@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
 import { AVATARS, getAvatarById, getLevel } from '../../data/constants';
+import { isSecureBackendApiEnabled, secureUsersApi } from '../../lib/secureApi';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 
 const RARITY_ORDER = ['common', 'bronze', 'silver', 'gold', 'legendary'];
@@ -41,6 +42,7 @@ const CollectionView = ({ userStats, swimSessions, userBadges, setCurrentView })
   const { darkMode, showToast, playSound } = useApp();
   const [filter, setFilter] = useState('all');
   const [selectedAvatar, setSelectedAvatar] = useState(null);
+  const secureBackendProfileEnabled = isSecureBackendApiEnabled();
 
   const toSafeInt = (v) => { const n = Number(v); return Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0; };
 
@@ -117,11 +119,13 @@ const CollectionView = ({ userStats, swimSessions, userBadges, setCurrentView })
       return;
     }
     try {
-      const { error } = await supabase.from('profiles').update({ avatar: avatarId }).eq('id', user.id);
-      if (error) throw error;
-      const updated = { ...user, avatar: avatarId };
-      setUser(updated);
-      localStorage.setItem('bäder_user', JSON.stringify(updated));
+      if (secureBackendProfileEnabled) {
+        await secureUsersApi.updateMe({ avatar: avatarId });
+      } else {
+        const { error } = await supabase.from('profiles').update({ avatar: avatarId }).eq('id', user.id);
+        if (error) throw error;
+      }
+      setUser({ ...user, avatar: avatarId });
       playSound?.('success');
       showToast(`${entry.avatar.label} ausgerüstet!`, 'success');
       setSelectedAvatar(null);
