@@ -1,0 +1,16 @@
+[Unit]
+Description=Baeder Azubi Push Backend
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/baeder-azubi-app/backend
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/baeder-azubi-app/backend/.env
+ExecStart=/usr/bin/node /opt/baeder-azubi-app/backend/src/server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
