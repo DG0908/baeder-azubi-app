@@ -93,7 +93,7 @@ export function AuthProvider({ children }) {
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event);
+      if (import.meta.env.DEV) console.log('Auth state changed:', event);
       if (event === 'SIGNED_OUT') {
         setUser(null);
         localStorage.removeItem('baeder_user');
@@ -220,7 +220,7 @@ export function AuthProvider({ children }) {
         return;
       }
 
-      console.log('User created via Supabase Auth:', data);
+      if (import.meta.env.DEV) console.log('User created via Supabase Auth');
 
       if (data?.user) {
         try {
