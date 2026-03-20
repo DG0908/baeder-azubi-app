@@ -2525,7 +2525,7 @@ export default function BaederApp() {
         .in('role', ['azubi', 'trainer']);
 
       if (error || !users) {
-        console.log('No users found or Supabase error');
+        if (import.meta.env.DEV) console.log('No users found or Supabase error');
         return;
       }
 
@@ -7409,7 +7409,7 @@ export default function BaederApp() {
         throw error;
       }
 
-      console.log('Schwimm-Sessions geladen:', data?.length || 0);
+      if (import.meta.env.DEV) console.log('Schwimm-Sessions geladen:', data?.length || 0);
       setSwimSessions(data || []);
 
       // Filtere unbestätigte Einheiten für Trainer
@@ -7430,7 +7430,7 @@ export default function BaederApp() {
     try {
       // Prüfe ob User eingeloggt ist und eine ID hat
       if (!user || !user.id) {
-        console.error('Kein User oder User-ID vorhanden:', user);
+        console.error('Kein User oder User-ID vorhanden');
         return { success: false, error: 'Bitte melde dich erneut an.' };
       }
 
@@ -7453,7 +7453,7 @@ export default function BaederApp() {
         confirmed_at: null
       };
 
-      console.log('Speichere Schwimm-Session:', newSession);
+      if (import.meta.env.DEV) console.log('Speichere Schwimm-Session');
 
       const { data, error } = await supabase
         .from('swim_sessions')
@@ -7469,7 +7469,7 @@ export default function BaederApp() {
         throw error;
       }
 
-      console.log('Session gespeichert:', data);
+      if (import.meta.env.DEV) console.log('Session gespeichert');
 
       // Aktualisiere lokale Liste
       setSwimSessions(prev => [data[0], ...prev]);
