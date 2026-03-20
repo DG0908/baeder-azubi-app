@@ -1,310 +1,271 @@
-# Umsetzungspfad: IT-freigabefähige Azubi-App
+# Umsetzungsplan: IT-freigabefaehige Azubi-App
+
+Stand: 2026-03-20
 
 ## Ziel
 
-Dieser Plan beschreibt die Reihenfolge, in der die Azubi-App auf ein Niveau gebracht wird, das in einem kommunalen oder unternehmensweiten Einsatz fachlich vertretbar ist. Ziel ist nicht eine theoretisch perfekte App, sondern eine App, die bei Security-, Datenschutz- und Betriebsprüfung keine typischen Ausschlussgründe mehr aufweist.
+Dieser Plan ist das verbindliche Arbeitsdokument fuer die weitere Absicherung der Azubi-App. Er haelt fest:
 
-## Maßstab
+- was bereits technisch umgesetzt ist
+- was fuer Pilot und Produktion noch offen ist
+- in welcher Reihenfolge wir ohne Abschweifen weiterarbeiten
 
-- DSGVO-konforme Verarbeitung mit dokumentierten Zwecken, Rollen, Speicherfristen und Löschprozessen
-- Backend-zentrierte Sicherheitsarchitektur ohne direkten Client-Datenbankzugriff
-- Nachvollziehbare Administrator- und Sicherheitsereignisse
-- Härtung gegen typische Web- und Betriebsrisiken
-- Wiederherstellbarer Betrieb mit Backup- und Restore-Nachweis
+Der Massstab bleibt:
 
-## Arbeitsweise
+- DSGVO-tauglicher Betrieb
+- backend-zentrierte Sicherheitsarchitektur
+- keine sicherheitsrelevanten Browser-Schreibrechte
+- nachvollziehbare Admin- und Sicherheitsaktionen
+- wiederherstellbarer Betrieb mit Backup- und Restore-Nachweis
 
-- Reihenfolge strikt einhalten
-- Neue Features bis Abschluss der kritischen Pakete zurückstellen
-- Jedes Paket erst schließen, wenn die Abnahmekriterien erfüllt sind
-- Keine Produktivfreigabe vor Abschluss von Paket 8
+## Aktueller Gesamtstand
 
-## Paket 1: Sofortmaßnahmen
+Die groessten Architektur- und Security-Baustellen des Prototyps wurden bereits umgebaut:
 
-### Ziel
+- NestJS-Backend unter `server/` als autoritativer API-Pfad
+- PostgreSQL + Prisma als Ziel-Datenmodell
+- Auth, Freigabestatus, RBAC und Passwort-Reset serverseitig
+- Chat, Duelle, Ranking, Benachrichtigungen, Berichtsheft, Schwimmeinheiten, Trainingsplaene, Flashcards, Pruefungen, Content, Forum, Ressourcen und App-Konfiguration auf dem sicheren Backend-Pfad
+- Legacy-Express-Altpfade fuer `/api/push` und `/api/admin` stillgelegt
+- Docker-/Compose-, Nginx-, Backup-/Restore- und Betriebsdokumente vorhanden
 
-Akute Risiken entfernen, damit kein weiterer Schaden durch den Prototyp entsteht.
+Wichtige Restwahrheit:
 
-### Aufgaben
+- Die App ist noch nicht produktiv freizugeben.
+- Der Schwerpunkt liegt jetzt auf Testdatenbank, Migration, Smoke-Tests, Restore-Drill und dem Entfernen der letzten Legacy-Fallbacks.
 
-- Alle bekannten Secrets und Tokens rotieren
-- Hardcoded Secrets und Fallback-Credentials vollständig entfernen
-- Direkte Client-Schreibpfade auf sicherheitsrelevante Tabellen identifizieren und sperren
-- Automatische Löschlogik im Frontend außer Betrieb nehmen
-- Legacy-Pfade klar als nicht produktionsfähig kennzeichnen
+## Paketstatus
 
-### Abnahmekriterien
+## Paket 1: Sofortmassnahmen
 
-- Kein Secret mehr im Repository
-- Kein Fallback-JWT-Secret im Backend
-- Keine unkontrollierte Löschroutine mehr im Frontend
-- Kritische Admin-, Auth- und Ranking-Änderungen nicht mehr direkt aus dem Browser möglich
+Status: `teilweise abgeschlossen`
 
-### Priorität
+Erledigt:
 
-Critical
+- Hardcoded Secrets und unsichere Fallbacks aus den relevanten App-Pfaden entfernt
+- kritische Browser-Schreibpfade blockiert oder auf `/api` umgezogen
+- automatische clientseitige Loeschlogik deaktiviert
+- Legacy-Altpfade sichtbar als nicht produktionsfaehig markiert
+
+Offen:
+
+- echte Rotation aller real verwendeten Secrets in Test/Produktion
+- Nachweis, dass keine Alt-Secrets mehr im Betrieb verwendet werden
+
+Abschlusskriterium:
+
+- reale Secrets sind ersetzt, dokumentiert und ausserhalb des Repos verwaltet
 
 ## Paket 2: Datenschutz- und Betriebsgrundlagen
 
-### Ziel
+Status: `teilweise abgeschlossen`
 
-Vor dem weiteren Umbau muss klar sein, welche Daten warum verarbeitet werden und wer verantwortlich ist.
+Erledigt:
 
-### Aufgaben
+- Datenschutz-/Betriebsgrundlagen in `docs/dsgvo-betriebskonzept.md`
+- AVV-Basis und Betriebsdokumente angelegt
+- Rollenmodell fachlich festgezogen
 
-- Verzeichnis der verarbeiteten Daten erstellen
-- Rollen und Berechtigungen verbindlich definieren
-- Aufbewahrungs- und Löschfristen festlegen
-- Verantwortlichkeiten für Betrieb, Support, Incident Response und Freigaben festlegen
-- Externe Dienstleister und AVV-Pflichten erfassen
+Offen:
 
-### Abnahmekriterien
+- formale Freigabe von Aufbewahrungs-, Loesch- und Auskunftsprozessen durch den Betreiber
+- Benennung der realen Verantwortlichen fuer Betrieb, Support, Incident Response und Datenschutz
 
-- Datenarten, Zweck, Rechtsgrundlage und Fristen sind dokumentiert
-- Rollenmodell ist schriftlich freigegeben
-- Löschung erfolgt nur nach dokumentierter Regel, nicht durch versteckte App-Logik
-- Hoster- und Auftragsverarbeiterrolle ist geklärt
+Abschlusskriterium:
 
-### Priorität
-
-Critical
+- Betreiber hat die Dokumente nicht nur im Repo, sondern organisatorisch freigegeben
 
 ## Paket 3: Zielarchitektur festziehen
 
-### Ziel
+Status: `weitgehend umgesetzt`
 
-Eine eindeutige Systemarchitektur schaffen, die von IT und Datenschutz geprüft werden kann.
+Erledigt:
 
-### Aufgaben
+- Frontend, Backend und Datenbank sind technisch getrennt
+- NestJS ist die Ziel-API
+- Mandantenfaehigkeit ist im Datenmodell und in den Kernmodulen verankert
+- PostgreSQL ist fuer den Zielbetrieb nur intern vorgesehen
 
-- Frontend, Backend und Datenbank technisch trennen
-- PostgreSQL nur intern erreichbar betreiben
-- NestJS als einzige autoritative API definieren
-- Mandantenmodell für mehrere Unternehmen im Datenmodell verankern
-- Dev-, Test- und Produktionsumgebungen trennen
+Offen:
 
-### Abnahmekriterien
+- letzte Legacy-Fallbacks im Frontend vollstaendig entfernen
+- Migrationen gegen eine echte Testdatenbank pruefen
 
-- Browser greift nicht direkt auf produktive Datenbanktabellen zu
-- Alle sicherheitsrelevanten Vorgänge laufen über `/api`
-- Mandantentrennung ist im Schema und in der Autorisierung abgebildet
-- Separate Konfigurationen für `dev`, `test`, `prod` existieren
+Abschlusskriterium:
 
-### Priorität
-
-Critical
+- kein produktiver Fachpfad faellt mehr auf direkte Supabase-/Legacy-Zugriffe zurueck
 
 ## Paket 4: Authentifizierung und Autorisierung
 
-### Ziel
+Status: `weitgehend umgesetzt`
 
-Alle Zugriffe nachvollziehbar an Benutzer, Rollen und Freigabestatus binden.
+Erledigt:
 
-### Aufgaben
+- Passwort-Hashing
+- Approval-Workflow
+- JWT + Refresh-Cookie-Ansatz
+- RBAC fuer `admin`, `ausbilder`, `azubi`, `rettungsschwimmer_azubi`
+- Guards auf dem sicheren Backend-Pfad
+- Passwort-Reset
 
-- Passwort-Hashing mit Argon2 oder bcrypt erzwingen
-- Registrierung über kontrollierten Prozess mit Freigabestatus
-- JWT oder sichere Session-Strategie finalisieren
-- RBAC für `admin`, `ausbilder`, `azubi`, `rettungsschwimmer_azubi`
-- Guards für geschützte Routen flächendeckend anwenden
-- Negativtests für unzulässige Zugriffe ergänzen
+Offen:
 
-### Abnahmekriterien
+- End-to-End-Tests gegen echte Testdatenbank
+- Bestandsnutzer-/Passwortmigration spaeter sauber planen und pruefen
 
-- Kein Passwort im Klartext
-- Gesperrte oder nicht freigegebene Konten können sich nicht anmelden
-- Rollenwechsel und Freigaben nur serverseitig möglich
-- Jeder geschützte Endpunkt liefert bei fehlenden Rechten korrekt `401` oder `403`
+Abschlusskriterium:
 
-### Priorität
-
-Critical
+- alle Auth- und Rollenfluesse sind auf Testsystemen erfolgreich nachgewiesen
 
 ## Paket 5: Eingaben, Chat und Fachlogik absichern
 
-### Ziel
+Status: `weitgehend umgesetzt`
 
-Manipulationen über das Frontend technisch unattraktiv und serverseitig wirkungslos machen.
+Erledigt:
 
-### Aufgaben
+- DTO-Validierung in den neuen Backend-Modulen
+- Sanitizing fuer Chat- und Freitextpfade
+- serverseitige Duell-, Ranking-, Notification- und weite Teile der Fortschrittslogik
+- Client sendet in den sensiblen Spielfluessen nur Eingaben, nicht autoritative Scores
 
-- DTO-basierte Validierung für alle Endpunkte
-- Sanitizing für Chat- und Freitextinhalte
-- Rate Limiting für Login, Registrierung, Admin- und Duell-Endpunkte
-- Duell-, Ranking- und Fortschrittslogik vollständig serverseitig berechnen
-- Client nur Antworten und Eingaben senden lassen, nie Punkte oder Sieger
+Offen:
 
-### Abnahmekriterien
+- strukturierte Smoke-Tests fuer alle Kernmodule
+- Restscan auf verbliebene unsichere Legacy-Sonderpfade
+- Nachweis der Rate-Limits im Testbetrieb
 
-- Ungültige Nutzereingaben werden serverseitig abgewiesen
-- Chat-Nachrichten können keine schädlichen HTML-/Script-Inhalte einschleusen
-- Missbrauch durch Masseneingaben ist begrenzt
-- Ranglisten ändern sich nur durch serverseitig validierte Aktionen
+Abschlusskriterium:
 
-### Priorität
-
-Critical
+- Kernflows sind praktisch getestet und liefern keine ungeschuetzten Browser-Schreibpfade mehr
 
 ## Paket 6: Datenmigration ohne Verlust
 
-### Ziel
+Status: `offen`
 
-Bestehende Konten, Lernstände und fachliche Daten kontrolliert in die Zielarchitektur überführen.
+Erledigt:
 
-### Aufgaben
+- Zielmodell in Prisma weitgehend vorhanden
+- Migrationsgrundsatz mehrfach festgelegt: `Backup -> Testexport -> Testimport -> Pruefung -> erst dann Produktivmigration`
 
-- Bestehende Tabellen und Datensätze inventarisieren
-- Migrationsmapping von Altstruktur auf Prisma/PostgreSQL-Zielmodell definieren
-- Testexport und Testimport in isolierter Umgebung durchführen
-- Dubletten, Pflichtfelder und Rollenfehler bereinigen
-- Migrations-Checkliste und Rollback-Verfahren festlegen
+Offen:
 
-### Abnahmekriterien
+- Alt-Daten inventarisieren
+- Feldmapping Alt -> Zielmodell dokumentieren
+- Testmigration in isolierter Umgebung bauen
+- Rollback-Plan praktisch vorbereiten
 
-- Für jeden relevanten Alt-Datensatz gibt es ein Ziel im neuen Modell oder eine dokumentierte Ausnahmeregel
-- Testmigration läuft vollständig durch
-- Stichproben bestätigen Konten, Fortschritte und Organisationszuordnung
-- Rollback ist dokumentiert und praktisch testbar
+Abschlusskriterium:
 
-### Priorität
+- Testmigration laeuft durch und Stichproben bestaetigen Konten, Rollen und Fortschritte
 
-High
+## Paket 7: Logging, Datenschutzrechte und Loeschprozesse
 
-## Paket 7: Logging, Datenschutzrechte und Löschprozesse
+Status: `teilweise abgeschlossen`
 
-### Ziel
+Erledigt:
 
-Den Betrieb revisionssicher und datenschutzfähig machen.
+- Audit-Logs fuer viele Admin-/Sicherheitsaktionen vorhanden
+- unkontrollierte clientseitige Loeschlogik entfernt
 
-### Aufgaben
+Offen:
 
-- Audit-Log für Admin- und Sicherheitsaktionen aktivieren
-- Log-Felder auf Datenschutz und Geheimnisschutz prüfen
-- Exportprozess für Betroffenenanfragen schaffen
-- Korrektur- und Löschprozess serverseitig abbilden
-- Aufbewahrungsregeln technisch erzwingbar machen
+- Exportprozess fuer Betroffenenanfragen technisch und betrieblich vervollstaendigen
+- serverseitige Berichtigungs-/Loeschprozesse vollstaendig dokumentieren
+- Retention-Regeln in echtem Betrieb pruefen
 
-### Abnahmekriterien
+Abschlusskriterium:
 
-- Rollenänderungen, Freigaben, Einladungen und kritische Admin-Aktionen werden protokolliert
-- Logs enthalten keine Passwörter, Tokens oder unnötige personenbezogene Daten
-- Löschungen erfolgen kontrolliert und nachvollziehbar
-- Export und Berichtigung sind betrieblich durchführbar
+- Auskunft, Berichtigung und kontrollierte Loeschung sind praktisch durchfuehrbar
 
-### Priorität
+## Paket 8: Deployment und Haertung
 
-High
+Status: `teilweise abgeschlossen`
 
-## Paket 8: Deployment und Härtung
+Erledigt:
 
-### Ziel
+- Dockerfile fuer Web und Server
+- Docker Compose
+- Nginx-Reverse-Proxy
+- `.env.example`
+- Operations-Runbook und Go-Live-Checkliste
+- Push-/Mail-/TLS-relevante Konfigurationsparameter dokumentiert
 
-Ein Setup liefern, das auf VPS oder im Rechenzentrum sauber betrieben werden kann.
+Offen:
 
-### Aufgaben
+- echte Produktions-Secrets setzen
+- TLS im Zielbetrieb pruefen
+- Compose-Deployment mit realer `.env` einmal komplett durchtesten
+- Betriebsrechte und Deploy-Zugriffe organisatorisch absichern
 
-- Docker- und Docker-Compose-Setup finalisieren
-- Reverse Proxy mit TLS und sicheren Headern betreiben
-- Minimalprinzip bei offenen Ports umsetzen
-- Produktions-`.env` nur außerhalb des Repositories pflegen
-- Betriebsbenutzer, Dateirechte und Adminzugänge härten
-- Unautorisierte Serveränderungen über Zugriffs- und Deploy-Prozess verhindern
+Abschlusskriterium:
 
-### Abnahmekriterien
+- reproduzierbarer Test-/Produktivdeploy mit echten Secrets und minimaler Aussenflaeche
 
-- Nur notwendige Ports sind von außen erreichbar
-- HTTPS ist Standard
-- Produktive Secrets liegen nicht im Code und nicht im Image-Layer
-- Deployment-Prozess ist dokumentiert und reproduzierbar
-- Änderungen am Server sind nur für berechtigte Personen möglich
+## Paket 9: Backup, Restore und Notfallfaehigkeit
 
-### Priorität
+Status: `teilweise abgeschlossen`
 
-High
+Erledigt:
 
-## Paket 9: Backup, Restore und Notfallfähigkeit
+- Backup- und Restore-Skripte vorhanden
+- Runbook fuer Restore-Drill vorhanden
 
-### Ziel
+Offen:
 
-Sicherstellen, dass der Betrieb auch nach Fehlern oder Angriffen wiederherstellbar ist.
+- echter Backup-Lauf auf Testsystem
+- echter Restore-Drill auf isolierter Datenbank
+- Wiederanlaufzeit und Verantwortlichkeiten dokumentiert verifizieren
 
-### Aufgaben
+Abschlusskriterium:
 
-- Automatische Datenbank-Backups einrichten
-- Restore-Skripte und Restore-Handbuch finalisieren
-- Test-Restore in einer isolierten Umgebung durchführen
-- Notfallkontakt, Meldeweg und Wiederanlaufplan definieren
-- Datenschutzverletzungsprozess vorbereiten
+- Restore wurde praktisch getestet und dokumentiert
 
-### Abnahmekriterien
+## Paket 10: Pruefbarkeit und Freigabe
 
-- Geplante Backups laufen erfolgreich
-- Ein Test-Restore wurde nachweislich durchgeführt
-- Wiederherstellungszeit und Verantwortlichkeiten sind dokumentiert
-- Vorfallprozess für Datenschutz- und Sicherheitsereignisse ist vorhanden
+Status: `offen`
 
-### Priorität
+Erledigt:
 
-High
+- Security-Audit, Roadmap, Go-Live-Checkliste und Betriebsdokumente liegen vor
 
-## Paket 10: Prüfbarkeit und Freigabe
+Offen:
 
-### Ziel
+- Smoke-Tests aller Kernflows
+- Dependency-/Container-Scans
+- interner Security-Abschlusscheck
+- optional externer Pentest
+- formale Pilot- und spaetere Produktivfreigabe
 
-Die App so dokumentieren und testen, dass eine IT-Abteilung sie belastbar bewerten kann.
+Abschlusskriterium:
 
-### Aufgaben
+- keine offenen Critical Findings und keine unbewerteten High Findings
 
-- Technische Dokumentation und Betriebsdokumentation abschließen
-- Security-Tests gegen OWASP ASVS-orientierte Kriterien durchführen
-- Dependency- und Container-Scans ausführen
-- Offene Findings priorisieren und abarbeiten
-- Pilotfreigabe und spätere Produktivfreigabe formal vorbereiten
+## Naechste konkrete Reihenfolge
 
-### Abnahmekriterien
+Diese Schritte sind jetzt die richtige Arbeitsreihenfolge:
 
-- Keine offenen Critical Findings
-- Keine offenen High Findings ohne akzeptierte Risikobewertung
-- Dokumentation deckt Architektur, Betrieb, Backup, Rollen und Datenschutz ab
-- Pilot kann kontrolliert freigegeben werden
+1. Testdatenbank bereitstellen.
+2. Alle Prisma-Migrationen gegen die Testdatenbank anwenden.
+3. Smoke-Tests fuer Login, Rollen, Chat, Forum, Duelle, Ranking, Berichtsheft, Schwimmeinheiten, Trainingsplaene, Flashcards, Pruefungen, Content und Push fahren.
+4. Backup erstellen und Restore-Drill in isolierter Umgebung durchfuehren.
+5. Letzte Legacy-Fallbacks im Frontend entfernen.
+6. Abschlussreview mit neuer Sicherheitsbewertung und Pilotfreigabe vorbereiten.
 
-### Priorität
+## Go/No-Go
 
-High
+Kein Go fuer Pilot:
 
-## Go/No-Go-Regeln
+- wenn Migrationen auf Testdatenbank nicht sauber laufen
+- wenn Kernflows nur im Code gut aussehen, aber nicht praktisch getestet sind
+- wenn Secrets weiter unkontrolliert verteilt sind
 
-### Kein Go für Pilot
+Kein Go fuer Produktion:
 
-- Wenn der Browser noch produktive DB-Schreibrechte hat
-- Wenn Auth oder Rollen teilweise nur im Frontend entschieden werden
-- Wenn keine getesteten Backups existieren
-- Wenn Secrets noch im Repo oder in Deployment-Dateien liegen
+- wenn Paket 1 bis 9 nicht praktisch abgeschlossen sind
+- wenn Restore nicht nachgewiesen ist
+- wenn letzte Legacy-Fallbacks noch produktiv aktiv sind
+- wenn offene Critical Findings bestehen
 
-### Kein Go für Produktion
+## Kurzfazit
 
-- Wenn Paket 1 bis 9 nicht abgeschlossen sind
-- Wenn offene Critical Findings existieren
-- Wenn Restore nicht nachgewiesen ist
-- Wenn Lösch- und Auskunftsprozesse nur theoretisch beschrieben, aber nicht ausführbar sind
-
-## Reihenfolge ohne Abschweifen
-
-1. Paket 1 abschließen
-2. Paket 2 schriftlich festziehen
-3. Paket 3 bis 5 technisch umsetzen
-4. Paket 6 mit Testmigration durchführen
-5. Paket 7 bis 9 betrieblich absichern
-6. Paket 10 zur Freigabevorbereitung nutzen
-
-## Hinweis zu Datenverlust
-
-Die Zielmigration darf nicht mit direkter Löschung beginnen. Richtige Reihenfolge:
-
-1. Backup erstellen
-2. Testexport erzeugen
-3. Testimport in isolierter Umgebung prüfen
-4. Ergebnisse fachlich abnehmen
-5. Erst danach produktive Migration planen
-
-So bleiben Konten, Fortschritte und organisatorische Zuordnungen erhalten, sofern die Alt-Daten konsistent genug sind. Falls Datenfelder in der Altstruktur fehlen oder fachlich unklar sind, müssen diese Fälle vor der Produktivmigration einzeln bereinigt werden.
+Die App ist nicht mehr auf Prototyp-Niveau. Der grosse Architekturumbau ist weitgehend erledigt. Der Engpass ist jetzt nicht mehr primar Entwicklung, sondern belastbarer Betriebsnachweis.

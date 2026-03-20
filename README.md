@@ -71,7 +71,9 @@ See `docs/security-audit.md` for:
 
 See also:
 
+- `REPO_STATUS.md` for the current handoff summary and next working step
 - `docs/implementation-roadmap.md` for the ordered remediation plan
+- `docs/supabase-to-nestjs-migration-plan.md` for the staged runtime migration from Supabase to the NestJS backend
 - `docs/dsgvo-betriebskonzept.md` for the operating/privacy baseline
 - `docs/migration-slice-auth-admin.md` for the first backend migration slice
 - `docs/operations-runbook.md` for the production operations baseline
