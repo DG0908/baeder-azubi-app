@@ -2,31 +2,9 @@ import React from 'react';
 import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound, Building2, Ticket, Copy, Plus, RefreshCw } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import {
-  supabase,
-  LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED,
-  LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE
-} from '../../supabase';
-import {
-  isSecureBackendApiEnabled,
-  mapBackendRoleToFrontendRole,
-  mapFrontendRoleToBackendRole,
-  secureInvitationsApi,
-  secureOrganizationsApi,
-  secureUsersApi
-} from '../../lib/secureApi';
+import { supabase } from '../../supabase';
 
 // ─── Betriebe & Einladungscodes Verwaltung (nur Owner) ───
-const SECURE_ADMIN_API_ENABLED = isSecureBackendApiEnabled();
-const LEGACY_ADMIN_MUTATIONS_BLOCKED = LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED && !SECURE_ADMIN_API_ENABLED;
-const APPRENTICE_ROLES = new Set(['azubi', 'rettungsschwimmer_azubi']);
-
-const getInvitationRoleLabel = (role) => {
-  if (role === 'trainer') return 'Ausbilder';
-  if (role === 'rettungsschwimmer_azubi') return 'Rettungsschwimmer-Azubi';
-  return 'Azubi';
-};
-
 const OrganizationManager = () => {
   const { showToast } = useApp();
   const [orgs, setOrgs] = React.useState([]);
@@ -36,91 +14,26 @@ const OrganizationManager = () => {
   const [showNewCode, setShowNewCode] = React.useState(false);
   const [newOrg, setNewOrg] = React.useState({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
   const [newCode, setNewCode] = React.useState({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
-  const [latestCreatedCode, setLatestCreatedCode] = React.useState('');
-
-  const mapInvitationForUi = (invitation) => ({
-    id: invitation.id,
-    code: invitation.code || '',
-    role: mapBackendRoleToFrontendRole(invitation.role),
-    max_uses: invitation.maxUses ?? invitation.max_uses ?? 0,
-    used_count: invitation.usedCount ?? invitation.used_count ?? 0,
-    expires_at: invitation.expiresAt ?? invitation.expires_at ?? null,
-    is_active: !(invitation.revokedAt ?? invitation.revoked_at),
-    revoked_at: invitation.revokedAt ?? invitation.revoked_at ?? null,
-    organizations: invitation.organization
-      ? { name: invitation.organization.name }
-      : (invitation.organizations || null)
-  });
 
   const loadOrgs = async () => {
     setLoading(true);
-    try {
-      if (SECURE_ADMIN_API_ENABLED) {
-        const [orgsData, codesData] = await Promise.all([
-          secureOrganizationsApi.list(),
-          secureInvitationsApi.list()
-        ]);
-        setOrgs((orgsData || []).map((org) => ({
-          ...org,
-          is_active: org.isActive,
-          contact_name: org.contactName,
-          contact_email: org.contactEmail
-        })));
-        setCodes((codesData || []).map(mapInvitationForUi));
-        return;
-      }
+    const { data: orgsData } = await supabase
+      .from('organizations')
+      .select('*')
+      .order('created_at', { ascending: true });
+    setOrgs(orgsData || []);
 
-      const { data: orgsData } = await supabase
-        .from('organizations')
-        .select('*')
-        .order('created_at', { ascending: true });
-      setOrgs(orgsData || []);
-
-      const { data: codesData } = await supabase
-        .from('invitation_codes')
-        .select('*, organizations(name)')
-        .order('created_at', { ascending: false });
-      setCodes(codesData || []);
-    } catch (error) {
-      console.error('Organization admin load failed:', error);
-      showToast(error?.message || 'Betriebsdaten konnten nicht geladen werden.', 'error');
-    } finally {
-      setLoading(false);
-    }
+    const { data: codesData } = await supabase
+      .from('invitation_codes')
+      .select('*, organizations(name)')
+      .order('created_at', { ascending: false });
+    setCodes(codesData || []);
+    setLoading(false);
   };
 
   React.useEffect(() => { loadOrgs(); }, []);
 
   const createOrg = async () => {
-    if (SECURE_ADMIN_API_ENABLED) {
-      if (!newOrg.name.trim() || !newOrg.slug.trim()) {
-        showToast('Name und Kuerzel sind Pflichtfelder!', 'error');
-        return;
-      }
-
-      try {
-        const slug = newOrg.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
-        await secureOrganizationsApi.create({
-          name: newOrg.name.trim(),
-          slug,
-          contactName: newOrg.contact_name.trim() || undefined,
-          contactEmail: newOrg.contact_email.trim() || undefined
-        });
-        showToast(`Betrieb "${newOrg.name}" angelegt!`, 'success');
-        setNewOrg({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
-        setShowNewOrg(false);
-        await loadOrgs();
-      } catch (error) {
-        showToast(error?.message || 'Fehler beim Anlegen des Betriebs.', 'error');
-      }
-      return;
-    }
-
-    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
-      showToast(LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE, 'error');
-      return;
-    }
-
     if (!newOrg.name.trim() || !newOrg.slug.trim()) {
       showToast('Name und Kürzel sind Pflichtfelder!', 'error');
       return;
@@ -149,35 +62,6 @@ const OrganizationManager = () => {
   };
 
   const createCode = async () => {
-    if (SECURE_ADMIN_API_ENABLED) {
-      if (!newCode.organization_id) {
-        showToast('Bitte einen Betrieb auswaehlen!', 'error');
-        return;
-      }
-
-      try {
-        const createdInvitation = await secureInvitationsApi.create({
-          organizationId: newCode.organization_id,
-          role: mapFrontendRoleToBackendRole(newCode.role),
-          maxUses: Number(newCode.max_uses) || 1
-        });
-        const invitationForUi = mapInvitationForUi(createdInvitation);
-        setCodes((prev) => [invitationForUi, ...prev]);
-        setLatestCreatedCode(String(createdInvitation.code || ''));
-        showToast(`Code "${createdInvitation.code}" erstellt. Jetzt sicher speichern.`, 'success', 4500);
-        setNewCode({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
-        setShowNewCode(false);
-      } catch (error) {
-        showToast(error?.message || 'Fehler beim Erstellen des Einladungscodes.', 'error');
-      }
-      return;
-    }
-
-    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
-      showToast(LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE, 'error');
-      return;
-    }
-
     if (!newCode.organization_id) {
       showToast('Bitte einen Betrieb auswählen!', 'error');
       return;
@@ -205,50 +89,11 @@ const OrganizationManager = () => {
   };
 
   const toggleCodeActive = async (codeId, currentActive) => {
-    if (SECURE_ADMIN_API_ENABLED) {
-      if (!currentActive) {
-        showToast('Widerrufene Codes koennen aus Sicherheitsgruenden nicht reaktiviert werden.', 'warning');
-        return;
-      }
-
-      try {
-        await secureInvitationsApi.revoke(codeId);
-        showToast('Code widerrufen', 'success');
-        await loadOrgs();
-      } catch (error) {
-        showToast(error?.message || 'Code konnte nicht widerrufen werden.', 'error');
-      }
-      return;
-    }
-
-    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
-      showToast(LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE, 'error');
-      return;
-    }
-
     await supabase.from('invitation_codes').update({ is_active: !currentActive }).eq('id', codeId);
     loadOrgs();
   };
 
   const deleteCode = async (codeId, codeText) => {
-    if (SECURE_ADMIN_API_ENABLED) {
-      if (!confirm(`Code wirklich widerrufen?${codeText ? ` (${codeText})` : ''}`)) return;
-
-      try {
-        await secureInvitationsApi.revoke(codeId);
-        showToast('Code widerrufen', 'success');
-        await loadOrgs();
-      } catch (error) {
-        showToast(error?.message || 'Code konnte nicht widerrufen werden.', 'error');
-      }
-      return;
-    }
-
-    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
-      showToast(LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE, 'error');
-      return;
-    }
-
     if (!confirm(`Code "${codeText}" wirklich löschen?`)) return;
     await supabase.from('invitation_codes').delete().eq('id', codeId);
     showToast('Code gelöscht', 'success');
@@ -256,10 +101,6 @@ const OrganizationManager = () => {
   };
 
   const copyCode = (code) => {
-    if (!code) {
-      showToast('Der Klartext-Code ist nur direkt nach der Erstellung sichtbar.', 'warning');
-      return;
-    }
     navigator.clipboard.writeText(code);
     showToast(`Code "${code}" kopiert!`, 'success');
   };
@@ -268,13 +109,6 @@ const OrganizationManager = () => {
 
   return (
     <div className="space-y-6">
-      {LEGACY_ADMIN_MUTATIONS_BLOCKED && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-800">
-          <AlertTriangle className="inline mr-2" size={16} />
-          Sicherheitsmodus aktiv. Legacy-Schreibzugriffe aus dem Browser bleiben gesperrt, bis die Backend-API verwendet wird.
-        </div>
-      )}
-
       {/* Betriebe */}
       <div className="bg-white rounded-xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-4">
@@ -287,9 +121,8 @@ const OrganizationManager = () => {
               <RefreshCw size={18} />
             </button>
             <button
-              disabled={LEGACY_ADMIN_MUTATIONS_BLOCKED}
               onClick={() => setShowNewOrg(!showNewOrg)}
-              className="flex items-center gap-1 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium"
+              className="flex items-center gap-1 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium"
             >
               <Plus size={16} /> Neuer Betrieb
             </button>
@@ -330,11 +163,7 @@ const OrganizationManager = () => {
               />
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={createOrg}
-                disabled={LEGACY_ADMIN_MUTATIONS_BLOCKED}
-                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium"
-              >
+              <button onClick={createOrg} className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-medium">
                 Anlegen
               </button>
               <button onClick={() => setShowNewOrg(false)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg">
@@ -373,23 +202,12 @@ const OrganizationManager = () => {
             Einladungscodes ({codes.length})
           </h3>
           <button
-            disabled={LEGACY_ADMIN_MUTATIONS_BLOCKED}
             onClick={() => setShowNewCode(!showNewCode)}
-            className="flex items-center gap-1 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium"
+            className="flex items-center gap-1 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium"
           >
             <Plus size={16} /> Neuer Code
           </button>
         </div>
-
-        {SECURE_ADMIN_API_ENABLED && latestCreatedCode && (
-          <div className="mb-4 rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-900">
-            <div className="font-bold">Neuer Einladungscode</div>
-            <div className="mt-1 font-mono text-lg">{latestCreatedCode}</div>
-            <div className="mt-1 text-emerald-800">
-              Der Klartext ist nur direkt nach der Erstellung sichtbar. Danach wird er nur noch gehasht gespeichert.
-            </div>
-          </div>
-        )}
 
         {showNewCode && (
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4 space-y-3">
@@ -411,15 +229,13 @@ const OrganizationManager = () => {
                 className="px-3 py-2 border border-emerald-300 rounded-lg"
               >
                 <option value="azubi">Azubi-Code</option>
-                <option value="rettungsschwimmer_azubi">Rettungsschwimmer-Azubi-Code</option>
                 <option value="trainer">Ausbilder-Code</option>
               </select>
               <input
                 type="text"
-                placeholder={SECURE_ADMIN_API_ENABLED ? 'Code wird sicher generiert' : 'Code (leer = automatisch)'}
+                placeholder="Code (leer = automatisch)"
                 value={newCode.code}
                 onChange={(e) => setNewCode({ ...newCode, code: e.target.value.toUpperCase() })}
-                disabled={SECURE_ADMIN_API_ENABLED}
                 className="px-3 py-2 border border-emerald-300 rounded-lg font-mono"
               />
               <input
@@ -431,11 +247,7 @@ const OrganizationManager = () => {
               />
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={createCode}
-                disabled={LEGACY_ADMIN_MUTATIONS_BLOCKED}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium"
-              >
+              <button onClick={createCode} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium">
                 Code erstellen
               </button>
               <button onClick={() => setShowNewCode(false)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg">
@@ -452,11 +264,11 @@ const OrganizationManager = () => {
             {codes.map(c => (
               <div key={c.id} className={`flex items-center justify-between border rounded-lg p-3 ${c.is_active ? 'border-emerald-200' : 'border-gray-200 opacity-60'}`}>
                 <div className="flex items-center gap-3">
-                  <span className="font-mono font-bold text-lg bg-gray-100 px-3 py-1 rounded-lg">{c.code || 'Nur bei Erstellung sichtbar'}</span>
+                  <span className="font-mono font-bold text-lg bg-gray-100 px-3 py-1 rounded-lg">{c.code}</span>
                   <div className="text-sm">
                     <div className="font-medium">{c.organizations?.name || '?'}</div>
                     <div className="text-gray-500">
-                      {getInvitationRoleLabel(c.role)} · {c.used_count}/{c.max_uses || '\u221e'} genutzt
+                      {c.role === 'azubi' ? 'Azubi' : 'Ausbilder'} · {c.used_count}/{c.max_uses || '\u221e'} genutzt
                     </div>
                   </div>
                 </div>
@@ -470,17 +282,15 @@ const OrganizationManager = () => {
                   </button>
                   <button
                     onClick={() => toggleCodeActive(c.id, c.is_active)}
-                    disabled={LEGACY_ADMIN_MUTATIONS_BLOCKED}
-                    className={`p-2 rounded-lg disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed ${c.is_active ? 'bg-green-100 hover:bg-green-200 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}
-                    title={SECURE_ADMIN_API_ENABLED ? (c.is_active ? 'Widerrufen' : 'Bereits widerrufen') : (c.is_active ? 'Deaktivieren' : 'Aktivieren')}
+                    className={`p-2 rounded-lg ${c.is_active ? 'bg-green-100 hover:bg-green-200 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}
+                    title={c.is_active ? 'Deaktivieren' : 'Aktivieren'}
                   >
                     {c.is_active ? <Check size={16} /> : <X size={16} />}
                   </button>
                   <button
                     onClick={() => deleteCode(c.id, c.code)}
-                    disabled={LEGACY_ADMIN_MUTATIONS_BLOCKED}
-                    className="p-2 bg-red-100 hover:bg-red-200 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-red-600 rounded-lg"
-                    title={SECURE_ADMIN_API_ENABLED ? 'Code widerrufen' : 'Code loeschen'}
+                    className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg"
+                    title="Code löschen"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -494,16 +304,11 @@ const OrganizationManager = () => {
   );
 };
 
-const AdminPasswordReset = ({ userEmail, disabled = false }) => {
+const AdminPasswordReset = ({ userEmail }) => {
   const { showToast } = useApp();
   const [loading, setLoading] = React.useState(false);
 
   const handleReset = async () => {
-    if (disabled) {
-      showToast('Passwort-Reset ist im sicheren API-Pfad noch nicht migriert.', 'warning');
-      return;
-    }
-
     if (!confirm(`Passwort-Reset-Link an ${userEmail} senden?`)) return;
     setLoading(true);
     try {
@@ -522,9 +327,9 @@ const AdminPasswordReset = ({ userEmail, disabled = false }) => {
   return (
     <button
       onClick={handleReset}
-      disabled={loading || disabled}
+      disabled={loading}
       className="bg-amber-500 hover:bg-amber-600 disabled:bg-gray-400 text-white p-2 rounded-lg"
-      title={disabled ? 'Noch nicht auf Backend-API migriert' : 'Passwort-Reset-Link senden'}
+      title="Passwort-Reset-Link senden"
     >
       <KeyRound size={18} />
     </button>
@@ -539,39 +344,11 @@ const UserOrgAssign = ({ userId, currentOrgId, onChanged }) => {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (SECURE_ADMIN_API_ENABLED) {
-      secureOrganizationsApi.list()
-        .then((data) => setOrgs((data || []).filter((org) => org?.isActive !== false)))
-        .catch(() => setOrgs([]));
-      return;
-    }
-
     supabase.from('organizations').select('id, name').eq('is_active', true).order('name')
       .then(({ data }) => setOrgs(data || []));
   }, []);
 
   const handleChange = async (newOrgId) => {
-    if (SECURE_ADMIN_API_ENABLED) {
-      setLoading(true);
-      try {
-        await secureUsersApi.updateOrganization(userId, {
-          organizationId: newOrgId || null
-        });
-        showToast('Betrieb zugewiesen!', 'success');
-        if (onChanged) onChanged();
-      } catch (error) {
-        showToast(error?.message || 'Fehler beim Zuweisen des Betriebs.', 'error');
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
-    if (LEGACY_ADMIN_MUTATIONS_BLOCKED) {
-      showToast(LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE, 'error');
-      return;
-    }
-
     setLoading(true);
     const { error } = await supabase
       .from('profiles')
@@ -590,7 +367,7 @@ const UserOrgAssign = ({ userId, currentOrgId, onChanged }) => {
     <select
       value={currentOrgId || ''}
       onChange={(e) => handleChange(e.target.value || null)}
-      disabled={loading || LEGACY_ADMIN_MUTATIONS_BLOCKED}
+      disabled={loading}
       className="px-2 py-1.5 border border-indigo-300 rounded text-sm bg-indigo-50"
       title="Betrieb zuweisen"
     >
@@ -697,22 +474,8 @@ const AdminView = ({
         <div className="absolute bottom-2 right-3 text-xs opacity-60">v1.1.0</div>
       </div>
 
-      {LEGACY_ADMIN_MUTATIONS_BLOCKED && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-800">
-          <AlertTriangle className="inline mr-2" size={16} />
-          Sicherheitsmodus aktiv. Browserbasierte Admin-Aenderungen bleiben blockiert, bis die Backend-API verwendet wird.
-        </div>
-      )}
-
-      {SECURE_ADMIN_API_ENABLED && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800">
-          <Shield className="inline mr-2" size={16} />
-          Sichere Admin-API aktiv. Benutzer-, Betriebs- und Einladungsvorgaenge laufen ueber das Backend. Nicht migrierte Altaktionen bleiben deaktiviert.
-        </div>
-      )}
-
       {/* Betriebe & Einladungscodes — nur für Owner */}
-      {(user?.isOwner || (SECURE_ADMIN_API_ENABLED && user?.permissions?.canManageUsers)) && <OrganizationManager />}
+      {user?.isOwner && <OrganizationManager />}
 
       {/* Admin Statistics Dashboard */}
       <div className="grid md:grid-cols-4 gap-4">
@@ -972,47 +735,26 @@ const AdminView = ({
                   <div>
                     <p className="font-bold">{acc.name}</p>
                     <p className="text-sm text-gray-600">{acc.email} • {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}</p>
-                    {APPRENTICE_ROLES.has(acc.role) && acc.trainingEnd && (
+                    {acc.role === 'azubi' && acc.trainingEnd && (
                       <p className="text-xs text-gray-500">Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}</p>
                     )}
                   </div>
                   <div className="flex gap-2">
                     <button
-                      disabled={LEGACY_ADMIN_MUTATIONS_BLOCKED}
                       onClick={() => approveUser(acc.email)}
-                      className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold"
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold"
                     >
                       <Check size={20} />
                     </button>
                     <button
                       onClick={async () => {
-                        if (SECURE_ADMIN_API_ENABLED) {
-                          try {
-                            if (!confirm(`Account von ${acc.name} wirklich ablehnen?`)) return;
-                            await secureUsersApi.updateApproval(acc.id, {
-                              status: 'REJECTED',
-                              reason: 'Rejected by admin UI'
-                            });
-                            loadData();
-                            showToast('Account abgelehnt.', 'success');
-                          } catch (error) {
-                            showToast(error?.message || 'Account konnte nicht abgelehnt werden.', 'error');
-                          }
-                          return;
-                        }
-
-                        if (LEGACY_ADMIN_MUTATIONS_BLOCKED) {
-                          showToast(LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE, 'error');
-                          return;
-                        }
                         if (confirm(`Account von ${acc.name} wirklich ablehnen und löschen?`)) {
                           await supabase.from('profiles').delete().eq('email', acc.email);
                           loadData();
                           alert('Account abgelehnt und gelöscht.');
                         }
                       }}
-                      disabled={LEGACY_ADMIN_MUTATIONS_BLOCKED}
-                      className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-bold"
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold"
                     >
                       <X size={20} />
                     </button>
@@ -1039,15 +781,14 @@ const AdminView = ({
             const daysLeft = getDaysUntilDeletion(acc);
             const isOwnAccount =
               String(acc?.email || '').trim().toLowerCase() === String(currentUserEmail || '').trim().toLowerCase();
-            const roleSelectDisabled = isOwnAccount || !canManageRoles || LEGACY_ADMIN_MUTATIONS_BLOCKED;
+            const roleSelectDisabled = isOwnAccount || !canManageRoles;
             return (
               <div key={acc.email} className="border rounded-lg p-4">
                 <div className="flex items-start gap-2 mb-1 flex-wrap">
                   <p className="font-bold">{acc.name}</p>
                   <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
                     acc.role === 'admin' ? 'bg-purple-500' :
-                    acc.role === 'trainer' ? 'bg-blue-500' :
-                    acc.role === 'rettungsschwimmer_azubi' ? 'bg-cyan-500' : 'bg-green-500'
+                    acc.role === 'trainer' ? 'bg-blue-500' : 'bg-green-500'
                   }`}>
                     {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}
                   </span>
@@ -1074,8 +815,8 @@ const AdminView = ({
                   }`}>
                     <AlertTriangle size={14} className="mr-1" />
                     {daysLeft > 0
-                      ? `Aufbewahrungspruefung in ${daysLeft} Tagen`
-                      : 'Aufbewahrungspruefung faellig'}
+                      ? `Automatische Löschung in ${daysLeft} Tagen`
+                      : 'Löschung steht bevor'}
                   </div>
                 )}
                 <div className="flex gap-2 mt-3 flex-wrap items-center">
@@ -1093,11 +834,10 @@ const AdminView = ({
                     }
                   >
                     <option value="azubi">Azubi</option>
-                    <option value="rettungsschwimmer_azubi">Rettungsschwimmer-Azubi</option>
                     <option value="trainer">Ausbilder</option>
                     <option value="admin">Admin</option>
                   </select>
-                  {(user?.isOwner || (SECURE_ADMIN_API_ENABLED && user?.permissions?.canManageUsers)) && (
+                  {user?.isOwner && (
                     <UserOrgAssign userId={acc.id} currentOrgId={acc.organization_id} onChanged={loadData} />
                   )}
                   <button
@@ -1107,13 +847,12 @@ const AdminView = ({
                   >
                     <Download size={18} />
                   </button>
-                  <AdminPasswordReset userEmail={acc.email} disabled={SECURE_ADMIN_API_ENABLED} />
+                  <AdminPasswordReset userEmail={acc.email} />
                   {acc.role !== 'admin' && (
                     <button
                       onClick={() => deleteUser(acc.email)}
-                      disabled={LEGACY_ADMIN_MUTATIONS_BLOCKED}
-                      className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white p-2 rounded-lg"
-                      title={SECURE_ADMIN_API_ENABLED ? 'Account sperren' : 'Nutzer loeschen'}
+                      className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg"
+                      title="Nutzer löschen"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -1122,8 +861,7 @@ const AdminView = ({
                     <>
                       <button
                         onClick={() => toggleSchoolCardPermission(acc.id, acc.can_view_school_cards)}
-                        disabled={SECURE_ADMIN_API_ENABLED || LEGACY_ADMIN_MUTATIONS_BLOCKED}
-                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed ${
+                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
                           acc.can_view_school_cards
                             ? 'bg-green-100 text-green-800 hover:bg-green-200'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -1134,8 +872,7 @@ const AdminView = ({
                       </button>
                       <button
                         onClick={() => toggleSignReportsPermission(acc.id, acc.can_sign_reports)}
-                        disabled={SECURE_ADMIN_API_ENABLED || LEGACY_ADMIN_MUTATIONS_BLOCKED}
-                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed ${
+                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
                           acc.can_sign_reports
                             ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -1146,8 +883,7 @@ const AdminView = ({
                       </button>
                       <button
                         onClick={() => toggleExamGradesPermission(acc.id, acc.can_view_exam_grades)}
-                        disabled={SECURE_ADMIN_API_ENABLED || LEGACY_ADMIN_MUTATIONS_BLOCKED}
-                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed ${
+                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
                           acc.can_view_exam_grades
                             ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'

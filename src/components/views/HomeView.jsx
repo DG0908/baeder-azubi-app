@@ -690,15 +690,7 @@ const HomeView = ({
                     {isWaitingChallenge ? `${opponentName} fordert dich heraus!` : `Du bist gegen ${opponentName} dran!`}
                   </p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
-                    <span>
-                      {game.secureDuel
-                        ? (isWaitingChallenge
-                            ? `Server-Duell - ${Number(game.secureQuestionCount || 0)} Fragen`
-                            : `Fragen ${Number(game.secureMyAnsweredCount || 0)}/${Number(game.secureQuestionCount || 0)} - ${game.player1Score}:${game.player2Score}`)
-                        : (isWaitingChallenge
-                            ? 'Quizduell - 6 Runden'
-                            : `Runde ${(Number(game.round ?? game.categoryRound ?? 0) || 0) + 1}/6 - ${game.player1Score}:${game.player2Score}`)}
-                    </span>
+                    <span>{isWaitingChallenge ? 'Quizduell - 6 Runden' : `Runde ${(Number(game.round ?? game.categoryRound ?? 0) || 0) + 1}/6 - ${game.player1Score}:${game.player2Score}`}</span>
                     <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold whitespace-normal break-words`}>
                       {diff.icon} {diff.label} ({diff.time}s)
                     </span>
@@ -754,11 +746,7 @@ const HomeView = ({
                 <div className="min-w-0 flex-1">
                   <p className={`font-bold break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>{game.player1} vs {game.player2}</p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
-                    <span>
-                      {game.secureDuel
-                        ? `Fragen ${Number(game.secureMyAnsweredCount || 0)}/${Number(game.secureQuestionCount || 0)} - ${game.player1Score}:${game.player2Score}`
-                        : `Runde ${game.round + 1}/6 - ${game.player1Score}:${game.player2Score}`}
-                    </span>
+                    <span>Runde {game.round + 1}/6 - {game.player1Score}:{game.player2Score}</span>
                     <span className={`${diff.color} text-white px-2 py-0.5 rounded text-xs font-bold whitespace-normal break-words`}>
                       {diff.icon} {diff.label}
                     </span>

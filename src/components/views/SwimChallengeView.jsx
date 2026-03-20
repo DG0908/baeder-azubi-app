@@ -170,10 +170,7 @@ const {
     || user?.role === 'trainer'
     || user?.role === 'ausbilder'
   );
-  const azubiCandidates = allUsers.filter((account) => {
-    const role = String(account?.role || '').toLowerCase();
-    return account?.id && (role === 'azubi' || role === 'rettungsschwimmer_azubi');
-  });
+  const azubiCandidates = allUsers.filter((account) => String(account?.role || '').toLowerCase() === 'azubi' && account?.id);
   const [customPlanForm, setCustomPlanForm] = React.useState({
     name: '',
     category: 'ausdauer',
