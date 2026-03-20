@@ -4,6 +4,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
 import { AVATARS, PERMISSIONS, getAvatarById, getLevel } from '../../data/constants';
+import {
+  isSecureBackendApiEnabled,
+  mapBackendUserToFrontendUser,
+  secureAuthApi,
+  secureUsersApi
+} from '../../lib/secureApi';
 import AvatarBadge from '../ui/AvatarBadge';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
@@ -22,6 +28,7 @@ const ProfileView = ({
   const { darkMode, showToast, playSound } = useApp();
 
   const [profileEditName, setProfileEditName] = useState('');
+  const [profileCurrentPassword, setProfileCurrentPassword] = useState('');
   const [profileEditPassword, setProfileEditPassword] = useState('');
   const [profileEditPasswordConfirm, setProfileEditPasswordConfirm] = useState('');
   const [profileEditCompany, setProfileEditCompany] = useState('');
@@ -30,6 +37,8 @@ const ProfileView = ({
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [pushActionLoading, setPushActionLoading] = useState(false);
+  const secureBackendProfileEnabled = isSecureBackendApiEnabled();
+  const minimumPasswordLength = secureBackendProfileEnabled ? 12 : 6;
 
   const toSafeInt = (value) => {
     const numeric = Number(value);
@@ -182,6 +191,16 @@ const ProfileView = ({
   const nextLockedAvatar = avatarStates
     .filter((entry) => !entry.unlocked)
     .sort((a, b) => b.progress - a.progress)[0] || null;
+  const applySecureUserUpdate = (backendUser) => {
+    const mappedUser = mapBackendUserToFrontendUser(backendUser);
+    if (!mappedUser) return;
+
+    setUser({
+      ...(user || {}),
+      ...mappedUser,
+      permissions: PERMISSIONS[mappedUser.role] || PERMISSIONS.azubi
+    });
+  };
 
   const updateProfileName = async () => {
     if (!profileEditName.trim()) {
@@ -190,14 +209,21 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ name: profileEditName.trim() })
-        .eq('id', user.id);
-      if (error) throw error;
-      const updatedUser = { ...user, name: profileEditName.trim() };
-      setUser(updatedUser);
-      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
+      if (secureBackendProfileEnabled) {
+        const updatedUser = await secureUsersApi.updateMe({
+          displayName: profileEditName.trim()
+        });
+        applySecureUserUpdate(updatedUser);
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ name: profileEditName.trim() })
+          .eq('id', user.id);
+        if (error) throw error;
+      }
+      if (!secureBackendProfileEnabled) {
+        setUser({ ...user, name: profileEditName.trim() });
+      }
       showToast('Name erfolgreich geändert!', 'success');
       setProfileEditName('');
     } catch (error) {
@@ -209,7 +235,7 @@ const ProfileView = ({
   };
 
   const updateProfilePassword = async () => {
-    if (!profileEditPassword || !profileEditPasswordConfirm) {
+    if (!profileEditPassword || !profileEditPasswordConfirm || (secureBackendProfileEnabled && !profileCurrentPassword)) {
       showToast('Bitte beide Passwort-Felder ausfüllen.', 'warning');
       return;
     }
@@ -217,12 +243,25 @@ const ProfileView = ({
       showToast('Die Passwörter stimmen nicht überein!', 'error');
       return;
     }
-    if (profileEditPassword.length < 6) {
-      showToast('Das Passwort muss mindestens 6 Zeichen haben.', 'warning');
+    if (profileEditPassword.length < minimumPasswordLength) {
+      showToast(`Das Passwort muss mindestens ${minimumPasswordLength} Zeichen haben.`, 'warning');
       return;
     }
     setProfileSaving(true);
     try {
+      if (secureBackendProfileEnabled) {
+        await secureAuthApi.changePassword({
+          currentPassword: profileCurrentPassword,
+          newPassword: profileEditPassword
+        });
+        showToast('Passwort geändert. Bitte neu anmelden.', 'success');
+        setProfileCurrentPassword('');
+        setProfileEditPassword('');
+        setProfileEditPasswordConfirm('');
+        await handleLogout();
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({ password: profileEditPassword });
       if (error) throw error;
       showToast('Passwort erfolgreich geändert!', 'success');
@@ -249,14 +288,21 @@ const ProfileView = ({
 
     setProfileSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ avatar: avatarId })
-        .eq('id', user.id);
-      if (error) throw error;
-      const updatedUser = { ...user, avatar: avatarId };
-      setUser(updatedUser);
-      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
+      if (secureBackendProfileEnabled) {
+        const updatedUser = await secureUsersApi.updateMe({
+          avatar: avatarId
+        });
+        applySecureUserUpdate(updatedUser);
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ avatar: avatarId })
+          .eq('id', user.id);
+        if (error) throw error;
+      }
+      if (!secureBackendProfileEnabled) {
+        setUser({ ...user, avatar: avatarId });
+      }
       showToast(avatarId ? 'Avatar geändert!' : 'Avatar entfernt', 'success');
     } catch (error) {
       console.error('Error updating avatar:', error);
@@ -269,14 +315,21 @@ const ProfileView = ({
   const updateProfileCompany = async () => {
     setProfileSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ company: profileEditCompany.trim() || null })
-        .eq('id', user.id);
-      if (error) throw error;
-      const updatedUser = { ...user, company: profileEditCompany.trim() || null };
-      setUser(updatedUser);
-      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
+      if (secureBackendProfileEnabled) {
+        const updatedUser = await secureUsersApi.updateMe({
+          company: profileEditCompany.trim() || null
+        });
+        applySecureUserUpdate(updatedUser);
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ company: profileEditCompany.trim() || null })
+          .eq('id', user.id);
+        if (error) throw error;
+      }
+      if (!secureBackendProfileEnabled) {
+        setUser({ ...user, company: profileEditCompany.trim() || null });
+      }
       showToast('Betrieb gespeichert!', 'success');
       setProfileEditCompany('');
     } catch (error) {
@@ -294,14 +347,21 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ birth_date: profileEditBirthDate })
-        .eq('id', user.id);
-      if (error) throw error;
-      const updatedUser = { ...user, birthDate: profileEditBirthDate };
-      setUser(updatedUser);
-      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
+      if (secureBackendProfileEnabled) {
+        const updatedUser = await secureUsersApi.updateMe({
+          birthDate: profileEditBirthDate
+        });
+        applySecureUserUpdate(updatedUser);
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ birth_date: profileEditBirthDate })
+          .eq('id', user.id);
+        if (error) throw error;
+      }
+      if (!secureBackendProfileEnabled) {
+        setUser({ ...user, birthDate: profileEditBirthDate });
+      }
       showToast('Geburtsdatum gespeichert!', 'success');
       setProfileEditBirthDate('');
     } catch (error) {
@@ -617,6 +677,7 @@ const ProfileView = ({
             onClick={handleEnablePushOnDevice}
             disabled={
               pushActionLoading
+              || !secureBackendProfileEnabled
               || !pushDeviceState?.supported
               || !pushDeviceState?.configured
             }
@@ -628,6 +689,7 @@ const ProfileView = ({
             onClick={handleResyncPushOnDevice}
             disabled={
               pushActionLoading
+              || !secureBackendProfileEnabled
               || !pushDeviceState?.supported
               || !pushDeviceState?.configured
             }
@@ -641,7 +703,7 @@ const ProfileView = ({
           </button>
           <button
             onClick={handleDisablePushOnDevice}
-            disabled={pushActionLoading || !pushDeviceState?.supported}
+            disabled={pushActionLoading || !secureBackendProfileEnabled || !pushDeviceState?.supported}
             className="px-5 py-3 bg-rose-500 hover:bg-rose-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
           >
             Abo auf diesem Geraet loeschen
@@ -653,6 +715,11 @@ const ProfileView = ({
             Wenn nach dem Aktivieren nichts ankommt, oeffne die App auf diesem Handy einmal neu und tippe danach auf{' '}
             <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Abo neu synchronisieren</span>.
           </p>
+          {!secureBackendProfileEnabled && (
+            <p className={darkMode ? 'text-amber-300' : 'text-amber-700'}>
+              Web-Push ist nur noch im sicheren Backend-Modus verfuegbar. Der alte Browser-/Supabase-Pfad wurde stillgelegt.
+            </p>
+          )}
           {pushDeviceState?.permission === 'denied' && (
             <p className={darkMode ? 'text-amber-300' : 'text-amber-700'}>
               Benachrichtigungen sind fuer diese Web-App aktuell blockiert. Bitte erlaube sie in den Browser- oder App-Einstellungen.
@@ -819,6 +886,20 @@ const ProfileView = ({
           Passwort ändern
         </h3>
         <div className="space-y-4">
+          {secureBackendProfileEnabled && (
+            <div>
+              <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Aktuelles Passwort
+              </label>
+              <input
+                type="password"
+                placeholder="Aktuelles Passwort"
+                value={profileCurrentPassword}
+                onChange={(e) => setProfileCurrentPassword(e.target.value)}
+                className={`w-full px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+              />
+            </div>
+          )}
           <div>
             <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Neues Passwort
@@ -826,7 +907,7 @@ const ProfileView = ({
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Mindestens 6 Zeichen"
+                placeholder={`Mindestens ${minimumPasswordLength} Zeichen`}
                 value={profileEditPassword}
                 onChange={(e) => setProfileEditPassword(e.target.value)}
                 className={`w-full px-4 py-3 pr-12 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
@@ -863,14 +944,14 @@ const ProfileView = ({
           </div>
           <button
             onClick={updateProfilePassword}
-            disabled={profileSaving || !profileEditPassword || !profileEditPasswordConfirm}
+            disabled={profileSaving || !profileEditPassword || !profileEditPasswordConfirm || (secureBackendProfileEnabled && !profileCurrentPassword)}
             className="px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
           >
             {profileSaving ? 'Speichern...' : 'Passwort ändern'}
           </button>
         </div>
         <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Verwende ein sicheres Passwort mit mindestens 6 Zeichen.
+          Verwende ein sicheres Passwort mit mindestens {minimumPasswordLength} Zeichen.
         </p>
       </div>
 

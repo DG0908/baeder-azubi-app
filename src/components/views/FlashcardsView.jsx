@@ -2,7 +2,6 @@ import React from 'react';
 import { Plus, Check, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { supabase } from '../../supabase';
 import { CATEGORIES } from '../../data/constants';
 import { getWhoAmIClueCount, getWhoAmIVisibleClues, WHO_AM_I_TIME_LIMIT } from '../../data/whoAmIChallenges';
 
@@ -25,9 +24,8 @@ const FlashcardsView = ({
   newFlashcardBack,
   setNewFlashcardBack,
   pendingFlashcards,
-  setPendingFlashcards,
   userFlashcards,
-  setUserFlashcards,
+  createFlashcard,
   newQuestionCategory,
   setNewQuestionCategory,
   deleteFlashcard,
@@ -40,8 +38,6 @@ const FlashcardsView = ({
   moderateContent,
   getCardSpacedData,
   updateCardSpacedData,
-  queueXpAward,
-  XP_REWARDS,
   FLASHCARD_CONTENT,
   KEYWORD_FLASHCARD_CONTENT,
   WHO_AM_I_FLASHCARD_CONTENT,
@@ -166,51 +162,29 @@ const FlashcardsView = ({
               return;
             }
 
+            const result = await createFlashcard({
+              category: newFlashcardCategory,
+              front: newFlashcardFront.trim(),
+              back: newFlashcardBack.trim()
+            });
+
+            if (!result?.success) {
+              alert(result?.error || 'Fehler beim Erstellen der Karteikarte');
+              return;
+            }
+
+            if (result?.flashcard?.approved) {
+              alert('Karteikarte hinzugefuegt!');
+            } else {
+              alert('Karteikarte eingereicht! Sie wird nach Pruefung freigeschaltet.');
+            }
+
             try {
-              const isApproved = user.permissions.canApproveQuestions;
-              const { data, error } = await supabase
-                .from('flashcards')
-                .insert([{
-                  user_id: user.id,
-                  category: newFlashcardCategory,
-                  question: newFlashcardFront.trim(),
-                  answer: newFlashcardBack.trim(),
-                  approved: isApproved
-                }])
-                .select()
-                .single();
-
-              if (error) throw error;
-
-              const flashcard = {
-                id: data.id,
-                front: data.question,
-                back: data.answer,
-                category: data.category,
-                approved: data.approved,
-                userId: data.user_id
-              };
-
-              if (flashcard.approved) {
-                setUserFlashcards([...userFlashcards, flashcard]);
-                alert('Karteikarte hinzugefuegt!');
-              } else {
-                setPendingFlashcards([...pendingFlashcards, flashcard]);
-                alert('Karteikarte eingereicht! Sie wird nach Pruefung freigeschaltet.');
-              }
-
-              void queueXpAward('flashcardCreation', XP_REWARDS.FLASHCARD_CREATE, {
-                eventKey: `flashcard_create_${data.id}`,
-                reason: 'Karteikarte erstellt',
-                showXpToast: true
-              });
-
               setNewFlashcardFront('');
               setNewFlashcardBack('');
               playSound('splash');
             } catch (error) {
-              console.error('Flashcard error:', error);
-              alert('Fehler beim Erstellen der Karteikarte');
+              console.error('Flashcard UI follow-up error:', error);
             }
           }}
           className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg"

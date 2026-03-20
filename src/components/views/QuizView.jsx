@@ -26,6 +26,7 @@ const CHALLENGE_TIMEOUT_OPTIONS = [
 
 const getDifficulty = (difficulty) => DIFFICULTY_SETTINGS[difficulty] || DIFFICULTY_SETTINGS.profi;
 const QuizView = ({
+  secureBackendApiEnabled,
   selectedDifficulty,
   setSelectedDifficulty,
   allUsers,
@@ -66,6 +67,10 @@ const QuizView = ({
   const [challengeTimeoutMinutes, setChallengeTimeoutMinutes] = React.useState(1440);
   const [countdownNow, setCountdownNow] = React.useState(() => Date.now());
   const currentDifficulty = getDifficulty(currentGame?.difficulty);
+  const secureDuelMode = Boolean(currentGame?.secureDuel);
+  const secureQuestionCount = Number(currentGame?.secureQuestionCount || currentGame?.questionCount || 0);
+  const secureAnsweredCount = Number(currentGame?.secureMyAnsweredCount || 0);
+  const secureQuestionNumber = Math.max(1, Number(questionInCategory || 0) + 1);
   const questionIsKeyword = Boolean(currentQuestion && isKeywordQuestion?.(currentQuestion));
   const questionIsWhoAmI = Boolean(currentQuestion && isWhoAmIQuestion?.(currentQuestion));
   const questionUsesFreeText = questionIsKeyword || questionIsWhoAmI || quizMCKeywordMode;
@@ -169,6 +174,7 @@ const QuizView = ({
                   <button
                     key={key}
                     onClick={() => setSelectedDifficulty(key)}
+                    disabled={secureBackendApiEnabled}
                     className={`p-4 rounded-xl border-2 transition-all ${
                       selectedDifficulty === key
                         ? `${diff.color} text-white border-transparent`
@@ -189,6 +195,7 @@ const QuizView = ({
               <select
                 value={challengeTimeoutMinutes}
                 onChange={(event) => setChallengeTimeoutMinutes(Number(event.target.value) || 1440)}
+                disabled={secureBackendApiEnabled}
                 className="w-full md:w-64 border border-gray-300 rounded-lg px-3 py-2 bg-white"
               >
                 {CHALLENGE_TIMEOUT_OPTIONS.map((option) => (
@@ -197,6 +204,11 @@ const QuizView = ({
                   </option>
                 ))}
               </select>
+              {secureBackendApiEnabled && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Sicherer Backend-Modus aktiv: Fragen, Annahme und Ranking werden serverseitig gesteuert. Prototyp-Timer und lokale Schwierigkeitslogik sind hier nicht mehr massgeblich.
+                </p>
+              )}
             </div>
             <div className="grid gap-2">
               {allUsers.filter(u => u.name !== user.name).map(u => {
@@ -238,10 +250,12 @@ const QuizView = ({
                 const turnRemainingMs = Number.isFinite(turnDeadlineTs) ? (turnDeadlineTs - countdownNow) : null;
                 const countdownHint = relatedGame?.status === 'waiting'
                   ? `Annahmefrist: ${formatCountdown(waitingRemainingMs)}`
-                  : relatedGame?.status === 'active'
-                    ? `${isMyTurn ? 'Deine Runde' : 'Rundenfrist'}: ${formatCountdown(turnRemainingMs)}`
-                    : '';
-                const countdownClass = relatedGame?.status === 'active' && isMyTurn
+                  : relatedGame?.secureDuel
+                    ? `Fragen: ${Number(relatedGame?.secureMyAnsweredCount || 0)}/${Number(relatedGame?.secureQuestionCount || 0)} beantwortet`
+                    : relatedGame?.status === 'active'
+                      ? `${isMyTurn ? 'Deine Runde' : 'Rundenfrist'}: ${formatCountdown(turnRemainingMs)}`
+                      : '';
+                const countdownClass = relatedGame?.status === 'active' && isMyTurn && !relatedGame?.secureDuel
                   ? 'text-amber-600'
                   : 'text-gray-500';
                 return (
@@ -318,7 +332,7 @@ const QuizView = ({
                       )
                     ) : (
                       <button
-                        onClick={() => challengePlayer(u.name, challengeTimeoutMinutes)}
+                        onClick={() => challengePlayer(u, challengeTimeoutMinutes)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-sm transition-all col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto whitespace-normal text-center leading-tight"
                       >
                         <Target size={16} />
@@ -336,7 +350,138 @@ const QuizView = ({
         </>
       )}
 
-      {currentGame && (
+      {currentGame && secureDuelMode && (
+        <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
+          <div className="text-center mb-4">
+            <span className="bg-cyan-600 text-white px-6 py-2 rounded-full font-bold inline-flex items-center gap-2">
+              Server-Duell - Frage {secureQuestionNumber}/{Math.max(secureQuestionCount, 1)}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center mb-6">
+            <div className="text-center flex-1">
+              <p className="text-sm text-gray-600 mb-1">{currentGame.player1}</p>
+              <p className="text-3xl font-bold text-blue-600">{currentGame.player1Score}</p>
+            </div>
+            <div className="text-center flex-1 px-4">
+              <p className="text-xl font-bold text-gray-700">
+                {secureAnsweredCount}/{Math.max(secureQuestionCount, 1)} beantwortet
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Antworten werden direkt serverseitig gespeichert.
+              </p>
+            </div>
+            <div className="text-center flex-1">
+              <p className="text-sm text-gray-600 mb-1">{currentGame.player2}</p>
+              <p className="text-3xl font-bold text-red-600">{currentGame.player2Score}</p>
+            </div>
+          </div>
+
+          {currentQuestion ? (
+            <div className="space-y-4">
+              <div className="mb-4 flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-600">
+                  {(() => {
+                    const cat = CATEGORIES.find((entry) => entry.id === quizCategory);
+                    return cat ? `${cat.icon} ${cat.name}` : 'Quizfrage';
+                  })()}
+                </span>
+                <span className="text-sm font-semibold text-cyan-700">
+                  {answered ? 'Antwort gespeichert' : 'Wertung durch API'}
+                </span>
+              </div>
+
+              <div className="bg-gray-100 rounded-xl p-6">
+                <p className="text-xl font-bold text-center">{currentQuestion.q}</p>
+              </div>
+
+              <div className="grid gap-3">
+                {(Array.isArray(currentQuestion?.a) ? currentQuestion.a : []).map((answer, idx) => {
+                  const selectedAnswerIndex = currentQuestion?.myAnswer?.selectedOptionIndex ?? lastSelectedAnswer;
+                  const isSelectedAnswer = selectedAnswerIndex === idx;
+                  let buttonClass = '';
+
+                  if (answered) {
+                    if (isSelectedAnswer) {
+                      buttonClass = currentQuestion?.myAnswer?.isCorrect
+                        ? 'bg-green-500 text-white animate-correct-flash'
+                        : 'bg-red-500 text-white';
+                    } else {
+                      buttonClass = 'bg-gray-200 text-gray-500';
+                    }
+                  } else {
+                    buttonClass = 'bg-white hover:bg-cyan-50 border-2 border-gray-200 hover:border-cyan-500';
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => answerQuestion(idx)}
+                      disabled={answered}
+                      title={formatAnswerLabel(answer)}
+                      className={`p-4 rounded-xl font-medium transition-all min-h-[4.5rem] ${buttonClass}`}
+                    >
+                      {formatAnswerLabel(answer)}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => {
+                  void reportQuestionIssue({
+                    question: currentQuestion,
+                    categoryId: quizCategory,
+                    source: 'secure-duel'
+                  });
+                }}
+                className="w-full mt-2 bg-amber-100 hover:bg-amber-200 text-amber-800 py-2 rounded-lg font-semibold border border-amber-300"
+              >
+                Frage melden
+              </button>
+
+              {answered && (
+                <div className={`rounded-xl border-2 p-4 ${
+                  currentQuestion?.myAnswer?.isCorrect
+                    ? 'border-green-400 bg-green-50'
+                    : 'border-red-400 bg-red-50'
+                }`}>
+                  <p className={`font-bold ${
+                    currentQuestion?.myAnswer?.isCorrect ? 'text-green-700' : 'text-red-700'
+                  }`}>
+                    {currentQuestion?.myAnswer?.isCorrect ? 'Richtig beantwortet.' : 'Antwort war nicht korrekt.'}
+                  </p>
+                  {currentQuestion?.explanation && (
+                    <p className="text-sm text-gray-700 mt-2">{currentQuestion.explanation}</p>
+                  )}
+                </div>
+              )}
+
+              {answered && (
+                <button
+                  onClick={proceedToNextRound}
+                  className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg"
+                >
+                  {secureAnsweredCount < secureQuestionCount
+                    ? 'Naechste Frage'
+                    : (String(currentGame?.secureDuelStatus || '').toUpperCase() === 'COMPLETED'
+                        ? 'Zur Uebersicht'
+                        : 'Antworten abschliessen')}
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-10">
+              <p className="text-lg font-bold text-gray-700">Im Moment ist keine weitere Frage offen.</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Kehre zur Uebersicht zurueck und warte auf die serverseitige Aktualisierung.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {currentGame && !secureDuelMode && (
         <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
           <div className="text-center mb-4">
             <span className={`${currentDifficulty.color} text-white px-6 py-2 rounded-full font-bold inline-flex items-center gap-2`}>

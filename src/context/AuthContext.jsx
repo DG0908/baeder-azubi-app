@@ -1,9 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../supabase';
+import {
+  supabase,
+  LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED,
+  LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE
+} from '../supabase';
 import { PERMISSIONS } from '../data/constants';
 import { triggerWebPushNotification } from '../lib/pushNotifications';
+import {
+  isSecureBackendApiEnabled,
+  mapBackendRoleToFrontendRole,
+  mapBackendUserToFrontendUser,
+  secureAuthApi
+} from '../lib/secureApi';
+import { getApiAccessToken, refreshApiSession } from '../lib/secureApiClient';
 
 const AuthContext = createContext(null);
+const USER_STORAGE_KEY = 'baeder_user';
+const AZUBI_PROFILE_STORAGE_KEY = 'azubi_profile';
+const SECURE_BACKEND_AUTH_ENABLED = isSecureBackendApiEnabled();
+const LEGACY_MIN_PASSWORD_LENGTH = 6;
+const SECURE_MIN_PASSWORD_LENGTH = 12;
 
 const buildUserSession = (userId, profile, orgName) => ({
   id: userId,
@@ -22,9 +38,87 @@ const buildUserSession = (userId, profile, orgName) => ({
   permissions: PERMISSIONS[profile.role] || PERMISSIONS.azubi
 });
 
+const buildSecureUserSession = (backendUser) => {
+  const mappedUser = mapBackendUserToFrontendUser(backendUser);
+  if (!mappedUser) return null;
+
+  return {
+    ...mappedUser,
+    permissions: PERMISSIONS[mappedUser.role] || PERMISSIONS.azubi
+  };
+};
+
+const persistSecureReportBookProfile = (backendUser) => {
+  const profile = backendUser?.reportBookProfile ?? backendUser?.report_book_profile ?? null;
+  if (!profile || typeof profile !== 'object') return;
+
+  try {
+    localStorage.setItem(AZUBI_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  } catch {
+    // Ignore storage failures in private mode.
+  }
+};
+
+const clearStoredUserSession = () => {
+  try {
+    localStorage.removeItem(USER_STORAGE_KEY);
+    localStorage.removeItem(AZUBI_PROFILE_STORAGE_KEY);
+  } catch {
+    // Ignore storage failures in private mode.
+  }
+};
+
+const persistStoredUserSession = (userSession) => {
+  try {
+    if (!userSession) {
+      clearStoredUserSession();
+      return;
+    }
+
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userSession));
+  } catch {
+    // Ignore storage failures in private mode.
+  }
+};
+
+const mapSecureAuthErrorMessage = (error, fallbackMessage) => {
+  const message = String(error?.message || '').trim();
+  const normalized = message.toLowerCase();
+
+  if (!message) {
+    return fallbackMessage;
+  }
+
+  if (normalized.includes('invalid credentials')) {
+    return 'E-Mail oder Passwort falsch!';
+  }
+
+  if (normalized.includes('approved')) {
+    return 'Dein Account wurde noch nicht freigeschaltet. Bitte warte auf die Freigabe durch einen Administrator.';
+  }
+
+  if (normalized.includes('already registered')) {
+    return 'Diese E-Mail ist bereits registriert!';
+  }
+
+  if (normalized.includes('invitation code')) {
+    return 'Der Einladungscode ist ungueltig, abgelaufen oder bereits aufgebraucht.';
+  }
+
+  if (normalized.includes('email must be an email')) {
+    return 'Bitte gib eine gueltige E-Mail-Adresse ein.';
+  }
+
+  if (normalized.includes('password must be longer than or equal to 12 characters')) {
+    return 'Das Passwort muss mindestens 12 Zeichen lang sein.';
+  }
+
+  return `${fallbackMessage}: ${message}`;
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('baeder_user');
+    const savedUser = localStorage.getItem(USER_STORAGE_KEY);
     return savedUser ? JSON.parse(savedUser) : null;
   });
   const [authView, setAuthView] = useState('login');
@@ -38,10 +132,48 @@ export function AuthProvider({ children }) {
     trainingEnd: '',
     invitationCode: ''
   });
+  const secureBackendAuthEnabled = SECURE_BACKEND_AUTH_ENABLED;
+  const passwordResetAvailable = true;
+  const minimumPasswordLength = secureBackendAuthEnabled
+    ? SECURE_MIN_PASSWORD_LENGTH
+    : LEGACY_MIN_PASSWORD_LENGTH;
+
+  useEffect(() => {
+    persistStoredUserSession(user);
+  }, [user]);
 
   // Supabase Session prüfen + Auth-State-Listener
   useEffect(() => {
     const checkSession = async () => {
+      if (secureBackendAuthEnabled) {
+        try {
+          let backendUser = null;
+
+          if (getApiAccessToken()) {
+            try {
+              backendUser = await secureAuthApi.me();
+            } catch {
+              const refreshedSession = await refreshApiSession();
+              backendUser = refreshedSession?.user || null;
+            }
+          } else {
+            const refreshedSession = await refreshApiSession();
+            backendUser = refreshedSession?.user || null;
+          }
+
+          const secureUserSession = buildSecureUserSession(backendUser);
+          if (!secureUserSession) {
+            throw new Error('Secure backend session is invalid.');
+          }
+
+          persistSecureReportBookProfile(backendUser);
+          setUser(secureUserSession);
+        } catch {
+          setUser(null);
+          clearStoredUserSession();
+        }
+        return;
+      }
       // Prüfe ob es ein Password-Recovery-Link ist (type=recovery in URL)
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const urlParams = new URLSearchParams(window.location.search);
@@ -71,32 +203,35 @@ export function AuthProvider({ children }) {
           }
           const userSession = buildUserSession(session.user.id, profile, orgName);
           setUser(userSession);
-          localStorage.setItem('baeder_user', JSON.stringify(userSession));
 
           // Azubi-Profil für Berichtsheft in localStorage speichern (App.jsx liest es reaktiv)
           if (profile.berichtsheft_profile) {
-            localStorage.setItem('azubi_profile', JSON.stringify(profile.berichtsheft_profile));
+            localStorage.setItem(AZUBI_PROFILE_STORAGE_KEY, JSON.stringify(profile.berichtsheft_profile));
           }
         } else if (profile && !profile.approved) {
           await supabase.auth.signOut();
           setUser(null);
-          localStorage.removeItem('baeder_user');
+          clearStoredUserSession();
         }
       } else {
-        if (localStorage.getItem('baeder_user')) {
+        if (localStorage.getItem(USER_STORAGE_KEY)) {
           setUser(null);
-          localStorage.removeItem('baeder_user');
+          clearStoredUserSession();
         }
       }
     };
 
     checkSession();
 
+    if (secureBackendAuthEnabled) {
+      return undefined;
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event);
       if (event === 'SIGNED_OUT') {
         setUser(null);
-        localStorage.removeItem('baeder_user');
+        clearStoredUserSession();
       }
       if (event === 'PASSWORD_RECOVERY') {
         setAuthView('reset-password');
@@ -104,7 +239,7 @@ export function AuthProvider({ children }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [secureBackendAuthEnabled]);
 
   const notifyAdminsAboutPendingRegistration = async ({ name, email, role }) => {
     try {
@@ -162,6 +297,52 @@ export function AuthProvider({ children }) {
   };
 
   const handleRegister = async () => {
+    if (secureBackendAuthEnabled) {
+      if (!registerData.name.trim() || !registerData.email.trim() || !registerData.password) {
+        alert('Bitte alle Felder ausfuellen!');
+        return;
+      }
+      if (!registerData.invitationCode.trim()) {
+        alert('Bitte gib deinen Einladungscode ein!');
+        return;
+      }
+      if (registerData.password.length < minimumPasswordLength) {
+        alert(`Das Passwort muss mindestens ${minimumPasswordLength} Zeichen lang sein!`);
+        return;
+      }
+
+      const trimmedEmail = registerData.email.trim().toLowerCase();
+      const trimmedName = registerData.name.trim();
+      const trimmedCode = registerData.invitationCode.trim().toUpperCase();
+
+      try {
+        const result = await secureAuthApi.register({
+          email: trimmedEmail,
+          displayName: trimmedName,
+          password: registerData.password,
+          invitationCode: trimmedCode,
+          trainingEnd: registerData.trainingEnd || undefined
+        });
+
+        const frontendRole = mapBackendRoleToFrontendRole(result?.user?.role);
+        const roleLabel = (PERMISSIONS[frontendRole] || PERMISSIONS.azubi).label;
+        const organizationName = result?.user?.organization?.name || 'Dein Betrieb';
+
+        alert(`Registrierung erfolgreich!\n\nBetrieb: ${organizationName}\nRolle: ${roleLabel}\n\nDein Account muss von einem Administrator freigeschaltet werden.`);
+        setAuthView('login');
+        setRegisterData({ name: '', email: '', password: '', role: 'azubi', trainingEnd: '', invitationCode: '' });
+      } catch (error) {
+        alert(mapSecureAuthErrorMessage(error, 'Fehler bei der Registrierung'));
+        console.error('Secure registration error:', error);
+      }
+      return;
+    }
+
+    if (LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED) {
+      alert(`Registrierung ist im Sicherheitsmodus voruebergehend deaktiviert.\n\n${LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE}`);
+      return;
+    }
+
     if (!registerData.name.trim() || !registerData.email.trim() || !registerData.password) {
       alert('Bitte alle Felder ausfüllen!');
       return;
@@ -170,8 +351,8 @@ export function AuthProvider({ children }) {
       alert('Bitte gib deinen Einladungscode ein!');
       return;
     }
-    if (registerData.password.length < 6) {
-      alert('Das Passwort muss mindestens 6 Zeichen lang sein!');
+    if (registerData.password.length < minimumPasswordLength) {
+      alert(`Das Passwort muss mindestens ${minimumPasswordLength} Zeichen lang sein!`);
       return;
     }
 
@@ -293,6 +474,29 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    if (secureBackendAuthEnabled) {
+      try {
+        const result = await secureAuthApi.login({
+          email: loginEmail.trim().toLowerCase(),
+          password: loginPassword
+        });
+
+        const secureUserSession = buildSecureUserSession(result?.user);
+        if (!secureUserSession) {
+          throw new Error('Secure backend session is invalid.');
+        }
+
+        persistSecureReportBookProfile(result?.user);
+        setUser(secureUserSession);
+        setLoginEmail('');
+        setLoginPassword('');
+      } catch (error) {
+        alert(mapSecureAuthErrorMessage(error, 'Fehler beim Login'));
+        console.error('Secure login error:', error);
+      }
+      return;
+    }
+
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: loginEmail.trim(),
@@ -345,7 +549,6 @@ export function AuthProvider({ children }) {
       }
       const userSession = buildUserSession(authData.user.id, profile, orgName);
       setUser(userSession);
-      localStorage.setItem('baeder_user', JSON.stringify(userSession));
 
       // Initialize stats if not exists
       const { data: existingStats } = await supabase
@@ -376,9 +579,26 @@ export function AuthProvider({ children }) {
   };
 
   const handleLogout = async () => {
+    if (secureBackendAuthEnabled) {
+      try {
+        await secureAuthApi.logout();
+      } catch {
+        try {
+          await refreshApiSession();
+          await secureAuthApi.logout();
+        } catch {
+          // Local session cleanup still runs below.
+        }
+      } finally {
+        setUser(null);
+        clearStoredUserSession();
+      }
+      return;
+    }
+
     await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('baeder_user');
+    clearStoredUserSession();
   };
 
   return (
@@ -393,6 +613,9 @@ export function AuthProvider({ children }) {
       setLoginPassword,
       registerData,
       setRegisterData,
+      secureBackendAuthEnabled,
+      passwordResetAvailable,
+      minimumPasswordLength,
       handleLogin,
       handleRegister,
       handleLogout

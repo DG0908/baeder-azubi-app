@@ -62,6 +62,7 @@ const ExamsView = ({
 }) => {
   const { darkMode, showToast } = useApp();
   const { user } = useAuth();
+  const canManageScheduledExams = Boolean(user?.permissions?.canPostNews);
 
   const [activeTab, setActiveTab] = useState('upcoming');
 
@@ -180,6 +181,7 @@ const ExamsView = ({
       {activeTab === 'upcoming' && (
         <>
           {/* Neue Klausur eintragen */}
+          {canManageScheduledExams && (
           <div className={`${card} rounded-xl p-6 shadow-lg`}>
             <h3 className={`text-lg font-bold mb-4 ${text}`}>Klausur ankündigen</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -221,6 +223,7 @@ const ExamsView = ({
               Eintragen
             </button>
           </div>
+          )}
 
           {/* Liste */}
           <div className={`${card} rounded-xl shadow-lg overflow-hidden`}>
@@ -259,13 +262,15 @@ const ExamsView = ({
                               ? `${examDateObj.toLocaleDateString('de-DE')}${daysUntil !== null ? ` (${daysUntil}d)` : ''}`
                               : 'Ohne Termin'}
                           </span>
-                          <button
-                            onClick={() => deleteExam(exam.id)}
-                            className="text-red-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-500/10 transition-all"
-                            title="Löschen"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          {canManageScheduledExams && (
+                            <button
+                              onClick={() => deleteExam(exam.id)}
+                              className="text-red-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-500/10 transition-all"
+                              title="Löschen"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -470,3 +475,4 @@ const ExamsView = ({
 };
 
 export default ExamsView;
+

@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../supabase';
+import {
+  supabase,
+  LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED,
+  LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE
+} from '../../supabase';
+import { secureAuthApi } from '../../lib/secureApi';
 
 const LoginScreen = () => {
   const {
@@ -13,9 +18,13 @@ const LoginScreen = () => {
     setLoginPassword,
     registerData,
     setRegisterData,
+    secureBackendAuthEnabled,
+    passwordResetAvailable,
+    minimumPasswordLength,
     handleLogin,
     handleRegister
   } = useAuth();
+  const legacyRegistrationBlocked = LEGACY_FRONTEND_WRITE_PROTECTION_ENABLED && !secureBackendAuthEnabled;
 
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
@@ -23,12 +32,27 @@ const LoginScreen = () => {
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [newPasswordLoading, setNewPasswordLoading] = useState(false);
+  const secureResetToken = (
+    secureBackendAuthEnabled && typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('password_reset_token') || ''
+      : ''
+  );
 
   // Live-Validierung des Einladungscodes
   const [codeStatus, setCodeStatus] = useState(null); // null | 'checking' | { valid: true, orgName, role } | { valid: false }
   const codeTimerRef = useRef(null);
 
   useEffect(() => {
+    if (!secureBackendAuthEnabled || !secureResetToken) return;
+    setAuthView('reset-password');
+  }, [secureBackendAuthEnabled, secureResetToken, setAuthView]);
+
+  useEffect(() => {
+    if (legacyRegistrationBlocked || secureBackendAuthEnabled) {
+      setCodeStatus(null);
+      return;
+    }
+
     const code = registerData.invitationCode?.trim();
     if (!code || code.length < 4) {
       setCodeStatus(null);
@@ -70,7 +94,7 @@ const LoginScreen = () => {
     }, 500);
 
     return () => { if (codeTimerRef.current) clearTimeout(codeTimerRef.current); };
-  }, [registerData.invitationCode]);
+  }, [legacyRegistrationBlocked, registerData.invitationCode, secureBackendAuthEnabled]);
 
   const handlePasswordReset = async () => {
     if (!resetEmail.trim()) {
@@ -79,6 +103,14 @@ const LoginScreen = () => {
     }
     setResetLoading(true);
     try {
+      if (secureBackendAuthEnabled) {
+        await secureAuthApi.requestPasswordReset({
+          email: resetEmail.trim().toLowerCase()
+        });
+        setResetSent(true);
+        return;
+      }
+
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim().toLowerCase(), {
         redirectTo: window.location.origin
       });
@@ -244,12 +276,32 @@ const LoginScreen = () => {
         alert('Die Passwörter stimmen nicht überein!');
         return;
       }
-      if (newPassword.length < 6) {
-        alert('Das Passwort muss mindestens 6 Zeichen lang sein.');
+      if (newPassword.length < minimumPasswordLength) {
+        alert(`Das Passwort muss mindestens ${minimumPasswordLength} Zeichen lang sein.`);
         return;
       }
       setNewPasswordLoading(true);
       try {
+        if (secureBackendAuthEnabled) {
+          if (!secureResetToken) {
+            alert('Der Reset-Link ist ungueltig oder unvollstaendig.');
+            return;
+          }
+
+          await secureAuthApi.confirmPasswordReset({
+            token: secureResetToken,
+            newPassword
+          });
+          alert('Passwort erfolgreich geaendert! Du kannst dich jetzt anmelden.');
+          setNewPassword('');
+          setNewPasswordConfirm('');
+          if (typeof window !== 'undefined') {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          setAuthView('login');
+          return;
+        }
+
         const { error } = await supabase.auth.updateUser({ password: newPassword });
         if (error) throw error;
         alert('Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.');
@@ -269,13 +321,31 @@ const LoginScreen = () => {
         background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
       }}>
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+          <button
+            onClick={() => {
+              if (typeof window !== 'undefined' && secureBackendAuthEnabled) {
+                window.history.replaceState({}, '', window.location.pathname);
+              }
+              setAuthView('login');
+            }}
+            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
+          >
+            Zurueck zum Login
+          </button>
+
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="text-cyan-600" size={28} />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Neues Passwort setzen</h2>
-            <p className="text-gray-500 text-sm">Gib dein neues Passwort ein (mindestens 6 Zeichen).</p>
+            <p className="text-gray-500 text-sm">Gib dein neues Passwort ein (mindestens {minimumPasswordLength} Zeichen).</p>
           </div>
+          {secureBackendAuthEnabled && !secureResetToken && (
+            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+              <AlertTriangle className="inline mr-2" size={16} />
+              Der Reset-Link ist ungueltig oder abgelaufen.
+            </div>
+          )}
           <div className="space-y-4">
             <input
               type="password"
@@ -294,7 +364,7 @@ const LoginScreen = () => {
             />
             <button
               onClick={handleSetNewPassword}
-              disabled={newPasswordLoading}
+              disabled={newPasswordLoading || (secureBackendAuthEnabled && !secureResetToken)}
               className="w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors"
             >
               {newPasswordLoading ? 'Wird gespeichert...' : 'Passwort ändern'}
@@ -332,7 +402,7 @@ const LoginScreen = () => {
               <div className="text-4xl mb-3">✅</div>
               <h3 className="font-bold text-green-800 mb-2">E-Mail gesendet!</h3>
               <p className="text-sm text-green-700">
-                Prüfe dein Postfach (auch den Spam-Ordner) nach einer E-Mail von Supabase.
+                Pruefe dein Postfach (auch den Spam-Ordner) nach einer E-Mail mit dem Reset-Link.
                 Klicke auf den Link in der E-Mail, um ein neues Passwort zu setzen.
               </p>
               <button
@@ -448,11 +518,18 @@ const LoginScreen = () => {
           </button>
         </div>
 
+        {secureBackendAuthEnabled && (
+          <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-800">
+            <Shield className="inline mr-2" size={16} />
+            Sicherer Backend-Login aktiv. Anmeldung, Registrierung und Passwort-Reset laufen ueber die API.
+          </div>
+        )}
+
         {authView === 'login' ? (
           <div className="space-y-4">
             <input
               type="text"
-              placeholder="E-Mail oder Name"
+              placeholder="E-Mail"
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
@@ -476,7 +553,8 @@ const LoginScreen = () => {
             <div className="text-center">
               <button
                 onClick={() => setAuthView('forgot')}
-                className="text-sm text-cyan-600 hover:text-cyan-700 transition-colors"
+                disabled={!passwordResetAvailable}
+                className="text-sm text-cyan-600 hover:text-cyan-700 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
               >
                 Passwort vergessen?
               </button>
@@ -506,7 +584,15 @@ const LoginScreen = () => {
                   <div className="font-bold flex items-center gap-1">
                     <Building2 size={14} /> {codeStatus.orgName}
                   </div>
-                  <div>Registrierung als: {codeStatus.role === 'azubi' ? 'Azubi' : 'Ausbilder'}</div>
+                  <div>
+                    Registrierung als: {
+                      codeStatus.role === 'azubi'
+                        ? 'Azubi'
+                        : codeStatus.role === 'rettungsschwimmer_azubi'
+                          ? 'Rettungsschwimmer-Azubi'
+                          : 'Ausbilder'
+                    }
+                  </div>
                 </div>
               </div>
             )}
@@ -515,7 +601,19 @@ const LoginScreen = () => {
                 {codeStatus.reason || 'Ungültiger Einladungscode'}
               </div>
             )}
-            {!codeStatus && (
+            {legacyRegistrationBlocked && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+                <AlertTriangle className="inline mr-2" size={16} />
+                Registrierung ist voruebergehend gesperrt. {LEGACY_FRONTEND_WRITE_PROTECTION_MESSAGE}
+              </div>
+            )}
+            {secureBackendAuthEnabled && (
+              <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
+                <Shield className="inline mr-2" size={16} />
+                Der Einladungscode wird beim Absenden serverseitig geprueft und nicht mehr direkt im Browser ausgewertet.
+              </div>
+            )}
+            {!codeStatus && !legacyRegistrationBlocked && !secureBackendAuthEnabled && (
               <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
                 <Shield className="inline mr-2" size={16} />
                 Du brauchst einen Einladungscode von deinem Ausbilder oder Betrieb.
@@ -537,7 +635,7 @@ const LoginScreen = () => {
             />
             <input
               type="password"
-              placeholder="Passwort (mind. 6 Zeichen)"
+              placeholder={`Passwort (mind. ${minimumPasswordLength} Zeichen)`}
               value={registerData.password}
               onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -553,13 +651,14 @@ const LoginScreen = () => {
                 className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               />
               <p className="text-xs text-gray-500 mt-1">
-                <AlertTriangle className="inline" size={12} /> Deine Daten werden nach Ausbildungsende automatisch gelöscht.
+                <AlertTriangle className="inline" size={12} /> Speicherfristen und Loeschregeln werden zentral im Backend verwaltet.
               </p>
             </div>
 
             <button
               onClick={handleRegister}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition-colors"
+              disabled={legacyRegistrationBlocked}
+              className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-colors"
             >
               <Shield className="inline mr-2" size={20} />
               Registrierung beantragen
