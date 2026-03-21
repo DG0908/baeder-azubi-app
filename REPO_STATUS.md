@@ -1,6 +1,6 @@
 # Repo Status
 
-Stand: 2026-03-20 (Update: Nacht)
+Stand: 2026-03-21 (Update: Abend)
 
 ## Zweck
 
@@ -15,9 +15,9 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 
 ## Aktueller Fokus
 
-- sichere Migration von direktem Supabase-Frontendzugriff auf das NestJS-Backend in `server/`
+- NestJS-Backend ist live auf `https://api.smartbaden.de`
+- Frontend-Migration von Supabase-Direktzugriff auf NestJS-API (Phase 0+)
 - Build-stabiler Dual-Mode ueber `VITE_ENABLE_SECURE_BACKEND_API`
-- Vorbereitung der spaeteren Datenmigration von Supabase nach PostgreSQL/Prisma
 
 ## Was bereits vorliegt
 
@@ -29,6 +29,12 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - CSP-Header in `index.html` (Content-Security-Policy)
 - console.log-Guards fuer Production in `AuthContext.jsx` und `App.jsx`
 - RLS-Policies auf VPS fuer `push_subscriptions` und `question_reports` eingerichtet
+- RLS-Hardening fuer Game-Scores (games, game_answers, user_stats) auf VPS ausgefuehrt
+- NestJS-Backend deployed auf VPS: `docker compose up -d postgres server`
+- Prisma-Schema synchronisiert mit neuer PostgreSQL-DB (`azubi_app`)
+- Traefik-Routing konfiguriert: `api.smartbaden.de` → NestJS (Port 3000)
+- SSL-Zertifikat via Let's Encrypt aktiv
+- DNS A-Record `api.smartbaden.de` → VPS-IP angelegt
 
 ## Tatsaechlicher Code-Stand dieses Branches
 
@@ -43,20 +49,19 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 
 Phase 0 aus `docs/supabase-to-nestjs-migration-plan.md`:
 
-1. `src/supabase.js` auf sicheren Bootstrap ohne harte Fallback-Secrets umbauen
+1. `src/supabase.js` auf sicheren Bootstrap ohne harte Fallback-Secrets umbauen (Dual-Mode TDZ-Fix)
 2. `src/context/AuthContext.jsx` fuer Dual-Mode vorbereiten
-3. Build pruefen mit:
-   - `VITE_ENABLE_SECURE_BACKEND_API=true`
-   - `VITE_SUPABASE_URL=""`
-   - `VITE_SUPABASE_ANON_KEY=""`
+3. Frontend schrittweise auf `secureApi.js` umstellen
+4. Traefik-Restart-Script stabilisieren (IP-Zuweisung nach Container-Neustart)
 
 ## Offene Risiken
 
 - Der aktuelle Frontend-Branch ist noch stark Supabase-abhaengig.
 - Der fruehere Migrationscommit `df7bd38` ist nur Referenz, kein sicherer Blind-Merge.
-- Backend-Deployment, Testdatenbank, echte Migrationen und produktive Betriebsnachweise sind noch offen.
-- RLS-Hardening fuer Game-Scores (games, game_answers, user_stats) auf VPS noch ausstehend.
+- Traefik-Routing nutzt feste Container-IP (10.0.1.9) — aendert sich bei Container-Neustart.
+  Ein Restart-Script (`scripts/update-traefik.sh`) auf dem VPS behebt das automatisch.
 - Rate Limiting erst mit NestJS-Backend moeglich (Throttler-Modul vorhanden).
+- SMTP/Push-Notifications noch nicht konfiguriert (leere Env-Vars).
 
 ## Arbeitsregel
 
