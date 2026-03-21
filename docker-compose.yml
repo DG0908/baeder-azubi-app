@@ -64,7 +64,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.azubi-api.rule=Host(`api.smartbaden.de`)"
-      - "traefik.http.routers.azubi-api.entrypoints=websecure"
+      - "traefik.http.routers.azubi-api.entrypoints=https"
       - "traefik.http.routers.azubi-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.azubi-api.loadbalancer.server.port=3000"
     healthcheck:
