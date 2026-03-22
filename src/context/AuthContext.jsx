@@ -2,6 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { PERMISSIONS } from '../data/constants';
 import { triggerWebPushNotification } from '../lib/pushNotifications';
+import { isSecureBackendApiEnabled } from '../lib/secureApiClient';
+import { secureAuthApi, secureUsersApi, mapBackendUserToFrontendUser } from '../lib/secureApi';
+
+const USE_SECURE_API = isSecureBackendApiEnabled();
 
 const AuthContext = createContext(null);
 
@@ -39,7 +43,7 @@ export function AuthProvider({ children }) {
     invitationCode: ''
   });
 
-  // Supabase Session prüfen + Auth-State-Listener
+  // Session prüfen + Auth-State-Listener
   useEffect(() => {
     const checkSession = async () => {
       // Prüfe ob es ein Password-Recovery-Link ist (type=recovery in URL)
@@ -47,9 +51,30 @@ export function AuthProvider({ children }) {
       const urlParams = new URLSearchParams(window.location.search);
       if (hashParams.get('type') === 'recovery' || urlParams.get('type') === 'recovery') {
         setAuthView('reset-password');
-        return; // Nicht einloggen, Reset-Formular zeigen
+        return;
       }
 
+      if (USE_SECURE_API) {
+        // NestJS-Backend: Session über /auth/me prüfen
+        try {
+          const backendUser = await secureAuthApi.me();
+          if (backendUser) {
+            const frontendUser = mapBackendUserToFrontendUser(backendUser);
+            frontendUser.permissions = PERMISSIONS[frontendUser.role] || PERMISSIONS.azubi;
+            setUser(frontendUser);
+            localStorage.setItem('baeder_user', JSON.stringify(frontendUser));
+          }
+        } catch {
+          // Nicht eingeloggt oder Token abgelaufen
+          if (localStorage.getItem('baeder_user')) {
+            setUser(null);
+            localStorage.removeItem('baeder_user');
+          }
+        }
+        return;
+      }
+
+      // Supabase-Pfad (Legacy)
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session?.user) {
@@ -73,7 +98,6 @@ export function AuthProvider({ children }) {
           setUser(userSession);
           localStorage.setItem('baeder_user', JSON.stringify(userSession));
 
-          // Azubi-Profil für Berichtsheft in localStorage speichern (App.jsx liest es reaktiv)
           if (profile.berichtsheft_profile) {
             localStorage.setItem('azubi_profile', JSON.stringify(profile.berichtsheft_profile));
           }
@@ -92,18 +116,21 @@ export function AuthProvider({ children }) {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (import.meta.env.DEV) console.log('Auth state changed:', event);
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        localStorage.removeItem('baeder_user');
-      }
-      if (event === 'PASSWORD_RECOVERY') {
-        setAuthView('reset-password');
-      }
-    });
+    // Supabase Auth-Listener nur wenn Supabase aktiv
+    if (!USE_SECURE_API && supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+        if (import.meta.env.DEV) console.log('Auth state changed:', event);
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          localStorage.removeItem('baeder_user');
+        }
+        if (event === 'PASSWORD_RECOVERY') {
+          setAuthView('reset-password');
+        }
+      });
 
-    return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe();
+    }
   }, []);
 
   const notifyAdminsAboutPendingRegistration = async ({ name, email, role }) => {
@@ -294,6 +321,31 @@ export function AuthProvider({ children }) {
     }
 
     try {
+      if (USE_SECURE_API) {
+        // NestJS-Backend Login
+        const result = await secureAuthApi.login({
+          email: loginEmail.trim(),
+          password: loginPassword
+        });
+
+        const backendUser = result?.user || (await secureAuthApi.me());
+        const frontendUser = mapBackendUserToFrontendUser(backendUser);
+        frontendUser.permissions = PERMISSIONS[frontendUser.role] || PERMISSIONS.azubi;
+
+        if (!frontendUser.approved) {
+          await secureAuthApi.logout();
+          alert('Dein Account wurde noch nicht freigeschaltet. Bitte warte auf die Freigabe durch einen Administrator.');
+          return;
+        }
+
+        setUser(frontendUser);
+        localStorage.setItem('baeder_user', JSON.stringify(frontendUser));
+        setLoginEmail('');
+        setLoginPassword('');
+        return;
+      }
+
+      // Supabase-Pfad (Legacy)
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: loginEmail.trim(),
         password: loginPassword
@@ -347,7 +399,6 @@ export function AuthProvider({ children }) {
       setUser(userSession);
       localStorage.setItem('baeder_user', JSON.stringify(userSession));
 
-      // Initialize stats if not exists
       const { data: existingStats } = await supabase
         .from('user_stats')
         .select('*')
@@ -376,7 +427,11 @@ export function AuthProvider({ children }) {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    if (USE_SECURE_API) {
+      try { await secureAuthApi.logout(); } catch { /* ignore */ }
+    } else {
+      await supabase.auth.signOut();
+    }
     setUser(null);
     localStorage.removeItem('baeder_user');
   };
