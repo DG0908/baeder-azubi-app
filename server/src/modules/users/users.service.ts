@@ -12,6 +12,7 @@ import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApproveUserDto } from './dto/approve-user.dto';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
+import { UpdateUserPermissionsDto } from './dto/update-user-permissions.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 
 const currentUserSelect = {
@@ -24,6 +25,8 @@ const currentUserSelect = {
   role: true,
   status: true,
   canSignReports: true,
+  canViewSchoolCards: true,
+  canViewExamGrades: true,
   organizationId: true,
   organization: {
     select: {
@@ -50,6 +53,8 @@ const adminUserSelect = {
   role: true,
   status: true,
   canSignReports: true,
+  canViewSchoolCards: true,
+  canViewExamGrades: true,
   organizationId: true,
   organization: {
     select: {
@@ -333,6 +338,55 @@ export class UsersService {
         previousOrganizationId: user.organizationId,
         nextOrganizationId: organizationId
       },
+      request
+    );
+
+    return updated;
+  }
+
+  async updatePermissions(
+    actor: AuthenticatedUser,
+    userId: string,
+    dto: UpdateUserPermissionsDto,
+    request: Request
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.isDeleted) {
+      throw new NotFoundException('User not found.');
+    }
+
+    const data: Prisma.UserUpdateInput = {};
+    const metadata: Record<string, unknown> = {};
+
+    if (dto.canSignReports !== undefined) {
+      data.canSignReports = dto.canSignReports;
+      metadata.canSignReports = dto.canSignReports;
+    }
+    if (dto.canViewSchoolCards !== undefined) {
+      data.canViewSchoolCards = dto.canViewSchoolCards;
+      metadata.canViewSchoolCards = dto.canViewSchoolCards;
+    }
+    if (dto.canViewExamGrades !== undefined) {
+      data.canViewExamGrades = dto.canViewExamGrades;
+      metadata.canViewExamGrades = dto.canViewExamGrades;
+    }
+
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestException('No permission updates were provided.');
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: adminUserSelect
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'user.permissions_updated',
+      'user',
+      userId,
+      metadata as Prisma.InputJsonValue,
       request
     );
 

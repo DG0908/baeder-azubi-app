@@ -103,6 +103,8 @@ model User {
   role                 AppRole          @default(AZUBI)
   status               AccountStatus    @default(PENDING)
   canSignReports       Boolean          @default(false)
+  canViewSchoolCards   Boolean          @default(false)
+  canViewExamGrades    Boolean          @default(false)
   reportBookProfile    Json?
   organizationId       String?
   organization         Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)

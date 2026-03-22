@@ -7,6 +7,7 @@ import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.in
 import { ApproveUserDto } from './dto/approve-user.dto';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 import { UpdateUserOrganizationDto } from './dto/update-user-organization.dto';
+import { UpdateUserPermissionsDto } from './dto/update-user-permissions.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UsersService } from './users.service';
 
@@ -76,6 +77,17 @@ export class UsersController {
     @Req() request: Request
   ) {
     return this.usersService.updateOrganization(actor, userId, dto.organizationId ?? null, request);
+  }
+
+  @Roles(AppRole.ADMIN)
+  @Patch(':id/permissions')
+  permissions(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') userId: string,
+    @Body() dto: UpdateUserPermissionsDto,
+    @Req() request: Request
+  ) {
+    return this.usersService.updatePermissions(actor, userId, dto, request);
   }
 
   @Roles(AppRole.ADMIN)

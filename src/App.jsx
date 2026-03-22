@@ -70,9 +70,54 @@ import {
   saveTheoryExamAttempt as dsSaveTheoryExamAttempt,
   loadTheoryExamHistory as dsLoadTheoryExamHistory,
   deletePracticalExamAttempt as dsDsPracticalExamAttempt,
-  saveAppConfig as dsSaveAppConfig
+  saveAppConfig as dsSaveAppConfig,
+  loadSchoolAttendanceAzubis as dsLoadSchoolAttendanceAzubis,
+  loadSchoolAttendance as dsLoadSchoolAttendance,
+  addSchoolAttendanceEntry as dsAddSchoolAttendance,
+  updateSchoolAttendanceSignature as dsUpdateAttendanceSignature,
+  deleteSchoolAttendanceEntry as dsDeleteSchoolAttendance,
+  loadExamGradesAzubis as dsLoadExamGradesAzubis,
+  loadExamGradeEntries as dsLoadExamGrades,
+  addExamGradeEntry as dsAddExamGrade,
+  deleteExamGradeEntry as dsDeleteExamGrade,
+  addMaterialEntry as dsAddMaterial,
+  addResourceEntry as dsAddResource,
+  deleteResourceEntry as dsDeleteResource,
+  addNewsEntry as dsAddNews,
+  deleteNewsEntry as dsDeleteNews,
+  addExamEntry as dsAddExam,
+  deleteExamEntry as dsDeleteExam,
+  approveFlashcardEntry as dsApproveFlashcard,
+  deleteFlashcardEntry as dsDeleteFlashcard,
+  createDuel as dsCreateDuel,
+  acceptDuel as dsAcceptDuel,
+  saveDuelState as dsSaveDuelState,
+  loadSwimSessionEntries as dsLoadSwimSessions,
+  saveSwimSessionEntry as dsSaveSwimSession,
+  confirmSwimSessionEntry as dsConfirmSwimSession,
+  rejectSwimSessionEntry as dsRejectSwimSession,
+  loadCustomSwimTrainingPlanEntries as dsLoadCustomSwimPlans,
+  createCustomSwimTrainingPlanEntry as dsCreateCustomSwimPlan,
+  loadBerichtsheftEntriesFromDb as dsLoadBerichtsheftEntries,
+  saveBerichtsheftEntry as dsSaveBerichtsheft,
+  deleteBerichtsheftEntry as dsDeleteBerichtsheft,
+  loadBerichtsheftPending as dsLoadBerichtsheftPending,
+  assignBerichtsheftTrainerEntry as dsAssignBerichtsheftTrainer,
+  upsertBerichtsheftDraft as dsUpsertBerichtsheftDraft,
+  deleteBerichtsheftDraftByWeek as dsDeleteBerichtsheftDraft,
+  updateBerichtsheftProfile as dsUpdateBerichtsheftProfile,
+  loadPracticalExamAttempts as dsLoadPracticalExamAttempts,
+  savePracticalExamAttemptEntry as dsSavePracticalExamAttempt,
+  reportQuestion as dsReportQuestion,
+  updateQuestionReportStatus as dsUpdateQuestionReportStatus,
+  repairQuizStatsRemote as dsRepairQuizStats,
+  sendTestPushRemote as dsSendTestPush,
+  getAuthorizedReviewers as dsGetAuthorizedReviewers,
+  saveBadges as dsSaveBadges,
+  loadSwimMonthlyResultEntries as dsLoadSwimMonthlyResults,
+  upsertSwimMonthlyResultEntry as dsUpsertSwimMonthlyResult
 } from './lib/dataService';
-import { secureUsersApi } from './lib/secureApi';
+import { secureUsersApi, secureChatApi, secureQuestionWorkflowsApi, secureFlashcardsApi, secureContentApi, secureSchoolAttendanceApi, secureExamGradesApi, secureReportBooksApi, secureSwimSessionsApi, secureSwimTrainingPlansApi, secureDuelsApi, secureNotificationsApi, secureUserStatsApi } from './lib/secureApi';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -2772,16 +2817,10 @@ export default function BaederApp() {
           .filter(Boolean)
       );
 
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('name')
-        .eq('approved', true);
-
-      if (error) throw error;
-
+      // Use allUsers state (already loaded) instead of a separate Supabase query
       const targetNames = [...new Set(
-        (profiles || [])
-          .map(profile => String(profile.name || '').trim())
+        (allUsers || [])
+          .map(u => String(u.name || '').trim())
           .filter(Boolean)
       )].filter(name => !excluded.has(name.toLowerCase()));
 
@@ -3309,85 +3348,52 @@ export default function BaederApp() {
     }
   };
 
-  // Kontrollkarten-Berechtigung für Trainer ändern
-  const toggleSchoolCardPermission = async (userId, currentValue) => {
+  const togglePermission = async (userId, field, currentValue, labels) => {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ can_view_school_cards: !currentValue })
-        .eq('id', userId);
-
-      if (error) throw error;
-
+      if (USE_SECURE_API) {
+        await secureUsersApi.updatePermissions(userId, { [field]: !currentValue });
+      } else {
+        const supabaseField = field === 'canSignReports' ? 'can_sign_reports'
+          : field === 'canViewSchoolCards' ? 'can_view_school_cards'
+          : 'can_view_exam_grades';
+        const { error } = await supabase
+          .from('profiles')
+          .update({ [supabaseField]: !currentValue })
+          .eq('id', userId);
+        if (error) throw error;
+      }
       loadData();
-      showToast(
-        !currentValue
-          ? 'Kontrollkarten-Berechtigung erteilt'
-          : 'Kontrollkarten-Berechtigung entzogen',
-        'success'
-      );
+      showToast(!currentValue ? labels.granted : labels.revoked, 'success');
     } catch (error) {
-      console.error('Error toggling school card permission:', error);
+      console.error(`Error toggling ${field}:`, error);
       showToast('Fehler beim Ändern der Berechtigung', 'error');
     }
   };
 
-  // Berichtsheft-Unterschrift-Berechtigung für Trainer ändern
-  const toggleSignReportsPermission = async (userId, currentValue) => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ can_sign_reports: !currentValue })
-        .eq('id', userId);
+  const toggleSchoolCardPermission = (userId, currentValue) =>
+    togglePermission(userId, 'canViewSchoolCards', currentValue, {
+      granted: 'Kontrollkarten-Berechtigung erteilt',
+      revoked: 'Kontrollkarten-Berechtigung entzogen'
+    });
 
-      if (error) throw error;
+  const toggleSignReportsPermission = (userId, currentValue) =>
+    togglePermission(userId, 'canSignReports', currentValue, {
+      granted: 'Berichtsheft-Unterschrift-Berechtigung erteilt',
+      revoked: 'Berichtsheft-Unterschrift-Berechtigung entzogen'
+    });
 
-      loadData();
-      showToast(
-        !currentValue
-          ? 'Berichtsheft-Unterschrift-Berechtigung erteilt'
-          : 'Berichtsheft-Unterschrift-Berechtigung entzogen',
-        'success'
-      );
-    } catch (error) {
-      console.error('Error toggling sign reports permission:', error);
-      showToast('Fehler beim Ändern der Berechtigung', 'error');
-    }
-  };
-
-  // Klasuren-Berechtigung für Trainer ändern
-  const toggleExamGradesPermission = async (userId, currentValue) => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ can_view_exam_grades: !currentValue })
-        .eq('id', userId);
-      if (error) throw error;
-      loadData();
-      showToast(
-        !currentValue
-          ? 'Klasuren-Berechtigung erteilt'
-          : 'Klasuren-Berechtigung entzogen',
-        'success'
-      );
-    } catch (error) {
-      console.error('Error toggling exam grades permission:', error);
-      showToast('Fehler beim Ändern der Berechtigung', 'error');
-    }
-  };
+  const toggleExamGradesPermission = (userId, currentValue) =>
+    togglePermission(userId, 'canViewExamGrades', currentValue, {
+      granted: 'Klasuren-Berechtigung erteilt',
+      revoked: 'Klasuren-Berechtigung entzogen'
+    });
 
   const repairQuizStats = async () => {
     if (!user?.permissions?.canManageUsers) {
       throw new Error('Keine Berechtigung für den Statistik-Repair.');
     }
 
-    const responseData = await fetchPushBackendWithAuth({
-      supabase,
-      pathname: '/api/admin/repair-quiz-stats',
-      method: 'POST',
-      body: {}
-    });
-
+    const responseData = await dsRepairQuizStats(supabase, fetchPushBackendWithAuth);
     await loadData();
     return responseData;
   };
@@ -3407,21 +3413,14 @@ export default function BaederApp() {
         )]
       : [String(user.name || '').trim()].filter(Boolean);
 
-    const responseData = await fetchPushBackendWithAuth({
-      supabase,
-      pathname: '/api/push/test',
-      method: 'POST',
-      body: {
-        delaySeconds: 15,
-        targetScope,
-        userName: user.name || '',
-        email: user.email || '',
-        organizationId: user.organizationId || null,
-        targetUserNames: requestedTargetUserNames
-      }
-    });
+    const payload = {
+      delaySeconds: 15, targetScope,
+      userName: user.name || '', email: user.email || '',
+      organizationId: user.organizationId || null,
+      targetUserNames: requestedTargetUserNames
+    };
 
-    return responseData;
+    return dsSendTestPush(supabase, fetchPushBackendWithAuth, payload);
   };
 
   // Profil-Bearbeitung: Name ändern
@@ -3470,91 +3469,72 @@ export default function BaederApp() {
     }
 
     try {
-      let timerColumnsUnavailable = false;
-      const basePayload = {
-        player1: user.name,
-        player2: opponent,
-        difficulty: selectedDifficulty,
-        status: 'waiting',
-        round: 0,
-        player1_score: 0,
-        player2_score: 0,
-        current_turn: user.name,
-        rounds_data: []
-      };
-      const payloadWithTimer = {
-        ...basePayload,
-        challenge_timeout_minutes: timeoutMinutes,
-        challenge_expires_at: challengeExpiresAt
-      };
+      let game;
+      if (USE_SECURE_API) {
+        game = await dsCreateDuel(supabase, {
+          player1: user.name, player2: opponent, difficulty: selectedDifficulty,
+          challengeTimeoutMinutes: timeoutMinutes, challengeExpiresAt
+        });
+      } else {
+        let timerColumnsUnavailable = false;
+        const basePayload = {
+          player1: user.name, player2: opponent, difficulty: selectedDifficulty,
+          status: 'waiting', round: 0, player1_score: 0, player2_score: 0,
+          current_turn: user.name, rounds_data: []
+        };
+        const payloadWithTimer = {
+          ...basePayload,
+          challenge_timeout_minutes: timeoutMinutes,
+          challenge_expires_at: challengeExpiresAt
+        };
 
-      let data = null;
-      let error = null;
-      const insertWithTimer = await supabase
-        .from('games')
-        .insert([payloadWithTimer])
-        .select()
-        .single();
-      data = insertWithTimer.data;
-      error = insertWithTimer.error;
+        let data = null;
+        let error = null;
+        const insertWithTimer = await supabase
+          .from('games').insert([payloadWithTimer]).select().single();
+        data = insertWithTimer.data;
+        error = insertWithTimer.error;
 
-      if (error && error.code === '42703' && (
-        String(error.message || '').includes('challenge_timeout_minutes')
-        || String(error.message || '').includes('challenge_expires_at')
-      )) {
-        timerColumnsUnavailable = true;
-        const legacyInsert = await supabase
-          .from('games')
-          .insert([basePayload])
-          .select()
-          .single();
-        data = legacyInsert.data;
-        error = legacyInsert.error;
+        if (error && error.code === '42703' && (
+          String(error.message || '').includes('challenge_timeout_minutes')
+          || String(error.message || '').includes('challenge_expires_at')
+        )) {
+          timerColumnsUnavailable = true;
+          const legacyInsert = await supabase
+            .from('games').insert([basePayload]).select().single();
+          data = legacyInsert.data;
+          error = legacyInsert.error;
+        }
+        if (error) throw error;
+
+        game = {
+          id: data.id, player1: data.player1, player2: data.player2,
+          difficulty: data.difficulty, status: data.status,
+          categoryRound: 0, round: 0,
+          player1Score: data.player1_score, player2Score: data.player2_score,
+          currentTurn: data.current_turn, categoryRounds: [], questionHistory: [],
+          updatedAt: data.updated_at || new Date().toISOString(),
+          createdAt: data.created_at || new Date().toISOString(),
+          challengeTimeoutMinutes: timerColumnsUnavailable ? DEFAULT_CHALLENGE_TIMEOUT_MINUTES : timeoutMinutes,
+          challengeExpiresAt: timerColumnsUnavailable ? null : (data.challenge_expires_at || challengeExpiresAt)
+        };
+
+        if (timerColumnsUnavailable) {
+          showToast('Herausforderung gesendet. Timer-Spalten fehlen in Supabase, aktuell gilt 48h Standard.', 'warning');
+        }
       }
-
-      if (error) throw error;
-
-      const game = {
-        id: data.id,
-        player1: data.player1,
-        player2: data.player2,
-        difficulty: data.difficulty,
-        status: data.status,
-        categoryRound: 0, // 0-3 (4 Kategorien)
-        round: 0,
-        player1Score: data.player1_score,
-        player2Score: data.player2_score,
-        currentTurn: data.current_turn,
-        categoryRounds: [], // Speichert alle Kategorie-Runden mit Fragen
-        questionHistory: [],
-        updatedAt: data.updated_at || new Date().toISOString(),
-        createdAt: data.created_at || new Date().toISOString(),
-        challengeTimeoutMinutes: timerColumnsUnavailable
-          ? DEFAULT_CHALLENGE_TIMEOUT_MINUTES
-          : timeoutMinutes,
-        challengeExpiresAt: timerColumnsUnavailable
-          ? null
-          : (data.challenge_expires_at || challengeExpiresAt)
-      };
 
       setActiveGames([...activeGames, game]);
       setSelectedOpponent(null);
 
-      const effectiveTimeoutMinutes = timerColumnsUnavailable
-        ? DEFAULT_CHALLENGE_TIMEOUT_MINUTES
-        : timeoutMinutes;
       await sendNotification(
         opponent,
         '🎮 Neue Quizduell-Herausforderung',
-        `${user.name} hat dich herausgefordert. Annahmefrist: ${formatDurationMinutesCompact(effectiveTimeoutMinutes)}.`,
+        `${user.name} hat dich herausgefordert. Annahmefrist: ${formatDurationMinutesCompact(game.challengeTimeoutMinutes || timeoutMinutes)}.`,
         'info'
       );
 
-      if (timerColumnsUnavailable) {
-        showToast('Herausforderung gesendet. Timer-Spalten fehlen in Supabase, aktuell gilt 48h Standard.', 'warning');
-      } else {
-        showToast(`Herausforderung an ${opponent} gesendet! Frist: ${formatDurationMinutesCompact(timeoutMinutes)}.`, 'success');
-      }
+      showToast(`Herausforderung an ${opponent} gesendet! Frist: ${formatDurationMinutesCompact(game.challengeTimeoutMinutes || timeoutMinutes)}.`, 'success');
     } catch (error) {
       console.error('Challenge error:', error);
       showToast('Fehler beim Senden der Herausforderung', 'error');
@@ -3575,15 +3555,7 @@ export default function BaederApp() {
 
     try {
       const acceptedAt = new Date().toISOString();
-      const { error } = await supabase
-        .from('games')
-        .update({
-          status: 'active',
-          updated_at: acceptedAt
-        })
-        .eq('id', gameId);
-
-      if (error) throw error;
+      await dsAcceptDuel(supabase, gameId);
 
       game.status = 'active';
       game.categoryRound = 0;
@@ -3673,30 +3645,10 @@ export default function BaederApp() {
     setCurrentView('quiz');
   };
 
-  // Helper function to save game state to Supabase
+  // Helper function to save game state
   const saveGameToSupabase = async (game) => {
     try {
-      const updateData = {
-        player1_score: game.player1Score,
-        player2_score: game.player2Score,
-        current_turn: game.currentTurn,
-        round: game.categoryRound || 0,
-        status: game.status,
-        rounds_data: game.categoryRounds || [],
-        updated_at: new Date().toISOString()
-      };
-
-      // Winner-Feld nur setzen wenn Spiel beendet ist
-      if (game.status === 'finished') {
-        updateData.winner = game.winner || null;
-      }
-
-      const { error } = await supabase
-        .from('games')
-        .update(updateData)
-        .eq('id', game.id);
-
-      if (error) throw error;
+      await dsSaveDuelState(supabase, game);
     } catch (error) {
       console.error('Save game error:', error);
     }
@@ -3717,6 +3669,12 @@ export default function BaederApp() {
 
     const userName = String(userInput || '').trim();
     if (!userName) return null;
+
+    if (USE_SECURE_API) {
+      // In secure mode, try to find user in allUsers state
+      const match = allUsers.find(u => String(u.name || '').toLowerCase() === userName.toLowerCase());
+      return match ? { userId: match.id, userName: match.name } : null;
+    }
 
     const { data: matchingProfiles, error } = await supabase
       .from('profiles')
@@ -4038,22 +3996,17 @@ export default function BaederApp() {
 
     let savedRemotely = false;
     try {
-      const { error } = await supabase
-        .from('question_reports')
-        .insert([{
-          question_key: payload.questionKey,
-          question_text: payload.questionText,
-          category: payload.category,
-          source: payload.source,
-          note: payload.note || null,
-          answers: payload.answers,
-          reported_by: payload.reportedBy,
-          reported_by_id: payload.reportedById,
-          status: payload.status
-        }]);
-      if (!error) {
-        savedRemotely = true;
-      }
+      await dsReportQuestion(supabase, {
+        questionKey: payload.questionKey, questionText: payload.questionText,
+        category: payload.category, source: payload.source,
+        note: payload.note || null, answers: payload.answers,
+        reportedBy: payload.reportedBy, reportedById: payload.reportedById,
+        status: payload.status,
+        // Supabase-format fields for fallback
+        question_key: payload.questionKey, question_text: payload.questionText,
+        reported_by: payload.reportedBy, reported_by_id: payload.reportedById
+      });
+      savedRemotely = true;
     } catch (error) {
       console.log('question_reports table unavailable, fallback local only');
     }
@@ -4079,10 +4032,7 @@ export default function BaederApp() {
     )));
     if (!String(reportId).startsWith('local-')) {
       try {
-        await supabase
-          .from('question_reports')
-          .update({ status: nextStatus })
-          .eq('id', reportId);
+        await dsUpdateQuestionReportStatus(supabase, reportId, nextStatus);
       } catch {
         // local state remains source of truth when remote update fails
       }
@@ -4771,24 +4721,43 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .insert([{
-          user_name: user.name,
-          user_avatar: user.avatar || null,
-          user_role: user.role,
-          sender_id: user.id,
-          organization_id: user.organizationId,
-          chat_scope: activeScope,
-          recipient_id: recipient?.id || null,
-          content: newMessage.trim()
-        }])
-        .select('*')
-        .single();
-
-      if (error) throw error;
-
-      const msg = normalizeChatMessageRow(data);
+      let msg;
+      if (USE_SECURE_API) {
+        const result = await secureChatApi.create({
+          content: newMessage.trim(),
+          scope: activeScope,
+          recipientId: recipient?.id || null
+        });
+        msg = {
+          id: result.id,
+          sender: user.name,
+          text: result.content || newMessage.trim(),
+          time: new Date(result.createdAt || Date.now()).getTime(),
+          avatar: user.avatar || null,
+          senderId: user.id,
+          senderRole: user.role,
+          scope: activeScope,
+          organizationId: user.organizationId,
+          recipientId: recipient?.id || null
+        };
+      } else {
+        const { data, error } = await supabase
+          .from('messages')
+          .insert([{
+            user_name: user.name,
+            user_avatar: user.avatar || null,
+            user_role: user.role,
+            sender_id: user.id,
+            organization_id: user.organizationId,
+            chat_scope: activeScope,
+            recipient_id: recipient?.id || null,
+            content: newMessage.trim()
+          }])
+          .select('*')
+          .single();
+        if (error) throw error;
+        msg = normalizeChatMessageRow(data);
+      }
 
       setMessages((prev) => [...prev, msg]);
       setNewMessage('');
@@ -4823,31 +4792,39 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('custom_questions')
-        .insert([{
+      let q;
+      if (USE_SECURE_API) {
+        const result = await secureQuestionWorkflowsApi.createSubmission({
           category: newQuestionCategory,
           question: newQuestionText,
           answers: newQuestionAnswers,
-          correct: newQuestionCorrect,
-          created_by: user.name,
-          approved: false
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const q = {
-        id: data.id,
-        text: data.question,
-        category: data.category,
-        answers: data.answers,
-        correct: data.correct,
-        submittedBy: data.created_by,
-        approved: data.approved,
-        time: new Date(data.created_at).getTime()
-      };
+          correctIndex: newQuestionCorrect
+        });
+        q = {
+          id: result.id, text: result.question || newQuestionText,
+          category: result.category || newQuestionCategory,
+          answers: result.answers || newQuestionAnswers,
+          correct: result.correctIndex ?? result.correct ?? newQuestionCorrect,
+          submittedBy: user.name, approved: false,
+          time: new Date(result.createdAt || Date.now()).getTime()
+        };
+      } else {
+        const { data, error } = await supabase
+          .from('custom_questions')
+          .insert([{
+            category: newQuestionCategory, question: newQuestionText,
+            answers: newQuestionAnswers, correct: newQuestionCorrect,
+            created_by: user.name, approved: false
+          }])
+          .select().single();
+        if (error) throw error;
+        q = {
+          id: data.id, text: data.question, category: data.category,
+          answers: data.answers, correct: data.correct,
+          submittedBy: data.created_by, approved: data.approved,
+          time: new Date(data.created_at).getTime()
+        };
+      }
 
       setSubmittedQuestions([...submittedQuestions, q]);
       setNewQuestionText('');
@@ -4861,13 +4838,15 @@ export default function BaederApp() {
 
   const approveQuestion = async (qId) => {
     try {
-      const { error } = await supabase
-        .from('custom_questions')
-        .update({ approved: true })
-        .eq('id', qId);
-
-      if (error) throw error;
-
+      if (USE_SECURE_API) {
+        await secureQuestionWorkflowsApi.approveSubmission(qId);
+      } else {
+        const { error } = await supabase
+          .from('custom_questions')
+          .update({ approved: true })
+          .eq('id', qId);
+        if (error) throw error;
+      }
       setSubmittedQuestions(submittedQuestions.map(sq => sq.id === qId ? { ...sq, approved: true } : sq));
     } catch (error) {
       console.error('Approve error:', error);
@@ -5057,28 +5036,9 @@ export default function BaederApp() {
     const canManageAll = Boolean(user?.permissions?.canViewAllStats);
 
     try {
-      let query = supabase
-        .from('practical_exam_attempts')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const rawAttempts = await dsLoadPracticalExamAttempts(supabase, user.id, canManageAll);
 
-      if (!canManageAll) {
-        query = query.eq('user_id', user.id);
-      }
-
-      const { data, error } = await query;
-      if (error) {
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
-          const filteredLocal = canManageAll
-            ? localAttempts
-            : localAttempts.filter(entry => entry.user_id === user.id);
-          setPracticalExamHistory(filteredLocal.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-          return;
-        }
-        throw error;
-      }
-
-      const remoteAttempts = (data || [])
+      const remoteAttempts = (rawAttempts || [])
         .map(normalizePracticalAttempt)
         .filter(Boolean);
 
@@ -5141,13 +5101,7 @@ export default function BaederApp() {
         created_by_name: user?.name || null
       };
 
-      const { data, error } = await supabase
-        .from('practical_exam_attempts')
-        .insert([insertPayload])
-        .select()
-        .single();
-
-      if (error) throw error;
+      const data = await dsSavePracticalExamAttempt(supabase, insertPayload);
 
       const savedAttempt = normalizePracticalAttempt({ ...data, source: 'remote' });
       if (savedAttempt) {
@@ -5562,15 +5516,8 @@ export default function BaederApp() {
   const loadAzubisForSchoolCard = async () => {
     if (!canViewAllSchoolCards()) return;
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, name, email')
-        .eq('role', 'azubi')
-        .eq('approved', true)
-        .order('name');
-
-      if (error) throw error;
-      setAllAzubisForSchoolCard(data || []);
+      const data = await dsLoadSchoolAttendanceAzubis(supabase);
+      setAllAzubisForSchoolCard(data);
     } catch (err) {
       console.error('Fehler beim Laden der Azubis:', err);
     }
@@ -5579,17 +5526,9 @@ export default function BaederApp() {
   const loadSchoolAttendance = async (targetUserId = null) => {
     if (!user) return;
     try {
-      // Bestimme welche User-ID geladen werden soll
       const userIdToLoad = targetUserId || selectedSchoolCardUser?.id || user.id;
-
-      const { data, error } = await supabase
-        .from('school_attendance')
-        .select('*')
-        .eq('user_id', userIdToLoad)
-        .order('date', { ascending: false });
-
-      if (error) throw error;
-      setSchoolAttendance(data || []);
+      const data = await dsLoadSchoolAttendance(supabase, userIdToLoad);
+      setSchoolAttendance(data);
     } catch (err) {
       console.error('Fehler beim Laden der Kontrollkarte:', err);
     }
@@ -5602,49 +5541,34 @@ export default function BaederApp() {
     }
 
     try {
-      const { error } = await supabase
-        .from('school_attendance')
-        .insert({
-          user_id: user.id,
-          user_name: user.name,
-          date: newAttendanceDate,
-          start_time: newAttendanceStart,
-          end_time: newAttendanceEnd,
-          teacher_signature: newAttendanceTeacherSig,
-          trainer_signature: newAttendanceTrainerSig
-        });
+      await dsAddSchoolAttendance(supabase, {
+        userId: user.id, userName: user.name, date: newAttendanceDate,
+        startTime: newAttendanceStart, endTime: newAttendanceEnd,
+        teacherSignature: newAttendanceTeacherSig, trainerSignature: newAttendanceTrainerSig,
+        // Supabase-format fields for fallback
+        user_id: user.id, user_name: user.name,
+        start_time: newAttendanceStart, end_time: newAttendanceEnd,
+        teacher_signature: newAttendanceTeacherSig, trainer_signature: newAttendanceTrainerSig
+      });
 
-      if (error) throw error;
-
-      // Benachrichtigung an berechtigte Trainer/Admins senden
-      const { data: authorizedUsers } = await supabase
-        .from('profiles')
-        .select('id,name')
-        .or('role.eq.admin,can_view_school_cards.eq.true');
-
-      if (authorizedUsers) {
-        for (const authUser of authorizedUsers) {
-          if (authUser.id !== user.id && authUser.name) {
-            await sendNotification(
-              authUser.name,
-              '📝 Neuer Kontrollkarten-Eintrag',
-              `${user.name} hat einen neuen Berufsschul-Eintrag vom ${new Date(newAttendanceDate).toLocaleDateString('de-DE')} hinzugefuegt.`,
-              'school_card'
-            );
-          }
+      const authorizedUsers = await dsGetAuthorizedReviewers(supabase, 'can_view_school_cards');
+      for (const authUser of authorizedUsers) {
+        if (authUser.id !== user.id && authUser.name) {
+          await sendNotification(
+            authUser.name,
+            '📝 Neuer Kontrollkarten-Eintrag',
+            `${user.name} hat einen neuen Berufsschul-Eintrag vom ${new Date(newAttendanceDate).toLocaleDateString('de-DE')} hinzugefuegt.`,
+            'school_card'
+          );
         }
       }
 
-      // Reset form
       setNewAttendanceDate('');
       setNewAttendanceStart('');
       setNewAttendanceEnd('');
       setNewAttendanceTeacherSig('');
       setNewAttendanceTrainerSig('');
-
       showToast('Eintrag gespeichert!', 'success');
-
-      // Reload data
       loadSchoolAttendance();
     } catch (err) {
       console.error('Fehler beim Speichern:', err);
@@ -5654,12 +5578,7 @@ export default function BaederApp() {
 
   const updateAttendanceSignature = async (id, field, value) => {
     try {
-      const { error } = await supabase
-        .from('school_attendance')
-        .update({ [field]: value })
-        .eq('id', id);
-
-      if (error) throw error;
+      await dsUpdateAttendanceSignature(supabase, id, field, value);
       loadSchoolAttendance();
     } catch (err) {
       console.error('Fehler beim Aktualisieren:', err);
@@ -5669,12 +5588,7 @@ export default function BaederApp() {
   const deleteSchoolAttendance = async (id) => {
     if (!confirm('Eintrag wirklich löschen?')) return;
     try {
-      const { error } = await supabase
-        .from('school_attendance')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await dsDeleteSchoolAttendance(supabase, id);
       loadSchoolAttendance();
     } catch (err) {
       console.error('Fehler beim Löschen:', err);
@@ -5690,14 +5604,8 @@ export default function BaederApp() {
   const loadAzubisForExamGrades = async () => {
     if (!canViewAllExamGrades()) return;
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, name, email')
-        .eq('role', 'azubi')
-        .eq('approved', true)
-        .order('name');
-      if (error) throw error;
-      setAllAzubisForExamGrades(data || []);
+      const data = await dsLoadExamGradesAzubis(supabase);
+      setAllAzubisForExamGrades(data);
     } catch (err) {
       console.error('Fehler beim Laden der Azubis für Klasuren:', err);
     }
@@ -5707,13 +5615,8 @@ export default function BaederApp() {
     if (!user) return;
     try {
       const userIdToLoad = targetUserId || selectedExamGradesUser?.id || user.id;
-      const { data, error } = await supabase
-        .from('exam_grades')
-        .select('*')
-        .eq('user_id', userIdToLoad)
-        .order('date', { ascending: false });
-      if (error) throw error;
-      setExamGrades(data || []);
+      const data = await dsLoadExamGrades(supabase, userIdToLoad);
+      setExamGrades(data);
     } catch (err) {
       console.error('Fehler beim Laden der Klasuren:', err);
     }
@@ -5721,35 +5624,20 @@ export default function BaederApp() {
 
   const addExamGrade = async ({ date, subject, topic, grade, notes }) => {
     try {
-      const { error } = await supabase
-        .from('exam_grades')
-        .insert({
-          user_id: user.id,
-          user_name: user.name,
-          date,
-          subject,
-          topic,
-          grade,
-          notes
-        });
-      if (error) throw error;
+      await dsAddExamGrade(supabase, {
+        userId: user.id, userName: user.name, date, subject, topic, grade, notes,
+        user_id: user.id, user_name: user.name
+      });
 
-      // Benachrichtigung an berechtigte Trainer/Admins
-      const { data: authorizedUsers } = await supabase
-        .from('profiles')
-        .select('id,name')
-        .or('role.eq.admin,can_view_exam_grades.eq.true');
-
-      if (authorizedUsers) {
-        for (const authUser of authorizedUsers) {
-          if (authUser.id !== user.id && authUser.name) {
-            await sendNotification(
-              authUser.name,
-              '📝 Neue Klasur eingetragen',
-              `${user.name} hat eine ${subject}-Klasur vom ${new Date(date).toLocaleDateString('de-DE')} eingetragen: Note ${grade.toFixed(1).replace('.', ',')}`,
-              'exam_grade'
-            );
-          }
+      const authorizedUsers = await dsGetAuthorizedReviewers(supabase, 'can_view_exam_grades');
+      for (const authUser of authorizedUsers) {
+        if (authUser.id !== user.id && authUser.name) {
+          await sendNotification(
+            authUser.name,
+            '📝 Neue Klasur eingetragen',
+            `${user.name} hat eine ${subject}-Klasur vom ${new Date(date).toLocaleDateString('de-DE')} eingetragen: Note ${grade.toFixed(1).replace('.', ',')}`,
+            'exam_grade'
+          );
         }
       }
 
@@ -5764,11 +5652,7 @@ export default function BaederApp() {
   const deleteExamGrade = async (id) => {
     if (!confirm('Klasur wirklich löschen?')) return;
     try {
-      const { error } = await supabase
-        .from('exam_grades')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
+      await dsDeleteExamGrade(supabase, id);
       showToast('Klasur gelöscht', 'success');
       loadExamGrades();
     } catch (err) {
@@ -5782,13 +5666,7 @@ export default function BaederApp() {
   const loadBerichtsheftEntries = async () => {
     if (!user) return;
     try {
-      const { data, error } = await supabase
-        .from('berichtsheft')
-        .select('*')
-        .eq('user_name', user.name)
-        .order('week_start', { ascending: false });
-
-      if (error) throw error;
+      const data = await dsLoadBerichtsheftEntries(supabase, user.name);
       const allEntries = Array.isArray(data) ? data : [];
       const submittedEntries = allEntries.filter((entry) => !isBerichtsheftDraft(entry));
       setBerichtsheftEntries(submittedEntries);
@@ -5823,24 +5701,9 @@ export default function BaederApp() {
     if (!normalizedAzubiName) return;
 
     try {
-      const { data: reviewers, error: reviewersError } = await supabase
-        .from('profiles')
-        .select('name,role,approved,can_sign_reports')
-        .eq('approved', true);
-
-      if (reviewersError) {
-        console.warn('Reviewer lookup for berichtsheft notification failed:', reviewersError);
-        return;
-      }
-
+      const reviewers = await dsGetAuthorizedReviewers(supabase, 'can_sign_reports');
       const reviewerNames = [...new Set(
-        (reviewers || [])
-          .filter((profile) => {
-            const role = String(profile?.role || '').trim().toLowerCase();
-            return role === 'admin' || role === 'trainer' || role === 'ausbilder' || Boolean(profile?.can_sign_reports);
-          })
-          .map((profile) => String(profile?.name || '').trim())
-          .filter(Boolean)
+        reviewers.map((r) => String(r?.name || '').trim()).filter(Boolean)
       )].filter((name) => name !== normalizedAzubiName);
 
       if (reviewerNames.length === 0) return;
@@ -5876,13 +5739,7 @@ export default function BaederApp() {
 
     setBerichtsheftPendingLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('berichtsheft')
-        .select('*')
-        .order('week_start', { ascending: false });
-
-      if (error) throw error;
-
+      const data = await dsLoadBerichtsheftPending(supabase);
       const allEntries = Array.isArray(data) ? data : [];
       let pending = allEntries.filter((entry) =>
         !isBerichtsheftDraft(entry)
@@ -5924,15 +5781,11 @@ export default function BaederApp() {
         assigned_trainer_id: trainerId,
         assigned_trainer_name: trainer.name || null,
         assigned_by_id: user?.id || null,
-        assigned_at: new Date().toISOString()
+        assigned_at: new Date().toISOString(),
+        trainerId, trainerName: trainer.name || null
       };
 
-      const { error } = await supabase
-        .from('berichtsheft')
-        .update(payload)
-        .eq('id', entryId);
-
-      if (error) throw error;
+      await dsAssignBerichtsheftTrainer(supabase, entryId, payload);
 
       setBerichtsheftPendingSignatures((prev) => prev.map((entry) => (
         entry.id === entryId
@@ -5942,7 +5795,7 @@ export default function BaederApp() {
       showToast(`Berichtsheft wurde ${trainer.name} zugewiesen.`, 'success');
     } catch (err) {
       console.error('Fehler beim Zuweisen des Berichtshefts:', err);
-      showToast('Zuweisung fehlgeschlagen. Bitte Supabase-Migration prüfen.', 'error');
+      showToast('Zuweisung fehlgeschlagen.', 'error');
     }
   };
 
@@ -6069,14 +5922,17 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('berichtsheft')
-        .select('*')
-        .eq('user_name', user.name)
-        .eq('status', 'draft')
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
+      let data;
+      if (USE_SECURE_API) {
+        const entries = await dsLoadBerichtsheftEntries(supabase, user.name);
+        data = entries.filter(e => e.status === 'draft');
+      } else {
+        const result = await supabase
+          .from('berichtsheft').select('*').eq('user_name', user.name)
+          .eq('status', 'draft').order('updated_at', { ascending: false });
+        if (result.error) throw result.error;
+        data = result.data;
+      }
 
       const map = {};
       (Array.isArray(data) ? data : []).forEach((row) => {
@@ -6107,18 +5963,19 @@ export default function BaederApp() {
     if (cached?.id) return cached;
 
     try {
-      const { data, error } = await supabase
-        .from('berichtsheft')
-        .select('*')
-        .eq('user_name', user.name)
-        .eq('week_start', week)
-        .eq('status', 'draft')
-        .order('updated_at', { ascending: false })
-        .limit(1);
-
-      if (error) throw error;
-
-      const row = Array.isArray(data) && data.length > 0 ? data[0] : null;
+      let row = null;
+      if (USE_SECURE_API) {
+        const entries = await dsLoadBerichtsheftEntries(supabase, user.name);
+        const drafts = entries.filter(e => e.status === 'draft' && String(e.week_start || '').trim() === week);
+        row = drafts.length > 0 ? drafts[0] : null;
+      } else {
+        const { data, error } = await supabase
+          .from('berichtsheft').select('*').eq('user_name', user.name)
+          .eq('week_start', week).eq('status', 'draft')
+          .order('updated_at', { ascending: false }).limit(1);
+        if (error) throw error;
+        row = Array.isArray(data) && data.length > 0 ? data[0] : null;
+      }
       if (row) upsertBerichtsheftServerDraft(row);
       return row;
     } catch (error) {
@@ -6163,11 +6020,12 @@ export default function BaederApp() {
     if (!hasContent) {
       if (existingDraft?.id) {
         try {
-          const { error } = await supabase
-            .from('berichtsheft')
-            .delete()
-            .eq('id', existingDraft.id);
-          if (error) throw error;
+          if (USE_SECURE_API) {
+            await dsDeleteBerichtsheftDraft(supabase, targetWeek);
+          } else {
+            const { error } = await supabase.from('berichtsheft').delete().eq('id', existingDraft.id);
+            if (error) throw error;
+          }
           removeBerichtsheftServerDraft(targetWeek);
         } catch (error) {
           disableBerichtsheftRemoteDrafts(error);
@@ -6180,43 +6038,38 @@ export default function BaederApp() {
     }
 
     const payload = {
-      user_name: user.name,
-      week_start: targetWeek,
-      week_end: getWeekEndDate(targetWeek),
-      ausbildungsjahr: snapshot.ausbildungsjahr,
-      nachweis_nr: snapshot.nachweis_nr,
+      user_name: user.name, userName: user.name,
+      week_start: targetWeek, weekStart: targetWeek,
+      week_end: getWeekEndDate(targetWeek), weekEnd: getWeekEndDate(targetWeek),
+      ausbildungsjahr: snapshot.ausbildungsjahr, trainingYear: snapshot.ausbildungsjahr,
+      nachweis_nr: snapshot.nachweis_nr, reportNumber: snapshot.nachweis_nr,
       entries: snapshot.entries,
-      bemerkung_azubi: snapshot.bemerkung_azubi,
-      bemerkung_ausbilder: snapshot.bemerkung_ausbilder,
-      signatur_azubi: snapshot.signatur_azubi,
-      signatur_ausbilder: snapshot.signatur_ausbilder,
-      datum_azubi: snapshot.datum_azubi || null,
-      datum_ausbilder: snapshot.datum_ausbilder || null,
+      bemerkung_azubi: snapshot.bemerkung_azubi, azubiRemarks: snapshot.bemerkung_azubi,
+      bemerkung_ausbilder: snapshot.bemerkung_ausbilder, trainerRemarks: snapshot.bemerkung_ausbilder,
+      signatur_azubi: snapshot.signatur_azubi, azubiSignature: snapshot.signatur_azubi,
+      signatur_ausbilder: snapshot.signatur_ausbilder, trainerSignature: snapshot.signatur_ausbilder,
+      datum_azubi: snapshot.datum_azubi || null, azubiDate: snapshot.datum_azubi || null,
+      datum_ausbilder: snapshot.datum_ausbilder || null, trainerDate: snapshot.datum_ausbilder || null,
       total_hours: calculateTotalHoursFromEntries(snapshot.entries),
+      totalHours: calculateTotalHoursFromEntries(snapshot.entries),
       status: 'draft'
     };
 
     try {
       let savedRow = null;
-      if (existingDraft?.id) {
-        const { data, error } = await supabase
-          .from('berichtsheft')
-          .update(payload)
-          .eq('id', existingDraft.id)
-          .select('*')
-          .single();
+      if (USE_SECURE_API) {
+        savedRow = await dsUpsertBerichtsheftDraft(supabase, payload);
+      } else if (existingDraft?.id) {
+        const { data, error } = await supabase.from('berichtsheft')
+          .update(payload).eq('id', existingDraft.id).select('*').single();
         if (error) throw error;
         savedRow = data || null;
       } else {
-        const { data, error } = await supabase
-          .from('berichtsheft')
-          .insert(payload)
-          .select('*')
-          .single();
+        const { data, error } = await supabase.from('berichtsheft')
+          .insert(payload).select('*').single();
         if (error) throw error;
         savedRow = data || null;
       }
-
       if (savedRow) upsertBerichtsheftServerDraft(savedRow);
     } catch (error) {
       disableBerichtsheftRemoteDrafts(error);
@@ -6247,12 +6100,12 @@ export default function BaederApp() {
     }
 
     try {
-      const { error } = await supabase
-        .from('berichtsheft')
-        .delete()
-        .eq('id', existingDraft.id);
-
-      if (error) throw error;
+      if (USE_SECURE_API) {
+        await dsDeleteBerichtsheftDraft(supabase, week);
+      } else {
+        const { error } = await supabase.from('berichtsheft').delete().eq('id', existingDraft.id);
+        if (error) throw error;
+      }
       removeBerichtsheftServerDraft(week);
     } catch (error) {
       disableBerichtsheftRemoteDrafts(error);
@@ -6336,25 +6189,18 @@ export default function BaederApp() {
     setBerichtsheftWeek(targetWeek);
   };
 
-  // Azubi-Profil speichern (localStorage sofort + Supabase debounced)
+  // Azubi-Profil speichern (localStorage sofort + Backend debounced)
   const saveAzubiProfile = (newProfile) => {
     setAzubiProfile(newProfile);
     localStorage.setItem('azubi_profile', JSON.stringify(newProfile));
 
-    // Debounced Supabase-Speicherung (1 Sekunde nach letzter Änderung)
     if (azubiProfileSaveTimerRef.current) {
       clearTimeout(azubiProfileSaveTimerRef.current);
     }
     azubiProfileSaveTimerRef.current = setTimeout(async () => {
       if (user?.id) {
         try {
-          const { error } = await supabase
-            .from('profiles')
-            .update({ berichtsheft_profile: newProfile })
-            .eq('id', user.id);
-          if (error) {
-            console.warn('Berichtsheft-Profil Supabase-Sync Fehler:', error.message);
-          }
+          await dsUpdateBerichtsheftProfile(supabase, user.id, newProfile);
         } catch (err) {
           console.warn('Berichtsheft-Profil Sync fehlgeschlagen:', err);
         }
@@ -6488,20 +6334,7 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('swim_training_plans_custom')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
-          setCustomSwimTrainingPlans([]);
-          return;
-        }
-        throw error;
-      }
-
+      const data = await dsLoadCustomSwimPlans(supabase);
       const normalizedPlans = (Array.isArray(data) ? data : []).map(normalizeCustomSwimTrainingPlan);
       const canManageAllPlans = Boolean(
         user?.permissions?.canViewAllStats
@@ -6591,28 +6424,7 @@ export default function BaederApp() {
     };
 
     try {
-      const { data, error } = await supabase
-        .from('swim_training_plans_custom')
-        .insert([insertPayload])
-        .select()
-        .single();
-
-      if (error) {
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
-          return {
-            success: false,
-            error: 'Die Tabelle swim_training_plans_custom fehlt noch in Supabase. Bitte Migration ausführen.'
-          };
-        }
-        if (error.code === '42703' && String(error.message || '').includes('units_json')) {
-          return {
-            success: false,
-            error: 'Die Spalte units_json fehlt in swim_training_plans_custom. Bitte das aktuelle Supabase-SQL für Trainingsplaene ausführen.'
-          };
-        }
-        throw error;
-      }
-
+      const data = await dsCreateCustomSwimPlan(supabase, insertPayload);
       const normalized = normalizeCustomSwimTrainingPlan(data);
       setCustomSwimTrainingPlans((prev) => [normalized, ...prev]);
 
@@ -6746,21 +6558,8 @@ export default function BaederApp() {
     try {
       const parsedYear = Number(yearInput);
       const year = Number.isFinite(parsedYear) ? Math.max(0, Math.round(parsedYear)) : new Date().getFullYear();
-      const { data, error } = await supabase
-        .from('swim_monthly_results')
-        .select('*')
-        .eq('year', year)
-        .order('month', { ascending: true });
-
-      if (error) {
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
-          setSwimMonthlyResults([]);
-          return;
-        }
-        throw error;
-      }
-
-      setSwimMonthlyResults(Array.isArray(data) ? data : []);
+      const data = await dsLoadSwimMonthlyResults(supabase, year);
+      setSwimMonthlyResults(data);
     } catch (err) {
       console.warn('Monatsergebnisse konnten nicht geladen werden:', err);
       setSwimMonthlyResults([]);
@@ -6770,18 +6569,8 @@ export default function BaederApp() {
   const upsertSwimMonthlyResult = useCallback(async (monthDateInput) => {
     const payload = buildSwimMonthlyResultPayload(monthDateInput);
     if (!payload) return;
-
     try {
-      const { error } = await supabase
-        .from('swim_monthly_results')
-        .upsert([payload], { onConflict: 'month_key' });
-
-      if (error) {
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
-          return;
-        }
-        throw error;
-      }
+      await dsUpsertSwimMonthlyResult(supabase, payload);
     } catch (err) {
       console.warn('Monatsergebnis konnte nicht gespeichert werden:', err);
     }
@@ -7097,32 +6886,16 @@ export default function BaederApp() {
     return normalizedUnits.some((unit) => doesSessionFulfillPlanUnit(sessionInput, unit));
   };
 
-  // Trainingseinheiten aus Supabase laden
+  // Trainingseinheiten laden
   const loadSwimSessions = async () => {
     setSwimSessionsLoaded(false);
     try {
-      const { data, error } = await supabase
-        .from('swim_sessions')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        // Tabelle existiert nicht - kein Fehler anzeigen, nur leere Liste
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
-          console.warn('swim_sessions Tabelle existiert nicht in Supabase');
-          setSwimSessions([]);
-          setSwimSessionsLoaded(true);
-          return;
-        }
-        throw error;
-      }
-
+      const data = await dsLoadSwimSessions(supabase);
       if (import.meta.env.DEV) console.log('Schwimm-Sessions geladen:', data?.length || 0);
-      setSwimSessions(data || []);
+      setSwimSessions(data);
 
-      // Filtere unbestätigte Einheiten für Trainer
       if (user?.permissions?.canViewAllStats) {
-        const pending = (data || []).filter(s => !s.confirmed);
+        const pending = data.filter(s => !s.confirmed);
         setPendingSwimConfirmations(pending);
       }
       setSwimSessionsLoaded(true);
@@ -7136,73 +6909,39 @@ export default function BaederApp() {
   // Trainingseinheit speichern
   const saveSwimSession = async (sessionData) => {
     try {
-      // Prüfe ob User eingeloggt ist und eine ID hat
       if (!user || !user.id) {
         console.error('Kein User oder User-ID vorhanden');
         return { success: false, error: 'Bitte melde dich erneut an.' };
       }
 
       const newSession = {
-        user_id: user.id,
-        user_name: user.name,
-        user_role: user.role,
+        user_id: user.id, userId: user.id,
+        user_name: user.name, userName: user.name,
+        user_role: user.role, userRole: user.role,
         date: sessionData.date,
         distance: parseInt(sessionData.distance) || 0,
-        time_minutes: parseInt(sessionData.time) || 0,
+        time_minutes: parseInt(sessionData.time) || 0, timeMinutes: parseInt(sessionData.time) || 0,
         style: sessionData.style,
-        notes: encodeSwimTrainingPlanInNotes(
-          sessionData.notes,
-          sessionData.trainingPlanId,
-          sessionData.trainingPlanUnitId
-        ),
-        challenge_id: sessionData.challengeId || null,
-        confirmed: false,
-        confirmed_by: null,
-        confirmed_at: null
+        notes: encodeSwimTrainingPlanInNotes(sessionData.notes, sessionData.trainingPlanId, sessionData.trainingPlanUnitId),
+        challenge_id: sessionData.challengeId || null, challengeId: sessionData.challengeId || null,
+        confirmed: false, confirmed_by: null, confirmed_at: null
       };
 
       if (import.meta.env.DEV) console.log('Speichere Schwimm-Session');
-
-      const { data, error } = await supabase
-        .from('swim_sessions')
-        .insert([newSession])
-        .select();
-
-      if (error) {
-        console.error('Supabase Fehler:', error);
-        // Prüfe ob Tabelle nicht existiert
-        if (error.code === '42P01' || error.message?.includes('does not exist')) {
-          return { success: false, error: 'Die Tabelle swim_sessions existiert nicht in Supabase. Bitte erstellen!' };
-        }
-        throw error;
-      }
-
+      const savedSession = await dsSaveSwimSession(supabase, newSession);
       if (import.meta.env.DEV) console.log('Session gespeichert');
 
-      // Aktualisiere lokale Liste
-      setSwimSessions(prev => [data[0], ...prev]);
-      setPendingSwimConfirmations(prev => [data[0], ...prev]);
+      setSwimSessions(prev => [savedSession, ...prev]);
+      setPendingSwimConfirmations(prev => [savedSession, ...prev]);
 
       const styleLabel = SWIM_STYLES.find(style => style.id === sessionData.style)?.name || sessionData.style || 'Unbekannt';
       const sessionDateLabel = sessionData.date
         ? new Date(sessionData.date).toLocaleDateString('de-DE')
         : 'ohne Datum';
 
-      const { data: reviewers, error: reviewersError } = await supabase
-        .from('profiles')
-        .select('name,role,approved')
-        .eq('approved', true)
-        .in('role', ['admin', 'trainer']);
-
-      if (reviewersError) {
-        console.warn('Reviewer lookup for swim notification failed:', reviewersError);
-      } else {
-        const reviewerNames = [...new Set(
-          (reviewers || [])
-            .map(profile => String(profile.name || '').trim())
-            .filter(Boolean)
-        )];
-
+      try {
+        const reviewers = await dsGetAuthorizedReviewers(supabase);
+        const reviewerNames = [...new Set(reviewers.map(r => String(r.name || '').trim()).filter(Boolean))];
         for (const reviewerName of reviewerNames) {
           if (reviewerName === user.name) continue;
           await sendNotification(
@@ -7212,9 +6951,11 @@ export default function BaederApp() {
             'swim_pending'
           );
         }
+      } catch (reviewErr) {
+        console.warn('Reviewer lookup for swim notification failed:', reviewErr);
       }
 
-      return { success: true, data: data[0] };
+      return { success: true, data: savedSession };
     } catch (err) {
       console.error('Fehler beim Speichern der Schwimm-Einheit:', err);
       return { success: false, error: err.message || 'Unbekannter Fehler' };
@@ -7225,17 +6966,7 @@ export default function BaederApp() {
   const confirmSwimSession = async (sessionId) => {
     try {
       const sessionToConfirm = swimSessions.find(s => s.id === sessionId) || null;
-
-      const { error } = await supabase
-        .from('swim_sessions')
-        .update({
-          confirmed: true,
-          confirmed_by: user.name,
-          confirmed_at: new Date().toISOString()
-        })
-        .eq('id', sessionId);
-
-      if (error) throw error;
+      await dsConfirmSwimSession(supabase, sessionId, user.name);
 
       // Aktualisiere lokale Listen
       setSwimSessions(prev => prev.map(s =>
@@ -7275,16 +7006,9 @@ export default function BaederApp() {
   // Trainingseinheit ablehnen (Trainer)
   const rejectSwimSession = async (sessionId) => {
     try {
-      const { error } = await supabase
-        .from('swim_sessions')
-        .delete()
-        .eq('id', sessionId);
-
-      if (error) throw error;
-
+      await dsRejectSwimSession(supabase, sessionId);
       setSwimSessions(prev => prev.filter(s => s.id !== sessionId));
       setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
-
       return { success: true };
     } catch (err) {
       console.error('Fehler beim Ablehnen:', err);
@@ -7557,22 +7281,11 @@ export default function BaederApp() {
         berichtsheftData.assigned_by_id = persistedEntry.assigned_by_id || null;
         berichtsheftData.assigned_at = persistedEntry.assigned_at || null;
 
-        // Update
-        const { error } = await supabase
-          .from('berichtsheft')
-          .update(berichtsheftData)
-          .eq('id', persistedEntry.id);
-
-        if (error) throw error;
+        await dsSaveBerichtsheft(supabase, berichtsheftData, persistedEntry.id);
         removeBerichtsheftServerDraft(berichtsheftWeek);
         showToast(selectedBerichtsheft ? 'Berichtsheft aktualisiert!' : 'Berichtsheft gespeichert!', 'success');
       } else {
-        // Insert
-        const { error } = await supabase
-          .from('berichtsheft')
-          .insert(berichtsheftData);
-
-        if (error) throw error;
+        await dsSaveBerichtsheft(supabase, berichtsheftData);
         showToast('Berichtsheft gespeichert!', 'success');
         setBerichtsheftNr(prev => prev + 1);
       }
@@ -7614,12 +7327,7 @@ export default function BaederApp() {
   const deleteBerichtsheft = async (id) => {
     if (!confirm('Berichtsheft wirklich löschen?')) return;
     try {
-      const { error } = await supabase
-        .from('berichtsheft')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await dsDeleteBerichtsheft(supabase, id);
       loadBerichtsheftEntries();
       loadBerichtsheftPendingSignatures();
     } catch (err) {
@@ -8117,13 +7825,7 @@ export default function BaederApp() {
 
   const approveFlashcard = async (fcId) => {
     try {
-      const { error } = await supabase
-        .from('flashcards')
-        .update({ approved: true })
-        .eq('id', fcId);
-
-      if (error) throw error;
-
+      await dsApproveFlashcard(supabase, fcId);
       const fc = pendingFlashcards.find(f => f.id === fcId);
       if (fc) {
         fc.approved = true;
@@ -8138,13 +7840,7 @@ export default function BaederApp() {
 
   const deleteFlashcard = async (fcId) => {
     try {
-      const { error } = await supabase
-        .from('flashcards')
-        .delete()
-        .eq('id', fcId);
-
-      if (error) throw error;
-
+      await dsDeleteFlashcard(supabase, fcId);
       setPendingFlashcards(pendingFlashcards.filter(f => f.id !== fcId));
       setUserFlashcards(userFlashcards.filter(f => f.id !== fcId));
     } catch (error) {
@@ -8282,15 +7978,7 @@ export default function BaederApp() {
     if (newBadges.length > 0) {
       setUserBadges(earnedBadges);
       try {
-        for (const badge of newBadges) {
-          await supabase
-            .from('user_badges')
-            .insert([{
-              user_id: user.id,
-              user_name: user.name,
-              badge_id: badge.id
-            }]);
-        }
+        await dsSaveBadges(supabase, newBadges, user.id, user.name);
       } catch (error) {
         console.error('Save badges error:', error);
       }
@@ -8302,26 +7990,9 @@ export default function BaederApp() {
     if (!materialTitle.trim() || !user?.permissions.canUploadMaterials) return;
 
     try {
-      const { data, error } = await supabase
-        .from('materials')
-        .insert([{
-          title: materialTitle,
-          category: materialCategory,
-          created_by: user.name
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const mat = {
-        id: data.id,
-        title: data.title,
-        category: data.category,
-        createdBy: data.created_by,
-        time: new Date(data.created_at).getTime()
-      };
-
+      const mat = await dsAddMaterial(supabase, {
+        title: materialTitle, category: materialCategory, createdBy: user.name
+      });
       setMaterials([...materials, mat]);
       setMaterialTitle('');
       showToast('Material hinzugefügt!', 'success');
@@ -8454,30 +8125,10 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('resources')
-        .insert([{
-          title: resourceTitle,
-          url: resourceUrl,
-          category: resourceType,
-          description: resourceDescription,
-          created_by: user.name
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const resource = {
-        id: data.id,
-        title: data.title,
-        url: data.url,
-        type: data.category,
-        description: data.description,
-        addedBy: data.created_by,
-        time: new Date(data.created_at).getTime()
-      };
-
+      const resource = await dsAddResource(supabase, {
+        title: resourceTitle, url: resourceUrl, category: resourceType,
+        description: resourceDescription, createdBy: user.name
+      });
       setResources([resource, ...resources]);
       setResourceTitle('');
       setResourceUrl('');
@@ -8491,22 +8142,13 @@ export default function BaederApp() {
   };
 
   const deleteResource = async (resourceId) => {
-    // Only admins can delete resources
     if (user.role !== 'admin') {
       showToast('Nur Administratoren können Ressourcen löschen', 'warning');
       return;
     }
-
     if (!confirm('Ressource wirklich löschen?')) return;
-
     try {
-      const { error } = await supabase
-        .from('resources')
-        .delete()
-        .eq('id', resourceId);
-
-      if (error) throw error;
-
+      await dsDeleteResource(supabase, resourceId);
       setResources(resources.filter(r => r.id !== resourceId));
     } catch (error) {
       console.error('Delete resource error:', error);
@@ -8526,29 +8168,13 @@ export default function BaederApp() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('news')
-        .insert([{
-          title: newsTitle.trim(),
-          content: newsContent.trim(),
-          author: user.name
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      const newsItem = {
-        id: data.id,
-        title: data.title,
-        content: data.content,
-        author: data.author,
-        time: new Date(data.created_at).getTime()
-      };
+      const newsItem = await dsAddNews(supabase, {
+        title: newsTitle.trim(), content: newsContent.trim(), author: user.name
+      });
 
       await sendNotificationToApprovedUsers({
         title: '📰 Neue News',
-        message: `${user.name} hat eine neue News veroeffentlicht: "${data.title}"`,
+        message: `${user.name} hat eine neue News veroeffentlicht: "${newsItem.title}"`,
         type: 'news',
         excludeUserNames: [user.name]
       });
@@ -8564,15 +8190,8 @@ export default function BaederApp() {
   const deleteNews = async (newsId) => {
     if (!user?.permissions.canPostNews) return;
     if (!confirm('Diese Ankündigung wirklich löschen?')) return;
-
     try {
-      const { error } = await supabase
-        .from('news')
-        .delete()
-        .eq('id', newsId);
-
-      if (error) throw error;
-
+      await dsDeleteNews(supabase, newsId);
       setNews(news.filter(n => n.id !== newsId));
     } catch (error) {
       console.error('Delete news error:', error);
@@ -8584,35 +8203,18 @@ export default function BaederApp() {
     if (!examTitle.trim() || !user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('exams')
-        .insert([{
-          title: examTitle,
-          description: examTopics,
-          exam_date: examDate || null,
-          created_by: user.name
-        }])
-        .select()
-        .single();
+      const exam = await dsAddExam(supabase, {
+        title: examTitle, description: examTopics,
+        examDate: examDate || null, createdBy: user.name
+      });
 
-      if (error) throw error;
-
-      const exam = {
-        id: data.id,
-        title: data.title,
-        description: data.description,
-        date: data.exam_date,
-        createdBy: data.created_by,
-        time: new Date(data.created_at).getTime()
-      };
-
-      const examDateLabel = data.exam_date
-        ? new Date(data.exam_date).toLocaleDateString('de-DE')
+      const examDateLabel = exam.date
+        ? new Date(exam.date).toLocaleDateString('de-DE')
         : 'ohne Termin';
 
       await sendNotificationToApprovedUsers({
         title: '📝 Neue Klausur',
-        message: `${user.name} hat eine neue Klausur eingetragen: "${data.title}" (${examDateLabel}).`,
+        message: `${user.name} hat eine neue Klausur eingetragen: "${exam.title}" (${examDateLabel}).`,
         type: 'exam',
         excludeUserNames: [user.name]
       });
@@ -8629,15 +8231,8 @@ export default function BaederApp() {
   const deleteExam = async (examId) => {
     if (!examId) return;
     if (!confirm('Klausur wirklich löschen?')) return;
-
     try {
-      const { error } = await supabase
-        .from('exams')
-        .delete()
-        .eq('id', examId);
-
-      if (error) throw error;
-
+      await dsDeleteExam(supabase, examId);
       setExams(prev => prev.filter(exam => exam.id !== examId));
       showToast('Klausur gelöscht.', 'success');
     } catch (error) {

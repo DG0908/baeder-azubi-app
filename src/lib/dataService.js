@@ -758,5 +758,624 @@ export const deletePracticalExamAttempt = async (supabase, attemptId) => {
   await supabase.from('practical_exam_attempts').delete().eq('id', attemptId);
 };
 
+// ─── School Attendance ──────────────────────────────────────────────
+
+export const loadSchoolAttendanceAzubis = async (supabase) => {
+  if (USE_SECURE_API) {
+    const users = await secureUsersApi.list();
+    return (users || [])
+      .filter(u => String(u.role).toUpperCase() === 'AZUBI' && String(u.status).toUpperCase() === 'APPROVED')
+      .map(u => ({ id: u.id, name: u.displayName, email: u.email }))
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
+  }
+  const { data, error } = await supabase
+    .from('profiles').select('id, name, email').eq('role', 'azubi').eq('approved', true).order('name');
+  if (error) throw error;
+  return data || [];
+};
+
+export const loadSchoolAttendance = async (supabase, userId) => {
+  if (USE_SECURE_API) {
+    const entries = await secureSchoolAttendanceApi.list({ userId });
+    return (entries || []).map(e => ({
+      id: e.id, user_id: e.userId, user_name: e.userName,
+      date: e.date, start_time: e.startTime, end_time: e.endTime,
+      teacher_signature: e.teacherSignature || null,
+      trainer_signature: e.trainerSignature || null,
+      created_at: e.createdAt
+    }));
+  }
+  const { data, error } = await supabase
+    .from('school_attendance').select('*').eq('user_id', userId).order('date', { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+export const addSchoolAttendanceEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    return secureSchoolAttendanceApi.create(payload);
+  }
+  const { error } = await supabase.from('school_attendance').insert(payload);
+  if (error) throw error;
+};
+
+export const updateSchoolAttendanceSignature = async (supabase, entryId, field, value) => {
+  if (USE_SECURE_API) {
+    return secureSchoolAttendanceApi.updateSignature(entryId, { [field]: value });
+  }
+  const { error } = await supabase.from('school_attendance').update({ [field]: value }).eq('id', entryId);
+  if (error) throw error;
+};
+
+export const deleteSchoolAttendanceEntry = async (supabase, entryId) => {
+  if (USE_SECURE_API) {
+    return secureSchoolAttendanceApi.remove(entryId);
+  }
+  const { error } = await supabase.from('school_attendance').delete().eq('id', entryId);
+  if (error) throw error;
+};
+
+// ─── Exam Grades ────────────────────────────────────────────────────
+
+export const loadExamGradesAzubis = async (supabase) => {
+  // Same data source as school attendance azubis
+  return loadSchoolAttendanceAzubis(supabase);
+};
+
+export const loadExamGradeEntries = async (supabase, userId) => {
+  if (USE_SECURE_API) {
+    const entries = await secureExamGradesApi.list({ userId });
+    return (entries || []).map(e => ({
+      id: e.id, user_id: e.userId, user_name: e.userName,
+      date: e.date, subject: e.subject, topic: e.topic,
+      grade: e.grade, notes: e.notes, created_at: e.createdAt
+    }));
+  }
+  const { data, error } = await supabase
+    .from('exam_grades').select('*').eq('user_id', userId).order('date', { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+export const addExamGradeEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    return secureExamGradesApi.create(payload);
+  }
+  const { error } = await supabase.from('exam_grades').insert(payload);
+  if (error) throw error;
+};
+
+export const deleteExamGradeEntry = async (supabase, gradeId) => {
+  if (USE_SECURE_API) {
+    return secureExamGradesApi.remove(gradeId);
+  }
+  const { error } = await supabase.from('exam_grades').delete().eq('id', gradeId);
+  if (error) throw error;
+};
+
+// ─── Content CRUD ───────────────────────────────────────────────────
+
+export const addMaterialEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureContentApi.createMaterial(payload);
+    return {
+      id: result.id, title: result.title, category: result.category,
+      createdBy: result.createdBy || result.created_by, time: new Date(result.createdAt || Date.now()).getTime()
+    };
+  }
+  const { data, error } = await supabase.from('materials')
+    .insert([{ title: payload.title, category: payload.category, created_by: payload.createdBy }])
+    .select().single();
+  if (error) throw error;
+  return {
+    id: data.id, title: data.title, category: data.category,
+    createdBy: data.created_by, time: new Date(data.created_at).getTime()
+  };
+};
+
+export const addResourceEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureContentApi.createResource(payload);
+    return {
+      id: result.id, title: result.title, url: result.url,
+      type: result.category || result.type, description: result.description,
+      addedBy: result.createdBy || result.created_by, time: new Date(result.createdAt || Date.now()).getTime()
+    };
+  }
+  const { data, error } = await supabase.from('resources')
+    .insert([{ title: payload.title, url: payload.url, category: payload.category, description: payload.description, created_by: payload.createdBy }])
+    .select().single();
+  if (error) throw error;
+  return {
+    id: data.id, title: data.title, url: data.url,
+    type: data.category, description: data.description,
+    addedBy: data.created_by, time: new Date(data.created_at).getTime()
+  };
+};
+
+export const deleteResourceEntry = async (supabase, resourceId) => {
+  if (USE_SECURE_API) {
+    return secureContentApi.removeResource(resourceId);
+  }
+  const { error } = await supabase.from('resources').delete().eq('id', resourceId);
+  if (error) throw error;
+};
+
+export const addNewsEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureContentApi.createNews(payload);
+    return {
+      id: result.id, title: result.title, content: result.content,
+      author: result.author || result.createdBy, time: new Date(result.createdAt || Date.now()).getTime()
+    };
+  }
+  const { data, error } = await supabase.from('news')
+    .insert([{ title: payload.title, content: payload.content, author: payload.author }])
+    .select().single();
+  if (error) throw error;
+  return {
+    id: data.id, title: data.title, content: data.content,
+    author: data.author, time: new Date(data.created_at).getTime()
+  };
+};
+
+export const deleteNewsEntry = async (supabase, newsId) => {
+  if (USE_SECURE_API) {
+    return secureContentApi.removeNews(newsId);
+  }
+  const { error } = await supabase.from('news').delete().eq('id', newsId);
+  if (error) throw error;
+};
+
+export const addExamEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureContentApi.createExam(payload);
+    return {
+      id: result.id, title: result.title, description: result.description,
+      date: result.examDate || result.date, createdBy: result.createdBy || result.created_by,
+      time: new Date(result.createdAt || Date.now()).getTime()
+    };
+  }
+  const { data, error } = await supabase.from('exams')
+    .insert([{ title: payload.title, description: payload.description, exam_date: payload.examDate || null, created_by: payload.createdBy }])
+    .select().single();
+  if (error) throw error;
+  return {
+    id: data.id, title: data.title, description: data.description,
+    date: data.exam_date, createdBy: data.created_by, time: new Date(data.created_at).getTime()
+  };
+};
+
+export const deleteExamEntry = async (supabase, examId) => {
+  if (USE_SECURE_API) {
+    return secureContentApi.removeExam(examId);
+  }
+  const { error } = await supabase.from('exams').delete().eq('id', examId);
+  if (error) throw error;
+};
+
+export const approveFlashcardEntry = async (supabase, flashcardId) => {
+  if (USE_SECURE_API) {
+    return secureFlashcardsApi.approve(flashcardId);
+  }
+  const { error } = await supabase.from('flashcards').update({ approved: true }).eq('id', flashcardId);
+  if (error) throw error;
+};
+
+export const deleteFlashcardEntry = async (supabase, flashcardId) => {
+  if (USE_SECURE_API) {
+    return secureFlashcardsApi.remove(flashcardId);
+  }
+  const { error } = await supabase.from('flashcards').delete().eq('id', flashcardId);
+  if (error) throw error;
+};
+
+// ─── Quiz Duels ─────────────────────────────────────────────────────
+
+export const createDuel = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureDuelsApi.create(payload);
+    return {
+      id: result.id,
+      player1: result.challengerName || payload.player1,
+      player2: result.opponentName || payload.player2,
+      difficulty: result.difficulty || payload.difficulty,
+      status: String(result.status || 'waiting').toLowerCase(),
+      player1Score: result.challengerScore ?? 0,
+      player2Score: result.opponentScore ?? 0,
+      currentTurn: result.currentTurnName || payload.player1,
+      categoryRounds: result.roundsData || [],
+      categoryRound: 0, round: 0, questionHistory: [],
+      updatedAt: result.updatedAt || new Date().toISOString(),
+      createdAt: result.createdAt || new Date().toISOString(),
+      challengeTimeoutMinutes: payload.challengeTimeoutMinutes,
+      challengeExpiresAt: result.challengeExpiresAt || payload.challengeExpiresAt
+    };
+  }
+  // Supabase path handled in App.jsx (complex fallback logic)
+  return null;
+};
+
+export const acceptDuel = async (supabase, gameId) => {
+  if (USE_SECURE_API) {
+    return secureDuelsApi.accept(gameId);
+  }
+  const acceptedAt = new Date().toISOString();
+  const { error } = await supabase.from('games')
+    .update({ status: 'active', updated_at: acceptedAt }).eq('id', gameId);
+  if (error) throw error;
+  return { acceptedAt };
+};
+
+export const saveDuelState = async (supabase, game) => {
+  if (USE_SECURE_API) {
+    // NestJS backend manages duel state server-side via submitAnswer.
+    // We still call submitAnswer for answer tracking; game state sync is a no-op.
+    return;
+  }
+  const updateData = {
+    player1_score: game.player1Score, player2_score: game.player2Score,
+    current_turn: game.currentTurn, round: game.categoryRound || 0,
+    status: game.status, rounds_data: game.categoryRounds || [],
+    updated_at: new Date().toISOString()
+  };
+  if (game.status === 'finished') updateData.winner = game.winner || null;
+  const { error } = await supabase.from('games').update(updateData).eq('id', game.id);
+  if (error) throw error;
+};
+
+export const submitDuelAnswer = async (supabase, duelId, payload) => {
+  if (USE_SECURE_API) {
+    return secureDuelsApi.submitAnswer(duelId, payload);
+  }
+  // In Supabase mode, answers are stored in rounds_data via saveDuelState
+  return;
+};
+
+// ─── Swim Sessions ──────────────────────────────────────────────────
+
+export const loadSwimSessionEntries = async (supabase) => {
+  if (USE_SECURE_API) {
+    const sessions = await secureSwimSessionsApi.list();
+    return (sessions || []).map(s => ({
+      id: s.id, user_id: s.userId, user_name: s.userName, user_role: s.userRole,
+      date: s.date, distance: s.distance, time_minutes: s.timeMinutes,
+      style: s.style, notes: s.notes, challenge_id: s.challengeId || null,
+      confirmed: Boolean(s.confirmed), confirmed_by: s.confirmedBy || null,
+      confirmed_at: s.confirmedAt || null, created_at: s.createdAt
+    }));
+  }
+  const { data, error } = await supabase.from('swim_sessions')
+    .select('*').order('created_at', { ascending: false });
+  if (error) {
+    if (error.code === '42P01' || error.message?.includes('does not exist')) return [];
+    throw error;
+  }
+  return data || [];
+};
+
+export const saveSwimSessionEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureSwimSessionsApi.create(payload);
+    return {
+      id: result.id, user_id: result.userId, user_name: result.userName,
+      user_role: result.userRole, date: result.date, distance: result.distance,
+      time_minutes: result.timeMinutes, style: result.style, notes: result.notes,
+      challenge_id: result.challengeId || null, confirmed: false,
+      confirmed_by: null, confirmed_at: null, created_at: result.createdAt
+    };
+  }
+  const { data, error } = await supabase.from('swim_sessions')
+    .insert([payload]).select();
+  if (error) throw error;
+  return data?.[0] || null;
+};
+
+export const confirmSwimSessionEntry = async (supabase, sessionId, confirmerName) => {
+  if (USE_SECURE_API) {
+    return secureSwimSessionsApi.confirm(sessionId);
+  }
+  const { error } = await supabase.from('swim_sessions')
+    .update({ confirmed: true, confirmed_by: confirmerName, confirmed_at: new Date().toISOString() })
+    .eq('id', sessionId);
+  if (error) throw error;
+};
+
+export const rejectSwimSessionEntry = async (supabase, sessionId) => {
+  if (USE_SECURE_API) {
+    return secureSwimSessionsApi.reject(sessionId);
+  }
+  const { error } = await supabase.from('swim_sessions').delete().eq('id', sessionId);
+  if (error) throw error;
+};
+
+export const loadCustomSwimTrainingPlanEntries = async (supabase) => {
+  if (USE_SECURE_API) {
+    const plans = await secureSwimTrainingPlansApi.list();
+    return (plans || []).map(p => ({
+      id: p.id, name: p.name, category: p.category, difficulty: p.difficulty,
+      style_id: p.styleId, target_distance: p.targetDistance, target_time: p.targetTime,
+      units_json: p.units || [], xp_reward: p.xpReward, description: p.description,
+      created_by_user_id: p.createdByUserId, created_by_name: p.createdByName,
+      created_by_role: p.createdByRole, assigned_user_id: p.assignedUserId,
+      assigned_user_name: p.assignedUserName, assigned_user_role: p.assignedUserRole,
+      created_at: p.createdAt, is_active: true
+    }));
+  }
+  const { data, error } = await supabase.from('swim_training_plans_custom')
+    .select('*').eq('is_active', true).order('created_at', { ascending: false });
+  if (error) {
+    if (error.code === '42P01' || error.message?.includes('does not exist')) return [];
+    throw error;
+  }
+  return data || [];
+};
+
+export const createCustomSwimTrainingPlanEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    return secureSwimTrainingPlansApi.create(payload);
+  }
+  const { data, error } = await supabase.from('swim_training_plans_custom')
+    .insert([payload]).select().single();
+  if (error) throw error;
+  return data;
+};
+
+// ─── Berichtsheft ───────────────────────────────────────────────────
+
+export const loadBerichtsheftEntriesFromDb = async (supabase, userName) => {
+  if (USE_SECURE_API) {
+    const entries = await secureReportBooksApi.list({ userName });
+    return (entries || []).map(e => ({
+      id: e.id, user_name: e.userName, week_start: e.weekStart, week_end: e.weekEnd,
+      ausbildungsjahr: e.trainingYear, nachweis_nr: e.reportNumber,
+      entries: e.entries, bemerkung_azubi: e.azubiRemarks, bemerkung_ausbilder: e.trainerRemarks,
+      signatur_azubi: e.azubiSignature, signatur_ausbilder: e.trainerSignature,
+      datum_azubi: e.azubiDate, datum_ausbilder: e.trainerDate,
+      total_hours: e.totalHours, status: e.status,
+      assigned_trainer_id: e.assignedTrainerId, assigned_trainer_name: e.assignedTrainerName,
+      assigned_by_id: e.assignedById, assigned_at: e.assignedAt,
+      created_at: e.createdAt, updated_at: e.updatedAt
+    }));
+  }
+  const { data, error } = await supabase.from('berichtsheft')
+    .select('*').eq('user_name', userName).order('week_start', { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+export const saveBerichtsheftEntry = async (supabase, payload, existingId = null) => {
+  if (USE_SECURE_API) {
+    return secureReportBooksApi.submit(payload);
+  }
+  if (existingId) {
+    const { error } = await supabase.from('berichtsheft').update(payload).eq('id', existingId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from('berichtsheft').insert(payload);
+    if (error) throw error;
+  }
+};
+
+export const deleteBerichtsheftEntry = async (supabase, entryId) => {
+  if (USE_SECURE_API) {
+    return secureReportBooksApi.remove(entryId);
+  }
+  const { error } = await supabase.from('berichtsheft').delete().eq('id', entryId);
+  if (error) throw error;
+};
+
+export const loadBerichtsheftPending = async (supabase) => {
+  if (USE_SECURE_API) {
+    const entries = await secureReportBooksApi.listPendingReview();
+    return (entries || []).map(e => ({
+      id: e.id, user_name: e.userName, week_start: e.weekStart, week_end: e.weekEnd,
+      ausbildungsjahr: e.trainingYear, nachweis_nr: e.reportNumber,
+      entries: e.entries, bemerkung_azubi: e.azubiRemarks, bemerkung_ausbilder: e.trainerRemarks,
+      signatur_azubi: e.azubiSignature, signatur_ausbilder: e.trainerSignature,
+      datum_azubi: e.azubiDate, datum_ausbilder: e.trainerDate,
+      total_hours: e.totalHours, status: e.status,
+      assigned_trainer_id: e.assignedTrainerId, assigned_trainer_name: e.assignedTrainerName,
+      assigned_by_id: e.assignedById, assigned_at: e.assignedAt
+    }));
+  }
+  const { data, error } = await supabase.from('berichtsheft')
+    .select('*').order('week_start', { ascending: false });
+  if (error) throw error;
+  return data || [];
+};
+
+export const assignBerichtsheftTrainerEntry = async (supabase, entryId, payload) => {
+  if (USE_SECURE_API) {
+    return secureReportBooksApi.assignTrainer(entryId, payload);
+  }
+  const { error } = await supabase.from('berichtsheft').update(payload).eq('id', entryId);
+  if (error) throw error;
+};
+
+export const upsertBerichtsheftDraft = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    return secureReportBooksApi.upsertDraft(payload);
+  }
+  // Supabase path handled in App.jsx (complex insert/update logic)
+  return null;
+};
+
+export const deleteBerichtsheftDraftByWeek = async (supabase, weekStart) => {
+  if (USE_SECURE_API) {
+    return secureReportBooksApi.deleteDraftByWeek(weekStart);
+  }
+  // Supabase path handled in App.jsx
+  return null;
+};
+
+export const loadBerichtsheftProfile = async (supabase) => {
+  if (USE_SECURE_API) {
+    return secureReportBooksApi.getProfile();
+  }
+  return null;
+};
+
+export const updateBerichtsheftProfile = async (supabase, userId, profile) => {
+  if (USE_SECURE_API) {
+    return secureReportBooksApi.updateProfile(profile);
+  }
+  const { error } = await supabase.from('profiles')
+    .update({ berichtsheft_profile: profile }).eq('id', userId);
+  if (error) throw error;
+};
+
+// ─── Practical Exam History ─────────────────────────────────────────
+
+export const loadPracticalExamAttempts = async (supabase, userId, canViewAll) => {
+  if (USE_SECURE_API) {
+    const attempts = await secureExamSimulatorApi.listPracticalAttempts(canViewAll ? {} : { userId });
+    return (attempts || []).map(a => ({
+      id: a.id, user_id: a.userId, user_name: a.userName,
+      exam_type: a.examType, average_grade: a.averageGrade,
+      graded_count: a.gradedCount, passed: a.passed,
+      result_rows: a.resultRows || a.rows || [], created_at: a.createdAt,
+      created_by: a.createdBy, created_by_name: a.createdByName, source: 'remote'
+    }));
+  }
+  let query = supabase.from('practical_exam_attempts').select('*').order('created_at', { ascending: false });
+  if (!canViewAll) query = query.eq('user_id', userId);
+  const { data, error } = await query;
+  if (error) {
+    if (error.code === '42P01' || error.message?.includes('does not exist')) return [];
+    throw error;
+  }
+  return data || [];
+};
+
+export const savePracticalExamAttemptEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureExamSimulatorApi.createPracticalAttempt(payload);
+    return result;
+  }
+  const { data, error } = await supabase.from('practical_exam_attempts')
+    .insert([payload]).select().single();
+  if (error) throw error;
+  return data;
+};
+
+// ─── Question Reports ───────────────────────────────────────────────
+
+export const reportQuestion = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    return secureQuestionWorkflowsApi.createReport(payload);
+  }
+  const { error } = await supabase.from('question_reports').insert([payload]);
+  if (error) throw error;
+};
+
+export const updateQuestionReportStatus = async (supabase, reportId, status) => {
+  if (USE_SECURE_API) {
+    return secureQuestionWorkflowsApi.updateReportStatus(reportId, { status });
+  }
+  await supabase.from('question_reports').update({ status }).eq('id', reportId);
+};
+
+// ─── Utility ────────────────────────────────────────────────────────
+
+export const repairQuizStatsRemote = async (supabase, fetchPushBackendWithAuth) => {
+  if (USE_SECURE_API) {
+    return secureUserStatsApi.repairQuizStats();
+  }
+  return fetchPushBackendWithAuth({
+    supabase,
+    pathname: '/api/admin/repair-quiz-stats',
+    method: 'POST',
+    body: {}
+  });
+};
+
+export const sendTestPushRemote = async (supabase, fetchPushBackendWithAuth, payload) => {
+  if (USE_SECURE_API) {
+    return secureNotificationsApi.sendTestPush(payload);
+  }
+  return fetchPushBackendWithAuth({
+    supabase,
+    pathname: '/api/push/test',
+    method: 'POST',
+    body: payload
+  });
+};
+
+export const getAuthorizedReviewers = async (supabase, filterField = null) => {
+  if (USE_SECURE_API) {
+    const contacts = await secureUsersApi.contacts();
+    const users = await secureUsersApi.list().catch(() => contacts || []);
+    return (users || [])
+      .filter(u => {
+        const role = String(u.role).toUpperCase();
+        if (role === 'ADMIN') return true;
+        if (filterField === 'can_view_school_cards') return Boolean(u.canViewSchoolCards);
+        if (filterField === 'can_view_exam_grades') return Boolean(u.canViewExamGrades);
+        if (filterField === 'can_sign_reports') return Boolean(u.canSignReports);
+        return role === 'AUSBILDER';
+      })
+      .map(u => ({ id: u.id, name: u.displayName }));
+  }
+  const filter = filterField
+    ? `role.eq.admin,${filterField}.eq.true`
+    : 'role.eq.admin,role.eq.trainer';
+  const { data } = await supabase.from('profiles').select('id,name').or(filter);
+  return data || [];
+};
+
+export const saveBadges = async (supabase, badges, userId, userName) => {
+  if (USE_SECURE_API) {
+    // NestJS backend manages badges server-side
+    return;
+  }
+  for (const badge of badges) {
+    await supabase.from('user_badges').insert([{
+      user_id: userId, user_name: userName, badge_id: badge.id
+    }]);
+  }
+};
+
+export const resolveUserIdentity = async (supabase, userInput) => {
+  if (USE_SECURE_API) {
+    // In secure mode, identity resolution happens server-side
+    if (userInput && typeof userInput === 'object') {
+      return { userId: userInput.id, userName: userInput.name };
+    }
+    return null;
+  }
+  // Supabase path handled in App.jsx (complex query)
+  return null;
+};
+
+// ─── Swim Monthly Results ───────────────────────────────────────────
+
+export const loadSwimMonthlyResultEntries = async (supabase, year) => {
+  if (USE_SECURE_API) {
+    // NestJS backend may not have this endpoint yet — return empty
+    return [];
+  }
+  const { data, error } = await supabase.from('swim_monthly_results')
+    .select('*').eq('year', year).order('month', { ascending: true });
+  if (error) {
+    if (error.code === '42P01' || error.message?.includes('does not exist')) return [];
+    throw error;
+  }
+  return data || [];
+};
+
+export const upsertSwimMonthlyResultEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    // NestJS backend may not have this endpoint yet — no-op
+    return;
+  }
+  const { error } = await supabase.from('swim_monthly_results')
+    .upsert([payload], { onConflict: 'month_key' });
+  if (error) {
+    if (error.code === '42P01' || error.message?.includes('does not exist')) return;
+    throw error;
+  }
+};
+
 // ─── Export flag for convenience ─────────────────────────────────────
 export { USE_SECURE_API };

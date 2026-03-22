@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -15,12 +16,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @Throttle({ default: { ttl: 3600000, limit: 5 } })
   @Post('register')
   register(@Body() dto: RegisterDto, @Req() request: Request) {
     return this.authService.register(dto, request);
   }
 
   @Public()
+  @Throttle({ default: { ttl: 60000, limit: 7 } })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   login(
@@ -32,6 +35,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
   refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
@@ -39,6 +43,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { ttl: 3600000, limit: 3 } })
   @HttpCode(HttpStatus.OK)
   @Post('password-reset/request')
   requestPasswordReset(@Body() dto: RequestPasswordResetDto, @Req() request: Request) {
@@ -46,6 +51,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { ttl: 3600000, limit: 5 } })
   @HttpCode(HttpStatus.OK)
   @Post('password-reset/confirm')
   confirmPasswordReset(
