@@ -1,6 +1,6 @@
 # Repo Status
 
-Stand: 2026-03-21 (Update: Abend)
+Stand: 2026-03-22 (Update: Nacht)
 
 ## Zweck
 
@@ -35,6 +35,10 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - Traefik-Routing konfiguriert: `api.smartbaden.de` → NestJS (Port 3000)
 - SSL-Zertifikat via Let's Encrypt aktiv
 - DNS A-Record `api.smartbaden.de` → VPS-IP angelegt
+- VAPID-Keys fuer Web-Push konfiguriert (VPS `.env` + Vercel Env-Vars)
+- Push-Notifications funktionieren (Subscription, Versand, Empfang auf Android/PC)
+- `WEB_PUSH_*` Env-Vars in `docker-compose.yml` an NestJS-Server durchgereicht
+- CSP-Header um Vercel-Live-Widget erweitert
 
 ## Tatsaechlicher Code-Stand dieses Branches
 
@@ -61,7 +65,9 @@ Phase 0 aus `docs/supabase-to-nestjs-migration-plan.md`:
 - Traefik-Routing nutzt feste Container-IP (10.0.1.9) — aendert sich bei Container-Neustart.
   Ein Restart-Script (`scripts/update-traefik.sh`) auf dem VPS behebt das automatisch.
 - Rate Limiting erst mit NestJS-Backend moeglich (Throttler-Modul vorhanden).
-- SMTP/Push-Notifications noch nicht konfiguriert (leere Env-Vars).
+- SMTP noch nicht konfiguriert (leere Env-Vars) — Passwort-Reset-Mails etc. funktionieren noch nicht.
+- Push-Subscriptions werden aktuell in der Supabase-DB gespeichert, nicht in der NestJS-DB.
+- Push-Versand laeuft ueber den Legacy-Backend (`push.smartbaden.de`), nicht ueber NestJS.
 
 ## Arbeitsregel
 
