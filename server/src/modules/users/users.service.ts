@@ -339,6 +339,48 @@ export class UsersService {
     return updated;
   }
 
+  async softDeleteUser(actor: AuthenticatedUser, userId: string, request: Request) {
+    if (actor.id === userId) {
+      throw new ForbiddenException('You cannot delete your own account from this endpoint.');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || user.isDeleted) {
+      throw new NotFoundException('User not found.');
+    }
+
+    if (user.role === AppRole.ADMIN) {
+      throw new ForbiddenException('Deleting administrator accounts requires a dedicated break-glass workflow.');
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isDeleted: true,
+        refreshTokenHash: null,
+        status: AccountStatus.DISABLED
+      }
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'user.deleted',
+      'user',
+      userId,
+      {
+        email: user.email,
+        displayName: user.displayName,
+        role: user.role
+      },
+      request
+    );
+
+    return { deleted: true };
+  }
+
   private sanitizeText(value: string, maxLength: number): string {
     const sanitized = sanitizeHtml(String(value || ''), {
       allowedTags: [],

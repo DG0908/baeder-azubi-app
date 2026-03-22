@@ -43,6 +43,36 @@ import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
 import { clearUserPushSubscription, ensureUserPushSubscription, fetchPushBackendWithAuth, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
+import {
+  USE_SECURE_API,
+  loadUsers as dsLoadUsers,
+  loadAppConfig as dsLoadAppConfig,
+  loadGames as dsLoadGames,
+  loadMessages as dsLoadMessages,
+  loadNotifications as dsLoadNotifications,
+  sendNotification as dsSendNotification,
+  markNotificationRead as dsMarkNotificationRead,
+  clearAllNotifications as dsClearAllNotifications,
+  getUserStats as dsGetUserStats,
+  getAllUserStats as dsGetAllUserStats,
+  saveUserStats as dsSaveUserStats,
+  loadMaterials as dsLoadMaterials,
+  loadResources as dsLoadResources,
+  loadNews as dsLoadNews,
+  loadExams as dsLoadExams,
+  loadFlashcards as dsLoadFlashcards,
+  loadCustomQuestions as dsLoadCustomQuestions,
+  loadQuestionReports as dsLoadQuestionReports,
+  approveUser as dsApproveUser,
+  deleteUser as dsDeleteUser,
+  changeUserRole as dsChangeUserRole,
+  loadSwimTrainingPlans as dsLoadSwimTrainingPlans,
+  saveTheoryExamAttempt as dsSaveTheoryExamAttempt,
+  loadTheoryExamHistory as dsLoadTheoryExamHistory,
+  deletePracticalExamAttempt as dsDsPracticalExamAttempt,
+  saveAppConfig as dsSaveAppConfig
+} from './lib/dataService';
+import { secureUsersApi } from './lib/secureApi';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -2567,13 +2597,14 @@ export default function BaederApp() {
 
   const deleteUserData = async (userId, email, userName) => {
     try {
-      // Delete related data first
-      await supabase.from('user_stats').delete().eq('user_id', userId);
-      await supabase.from('user_badges').delete().eq('user_name', userName);
-      await supabase.from('notifications').delete().eq('user_name', userName);
-
-      // Delete user
-      await supabase.from('profiles').delete().eq('id', userId);
+      if (USE_SECURE_API) {
+        await secureUsersApi.deleteUser(userId);
+      } else {
+        await supabase.from('user_stats').delete().eq('user_id', userId);
+        await supabase.from('user_badges').delete().eq('user_name', userName);
+        await supabase.from('notifications').delete().eq('user_name', userName);
+        await supabase.from('profiles').delete().eq('id', userId);
+      }
 
       console.log(`Alle Daten für ${email} gelöscht`);
     } catch (error) {
@@ -2665,22 +2696,14 @@ export default function BaederApp() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('id, title, message, type, created_at, read')
-        .eq('user_name', user.name)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      const notifs = (data || []).map(n => ({
+      const rawNotifs = await dsLoadNotifications(supabase, user.name);
+      const notifs = rawNotifs.map(n => ({
         id: n.id,
         title: n.title,
         message: n.message,
         type: n.type,
         userName: user.name,
-        time: new Date(n.created_at).getTime(),
+        time: new Date(n.createdAt || Date.now()).getTime(),
         read: n.read
       }));
 
@@ -2708,32 +2731,23 @@ export default function BaederApp() {
 
   const sendNotification = async (userName, title, message, type = 'info') => {
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .insert([{
-          user_name: userName,
-          title,
-          message,
-          type,
-          read: false
-        }])
-        .select()
-        .single();
+      const result = await dsSendNotification(supabase, { userName, title, message, type });
 
-      if (error) throw error;
-
-      // Trigger Web-Push für Zielnutzer (wenn konfiguriert)
-      try {
-        await triggerWebPushNotification({
-          supabase,
-          userName,
-          title,
-          message,
-          type,
-          notificationId: data?.id
-        });
-      } catch (pushError) {
-        console.warn('Push dispatch failed:', pushError);
+      // Trigger Web-Push für Zielnutzer (wenn konfiguriert und nicht im Secure-API-Modus,
+      // da das NestJS-Backend Push-Versand selbst übernimmt)
+      if (!USE_SECURE_API) {
+        try {
+          await triggerWebPushNotification({
+            supabase,
+            userName,
+            title,
+            message,
+            type,
+            notificationId: result?.id
+          });
+        } catch (pushError) {
+          console.warn('Push dispatch failed:', pushError);
+        }
       }
 
       // Lokale Notification nur dann, wenn die Nachricht den aktuellen User betrifft
@@ -2784,13 +2798,7 @@ export default function BaederApp() {
 
   const markNotificationAsRead = async (notifId) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', notifId);
-
-      if (error) throw error;
-
+      await dsMarkNotificationRead(supabase, notifId);
       setNotifications(notifications.map(n => n.id === notifId ? { ...n, read: true } : n));
     } catch (error) {
       console.error('Mark read error:', error);
@@ -2799,13 +2807,7 @@ export default function BaederApp() {
 
   const clearAllNotifications = async () => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('user_name', user.name);
-
-      if (error) throw error;
-
+      await dsClearAllNotifications(supabase, user.name);
       setNotifications([]);
     } catch (error) {
       console.error('Clear notifications error:', error);
@@ -2969,48 +2971,23 @@ export default function BaederApp() {
   const loadLightData = async () => {
     try {
       // Games aktualisieren
-      const { data: gamesData } = await supabase
-        .from('games')
-        .select('id, player1, player2, player1_score, player2_score, current_turn, round, status, difficulty, rounds_data, winner, updated_at, created_at, challenge_timeout_minutes, challenge_expires_at')
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (gamesData) {
-        const games = gamesData.map(g => {
-          let winner = g.winner || null;
-          if (!winner && g.status === 'finished') {
-            if (g.player1_score > g.player2_score) winner = g.player1;
-            else if (g.player2_score > g.player1_score) winner = g.player2;
-          }
-          return {
-            id: g.id, player1: g.player1, player2: g.player2,
-            player1Score: g.player1_score, player2Score: g.player2_score,
-            currentTurn: g.current_turn, categoryRound: g.round || 0, round: g.round || 0,
-            status: g.status, difficulty: g.difficulty, categoryRounds: g.rounds_data || [],
-            winner, questionHistory: [], updatedAt: g.updated_at, createdAt: g.created_at,
-            challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challenge_timeout_minutes),
-            challengeExpiresAt: g.challenge_expires_at || null
-          };
-        });
-        setAllGames(games);
-        setActiveGames(games.filter(g => g.status !== 'finished'));
-        updateLeaderboard(games, allUsers);
+      const games = await dsLoadGames(supabase, 100);
+      if (games.length > 0) {
+        const normalized = games.map(g => ({
+          ...g,
+          challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challengeTimeoutMinutes)
+        }));
+        setAllGames(normalized);
+        setActiveGames(normalized.filter(g => g.status !== 'finished'));
+        updateLeaderboard(normalized, allUsers);
       }
 
       // Messages aktualisieren
-      const { data: messagesData } = await supabase
-        .from('messages')
-        .select('id, content, user_name, sender_id, created_at, chat_scope, recipient_id, user_avatar')
-        .order('created_at', { ascending: true })
-        .limit(100);
-
-      if (messagesData) {
-        const userDirectory = Object.fromEntries(
-          (allUsers || []).filter(a => a?.id).map(a => [a.id, a])
-        );
-        const msgs = messagesData.map((row) => normalizeChatMessageRow(row, userDirectory));
-        setMessages(msgs);
-      }
+      const userDirectory = Object.fromEntries(
+        (allUsers || []).filter(a => a?.id).map(a => [a.id, a])
+      );
+      const msgs = await dsLoadMessages(supabase, normalizeChatMessageRow, userDirectory);
+      setMessages(msgs);
     } catch (error) {
       console.log('Light data refresh error:', error.message);
     }
@@ -3020,26 +2997,15 @@ export default function BaederApp() {
     try {
       let visibleUsers = [];
 
-      // Load App Config from Supabase (for all users)
+      // Load App Config
       try {
-        const { data: configData, error: configError } = await supabase
-          .from('app_config')
-          .select('id, menu_items, theme_colors')
-          .eq('id', 'main')
-          .single();
-
-        if (configError) {
-          console.log('No custom config found, using defaults');
-        } else if (configData) {
-          const loadedMenuItems = mergeMenuItemsWithDefaults(configData.menu_items);
-          const loadedThemeColors = configData.theme_colors && Object.keys(configData.theme_colors).length > 0
-            ? configData.theme_colors
+        const configResult = await dsLoadAppConfig(supabase);
+        if (configResult) {
+          const loadedMenuItems = mergeMenuItemsWithDefaults(configResult.menuItems);
+          const loadedThemeColors = configResult.themeColors && Object.keys(configResult.themeColors).length > 0
+            ? configResult.themeColors
             : DEFAULT_THEME_COLORS;
-
-          setAppConfig({
-            menuItems: loadedMenuItems,
-            themeColors: loadedThemeColors
-          });
+          setAppConfig({ menuItems: loadedMenuItems, themeColors: loadedThemeColors });
         }
         setConfigLoaded(true);
       } catch (err) {
@@ -3047,71 +3013,24 @@ export default function BaederApp() {
         setConfigLoaded(true);
       }
 
-      // Load users from Supabase
-      if (user && user.permissions.canManageUsers) {
-        // Admin sees all users
-        const { data: allUsersData } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (allUsersData) {
-          const approved = allUsersData.filter(u => u.approved);
-          const pending = allUsersData.filter(u => !u.approved);
-          visibleUsers = approved;
-          setAllUsers(approved);
-          setPendingUsers(pending);
-        }
-      } else {
-        // Normal users see only approved users
-        const { data: approvedUsers } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('approved', true);
-
-        if (approvedUsers) {
-          visibleUsers = approvedUsers;
-          setAllUsers(approvedUsers);
-        }
+      // Load users
+      const usersResult = await dsLoadUsers(supabase, user);
+      visibleUsers = usersResult.allUsers;
+      setAllUsers(usersResult.allUsers);
+      if (usersResult.pendingUsers.length > 0) {
+        setPendingUsers(usersResult.pendingUsers);
       }
 
       await loadCustomSwimTrainingPlans();
 
-      // Load games from Supabase
-      const { data: gamesData } = await supabase
-        .from('games')
-        .select('id, player1, player2, player1_score, player2_score, current_turn, round, status, difficulty, rounds_data, winner, updated_at, created_at, challenge_timeout_minutes, challenge_expires_at')
-        .order('created_at', { ascending: false })
-        .limit(200);
-
-      if (gamesData) {
-        const games = gamesData.map(g => {
-          // Winner aus DB laden, oder aus Scores berechnen (Fallback)
-          let winner = g.winner || null;
-          if (!winner && g.status === 'finished') {
-            if (g.player1_score > g.player2_score) winner = g.player1;
-            else if (g.player2_score > g.player1_score) winner = g.player2;
-          }
-          return {
-            id: g.id,
-            player1: g.player1,
-            player2: g.player2,
-            player1Score: g.player1_score,
-            player2Score: g.player2_score,
-            currentTurn: g.current_turn,
-            categoryRound: g.round || 0,
-            round: g.round || 0,
-            status: g.status,
-            difficulty: g.difficulty,
-            categoryRounds: g.rounds_data || [],
-            winner: winner,
-            questionHistory: [],
-            updatedAt: g.updated_at,
-            createdAt: g.created_at,
-            challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challenge_timeout_minutes),
-            challengeExpiresAt: g.challenge_expires_at || null
-          };
-        });
+      // Load games
+      const gamesRaw = await dsLoadGames(supabase, 200);
+      const gamesData = gamesRaw; // keep reference for stats sync below
+      if (gamesRaw.length > 0) {
+        const games = gamesRaw.map(g => ({
+          ...g,
+          challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challengeTimeoutMinutes)
+        }));
         setAllGames(games);
         setActiveGames(games.filter(g => g.status !== 'finished'));
         updateLeaderboard(games, allUsers);
@@ -3119,43 +3038,31 @@ export default function BaederApp() {
       }
 
       // Load all user stats for trainer dashboard cards
-      const { data: allStatsData, error: allStatsError } = await supabase
-        .from('user_stats')
-        .select('user_id, wins, losses, draws, category_stats');
-
-      if (allStatsError) {
-        console.log('All stats load error:', allStatsError.message);
-        setStatsByUserId({});
-      } else if (allStatsData) {
+      try {
+        const allStatsData = await dsGetAllUserStats(supabase);
         const nextStatsByUserId = {};
-        allStatsData.forEach(row => {
+        (allStatsData || []).forEach(row => {
           const wins = row.wins || 0;
           const losses = row.losses || 0;
           const draws = row.draws || 0;
-          const xpMeta = getXpMetaFromCategoryStats(row.category_stats || {});
-          nextStatsByUserId[row.user_id] = {
-            wins,
-            losses,
-            draws,
+          const xpMeta = getXpMetaFromCategoryStats(row.category_stats || row.categoryStats || {});
+          nextStatsByUserId[row.user_id || row.userId] = {
+            wins, losses, draws,
             total: wins + losses + draws,
             totalXp: xpMeta.totalXp,
             xpBreakdown: xpMeta.breakdown
           };
         });
         setStatsByUserId(nextStatsByUserId);
+      } catch (e) {
+        console.log('All stats load error:', e.message);
+        setStatsByUserId({});
       }
 
-      // Load user stats from Supabase.
-      // Existing aggregate stats are authoritative; we only restore from finished
-      // games when the stored quiz totals are missing/empty.
+      // Load user stats — restore from finished games if needed
       if (user && user.id && gamesData) {
         try {
-          const { data: statsData } = await supabase
-            .from('user_stats')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
-
+          const statsData = await dsGetUserStats(supabase, user);
           let stats = buildUserStatsFromRow(statsData);
           let shouldPersistStats = doesUserStatsRowNeedRepair(statsData, stats);
           const currentUserName = normalizePlayerName(user.name);
@@ -3194,205 +3101,55 @@ export default function BaederApp() {
         }
       }
 
-      // Load messages from Supabase
-      const { data: messagesData } = await supabase
-        .from('messages')
-        .select('id, content, user_name, sender_id, created_at, chat_scope, recipient_id, user_avatar')
-        .order('created_at', { ascending: true })
-        .limit(100);
+      // Load messages
+      const userDirectory = Object.fromEntries(
+        (visibleUsers || []).filter(a => a?.id).map(a => [a.id, a])
+      );
+      const msgs = await dsLoadMessages(supabase, normalizeChatMessageRow, userDirectory);
+      setMessages(msgs);
 
-      if (messagesData) {
-        const userDirectory = Object.fromEntries(
-          (visibleUsers || [])
-            .filter((account) => account?.id)
-            .map((account) => [account.id, account])
-        );
-        const msgs = messagesData.map((messageRow) => normalizeChatMessageRow(messageRow, userDirectory));
-        setMessages(msgs);
-      }
+      // Load custom questions
+      const customQuestions = await dsLoadCustomQuestions(supabase);
+      setSubmittedQuestions(customQuestions);
 
-      // Load custom questions from Supabase
-      const { data: questionsData } = await supabase
-        .from('custom_questions')
-        .select('id, question, category, answers, correct, created_by, approved, created_at')
-        .order('created_at', { ascending: false })
-        .limit(200);
-
-      if (questionsData) {
-        const qs = questionsData.map(q => ({
-          id: q.id,
-          text: q.question,
-          category: q.category,
-          answers: q.answers,
-          correct: q.correct,
-          submittedBy: q.created_by,
-          approved: q.approved,
-          time: new Date(q.created_at).getTime()
-        }));
-        setSubmittedQuestions(qs);
-      }
-
-      // Load reported question feedback (if table exists)
+      // Load reported question feedback
       if (user?.permissions?.canManageUsers) {
         try {
-          const { data: reportsData, error: reportsError } = await supabase
-            .from('question_reports')
-            .select('id, question_text, question, category, question_key, source, note, answers, reported_by, user_name, reported_by_id, status, created_at')
-            .order('created_at', { ascending: false })
-            .limit(200);
-
-          if (!reportsError && Array.isArray(reportsData)) {
-            const remoteReports = reportsData.map((row) => {
-              const questionText = String(row.question_text || row.question || '').trim();
-              const category = String(row.category || 'unknown');
-              return {
-                id: row.id ? String(row.id) : `remote-${Date.parse(row.created_at || '') || Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                questionKey: String(
-                  row.question_key
-                  || getQuestionPerformanceKey({ q: questionText, category }, category)
-                ),
-                questionText,
-                category,
-                source: String(row.source || 'unknown'),
-                note: String(row.note || ''),
-                answers: Array.isArray(row.answers) ? row.answers : [],
-                reportedBy: String(row.reported_by || row.user_name || 'Unbekannt'),
-                reportedById: row.reported_by_id || null,
-                status: String(row.status || 'open'),
-                createdAt: row.created_at || new Date().toISOString()
-              };
-            });
-
-            const localReports = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
-            const safeLocalReports = Array.isArray(localReports) ? localReports : [];
-            const merged = [...remoteReports];
-            const seen = new Set(remoteReports.map((entry) => `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`));
-            safeLocalReports.forEach((entry) => {
-              const dedupeKey = `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`;
-              if (seen.has(dedupeKey)) return;
-              seen.add(dedupeKey);
-              merged.push(entry);
-            });
-            setQuestionReports(merged.slice(0, 500));
-          }
-        } catch (error) {
-          console.log('question_reports load skipped');
-        }
-      }
-
-      // Load materials from Supabase
-      const { data: materialsData } = await supabase
-        .from('materials')
-        .select('id, title, content, category, type, url, created_by, created_at')
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (materialsData) {
-        const mats = materialsData.map(m => ({
-          id: m.id,
-          title: m.title,
-          content: m.content,
-          category: m.category,
-          type: m.type,
-          url: m.url,
-          createdBy: m.created_by,
-          time: new Date(m.created_at).getTime()
-        }));
-        setMaterials(mats);
-      }
-
-      // Load resources from Supabase
-      try {
-        const { data: resourcesData, error: resourcesError } = await supabase
-          .from('resources')
-          .select('id, title, description, url, category, created_by, created_at')
-          .order('created_at', { ascending: false })
-          .limit(100);
-
-        if (resourcesError) {
-          console.error('Resources load error:', resourcesError);
-        } else if (resourcesData) {
-          const ress = resourcesData.map(r => ({
-            id: r.id,
-            title: r.title,
-            description: r.description,
-            url: r.url,
-            type: r.category,
-            addedBy: r.created_by,
-            time: new Date(r.created_at).getTime()
+          const remoteReports = await dsLoadQuestionReports(supabase);
+          // Enrich with questionKey if missing
+          const enriched = remoteReports.map(r => ({
+            ...r,
+            questionKey: r.questionKey || getQuestionPerformanceKey({ q: r.questionText, category: r.category }, r.category)
           }));
-          setResources(ress);
-        }
-      } catch (err) {
-        console.error('Resources fetch failed:', err);
+          const localReports = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
+          const safeLocalReports = Array.isArray(localReports) ? localReports : [];
+          const merged = [...enriched];
+          const seen = new Set(enriched.map(e => `${e.questionKey}|${e.createdAt}|${e.reportedBy}`));
+          safeLocalReports.forEach(entry => {
+            const key = `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`;
+            if (!seen.has(key)) { seen.add(key); merged.push(entry); }
+          });
+          setQuestionReports(merged.slice(0, 500));
+        } catch { console.log('question_reports load skipped'); }
       }
 
-      // Load news from Supabase
-      const { data: newsData } = await supabase
-        .from('news')
-        .select('id, title, content, author, created_at')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      // Load materials
+      setMaterials(await dsLoadMaterials(supabase));
 
-      if (newsData) {
-        const newsItems = newsData.map(n => ({
-          id: n.id,
-          title: n.title,
-          content: n.content,
-          author: n.author,
-          time: new Date(n.created_at).getTime()
-        }));
-        setNews(newsItems);
-      }
+      // Load resources
+      try { setResources(await dsLoadResources(supabase)); }
+      catch (err) { console.error('Resources fetch failed:', err); }
 
-      // Load exams from Supabase
-      const { data: examsData } = await supabase
-        .from('exams')
-        .select('id, title, description, exam_date, location, created_by, created_at')
-        .order('exam_date', { ascending: true })
-        .limit(50);
+      // Load news
+      setNews(await dsLoadNews(supabase));
 
-      if (examsData) {
-        const exs = examsData.map(e => ({
-          id: e.id,
-          title: e.title,
-          description: e.description,
-          date: e.exam_date,
-          location: e.location,
-          createdBy: e.created_by,
-          time: new Date(e.created_at).getTime()
-        }));
-        setExams(exs);
-      }
+      // Load exams
+      setExams(await dsLoadExams(supabase));
 
-      // Load flashcards from Supabase
-      const { data: flashcardsData } = await supabase
-        .from('flashcards')
-        .select('id, category, question, answer, approved, user_id, created_at')
-        .order('created_at', { ascending: false })
-        .limit(500);
-
-      if (flashcardsData) {
-        const fcs = [];
-        const pendingFcs = [];
-        flashcardsData.forEach(fc => {
-          const card = {
-            id: fc.id,
-            category: fc.category,
-            front: fc.question,
-            back: fc.answer,
-            approved: fc.approved,
-            userId: fc.user_id
-          };
-          if (fc.approved) {
-            fcs.push(card);
-          } else {
-            pendingFcs.push(card);
-          }
-        });
-        setUserFlashcards(fcs);
-        setPendingFlashcards(pendingFcs);
-      }
+      // Load flashcards
+      const flashcardsResult = await dsLoadFlashcards(supabase);
+      setUserFlashcards(flashcardsResult.approved);
+      setPendingFlashcards(flashcardsResult.pending);
 
       // Load user badges from Supabase
       if (user?.id) {
@@ -3468,39 +3225,10 @@ export default function BaederApp() {
 
   const approveUser = async (email) => {
     try {
-      // Update user in Supabase
-      const { data: account, error } = await supabase
-        .from('profiles')
-        .update({ approved: true })
-        .eq('email', email)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Initialize stats in Supabase
-      const { data: existingStats } = await supabase
-        .from('user_stats')
-        .select('*')
-        .eq('user_id', account.id)
-        .single();
-
-      if (!existingStats) {
-        await supabase
-          .from('user_stats')
-          .insert([{
-            user_id: account.id,
-            wins: 0,
-            losses: 0,
-            draws: 0,
-            category_stats: {},
-            opponents: {}
-          }]);
-      }
-
+      const result = await dsApproveUser(supabase, email, allUsers);
       loadData();
       playSound('whistle');
-      showToast(`${account.name} wurde freigeschaltet!`, 'success');
+      showToast(`${result.account?.name || email} wurde freigeschaltet!`, 'success');
     } catch (error) {
       console.error('Error approving user:', error);
       showToast('Fehler beim Freischalten', 'error');
@@ -3509,39 +3237,22 @@ export default function BaederApp() {
 
   const deleteUser = async (email) => {
     try {
-      // Get user from Supabase
-      const { data: account, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', email)
-        .single();
-
-      if (fetchError || !account) {
+      const targetUser = allUsers.find(
+        u => String(u.email || '').trim().toLowerCase() === String(email || '').trim().toLowerCase()
+      );
+      if (!targetUser) {
         showToast('User nicht gefunden', 'error');
         return;
       }
-
-      // NEVER allow deletion of admin accounts
-      if (account.role === 'admin') {
+      if (targetUser.role === 'admin') {
         showToast('Administratoren können nicht gelöscht werden!', 'error');
         return;
       }
-
       if (!confirm('Möchtest du diesen Nutzer wirklich löschen? Alle Daten werden unwiderruflich gelöscht!')) {
         return;
       }
 
-      // Delete profile from Supabase
-      // HINWEIS: Der Supabase Auth User bleibt erhalten und muss über
-      // eine Edge Function oder manuell im Dashboard gelöscht werden.
-      // Für vollständige Löschung: supabase.auth.admin.deleteUser(userId)
-      const { error: deleteError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('email', email);
-
-      if (deleteError) throw deleteError;
-
+      await dsDeleteUser(supabase, email, allUsers);
       loadData();
       showToast('Nutzerprofil und Daten wurden gelöscht', 'success');
     } catch (error) {
@@ -3588,12 +3299,7 @@ export default function BaederApp() {
         }
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('email', targetEmail);
-
-      if (error) throw error;
+      await dsChangeUserRole(supabase, targetEmail, newRole, allUsers);
 
       loadData();
       showToast(`Rolle geändert zu: ${PERMISSIONS[newRole].label}`, 'success');
@@ -4033,9 +3739,13 @@ export default function BaederApp() {
     };
   };
 
-  // Helper function to save user stats to Supabase
+  // Helper function to save user stats
   const saveUserStatsToSupabase = async (userInput, stats) => {
     try {
+      if (USE_SECURE_API) {
+        // NestJS backend manages stats server-side
+        return true;
+      }
       const safeStats = ensureUserStatsStructure(stats);
       const identity = await resolveUserStatsIdentity(userInput);
       if (!identity?.userId) {
@@ -4061,9 +3771,13 @@ export default function BaederApp() {
     }
   };
 
-  // Helper function to get user stats from Supabase
+  // Helper function to get user stats
   const getUserStatsFromSupabase = async (userInput) => {
     try {
+      if (USE_SECURE_API) {
+        const data = await dsGetUserStats(supabase, userInput);
+        return data ? buildUserStatsFromRow(data) : null;
+      }
       const identity = await resolveUserStatsIdentity(userInput);
       if (!identity?.userId) return null;
 
@@ -4746,6 +4460,13 @@ export default function BaederApp() {
 
   const autoForfeitGame = async (game, loser, winner, reason = 'turn_timeout') => {
     try {
+      if (USE_SECURE_API) {
+        // NestJS backend handles duel expiry via its lifecycle cron.
+        // Just update local UI state — the backend already marked it expired.
+        setAllGames(prev => prev.map(g => g.id === game.id ? { ...g, status: 'finished', winner } : g));
+        setActiveGames(prev => prev.filter(g => g.id !== game.id));
+        return;
+      }
       await supabase.from('games').update({
         status: 'finished',
         winner,
@@ -5454,9 +5175,9 @@ export default function BaederApp() {
     // Remove from localStorage
     const existingLocal = loadLocalPracticalAttempts();
     saveLocalPracticalAttempts(existingLocal.filter(entry => entry.id !== attemptId));
-    // Try to remove from Supabase
+    // Try to remove from backend
     try {
-      await supabase.from('practical_exam_attempts').delete().eq('id', attemptId);
+      await dsDsPracticalExamAttempt(supabase, attemptId);
     } catch {
       // Local removal already done, ignore remote error
     }
@@ -5814,16 +5535,7 @@ export default function BaederApp() {
   const saveTheoryExamAttempt = async (progress) => {
     if (!user?.id) return;
     try {
-      await supabase.from('theory_exam_attempts').insert([{
-        user_id: user.id,
-        user_name: user.name,
-        correct: progress.correct,
-        total: progress.total,
-        percentage: progress.percentage,
-        passed: progress.passed,
-        time_ms: progress.timeMs,
-        keyword_mode: examKeywordMode,
-      }]);
+      await dsSaveTheoryExamAttempt(supabase, user.id, user.name, progress, examKeywordMode);
     } catch (e) {
       console.warn('Fehler beim Speichern des Prüfungsergebnisses:', e);
     }
@@ -5833,12 +5545,8 @@ export default function BaederApp() {
     if (!user?.id) return;
     setTheoryExamHistoryLoading(true);
     try {
-      let query = supabase.from('theory_exam_attempts').select('*').order('created_at', { ascending: false });
-      if (!user.permissions?.canViewAllStats) {
-        query = query.eq('user_id', user.id);
-      }
-      const { data } = await query;
-      setTheoryExamHistory(data || []);
+      const data = await dsLoadTheoryExamHistory(supabase, user.id, user.permissions?.canViewAllStats);
+      setTheoryExamHistory(data);
     } catch (e) {
       console.warn('Fehler beim Laden der Prüfungshistorie:', e);
     } finally {
@@ -8633,17 +8341,10 @@ export default function BaederApp() {
     }
 
     try {
-      const { error } = await supabase
-        .from('app_config')
-        .upsert({
-          id: 'main',
-          menu_items: editingMenuItems,
-          theme_colors: editingThemeColors,
-          updated_at: new Date().toISOString(),
-          updated_by: user.name
-        });
-
-      if (error) throw error;
+      await dsSaveAppConfig(supabase, {
+        menuItems: editingMenuItems,
+        themeColors: editingThemeColors
+      });
 
       setAppConfig({
         menuItems: editingMenuItems,

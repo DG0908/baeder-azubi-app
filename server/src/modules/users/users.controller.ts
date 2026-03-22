@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Req } from '@nestjs/common';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -76,5 +76,15 @@ export class UsersController {
     @Req() request: Request
   ) {
     return this.usersService.updateOrganization(actor, userId, dto.organizationId ?? null, request);
+  }
+
+  @Roles(AppRole.ADMIN)
+  @Delete(':id')
+  remove(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') userId: string,
+    @Req() request: Request
+  ) {
+    return this.usersService.softDeleteUser(actor, userId, request);
   }
 }
