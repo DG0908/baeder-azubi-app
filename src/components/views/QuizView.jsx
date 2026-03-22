@@ -562,9 +562,6 @@ const QuizView = ({
                           title={formatAnswerLabel(answer)}
                           className={`p-4 rounded-xl font-medium transition-all min-h-[4.5rem] ${buttonClass}`}
                         >
-                          {isMulti && !answered && (
-                            <span className="mr-2">{isSelectedMulti ? '[x]' : '[ ]'}</span>
-                          )}
                           {answerLabel}
                         </button>
                       );

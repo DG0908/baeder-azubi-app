@@ -1,6 +1,6 @@
 # Repo Status
 
-Stand: 2026-03-22 (Update: Nacht)
+Stand: 2026-03-22 (Update: Abend)
 
 ## Zweck
 
@@ -16,8 +16,8 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 ## Aktueller Fokus
 
 - NestJS-Backend ist live auf `https://api.smartbaden.de`
-- Frontend-Migration von Supabase-Direktzugriff auf NestJS-API (Phase 0+)
-- Build-stabiler Dual-Mode ueber `VITE_ENABLE_SECURE_BACKEND_API`
+- Frontend-Migration Phase 3: App.jsx schrittweise auf `secureApi.js` umstellen
+- Neue Data-Service-Schicht (`src/lib/dataService.js`) abstrahiert Supabase/NestJS-Zugriff
 
 ## Was bereits vorliegt
 
@@ -42,32 +42,45 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 
 ## Tatsaechlicher Code-Stand dieses Branches
 
-- `server/` enthaelt bereits das neue NestJS-Backend mit Auth, RBAC und vielen Fachmodulen.
-- Das Frontend ist aktuell noch nicht auf dem Zielzustand.
-- `src/supabase.js` verwendet noch harte Fallback-Werte fuer Supabase.
-- `src/context/AuthContext.jsx` nutzt aktuell noch Supabase Auth direkt.
-- `src/App.jsx` und mehrere Views greifen weiterhin direkt auf Supabase zu.
-- `src/lib/secureApi.js` und `src/lib/secureApiClient.js` liegen bereits als Grundlage fuer den sicheren API-Pfad vor.
+- `server/` enthaelt das NestJS-Backend mit Auth, RBAC und vielen Fachmodulen.
+- `src/context/AuthContext.jsx` hat Dual-Mode (Supabase + NestJS) — Login/Logout/Session
+- `src/lib/dataService.js` (NEU) — abstrahiert alle Datenzugriffe hinter einheitlicher API
+- `src/App.jsx` — Kern-Funktionen migriert auf Dual-Mode:
+  - loadData, loadLightData (komplettes Daten-Laden)
+  - loadNotifications, sendNotification, markNotificationAsRead, clearAllNotifications
+  - getUserStatsFromSupabase, saveUserStatsToSupabase
+  - approveUser, deleteUser, changeUserRole
+  - saveTheoryExamAttempt, loadTheoryExamHistory, deletePracticalExamAttempt
+  - saveAppConfig, autoForfeitGame
+- `src/App.jsx` — NOCH NICHT migriert (~70 Supabase-Refs):
+  - Quiz-Spiel-Funktionen (challengePlayer, acceptChallenge, saveGameToSupabase, etc.)
+  - Berichtsheft-Funktionen (loadBerichtsheftEntries, saveBerichtsheft, etc.)
+  - Kontrollkarten + Klausurnoten (loadSchoolAttendance, loadExamGrades, etc.)
+  - Schwimm-Funktionen (loadSwimSessions, saveSwimSession, etc.)
+  - Chat-Nachricht senden (sendMessage)
+  - toggleSchoolCardPermission, toggleSignReportsPermission, toggleExamGradesPermission
+- 5 extrahierte Views haben eigene Supabase-Imports: AdminView, CollectionView, FlashcardsView, ForumView, ProfileView
+- `server/src/modules/users/` — DELETE-Endpoint fuer User-Soft-Delete (NEU)
 
 ## Naechster konkreter Schritt
 
-Phase 0 aus `docs/supabase-to-nestjs-migration-plan.md`:
+Phase 3 fortsetzen — verbleibende Supabase-Aufrufe in App.jsx migrieren:
 
-1. `src/supabase.js` auf sicheren Bootstrap ohne harte Fallback-Secrets umbauen (Dual-Mode TDZ-Fix)
-2. `src/context/AuthContext.jsx` fuer Dual-Mode vorbereiten
-3. Frontend schrittweise auf `secureApi.js` umstellen
-4. Traefik-Restart-Script stabilisieren (IP-Zuweisung nach Container-Neustart)
+1. Quiz-Spiel-Funktionen (challengePlayer, acceptChallenge, saveGameToSupabase, finishGame)
+2. Berichtsheft-Funktionen (laden, speichern, Signatur, Entwuerfe)
+3. Kontrollkarten + Klausurnoten
+4. Schwimm-Funktionen
+5. Chat-Nachricht senden (sendMessage)
+6. 5 extrahierte Views auf Dual-Mode umstellen
 
 ## Offene Risiken
 
-- Der aktuelle Frontend-Branch ist noch stark Supabase-abhaengig.
-- Der fruehere Migrationscommit `df7bd38` ist nur Referenz, kein sicherer Blind-Merge.
-- Traefik-Routing nutzt feste Container-IP (10.0.1.9) — aendert sich bei Container-Neustart.
-  Ein Restart-Script (`scripts/update-traefik.sh`) auf dem VPS behebt das automatisch.
-- Rate Limiting erst mit NestJS-Backend moeglich (Throttler-Modul vorhanden).
-- SMTP noch nicht konfiguriert (leere Env-Vars) — Passwort-Reset-Mails etc. funktionieren noch nicht.
-- Push-Subscriptions werden aktuell in der Supabase-DB gespeichert, nicht in der NestJS-DB.
-- Push-Versand laeuft ueber den Legacy-Backend (`push.smartbaden.de`), nicht ueber NestJS.
+- ~70 Supabase-Referenzen in App.jsx noch nicht hinter Dual-Mode-Guard.
+- 5 extrahierte Views (AdminView, CollectionView, FlashcardsView, ForumView, ProfileView) nutzen Supabase direkt.
+- Traefik-Routing nutzt feste Container-IP — Restart-Script (`scripts/update-traefik.sh`) behebt das.
+- SMTP noch nicht konfiguriert — Passwort-Reset-Mails funktionieren noch nicht.
+- Push-Subscriptions in Supabase-DB, Push-Versand ueber Legacy-Backend (`push.smartbaden.de`).
+- Daten-Migration (Supabase → NestJS-DB) steht noch aus (Phase 2).
 
 ## Arbeitsregel
 

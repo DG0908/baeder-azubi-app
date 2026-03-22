@@ -148,6 +148,9 @@ export const secureUsersApi = {
   updateOrganization: (userId, payload) => apiRequest(`/users/${userId}/organization`, {
     method: 'PATCH',
     body: JSON.stringify(payload)
+  }),
+  deleteUser: (userId) => apiRequest(`/users/${userId}`, {
+    method: 'DELETE'
   })
 };
 
