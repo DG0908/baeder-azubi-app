@@ -477,8 +477,8 @@ export class AuthService {
         tokenType: 'access'
       },
       {
-        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_ACCESS_TTL')
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET')!,
+        expiresIn: this.configService.get<string>('JWT_ACCESS_TTL')! as any
       }
     );
 
@@ -488,8 +488,8 @@ export class AuthService {
         tokenType: 'refresh'
       },
       {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_REFRESH_TTL')
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET')!,
+        expiresIn: this.configService.get<string>('JWT_REFRESH_TTL')! as any
       }
     );
 

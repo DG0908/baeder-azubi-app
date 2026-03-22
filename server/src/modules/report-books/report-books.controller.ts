@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req } from '@nestjs/common';
+import { AppRole } from '@prisma/client';
 import { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { AssignReportBookTrainerDto } from './dto/assign-report-book-trainer.dto';
 import { ListReportBooksQueryDto } from './dto/list-report-books.query.dto';
@@ -26,6 +28,7 @@ export class ReportBooksController {
     return this.reportBooksService.updateProfile(actor, dto, request);
   }
 
+  @Roles(AppRole.ADMIN, AppRole.AUSBILDER)
   @Get('pending-review')
   listPendingReview(@CurrentUser() actor: AuthenticatedUser) {
     return this.reportBooksService.listPendingReview(actor);
@@ -63,6 +66,7 @@ export class ReportBooksController {
     return this.reportBooksService.submit(actor, dto, request);
   }
 
+  @Roles(AppRole.ADMIN, AppRole.AUSBILDER)
   @Patch(':id/assignment')
   assignTrainer(
     @CurrentUser() actor: AuthenticatedUser,
@@ -73,6 +77,7 @@ export class ReportBooksController {
     return this.reportBooksService.assignTrainer(actor, entryId, dto, request);
   }
 
+  @Roles(AppRole.ADMIN, AppRole.AUSBILDER)
   @Delete(':id')
   remove(
     @CurrentUser() actor: AuthenticatedUser,

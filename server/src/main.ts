@@ -17,7 +17,24 @@ async function bootstrap() {
     .filter(Boolean);
 
   app.setGlobalPrefix('api');
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          fontSrc: ["'self'", 'https:', 'data:'],
+          connectSrc: ["'self'", ...corsOrigins],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"]
+        }
+      }
+    })
+  );
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
@@ -31,7 +48,7 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors({
-    origin(origin, callback) {
+    origin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
       if (!origin || corsOrigins.length === 0 || corsOrigins.includes(origin)) {
         callback(null, true);
         return;

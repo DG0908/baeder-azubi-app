@@ -16,11 +16,7 @@ let supabase = null;
 if (supabaseUrl && supabaseAnonKey) {
   supabase = createClient(supabaseUrl, supabaseAnonKey);
 } else if (!ENABLE_SECURE_BACKEND_API) {
-  // Legacy-Fallback: Produktions-Supabase direkt
-  supabase = createClient(
-    'https://db.smartbaden.de',
-    'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3MDAwMDAwMDAsICJleHAiOiAyMjAwMDAwMDAwfQ.Ln6kjS3VxpyhSMMQQv_GmSRrTHXGPHasjdoAUlSLeJk'
-  );
+  console.error('[supabase] VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set when secure backend is disabled.');
 } else {
   if (import.meta.env.DEV) {
     console.info('[supabase] Secure backend API enabled — Supabase client disabled.');
