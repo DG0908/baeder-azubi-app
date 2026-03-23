@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AccountStatus, Prisma, User } from '@prisma/client';
 import * as argon2 from 'argon2';
+import * as bcrypt from 'bcrypt';
 import { createHash, randomBytes } from 'crypto';
 import { Request, Response } from 'express';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
@@ -147,7 +148,22 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials.');
     }
 
-    const passwordMatches = await argon2.verify(user.passwordHash, dto.password);
+    // Try Argon2 first, then bcrypt fallback (for migrated Supabase users)
+    let passwordMatches = false;
+    const isBcryptHash = user.passwordHash.startsWith('$2');
+    if (isBcryptHash) {
+      passwordMatches = await bcrypt.compare(dto.password, user.passwordHash);
+      if (passwordMatches) {
+        // Re-hash with Argon2 for future logins
+        const argon2Hash = await argon2.hash(dto.password);
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { passwordHash: argon2Hash }
+        });
+      }
+    } else {
+      passwordMatches = await argon2.verify(user.passwordHash, dto.password);
+    }
     if (!passwordMatches) {
       throw new UnauthorizedException('Invalid credentials.');
     }
@@ -266,7 +282,10 @@ export class AuthService {
       throw new UnauthorizedException('Account not found.');
     }
 
-    const passwordMatches = await argon2.verify(existingUser.passwordHash, dto.currentPassword);
+    const isBcryptHash = existingUser.passwordHash.startsWith('$2');
+    const passwordMatches = isBcryptHash
+      ? await bcrypt.compare(dto.currentPassword, existingUser.passwordHash)
+      : await argon2.verify(existingUser.passwordHash, dto.currentPassword);
     if (!passwordMatches) {
       throw new UnauthorizedException('Current password is invalid.');
     }
