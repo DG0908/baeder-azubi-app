@@ -16,7 +16,18 @@ nest_sql() {
   echo "$1" | $NEST -q 2>&1
 }
 
-echo "=== Supabase → NestJS Data Migration v2 ==="
+# Convert postgres boolean t/f to true/false
+bool() {
+  case "$1" in
+    t) echo "true" ;;
+    f) echo "false" ;;
+    true) echo "true" ;;
+    false) echo "false" ;;
+    *) echo "false" ;;
+  esac
+}
+
+echo "=== Supabase → NestJS Data Migration v3 ==="
 echo ""
 
 # =============================================================================
@@ -36,7 +47,7 @@ $SUPA -F'|' -c "SELECT id, name, slug, contact_name, contact_email, is_active, c
   [ -z "$id" ] && continue
   SAFE_NAME=$(echo "$name" | sed "s/'/''/g")
   nest_sql "INSERT INTO \"Organization\" (id, name, slug, \"contactName\", \"contactEmail\", \"isActive\", \"createdAt\", \"updatedAt\")
-    VALUES ('$id', '$SAFE_NAME', '$slug', NULLIF('$cname',''), NULLIF('$cemail',''), $active, '$cat', '$uat')
+    VALUES ('$id', '$SAFE_NAME', '$slug', NULLIF('$cname',''), NULLIF('$cemail',''), $(bool "$active"), '$cat', '$uat')
     ON CONFLICT (id) DO NOTHING;"
   echo "  Organization '$name' migrated"
 done
@@ -74,7 +85,7 @@ while IFS='|' read -r uid email name role approved training_end created_at last_
     \"isDeleted\", \"createdAt\", \"updatedAt\"
   ) VALUES (
     '$uid', '$email', '$SAFE_NAME', '$PW_HASH', '$NEST_ROLE', '$NEST_STATUS',
-    ${can_sign_reports:-false}, ${can_view_school_cards:-false}, ${can_view_exam_grades:-false},
+    $(bool "${can_sign_reports:-f}"), $(bool "${can_view_school_cards:-f}"), $(bool "${can_view_exam_grades:-f}"),
     $([ -z "$berichtsheft_profile" ] && echo "NULL" || echo "'$SAFE_BH_PROFILE'"),
     $([ -z "$org_id" ] && echo "NULL" || echo "'$org_id'"),
     $([ -z "$training_end" ] && echo "NULL" || echo "'$training_end'"),
@@ -144,7 +155,7 @@ while IFS='|' read -r id user_name title message type is_read created_at; do
     id, \"userId\", title, message, type, \"isRead\", \"createdAt\"
   ) VALUES (
     '$id', '$RESOLVED_UID', '$SAFE_TITLE', '$SAFE_MSG', '$NOTIF_TYPE',
-    $is_read, '$created_at'
+    $(bool "$is_read"), '$created_at'
   ) ON CONFLICT (id) DO NOTHING;"
   NOTIF_COUNT=$((NOTIF_COUNT + 1))
 done < <($SUPA -F'|' -c "SELECT id, user_name, title, message, type, read, created_at FROM notifications;")
@@ -281,7 +292,7 @@ while IFS='|' read -r id user_id category question answer approved created_at; d
     approved, \"createdAt\", \"updatedAt\"
   ) VALUES (
     '$id', '$USER_ORG', '$user_id', '$category', '$SAFE_Q', '$SAFE_A',
-    $approved, '$created_at', '$created_at'
+    $(bool "$approved"), '$created_at', '$created_at'
   ) ON CONFLICT (id) DO NOTHING;"
   FC_COUNT=$((FC_COUNT + 1))
 done < <($SUPA -F'|' -c "SELECT id, user_id, category, question, answer, approved, created_at FROM flashcards;")
@@ -419,7 +430,7 @@ while IFS='|' read -r id user_id exam_type average_grade graded_count passed res
     '$NEW_ID', '$USER_ORG', '$user_id', '${created_by:-$user_id}', '${exam_type:-practical}',
     $([ -z "$average_grade" ] && echo "NULL" || echo "$average_grade"),
     ${graded_count:-0},
-    $([ -z "$passed" ] && echo "NULL" || echo "$passed"),
+    $([ -z "$passed" ] && echo "NULL" || echo "$(bool "$passed")"),
     0, '$SAFE_ROWS', '$created_at'
   ) ON CONFLICT (id) DO NOTHING;"
   PRAC_COUNT=$((PRAC_COUNT + 1))
@@ -447,7 +458,7 @@ while IFS='|' read -r id user_id category title content pinned locked last_reply
     pinned, locked, \"lastReplyAt\", \"createdAt\", \"updatedAt\"
   ) VALUES (
     '$id', '$USER_ORG', '$user_id', '$category', '$SAFE_TITLE', '$SAFE_CONTENT',
-    ${pinned:-false}, ${locked:-false},
+    $(bool "${pinned:-f}"), $(bool "${locked:-f}"),
     $([ -z "$last_reply_at" ] && echo "NULL" || echo "'$last_reply_at'"),
     '$created_at', '$created_at'
   ) ON CONFLICT (id) DO NOTHING;"
@@ -564,7 +575,7 @@ while IFS='|' read -r id user_id correct total percentage passed time_ms keyword
     id, \"organizationId\", \"userId\", \"keywordMode\", questions, \"totalQuestions\",
     \"startedAt\", \"expiresAt\", \"completedAt\", \"createdAt\", \"updatedAt\"
   ) VALUES (
-    '$SESSION_ID', '$USER_ORG', '$user_id', ${keyword_mode:-false}, '[]'::jsonb, ${total:-0},
+    '$SESSION_ID', '$USER_ORG', '$user_id', $(bool "${keyword_mode:-f}"), '[]'::jsonb, ${total:-0},
     '$created_at', '$created_at', '$created_at', '$created_at', '$created_at'
   ) ON CONFLICT (id) DO NOTHING;"
 
@@ -573,7 +584,7 @@ while IFS='|' read -r id user_id correct total percentage passed time_ms keyword
     percentage, passed, \"timeMs\", \"keywordMode\", \"createdAt\"
   ) VALUES (
     '$id', '$USER_ORG', '$user_id', '$SESSION_ID', ${correct:-0}, ${total:-0},
-    ${percentage:-0}, $passed, ${time_ms:-0}, ${keyword_mode:-false}, '$created_at'
+    ${percentage:-0}, $(bool "$passed"), ${time_ms:-0}, $(bool "${keyword_mode:-f}"), '$created_at'
   ) ON CONFLICT (id) DO NOTHING;"
   TEA_COUNT=$((TEA_COUNT + 1))
 done < <($SUPA -F'|' -c "SELECT id, user_id, correct, total, percentage, passed, time_ms, keyword_mode, created_at FROM theory_exam_attempts;")
