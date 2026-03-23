@@ -4,7 +4,7 @@
 # Run on VPS: bash /opt/azubi-app/scripts/migrate-supabase-to-nestjs.sh
 # =============================================================================
 
-set -euo pipefail
+set -uo pipefail
 
 SUPA="docker exec supabase-db-1 psql -U supabase_admin -d postgres -t -A"
 DB_URL=$(docker exec azubi-app-server-1 printenv DATABASE_URL)
@@ -171,12 +171,19 @@ echo "--- Step 5: Migrating SwimSessions ---"
 
 SWIM_COUNT=0
 while IFS='|' read -r id user_id user_name user_role date distance time_minutes style notes challenge_id confirmed confirmed_by confirmed_at created_at; do
+  # Skip empty/whitespace-only lines
+  id=$(echo "$id" | tr -d '[:space:]')
+  user_id=$(echo "$user_id" | tr -d '[:space:]')
   [ -z "$id" ] && continue
+  [ -z "$user_id" ] && continue
 
   USER_ORG=$($SUPA -c "SELECT organization_id FROM profiles WHERE id='$user_id';" | tr -d '[:space:]')
   [ -z "$USER_ORG" ] && continue
 
   SAFE_NOTES=$(echo "$notes" | sed "s/'/''/g")
+  confirmed_by=$(echo "$confirmed_by" | xargs)
+  confirmed_at=$(echo "$confirmed_at" | xargs)
+  challenge_id=$(echo "$challenge_id" | xargs)
 
   # Map confirmed boolean to status enum
   if [ "$confirmed" = "t" ]; then
