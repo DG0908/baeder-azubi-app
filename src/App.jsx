@@ -778,10 +778,10 @@ export default function BaederApp() {
     wins: row.wins || 0,
     losses: row.losses || 0,
     draws: row.draws || 0,
-    categoryStats: row.category_stats || {},
+    categoryStats: row.categoryStats || row.category_stats || {},
     opponents: row.opponents || {},
-    winStreak: row.win_streak || 0,
-    bestWinStreak: row.best_win_streak || 0
+    winStreak: row.winStreak ?? row.win_streak ?? 0,
+    bestWinStreak: row.bestWinStreak ?? row.best_win_streak ?? 0
   } : createEmptyUserStats());
 
   const buildQuizTotalsFromFinishedGames = (gamesInput, currentUserName, existingStats = null) => {
