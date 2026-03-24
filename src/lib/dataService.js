@@ -979,8 +979,7 @@ export const createDuel = async (supabase, payload) => {
   if (USE_SECURE_API) {
     const result = await secureDuelsApi.create({
       opponentId: payload.opponentId,
-      requestTimeoutMinutes: payload.challengeTimeoutMinutes || undefined,
-      category: payload.difficulty || undefined
+      requestTimeoutMinutes: payload.challengeTimeoutMinutes || undefined
     });
     return mapDuelToGame(result);
   }
