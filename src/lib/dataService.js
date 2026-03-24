@@ -149,47 +149,31 @@ export const saveAppConfig = async (supabase, config) => {
 // ─── Games / Duels ───────────────────────────────────────────────────
 
 const mapDuelToGame = (d, currentUserId) => {
-  // The API returns myScore/opponentScore relative to the logged-in user.
-  // Map them to player1Score (challenger) / player2Score (opponent) based on
-  // whether the current user is the challenger or the opponent.
-  const iAmChallenger = !currentUserId || d.challenger?.id === currentUserId;
-  const p1Score = iAmChallenger ? (d.myScore ?? 0) : (d.opponentScore ?? 0);
-  const p2Score = iAmChallenger ? (d.opponentScore ?? 0) : (d.myScore ?? 0);
-
-  // NestJS duels: both players answer independently (no turns).
-  // "currentTurn" = current user's name when they still have unanswered questions.
-  const totalQuestions = d.questionCount || 5;
-  const myAnswered = d.myAnsweredCount ?? 0;
   const status = mapDuelStatus(d.status);
-  const myName = iAmChallenger
-    ? (d.challenger?.displayName || '')
-    : (d.opponent?.displayName || '');
-  const currentTurn = (status === 'active' && myAnswered < totalQuestions) ? myName : '';
+  // Restore client-managed game state from backend gameState JSON
+  const gs = d.gameState || {};
 
   return {
     id: d.id,
     player1: d.challenger?.displayName || '',
     player2: d.opponent?.displayName || '',
-    player1Score: p1Score,
-    player2Score: p2Score,
-    currentTurn,
-    categoryRound: 0,
-    round: 0,
-    status,
-    difficulty: 'normal',
-    categoryRounds: [],
-    winner: d.winnerUser?.displayName || null,
+    player1Score: gs.player1Score ?? 0,
+    player2Score: gs.player2Score ?? 0,
+    currentTurn: gs.currentTurn || '',
+    categoryRound: gs.categoryRound ?? 0,
+    round: gs.categoryRound ?? 0,
+    status: gs.status || status,
+    difficulty: gs.difficulty || 'normal',
+    categoryRounds: gs.categoryRounds || [],
+    winner: gs.winner || d.winnerUser?.displayName || null,
     questionHistory: [],
     updatedAt: d.updatedAt,
     createdAt: d.createdAt,
-    challengeTimeoutMinutes: 60,
+    challengeTimeoutMinutes: gs.challengeTimeoutMinutes || 60,
     challengeExpiresAt: d.expiresAt || null,
-    questionCount: totalQuestions,
+    questionCount: d.questionCount || 5,
     challengerId: d.challenger?.id || null,
-    opponentId: d.opponent?.id || null,
-    myAnsweredCount: myAnswered,
-    // Server-managed questions (from toDuelPayload responses)
-    serverQuestions: d.questions || null
+    opponentId: d.opponent?.id || null
   };
 };
 
@@ -1031,8 +1015,19 @@ export const getDuelWithQuestions = async (supabase, duelId, currentUserId = nul
 
 export const saveDuelState = async (supabase, game) => {
   if (USE_SECURE_API) {
-    // NestJS backend manages duel state server-side via submitAnswer.
-    // We still call submitAnswer for answer tracking; game state sync is a no-op.
+    // Save client-managed game state to NestJS backend as JSON
+    const gameState = {
+      player1Score: game.player1Score,
+      player2Score: game.player2Score,
+      currentTurn: game.currentTurn,
+      categoryRound: game.categoryRound || 0,
+      status: game.status,
+      difficulty: game.difficulty,
+      categoryRounds: game.categoryRounds || [],
+      winner: game.winner || null,
+      challengeTimeoutMinutes: game.challengeTimeoutMinutes
+    };
+    await secureDuelsApi.updateGameState(game.id, gameState);
     return;
   }
   const updateData = {

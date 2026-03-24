@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
@@ -41,6 +41,15 @@ export class DuelsController {
     @Req() request: Request
   ) {
     return this.duelsService.accept(actor, duelId, request);
+  }
+
+  @Patch(':id/state')
+  updateGameState(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') duelId: string,
+    @Body() body: { gameState: Record<string, unknown> }
+  ) {
+    return this.duelsService.updateGameState(actor, duelId, body.gameState);
   }
 
   @Post(':id/answers')

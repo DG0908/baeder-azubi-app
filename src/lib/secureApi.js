@@ -203,6 +203,10 @@ export const secureDuelsApi = {
   submitAnswer: (duelId, payload) => apiRequest(`/duels/${duelId}/answers`, {
     method: 'POST',
     body: JSON.stringify(payload)
+  }),
+  updateGameState: (duelId, gameState) => apiRequest(`/duels/${duelId}/state`, {
+    method: 'PATCH',
+    body: JSON.stringify({ gameState })
   })
 };
 

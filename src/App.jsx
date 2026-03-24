@@ -92,8 +92,6 @@ import {
   createDuel as dsCreateDuel,
   acceptDuel as dsAcceptDuel,
   saveDuelState as dsSaveDuelState,
-  getDuelWithQuestions as dsGetDuelWithQuestions,
-  submitDuelAnswer as dsSubmitDuelAnswer,
   loadSwimSessionEntries as dsLoadSwimSessions,
   saveSwimSessionEntry as dsSaveSwimSession,
   confirmSwimSessionEntry as dsConfirmSwimSession,
@@ -3562,38 +3560,52 @@ export default function BaederApp() {
 
     try {
       const acceptedAt = new Date().toISOString();
-      const acceptedGame = await dsAcceptDuel(supabase, gameId, user?.id);
+      await dsAcceptDuel(supabase, gameId, user?.id);
 
-      // Use the mapped response from NestJS (includes serverQuestions, currentTurn)
-      const updatedGame = acceptedGame?.id ? acceptedGame : {
-        ...game,
-        status: 'active',
-        categoryRound: 0,
-        categoryRounds: [],
-        updatedAt: acceptedAt,
-        currentTurn: user.name
-      };
-
+      game.status = 'active';
+      game.categoryRound = 0;
+      game.categoryRounds = [];
+      game.updatedAt = acceptedAt;
+      // Challenger (player1) picks first category
+      game.currentTurn = game.player1;
       setActiveGames(prev => prev.map((entry) => (
-        entry.id === gameId ? { ...entry, ...updatedGame } : entry
+        entry.id === gameId
+          ? {
+              ...entry,
+              status: 'active',
+              categoryRound: 0,
+              categoryRounds: [],
+              currentTurn: game.player1,
+              updatedAt: acceptedAt
+            }
+          : entry
       )));
       setAllGames(prev => prev.map((entry) => (
-        entry.id === gameId ? { ...entry, ...updatedGame } : entry
+        entry.id === gameId
+          ? {
+              ...entry,
+              status: 'active',
+              categoryRound: 0,
+              categoryRounds: [],
+              currentTurn: game.player1,
+              updatedAt: acceptedAt
+            }
+          : entry
       )));
 
       if (game.player1 && game.player1 !== user.name) {
         await sendNotification(
           game.player1,
           '⚡ Herausforderung angenommen - du bist dran!',
-          `${user.name} hat deine Quizduell-Herausforderung angenommen.`,
+          `${user.name} hat deine Quizduell-Herausforderung angenommen. Du darfst die erste Kategorie wählen.`,
           'info'
         );
       }
 
-      setCurrentGame(updatedGame);
+      setCurrentGame(game);
       setCategoryRound(0);
       setQuestionInCategory(0);
-      setPlayerTurn(updatedGame.currentTurn || user.name);
+      setPlayerTurn(game.currentTurn);
       setQuizCategory(null);
       setCurrentQuestion(null);
       setCurrentCategoryQuestions([]);
@@ -3610,27 +3622,13 @@ export default function BaederApp() {
   };
 
   const continueGame = async (gameId) => {
-    let game = activeGames.find(g => g.id === gameId);
+    const game = activeGames.find(g => g.id === gameId);
     if (!game) return;
-
-    // In NestJS mode, fetch duel with server-managed questions
-    if (USE_SECURE_API) {
-      try {
-        const duelData = await dsGetDuelWithQuestions(supabase, gameId, user?.id);
-        if (duelData) {
-          game = duelData;
-          // Update the game in activeGames with fresh data
-          setActiveGames(prev => prev.map(g => g.id === gameId ? duelData : g));
-        }
-      } catch (err) {
-        console.error('Failed to load duel details:', err);
-      }
-    }
 
     setCurrentGame(game);
     setCategoryRound(game.categoryRound || 0);
     setQuestionInCategory(0);
-    setPlayerTurn(game.currentTurn || user.name);
+    setPlayerTurn(game.currentTurn);
     setCurrentQuestion(null);
     setAnswered(false);
     setSelectedAnswers([]);
@@ -4051,53 +4049,6 @@ export default function BaederApp() {
     showToast(nextStatus === 'resolved' ? 'Meldung als erledigt markiert.' : 'Meldung wieder geoeffnet.', 'info', 1800);
   };
 
-  // ─── Server Duel (NestJS) Question Flow ─────────────────────────────
-  // Maps server questions to frontend format and auto-starts the quiz.
-  const startServerDuelQuestions = (game) => {
-    if (!game?.serverQuestions?.length) return;
-
-    // Find first unanswered question
-    const unansweredIdx = game.serverQuestions.findIndex(sq => !sq.myAnswer);
-    if (unansweredIdx === -1) {
-      // All questions answered — show completion
-      showToast('Du hast bereits alle Fragen beantwortet!', 'info');
-      return;
-    }
-
-    const sq = game.serverQuestions[unansweredIdx];
-    const mappedQuestion = {
-      q: sq.question.prompt,
-      a: sq.question.options,
-      correct: sq.question.correctOptionIndex,
-      category: sq.question.category,
-      _duelQuestionId: sq.id,
-      _startTime: Date.now()
-    };
-
-    setPlayerTurn(user.name);
-    setQuizCategory(sq.question.category || 'mixed');
-    setCurrentCategoryQuestions(
-      game.serverQuestions.map(s => ({
-        q: s.question.prompt,
-        a: s.question.options,
-        correct: s.question.correctOptionIndex,
-        category: s.question.category,
-        _duelQuestionId: s.id,
-        _answered: !!s.myAnswer
-      }))
-    );
-    setQuestionInCategory(unansweredIdx);
-    setCurrentQuestion(mappedQuestion);
-    setAnswered(false);
-    setSelectedAnswers([]);
-    setLastSelectedAnswer(null);
-    resetQuizKeywordState();
-
-    const timeLimit = 30;
-    setTimeLeft(timeLimit);
-    setTimerActive(true);
-  };
-
   // Spieler wählt Kategorie → 5 zufällige Fragen werden für BEIDE Spieler gespeichert
   const selectCategory = async (catId) => {
     if (!currentGame || currentGame.currentTurn !== user.name) return;
@@ -4220,24 +4171,9 @@ export default function BaederApp() {
     // Single-Choice: Direkt antworten
     setAnswered(true);
     setTimerActive(false);
-    setLastSelectedAnswer(answerIndex);
+    setLastSelectedAnswer(answerIndex); // Speichere gewählte Antwort für Feedback
 
     const isCorrect = answerIndex === currentQuestion.correct;
-
-    // NestJS server duel: submit answer to API
-    if (USE_SECURE_API && currentQuestion._duelQuestionId && currentGame?.id) {
-      try {
-        const startTime = currentQuestion._startTime || Date.now();
-        await dsSubmitDuelAnswer(supabase, currentGame.id, {
-          duelQuestionId: currentQuestion._duelQuestionId,
-          selectedOptionIndex: answerIndex,
-          durationMs: Math.min(Date.now() - startTime, 300000)
-        });
-      } catch (err) {
-        console.error('Submit duel answer error:', err);
-      }
-    }
-
     await savePlayerAnswer(isCorrect, false, {
       answerType: 'single',
       selectedAnswer: answerIndex
@@ -4288,10 +4224,7 @@ export default function BaederApp() {
   // Speichert die Antwort des aktuellen Spielers
   const savePlayerAnswer = async (isCorrect, isTimeout, answerMeta = {}) => {
     const isPlayer1 = user.name === currentGame.player1;
-    const isServerDuel = USE_SECURE_API && currentGame.serverQuestions;
-    const currentCategoryRound = !isServerDuel
-      ? currentGame.categoryRounds?.[currentGame.categoryRound]
-      : null;
+    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
 
     // Daily Challenge Progress
     updateChallengeProgress('answer_questions', 1);
@@ -4319,21 +4252,19 @@ export default function BaederApp() {
       }
     }
 
-    // Antwort speichern (skip for server duels — answers stored server-side)
-    if (currentCategoryRound) {
-      const answer = {
-        questionIndex: questionInCategory,
-        correct: isCorrect,
-        timeout: isTimeout,
-        points: answerPoints,
-        ...answerMeta
-      };
+    // Antwort speichern
+    const answer = {
+      questionIndex: questionInCategory,
+      correct: isCorrect,
+      timeout: isTimeout,
+      points: answerPoints,
+      ...answerMeta
+    };
 
-      if (isPlayer1) {
-        currentCategoryRound.player1Answers.push(answer);
-      } else {
-        currentCategoryRound.player2Answers.push(answer);
-      }
+    if (isPlayer1) {
+      currentCategoryRound.player1Answers.push(answer);
+    } else {
+      currentCategoryRound.player2Answers.push(answer);
     }
 
     // Stats aktualisieren
@@ -4357,75 +4288,6 @@ export default function BaederApp() {
 
   // Funktion zum Weitergehen zur nächsten Frage/Runde
   const proceedToNextRound = async () => {
-    // Server duel: linear question progression
-    if (USE_SECURE_API && currentGame.serverQuestions) {
-      const totalQuestions = currentGame.serverQuestions.length;
-      const nextIdx = questionInCategory + 1;
-      if (nextIdx < totalQuestions) {
-        const sq = currentGame.serverQuestions[nextIdx];
-        // Skip already answered questions
-        if (sq.myAnswer) {
-          setQuestionInCategory(nextIdx);
-          // Find next unanswered
-          const unansweredIdx = currentGame.serverQuestions.findIndex((s, i) => i > questionInCategory && !s.myAnswer);
-          if (unansweredIdx === -1) {
-            // All done
-            showToast('Alle Fragen beantwortet! Warte auf deinen Gegner.', 'success');
-            setCurrentGame(null);
-            setCurrentQuestion(null);
-            setTimerActive(false);
-            // Reload games to get fresh state
-            try {
-              const games = await dsLoadGames(supabase, 200, user?.id);
-              setActiveGames(games.filter(g => g.status !== 'finished'));
-              setAllGames(games);
-            } catch (e) { /* ignore */ }
-            return;
-          }
-          const nextSq = currentGame.serverQuestions[unansweredIdx];
-          const mappedQ = {
-            q: nextSq.question.prompt,
-            a: nextSq.question.options,
-            correct: nextSq.question.correctOptionIndex,
-            category: nextSq.question.category,
-            _duelQuestionId: nextSq.id,
-            _startTime: Date.now()
-          };
-          setQuestionInCategory(unansweredIdx);
-          setCurrentQuestion(mappedQ);
-        } else {
-          const mappedQ = {
-            q: sq.question.prompt,
-            a: sq.question.options,
-            correct: sq.question.correctOptionIndex,
-            category: sq.question.category,
-            _duelQuestionId: sq.id,
-            _startTime: Date.now()
-          };
-          setQuestionInCategory(nextIdx);
-          setCurrentQuestion(mappedQ);
-        }
-        setAnswered(false);
-        setSelectedAnswers([]);
-        setLastSelectedAnswer(null);
-        resetQuizKeywordState();
-        setTimeLeft(30);
-        setTimerActive(true);
-      } else {
-        // All questions answered
-        showToast('Alle Fragen beantwortet! Warte auf deinen Gegner.', 'success');
-        setCurrentGame(null);
-        setCurrentQuestion(null);
-        setTimerActive(false);
-        try {
-          const games = await dsLoadGames(supabase, 200, user?.id);
-          setActiveGames(games.filter(g => g.status !== 'finished'));
-          setAllGames(games);
-        } catch (e) { /* ignore */ }
-      }
-      return;
-    }
-
     const isPlayer1 = user.name === currentGame.player1;
     const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
     const questionsInCurrentCategory = currentCategoryRound.questions.length;
@@ -8866,7 +8728,6 @@ export default function BaederApp() {
             confirmMultiSelectAnswer={confirmMultiSelectAnswer}
             proceedToNextRound={proceedToNextRound}
             userStats={userStats}
-            startServerDuelQuestions={startServerDuelQuestions}
           />
         )}
 
