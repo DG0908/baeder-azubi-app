@@ -150,22 +150,25 @@ export const saveAppConfig = async (supabase, config) => {
 
 const mapDuelToGame = (d) => ({
   id: d.id,
-  player1: d.challenger?.displayName || d.challengerName || '',
-  player2: d.opponent?.displayName || d.opponentName || '',
-  player1Score: d.challengerScore ?? 0,
+  player1: d.challenger?.displayName || '',
+  player2: d.opponent?.displayName || '',
+  player1Score: d.myScore ?? 0,
   player2Score: d.opponentScore ?? 0,
-  currentTurn: d.currentTurnName || d.currentTurn || '',
-  categoryRound: d.round ?? 0,
-  round: d.round ?? 0,
+  currentTurn: '',
+  categoryRound: 0,
+  round: 0,
   status: mapDuelStatus(d.status),
-  difficulty: d.difficulty || 'normal',
-  categoryRounds: d.roundsData || d.rounds || [],
-  winner: d.winner?.displayName || d.winnerName || null,
+  difficulty: 'normal',
+  categoryRounds: [],
+  winner: d.winnerUser?.displayName || null,
   questionHistory: [],
   updatedAt: d.updatedAt,
   createdAt: d.createdAt,
-  challengeTimeoutMinutes: d.requestTimeoutMinutes || 60,
-  challengeExpiresAt: d.expiresAt || null
+  challengeTimeoutMinutes: 60,
+  challengeExpiresAt: d.expiresAt || null,
+  questionCount: d.questionCount || 5,
+  challengerId: d.challenger?.id || null,
+  opponentId: d.opponent?.id || null
 });
 
 const mapDuelStatus = (status) => {
@@ -974,23 +977,12 @@ export const deleteFlashcardEntry = async (supabase, flashcardId) => {
 
 export const createDuel = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    const result = await secureDuelsApi.create(payload);
-    return {
-      id: result.id,
-      player1: result.challengerName || payload.player1,
-      player2: result.opponentName || payload.player2,
-      difficulty: result.difficulty || payload.difficulty,
-      status: String(result.status || 'waiting').toLowerCase(),
-      player1Score: result.challengerScore ?? 0,
-      player2Score: result.opponentScore ?? 0,
-      currentTurn: result.currentTurnName || payload.player1,
-      categoryRounds: result.roundsData || [],
-      categoryRound: 0, round: 0, questionHistory: [],
-      updatedAt: result.updatedAt || new Date().toISOString(),
-      createdAt: result.createdAt || new Date().toISOString(),
-      challengeTimeoutMinutes: payload.challengeTimeoutMinutes,
-      challengeExpiresAt: result.challengeExpiresAt || payload.challengeExpiresAt
-    };
+    const result = await secureDuelsApi.create({
+      opponentId: payload.opponentId,
+      requestTimeoutMinutes: payload.challengeTimeoutMinutes || undefined,
+      category: payload.difficulty || undefined
+    });
+    return mapDuelToGame(result);
   }
   // Supabase path handled in App.jsx (complex fallback logic)
   return null;

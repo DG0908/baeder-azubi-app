@@ -3450,7 +3450,7 @@ export default function BaederApp() {
   };
 
   // Quiz functions with Supabase
-  const challengePlayer = async (opponent, timeoutMinutesInput = DEFAULT_CHALLENGE_TIMEOUT_MINUTES) => {
+  const challengePlayer = async (opponent, timeoutMinutesInput = DEFAULT_CHALLENGE_TIMEOUT_MINUTES, opponentId = null) => {
     const now = Date.now();
     const timeoutMinutes = normalizeChallengeTimeoutMinutes(timeoutMinutesInput);
     const challengeExpiresAt = new Date(now + timeoutMinutes * 60 * 1000).toISOString();
@@ -3473,7 +3473,8 @@ export default function BaederApp() {
       if (USE_SECURE_API) {
         game = await dsCreateDuel(supabase, {
           player1: user.name, player2: opponent, difficulty: selectedDifficulty,
-          challengeTimeoutMinutes: timeoutMinutes, challengeExpiresAt
+          challengeTimeoutMinutes: timeoutMinutes, challengeExpiresAt,
+          opponentId: opponentId
         });
       } else {
         let timerColumnsUnavailable = false;
