@@ -54,6 +54,28 @@ type RefreshJwtPayload = {
   tokenType: 'refresh';
 };
 
+// ─── Account Lockout ──────────────────────────────────────────────────
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const CLEANUP_INTERVAL_MS = 10 * 60 * 1000; // cleanup every 10 min
+
+interface LoginAttemptRecord {
+  failedCount: number;
+  lockedUntil: number | null;
+}
+
+const loginAttempts = new Map<string, LoginAttemptRecord>();
+
+// Periodic cleanup of stale entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, record] of loginAttempts) {
+    if (record.lockedUntil && record.lockedUntil < now && record.failedCount === 0) {
+      loginAttempts.delete(key);
+    }
+  }
+}, CLEANUP_INTERVAL_MS);
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -63,6 +85,52 @@ export class AuthService {
     private readonly auditLogService: AuditLogService,
     private readonly mailerService: MailerService
   ) {}
+
+  private checkLockout(email: string): void {
+    const record = loginAttempts.get(email);
+    if (!record) return;
+
+    if (record.lockedUntil && record.lockedUntil > Date.now()) {
+      const minutesLeft = Math.ceil((record.lockedUntil - Date.now()) / 60000);
+      throw new UnauthorizedException(
+        `Account is temporarily locked. Try again in ${minutesLeft} minute(s).`
+      );
+    }
+
+    // Lock expired — reset
+    if (record.lockedUntil && record.lockedUntil <= Date.now()) {
+      record.failedCount = 0;
+      record.lockedUntil = null;
+    }
+  }
+
+  private recordFailedLogin(email: string, request?: Request): void {
+    const record = loginAttempts.get(email) || { failedCount: 0, lockedUntil: null };
+    record.failedCount += 1;
+
+    if (record.failedCount >= MAX_FAILED_ATTEMPTS) {
+      record.lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
+
+      // Log the lockout event
+      this.auditLogService.write({
+        action: 'auth.account_locked',
+        entityType: 'user',
+        entityId: null,
+        metadata: {
+          email,
+          failedAttempts: record.failedCount,
+          lockoutMinutes: LOCKOUT_DURATION_MS / 60000
+        },
+        request: request ?? ({} as Request)
+      }).catch(() => { /* best-effort logging */ });
+    }
+
+    loginAttempts.set(email, record);
+  }
+
+  private clearFailedLogins(email: string): void {
+    loginAttempts.delete(email);
+  }
 
   async register(dto: RegisterDto, request: Request) {
     const email = this.normalizeEmail(dto.email);
@@ -140,11 +208,15 @@ export class AuthService {
   async login(dto: LoginDto, response: Response, request: Request) {
     const email = this.normalizeEmail(dto.email);
 
+    // Check if account is locked out
+    this.checkLockout(email);
+
     const user = await this.prisma.user.findUnique({
       where: { email }
     });
 
     if (!user || user.isDeleted) {
+      this.recordFailedLogin(email, request);
       throw new UnauthorizedException('Invalid credentials.');
     }
 
@@ -169,8 +241,21 @@ export class AuthService {
       }
     }
     if (!passwordMatches) {
+      this.recordFailedLogin(email, request);
+
+      const record = loginAttempts.get(email);
+      const remaining = MAX_FAILED_ATTEMPTS - (record?.failedCount ?? 0);
+      if (remaining > 0 && remaining <= 2) {
+        throw new UnauthorizedException(
+          `Invalid credentials. ${remaining} attempt(s) remaining before lockout.`
+        );
+      }
+
       throw new UnauthorizedException('Invalid credentials.');
     }
+
+    // Successful login — clear lockout
+    this.clearFailedLogins(email);
 
     if (user.status !== AccountStatus.APPROVED) {
       throw new ForbiddenException('Account has not been approved for access.');
