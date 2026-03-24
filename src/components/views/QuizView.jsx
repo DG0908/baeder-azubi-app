@@ -318,7 +318,7 @@ const QuizView = ({
                       )
                     ) : (
                       <button
-                        onClick={() => challengePlayer(u.name, challengeTimeoutMinutes)}
+                        onClick={() => challengePlayer(u.name, challengeTimeoutMinutes, u.id)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-sm transition-all col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto whitespace-normal text-center leading-tight"
                       >
                         <Target size={16} />
