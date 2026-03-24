@@ -86,7 +86,9 @@ export const apiRequest = async (path, options = {}, retry = true) => {
     credentials: 'include'
   });
 
-  if (response.status === 401 && retry && !String(path).startsWith('/auth/')) {
+  const skipRefreshPaths = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/password-reset'];
+  const shouldSkipRefresh = skipRefreshPaths.some(p => String(path).startsWith(p));
+  if (response.status === 401 && retry && !shouldSkipRefresh) {
     try {
       await refreshApiSession();
       return apiRequest(path, options, false);
