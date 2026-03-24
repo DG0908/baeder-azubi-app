@@ -256,6 +256,49 @@ export class DuelsService {
     return this.toDuelPayload(updated, actor.id);
   }
 
+  async updateGameState(actor: AuthenticatedUser, duelId: string, gameState: Record<string, unknown>) {
+    const duel = await this.prisma.duel.findUnique({
+      where: { id: duelId },
+      select: { challengerId: true, opponentId: true, status: true }
+    });
+
+    if (!duel) {
+      throw new NotFoundException('Duel not found.');
+    }
+
+    if (duel.challengerId !== actor.id && duel.opponentId !== actor.id) {
+      throw new ForbiddenException('You are not a participant in this duel.');
+    }
+
+    // Allow updates for both active and pending duels (to sync game state)
+    const updated = await this.prisma.duel.update({
+      where: { id: duelId },
+      data: {
+        gameState: gameState as Prisma.JsonObject,
+        status: gameState.status === 'finished' ? DuelStatus.COMPLETED : undefined,
+        winnerUserId: gameState.winner ? await this.resolveWinnerUserId(duelId, gameState.winner as string) : undefined,
+        completedAt: gameState.status === 'finished' ? new Date() : undefined
+      },
+      include: duelInclude
+    });
+
+    return this.toDuelSummary(updated, actor.id);
+  }
+
+  private async resolveWinnerUserId(duelId: string, winnerDisplayName: string): Promise<string | undefined> {
+    const duel = await this.prisma.duel.findUnique({
+      where: { id: duelId },
+      include: {
+        challenger: { select: { id: true, displayName: true } },
+        opponent: { select: { id: true, displayName: true } }
+      }
+    });
+    if (!duel) return undefined;
+    if (duel.challenger.displayName === winnerDisplayName) return duel.challenger.id;
+    if (duel.opponent.displayName === winnerDisplayName) return duel.opponent.id;
+    return undefined;
+  }
+
   async listMine(actor: AuthenticatedUser) {
     await this.reconcileDueDuelsAndReminders({
       participantUserId: actor.id
@@ -745,6 +788,7 @@ export class DuelsService {
       id: duel.id,
       status: duel.status,
       questionCount: duel.questionCount,
+      gameState: duel.gameState,
       expiresAt: duel.expiresAt,
       startedAt: duel.startedAt,
       completedAt: duel.completedAt,

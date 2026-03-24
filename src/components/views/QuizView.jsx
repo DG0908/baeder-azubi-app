@@ -60,7 +60,6 @@ const QuizView = ({
   confirmMultiSelectAnswer,
   proceedToNextRound,
   userStats,
-  startServerDuelQuestions,
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
@@ -351,28 +350,15 @@ const QuizView = ({
               <p className="text-3xl font-bold text-blue-600">{currentGame.player1Score}</p>
             </div>
             <div className="text-center flex-1">
-              {currentGame.serverQuestions ? (
-                <>
-                  <p className="text-2xl font-bold text-gray-400">
-                    Frage {questionInCategory + 1}/{currentGame.serverQuestions.length}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {currentGame.myAnsweredCount ?? 0} von {currentGame.serverQuestions.length} beantwortet
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-2xl font-bold text-gray-400">Kategorie {(currentGame.categoryRound || 0) + 1}/4</p>
-                  {quizCategory && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      Frage {questionInCategory + 1}/5
-                    </p>
-                  )}
-                  <p className="text-sm text-gray-600 mt-2">
-                    {playerTurn === user.name ? 'Du bist dran!' : `${playerTurn} ist dran...`}
-                  </p>
-                </>
+              <p className="text-2xl font-bold text-gray-400">Kategorie {(currentGame.categoryRound || 0) + 1}/4</p>
+              {quizCategory && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Frage {questionInCategory + 1}/5
+                </p>
               )}
+              <p className="text-sm text-gray-600 mt-2">
+                {playerTurn === user.name ? 'Du bist dran!' : `${playerTurn} ist dran...`}
+              </p>
             </div>
             <div className="text-center flex-1">
               <p className="text-sm text-gray-600 mb-1">{currentGame.player2}</p>
@@ -380,29 +366,7 @@ const QuizView = ({
             </div>
           </div>
 
-          {/* Server Duel: Start button when no question is shown yet */}
-          {currentGame.serverQuestions && !currentQuestion && (
-            <div className="text-center py-8">
-              <div className="text-4xl font-black mb-4 text-emerald-600">QUIZDUELL</div>
-              <p className="text-xl font-bold mb-2">
-                {currentGame.player1} vs {currentGame.player2}
-              </p>
-              <p className="text-gray-600 mb-2">
-                {currentGame.serverQuestions.length} Fragen aus verschiedenen Kategorien
-              </p>
-              <p className="text-sm text-gray-500 mb-6">
-                Beide Spieler beantworten die gleichen Fragen unabhaengig voneinander.
-              </p>
-              <button
-                onClick={() => startServerDuelQuestions?.(currentGame)}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
-              >
-                Los geht's!
-              </button>
-            </div>
-          )}
-
-          {!currentGame.serverQuestions && currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && !currentQuestion && (
+          {currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && !currentQuestion && (
             <div className="mb-4 flex justify-center gap-2 flex-wrap">
               {currentGame.categoryRounds.map((cr, idx) => {
                 const cat = CATEGORIES.find(c => c.id === cr.categoryId);
@@ -415,7 +379,7 @@ const QuizView = ({
             </div>
           )}
 
-          {!currentGame.serverQuestions && !quizCategory && playerTurn === user.name && !waitingForOpponent && (
+          {!quizCategory && playerTurn === user.name && !waitingForOpponent && (
             <div>
               <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
                 <div>
@@ -455,7 +419,7 @@ const QuizView = ({
             </div>
           )}
 
-          {!currentGame.serverQuestions && !currentQuestion && playerTurn === user.name && currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && (() => {
+          {!currentQuestion && playerTurn === user.name && currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && (() => {
             const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
             if (!currentCatRound) return false;
             const isPlayer1 = user.name === currentGame.player1;
@@ -482,7 +446,7 @@ const QuizView = ({
             </div>
           )}
 
-          {!currentGame.serverQuestions && !quizCategory && playerTurn !== user.name && (
+          {!quizCategory && playerTurn !== user.name && (
             <div className="text-center py-12">
               <div className="text-4xl font-black mb-4 text-slate-500">WAIT</div>
               <p className="text-xl text-gray-600">Warte auf {playerTurn}...</p>

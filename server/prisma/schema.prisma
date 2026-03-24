@@ -260,6 +260,7 @@ model Duel {
   winnerUser     User?        @relation("WinnerDuels", fields: [winnerUserId], references: [id], onDelete: SetNull)
   status         DuelStatus   @default(PENDING)
   questionCount  Int          @default(10)
+  gameState      Json?
   expiresAt      DateTime?
   reminderSentAt DateTime?
   startedAt      DateTime?
