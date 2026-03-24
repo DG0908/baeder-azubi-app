@@ -3435,13 +3435,17 @@ export default function BaederApp() {
     
     if (account.role === 'azubi' && account.trainingEnd) {
       const endDate = new Date(account.trainingEnd).getTime();
-      const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+      if (isNaN(endDate)) return null;
+      const threeMonthsMs = 3 * 30 * 24 * 60 * 60 * 1000;
+      const daysLeft = Math.ceil((endDate + threeMonthsMs - now) / (1000 * 60 * 60 * 24));
       return daysLeft;
     }
-    
-    if (account.role === 'trainer' && account.lastLogin) {
+
+    if (account.role === 'trainer' && (account.lastLogin || account.last_login)) {
       const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
-      const deleteDate = account.lastLogin + sixMonthsMs;
+      const lastLoginTime = new Date(account.lastLogin || account.last_login).getTime();
+      if (isNaN(lastLoginTime)) return null;
+      const deleteDate = lastLoginTime + sixMonthsMs;
       const daysLeft = Math.ceil((deleteDate - now) / (1000 * 60 * 60 * 24));
       return daysLeft;
     }
