@@ -148,43 +148,53 @@ export const saveAppConfig = async (supabase, config) => {
 
 // ─── Games / Duels ───────────────────────────────────────────────────
 
-const mapDuelToGame = (d) => ({
-  id: d.id,
-  player1: d.challenger?.displayName || '',
-  player2: d.opponent?.displayName || '',
-  player1Score: d.myScore ?? 0,
-  player2Score: d.opponentScore ?? 0,
-  currentTurn: '',
-  categoryRound: 0,
-  round: 0,
-  status: mapDuelStatus(d.status),
-  difficulty: 'normal',
-  categoryRounds: [],
-  winner: d.winnerUser?.displayName || null,
-  questionHistory: [],
-  updatedAt: d.updatedAt,
-  createdAt: d.createdAt,
-  challengeTimeoutMinutes: 60,
-  challengeExpiresAt: d.expiresAt || null,
-  questionCount: d.questionCount || 5,
-  challengerId: d.challenger?.id || null,
-  opponentId: d.opponent?.id || null
-});
+const mapDuelToGame = (d, currentUserId) => {
+  // The API returns myScore/opponentScore relative to the logged-in user.
+  // Map them to player1Score (challenger) / player2Score (opponent) based on
+  // whether the current user is the challenger or the opponent.
+  const iAmChallenger = !currentUserId || d.challenger?.id === currentUserId;
+  const p1Score = iAmChallenger ? (d.myScore ?? 0) : (d.opponentScore ?? 0);
+  const p2Score = iAmChallenger ? (d.opponentScore ?? 0) : (d.myScore ?? 0);
+
+  return {
+    id: d.id,
+    player1: d.challenger?.displayName || '',
+    player2: d.opponent?.displayName || '',
+    player1Score: p1Score,
+    player2Score: p2Score,
+    currentTurn: '',
+    categoryRound: 0,
+    round: 0,
+    status: mapDuelStatus(d.status),
+    difficulty: 'normal',
+    categoryRounds: [],
+    winner: d.winnerUser?.displayName || null,
+    questionHistory: [],
+    updatedAt: d.updatedAt,
+    createdAt: d.createdAt,
+    challengeTimeoutMinutes: 60,
+    challengeExpiresAt: d.expiresAt || null,
+    questionCount: d.questionCount || 5,
+    challengerId: d.challenger?.id || null,
+    opponentId: d.opponent?.id || null,
+    myAnsweredCount: d.myAnsweredCount ?? 0
+  };
+};
 
 const mapDuelStatus = (status) => {
   if (!status) return 'unknown';
   const s = String(status).toUpperCase();
   if (s === 'PENDING') return 'waiting';
   if (s === 'ACTIVE') return 'playing';
-  if (s === 'FINISHED') return 'finished';
+  if (s === 'FINISHED' || s === 'COMPLETED') return 'finished';
   if (s === 'EXPIRED') return 'finished';
   return status.toLowerCase();
 };
 
-export const loadGames = async (supabase, limit = 200) => {
+export const loadGames = async (supabase, limit = 200, currentUserId = null) => {
   if (USE_SECURE_API) {
     const duels = await secureDuelsApi.list();
-    return (duels || []).map(mapDuelToGame);
+    return (duels || []).map(d => mapDuelToGame(d, currentUserId));
   }
 
   const { data } = await supabase
@@ -975,13 +985,13 @@ export const deleteFlashcardEntry = async (supabase, flashcardId) => {
 
 // ─── Quiz Duels ─────────────────────────────────────────────────────
 
-export const createDuel = async (supabase, payload) => {
+export const createDuel = async (supabase, payload, currentUserId = null) => {
   if (USE_SECURE_API) {
     const result = await secureDuelsApi.create({
       opponentId: payload.opponentId,
       requestTimeoutMinutes: payload.challengeTimeoutMinutes || undefined
     });
-    return mapDuelToGame(result);
+    return mapDuelToGame(result, currentUserId);
   }
   // Supabase path handled in App.jsx (complex fallback logic)
   return null;

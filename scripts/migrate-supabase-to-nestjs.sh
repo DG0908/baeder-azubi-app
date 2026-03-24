@@ -4,7 +4,7 @@
 # Run on VPS: bash /opt/azubi-app/scripts/migrate-supabase-to-nestjs.sh
 # =============================================================================
 
-set -uo pipefail
+set -euo pipefail
 
 SUPA="docker exec supabase-db-1 psql -U supabase_admin -d postgres -t -A"
 DB_URL=$(docker exec azubi-app-server-1 printenv DATABASE_URL)
@@ -13,7 +13,15 @@ DB_NAME=$(echo "$DB_URL" | sed -n 's|.*/\([^?]*\).*|\1|p')
 NEST="docker exec -i azubi-app-postgres-1 psql -U $DB_USER -d $DB_NAME"
 
 nest_sql() {
-  echo "$1" | $NEST -q 2>&1
+  local result
+  result=$(echo "$1" | $NEST -q 2>&1)
+  local rc=$?
+  if [ $rc -ne 0 ]; then
+    echo "ERROR: SQL failed (exit $rc): $1" >&2
+    echo "$result" >&2
+    exit 1
+  fi
+  echo "$result"
 }
 
 # Convert postgres boolean t/f to true/false
