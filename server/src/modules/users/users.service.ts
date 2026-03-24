@@ -393,6 +393,44 @@ export class UsersService {
     return updated;
   }
 
+  async deleteSelf(actor: AuthenticatedUser, request: Request) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: actor.id }
+    });
+
+    if (!user || user.isDeleted) {
+      throw new NotFoundException('User not found.');
+    }
+
+    if (user.role === AppRole.ADMIN) {
+      throw new ForbiddenException('Admin accounts cannot be self-deleted.');
+    }
+
+    await this.prisma.user.update({
+      where: { id: actor.id },
+      data: {
+        isDeleted: true,
+        refreshTokenHash: null,
+        status: AccountStatus.DISABLED
+      }
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'user.self_deleted',
+      'user',
+      actor.id,
+      {
+        email: user.email,
+        displayName: user.displayName,
+        role: user.role
+      },
+      request
+    );
+
+    return { deleted: true };
+  }
+
   async softDeleteUser(actor: AuthenticatedUser, userId: string, request: Request) {
     if (actor.id === userId) {
       throw new ForbiddenException('You cannot delete your own account from this endpoint.');

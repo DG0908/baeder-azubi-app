@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
+import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
+import { secureUsersApi } from '../../lib/secureApi';
 import { supabase } from '../../supabase';
 import { AVATARS, PERMISSIONS, getAvatarById, getLevel } from '../../data/constants';
 import AvatarBadge from '../ui/AvatarBadge';
@@ -28,6 +30,9 @@ const ProfileView = ({
   const [profileEditBirthDate, setProfileEditBirthDate] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [pushActionLoading, setPushActionLoading] = useState(false);
 
@@ -909,6 +914,78 @@ const ProfileView = ({
             Datenschutzerklärung
           </button>
         </div>
+
+        {/* Konto löschen (Art. 17 DSGVO) */}
+        {user?.role !== 'admin' && (
+          <div className={`mt-6 p-4 rounded-xl border-2 ${darkMode ? 'border-red-800 bg-red-900/20' : 'border-red-200 bg-red-50'}`}>
+            {!showDeleteConfirm ? (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className={`flex items-center gap-2 text-sm ${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'}`}
+              >
+                <Trash2 size={16} />
+                Konto und alle Daten löschen
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <p className={`text-sm font-semibold ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
+                  Konto unwiderruflich löschen?
+                </p>
+                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Alle deine Daten (Berichtshefte, Quizduelle, Chat-Nachrichten, Statistiken) werden gelöscht.
+                  Diese Aktion kann nicht rückgängig gemacht werden.
+                </p>
+                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Tippe <strong>LÖSCHEN</strong> zur Bestätigung:
+                </p>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="LÖSCHEN"
+                  className={`w-full px-3 py-2 rounded-lg border text-sm ${
+                    darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-gray-300'
+                  }`}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      if (deleteConfirmText !== 'LÖSCHEN') {
+                        showToast('Bitte tippe LÖSCHEN zur Bestätigung.', 'error');
+                        return;
+                      }
+                      setDeleting(true);
+                      try {
+                        if (isSecureBackendApiEnabled()) {
+                          await secureUsersApi.deleteSelf();
+                        } else {
+                          await supabase.from('profiles').delete().eq('id', user.id);
+                        }
+                        showToast('Dein Konto wurde gelöscht.', 'success');
+                        handleLogout();
+                      } catch (err) {
+                        console.error('Delete account error:', err);
+                        showToast('Fehler beim Löschen: ' + (err.message || 'Unbekannter Fehler'), 'error');
+                      } finally {
+                        setDeleting(false);
+                      }
+                    }}
+                    disabled={deleting || deleteConfirmText !== 'LÖSCHEN'}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-bold transition-all"
+                  >
+                    {deleting ? 'Wird gelöscht...' : 'Endgültig löschen'}
+                  </button>
+                  <button
+                    onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                    className={`px-4 py-2 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

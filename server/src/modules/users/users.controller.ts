@@ -90,6 +90,14 @@ export class UsersController {
     return this.usersService.updatePermissions(actor, userId, dto, request);
   }
 
+  @Delete('me')
+  deleteSelf(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: Request
+  ) {
+    return this.usersService.deleteSelf(user, request);
+  }
+
   @Roles(AppRole.ADMIN)
   @Delete(':id')
   remove(
