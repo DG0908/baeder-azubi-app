@@ -620,13 +620,12 @@ export class AuthService {
 
   private setRefreshCookie(response: Response, refreshToken: string) {
     const cookieDomain = String(this.configService.get<string>('APP_COOKIE_DOMAIN', '')).trim();
-    const secureCookie = Boolean(this.configService.get<boolean>('APP_COOKIE_SECURE', false));
 
     response.cookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: secureCookie,
-      sameSite: 'strict',
-      path: '/api/auth/refresh',
+      secure: true,
+      sameSite: 'none',
+      path: '/api/auth',
       domain: cookieDomain || undefined,
       maxAge: this.ttlToMilliseconds(this.configService.get<string>('JWT_REFRESH_TTL', '7d'))
     });
@@ -636,9 +635,9 @@ export class AuthService {
     const cookieDomain = String(this.configService.get<string>('APP_COOKIE_DOMAIN', '')).trim();
     response.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: Boolean(this.configService.get<boolean>('APP_COOKIE_SECURE', false)),
-      sameSite: 'strict',
-      path: '/api/auth/refresh',
+      secure: true,
+      sameSite: 'none',
+      path: '/api/auth',
       domain: cookieDomain || undefined
     });
   }
