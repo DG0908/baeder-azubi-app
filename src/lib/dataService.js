@@ -156,16 +156,26 @@ const mapDuelToGame = (d, currentUserId) => {
   const p1Score = iAmChallenger ? (d.myScore ?? 0) : (d.opponentScore ?? 0);
   const p2Score = iAmChallenger ? (d.opponentScore ?? 0) : (d.myScore ?? 0);
 
+  // NestJS duels: both players answer independently (no turns).
+  // "currentTurn" = current user's name when they still have unanswered questions.
+  const totalQuestions = d.questionCount || 5;
+  const myAnswered = d.myAnsweredCount ?? 0;
+  const status = mapDuelStatus(d.status);
+  const myName = iAmChallenger
+    ? (d.challenger?.displayName || '')
+    : (d.opponent?.displayName || '');
+  const currentTurn = (status === 'active' && myAnswered < totalQuestions) ? myName : '';
+
   return {
     id: d.id,
     player1: d.challenger?.displayName || '',
     player2: d.opponent?.displayName || '',
     player1Score: p1Score,
     player2Score: p2Score,
-    currentTurn: '',
+    currentTurn,
     categoryRound: 0,
     round: 0,
-    status: mapDuelStatus(d.status),
+    status,
     difficulty: 'normal',
     categoryRounds: [],
     winner: d.winnerUser?.displayName || null,
@@ -174,10 +184,12 @@ const mapDuelToGame = (d, currentUserId) => {
     createdAt: d.createdAt,
     challengeTimeoutMinutes: 60,
     challengeExpiresAt: d.expiresAt || null,
-    questionCount: d.questionCount || 5,
+    questionCount: totalQuestions,
     challengerId: d.challenger?.id || null,
     opponentId: d.opponent?.id || null,
-    myAnsweredCount: d.myAnsweredCount ?? 0
+    myAnsweredCount: myAnswered,
+    // Server-managed questions (from toDuelPayload responses)
+    serverQuestions: d.questions || null
   };
 };
 
@@ -185,7 +197,7 @@ const mapDuelStatus = (status) => {
   if (!status) return 'unknown';
   const s = String(status).toUpperCase();
   if (s === 'PENDING') return 'waiting';
-  if (s === 'ACTIVE') return 'playing';
+  if (s === 'ACTIVE') return 'active';
   if (s === 'FINISHED' || s === 'COMPLETED') return 'finished';
   if (s === 'EXPIRED') return 'finished';
   return status.toLowerCase();
@@ -997,15 +1009,24 @@ export const createDuel = async (supabase, payload, currentUserId = null) => {
   return null;
 };
 
-export const acceptDuel = async (supabase, gameId) => {
+export const acceptDuel = async (supabase, gameId, currentUserId = null) => {
   if (USE_SECURE_API) {
-    return secureDuelsApi.accept(gameId);
+    const result = await secureDuelsApi.accept(gameId);
+    return mapDuelToGame(result, currentUserId);
   }
   const acceptedAt = new Date().toISOString();
   const { error } = await supabase.from('games')
     .update({ status: 'active', updated_at: acceptedAt }).eq('id', gameId);
   if (error) throw error;
   return { acceptedAt };
+};
+
+export const getDuelWithQuestions = async (supabase, duelId, currentUserId = null) => {
+  if (USE_SECURE_API) {
+    const result = await secureDuelsApi.getById(duelId);
+    return mapDuelToGame(result, currentUserId);
+  }
+  return null;
 };
 
 export const saveDuelState = async (supabase, game) => {

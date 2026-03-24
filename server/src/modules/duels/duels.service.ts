@@ -727,6 +727,7 @@ export class DuelsService {
           category: assignment.question.category,
           prompt: assignment.question.prompt,
           options: this.extractOptions(assignment.question.options),
+          correctOptionIndex: assignment.question.correctOptionIndex,
           explanation: duel.status === DuelStatus.COMPLETED ? assignment.question.explanation : null
         },
         myAnswer: answersByQuestion.get(assignment.id) ?? null
