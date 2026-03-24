@@ -162,7 +162,11 @@ export class AuthService {
         });
       }
     } else {
-      passwordMatches = await argon2.verify(user.passwordHash, dto.password);
+      try {
+        passwordMatches = await argon2.verify(user.passwordHash, dto.password);
+      } catch {
+        passwordMatches = false;
+      }
     }
     if (!passwordMatches) {
       throw new UnauthorizedException('Invalid credentials.');
@@ -283,9 +287,14 @@ export class AuthService {
     }
 
     const isBcryptHash = existingUser.passwordHash.startsWith('$2');
-    const passwordMatches = isBcryptHash
-      ? await bcrypt.compare(dto.currentPassword, existingUser.passwordHash)
-      : await argon2.verify(existingUser.passwordHash, dto.currentPassword);
+    let passwordMatches = false;
+    try {
+      passwordMatches = isBcryptHash
+        ? await bcrypt.compare(dto.currentPassword, existingUser.passwordHash)
+        : await argon2.verify(existingUser.passwordHash, dto.currentPassword);
+    } catch {
+      passwordMatches = false;
+    }
     if (!passwordMatches) {
       throw new UnauthorizedException('Current password is invalid.');
     }
