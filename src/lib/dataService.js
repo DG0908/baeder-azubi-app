@@ -1038,11 +1038,11 @@ export const loadSwimSessionEntries = async (supabase) => {
   if (USE_SECURE_API) {
     const sessions = await secureSwimSessionsApi.list();
     return (sessions || []).map(s => ({
-      id: s.id, user_id: s.userId, user_name: s.userName, user_role: s.userRole,
-      date: s.date, distance: s.distance, time_minutes: s.timeMinutes,
-      style: s.style, notes: s.notes, challenge_id: s.challengeId || null,
-      confirmed: Boolean(s.confirmed), confirmed_by: s.confirmedBy || null,
-      confirmed_at: s.confirmedAt || null, created_at: s.createdAt
+      id: s.id, user_id: s.user_id || s.userId, user_name: s.user_name || s.userName, user_role: s.user_role || s.userRole,
+      date: s.date, distance: s.distance, time_minutes: s.time_minutes ?? s.timeMinutes,
+      style: s.style, notes: s.notes, challenge_id: s.challenge_id ?? s.challengeId ?? null,
+      confirmed: Boolean(s.confirmed), confirmed_by: s.confirmed_by || s.confirmedBy || null,
+      confirmed_at: s.confirmed_at || s.confirmedAt || null, created_at: s.created_at || s.createdAt
     }));
   }
   const { data, error } = await supabase.from('swim_sessions')
@@ -1128,10 +1128,10 @@ export const loadBerichtsheftEntriesFromDb = async (supabase, userName) => {
     const entries = await secureReportBooksApi.list({ userName });
     return (entries || []).map(e => ({
       id: e.id, user_name: e.userName, week_start: e.weekStart, week_end: e.weekEnd,
-      ausbildungsjahr: e.trainingYear, nachweis_nr: e.reportNumber,
-      entries: e.entries, bemerkung_azubi: e.azubiRemarks, bemerkung_ausbilder: e.trainerRemarks,
-      signatur_azubi: e.azubiSignature, signatur_ausbilder: e.trainerSignature,
-      datum_azubi: e.azubiDate, datum_ausbilder: e.trainerDate,
+      ausbildungsjahr: e.trainingYear, nachweis_nr: e.evidenceNumber || e.reportNumber,
+      entries: e.entries, bemerkung_azubi: e.apprenticeNote || e.azubiRemarks, bemerkung_ausbilder: e.trainerNote || e.trainerRemarks,
+      signatur_azubi: e.apprenticeSignature || e.azubiSignature, signatur_ausbilder: e.trainerSignature,
+      datum_azubi: e.apprenticeSignatureDate || e.azubiDate, datum_ausbilder: e.trainerSignatureDate || e.trainerDate,
       total_hours: e.totalHours, status: e.status,
       assigned_trainer_id: e.assignedTrainerId, assigned_trainer_name: e.assignedTrainerName,
       assigned_by_id: e.assignedById, assigned_at: e.assignedAt,
@@ -1170,10 +1170,10 @@ export const loadBerichtsheftPending = async (supabase) => {
     const entries = await secureReportBooksApi.listPendingReview();
     return (entries || []).map(e => ({
       id: e.id, user_name: e.userName, week_start: e.weekStart, week_end: e.weekEnd,
-      ausbildungsjahr: e.trainingYear, nachweis_nr: e.reportNumber,
-      entries: e.entries, bemerkung_azubi: e.azubiRemarks, bemerkung_ausbilder: e.trainerRemarks,
-      signatur_azubi: e.azubiSignature, signatur_ausbilder: e.trainerSignature,
-      datum_azubi: e.azubiDate, datum_ausbilder: e.trainerDate,
+      ausbildungsjahr: e.trainingYear, nachweis_nr: e.evidenceNumber || e.reportNumber,
+      entries: e.entries, bemerkung_azubi: e.apprenticeNote || e.azubiRemarks, bemerkung_ausbilder: e.trainerNote || e.trainerRemarks,
+      signatur_azubi: e.apprenticeSignature || e.azubiSignature, signatur_ausbilder: e.trainerSignature,
+      datum_azubi: e.apprenticeSignatureDate || e.azubiDate, datum_ausbilder: e.trainerSignatureDate || e.trainerDate,
       total_hours: e.totalHours, status: e.status,
       assigned_trainer_id: e.assignedTrainerId, assigned_trainer_name: e.assignedTrainerName,
       assigned_by_id: e.assignedById, assigned_at: e.assignedAt
