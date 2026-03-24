@@ -2,10 +2,10 @@ import { IsString, Length } from 'class-validator';
 
 export class ChangePasswordDto {
   @IsString()
-  @Length(12, 128)
+  @Length(1, 128)
   currentPassword!: string;
 
   @IsString()
-  @Length(12, 128)
+  @Length(6, 128)
   newPassword!: string;
 }
