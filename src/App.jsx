@@ -3010,7 +3010,7 @@ export default function BaederApp() {
   const loadLightData = async () => {
     try {
       // Games aktualisieren
-      const games = await dsLoadGames(supabase, 100);
+      const games = await dsLoadGames(supabase, 100, user?.id);
       if (games.length > 0) {
         const normalized = games.map(g => ({
           ...g,
@@ -3063,7 +3063,7 @@ export default function BaederApp() {
       await loadCustomSwimTrainingPlans();
 
       // Load games
-      const gamesRaw = await dsLoadGames(supabase, 200);
+      const gamesRaw = await dsLoadGames(supabase, 200, user?.id);
       const gamesData = gamesRaw; // keep reference for stats sync below
       if (gamesRaw.length > 0) {
         const games = gamesRaw.map(g => ({
@@ -3479,7 +3479,7 @@ export default function BaederApp() {
           player1: user.name, player2: opponent, difficulty: selectedDifficulty,
           challengeTimeoutMinutes: timeoutMinutes, challengeExpiresAt,
           opponentId: opponentId
-        });
+        }, user?.id);
       } else {
         let timerColumnsUnavailable = false;
         const basePayload = {
