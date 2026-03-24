@@ -152,6 +152,9 @@ export const secureUsersApi = {
   deleteUser: (userId) => apiRequest(`/users/${userId}`, {
     method: 'DELETE'
   }),
+  deleteSelf: () => apiRequest('/users/me', {
+    method: 'DELETE'
+  }),
   updatePermissions: (userId, payload) => apiRequest(`/users/${userId}/permissions`, {
     method: 'PATCH',
     body: JSON.stringify(payload)
