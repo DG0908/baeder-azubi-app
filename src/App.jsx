@@ -7041,7 +7041,21 @@ export default function BaederApp() {
       const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       await upsertSwimMonthlyResult(previousMonth);
       if (!cancelled) {
-        await loadSwimMonthlyResults(now.getFullYear());
+        if (USE_SECURE_API && swimSessions.length > 0) {
+          // Compute monthly results client-side from swim sessions (no backend endpoint)
+          const year = now.getFullYear();
+          const results = [];
+          for (let m = 0; m < now.getMonth(); m++) {
+            const monthDate = new Date(year, m, 1);
+            const payload = buildSwimMonthlyResultPayload(monthDate);
+            if (payload && (payload.azubis_points > 0 || payload.trainer_points > 0)) {
+              results.push(payload);
+            }
+          }
+          if (!cancelled) setSwimMonthlyResults(results);
+        } else {
+          await loadSwimMonthlyResults(now.getFullYear());
+        }
       }
     };
 
