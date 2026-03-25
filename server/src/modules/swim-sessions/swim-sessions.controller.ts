@@ -50,4 +50,13 @@ export class SwimSessionsController {
   ) {
     return this.swimSessionsService.reject(actor, sessionId, request);
   }
+
+  @Patch(':id/withdraw')
+  withdraw(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') sessionId: string,
+    @Req() request: Request
+  ) {
+    return this.swimSessionsService.withdraw(actor, sessionId, request);
+  }
 }

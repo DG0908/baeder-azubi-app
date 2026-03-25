@@ -97,6 +97,7 @@ import {
   saveSwimSessionEntry as dsSaveSwimSession,
   confirmSwimSessionEntry as dsConfirmSwimSession,
   rejectSwimSessionEntry as dsRejectSwimSession,
+  withdrawSwimSessionEntry as dsWithdrawSwimSession,
   loadCustomSwimTrainingPlanEntries as dsLoadCustomSwimPlans,
   createCustomSwimTrainingPlanEntry as dsCreateCustomSwimPlan,
   loadBerichtsheftEntriesFromDb as dsLoadBerichtsheftEntries,
@@ -7086,15 +7087,24 @@ export default function BaederApp() {
   const confirmSwimSession = async (sessionId) => {
     try {
       const sessionToConfirm = swimSessions.find(s => s.id === sessionId) || null;
-      await dsConfirmSwimSession(supabase, sessionId, user.name);
+      const confirmationResult = await dsConfirmSwimSession(supabase, sessionId, user.name);
+      const confirmedSession = confirmationResult?.id ? confirmationResult : sessionToConfirm;
 
       // Aktualisiere lokale Listen
       setSwimSessions(prev => prev.map(s =>
-        s.id === sessionId ? { ...s, confirmed: true, confirmed_by: user.name } : s
+        s.id === sessionId
+          ? {
+              ...s,
+              ...(confirmedSession || {}),
+              confirmed: true,
+              confirmed_by: confirmationResult?.confirmed_by || confirmationResult?.reviewed_by || user.name,
+              confirmed_at: confirmationResult?.confirmed_at || confirmationResult?.reviewed_at || new Date().toISOString()
+            }
+          : s
       ));
       setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
 
-      if (sessionToConfirm?.user_id && sessionToConfirm?.user_name) {
+      if (!USE_SECURE_API && sessionToConfirm?.user_id && sessionToConfirm?.user_name) {
         const { trainingPlanId, trainingPlanUnitId } = extractSwimTrainingPlanSelectionFromNotes(sessionToConfirm.notes);
         if (trainingPlanId) {
           const trainingPlan = getSwimTrainingPlanById(trainingPlanId);
@@ -7132,6 +7142,18 @@ export default function BaederApp() {
       return { success: true };
     } catch (err) {
       console.error('Fehler beim Ablehnen:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const withdrawSwimSession = async (sessionId) => {
+    try {
+      await dsWithdrawSwimSession(supabase, sessionId);
+      setSwimSessions(prev => prev.filter(s => s.id !== sessionId));
+      setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
+      return { success: true };
+    } catch (err) {
+      console.error('Fehler beim Zurueckziehen:', err);
       return { success: false, error: err.message };
     }
   };
@@ -9183,6 +9205,7 @@ export default function BaederApp() {
             swimYear={swimYear}
             swimYearlySwimmerRanking={swimYearlySwimmerRanking}
             toSafeInt={toSafeInt}
+            withdrawSwimSession={withdrawSwimSession}
           />
         )}
 

@@ -51,6 +51,7 @@ const {
   swimYear,
   swimYearlySwimmerRanking,
   toSafeInt,
+  withdrawSwimSession,
 } = props;
   const { user } = useAuth();
   const { darkMode } = useApp();
@@ -84,6 +85,10 @@ const {
     trainingPlanId: extractTrainingPlanIdFromNotes(notesInput),
     trainingPlanUnitId: extractTrainingPlanUnitIdFromNotes(notesInput)
   });
+  const isOwnPendingSwimSession = (sessionInput) => {
+    if (!sessionInput?.user_id || !user?.id) return false;
+    return String(sessionInput.user_id) === String(user.id);
+  };
   const stripTrainingPlanTagFromNotes = (notesInput) => String(notesInput || '')
     .replace(/\s*\[SWIM_PLAN:[^\]]+\]\s*/gi, ' ')
     .replace(/\s*\[SWIM_PLAN_UNIT:[^\]]+\]\s*/gi, ' ')
@@ -840,9 +845,6 @@ const {
                                   if (!defaultUnit) return;
                                   setSwimSessionForm(prev => ({
                                     ...prev,
-                                    style: defaultUnit.styleId || prev.style || 'kraul',
-                                    distance: String(defaultUnit.targetDistance),
-                                    time: `${defaultUnit.targetTime}:00,00`,
                                     trainingPlanId: plan.id,
                                     trainingPlanUnitId: defaultUnit.id
                                   }));
@@ -967,10 +969,7 @@ const {
                         setSwimSessionForm({
                           ...swimSessionForm,
                           trainingPlanId: plan.id,
-                          trainingPlanUnitId: defaultUnit.id,
-                          style: defaultUnit.styleId || swimSessionForm.style,
-                          distance: String(defaultUnit.targetDistance),
-                          time: `${defaultUnit.targetTime}:00,00`
+                          trainingPlanUnitId: defaultUnit.id
                         });
                       }}
                       className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
@@ -1007,10 +1006,7 @@ const {
                           if (!nextUnit) return;
                           setSwimSessionForm({
                             ...swimSessionForm,
-                            trainingPlanUnitId: nextUnit.id,
-                            style: nextUnit.styleId || swimSessionForm.style,
-                            distance: String(nextUnit.targetDistance),
-                            time: `${nextUnit.targetTime}:00,00`
+                            trainingPlanUnitId: nextUnit.id
                           });
                         }}
                         className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
@@ -2217,6 +2213,7 @@ const {
                 </h3>
                 <div className="space-y-3">
                   {pendingSwimConfirmations.map(session => {
+                    const isOwnSession = isOwnPendingSwimSession(session);
                     const { trainingPlanId, trainingPlanUnitId } = extractTrainingPlanSelectionFromNotes(session.notes);
                     const trainingPlan = trainingPlanId ? getTrainingPlanById(trainingPlanId) : null;
                     const trainingPlanUnits = getPlanUnits(trainingPlan);
@@ -2243,8 +2240,21 @@ const {
                               {trainingPlanUnit && trainingPlanUnitIndex >= 0 && ` | ${getPlanUnitLabel(trainingPlanUnit, trainingPlanUnitIndex)}`}
                             </div>
                           )}
+                          {isOwnSession && (
+                            <div className={`text-xs mt-1 ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
+                              Eigene Einheit: Diese Freigabe muss durch eine andere Person erfolgen.
+                            </div>
+                          )}
                         </div>
-                        <div className="flex gap-2">
+                        {isOwnSession ? (
+                          <button
+                            onClick={() => withdrawSwimSession(session.id)}
+                            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium"
+                          >
+                            Zurueckziehen
+                          </button>
+                        ) : (
+                          <div className="flex gap-2">
                           <button
                             onClick={() => confirmSwimSession(session.id)}
                             className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium"
@@ -2257,7 +2267,8 @@ const {
                           >
                             Ablehnen
                           </button>
-                        </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
