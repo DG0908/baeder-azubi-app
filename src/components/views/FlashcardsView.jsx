@@ -178,13 +178,14 @@ const FlashcardsView = ({
                   question: newFlashcardFront.trim(),
                   answer: newFlashcardBack.trim()
                 });
+                const card = result.flashcard || result;
                 flashcard = {
-                  id: result.id,
-                  front: result.question,
-                  back: result.answer,
-                  category: result.category,
-                  approved: result.approved ?? false,
-                  userId: result.userId || result.user_id
+                  id: card.id,
+                  front: card.question,
+                  back: card.answer,
+                  category: card.category,
+                  approved: card.approved ?? false,
+                  userId: card.userId || card.user_id
                 };
               } else {
                 const isApproved = user.permissions.canApproveQuestions;
