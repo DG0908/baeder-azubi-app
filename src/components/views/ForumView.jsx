@@ -3,6 +3,10 @@ import { MessageSquare, Plus, Send, ArrowLeft, Pin, Lock, Trash2, ChevronRight, 
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
+import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
+import { secureForumApi } from '../../lib/secureApi';
+
+const USE_SECURE_API = isSecureBackendApiEnabled();
 
 const FORUM_CATEGORIES = [
   { id: 'updates', label: 'Aktualisierungen', icon: '📢', color: 'bg-blue-500', description: 'Neuigkeiten zur App', canPost: ['admin'], canRead: ['all'] },
@@ -12,6 +16,39 @@ const FORUM_CATEGORIES = [
   { id: 'azubi', label: 'Azubiaustausch', icon: '🏊', color: 'bg-cyan-500', description: 'Azubis & Ausbilder', canPost: ['all'], canRead: ['all'] },
   { id: 'nuetzliches', label: 'Interessantes & Nützliches', icon: '⭐', color: 'bg-emerald-500', description: 'Tipps, Links, Wissenswertes', canPost: ['all'], canRead: ['all'] },
 ];
+
+const mapBackendRole = (role) => {
+  const r = String(role || '').toUpperCase();
+  if (r === 'ADMIN') return 'admin';
+  if (r === 'AUSBILDER') return 'trainer';
+  if (r === 'RETTUNGSSCHWIMMER_AZUBI') return 'rettungsschwimmer_azubi';
+  return 'azubi';
+};
+
+const mapBackendPost = (p) => ({
+  id: p.id,
+  category: p.category,
+  title: p.title,
+  content: p.content,
+  pinned: p.pinned,
+  locked: p.locked,
+  user_id: p.userId,
+  user_name: p.user?.displayName || '',
+  user_role: mapBackendRole(p.user?.role),
+  reply_count: p.replyCount ?? 0,
+  created_at: p.createdAt,
+  last_reply_at: p.lastReplyAt
+});
+
+const mapBackendReply = (r) => ({
+  id: r.id,
+  post_id: r.postId,
+  content: r.content,
+  user_id: r.userId,
+  user_name: r.user?.displayName || '',
+  user_role: mapBackendRole(r.user?.role),
+  created_at: r.createdAt
+});
 
 const ForumView = () => {
   const { user } = useAuth();
@@ -54,13 +91,24 @@ const ForumView = () => {
   // Load category counts
   useEffect(() => {
     const loadCounts = async () => {
-      const { data } = await supabase
-        .from('forum_posts')
-        .select('category');
-      if (data) {
-        const counts = {};
-        data.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
-        setCategoryCounts(counts);
+      try {
+        if (USE_SECURE_API) {
+          const data = await secureForumApi.listCategories();
+          const counts = {};
+          (data || []).forEach(c => { counts[c.category] = c.count || 0; });
+          setCategoryCounts(counts);
+        } else {
+          const { data } = await supabase
+            .from('forum_posts')
+            .select('category');
+          if (data) {
+            const counts = {};
+            data.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+            setCategoryCounts(counts);
+          }
+        }
+      } catch (error) {
+        console.error('Forum counts error:', error);
       }
     };
     loadCounts();
@@ -69,18 +117,27 @@ const ForumView = () => {
   // Load posts for category
   const loadPosts = async (categoryId) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('forum_posts')
-      .select('*')
-      .eq('category', categoryId)
-      .order('pinned', { ascending: false })
-      .order('last_reply_at', { ascending: false, nullsFirst: false })
-      .order('created_at', { ascending: false });
+    try {
+      if (USE_SECURE_API) {
+        const data = await secureForumApi.listPosts({ category: categoryId });
+        setPosts((data || []).map(mapBackendPost));
+      } else {
+        const { data, error } = await supabase
+          .from('forum_posts')
+          .select('*')
+          .eq('category', categoryId)
+          .order('pinned', { ascending: false })
+          .order('last_reply_at', { ascending: false, nullsFirst: false })
+          .order('created_at', { ascending: false });
 
-    if (error) {
-      showToast('Fehler beim Laden', 'error');
-    } else {
-      setPosts(data || []);
+        if (error) {
+          showToast('Fehler beim Laden', 'error');
+        } else {
+          setPosts(data || []);
+        }
+      }
+    } catch (error) {
+      showToast('Fehler beim Laden: ' + error.message, 'error');
     }
     setLoading(false);
   };
@@ -88,12 +145,24 @@ const ForumView = () => {
   // Load replies for post
   const loadReplies = async (postId) => {
     setLoading(true);
-    const { data } = await supabase
-      .from('forum_replies')
-      .select('*')
-      .eq('post_id', postId)
-      .order('created_at', { ascending: true });
-    setReplies(data || []);
+    try {
+      if (USE_SECURE_API) {
+        const data = await secureForumApi.getThread(postId);
+        setReplies((data?.replies || []).map(mapBackendReply));
+        if (data?.post) {
+          setActivePost(mapBackendPost(data.post));
+        }
+      } else {
+        const { data } = await supabase
+          .from('forum_replies')
+          .select('*')
+          .eq('post_id', postId)
+          .order('created_at', { ascending: true });
+        setReplies(data || []);
+      }
+    } catch (error) {
+      console.error('Forum replies error:', error);
+    }
     setLoading(false);
   };
 
@@ -114,24 +183,33 @@ const ForumView = () => {
       showToast('Titel und Inhalt sind Pflichtfelder!', 'error');
       return;
     }
-    const { error } = await supabase.from('forum_posts').insert({
-      user_id: user.id,
-      user_name: user.name,
-      user_role: user.role,
-      user_avatar: user.avatar,
-      category: activeCategory.id,
-      title: newTitle.trim(),
-      content: newContent.trim()
-    });
-    if (error) {
+    try {
+      if (USE_SECURE_API) {
+        await secureForumApi.createPost({
+          category: activeCategory.id,
+          title: newTitle.trim(),
+          content: newContent.trim()
+        });
+      } else {
+        const { error } = await supabase.from('forum_posts').insert({
+          user_id: user.id,
+          user_name: user.name,
+          user_role: user.role,
+          user_avatar: user.avatar,
+          category: activeCategory.id,
+          title: newTitle.trim(),
+          content: newContent.trim()
+        });
+        if (error) throw error;
+      }
+      showToast('Beitrag erstellt!', 'success');
+      setNewTitle('');
+      setNewContent('');
+      setView('list');
+      loadPosts(activeCategory.id);
+    } catch (error) {
       showToast('Fehler: ' + error.message, 'error');
-      return;
     }
-    showToast('Beitrag erstellt!', 'success');
-    setNewTitle('');
-    setNewContent('');
-    setView('list');
-    loadPosts(activeCategory.id);
   };
 
   const sendReply = async () => {
@@ -140,55 +218,93 @@ const ForumView = () => {
       showToast('Dieses Thema ist geschlossen.', 'error');
       return;
     }
-    const { error } = await supabase.from('forum_replies').insert({
-      post_id: activePost.id,
-      user_id: user.id,
-      user_name: user.name,
-      user_role: user.role,
-      user_avatar: user.avatar,
-      content: replyContent.trim()
-    });
-    if (error) {
+    try {
+      if (USE_SECURE_API) {
+        await secureForumApi.createReply(activePost.id, {
+          content: replyContent.trim()
+        });
+      } else {
+        const { error } = await supabase.from('forum_replies').insert({
+          post_id: activePost.id,
+          user_id: user.id,
+          user_name: user.name,
+          user_role: user.role,
+          user_avatar: user.avatar,
+          content: replyContent.trim()
+        });
+        if (error) throw error;
+      }
+      setReplyContent('');
+      loadReplies(activePost.id);
+      setActivePost(prev => ({ ...prev, reply_count: (prev.reply_count || 0) + 1 }));
+    } catch (error) {
       showToast('Fehler: ' + error.message, 'error');
-      return;
     }
-    setReplyContent('');
-    loadReplies(activePost.id);
-    // Update local reply count
-    setActivePost(prev => ({ ...prev, reply_count: (prev.reply_count || 0) + 1 }));
   };
 
   const deletePost = async (postId) => {
     if (!confirm('Beitrag wirklich löschen? Alle Antworten werden ebenfalls gelöscht.')) return;
-    await supabase.from('forum_posts').delete().eq('id', postId);
-    showToast('Beitrag gelöscht', 'success');
-    if (view === 'thread') {
-      setView('list');
-      loadPosts(activeCategory.id);
-    } else {
-      loadPosts(activeCategory.id);
+    try {
+      if (USE_SECURE_API) {
+        await secureForumApi.removePost(postId);
+      } else {
+        await supabase.from('forum_posts').delete().eq('id', postId);
+      }
+      showToast('Beitrag gelöscht', 'success');
+      if (view === 'thread') {
+        setView('list');
+        loadPosts(activeCategory.id);
+      } else {
+        loadPosts(activeCategory.id);
+      }
+    } catch (error) {
+      showToast('Fehler: ' + error.message, 'error');
     }
   };
 
   const deleteReply = async (replyId) => {
     if (!confirm('Antwort löschen?')) return;
-    await supabase.from('forum_replies').delete().eq('id', replyId);
-    showToast('Antwort gelöscht', 'success');
-    loadReplies(activePost.id);
-    setActivePost(prev => ({ ...prev, reply_count: Math.max((prev.reply_count || 1) - 1, 0) }));
+    try {
+      if (USE_SECURE_API) {
+        await secureForumApi.removeReply(replyId);
+      } else {
+        await supabase.from('forum_replies').delete().eq('id', replyId);
+      }
+      showToast('Antwort gelöscht', 'success');
+      loadReplies(activePost.id);
+      setActivePost(prev => ({ ...prev, reply_count: Math.max((prev.reply_count || 1) - 1, 0) }));
+    } catch (error) {
+      showToast('Fehler: ' + error.message, 'error');
+    }
   };
 
   const togglePin = async (postId, currentPinned) => {
-    await supabase.from('forum_posts').update({ pinned: !currentPinned }).eq('id', postId);
-    loadPosts(activeCategory.id);
+    try {
+      if (USE_SECURE_API) {
+        await secureForumApi.togglePin(postId);
+      } else {
+        await supabase.from('forum_posts').update({ pinned: !currentPinned }).eq('id', postId);
+      }
+      loadPosts(activeCategory.id);
+    } catch (error) {
+      showToast('Fehler: ' + error.message, 'error');
+    }
   };
 
   const toggleLock = async (postId, currentLocked) => {
-    await supabase.from('forum_posts').update({ locked: !currentLocked }).eq('id', postId);
-    if (view === 'thread') {
-      setActivePost(prev => ({ ...prev, locked: !currentLocked }));
+    try {
+      if (USE_SECURE_API) {
+        await secureForumApi.toggleLock(postId);
+      } else {
+        await supabase.from('forum_posts').update({ locked: !currentLocked }).eq('id', postId);
+      }
+      if (view === 'thread') {
+        setActivePost(prev => ({ ...prev, locked: !currentLocked }));
+      }
+      loadPosts(activeCategory.id);
+    } catch (error) {
+      showToast('Fehler: ' + error.message, 'error');
     }
-    loadPosts(activeCategory.id);
   };
 
   const formatDate = (dateStr) => {
