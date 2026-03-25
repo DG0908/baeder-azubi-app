@@ -3,6 +3,10 @@ import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, S
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
+import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
+import { secureOrganizationsApi, secureInvitationsApi, mapFrontendRoleToBackendRole } from '../../lib/secureApi';
+
+const USE_SECURE_API = isSecureBackendApiEnabled();
 
 // ─── Betriebe & Einladungscodes Verwaltung (nur Owner) ───
 const OrganizationManager = () => {
@@ -17,17 +21,40 @@ const OrganizationManager = () => {
 
   const loadOrgs = async () => {
     setLoading(true);
-    const { data: orgsData } = await supabase
-      .from('organizations')
-      .select('*')
-      .order('created_at', { ascending: true });
-    setOrgs(orgsData || []);
+    try {
+      if (USE_SECURE_API) {
+        const orgsData = await secureOrganizationsApi.list();
+        setOrgs((orgsData || []).map(o => ({
+          id: o.id, name: o.name, slug: o.slug,
+          contact_name: o.contactName, contact_email: o.contactEmail,
+          max_azubis: o.maxAzubis || 50, created_at: o.createdAt
+        })));
+        const codesData = await secureInvitationsApi.list();
+        setCodes((codesData || []).map(c => ({
+          id: c.id, code: c.code,
+          organization_id: c.organizationId,
+          organizations: c.organization ? { name: c.organization.name } : null,
+          role: (c.role || '').toLowerCase(),
+          max_uses: c.maxUses, current_uses: c.currentUses || 0,
+          is_active: c.isActive ?? true,
+          created_at: c.createdAt, expires_at: c.expiresAt
+        })));
+      } else {
+        const { data: orgsData } = await supabase
+          .from('organizations')
+          .select('*')
+          .order('created_at', { ascending: true });
+        setOrgs(orgsData || []);
 
-    const { data: codesData } = await supabase
-      .from('invitation_codes')
-      .select('*, organizations(name)')
-      .order('created_at', { ascending: false });
-    setCodes(codesData || []);
+        const { data: codesData } = await supabase
+          .from('invitation_codes')
+          .select('*, organizations(name)')
+          .order('created_at', { ascending: false });
+        setCodes(codesData || []);
+      }
+    } catch (error) {
+      showToast('Fehler beim Laden: ' + error.message, 'error');
+    }
     setLoading(false);
   };
 
@@ -39,19 +66,29 @@ const OrganizationManager = () => {
       return;
     }
     const slug = newOrg.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
-    const { error } = await supabase.from('organizations').insert({
-      ...newOrg,
-      slug,
-      name: newOrg.name.trim()
-    });
-    if (error) {
+    try {
+      if (USE_SECURE_API) {
+        await secureOrganizationsApi.create({
+          name: newOrg.name.trim(),
+          slug,
+          contactName: newOrg.contact_name || undefined,
+          contactEmail: newOrg.contact_email || undefined
+        });
+      } else {
+        const { error } = await supabase.from('organizations').insert({
+          ...newOrg,
+          slug,
+          name: newOrg.name.trim()
+        });
+        if (error) throw error;
+      }
+      showToast(`Betrieb "${newOrg.name}" angelegt!`, 'success');
+      setNewOrg({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
+      setShowNewOrg(false);
+      loadOrgs();
+    } catch (error) {
       showToast('Fehler: ' + error.message, 'error');
-      return;
     }
-    showToast(`Betrieb "${newOrg.name}" angelegt!`, 'success');
-    setNewOrg({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
-    setShowNewOrg(false);
-    loadOrgs();
   };
 
   const generateCode = () => {
@@ -66,38 +103,71 @@ const OrganizationManager = () => {
       showToast('Bitte einen Betrieb auswählen!', 'error');
       return;
     }
-    const code = newCode.code.trim().toUpperCase() || generateCode();
-    const { error } = await supabase.from('invitation_codes').insert({
-      organization_id: newCode.organization_id,
-      code,
-      role: newCode.role,
-      max_uses: newCode.max_uses,
-      created_by: null
-    });
-    if (error) {
-      if (error.message.includes('duplicate')) {
-        showToast('Dieser Code existiert bereits!', 'error');
+    try {
+      if (USE_SECURE_API) {
+        const result = await secureInvitationsApi.create({
+          role: mapFrontendRoleToBackendRole(newCode.role),
+          organizationId: newCode.organization_id,
+          maxUses: newCode.max_uses || 30
+        });
+        const createdCode = result?.code || 'Erstellt';
+        showToast(`Code "${createdCode}" erstellt!`, 'success');
       } else {
-        showToast('Fehler: ' + error.message, 'error');
+        const code = newCode.code.trim().toUpperCase() || generateCode();
+        const { error } = await supabase.from('invitation_codes').insert({
+          organization_id: newCode.organization_id,
+          code,
+          role: newCode.role,
+          max_uses: newCode.max_uses,
+          created_by: null
+        });
+        if (error) {
+          if (error.message.includes('duplicate')) {
+            showToast('Dieser Code existiert bereits!', 'error');
+          } else {
+            throw error;
+          }
+          return;
+        }
+        showToast(`Code "${code}" erstellt!`, 'success');
       }
-      return;
+      setNewCode({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
+      setShowNewCode(false);
+      loadOrgs();
+    } catch (error) {
+      showToast('Fehler: ' + error.message, 'error');
     }
-    showToast(`Code "${code}" erstellt!`, 'success');
-    setNewCode({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
-    setShowNewCode(false);
-    loadOrgs();
   };
 
   const toggleCodeActive = async (codeId, currentActive) => {
-    await supabase.from('invitation_codes').update({ is_active: !currentActive }).eq('id', codeId);
-    loadOrgs();
+    try {
+      if (USE_SECURE_API) {
+        // Secure API only supports revoke (delete), not toggle
+        if (currentActive) {
+          await secureInvitationsApi.revoke(codeId);
+        }
+      } else {
+        await supabase.from('invitation_codes').update({ is_active: !currentActive }).eq('id', codeId);
+      }
+      loadOrgs();
+    } catch (error) {
+      showToast('Fehler: ' + error.message, 'error');
+    }
   };
 
   const deleteCode = async (codeId, codeText) => {
     if (!confirm(`Code "${codeText}" wirklich löschen?`)) return;
-    await supabase.from('invitation_codes').delete().eq('id', codeId);
-    showToast('Code gelöscht', 'success');
-    loadOrgs();
+    try {
+      if (USE_SECURE_API) {
+        await secureInvitationsApi.revoke(codeId);
+      } else {
+        await supabase.from('invitation_codes').delete().eq('id', codeId);
+      }
+      showToast('Code gelöscht', 'success');
+      loadOrgs();
+    } catch (error) {
+      showToast('Fehler: ' + error.message, 'error');
+    }
   };
 
   const copyCode = (code) => {
@@ -344,21 +414,33 @@ const UserOrgAssign = ({ userId, currentOrgId, onChanged }) => {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    supabase.from('organizations').select('id, name').eq('is_active', true).order('name')
-      .then(({ data }) => setOrgs(data || []));
+    if (USE_SECURE_API) {
+      secureOrganizationsApi.list()
+        .then(data => setOrgs((data || []).map(o => ({ id: o.id, name: o.name }))))
+        .catch(() => {});
+    } else {
+      supabase.from('organizations').select('id, name').eq('is_active', true).order('name')
+        .then(({ data }) => setOrgs(data || []));
+    }
   }, []);
 
   const handleChange = async (newOrgId) => {
     setLoading(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update({ organization_id: newOrgId || null })
-      .eq('id', userId);
-    if (error) {
-      showToast('Fehler: ' + error.message, 'error');
-    } else {
+    try {
+      if (USE_SECURE_API) {
+        const { secureUsersApi } = await import('../../lib/secureApi');
+        await secureUsersApi.updateRole(userId, { organizationId: newOrgId || null });
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ organization_id: newOrgId || null })
+          .eq('id', userId);
+        if (error) throw error;
+      }
       showToast('Betrieb zugewiesen!', 'success');
       if (onChanged) onChanged();
+    } catch (error) {
+      showToast('Fehler: ' + error.message, 'error');
     }
     setLoading(false);
   };
@@ -749,9 +831,18 @@ const AdminView = ({
                     <button
                       onClick={async () => {
                         if (confirm(`Account von ${acc.name} wirklich ablehnen und löschen?`)) {
-                          await supabase.from('profiles').delete().eq('email', acc.email);
-                          loadData();
-                          alert('Account abgelehnt und gelöscht.');
+                          try {
+                            if (USE_SECURE_API && acc.id) {
+                              const { secureUsersApi } = await import('../../lib/secureApi');
+                              await secureUsersApi.deleteUser(acc.id);
+                            } else {
+                              await supabase.from('profiles').delete().eq('email', acc.email);
+                            }
+                            loadData();
+                            alert('Account abgelehnt und gelöscht.');
+                          } catch (error) {
+                            alert('Fehler: ' + error.message);
+                          }
                         }
                       }}
                       className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold"
