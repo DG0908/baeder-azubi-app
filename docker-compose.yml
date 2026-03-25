@@ -66,6 +66,7 @@ services:
       - "3000"
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
       - "traefik.http.routers.azubi-api.rule=Host(`api.smartbaden.de`)"
       - "traefik.http.routers.azubi-api.entrypoints=https"
       - "traefik.http.routers.azubi-api.tls.certresolver=letsencrypt"
