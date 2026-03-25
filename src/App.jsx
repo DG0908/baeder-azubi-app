@@ -303,6 +303,7 @@ export default function BaederApp() {
   const [playerTurn, setPlayerTurn] = useState(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
+  const quizActiveRef = useRef(false);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
   const [selectedAnswers, setSelectedAnswers] = useState([]); // Für Multi-Select Fragen
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState(null); // Für Single-Choice Feedback
@@ -1864,7 +1865,9 @@ export default function BaederApp() {
       loadNotifications();
       loadTheoryExamHistory();
       // Polling: nur leichte Daten (Notifications, Games, Messages) alle 30s
+      // Pausiert wenn Quiz aktiv, um Re-Renders und Flicker zu vermeiden
       const interval = setInterval(() => {
+        if (quizActiveRef.current) return;
         loadLightData();
         loadNotifications();
       }, 30000);
@@ -1950,7 +1953,11 @@ export default function BaederApp() {
     void loadPracticalExamHistory();
   }, [user, currentView, examSimulatorMode]);
 
-  
+  // Sync quiz active ref for polling guard
+  useEffect(() => {
+    quizActiveRef.current = timerActive && currentView === 'quiz';
+  }, [timerActive, currentView]);
+
   useEffect(() => {
     if (timerActive && timeLeft > 0 && !answered) {
       const timer = setTimeout(() => {
