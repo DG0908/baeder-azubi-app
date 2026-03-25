@@ -261,6 +261,41 @@ export class SwimSessionsService {
     return this.toPayload(updated);
   }
 
+  async withdraw(actor: AuthenticatedUser, sessionId: string, request: Request) {
+    this.assertOrganization(actor);
+
+    const session = await this.getPendingSession(sessionId, actor.organizationId!);
+    if (session.userId !== actor.id) {
+      throw new ForbiddenException('You may only withdraw your own pending swim sessions.');
+    }
+
+    const updated = await this.prisma.swimSession.update({
+      where: { id: session.id },
+      data: {
+        status: SwimSessionStatus.REJECTED,
+        reviewedById: null,
+        reviewedAt: null
+      },
+      select: swimSessionSelect
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'swim_session.withdrawn',
+      'SwimSession',
+      updated.id,
+      {
+        date: updated.date.toISOString(),
+        distanceMeters: updated.distanceMeters,
+        timeMinutes: updated.timeMinutes,
+        styleId: updated.styleId
+      },
+      request
+    );
+
+    return this.toPayload(updated);
+  }
+
   private async getPendingSession(sessionId: string, organizationId: string) {
     const session = await this.prisma.swimSession.findFirst({
       where: {

@@ -398,6 +398,9 @@ export const secureSwimSessionsApi = {
   }),
   reject: (sessionId) => apiRequest(`/swim-sessions/${sessionId}/reject`, {
     method: 'PATCH'
+  }),
+  withdraw: (sessionId) => apiRequest(`/swim-sessions/${sessionId}/withdraw`, {
+    method: 'PATCH'
   })
 };
 

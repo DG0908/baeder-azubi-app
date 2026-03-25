@@ -1365,6 +1365,14 @@ export const rejectSwimSessionEntry = async (supabase, sessionId) => {
   if (error) throw error;
 };
 
+export const withdrawSwimSessionEntry = async (supabase, sessionId) => {
+  if (USE_SECURE_API) {
+    return secureSwimSessionsApi.withdraw(sessionId);
+  }
+  const { error } = await supabase.from('swim_sessions').delete().eq('id', sessionId);
+  if (error) throw error;
+};
+
 export const loadCustomSwimTrainingPlanEntries = async (supabase) => {
   if (USE_SECURE_API) {
     const plans = await secureSwimTrainingPlansApi.list();
