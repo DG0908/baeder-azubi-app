@@ -153,16 +153,22 @@ const mapDuelToGame = (d, currentUserId) => {
   // Restore client-managed game state from backend gameState JSON
   const gs = d.gameState || {};
 
+  const player1 = d.challenger?.displayName || '';
+  const player2 = d.opponent?.displayName || '';
+  const effectiveStatus = gs.status || status;
+  // If game is active but no currentTurn saved, default to player1 (challenger picks first)
+  const currentTurn = gs.currentTurn || (effectiveStatus === 'active' ? player1 : '');
+
   return {
     id: d.id,
-    player1: d.challenger?.displayName || '',
-    player2: d.opponent?.displayName || '',
+    player1,
+    player2,
     player1Score: gs.player1Score ?? 0,
     player2Score: gs.player2Score ?? 0,
-    currentTurn: gs.currentTurn || '',
+    currentTurn,
     categoryRound: gs.categoryRound ?? 0,
     round: gs.categoryRound ?? 0,
-    status: gs.status || status,
+    status: effectiveStatus,
     difficulty: gs.difficulty || 'normal',
     categoryRounds: gs.categoryRounds || [],
     winner: gs.winner || d.winnerUser?.displayName || null,
