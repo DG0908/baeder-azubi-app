@@ -44,8 +44,8 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
     @Body() body: RefreshDto
   ) {
-    // Accept refresh token from cookie (preferred) or request body (fallback for cross-origin)
-    const refreshToken = request.cookies?.refresh_token || body?.refreshToken;
+    // Accept refresh token from body (preferred, always fresh) or cookie (fallback)
+    const refreshToken = body?.refreshToken || request.cookies?.refresh_token;
     return this.authService.refreshSession(refreshToken, response);
   }
 
