@@ -106,6 +106,14 @@ export const secureAuthApi = {
     });
   },
 
+  /**
+   * Attempt to restore session via refresh cookie (single roundtrip).
+   * Returns { accessToken, user } on success, throws on failure.
+   */
+  async refreshSession() {
+    return refreshApiSession();
+  },
+
   async changePassword(payload) {
     return apiRequest('/auth/password', {
       method: 'PATCH',

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { PERMISSIONS } from '../data/constants';
 import { triggerWebPushNotification } from '../lib/pushNotifications';
-import { isSecureBackendApiEnabled } from '../lib/secureApiClient';
+import { isSecureBackendApiEnabled, getApiAccessToken } from '../lib/secureApiClient';
 import { secureAuthApi, secureUsersApi, mapBackendUserToFrontendUser } from '../lib/secureApi';
 
 const USE_SECURE_API = isSecureBackendApiEnabled();
@@ -55,14 +55,34 @@ export function AuthProvider({ children }) {
       }
 
       if (USE_SECURE_API) {
-        // NestJS-Backend: Session über /auth/me prüfen
+        // NestJS-Backend: Session über Refresh-Cookie oder Access-Token prüfen
         try {
-          const backendUser = await secureAuthApi.me();
+          let backendUser;
+
+          if (getApiAccessToken()) {
+            // Access-Token vorhanden → direkt /auth/me aufrufen
+            backendUser = await secureAuthApi.me();
+          } else {
+            // Kein Access-Token (z.B. nach Seiten-Refresh) → direkt Refresh versuchen
+            // Das spart einen 401-Roundtrip: statt me()→401→refresh→retry me()
+            // machen wir nur refresh() (gibt { accessToken, user } zurück)
+            try {
+              const refreshResult = await secureAuthApi.refreshSession();
+              backendUser = refreshResult?.user;
+            } catch {
+              // Kein gültiger Refresh-Cookie → nicht eingeloggt
+              backendUser = null;
+            }
+          }
+
           if (backendUser) {
             const frontendUser = mapBackendUserToFrontendUser(backendUser);
             frontendUser.permissions = PERMISSIONS[frontendUser.role] || PERMISSIONS.azubi;
             setUser(frontendUser);
             localStorage.setItem('baeder_user', JSON.stringify(frontendUser));
+          } else if (localStorage.getItem('baeder_user')) {
+            setUser(null);
+            localStorage.removeItem('baeder_user');
           }
         } catch {
           // Nicht eingeloggt oder Token abgelaufen

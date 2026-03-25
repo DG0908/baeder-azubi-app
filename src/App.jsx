@@ -3615,6 +3615,10 @@ export default function BaederApp() {
       setTimerActive(false);
       localStorage.removeItem(`quiz_waiting_reminder_${game.id}_${game.player2}`);
       resetQuizKeywordState();
+
+      // Save initial game state to backend so the other player can see it
+      await saveGameToSupabase(game);
+
       setCurrentView('quiz');
     } catch (error) {
       console.error('Accept error:', error);
