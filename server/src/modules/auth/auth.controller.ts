@@ -9,6 +9,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto';
 import { LoginDto } from './dto/login.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
@@ -38,8 +39,14 @@ export class AuthController {
   @Throttle({ default: { ttl: 60000, limit: 10 } })
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
-  refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    return this.authService.refreshSession(request.cookies?.refresh_token, response);
+  refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+    @Body() body: RefreshDto
+  ) {
+    // Accept refresh token from cookie (preferred) or request body (fallback for cross-origin)
+    const refreshToken = request.cookies?.refresh_token || body?.refreshToken;
+    return this.authService.refreshSession(refreshToken, response);
   }
 
   @Public()
