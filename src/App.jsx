@@ -2927,6 +2927,46 @@ export default function BaederApp() {
     }
   }, [chatScope, selectedChatRecipientId, directChatCandidates]);
 
+  // Load direct messages on-demand when switching to direct_staff scope
+  useEffect(() => {
+    if (!USE_SECURE_API || chatScope !== 'direct_staff' || !selectedChatRecipientId) return;
+    const loadDirectMessages = async () => {
+      try {
+        const directMsgs = await secureChatApi.list({
+          scope: 'DIRECT_STAFF',
+          recipientId: selectedChatRecipientId,
+          limit: 100
+        });
+        const mapped = (directMsgs || []).map(m => ({
+          id: m.id,
+          sender: m.senderName || m.sender?.displayName || 'Unbekannt',
+          text: m.content || m.text || '',
+          time: new Date(m.createdAt || Date.now()).getTime(),
+          avatar: m.senderAvatar || m.sender?.avatar || null,
+          senderId: m.senderId || m.sender?.id || null,
+          senderRole: m.senderRole || m.sender?.role?.toLowerCase() || 'azubi',
+          scope: 'direct_staff',
+          organizationId: m.organizationId || null,
+          recipientId: m.recipientId || null
+        }));
+        setMessages(prev => {
+          // Remove old direct_staff messages for this recipient, add new ones
+          const withoutOldDirect = prev.filter(msg =>
+            msg.scope !== 'direct_staff' ||
+            !(
+              (msg.senderId === user?.id && msg.recipientId === selectedChatRecipientId) ||
+              (msg.senderId === selectedChatRecipientId && msg.recipientId === user?.id)
+            )
+          );
+          return [...withoutOldDirect, ...mapped];
+        });
+      } catch (error) {
+        console.warn('Direct messages load error:', error.message);
+      }
+    };
+    loadDirectMessages();
+  }, [chatScope, selectedChatRecipientId]);
+
   const getTodayStamp = (input = Date.now()) => {
     const date = new Date(input);
     if (Number.isNaN(date.getTime())) return '';
@@ -4749,11 +4789,12 @@ export default function BaederApp() {
     try {
       let msg;
       if (USE_SECURE_API) {
-        const result = await secureChatApi.create({
+        const chatPayload = {
           content: newMessage.trim(),
-          scope: activeScope,
-          recipientId: recipient?.id || null
-        });
+          scope: activeScope.toUpperCase()
+        };
+        if (recipient?.id) chatPayload.recipientId = recipient.id;
+        const result = await secureChatApi.create(chatPayload);
         msg = {
           id: result.id,
           sender: user.name,

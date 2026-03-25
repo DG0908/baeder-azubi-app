@@ -458,8 +458,7 @@ export const loadGames = async (supabase, limit = 200, currentUserId = null) => 
 
 export const loadMessages = async (supabase, normalizeFn, userDirectory) => {
   if (USE_SECURE_API) {
-    const messages = await secureChatApi.list({ limit: 100 });
-    return (messages || []).map(m => ({
+    const mapMsg = (m) => ({
       id: m.id,
       sender: m.senderName || m.sender?.displayName || 'Unbekannt',
       text: m.content || m.text || '',
@@ -467,10 +466,23 @@ export const loadMessages = async (supabase, normalizeFn, userDirectory) => {
       avatar: m.senderAvatar || m.sender?.avatar || null,
       senderId: m.senderId || m.sender?.id || null,
       senderRole: m.senderRole || m.sender?.role?.toLowerCase() || 'azubi',
-      scope: m.scope || m.chatScope || 'public',
+      scope: (m.scope || m.chatScope || 'public').toLowerCase(),
       organizationId: m.organizationId || null,
       recipientId: m.recipientId || null
-    }));
+    });
+    // Load room scopes in parallel (backend returns one scope at a time)
+    // DIRECT_STAFF requires recipientId so it's loaded on-demand in the chat view
+    const scopes = ['AZUBI_ROOM', 'STAFF_ROOM'];
+    const results = await Promise.allSettled(
+      scopes.map(scope => secureChatApi.list({ scope, limit: 100 }))
+    );
+    const allMessages = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled' && Array.isArray(result.value)) {
+        allMessages.push(...result.value.map(mapMsg));
+      }
+    }
+    return allMessages;
   }
 
   const { data } = await supabase
