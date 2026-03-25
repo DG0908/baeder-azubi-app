@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
+import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
+import { secureUsersApi } from '../../lib/secureApi';
 import { AVATARS, getAvatarById, getLevel } from '../../data/constants';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 
@@ -117,8 +119,12 @@ const CollectionView = ({ userStats, swimSessions, userBadges, setCurrentView })
       return;
     }
     try {
-      const { error } = await supabase.from('profiles').update({ avatar: avatarId }).eq('id', user.id);
-      if (error) throw error;
+      if (isSecureBackendApiEnabled()) {
+        await secureUsersApi.updateMe({ avatar: avatarId });
+      } else {
+        const { error } = await supabase.from('profiles').update({ avatar: avatarId }).eq('id', user.id);
+        if (error) throw error;
+      }
       const updated = { ...user, avatar: avatarId };
       setUser(updated);
       localStorage.setItem('bäder_user', JSON.stringify(updated));

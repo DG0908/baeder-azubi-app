@@ -3,7 +3,11 @@ import { Plus, Check, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
+import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
+import { secureFlashcardsApi } from '../../lib/secureApi';
 import { CATEGORIES } from '../../data/constants';
+
+const USE_SECURE_API = isSecureBackendApiEnabled();
 import { getWhoAmIClueCount, getWhoAmIVisibleClues, WHO_AM_I_TIME_LIMIT } from '../../data/whoAmIChallenges';
 
 const FlashcardsView = ({
@@ -167,29 +171,46 @@ const FlashcardsView = ({
             }
 
             try {
-              const isApproved = user.permissions.canApproveQuestions;
-              const { data, error } = await supabase
-                .from('flashcards')
-                .insert([{
-                  user_id: user.id,
+              let flashcard;
+              if (USE_SECURE_API) {
+                const result = await secureFlashcardsApi.create({
                   category: newFlashcardCategory,
                   question: newFlashcardFront.trim(),
-                  answer: newFlashcardBack.trim(),
-                  approved: isApproved
-                }])
-                .select()
-                .single();
+                  answer: newFlashcardBack.trim()
+                });
+                flashcard = {
+                  id: result.id,
+                  front: result.question,
+                  back: result.answer,
+                  category: result.category,
+                  approved: result.approved ?? false,
+                  userId: result.userId || result.user_id
+                };
+              } else {
+                const isApproved = user.permissions.canApproveQuestions;
+                const { data, error } = await supabase
+                  .from('flashcards')
+                  .insert([{
+                    user_id: user.id,
+                    category: newFlashcardCategory,
+                    question: newFlashcardFront.trim(),
+                    answer: newFlashcardBack.trim(),
+                    approved: isApproved
+                  }])
+                  .select()
+                  .single();
 
-              if (error) throw error;
+                if (error) throw error;
 
-              const flashcard = {
-                id: data.id,
-                front: data.question,
-                back: data.answer,
-                category: data.category,
-                approved: data.approved,
-                userId: data.user_id
-              };
+                flashcard = {
+                  id: data.id,
+                  front: data.question,
+                  back: data.answer,
+                  category: data.category,
+                  approved: data.approved,
+                  userId: data.user_id
+                };
+              }
 
               if (flashcard.approved) {
                 setUserFlashcards([...userFlashcards, flashcard]);
@@ -200,7 +221,7 @@ const FlashcardsView = ({
               }
 
               void queueXpAward('flashcardCreation', XP_REWARDS.FLASHCARD_CREATE, {
-                eventKey: `flashcard_create_${data.id}`,
+                eventKey: `flashcard_create_${flashcard.id}`,
                 reason: 'Karteikarte erstellt',
                 showXpToast: true
               });
