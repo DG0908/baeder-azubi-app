@@ -1,6 +1,10 @@
+import { isSecureBackendApiEnabled } from './secureApiClient';
+import { secureNotificationsApi } from './secureApi';
+
 const WEB_PUSH_PUBLIC_KEY = import.meta.env.VITE_WEB_PUSH_PUBLIC_KEY || '';
 const PUSH_FUNCTION_NAME = import.meta.env.VITE_PUSH_FUNCTION_NAME || 'send-web-push';
 const SMARTBADEN_PUSH_BACKEND_URL = 'https://push.smartbaden.de/api/push/send';
+const USE_SECURE_API = isSecureBackendApiEnabled();
 
 export const getPushBackendUrl = () => {
   const configuredUrl = String(import.meta.env.VITE_PUSH_BACKEND_URL || '').trim();
@@ -167,7 +171,7 @@ export const ensureUserPushSubscription = async ({
   user,
   requestPermission = false
 }) => {
-  if (!supabase || !user?.id || !user?.name) return { enabled: false, reason: 'missing-user' };
+  if ((!USE_SECURE_API && !supabase) || !user?.id || !user?.name) return { enabled: false, reason: 'missing-user' };
   if (!isWebPushSupported()) return { enabled: false, reason: 'unsupported' };
   if (!isWebPushConfigured()) return { enabled: false, reason: 'missing-vapid-key' };
 
@@ -192,22 +196,31 @@ export const ensureUserPushSubscription = async ({
     return { enabled: false, reason: 'invalid-subscription' };
   }
 
-  const { error } = await supabase
-    .from('push_subscriptions')
-    .upsert(
-      {
-        user_id: user.id,
-        user_name: user.name,
-        endpoint: serialized.endpoint,
-        p256dh: keys.p256dh,
-        auth: keys.auth,
-        user_agent: navigator.userAgent,
-        last_seen_at: new Date().toISOString()
-      },
-      { onConflict: 'endpoint' }
-    );
+  if (USE_SECURE_API) {
+    await secureNotificationsApi.upsertPushSubscription({
+      endpoint: serialized.endpoint,
+      p256dh: keys.p256dh,
+      auth: keys.auth,
+      userAgent: navigator.userAgent
+    });
+  } else {
+    const { error } = await supabase
+      .from('push_subscriptions')
+      .upsert(
+        {
+          user_id: user.id,
+          user_name: user.name,
+          endpoint: serialized.endpoint,
+          p256dh: keys.p256dh,
+          auth: keys.auth,
+          user_agent: navigator.userAgent,
+          last_seen_at: new Date().toISOString()
+        },
+        { onConflict: 'endpoint' }
+      );
 
-  if (error) throw error;
+    if (error) throw error;
+  }
   return { enabled: true, subscription: serialized };
 };
 
@@ -215,7 +228,7 @@ export const clearUserPushSubscription = async ({
   supabase,
   user
 }) => {
-  if (!supabase || !user?.id) return { cleared: false, reason: 'missing-user' };
+  if ((!USE_SECURE_API && !supabase) || !user?.id) return { cleared: false, reason: 'missing-user' };
   if (!isWebPushSupported()) return { cleared: false, reason: 'unsupported' };
 
   const registration = await navigator.serviceWorker.ready;
@@ -224,13 +237,17 @@ export const clearUserPushSubscription = async ({
   const endpoint = String(serialized?.endpoint || '').trim();
 
   if (endpoint) {
-    const { error } = await supabase
-      .from('push_subscriptions')
-      .delete()
-      .eq('endpoint', endpoint)
-      .eq('user_id', user.id);
+    if (USE_SECURE_API) {
+      await secureNotificationsApi.removePushSubscription({ endpoint });
+    } else {
+      const { error } = await supabase
+        .from('push_subscriptions')
+        .delete()
+        .eq('endpoint', endpoint)
+        .eq('user_id', user.id);
 
-    if (error) throw error;
+      if (error) throw error;
+    }
   }
 
   if (subscription) {

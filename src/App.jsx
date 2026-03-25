@@ -266,6 +266,7 @@ export default function BaederApp() {
     .replace(/\s+/g, ' ');
 
   const {
+    authReady,
     user,
     setUser,
     authView,
@@ -1857,6 +1858,7 @@ export default function BaederApp() {
   // Auth wird vollständig vom AuthContext verwaltet (src/context/AuthContext.jsx)
 
   useEffect(() => {
+    if (!authReady) return;
     if (user) {
       loadData();
       loadNotifications();
@@ -1868,7 +1870,7 @@ export default function BaederApp() {
       }, 30000);
       return () => clearInterval(interval);
     }
-  }, [user]);
+  }, [authReady, user]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -1883,6 +1885,7 @@ export default function BaederApp() {
   }, [user?.id, user?.role, chatScope]);
 
   useEffect(() => {
+    if (!authReady) return;
     if (!user?.id) {
       setPushDeviceState({
         supported: false,
@@ -1898,14 +1901,15 @@ export default function BaederApp() {
     }
 
     void refreshPushDeviceState();
-  }, [refreshPushDeviceState, user?.id]);
+  }, [authReady, refreshPushDeviceState, user?.id]);
 
   useEffect(() => {
+    if (!authReady) return;
     if (!user?.id) return;
     if (!isWebPushConfigured()) return;
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     void syncPushSubscription(false);
-  }, [user?.id, syncPushSubscription]);
+  }, [authReady, user?.id, syncPushSubscription]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -1960,8 +1964,9 @@ export default function BaederApp() {
 
   // Check data retention only once on login (not on every view change)
   useEffect(() => {
-    if (user) checkDataRetention();
-  }, [user]);
+    if (!authReady || !user || USE_SECURE_API) return;
+    checkDataRetention();
+  }, [authReady, user]);
 
   useEffect(() => {
     // Load school attendance when view changes
@@ -7160,6 +7165,7 @@ export default function BaederApp() {
 
   // Lade Schwimmdaten beim Start
   useEffect(() => {
+    if (!authReady) return;
     if (user) {
       loadSwimSessions();
     } else {
@@ -7168,7 +7174,7 @@ export default function BaederApp() {
       setSwimSessionsLoaded(false);
       setCustomSwimTrainingPlans([]);
     }
-  }, [user]);
+  }, [authReady, user]);
 
   useEffect(() => {
     if (!user) {

@@ -31,6 +31,7 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem('baeder_user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
+  const [authReady, setAuthReady] = useState(false);
   const [authView, setAuthView] = useState('login');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -46,6 +47,7 @@ export function AuthProvider({ children }) {
   // Session prüfen + Auth-State-Listener
   useEffect(() => {
     const checkSession = async () => {
+      try {
       // Prüfe ob es ein Password-Recovery-Link ist (type=recovery in URL)
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const urlParams = new URLSearchParams(window.location.search);
@@ -131,6 +133,9 @@ export function AuthProvider({ children }) {
           setUser(null);
           localStorage.removeItem('baeder_user');
         }
+      }
+      } finally {
+        setAuthReady(true);
       }
     };
 
@@ -458,6 +463,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
+      authReady,
       user,
       setUser,
       authView,
