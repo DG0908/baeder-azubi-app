@@ -5,6 +5,7 @@ const ENABLE_SECURE_BACKEND_API = String(import.meta.env.VITE_ENABLE_SECURE_BACK
 
 let inMemoryAccessToken = '';
 const REFRESH_TOKEN_KEY = 'baeder_rt';
+let refreshPromise = null;
 
 export class ApiRequestError extends Error {
   constructor(message, status = 500, details = null) {
@@ -68,42 +69,62 @@ export const clearRefreshToken = () => {
 export const isSecureBackendApiEnabled = () => ENABLE_SECURE_BACKEND_API;
 
 export const refreshApiSession = async () => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
   // Send refresh token in body as fallback for browsers that block cross-origin cookies
-  const storedRefreshToken = getRefreshToken();
-  const fetchOptions = {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken: storedRefreshToken || undefined })
-  };
+    try {
+      const storedRefreshToken = getRefreshToken();
+      const fetchOptions = {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: storedRefreshToken || undefined })
+      };
 
-  const response = await fetch(buildUrl('/auth/refresh'), fetchOptions);
-  const body = await parseResponseBody(response);
+      const response = await fetch(buildUrl('/auth/refresh'), fetchOptions);
+      const body = await parseResponseBody(response);
 
-  if (!response.ok) {
-    clearApiAccessToken();
-    clearRefreshToken();
-    throw new ApiRequestError(
-      body?.message || body?.error || 'API session refresh failed.',
-      response.status,
-      body
-    );
-  }
+      if (!response.ok) {
+        clearApiAccessToken();
+        clearRefreshToken();
+        throw new ApiRequestError(
+          body?.message || body?.error || 'API session refresh failed.',
+          response.status,
+          body
+        );
+      }
 
-  if (body?.accessToken) {
-    setApiAccessToken(body.accessToken);
-  }
+      if (body?.accessToken) {
+        setApiAccessToken(body.accessToken);
+      }
 
-  // Store new refresh token if returned (for token rotation)
-  if (body?.refreshToken) {
-    setRefreshToken(body.refreshToken);
-  }
+      // Store new refresh token if returned (for token rotation)
+      if (body?.refreshToken) {
+        setRefreshToken(body.refreshToken);
+      }
 
-  return body;
+      return body;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 };
 
 export const apiRequest = async (path, options = {}, retry = true) => {
+  const skipRefreshPaths = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/password-reset'];
+  const shouldSkipRefresh = skipRefreshPaths.some(p => String(path).startsWith(p));
   const accessToken = getApiAccessToken();
+
+  if (!accessToken && retry && !shouldSkipRefresh && getRefreshToken()) {
+    await refreshApiSession();
+    return apiRequest(path, options, false);
+  }
+
   const headers = new Headers(options.headers || {});
 
   if (!headers.has('Content-Type') && options.body !== undefined) {
@@ -120,8 +141,6 @@ export const apiRequest = async (path, options = {}, retry = true) => {
     credentials: 'include'
   });
 
-  const skipRefreshPaths = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/password-reset'];
-  const shouldSkipRefresh = skipRefreshPaths.some(p => String(path).startsWith(p));
   if (response.status === 401 && retry && !shouldSkipRefresh) {
     try {
       await refreshApiSession();
