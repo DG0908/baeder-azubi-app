@@ -45,6 +45,236 @@ const safe = async (fn, fallback) => {
   }
 };
 
+const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const pickPayloadValue = (payload, ...keys) => {
+  if (!isPlainObject(payload)) return undefined;
+  for (const key of keys) {
+    if (payload[key] !== undefined) {
+      return payload[key];
+    }
+  }
+  return undefined;
+};
+
+const normalizeSignatureField = (field) => {
+  const normalized = String(field || '').trim();
+  if (normalized === 'teacher_signature' || normalized === 'teacherSignature') {
+    return 'teacherSignature';
+  }
+  if (normalized === 'trainer_signature' || normalized === 'trainerSignature') {
+    return 'trainerSignature';
+  }
+  return normalized;
+};
+
+const mapSecureReportBookToFrontendEntry = (entry) => ({
+  id: entry.id,
+  user_name: entry.userName,
+  week_start: entry.weekStart,
+  week_end: entry.weekEnd,
+  ausbildungsjahr: entry.trainingYear,
+  nachweis_nr: entry.evidenceNumber || entry.reportNumber,
+  entries: entry.entries,
+  bemerkung_azubi: entry.apprenticeNote || entry.azubiRemarks,
+  bemerkung_ausbilder: entry.trainerNote || entry.trainerRemarks,
+  signatur_azubi: entry.apprenticeSignature || entry.azubiSignature,
+  signatur_ausbilder: entry.trainerSignature,
+  datum_azubi: entry.apprenticeSignatureDate || entry.azubiDate,
+  datum_ausbilder: entry.trainerSignatureDate || entry.trainerDate,
+  total_hours: entry.totalHours,
+  status: entry.status,
+  assigned_trainer_id: entry.assignedTrainerId,
+  assigned_trainer_name: entry.assignedTrainerName,
+  assigned_by_id: entry.assignedById,
+  assigned_at: entry.assignedAt,
+  created_at: entry.createdAt,
+  updated_at: entry.updatedAt
+});
+
+const mapSecureSwimTrainingPlanToFrontendEntry = (plan) => ({
+  id: plan.id,
+  name: plan.name,
+  category: plan.category,
+  difficulty: plan.difficulty,
+  style_id: pickPayloadValue(plan, 'style_id', 'styleId'),
+  target_distance: pickPayloadValue(plan, 'target_distance', 'targetDistance'),
+  target_time: pickPayloadValue(plan, 'target_time', 'targetTime'),
+  units_json: pickPayloadValue(plan, 'units_json', 'units') || [],
+  xp_reward: pickPayloadValue(plan, 'xp_reward', 'xpReward'),
+  description: plan.description,
+  created_by_user_id: pickPayloadValue(plan, 'created_by_user_id', 'createdByUserId'),
+  created_by_name: pickPayloadValue(plan, 'created_by_name', 'createdByName'),
+  created_by_role: pickPayloadValue(plan, 'created_by_role', 'createdByRole'),
+  assigned_user_id: pickPayloadValue(plan, 'assigned_user_id', 'assignedUserId'),
+  assigned_user_name: pickPayloadValue(plan, 'assigned_user_name', 'assignedUserName'),
+  assigned_user_role: pickPayloadValue(plan, 'assigned_user_role', 'assignedUserRole'),
+  created_at: pickPayloadValue(plan, 'created_at', 'createdAt'),
+  is_active: true
+});
+
+const mapSecurePracticalAttemptToFrontendEntry = (attempt) => ({
+  id: attempt.id,
+  user_id: attempt.userId,
+  user_name: attempt.userName,
+  exam_type: attempt.examType,
+  average_grade: attempt.averageGrade,
+  graded_count: attempt.gradedCount,
+  passed: attempt.passed,
+  result_rows: attempt.resultRows || attempt.rows || [],
+  created_at: attempt.createdAt,
+  created_by: attempt.createdById || attempt.createdBy,
+  created_by_name: attempt.createdByName,
+  source: 'remote'
+});
+
+const toSecureSchoolAttendancePayload = (payload) => ({
+  date: String(pickPayloadValue(payload, 'date') || ''),
+  startTime: String(pickPayloadValue(payload, 'startTime', 'start_time') || ''),
+  endTime: String(pickPayloadValue(payload, 'endTime', 'end_time') || '')
+});
+
+const toSecureExamGradePayload = (payload) => ({
+  date: String(pickPayloadValue(payload, 'date') || ''),
+  subject: String(pickPayloadValue(payload, 'subject') || ''),
+  topic: String(pickPayloadValue(payload, 'topic') || ''),
+  grade: Number(pickPayloadValue(payload, 'grade') || 0),
+  notes: pickPayloadValue(payload, 'notes') ?? undefined
+});
+
+const toSecureMaterialPayload = (payload) => ({
+  title: String(pickPayloadValue(payload, 'title') || ''),
+  category: String(pickPayloadValue(payload, 'category') || ''),
+  content: pickPayloadValue(payload, 'content') ?? undefined,
+  type: pickPayloadValue(payload, 'type') ?? undefined,
+  url: pickPayloadValue(payload, 'url') ?? undefined
+});
+
+const toSecureResourcePayload = (payload) => ({
+  title: String(pickPayloadValue(payload, 'title') || ''),
+  description: pickPayloadValue(payload, 'description') ?? undefined,
+  url: String(pickPayloadValue(payload, 'url') || ''),
+  category: String(pickPayloadValue(payload, 'category') || '')
+});
+
+const toSecureNewsPayload = (payload) => ({
+  title: String(pickPayloadValue(payload, 'title') || ''),
+  content: String(pickPayloadValue(payload, 'content') || '')
+});
+
+const toSecureExamPayload = (payload) => ({
+  title: String(pickPayloadValue(payload, 'title') || ''),
+  description: pickPayloadValue(payload, 'description') ?? undefined,
+  examDate: pickPayloadValue(payload, 'examDate', 'exam_date') ?? undefined,
+  location: pickPayloadValue(payload, 'location') ?? undefined
+});
+
+const toSecureSwimSessionPayload = (payload) => ({
+  date: String(pickPayloadValue(payload, 'date') || ''),
+  distanceMeters: Number(pickPayloadValue(payload, 'distanceMeters', 'distance') || 0),
+  timeMinutes: Number(pickPayloadValue(payload, 'timeMinutes', 'time_minutes') || 0),
+  styleId: String(pickPayloadValue(payload, 'styleId', 'style') || ''),
+  notes: pickPayloadValue(payload, 'notes') ?? undefined,
+  challengeId: pickPayloadValue(payload, 'challengeId', 'challenge_id') ?? undefined
+});
+
+const toSecureSwimTrainingPlanUnits = (payload) => {
+  const units = pickPayloadValue(payload, 'units', 'units_json');
+  if (!Array.isArray(units)) return [];
+
+  return units.map((unit, index) => ({
+    id: String(pickPayloadValue(unit, 'id') || `unit_${index + 1}`),
+    styleId: String(pickPayloadValue(unit, 'styleId', 'style_id') || ''),
+    targetDistance: Number(pickPayloadValue(unit, 'targetDistance', 'target_distance') || 0),
+    targetTime: Number(pickPayloadValue(unit, 'targetTime', 'target_time') || 0)
+  }));
+};
+
+const toSecureSwimTrainingPlanPayload = (payload) => ({
+  name: String(pickPayloadValue(payload, 'name') || ''),
+  category: String(pickPayloadValue(payload, 'category') || ''),
+  difficulty: String(pickPayloadValue(payload, 'difficulty') || ''),
+  units: toSecureSwimTrainingPlanUnits(payload),
+  xpReward: Number(pickPayloadValue(payload, 'xpReward', 'xp_reward') || 0),
+  description: pickPayloadValue(payload, 'description') ?? undefined,
+  assignedUserId: pickPayloadValue(payload, 'assignedUserId', 'assigned_user_id') ?? undefined
+});
+
+const toSecureReportBookPayload = (payload, entryId = null) => ({
+  entryId: entryId || pickPayloadValue(payload, 'entryId', 'id') || undefined,
+  weekStart: String(pickPayloadValue(payload, 'weekStart', 'week_start') || ''),
+  trainingYear: Number(pickPayloadValue(payload, 'trainingYear', 'ausbildungsjahr') || 0),
+  evidenceNumber: Number(pickPayloadValue(payload, 'evidenceNumber', 'reportNumber', 'nachweis_nr') || 0),
+  entries: pickPayloadValue(payload, 'entries') || {},
+  apprenticeNote: pickPayloadValue(payload, 'apprenticeNote', 'azubiRemarks', 'bemerkung_azubi') ?? undefined,
+  trainerNote: pickPayloadValue(payload, 'trainerNote', 'trainerRemarks', 'bemerkung_ausbilder') ?? undefined,
+  apprenticeSignature: pickPayloadValue(payload, 'apprenticeSignature', 'azubiSignature', 'signatur_azubi') ?? undefined,
+  trainerSignature: pickPayloadValue(payload, 'trainerSignature', 'signatur_ausbilder') ?? undefined,
+  apprenticeSignatureDate: pickPayloadValue(payload, 'apprenticeSignatureDate', 'azubiDate', 'datum_azubi') ?? undefined,
+  trainerSignatureDate: pickPayloadValue(payload, 'trainerSignatureDate', 'trainerDate', 'datum_ausbilder') ?? undefined
+});
+
+const toSecureAssignTrainerPayload = (payload) => ({
+  trainerId: String(pickPayloadValue(payload, 'trainerId', 'assigned_trainer_id') || '')
+});
+
+const toSecurePracticalExamAttemptPayload = (payload) => ({
+  examType: String(pickPayloadValue(payload, 'examType', 'exam_type') || ''),
+  userId: pickPayloadValue(payload, 'userId', 'user_id') || undefined,
+  inputValues: pickPayloadValue(payload, 'inputValues', 'input_values') || {}
+});
+
+const toSecureTheoryExamAnswerPayload = (answer) => {
+  const question = isPlainObject(answer?.question) ? answer.question : {};
+  const questionId = String(pickPayloadValue(answer, 'questionId') || pickPayloadValue(question, 'id') || '').trim();
+  if (!questionId) return null;
+
+  if (answer?.answerType === 'keyword' || answer?.keywordText !== undefined) {
+    return {
+      questionId,
+      keywordText: String(answer?.keywordText || '')
+    };
+  }
+
+  const selectedAnswerIndices = Array.isArray(answer?.selectedAnswers)
+    ? answer.selectedAnswers
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value >= 0)
+    : [];
+  if (selectedAnswerIndices.length > 0) {
+    return {
+      questionId,
+      selectedAnswerIndices
+    };
+  }
+
+  const selectedAnswerIndex = Number(answer?.selectedAnswer);
+  if (Number.isInteger(selectedAnswerIndex) && selectedAnswerIndex >= 0) {
+    return {
+      questionId,
+      selectedAnswerIndex
+    };
+  }
+
+  return {
+    questionId
+  };
+};
+
+const toSecureQuestionReportPayload = (payload) => ({
+  questionKey: String(pickPayloadValue(payload, 'questionKey', 'question_key') || ''),
+  questionText: String(pickPayloadValue(payload, 'questionText', 'question_text') || ''),
+  category: String(pickPayloadValue(payload, 'category') || ''),
+  source: String(pickPayloadValue(payload, 'source') || ''),
+  note: pickPayloadValue(payload, 'note') ?? undefined,
+  answers: Array.isArray(pickPayloadValue(payload, 'answers')) ? pickPayloadValue(payload, 'answers') : undefined
+});
+
+const toSecurePushTestPayload = (payload) => ({
+  targetScope: pickPayloadValue(payload, 'targetScope') || undefined,
+  delaySeconds: Number(pickPayloadValue(payload, 'delaySeconds') || 0)
+});
+
 // ─── Users ───────────────────────────────────────────────────────────
 
 /**
@@ -287,13 +517,10 @@ export const loadNotifications = async (supabase, userName) => {
 
 export const sendNotification = async (supabase, { userName, title, message, type = 'info', triggerPush = true }) => {
   if (USE_SECURE_API) {
-    const result = await secureNotificationsApi.emitEvent({
-      targetUserName: userName,
-      title,
-      message,
-      type
-    });
-    return result;
+    // Secure-backend mode emits notifications server-side from the action endpoints.
+    // The legacy generic notification insert is Supabase-specific and should not
+    // produce invalid DTO requests against NestJS.
+    return null;
   }
 
   const { data, error } = await supabase
@@ -708,17 +935,31 @@ export const loadSwimTrainingPlans = async (supabase) => {
 
 // ─── Theory Exam Attempts ────────────────────────────────────────────
 
-export const saveTheoryExamAttempt = async (supabase, userId, userName, progress, keywordMode) => {
+export const startTheoryExamSession = async (supabase, keywordMode = false) => {
   if (USE_SECURE_API) {
-    await secureExamSimulatorApi.submitTheorySession('inline', {
-      correct: progress.correct,
-      total: progress.total,
-      percentage: progress.percentage,
-      passed: progress.passed,
-      timeMs: progress.timeMs,
-      keywordMode
+    return secureExamSimulatorApi.startTheorySession({
+      keywordMode: Boolean(keywordMode)
     });
-    return;
+  }
+  return null;
+};
+
+export const saveTheoryExamAttempt = async (supabase, userId, userName, progress, keywordMode, sessionPayload = null) => {
+  if (USE_SECURE_API) {
+    const sessionId = String(pickPayloadValue(sessionPayload, 'sessionId') || '').trim();
+    if (!sessionId) {
+      throw new Error('Theory exam sessionId fehlt fuer Secure-Submit.');
+    }
+
+    const rawAnswers = Array.isArray(sessionPayload?.answers) ? sessionPayload.answers : [];
+    const answers = rawAnswers
+      .map(toSecureTheoryExamAnswerPayload)
+      .filter(Boolean);
+
+    return secureExamSimulatorApi.submitTheorySession(sessionId, {
+      answers,
+      timeMs: Number(progress?.timeMs || 0)
+    });
   }
 
   await supabase.from('theory_exam_attempts').insert([{
@@ -808,7 +1049,7 @@ export const loadSchoolAttendance = async (supabase, userId) => {
 
 export const addSchoolAttendanceEntry = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    return secureSchoolAttendanceApi.create(payload);
+    return secureSchoolAttendanceApi.create(toSecureSchoolAttendancePayload(payload));
   }
   const { error } = await supabase.from('school_attendance').insert(payload);
   if (error) throw error;
@@ -816,7 +1057,10 @@ export const addSchoolAttendanceEntry = async (supabase, payload) => {
 
 export const updateSchoolAttendanceSignature = async (supabase, entryId, field, value) => {
   if (USE_SECURE_API) {
-    return secureSchoolAttendanceApi.updateSignature(entryId, { [field]: value });
+    return secureSchoolAttendanceApi.updateSignature(entryId, {
+      field: normalizeSignatureField(field),
+      value
+    });
   }
   const { error } = await supabase.from('school_attendance').update({ [field]: value }).eq('id', entryId);
   if (error) throw error;
@@ -854,7 +1098,7 @@ export const loadExamGradeEntries = async (supabase, userId) => {
 
 export const addExamGradeEntry = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    return secureExamGradesApi.create(payload);
+    return secureExamGradesApi.create(toSecureExamGradePayload(payload));
   }
   const { error } = await supabase.from('exam_grades').insert(payload);
   if (error) throw error;
@@ -872,7 +1116,7 @@ export const deleteExamGradeEntry = async (supabase, gradeId) => {
 
 export const addMaterialEntry = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    const result = await secureContentApi.createMaterial(payload);
+    const result = await secureContentApi.createMaterial(toSecureMaterialPayload(payload));
     return {
       id: result.id, title: result.title, category: result.category,
       createdBy: result.createdBy || result.created_by, time: new Date(result.createdAt || Date.now()).getTime()
@@ -890,7 +1134,7 @@ export const addMaterialEntry = async (supabase, payload) => {
 
 export const addResourceEntry = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    const result = await secureContentApi.createResource(payload);
+    const result = await secureContentApi.createResource(toSecureResourcePayload(payload));
     return {
       id: result.id, title: result.title, url: result.url,
       type: result.category || result.type, description: result.description,
@@ -918,7 +1162,7 @@ export const deleteResourceEntry = async (supabase, resourceId) => {
 
 export const addNewsEntry = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    const result = await secureContentApi.createNews(payload);
+    const result = await secureContentApi.createNews(toSecureNewsPayload(payload));
     return {
       id: result.id, title: result.title, content: result.content,
       author: result.author || result.createdBy, time: new Date(result.createdAt || Date.now()).getTime()
@@ -944,7 +1188,7 @@ export const deleteNewsEntry = async (supabase, newsId) => {
 
 export const addExamEntry = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    const result = await secureContentApi.createExam(payload);
+    const result = await secureContentApi.createExam(toSecureExamPayload(payload));
     return {
       id: result.id, title: result.title, description: result.description,
       date: result.examDate || result.date, createdBy: result.createdBy || result.created_by,
@@ -1079,13 +1323,22 @@ export const loadSwimSessionEntries = async (supabase) => {
 
 export const saveSwimSessionEntry = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    const result = await secureSwimSessionsApi.create(payload);
+    const result = await secureSwimSessionsApi.create(toSecureSwimSessionPayload(payload));
     return {
-      id: result.id, user_id: result.userId, user_name: result.userName,
-      user_role: result.userRole, date: result.date, distance: result.distance,
-      time_minutes: result.timeMinutes, style: result.style, notes: result.notes,
-      challenge_id: result.challengeId || null, confirmed: false,
-      confirmed_by: null, confirmed_at: null, created_at: result.createdAt
+      id: result.id,
+      user_id: result.user_id || result.userId,
+      user_name: result.user_name || result.userName,
+      user_role: result.user_role || result.userRole,
+      date: result.date,
+      distance: result.distance ?? result.distanceMeters,
+      time_minutes: result.time_minutes ?? result.timeMinutes,
+      style: result.style || result.styleId,
+      notes: result.notes,
+      challenge_id: result.challenge_id ?? result.challengeId ?? null,
+      confirmed: Boolean(result.confirmed),
+      confirmed_by: result.confirmed_by || result.confirmedBy || null,
+      confirmed_at: result.confirmed_at || result.confirmedAt || null,
+      created_at: result.created_at || result.createdAt
     };
   }
   const { data, error } = await supabase.from('swim_sessions')
@@ -1115,15 +1368,7 @@ export const rejectSwimSessionEntry = async (supabase, sessionId) => {
 export const loadCustomSwimTrainingPlanEntries = async (supabase) => {
   if (USE_SECURE_API) {
     const plans = await secureSwimTrainingPlansApi.list();
-    return (plans || []).map(p => ({
-      id: p.id, name: p.name, category: p.category, difficulty: p.difficulty,
-      style_id: p.styleId, target_distance: p.targetDistance, target_time: p.targetTime,
-      units_json: p.units || [], xp_reward: p.xpReward, description: p.description,
-      created_by_user_id: p.createdByUserId, created_by_name: p.createdByName,
-      created_by_role: p.createdByRole, assigned_user_id: p.assignedUserId,
-      assigned_user_name: p.assignedUserName, assigned_user_role: p.assignedUserRole,
-      created_at: p.createdAt, is_active: true
-    }));
+    return (plans || []).map(mapSecureSwimTrainingPlanToFrontendEntry);
   }
   const { data, error } = await supabase.from('swim_training_plans_custom')
     .select('*').eq('is_active', true).order('created_at', { ascending: false });
@@ -1136,7 +1381,8 @@ export const loadCustomSwimTrainingPlanEntries = async (supabase) => {
 
 export const createCustomSwimTrainingPlanEntry = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    return secureSwimTrainingPlansApi.create(payload);
+    const result = await secureSwimTrainingPlansApi.create(toSecureSwimTrainingPlanPayload(payload));
+    return mapSecureSwimTrainingPlanToFrontendEntry(result);
   }
   const { data, error } = await supabase.from('swim_training_plans_custom')
     .insert([payload]).select().single();
@@ -1149,17 +1395,7 @@ export const createCustomSwimTrainingPlanEntry = async (supabase, payload) => {
 export const loadBerichtsheftEntriesFromDb = async (supabase, userName) => {
   if (USE_SECURE_API) {
     const entries = await secureReportBooksApi.list({ userName });
-    return (entries || []).map(e => ({
-      id: e.id, user_name: e.userName, week_start: e.weekStart, week_end: e.weekEnd,
-      ausbildungsjahr: e.trainingYear, nachweis_nr: e.evidenceNumber || e.reportNumber,
-      entries: e.entries, bemerkung_azubi: e.apprenticeNote || e.azubiRemarks, bemerkung_ausbilder: e.trainerNote || e.trainerRemarks,
-      signatur_azubi: e.apprenticeSignature || e.azubiSignature, signatur_ausbilder: e.trainerSignature,
-      datum_azubi: e.apprenticeSignatureDate || e.azubiDate, datum_ausbilder: e.trainerSignatureDate || e.trainerDate,
-      total_hours: e.totalHours, status: e.status,
-      assigned_trainer_id: e.assignedTrainerId, assigned_trainer_name: e.assignedTrainerName,
-      assigned_by_id: e.assignedById, assigned_at: e.assignedAt,
-      created_at: e.createdAt, updated_at: e.updatedAt
-    }));
+    return (entries || []).map(mapSecureReportBookToFrontendEntry);
   }
   const { data, error } = await supabase.from('berichtsheft')
     .select('*').eq('user_name', userName).order('week_start', { ascending: false });
@@ -1169,7 +1405,7 @@ export const loadBerichtsheftEntriesFromDb = async (supabase, userName) => {
 
 export const saveBerichtsheftEntry = async (supabase, payload, existingId = null) => {
   if (USE_SECURE_API) {
-    return secureReportBooksApi.submit(payload);
+    return secureReportBooksApi.submit(toSecureReportBookPayload(payload, existingId));
   }
   if (existingId) {
     const { error } = await supabase.from('berichtsheft').update(payload).eq('id', existingId);
@@ -1191,16 +1427,7 @@ export const deleteBerichtsheftEntry = async (supabase, entryId) => {
 export const loadBerichtsheftPending = async (supabase) => {
   if (USE_SECURE_API) {
     const entries = await secureReportBooksApi.listPendingReview();
-    return (entries || []).map(e => ({
-      id: e.id, user_name: e.userName, week_start: e.weekStart, week_end: e.weekEnd,
-      ausbildungsjahr: e.trainingYear, nachweis_nr: e.evidenceNumber || e.reportNumber,
-      entries: e.entries, bemerkung_azubi: e.apprenticeNote || e.azubiRemarks, bemerkung_ausbilder: e.trainerNote || e.trainerRemarks,
-      signatur_azubi: e.apprenticeSignature || e.azubiSignature, signatur_ausbilder: e.trainerSignature,
-      datum_azubi: e.apprenticeSignatureDate || e.azubiDate, datum_ausbilder: e.trainerSignatureDate || e.trainerDate,
-      total_hours: e.totalHours, status: e.status,
-      assigned_trainer_id: e.assignedTrainerId, assigned_trainer_name: e.assignedTrainerName,
-      assigned_by_id: e.assignedById, assigned_at: e.assignedAt
-    }));
+    return (entries || []).map(mapSecureReportBookToFrontendEntry);
   }
   const { data, error } = await supabase.from('berichtsheft')
     .select('*').order('week_start', { ascending: false });
@@ -1210,7 +1437,7 @@ export const loadBerichtsheftPending = async (supabase) => {
 
 export const assignBerichtsheftTrainerEntry = async (supabase, entryId, payload) => {
   if (USE_SECURE_API) {
-    return secureReportBooksApi.assignTrainer(entryId, payload);
+    return secureReportBooksApi.assignTrainer(entryId, toSecureAssignTrainerPayload(payload));
   }
   const { error } = await supabase.from('berichtsheft').update(payload).eq('id', entryId);
   if (error) throw error;
@@ -1218,7 +1445,8 @@ export const assignBerichtsheftTrainerEntry = async (supabase, entryId, payload)
 
 export const upsertBerichtsheftDraft = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    return secureReportBooksApi.upsertDraft(payload);
+    const result = await secureReportBooksApi.upsertDraft(toSecureReportBookPayload(payload));
+    return mapSecureReportBookToFrontendEntry(result?.entry || result);
   }
   // Supabase path handled in App.jsx (complex insert/update logic)
   return null;
@@ -1253,13 +1481,7 @@ export const updateBerichtsheftProfile = async (supabase, userId, profile) => {
 export const loadPracticalExamAttempts = async (supabase, userId, canViewAll) => {
   if (USE_SECURE_API) {
     const attempts = await secureExamSimulatorApi.listPracticalAttempts(canViewAll ? {} : { userId });
-    return (attempts || []).map(a => ({
-      id: a.id, user_id: a.userId, user_name: a.userName,
-      exam_type: a.examType, average_grade: a.averageGrade,
-      graded_count: a.gradedCount, passed: a.passed,
-      result_rows: a.resultRows || a.rows || [], created_at: a.createdAt,
-      created_by: a.createdBy, created_by_name: a.createdByName, source: 'remote'
-    }));
+    return (attempts || []).map(mapSecurePracticalAttemptToFrontendEntry);
   }
   let query = supabase.from('practical_exam_attempts').select('*').order('created_at', { ascending: false });
   if (!canViewAll) query = query.eq('user_id', userId);
@@ -1273,8 +1495,8 @@ export const loadPracticalExamAttempts = async (supabase, userId, canViewAll) =>
 
 export const savePracticalExamAttemptEntry = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    const result = await secureExamSimulatorApi.createPracticalAttempt(payload);
-    return result;
+    const result = await secureExamSimulatorApi.createPracticalAttempt(toSecurePracticalExamAttemptPayload(payload));
+    return mapSecurePracticalAttemptToFrontendEntry(result);
   }
   const { data, error } = await supabase.from('practical_exam_attempts')
     .insert([payload]).select().single();
@@ -1286,7 +1508,7 @@ export const savePracticalExamAttemptEntry = async (supabase, payload) => {
 
 export const reportQuestion = async (supabase, payload) => {
   if (USE_SECURE_API) {
-    return secureQuestionWorkflowsApi.createReport(payload);
+    return secureQuestionWorkflowsApi.createReport(toSecureQuestionReportPayload(payload));
   }
   const { error } = await supabase.from('question_reports').insert([payload]);
   if (error) throw error;
@@ -1315,7 +1537,7 @@ export const repairQuizStatsRemote = async (supabase, fetchPushBackendWithAuth) 
 
 export const sendTestPushRemote = async (supabase, fetchPushBackendWithAuth, payload) => {
   if (USE_SECURE_API) {
-    return secureNotificationsApi.sendTestPush(payload);
+    return secureNotificationsApi.sendTestPush(toSecurePushTestPayload(payload));
   }
   return fetchPushBackendWithAuth({
     supabase,
