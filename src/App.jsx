@@ -67,6 +67,7 @@ import {
   deleteUser as dsDeleteUser,
   changeUserRole as dsChangeUserRole,
   loadSwimTrainingPlans as dsLoadSwimTrainingPlans,
+  startTheoryExamSession as dsStartTheoryExamSession,
   saveTheoryExamAttempt as dsSaveTheoryExamAttempt,
   loadTheoryExamHistory as dsLoadTheoryExamHistory,
   deletePracticalExamAttempt as dsDsPracticalExamAttempt,
@@ -2775,6 +2776,10 @@ export default function BaederApp() {
   };
 
   const sendNotification = async (userName, title, message, type = 'info') => {
+    if (USE_SECURE_API) {
+      return null;
+    }
+
     try {
       const result = await dsSendNotification(supabase, { userName, title, message, type });
 
@@ -4813,7 +4818,7 @@ export default function BaederApp() {
           category: newQuestionCategory,
           question: newQuestionText,
           answers: newQuestionAnswers,
-          correctIndex: newQuestionCorrect
+          correct: newQuestionCorrect
         });
         q = {
           id: result.id, text: result.question || newQuestionText,
@@ -4870,8 +4875,43 @@ export default function BaederApp() {
 
   
   // Exam Simulator Functions
-  const loadExamProgress = () => {
+  const loadExamProgress = async () => {
     setExamSimulatorMode('theory');
+    setUserExamProgress(null);
+    setExamAnswered(false);
+    setExamSelectedAnswers([]);
+    setExamSelectedAnswer(null);
+    setExamKeywordInput('');
+    setExamKeywordEvaluation(null);
+
+    if (USE_SECURE_API) {
+      try {
+        const result = await dsStartTheoryExamSession(supabase, examKeywordMode);
+        const examQuestions = Array.isArray(result?.questions) ? result.questions : [];
+        if (examQuestions.length === 0) {
+          throw new Error('Keine Theoriefragen vom Backend erhalten.');
+        }
+
+        setExamSimulator({
+          sessionId: result.sessionId,
+          questions: examQuestions,
+          answers: [],
+          startTime: Date.now(),
+          keywordMode: Boolean(result.keywordMode),
+          expiresAt: result.expiresAt || null
+        });
+        setExamQuestionIndex(0);
+        setExamCurrentQuestion(examQuestions[0]);
+        return;
+      } catch (error) {
+        console.error('Fehler beim Starten der Theorieprüfung:', error);
+        setExamSimulator(null);
+        setExamCurrentQuestion(null);
+        showToast('Theorieprüfung konnte nicht gestartet werden.', 'error');
+        return;
+      }
+    }
+
     const allQuestions = [];
     Object.entries(SAMPLE_QUESTIONS).forEach(([catId, questions]) => {
       if (catId === WHO_AM_I_CATEGORY.id) return;
@@ -4887,10 +4927,6 @@ export default function BaederApp() {
     setExamSimulator({ questions: examQuestions, answers: [], startTime: Date.now() });
     setExamQuestionIndex(0);
     setExamCurrentQuestion(examQuestions[0]);
-    setExamAnswered(false);
-    setExamSelectedAnswers([]); // Reset Multi-Select
-    setExamSelectedAnswer(null); // Reset Single-Choice
-    setUserExamProgress(null);
   };
 
   const toIsoDateTime = (value) => {
@@ -5105,15 +5141,11 @@ export default function BaederApp() {
 
     try {
       const insertPayload = {
-        user_id: targetUser.id,
-        user_name: targetUser.name,
-        exam_type: resultPayload.type,
-        average_grade: resultPayload.averageGrade,
-        graded_count: resultPayload.gradedCount,
-        passed: resultPayload.passed,
-        result_rows: normalizedResultRows,
-        created_by: user?.id || null,
-        created_by_name: user?.name || null
+        userId: targetUser.id,
+        examType: resultPayload.type,
+        inputValues: Object.fromEntries(
+          Object.entries(practicalExamInputs || {}).map(([key, value]) => [key, String(value ?? '')])
+        )
       };
 
       const data = await dsSavePracticalExamAttempt(supabase, insertPayload);
@@ -5420,7 +5452,13 @@ export default function BaederApp() {
     if (examCurrentQuestion.category) updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
     updateWeeklyProgress('examAnswers', 1);
     trackQuestionPerformance(examCurrentQuestion, examCurrentQuestion.category, isCorrect);
-    const newAnswers = [...examSimulator.answers, { question: examCurrentQuestion, selectedAnswer: -1, correct: isCorrect, answerType: 'keyword' }];
+    const newAnswers = [...examSimulator.answers, {
+      question: examCurrentQuestion,
+      selectedAnswer: -1,
+      correct: isCorrect,
+      answerType: 'keyword',
+      keywordText: examKeywordInput.trim()
+    }];
     setExamSimulator({ ...examSimulator, answers: newAnswers });
     setTimeout(() => {
       setExamKeywordInput('');
@@ -5474,18 +5512,20 @@ export default function BaederApp() {
       const percentage = Math.round((correctAnswers / newAnswers.length) * 100);
       const examProgress = { correct: correctAnswers, total: newAnswers.length, percentage, passed: percentage >= 50, timeMs: Date.now() - examSimulator.startTime };
       setUserExamProgress(examProgress);
-      void saveTheoryExamAttempt(examProgress);
+      void saveTheoryExamAttempt(examProgress, newAnswers, examSimulator?.sessionId);
       if (percentage >= 50) playSound('whistle');
 
-      const earnedXp =
-        XP_REWARDS.EXAM_COMPLETION +
-        (correctAnswers * XP_REWARDS.EXAM_CORRECT_ANSWER) +
-        (percentage >= 50 ? XP_REWARDS.EXAM_PASS_BONUS : 0);
-      void queueXpAward('examSimulator', earnedXp, {
-        eventKey: `exam_run_${examSimulator.startTime}`,
-        reason: 'Prüfungssimulator',
-        showXpToast: true
-      });
+      if (!USE_SECURE_API) {
+        const earnedXp =
+          XP_REWARDS.EXAM_COMPLETION +
+          (correctAnswers * XP_REWARDS.EXAM_CORRECT_ANSWER) +
+          (percentage >= 50 ? XP_REWARDS.EXAM_PASS_BONUS : 0);
+        void queueXpAward('examSimulator', earnedXp, {
+          eventKey: `exam_run_${examSimulator.startTime}`,
+          reason: 'Prüfungssimulator',
+          showXpToast: true
+        });
+      }
     }
   };
 
@@ -5501,12 +5541,77 @@ export default function BaederApp() {
     setExamKeywordEvaluation(null);
   };
 
-  const saveTheoryExamAttempt = async (progress) => {
+  const saveTheoryExamAttempt = async (progress, answers = [], sessionId = null) => {
     if (!user?.id) return;
     try {
-      await dsSaveTheoryExamAttempt(supabase, user.id, user.name, progress, examKeywordMode);
+      const result = await dsSaveTheoryExamAttempt(
+        supabase,
+        user.id,
+        user.name,
+        progress,
+        examKeywordMode,
+        {
+          sessionId: sessionId || examSimulator?.sessionId || null,
+          answers
+        }
+      );
+      if (!USE_SECURE_API || !result) {
+        return;
+      }
+
+      const authoritativeProgress = {
+        correct: Number(result.correct || 0),
+        total: Number(result.total || 0),
+        percentage: Number(result.percentage || 0),
+        passed: Boolean(result.passed),
+        timeMs: Number(result.timeMs || progress?.timeMs || 0)
+      };
+      setUserExamProgress(authoritativeProgress);
+
+      const savedAttempt = {
+        id: result.id,
+        user_id: result.userId || user.id,
+        user_name: result.userName || user.name,
+        correct: authoritativeProgress.correct,
+        total: authoritativeProgress.total,
+        percentage: authoritativeProgress.percentage,
+        passed: authoritativeProgress.passed,
+        time_ms: authoritativeProgress.timeMs,
+        keyword_mode: Boolean(result.keywordMode),
+        created_at: result.createdAt || new Date().toISOString()
+      };
+      setTheoryExamHistory(prev => [savedAttempt, ...prev.filter(entry => entry.id !== savedAttempt.id)]);
+
+      const refreshedStats = await getUserStatsFromSupabase(user);
+      if (refreshedStats) {
+        const stats = ensureUserStatsStructure(refreshedStats);
+        setUserStats(stats);
+        setStatsByUserId(prev => {
+          const wins = stats.wins || 0;
+          const losses = stats.losses || 0;
+          const draws = stats.draws || 0;
+          return {
+            ...prev,
+            [user.id]: {
+              ...(prev[user.id] || {}),
+              wins,
+              losses,
+              draws,
+              total: wins + losses + draws,
+              totalXp: getTotalXpFromStats(stats),
+              xpBreakdown: getXpBreakdownFromStats(stats)
+            }
+          };
+        });
+      }
+
+      const addedXp = Number(result?.xpAward?.addedXp || 0);
+      if (addedXp > 0) {
+        showToast(`+${addedXp} XP • Prüfungssimulator`, 'success', 2500);
+      }
     } catch (e) {
       console.warn('Fehler beim Speichern des Prüfungsergebnisses:', e);
+      showToast('Fehler beim Speichern des Prüfungsergebnisses.', 'error');
     }
   };
 
