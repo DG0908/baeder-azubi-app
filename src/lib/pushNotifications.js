@@ -1,4 +1,4 @@
-import { isSecureBackendApiEnabled } from './secureApiClient';
+import { isSecureBackendApiEnabled, getApiAccessToken } from './secureApiClient';
 import { secureNotificationsApi } from './secureApi';
 
 const WEB_PUSH_PUBLIC_KEY = import.meta.env.VITE_WEB_PUSH_PUBLIC_KEY || '';
@@ -41,6 +41,12 @@ const parseBackendResponse = async (response) => {
 };
 
 const getAccessTokenForBackendRequest = async (supabase, { forceRefresh = false } = {}) => {
+  // NestJS path: use stored JWT token
+  if (USE_SECURE_API) {
+    return getApiAccessToken() || '';
+  }
+
+  // Legacy Supabase path
   if (!supabase?.auth) return '';
 
   if (forceRefresh && typeof supabase.auth.refreshSession === 'function') {
@@ -269,7 +275,7 @@ export const triggerWebPushNotification = async ({
   type = 'info',
   notificationId
 }) => {
-  if (!supabase || !userName || !title) return { sent: false, reason: 'missing-input' };
+  if ((!USE_SECURE_API && !supabase) || !userName || !title) return { sent: false, reason: 'missing-input' };
 
   const body = {
     userName,
@@ -296,11 +302,12 @@ export const triggerWebPushNotification = async ({
     }
   }
 
-  if (!isWebPushConfigured()) {
+  if (!isWebPushConfigured() || USE_SECURE_API) {
     if (backendError) throw backendError;
-    return { sent: false, reason: 'missing-vapid-key' };
+    return { sent: false, reason: USE_SECURE_API ? 'no-supabase-fallback' : 'missing-vapid-key' };
   }
 
+  // Legacy Supabase Edge Function fallback
   try {
     const { data, error } = await supabase.functions.invoke(PUSH_FUNCTION_NAME, { body });
     if (error) throw error;
