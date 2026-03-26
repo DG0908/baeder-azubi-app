@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
+import { secureAuthApi } from '../../lib/secureApi';
+import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
 
 const LoginScreen = () => {
   const {
@@ -79,10 +81,14 @@ const LoginScreen = () => {
     }
     setResetLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim().toLowerCase(), {
-        redirectTo: window.location.origin
-      });
-      if (error) throw error;
+      if (isSecureBackendApiEnabled()) {
+        await secureAuthApi.requestPasswordReset({ email: resetEmail.trim().toLowerCase() });
+      } else {
+        const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim().toLowerCase(), {
+          redirectTo: window.location.origin
+        });
+        if (error) throw error;
+      }
       setResetSent(true);
     } catch (error) {
       alert('Fehler: ' + error.message);
@@ -250,12 +256,18 @@ const LoginScreen = () => {
       }
       setNewPasswordLoading(true);
       try {
-        const { error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) throw error;
+        if (isSecureBackendApiEnabled()) {
+          const params = new URLSearchParams(window.location.search);
+          const token = params.get('token') || window.location.hash?.match(/access_token=([^&]+)/)?.[1];
+          await secureAuthApi.confirmPasswordReset({ token, newPassword });
+        } else {
+          const { error } = await supabase.auth.updateUser({ password: newPassword });
+          if (error) throw error;
+          await supabase.auth.signOut();
+        }
         alert('Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.');
         setNewPassword('');
         setNewPasswordConfirm('');
-        await supabase.auth.signOut();
         setAuthView('login');
       } catch (error) {
         alert('Fehler: ' + error.message);
