@@ -173,6 +173,10 @@ export const secureUsersApi = {
   updatePermissions: (userId, payload) => apiRequest(`/users/${userId}/permissions`, {
     method: 'PATCH',
     body: JSON.stringify(payload)
+  }),
+  adminResetPassword: (userId, newPassword) => apiRequest(`/users/${userId}/password`, {
+    method: 'PATCH',
+    body: JSON.stringify({ newPassword })
   })
 };
 

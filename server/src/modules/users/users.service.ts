@@ -5,6 +5,7 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { AccountStatus, AppRole, Prisma } from '@prisma/client';
+import * as argon2 from 'argon2';
 import { Request } from 'express';
 import sanitizeHtml from 'sanitize-html';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
@@ -391,6 +392,49 @@ export class UsersService {
     );
 
     return updated;
+  }
+
+  async adminResetPassword(
+    actor: AuthenticatedUser,
+    userId: string,
+    newPassword: string,
+    request: Request
+  ) {
+    if (actor.id === userId) {
+      throw new ForbiddenException('Use the change-password endpoint for your own account.');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || user.isDeleted) {
+      throw new NotFoundException('User not found.');
+    }
+
+    const passwordHash = await argon2.hash(newPassword);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        refreshTokenHash: null
+      }
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'user.password_reset_by_admin',
+      'user',
+      userId,
+      {
+        targetEmail: user.email,
+        targetDisplayName: user.displayName
+      },
+      request
+    );
+
+    return { reset: true };
   }
 
   async deleteSelf(actor: AuthenticatedUser, request: Request) {

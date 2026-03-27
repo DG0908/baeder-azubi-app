@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
 import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
-import { secureOrganizationsApi, secureInvitationsApi, mapFrontendRoleToBackendRole } from '../../lib/secureApi';
+import { secureOrganizationsApi, secureInvitationsApi, secureUsersApi, mapFrontendRoleToBackendRole } from '../../lib/secureApi';
 
 const USE_SECURE_API = isSecureBackendApiEnabled();
 
@@ -374,19 +374,32 @@ const OrganizationManager = () => {
   );
 };
 
-const AdminPasswordReset = ({ userEmail }) => {
+const AdminPasswordReset = ({ userId, userEmail, userName }) => {
   const { showToast } = useApp();
   const [loading, setLoading] = React.useState(false);
 
+  const generatePassword = () => {
+    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    let pw = '';
+    for (let i = 0; i < 8; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+    return pw;
+  };
+
   const handleReset = async () => {
-    if (!confirm(`Passwort-Reset-Link an ${userEmail} senden?`)) return;
+    const tempPassword = generatePassword();
+    if (!confirm(`Neues Passwort für ${userName || userEmail} setzen?\n\nDas generierte Passwort wird: ${tempPassword}\n\nBitte notiere es und teile es dem User mit.`)) return;
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-        redirectTo: window.location.origin
-      });
-      if (error) throw error;
-      showToast(`Reset-Link an ${userEmail} gesendet!`, 'success');
+      if (USE_SECURE_API) {
+        await secureUsersApi.adminResetPassword(userId, tempPassword);
+      } else {
+        const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+          redirectTo: window.location.origin
+        });
+        if (error) throw error;
+      }
+      alert(`Neues Passwort für ${userName || userEmail}:\n\n${tempPassword}\n\nBitte dem User mitteilen!`);
+      showToast(`Passwort für ${userName || userEmail} zurückgesetzt!`, 'success');
     } catch (err) {
       showToast('Fehler: ' + err.message, 'error');
     } finally {
@@ -399,7 +412,7 @@ const AdminPasswordReset = ({ userEmail }) => {
       onClick={handleReset}
       disabled={loading}
       className="bg-amber-500 hover:bg-amber-600 disabled:bg-gray-400 text-white p-2 rounded-lg"
-      title="Passwort-Reset-Link senden"
+      title="Passwort zurücksetzen"
     >
       <KeyRound size={18} />
     </button>
@@ -938,7 +951,7 @@ const AdminView = ({
                   >
                     <Download size={18} />
                   </button>
-                  <AdminPasswordReset userEmail={acc.email} />
+                  <AdminPasswordReset userId={acc.id} userEmail={acc.email} userName={acc.name} />
                   {acc.role !== 'admin' && (
                     <button
                       onClick={() => deleteUser(acc.email)}
