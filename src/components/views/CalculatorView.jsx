@@ -98,14 +98,14 @@ const CalculatorView = ({
         🧮 Praxis-Rechner
       </h2>
       
-      <div className="grid md:grid-cols-8 gap-4 mb-6">
+      <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
         <button
           onClick={() => {
             setCalculatorType('ph');
             setCalculatorInputs({});
             setCalculatorResult(null);
           }}
-          className={`p-4 rounded-xl font-bold ${
+          className={`p-4 rounded-xl font-bold whitespace-nowrap flex-shrink-0 ${
             calculatorType === 'ph'
               ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
               : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
@@ -125,7 +125,7 @@ const CalculatorView = ({
             });
             setCalculatorResult(null);
           }}
-          className={`p-4 rounded-xl font-bold ${
+          className={`p-4 rounded-xl font-bold whitespace-nowrap flex-shrink-0 ${
             calculatorType === 'chlorine'
               ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
               : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
@@ -139,7 +139,7 @@ const CalculatorView = ({
             setCalculatorInputs({});
             setCalculatorResult(null);
           }}
-          className={`p-4 rounded-xl font-bold ${
+          className={`p-4 rounded-xl font-bold whitespace-nowrap flex-shrink-0 ${
             calculatorType === 'volume'
               ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
               : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
@@ -160,7 +160,7 @@ const CalculatorView = ({
             });
             setCalculatorResult(null);
           }}
-          className={`p-4 rounded-xl font-bold ${
+          className={`p-4 rounded-xl font-bold whitespace-nowrap flex-shrink-0 ${
             calculatorType === 'dilution'
               ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
               : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
@@ -189,7 +189,7 @@ const CalculatorView = ({
             });
             setCalculatorResult(null);
           }}
-          className={`p-4 rounded-xl font-bold ${
+          className={`p-4 rounded-xl font-bold whitespace-nowrap flex-shrink-0 ${
             calculatorType === 'flocculation'
               ? 'bg-gradient-to-r from-sky-500 to-cyan-500 text-white'
               : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
@@ -203,7 +203,7 @@ const CalculatorView = ({
             setCalculatorInputs({});
             setCalculatorResult(null);
           }}
-          className={`p-4 rounded-xl font-bold ${
+          className={`p-4 rounded-xl font-bold whitespace-nowrap flex-shrink-0 ${
             calculatorType === 'chemicals'
               ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
               : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
@@ -217,7 +217,7 @@ const CalculatorView = ({
             setCalculatorInputs({});
             setCalculatorResult(null);
           }}
-          className={`p-4 rounded-xl font-bold ${
+          className={`p-4 rounded-xl font-bold whitespace-nowrap flex-shrink-0 ${
             calculatorType === 'periodic'
               ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
               : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
@@ -231,7 +231,7 @@ const CalculatorView = ({
             setCalculatorInputs({ industrialMode: 'clockToIndustrial' });
             setCalculatorResult(null);
           }}
-          className={`p-4 rounded-xl font-bold ${
+          className={`p-4 rounded-xl font-bold whitespace-nowrap flex-shrink-0 ${
             calculatorType === 'industrialTime'
               ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
               : darkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'
