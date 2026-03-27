@@ -3083,7 +3083,7 @@ export default function BaederApp() {
       const userDirectory = Object.fromEntries(
         (allUsers || []).filter(a => a?.id).map(a => [a.id, a])
       );
-      const msgs = await dsLoadMessages(supabase, normalizeChatMessageRow, userDirectory);
+      const msgs = await dsLoadMessages(supabase, normalizeChatMessageRow, userDirectory, user?.role);
       setMessages(msgs);
     } catch (error) {
       console.log('Light data refresh error:', error.message);
@@ -3202,7 +3202,7 @@ export default function BaederApp() {
       const userDirectory = Object.fromEntries(
         (visibleUsers || []).filter(a => a?.id).map(a => [a.id, a])
       );
-      const msgs = await dsLoadMessages(supabase, normalizeChatMessageRow, userDirectory);
+      const msgs = await dsLoadMessages(supabase, normalizeChatMessageRow, userDirectory, user?.role);
       setMessages(msgs);
 
       // Load custom questions
