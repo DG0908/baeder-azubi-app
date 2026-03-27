@@ -4,6 +4,16 @@ import { useApp } from '../../context/AppContext';
 import { CATEGORIES } from '../../data/constants';
 import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel, parseExamTimeToSeconds, formatSecondsAsTime } from '../../data/practicalExam';
 import { formatAnswerLabel } from '../../lib/utils';
+import { PERMISSIONS } from '../../data/constants';
+
+const getFirstName = (fullName) => String(fullName || '').trim().split(/\s+/)[0] || '?';
+
+const formatCandidateLabel = (account) => {
+  const name = getFirstName(account.name);
+  const role = (PERMISSIONS[account.role] || PERMISSIONS.azubi).label;
+  const company = account.company ? ` · ${account.company}` : '';
+  return `${name} (${role}${company})`;
+};
 
 const ExamSimulatorView = ({
   examSimulatorMode,
@@ -554,7 +564,7 @@ const ExamSimulatorView = ({
               {practicalCandidates.length === 0 && <option value="">Keine Teilnehmer verfügbar</option>}
               {practicalCandidates.map((account) => (
                 <option key={account.id} value={account.id}>
-                  {account.name} ({account.role || 'user'})
+                  {formatCandidateLabel(account)}
                 </option>
               ))}
             </select>
@@ -569,7 +579,7 @@ const ExamSimulatorView = ({
             Format: Zeit als mm:ss (z. B. 01:42) oder in Sekunden.
           </div>
           <div className={`text-xs mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-            Teilnehmer: {selectedTargetUser?.name || user?.name || 'Unbekannt'}
+            Teilnehmer: {getFirstName(selectedTargetUser?.name || user?.name)}
           </div>
         </div>
 
@@ -640,7 +650,7 @@ const ExamSimulatorView = ({
             Ergebnis {selectedType.label}
           </h3>
           <div className={`mb-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-            Teilnehmer: <strong>{practicalExamResult.userName || selectedTargetUser?.name || '-'}</strong>
+            Teilnehmer: <strong>{getFirstName(practicalExamResult.userName || selectedTargetUser?.name)}</strong>
           </div>
           <div className="space-y-2">
             {practicalExamResult.rows.map((row) => (
@@ -755,7 +765,7 @@ const ExamSimulatorView = ({
                     {formatSecondsAsTime(entry.best.seconds)}
                   </div>
                   <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {entry.best.userName}
+                    {getFirstName(entry.best.userName)}
                   </div>
                   <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     {formatAttemptDate(entry.best.createdAt)} • {entry.best.row?.grade ? formatGradeLabel(entry.best.row.grade, entry.best.row.noteLabel) : 'Keine Note'}
@@ -800,7 +810,7 @@ const ExamSimulatorView = ({
                 <option value="all">Alle Teilnehmer</option>
                 {practicalCandidates.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.name} ({account.role || 'user'})
+                    {formatCandidateLabel(account)}
                   </option>
                 ))}
               </select>
@@ -899,7 +909,7 @@ const ExamSimulatorView = ({
                 >
                   <div>
                     <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                      {index + 1}. {row.userName}
+                      {index + 1}. {getFirstName(row.userName)}
                     </div>
                     <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {row.attemptsCount} Versuch(e)
