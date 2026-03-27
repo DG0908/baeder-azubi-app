@@ -305,6 +305,7 @@ export default function BaederApp() {
   const [timerActive, setTimerActive] = useState(false);
   const quizActiveRef = useRef(false);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
+  const [duelResult, setDuelResult] = useState(null); // Ergebnis-Screen nach Spielende
   const [selectedAnswers, setSelectedAnswers] = useState([]); // Für Multi-Select Fragen
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState(null); // Für Single-Choice Feedback
   const [keywordAnswerText, setKeywordAnswerText] = useState('');
@@ -4726,7 +4727,21 @@ export default function BaederApp() {
         console.error('Stats update error:', error);
       }
 
-      // Spiel-State komplett zurücksetzen
+      // Ergebnis-Screen anzeigen statt sofort zurückzusetzen
+      const h2h = userStats?.opponents?.[opponentName] || { wins: 0, losses: 0, draws: 0 };
+
+      setDuelResult({
+        player1: currentGame.player1,
+        player2: currentGame.player2,
+        player1Score: currentGame.player1Score,
+        player2Score: currentGame.player2Score,
+        winner,
+        myName: user.name,
+        opponentName,
+        h2h: { wins: h2h.wins || 0, losses: h2h.losses || 0, draws: h2h.draws || 0 }
+      });
+
+      // Spiel-State zurücksetzen (aber duelResult bleibt)
       setCurrentGame(null);
       setQuizCategory(null);
       setCurrentQuestion(null);
@@ -4741,18 +4756,7 @@ export default function BaederApp() {
       setTimerActive(false);
       resetQuizKeywordState();
 
-      // Spieleliste neu laden damit beendetes Spiel verschwindet
       loadData();
-
-      showToast(
-        winner === user.name
-          ? '🎉 Glückwunsch, du hast gewonnen!'
-          : winner === null
-            ? '🤝 Unentschieden!'
-            : '😔 Leider verloren!',
-        winner === user.name ? 'success' : 'info'
-      );
-
       setCurrentView('quizduell');
       checkBadges();
     } catch (error) {
@@ -8913,6 +8917,8 @@ export default function BaederApp() {
             confirmMultiSelectAnswer={confirmMultiSelectAnswer}
             proceedToNextRound={proceedToNextRound}
             userStats={userStats}
+            duelResult={duelResult}
+            setDuelResult={setDuelResult}
           />
         )}
 

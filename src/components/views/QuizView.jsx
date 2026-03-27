@@ -60,6 +60,8 @@ const QuizView = ({
   confirmMultiSelectAnswer,
   proceedToNextRound,
   userStats,
+  duelResult,
+  setDuelResult,
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
@@ -141,6 +143,114 @@ const QuizView = ({
     }
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
+
+  const getFirstName = (name) => String(name || '').trim().split(/\s+/)[0] || '?';
+
+  // Ergebnis-Screen nach Spielende
+  if (duelResult) {
+    const iWon = duelResult.winner === duelResult.myName;
+    const isDraw = duelResult.winner === null;
+    const iLost = !iWon && !isDraw;
+    const myScore = duelResult.myName === duelResult.player1 ? duelResult.player1Score : duelResult.player2Score;
+    const opponentScore = duelResult.myName === duelResult.player1 ? duelResult.player2Score : duelResult.player1Score;
+    const h2hTotal = duelResult.h2h.wins + duelResult.h2h.losses + duelResult.h2h.draws;
+
+    return (
+      <div className="max-w-lg mx-auto text-center space-y-6 py-8">
+        {/* Ergebnis-Grafik */}
+        <div className={`rounded-2xl p-8 shadow-xl ${
+          iWon
+            ? 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500'
+            : isDraw
+              ? 'bg-gradient-to-br from-slate-400 via-gray-400 to-slate-500'
+              : darkMode
+                ? 'bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900'
+                : 'bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400'
+        }`}>
+          <div className="text-7xl mb-4">
+            {iWon ? '🏊‍♂️🏆' : isDraw ? '🤝🏊' : '🌊😵'}
+          </div>
+          <h2 className={`text-3xl font-black mb-2 ${iWon || isDraw ? 'text-white' : darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            {iWon ? 'Sieg!' : isDraw ? 'Unentschieden!' : 'Knapp daneben!'}
+          </h2>
+          <p className={`text-lg ${iWon || isDraw ? 'text-white/90' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            {iWon
+              ? 'Du hast das Becken gerockt!'
+              : isDraw
+                ? 'Gleichauf — Rematch?'
+                : 'Nächstes Mal tauchst du tiefer!'}
+          </p>
+        </div>
+
+        {/* Score */}
+        <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-2xl p-6 shadow-lg`}>
+          <div className="flex items-center justify-center gap-6">
+            <div className="text-center flex-1">
+              <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Du</p>
+              <p className={`text-5xl font-black ${iWon ? 'text-emerald-500' : iLost ? 'text-red-400' : darkMode ? 'text-white' : 'text-gray-800'}`}>
+                {myScore}
+              </p>
+              <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {getFirstName(duelResult.myName)}
+              </p>
+            </div>
+            <div className={`text-2xl font-bold ${darkMode ? 'text-gray-600' : 'text-gray-300'}`}>:</div>
+            <div className="text-center flex-1">
+              <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gegner</p>
+              <p className={`text-5xl font-black ${iLost ? 'text-emerald-500' : iWon ? 'text-red-400' : darkMode ? 'text-white' : 'text-gray-800'}`}>
+                {opponentScore}
+              </p>
+              <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {getFirstName(duelResult.opponentName)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Head-to-Head Statistik */}
+        {h2hTotal > 0 && (
+          <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-2xl p-6 shadow-lg`}>
+            <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              Bilanz gegen {getFirstName(duelResult.opponentName)}
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className={`p-3 rounded-xl ${darkMode ? 'bg-emerald-900/40' : 'bg-emerald-50'}`}>
+                <p className={`text-2xl font-black ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{duelResult.h2h.wins}</p>
+                <p className={`text-xs font-semibold ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Siege</p>
+              </div>
+              <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                <p className={`text-2xl font-black ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{duelResult.h2h.draws}</p>
+                <p className={`text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Remis</p>
+              </div>
+              <div className={`p-3 rounded-xl ${darkMode ? 'bg-red-900/40' : 'bg-red-50'}`}>
+                <p className={`text-2xl font-black ${darkMode ? 'text-red-400' : 'text-red-600'}`}>{duelResult.h2h.losses}</p>
+                <p className={`text-xs font-semibold ${darkMode ? 'text-red-300' : 'text-red-700'}`}>Niederlagen</p>
+              </div>
+            </div>
+            {h2hTotal >= 3 && (
+              <div className={`mt-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {duelResult.h2h.wins > duelResult.h2h.losses
+                  ? `Du führst mit ${duelResult.h2h.wins - duelResult.h2h.losses} Sieg${duelResult.h2h.wins - duelResult.h2h.losses > 1 ? 'en' : ''} Vorsprung!`
+                  : duelResult.h2h.losses > duelResult.h2h.wins
+                    ? `${getFirstName(duelResult.opponentName)} führt — Zeit für die Aufholjagd!`
+                    : 'Absolut ausgeglichen — wer holt sich den Vorsprung?'}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => setDuelResult(null)}
+            className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-xl shadow-lg transition-all"
+          >
+            Zurück zum Quizduell
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
