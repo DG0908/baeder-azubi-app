@@ -4,6 +4,7 @@ import { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
+import { AdminResetPasswordDto } from './dto/admin-reset-password.dto';
 import { ApproveUserDto } from './dto/approve-user.dto';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 import { UpdateUserOrganizationDto } from './dto/update-user-organization.dto';
@@ -88,6 +89,17 @@ export class UsersController {
     @Req() request: Request
   ) {
     return this.usersService.updatePermissions(actor, userId, dto, request);
+  }
+
+  @Roles(AppRole.ADMIN)
+  @Patch(':id/password')
+  resetPassword(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') userId: string,
+    @Body() dto: AdminResetPasswordDto,
+    @Req() request: Request
+  ) {
+    return this.usersService.adminResetPassword(actor, userId, dto.newPassword, request);
   }
 
   @Delete('me')
