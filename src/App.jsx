@@ -1015,7 +1015,8 @@ export default function BaederApp() {
   const [editingThemeColors, setEditingThemeColors] = useState({});
   const [configLoaded, setConfigLoaded] = useState(false);
   const [showMehrDrawer, setShowMehrDrawer] = useState(false);
-  
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   // Flashcards State
   const [flashcards, setFlashcards] = useState([]);
   const [currentFlashcard, setCurrentFlashcard] = useState(null);
@@ -8598,115 +8599,71 @@ export default function BaederApp() {
         }
       `}</style>
 
-      {/* Header */}
-      <div className={`${darkMode ? 'bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800' : 'bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-600'} text-white p-4 shadow-lg relative z-20`}>
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <AvatarBadge
-              avatar={user.avatar ? getAvatarById(user.avatar) : null}
-              size="md"
-              className="border border-white/40"
-            />
-            <div>
-              <h1 className="text-2xl font-bold drop-shadow-lg">Bäder-Azubi App</h1>
-              <p className="text-sm opacity-90">
-                {user.name} • {(PERMISSIONS[user.role] || PERMISSIONS.azubi).label}
-                {user.role === 'admin' && ' 👑'}
-                {user.role === 'trainer' && ' 👨‍🏫'}
-              </p>
-              {/* Level Badge */}
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="text-xs font-bold text-white/90 bg-white/20 rounded-full px-2 py-0.5">
-                  Lv.{getLevel(getTotalXpFromStats(userStats))}
-                </span>
-                <div className="w-16 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-white/80 rounded-full transition-all duration-500"
-                    style={{ width: `${getLevelProgress(getTotalXpFromStats(userStats)) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs opacity-70">{getTotalXpFromStats(userStats)} XP</span>
-              </div>
-            </div>
-          </div>
+      {/* Header — slim top bar */}
+      <div className={`${darkMode ? 'bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800' : 'bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-600'} text-white shadow-lg relative z-20`}>
+        <div className={`flex justify-between items-center px-4 py-2 transition-all ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-60'}`}>
           <div className="flex items-center gap-3">
-            {/* Dark Mode Toggle */}
+            {/* Sidebar toggle — desktop only */}
             <button
-              onClick={() => {
-                setDarkMode(!darkMode);
-                playSound('splash');
-              }}
-              className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors backdrop-blur-sm"
-              title={darkMode ? 'Tag-Modus' : 'Nacht-Modus'}
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="hidden md:flex bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors"
+              title={sidebarCollapsed ? 'Menü ausklappen' : 'Menü einklappen'}
             >
+              <span className="text-lg leading-none">{sidebarCollapsed ? '☰' : '✕'}</span>
+            </button>
+            <button
+              onClick={() => { setCurrentView('profile'); playSound('splash'); }}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <AvatarBadge
+                avatar={user.avatar ? getAvatarById(user.avatar) : null}
+                size="sm"
+                className="border border-white/40"
+              />
+              <div className="text-left hidden sm:block">
+                <p className="text-sm font-semibold leading-tight">{user.name}</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold bg-white/20 rounded-full px-1.5 py-0.5 leading-none">
+                    Lv.{getLevel(getTotalXpFromStats(userStats))}
+                  </span>
+                  <div className="w-10 h-1 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-white/80 rounded-full" style={{ width: `${getLevelProgress(getTotalXpFromStats(userStats)) * 100}%` }} />
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <h1 className="text-lg font-bold drop-shadow-lg hidden md:block absolute left-1/2 -translate-x-1/2">Bäder-Azubi App</h1>
+          <h1 className="text-lg font-bold drop-shadow-lg md:hidden">Bäder-Azubi</h1>
+
+          <div className="flex items-center gap-2">
+            <button onClick={() => { setDarkMode(!darkMode); playSound('splash'); }} className="bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors" title={darkMode ? 'Tag-Modus' : 'Nacht-Modus'}>
               {darkMode ? '☀️' : '🌙'}
             </button>
-
-            {/* Sound Toggle */}
-            <button
-              onClick={() => {
-                setSoundEnabled(!soundEnabled);
-                if (!soundEnabled) playSound('splash');
-              }}
-              className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors backdrop-blur-sm"
-              title={soundEnabled ? 'Sound aus' : 'Sound an'}
-            >
+            <button onClick={() => { setSoundEnabled(!soundEnabled); if (!soundEnabled) playSound('splash'); }} className="bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors hidden sm:block" title={soundEnabled ? 'Sound aus' : 'Sound an'}>
               {soundEnabled ? '🔊' : '🔇'}
             </button>
-
-            {/* App Update (nur wenn neue Version verfügbar) */}
             {(updateAvailable || updatingApp) && (
-              <button
-                onClick={() => { void applyPwaUpdate(); }}
-                disabled={updatingApp}
-                className={`px-3 py-2 rounded-lg transition-colors backdrop-blur-sm flex items-center gap-2 bg-emerald-500/90 hover:bg-emerald-600/90 ${
-                  updatingApp ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
-                title="Neue Version installieren"
-              >
+              <button onClick={() => { void applyPwaUpdate(); }} disabled={updatingApp} className={`px-2 py-1.5 rounded-lg transition-colors flex items-center gap-1 bg-emerald-500/90 hover:bg-emerald-600/90 text-sm ${updatingApp ? 'opacity-70 cursor-not-allowed' : ''}`} title="Neue Version installieren">
                 <span>{updatingApp ? '⏳' : '⬆️'}</span>
-                <span className="hidden sm:inline text-sm font-medium">
-                  {updatingApp ? 'Update...' : 'Update'}
-                </span>
+                <span className="hidden sm:inline text-xs font-medium">{updatingApp ? 'Update...' : 'Update'}</span>
               </button>
             )}
-
-            {/* Request Notification Permission */}
             {'Notification' in window && Notification.permission === 'default' && (
-              <button
-                onClick={() => { void enablePushNotifications(); }}
-                className="bg-yellow-500/80 hover:bg-yellow-600/80 px-3 py-2 rounded-lg transition-colors backdrop-blur-sm font-bold text-sm flex items-center gap-2 animate-pulse"
-                title="Benachrichtigungen erlauben"
-              >
-                🔔 Erlauben
+              <button onClick={() => { void enablePushNotifications(); }} className="bg-yellow-500/80 hover:bg-yellow-600/80 px-2 py-1.5 rounded-lg transition-colors font-bold text-xs flex items-center gap-1 animate-pulse" title="Benachrichtigungen erlauben">
+                🔔
               </button>
             )}
-
-            {/* Notification Bell */}
             <div className="relative">
-              <button
-                id="notification-bell"
-                onClick={() => {
-                  setShowNotifications(!showNotifications);
-                  playSound('splash');
-                }}
-                className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition-colors relative backdrop-blur-sm"
-              >
-                <Bell size={24} />
+              <button id="notification-bell" onClick={() => { setShowNotifications(!showNotifications); playSound('splash'); }} className="bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors relative">
+                <Bell size={20} />
                 {notifications.filter(n => !n.read).length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                    {notifications.filter(n => !n.read).length}
-                  </span>
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center animate-pulse">{notifications.filter(n => !n.read).length}</span>
                 )}
               </button>
             </div>
-            
-            <button
-              onClick={handleLogout}
-              className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors backdrop-blur-sm"
-            >
-              Abmelden
-            </button>
+            <button onClick={handleLogout} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors text-sm hidden sm:block">Abmelden</button>
           </div>
         </div>
       </div>
@@ -8764,48 +8721,68 @@ export default function BaederApp() {
         </div>
       )}
 
-      {/* Navigation */}
-      <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm shadow-md sticky top-0 z-10 relative`}>
-        <div className="max-w-7xl mx-auto flex overflow-x-auto">
-          {[...appConfig.menuItems]
-            .sort((a, b) => a.order - b.order)
-            .filter(item => {
-              // Check visibility
-              if (!item.visible) return false;
-              // Check permission requirements
-              if (item.requiresPermission) {
-                return user.permissions[item.requiresPermission];
-              }
-              return true;
-            })
-            .map(item => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setCurrentView(item.id);
-                playSound('splash');
-                if (item.id === 'flashcards') {
-                  loadFlashcards();
-                }
-              }}
-              className={`flex items-center space-x-2 px-6 py-4 font-medium transition-all whitespace-nowrap ${
-                currentView === item.id
-                  ? darkMode
-                    ? 'text-cyan-400 border-b-4 border-cyan-400 bg-slate-700'
-                    : 'text-cyan-600 border-b-4 border-cyan-600 bg-cyan-50'
-                  : darkMode
-                    ? 'text-gray-300 hover:text-cyan-400 hover:bg-slate-700'
-                    : 'text-gray-600 hover:text-cyan-600 hover:bg-cyan-50'
-              }`}
-            >
-              <span className="text-xl">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
+      {/* Desktop Sidebar */}
+      <aside className={`hidden md:flex flex-col fixed top-0 left-0 h-full z-30 transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-60'} ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'} border-r shadow-lg`}>
+        {/* Sidebar header */}
+        <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'px-4'} h-11 shrink-0 ${darkMode ? 'border-slate-700' : 'border-gray-200'} border-b`}>
+          {!sidebarCollapsed && <span className={`font-bold text-sm ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>Navigation</span>}
+          {sidebarCollapsed && <span className="text-lg">🏊</span>}
         </div>
-      </div>
+        {/* Menu items grouped */}
+        <nav className="flex-1 overflow-y-auto py-2 scrollbar-thin">
+          {Object.entries(MENU_GROUP_LABELS).map(([groupId, groupLabel]) => {
+            const groupItems = [...appConfig.menuItems]
+              .filter(item => {
+                if (!item.visible) return false;
+                if ((item.group || 'lernen') !== groupId) return false;
+                if (item.requiresPermission) return user.permissions[item.requiresPermission];
+                return true;
+              })
+              .sort((a, b) => a.order - b.order);
+            if (groupItems.length === 0) return null;
+            return (
+              <div key={groupId} className={sidebarCollapsed ? 'mb-1' : 'mb-2'}>
+                {!sidebarCollapsed && groupId !== 'home' && (
+                  <p className={`text-[10px] font-bold uppercase tracking-wider px-4 pt-3 pb-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                    {groupLabel}
+                  </p>
+                )}
+                {sidebarCollapsed && groupId !== 'home' && (
+                  <div className={`mx-3 my-1 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`} />
+                )}
+                {groupItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => { setCurrentView(item.id); playSound('splash'); if (item.id === 'flashcards') loadFlashcards(); }}
+                    title={sidebarCollapsed ? item.label : undefined}
+                    className={`w-full flex items-center gap-3 transition-all ${sidebarCollapsed ? 'justify-center px-0 py-2.5' : 'px-4 py-2'} ${
+                      currentView === item.id
+                        ? darkMode ? 'text-cyan-400 bg-cyan-400/10 border-r-3 border-cyan-400' : 'text-cyan-600 bg-cyan-50 border-r-3 border-cyan-600'
+                        : darkMode ? 'text-gray-400 hover:text-white hover:bg-slate-800' : 'text-gray-600 hover:text-cyan-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className={sidebarCollapsed ? 'text-xl' : 'text-lg'}>{item.icon}</span>
+                    {!sidebarCollapsed && <span className="text-sm font-medium truncate">{item.label}</span>}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+        </nav>
+        {/* Sidebar footer — logout */}
+        <div className={`shrink-0 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} ${sidebarCollapsed ? 'p-2' : 'p-3'}`}>
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 ${sidebarCollapsed ? 'justify-center py-2' : 'px-3 py-2'} rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:text-red-400 hover:bg-slate-800' : 'text-gray-500 hover:text-red-500 hover:bg-red-50'}`}
+            title={sidebarCollapsed ? 'Abmelden' : undefined}
+          >
+            <span className="text-lg">🚪</span>
+            {!sidebarCollapsed && <span className="text-sm font-medium">Abmelden</span>}
+          </button>
+        </div>
+      </aside>
 
-      <div className="max-w-7xl mx-auto p-4 relative z-10 pb-20 md:pb-4">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-60'} p-4 relative z-10 pb-20 md:pb-4`}>
         {/* Admin Panel */}
         {currentView === 'admin' && user.permissions.canManageUsers && (
           <AdminView
