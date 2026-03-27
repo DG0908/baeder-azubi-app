@@ -27,6 +27,8 @@ const STAFF_ROLES = new Set(['trainer', 'ausbilder', 'admin']);
 
 const getRoleKey = (value) => String(value || '').trim().toLowerCase();
 
+const getFirstName = (fullName) => String(fullName || '').trim().split(/\s+/)[0] || '?';
+
 const formatChatTime = (timeInput) => {
   const date = new Date(timeInput);
   if (Number.isNaN(date.getTime())) return '';
@@ -81,14 +83,14 @@ const ChatView = ({
 
   const selectedScopeDescription = chatScope === 'direct_staff'
     ? (selectedPartner
-      ? `Privater Chat mit ${selectedPartner.name}`
+      ? `Privater Chat mit ${getFirstName(selectedPartner.name)}`
       : 'Waehle zuerst einen Chatpartner aus deinem Betrieb')
     : selectedScopeMeta.description;
 
   const inputPlaceholder = !hasChatOrganization
     ? 'Chat erst nach Betriebszuordnung verfuegbar'
     : chatScope === 'direct_staff'
-      ? (selectedPartner ? `Nachricht an ${selectedPartner.name}...` : 'Zuerst Chatpartner auswaehlen...')
+      ? (selectedPartner ? `Nachricht an ${getFirstName(selectedPartner.name)}...` : 'Zuerst Chatpartner auswaehlen...')
       : `Nachricht in ${selectedScopeMeta.label} schreiben...`;
 
   const directChatEmptyText = getRoleKey(user?.role) === 'azubi'
@@ -202,10 +204,10 @@ const ChatView = ({
                           />
                           <div className="min-w-0">
                             <p className={`font-semibold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                              {account.name}
+                              {getFirstName(account.name)}
                             </p>
-                            <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                              {roleLabel}
+                            <p className={`text-xs truncate ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                              {roleLabel}{account.company ? ` · ${account.company}` : ''}
                             </p>
                           </div>
                         </div>
@@ -236,7 +238,7 @@ const ChatView = ({
               <div>
                 <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   {chatScope === 'direct_staff'
-                    ? (selectedPartner ? selectedPartner.name : 'Direktchat')
+                    ? (selectedPartner ? getFirstName(selectedPartner.name) : 'Direktchat')
                     : selectedScopeMeta.label}
                 </h3>
                 <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
@@ -283,7 +285,7 @@ const ChatView = ({
                         }`}
                       >
                         <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                          <span className="text-sm font-semibold">{message.user}</span>
+                          <span className="text-sm font-semibold">{getFirstName(message.user)}</span>
                           <span className={`text-[11px] px-2 py-0.5 rounded-full ${
                             isMine
                               ? 'bg-white/20 text-white'
@@ -317,7 +319,7 @@ const ChatView = ({
                   <p className="text-sm">
                     {chatScope === 'direct_staff'
                       ? (selectedPartner
-                        ? `Starte den ersten Chat mit ${selectedPartner.name}.`
+                        ? `Starte den ersten Chat mit ${getFirstName(selectedPartner.name)}.`
                         : 'Waehle links einen Kontakt aus, um den Direktchat zu starten.')
                       : `Starte den ersten Beitrag im Bereich ${selectedScopeMeta.label}.`}
                   </p>
