@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Trash2, Pencil, X as XIcon, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
-import { secureUsersApi } from '../../lib/secureApi';
+import { secureUsersApi, secureAuthApi } from '../../lib/secureApi';
 import { supabase } from '../../supabase';
 import { AVATARS, PERMISSIONS, getAvatarById, getLevel } from '../../data/constants';
+
+const USE_SECURE_API = isSecureBackendApiEnabled();
 import AvatarBadge from '../ui/AvatarBadge';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
@@ -35,6 +37,18 @@ const ProfileView = ({
   const [deleting, setDeleting] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [pushActionLoading, setPushActionLoading] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [avatarFilter, setAvatarFilter] = useState('all');
+
+  // Profil-Vervollständigung
+  const profileNameLooksLikeEmail = /^[^@]+@[^@]+\.[^@]+$/.test(String(user?.name || '').trim());
+  const isProfileIncomplete = profileNameLooksLikeEmail || !user?.company || !user?.birthDate;
+  const profileCompletionItems = [
+    { key: 'name', label: 'Anzeigename', missing: profileNameLooksLikeEmail },
+    { key: 'company', label: 'Betrieb', missing: !user?.company },
+    { key: 'birthDate', label: 'Geburtsdatum', missing: !user?.birthDate },
+  ];
+  const profileCompletionCount = profileCompletionItems.filter(i => !i.missing).length;
 
   const toSafeInt = (value) => {
     const numeric = Number(value);
@@ -195,11 +209,15 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ name: profileEditName.trim() })
-        .eq('id', user.id);
-      if (error) throw error;
+      if (USE_SECURE_API) {
+        await secureUsersApi.updateMe({ displayName: profileEditName.trim() });
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ name: profileEditName.trim() })
+          .eq('id', user.id);
+        if (error) throw error;
+      }
       const updatedUser = { ...user, name: profileEditName.trim() };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -228,8 +246,12 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: profileEditPassword });
-      if (error) throw error;
+      if (USE_SECURE_API) {
+        await secureAuthApi.changePassword({ newPassword: profileEditPassword });
+      } else {
+        const { error } = await supabase.auth.updateUser({ password: profileEditPassword });
+        if (error) throw error;
+      }
       showToast('Passwort erfolgreich geändert!', 'success');
       setProfileEditPassword('');
       setProfileEditPasswordConfirm('');
@@ -254,11 +276,15 @@ const ProfileView = ({
 
     setProfileSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ avatar: avatarId })
-        .eq('id', user.id);
-      if (error) throw error;
+      if (USE_SECURE_API) {
+        await secureUsersApi.updateMe({ avatar: avatarId });
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ avatar: avatarId })
+          .eq('id', user.id);
+        if (error) throw error;
+      }
       const updatedUser = { ...user, avatar: avatarId };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -274,11 +300,15 @@ const ProfileView = ({
   const updateProfileCompany = async () => {
     setProfileSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ company: profileEditCompany.trim() || null })
-        .eq('id', user.id);
-      if (error) throw error;
+      if (USE_SECURE_API) {
+        await secureUsersApi.updateMe({ company: profileEditCompany.trim() || null });
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ company: profileEditCompany.trim() || null })
+          .eq('id', user.id);
+        if (error) throw error;
+      }
       const updatedUser = { ...user, company: profileEditCompany.trim() || null };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -299,11 +329,15 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ birth_date: profileEditBirthDate })
-        .eq('id', user.id);
-      if (error) throw error;
+      if (USE_SECURE_API) {
+        await secureUsersApi.updateMe({ birthDate: profileEditBirthDate });
+      } else {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ birth_date: profileEditBirthDate })
+          .eq('id', user.id);
+        if (error) throw error;
+      }
       const updatedUser = { ...user, birthDate: profileEditBirthDate };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -371,111 +405,297 @@ const ProfileView = ({
         ? 'Noch nicht erlaubt'
         : 'Nicht verfügbar';
 
+  const filteredAvatarStates = avatarFilter === 'all'
+    ? avatarStates
+    : avatarStates.filter(e => (e.avatar.rarity || 'common') === avatarFilter);
+
   return (
     <div className="space-y-6">
+      {/* Profil-Vervollständigungs-Banner */}
+      {isProfileIncomplete && (
+        <div className={`${darkMode ? 'bg-amber-900/30 border-amber-700' : 'bg-amber-50 border-amber-300'} border-2 rounded-xl p-4 flex items-start gap-3`}>
+          <AlertTriangle className={`flex-shrink-0 mt-0.5 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} size={22} />
+          <div>
+            <p className={`font-semibold ${darkMode ? 'text-amber-300' : 'text-amber-800'}`}>
+              Profil unvollständig ({profileCompletionCount}/3)
+            </p>
+            <p className={`text-sm mt-1 ${darkMode ? 'text-amber-200/70' : 'text-amber-700'}`}>
+              Bitte ergänze die fehlenden Angaben:
+            </p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {profileCompletionItems.filter(i => i.missing).map(item => (
+                <span key={item.key} className={`px-3 py-1 rounded-full text-xs font-semibold ${darkMode ? 'bg-amber-800/50 text-amber-200' : 'bg-amber-200 text-amber-800'}`}>
+                  {item.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profil-Header */}
       <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl p-8 text-center">
         <div className="mb-3 flex justify-center">
-          <PremiumAvatarBadge
-            avatar={equippedAvatar || fallbackAvatar}
-            size="xl"
-          />
+          <button onClick={() => setShowAvatarPicker(true)} className="relative group" title="Avatar ändern">
+            <PremiumAvatarBadge
+              avatar={equippedAvatar || fallbackAvatar}
+              size="xl"
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+              <Pencil size={24} />
+            </div>
+          </button>
         </div>
         <h2 className="text-3xl font-bold mb-2">{user.name}</h2>
         <p className="opacity-90">{PERMISSIONS[user.role]?.label || user.role}</p>
+        {profileNameLooksLikeEmail && (
+          <p className="mt-2 text-sm bg-white/20 rounded-lg px-3 py-1 inline-block">
+            Tipp: Ändere deinen Anzeigenamen unten — gerade sehen andere deine E-Mail!
+          </p>
+        )}
       </div>
 
-      {/* Avatar auswählen */}
+      {/* Avatar kompakt + Modal */}
       <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-        <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Avatar auswählen
-        </h3>
-        <div className="flex items-center justify-between mb-4">
-          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Verdiene exklusive Avatare über Disziplinen wie Technik, Rettung, Hygiene und Erste Hilfe.
-          </p>
-          <button
-            onClick={() => setCurrentView('collection')}
-            className="ml-4 px-4 py-2 bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-sm font-bold rounded-lg hover:shadow-lg hover:shadow-violet-500/30 transition-all whitespace-nowrap"
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <AvatarBadge avatar={equippedAvatar || fallbackAvatar} size="md" />
+            <div>
+              <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                {equippedAvatar?.label || 'Kein Avatar'}
+              </h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {unlockedAvatarCount}/{AVATARS.length} freigeschaltet · Level {currentLevel} · {totalXp} XP
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowAvatarPicker(true)}
+              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-bold rounded-lg transition-all"
+            >
+              Avatar ändern
+            </button>
+            <button
+              onClick={() => setCurrentView('collection')}
+              className="px-4 py-2 bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-sm font-bold rounded-lg hover:shadow-lg transition-all"
+            >
+              Sammlung
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Avatar-Picker Modal */}
+      {showAvatarPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setShowAvatarPicker(false)}>
+          <div
+            className={`w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl ${darkMode ? 'bg-slate-800' : 'bg-white'} p-6`}
+            onClick={e => e.stopPropagation()}
           >
-            Sammlung öffnen
-          </button>
-        </div>
-        <div className={`mb-4 flex flex-wrap items-center gap-2 text-xs ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
-          <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-cyan-900/50' : 'bg-cyan-100'}`}>
-            Level {currentLevel}
-          </span>
-          <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-gray-100 text-gray-700'}`}>
-            {totalXp} XP
-          </span>
-          <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-emerald-900/50 text-emerald-300' : 'bg-emerald-100 text-emerald-700'}`}>
-            {unlockedAvatarCount}/{AVATARS.length} freigeschaltet
-          </span>
-          {nextLockedAvatar && (
-            <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700'}`}>
-              Nächster: {nextLockedAvatar.avatar.label} · {nextLockedAvatar.nextRequirementText}
-            </span>
-          )}
-          {!nextLockedAvatar && (
-            <span className={`px-2 py-1 rounded-full ${darkMode ? 'bg-violet-900/50 text-violet-300' : 'bg-violet-100 text-violet-700'}`}>
-              Alle Avatare freigeschaltet
-            </span>
-          )}
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {avatarStates.map((entry) => {
-            const { avatar, unlocked, nextRequirementText, requirements } = entry;
-            const isSelected = user.avatar === avatar.id;
-            const rarityMeta = AVATAR_RARITY_META[avatar.rarity] || AVATAR_RARITY_META.common;
-            const hasUnlockRules = requirements.length > 0;
-            return (
-              <button
-                key={avatar.id}
-                onClick={() => updateProfileAvatar(avatar.id)}
-                disabled={profileSaving}
-                title={avatar.label}
-                className={`relative p-3 rounded-xl border text-left transition-all ${
-                  isSelected
-                    ? `ring-2 ring-cyan-400 ${darkMode ? 'bg-cyan-900/30 border-cyan-500' : 'bg-cyan-50 border-cyan-300'}`
-                    : darkMode
-                      ? 'bg-slate-700 border-slate-600 hover:bg-slate-600'
-                      : 'bg-gray-50 border-gray-200 hover:bg-white'
-                } ${unlocked ? 'hover:-translate-y-0.5' : 'opacity-75'}`}
-              >
-                {!unlocked && (
-                  <span className="absolute top-2 right-2 text-[10px] bg-black/70 text-white rounded-full px-1">🔒</span>
-                )}
-                <div className={`mb-2 rounded-lg border px-3 py-2 flex items-center justify-center ${darkMode ? 'bg-slate-800 border-slate-500' : 'bg-white border-gray-200'}`}>
-                  <AvatarBadge avatar={avatar} size="md" className="border border-white/40" />
-                </div>
-                <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  {avatar.label}
-                </div>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] ${rarityMeta.chipClass}`}>
-                    {rarityMeta.label}
-                  </span>
-                  {avatar.discipline && (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] ${darkMode ? 'bg-cyan-900/40 text-cyan-200' : 'bg-cyan-100 text-cyan-700'}`}>
-                      {avatar.discipline}
-                    </span>
-                  )}
-                </div>
-                <div className={`mt-2 text-xs ${unlocked ? (darkMode ? 'text-emerald-300' : 'text-emerald-700') : (darkMode ? 'text-amber-300' : 'text-amber-700')}`}>
-                  {hasUnlockRules ? (unlocked ? 'Freigeschaltet' : nextRequirementText) : 'Standard-Avatar'}
-                </div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Avatar auswählen</h3>
+              <button onClick={() => setShowAvatarPicker(false)} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-slate-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                <XIcon size={20} />
               </button>
-            );
-          })}
+            </div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {[
+                { key: 'all', label: 'Alle' },
+                { key: 'common', label: 'Standard' },
+                { key: 'bronze', label: 'Bronze' },
+                { key: 'silver', label: 'Silber' },
+                { key: 'gold', label: 'Gold' },
+                { key: 'legendary', label: 'Legendär' }
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setAvatarFilter(tab.key)}
+                  className={`px-3 py-1 rounded-full text-sm font-semibold transition-all ${
+                    avatarFilter === tab.key
+                      ? 'bg-cyan-500 text-white'
+                      : darkMode ? 'bg-slate-700 text-gray-300 hover:bg-slate-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              {filteredAvatarStates.map((entry) => {
+                const { avatar, unlocked, nextRequirementText, requirements } = entry;
+                const isSelected = user.avatar === avatar.id;
+                const rarityMeta = AVATAR_RARITY_META[avatar.rarity] || AVATAR_RARITY_META.common;
+                const hasUnlockRules = requirements.length > 0;
+                return (
+                  <button
+                    key={avatar.id}
+                    onClick={() => { updateProfileAvatar(avatar.id); setShowAvatarPicker(false); }}
+                    disabled={profileSaving}
+                    title={avatar.label}
+                    className={`relative p-3 rounded-xl border text-left transition-all ${
+                      isSelected
+                        ? `ring-2 ring-cyan-400 ${darkMode ? 'bg-cyan-900/30 border-cyan-500' : 'bg-cyan-50 border-cyan-300'}`
+                        : darkMode
+                          ? 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                          : 'bg-gray-50 border-gray-200 hover:bg-white'
+                    } ${unlocked ? 'hover:-translate-y-0.5' : 'opacity-75'}`}
+                  >
+                    {!unlocked && (
+                      <span className="absolute top-2 right-2 text-[10px] bg-black/70 text-white rounded-full px-1">🔒</span>
+                    )}
+                    <div className={`mb-2 rounded-lg border px-3 py-2 flex items-center justify-center ${darkMode ? 'bg-slate-800 border-slate-500' : 'bg-white border-gray-200'}`}>
+                      <AvatarBadge avatar={avatar} size="md" className="border border-white/40" />
+                    </div>
+                    <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      {avatar.label}
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] ${rarityMeta.chipClass}`}>
+                        {rarityMeta.label}
+                      </span>
+                      {avatar.discipline && (
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] ${darkMode ? 'bg-cyan-900/40 text-cyan-200' : 'bg-cyan-100 text-cyan-700'}`}>
+                          {avatar.discipline}
+                        </span>
+                      )}
+                    </div>
+                    <div className={`mt-2 text-xs ${unlocked ? (darkMode ? 'text-emerald-300' : 'text-emerald-700') : (darkMode ? 'text-amber-300' : 'text-amber-700')}`}>
+                      {hasUnlockRules ? (unlocked ? 'Freigeschaltet' : nextRequirementText) : 'Standard-Avatar'}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            {user.avatar && (
+              <button
+                onClick={() => { updateProfileAvatar(null); setShowAvatarPicker(false); }}
+                disabled={profileSaving}
+                className={`mt-4 text-sm ${darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-500'} transition-colors`}
+              >
+                Avatar entfernen
+              </button>
+            )}
+          </div>
         </div>
-        {user.avatar && (
-          <button
-            onClick={() => updateProfileAvatar(null)}
-            disabled={profileSaving}
-            className={`mt-4 text-sm ${darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-500'} transition-colors`}
-          >
-            Avatar entfernen
-          </button>
-        )}
+      )}
+
+      {/* Persönliche Daten — alles in einer Karte */}
+      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+        <h3 className={`text-xl font-bold mb-5 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+          Persönliche Daten
+        </h3>
+        <div className="space-y-5">
+          {/* E-Mail (nur Anzeige) */}
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>E-Mail</label>
+            <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{user.email}</p>
+          </div>
+
+          {/* Rolle (nur Anzeige) */}
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Rolle</label>
+            <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{PERMISSIONS[user.role]?.label || user.role}</p>
+          </div>
+
+          {/* Anzeigename */}
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Anzeigename</label>
+            <p className={`text-base font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              {user.name}
+              {profileNameLooksLikeEmail && (
+                <span className={`ml-2 text-xs font-normal ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                  (sieht aus wie eine E-Mail — bitte ändern)
+                </span>
+              )}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                placeholder="Neuer Name"
+                value={profileEditName}
+                onChange={(e) => setProfileEditName(e.target.value)}
+                className={`flex-1 px-4 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+              />
+              <button
+                onClick={updateProfileName}
+                disabled={profileSaving || !profileEditName.trim()}
+                className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white text-sm font-bold rounded-lg transition-all"
+              >
+                {profileSaving ? 'Speichern...' : 'Ändern'}
+              </button>
+            </div>
+            <p className={`mt-1.5 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              Wird in der App, im Chat und in der Bestenliste angezeigt.
+            </p>
+          </div>
+
+          <div className={`border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`} />
+
+          {/* Betrieb */}
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Betrieb</label>
+            {(user.organizationName || user.company) && (
+              <p className={`text-base font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                {user.organizationName || user.company}
+              </p>
+            )}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                placeholder={user.company || "z.B. Stadtbad München, Hallenbad Köln..."}
+                value={profileEditCompany}
+                onChange={(e) => setProfileEditCompany(e.target.value)}
+                className={`flex-1 px-4 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+              />
+              <button
+                onClick={updateProfileCompany}
+                disabled={profileSaving}
+                className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white text-sm font-bold rounded-lg transition-all"
+              >
+                {profileSaving ? 'Speichern...' : 'Speichern'}
+              </button>
+            </div>
+            <p className={`mt-1.5 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              In welchem Schwimmbad / Betrieb arbeitest du?
+            </p>
+          </div>
+
+          <div className={`border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`} />
+
+          {/* Geburtsdatum */}
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Geburtsdatum</label>
+            {user.birthDate && (
+              <p className={`text-base font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                {new Date(user.birthDate).toLocaleDateString('de-DE')}
+                {getAgeHandicap(user.birthDate) > 0 && (
+                  <span className="ml-2 text-sm font-normal text-cyan-500">
+                    (Handicap: {Math.round(getAgeHandicap(user.birthDate) * 100)}% Zeitbonus)
+                  </span>
+                )}
+              </p>
+            )}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="date"
+                value={profileEditBirthDate || user.birthDate || ''}
+                onChange={(e) => setProfileEditBirthDate(e.target.value)}
+                className={`flex-1 px-4 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+              />
+              <button
+                onClick={updateProfileBirthDate}
+                disabled={profileSaving || !profileEditBirthDate}
+                className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white text-sm font-bold rounded-lg transition-all"
+              >
+                {profileSaving ? 'Speichern...' : 'Speichern'}
+              </button>
+            </div>
+            <p className={`mt-1.5 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              Wird für das Alters-Handicap bei der Schwimm-Challenge verwendet (ab 40 Jahren).
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Aktivitäts-Statistik */}
@@ -493,25 +713,25 @@ const ProfileView = ({
           </div>
           <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-blue-900 to-cyan-900' : 'bg-gradient-to-br from-blue-100 to-cyan-100'}`}>
             <div className="text-3xl mb-1">🏊</div>
-                <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                  {swimDistanceMeters.toLocaleString('de-DE')}m
-                </div>
-                <div className={`text-xs ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Geschwommen</div>
-              </div>
-              <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-purple-900 to-pink-900' : 'bg-gradient-to-br from-purple-100 to-pink-100'}`}>
-                <div className="text-3xl mb-1">🎖️</div>
-                <div className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                  {badgeCount}
-                </div>
-                <div className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>Badges</div>
-              </div>
-              <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-orange-900 to-amber-900' : 'bg-gradient-to-br from-orange-100 to-amber-100'}`}>
-                <div className="text-3xl mb-1">✅</div>
-                <div className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
-                  {totalCorrectAnswers.toLocaleString('de-DE')}
-                </div>
-                <div className={`text-xs ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>Richtige Antworten</div>
-              </div>
+            <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+              {swimDistanceMeters.toLocaleString('de-DE')}m
+            </div>
+            <div className={`text-xs ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Geschwommen</div>
+          </div>
+          <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-purple-900 to-pink-900' : 'bg-gradient-to-br from-purple-100 to-pink-100'}`}>
+            <div className="text-3xl mb-1">🎖️</div>
+            <div className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+              {badgeCount}
+            </div>
+            <div className={`text-xs ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>Badges</div>
+          </div>
+          <div className={`p-4 rounded-xl text-center ${darkMode ? 'bg-gradient-to-br from-orange-900 to-amber-900' : 'bg-gradient-to-br from-orange-100 to-amber-100'}`}>
+            <div className="text-3xl mb-1">✅</div>
+            <div className={`text-2xl font-bold ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
+              {totalCorrectAnswers.toLocaleString('de-DE')}
+            </div>
+            <div className={`text-xs ${darkMode ? 'text-orange-300' : 'text-orange-700'}`}>Richtige Antworten</div>
+          </div>
         </div>
         <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} grid grid-cols-3 gap-4 text-center`}>
           <div>
@@ -535,36 +755,7 @@ const ProfileView = ({
         </div>
       </div>
 
-      {/* Aktuelle Daten */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-        <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Aktuelle Kontodaten
-        </h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Name</p>
-            <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{user.name}</p>
-          </div>
-          <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>E-Mail</p>
-            <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{user.email}</p>
-          </div>
-          <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Rolle</p>
-            <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              {PERMISSIONS[user.role]?.label || user.role}
-            </p>
-          </div>
-          <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Betrieb</p>
-            <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-              {user.organizationName || user.company || <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>Nicht angegeben</span>}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Betrieb ändern */}
+      {/* Handy-Benachrichtigungen */}
       <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
           <div>
@@ -671,97 +862,10 @@ const ProfileView = ({
         </div>
       </div>
 
-      {/* Betrieb aendern */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-        <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Betrieb angeben
-        </h3>
-        <div className="flex flex-col md:flex-row gap-4">
-          <input
-            type="text"
-            placeholder={user.company || "z.B. Stadtbad München, Hallenbad Köln..."}
-            value={profileEditCompany}
-            onChange={(e) => setProfileEditCompany(e.target.value)}
-            className={`flex-1 px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
-          />
-          <button
-            onClick={updateProfileCompany}
-            disabled={profileSaving}
-            className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
-          >
-            {profileSaving ? 'Speichern...' : 'Speichern'}
-          </button>
-        </div>
-        <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          In welchem Schwimmbad / Betrieb arbeitest du?
-        </p>
-      </div>
-
-      {/* Geburtsdatum für Handicap */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-        <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          🎂 Geburtsdatum
-        </h3>
-        <div className="flex flex-col md:flex-row gap-4">
-          <input
-            type="date"
-            value={profileEditBirthDate || user.birthDate || ''}
-            onChange={(e) => setProfileEditBirthDate(e.target.value)}
-            className={`flex-1 px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
-          />
-          <button
-            onClick={updateProfileBirthDate}
-            disabled={profileSaving || !profileEditBirthDate}
-            className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
-          >
-            {profileSaving ? 'Speichern...' : 'Speichern'}
-          </button>
-        </div>
-        {user.birthDate && (
-          <p className={`mt-2 text-sm ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-            ✓ Gespeichert: {new Date(user.birthDate).toLocaleDateString('de-DE')}
-            {getAgeHandicap(user.birthDate) > 0 && (
-              <span className="ml-2 text-cyan-500">
-                (Handicap: {Math.round(getAgeHandicap(user.birthDate) * 100)}% Zeitbonus)
-              </span>
-            )}
-          </p>
-        )}
-        <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Wird für das Alters-Handicap bei der Schwimm-Challenge verwendet (ab 40 Jahren).
-        </p>
-      </div>
-
-      {/* Name ändern */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-        <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Anzeigename ändern
-        </h3>
-        <div className="flex flex-col md:flex-row gap-4">
-          <input
-            type="text"
-            placeholder="Neuer Name"
-            value={profileEditName}
-            onChange={(e) => setProfileEditName(e.target.value)}
-            className={`flex-1 px-4 py-3 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
-          />
-          <button
-            onClick={updateProfileName}
-            disabled={profileSaving || !profileEditName.trim()}
-            className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
-          >
-            {profileSaving ? 'Speichern...' : 'Name ändern'}
-          </button>
-        </div>
-        <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Dein Anzeigename wird in der App, im Chat und in der Bestenliste angezeigt.
-        </p>
-      </div>
-
       {/* Freunde einladen */}
       <div className={`${darkMode ? 'bg-gradient-to-r from-pink-900/80 to-purple-900/80' : 'bg-gradient-to-r from-pink-100 to-purple-100'} rounded-xl p-6 shadow-lg border-2 ${darkMode ? 'border-pink-700' : 'border-pink-300'}`}>
         <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          🎉 Freunde einladen
+          Freunde einladen
         </h3>
         <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
           Teile Bäder Azubi mit deinem Team und lernt gemeinsam!
@@ -783,27 +887,26 @@ const ProfileView = ({
                 }
               } else {
                 try {
-                  await navigator.clipboard.writeText('https://bäder-azubi-app.vercel.app');
+                  await navigator.clipboard.writeText('https://azubi.smartbaden.de');
                   showToast('Link kopiert! Teile ihn mit deinen Freunden.', 'success');
                   playSound('splash');
                 } catch (err) {
-                  showToast('Link: https://bäder-azubi-app.vercel.app', 'info');
+                  showToast('Link: https://azubi.smartbaden.de', 'info');
                 }
               }
             }}
             className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all"
           >
-            <span className="text-xl">📤</span>
-            <span>App teilen</span>
+            App teilen
           </button>
           <button
             onClick={async () => {
               try {
-                await navigator.clipboard.writeText('https://bäder-azubi-app.vercel.app');
+                await navigator.clipboard.writeText('https://azubi.smartbaden.de');
                 showToast('Link kopiert!', 'success');
                 playSound('splash');
               } catch (err) {
-                showToast('Link: https://bäder-azubi-app.vercel.app', 'info');
+                showToast('Link: https://azubi.smartbaden.de', 'info');
               }
             }}
             className={`px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${
@@ -812,20 +915,19 @@ const ProfileView = ({
                 : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-300'
             }`}
           >
-            <span className="text-xl">📋</span>
-            <span>Link kopieren</span>
+            Link kopieren
           </button>
         </div>
       </div>
 
-      {/* Passwort ändern */}
+      {/* Sicherheit — Passwort + Abmelden */}
       <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-        <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Passwort ändern
+        <h3 className={`text-xl font-bold mb-5 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+          Sicherheit
         </h3>
         <div className="space-y-4">
           <div>
-            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Neues Passwort
             </label>
             <div className="relative">
@@ -834,7 +936,7 @@ const ProfileView = ({
                 placeholder="Mindestens 6 Zeichen"
                 value={profileEditPassword}
                 onChange={(e) => setProfileEditPassword(e.target.value)}
-                className={`w-full px-4 py-3 pr-12 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+                className={`w-full px-4 py-2.5 pr-12 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
               />
               <button
                 type="button"
@@ -846,7 +948,7 @@ const ProfileView = ({
             </div>
           </div>
           <div>
-            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Passwort bestätigen
             </label>
             <div className="relative">
@@ -855,7 +957,7 @@ const ProfileView = ({
                 placeholder="Passwort wiederholen"
                 value={profileEditPasswordConfirm}
                 onChange={(e) => setProfileEditPasswordConfirm(e.target.value)}
-                className={`w-full px-4 py-3 pr-12 rounded-lg ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+                className={`w-full px-4 py-2.5 pr-12 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
               />
               <button
                 type="button"
@@ -869,30 +971,23 @@ const ProfileView = ({
           <button
             onClick={updateProfilePassword}
             disabled={profileSaving || !profileEditPassword || !profileEditPasswordConfirm}
-            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
+            className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white text-sm font-bold rounded-lg transition-all"
           >
             {profileSaving ? 'Speichern...' : 'Passwort ändern'}
           </button>
         </div>
-        <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Verwende ein sicheres Passwort mit mindestens 6 Zeichen.
-        </p>
-      </div>
 
-      {/* Abmelden */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-        <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Sitzung beenden
-        </h3>
-        <button
-          onClick={handleLogout}
-          className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition-all"
-        >
-          Abmelden
-        </button>
-        <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Du wirst aus der App abgemeldet und musst dich erneut anmelden.
-        </p>
+        <div className={`mt-6 pt-5 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
+          <button
+            onClick={handleLogout}
+            className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-all"
+          >
+            Abmelden
+          </button>
+          <p className={`mt-2 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            Du wirst aus der App abgemeldet und musst dich erneut anmelden.
+          </p>
+        </div>
       </div>
 
       {/* Rechtliches */}
