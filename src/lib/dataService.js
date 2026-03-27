@@ -1416,7 +1416,7 @@ export const createCustomSwimTrainingPlanEntry = async (supabase, payload) => {
 
 export const loadBerichtsheftEntriesFromDb = async (supabase, userName) => {
   if (USE_SECURE_API) {
-    const entries = await secureReportBooksApi.list({ userName });
+    const entries = await secureReportBooksApi.list();
     return (entries || []).map(mapSecureReportBookToFrontendEntry);
   }
   const { data, error } = await supabase.from('berichtsheft')
