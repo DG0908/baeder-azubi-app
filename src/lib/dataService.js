@@ -456,7 +456,7 @@ export const loadGames = async (supabase, limit = 200, currentUserId = null) => 
 
 // ─── Chat Messages ───────────────────────────────────────────────────
 
-export const loadMessages = async (supabase, normalizeFn, userDirectory) => {
+export const loadMessages = async (supabase, normalizeFn, userDirectory, userRole) => {
   if (USE_SECURE_API) {
     const mapMsg = (m) => ({
       id: m.id,
@@ -472,7 +472,9 @@ export const loadMessages = async (supabase, normalizeFn, userDirectory) => {
     });
     // Load room scopes in parallel (backend returns one scope at a time)
     // DIRECT_STAFF requires recipientId so it's loaded on-demand in the chat view
-    const scopes = ['AZUBI_ROOM', 'STAFF_ROOM'];
+    // AZUBI_ROOM is only accessible by apprentices; staff/admin only see STAFF_ROOM
+    const isApprentice = ['azubi', 'rettungsschwimmer_azubi'].includes(String(userRole).toLowerCase());
+    const scopes = isApprentice ? ['AZUBI_ROOM', 'STAFF_ROOM'] : ['STAFF_ROOM'];
     const results = await Promise.allSettled(
       scopes.map(scope => secureChatApi.list({ scope, limit: 100 }))
     );
