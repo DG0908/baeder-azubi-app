@@ -381,7 +381,7 @@ const AdminPasswordReset = ({ userId, userEmail, userName }) => {
   const generatePassword = () => {
     const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
     let pw = '';
-    for (let i = 0; i < 8; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < 12; i++) pw += chars[Math.floor(Math.random() * chars.length)];
     return pw;
   };
 
