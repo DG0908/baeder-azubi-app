@@ -679,7 +679,7 @@ const ProfileView = ({
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="date"
-                value={profileEditBirthDate || user.birthDate || ''}
+                value={profileEditBirthDate || (user.birthDate ? user.birthDate.slice(0, 10) : '')}
                 onChange={(e) => setProfileEditBirthDate(e.target.value)}
                 className={`flex-1 px-4 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
               />
@@ -925,7 +925,7 @@ const ProfileView = ({
         <h3 className={`text-xl font-bold mb-5 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
           Sicherheit
         </h3>
-        <div className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); updateProfilePassword(); }} className="space-y-4">
           <div>
             <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Neues Passwort
@@ -933,6 +933,7 @@ const ProfileView = ({
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
                 placeholder="Mindestens 6 Zeichen"
                 value={profileEditPassword}
                 onChange={(e) => setProfileEditPassword(e.target.value)}
@@ -954,6 +955,7 @@ const ProfileView = ({
             <div className="relative">
               <input
                 type={showPasswordConfirm ? 'text' : 'password'}
+                autoComplete="new-password"
                 placeholder="Passwort wiederholen"
                 value={profileEditPasswordConfirm}
                 onChange={(e) => setProfileEditPasswordConfirm(e.target.value)}
@@ -969,13 +971,13 @@ const ProfileView = ({
             </div>
           </div>
           <button
-            onClick={updateProfilePassword}
+            type="submit"
             disabled={profileSaving || !profileEditPassword || !profileEditPasswordConfirm}
             className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white text-sm font-bold rounded-lg transition-all"
           >
             {profileSaving ? 'Speichern...' : 'Passwort ändern'}
           </button>
-        </div>
+        </form>
 
         <div className={`mt-6 pt-5 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
           <button
