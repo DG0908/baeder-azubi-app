@@ -456,7 +456,7 @@ const QuizView = ({
 
           <div className="flex justify-between items-center mb-6">
             <div className="text-center flex-1">
-              <p className="text-sm text-gray-600 mb-1">{currentGame.player1}</p>
+              <p className="text-sm text-gray-600 mb-1">{getFirstName(currentGame.player1)}</p>
               <p className="text-3xl font-bold text-blue-600">{currentGame.player1Score}</p>
             </div>
             <div className="text-center flex-1">
@@ -467,11 +467,11 @@ const QuizView = ({
                 </p>
               )}
               <p className="text-sm text-gray-600 mt-2">
-                {playerTurn === user.name ? 'Du bist dran!' : `${playerTurn} ist dran...`}
+                {playerTurn === user.name ? 'Du bist dran!' : `${getFirstName(playerTurn)} ist dran...`}
               </p>
             </div>
             <div className="text-center flex-1">
-              <p className="text-sm text-gray-600 mb-1">{currentGame.player2}</p>
+              <p className="text-sm text-gray-600 mb-1">{getFirstName(currentGame.player2)}</p>
               <p className="text-3xl font-bold text-red-600">{currentGame.player2Score}</p>
             </div>
           </div>
@@ -510,7 +510,7 @@ const QuizView = ({
                 </button>
               </div>
               <h3 className="text-xl font-bold text-center mb-4">Wähle eine Kategorie:</h3>
-              <p className="text-center text-gray-500 mb-4">Du waehlst 5 Fragen - danach spielt {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} die gleichen Fragen!</p>
+              <p className="text-center text-gray-500 mb-4">Du wählst 5 Fragen - danach spielt {getFirstName(currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1)} die gleichen Fragen!</p>
               <div className="grid grid-cols-2 gap-3">
                 {CATEGORIES.filter(cat => {
                   const played = currentGame.categoryRounds?.map(cr => cr.categoryId) || [];
@@ -545,7 +545,7 @@ const QuizView = ({
                 })()}
               </p>
               <p className="text-gray-600 mb-4">
-                {currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1} hat diese Kategorie gespielt. Jetzt bist du dran mit den gleichen 5 Fragen!
+                {getFirstName(currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1)} hat diese Kategorie gespielt. Jetzt bist du dran mit den gleichen 5 Fragen!
               </p>
               <button
                 onClick={startCategoryAsSecondPlayer}
@@ -559,7 +559,7 @@ const QuizView = ({
           {!quizCategory && playerTurn !== user.name && (
             <div className="text-center py-12">
               <div className="text-4xl font-black mb-4 text-slate-500">WAIT</div>
-              <p className="text-xl text-gray-600">Warte auf {playerTurn}...</p>
+              <p className="text-xl text-gray-600">Warte auf {getFirstName(playerTurn)}...</p>
               <p className="text-sm text-gray-400 mt-2">
                 {waitingForOpponent ? 'Dein Gegner spielt jetzt die gleichen Fragen' : 'Dein Gegner waehlt eine Kategorie'}
               </p>
