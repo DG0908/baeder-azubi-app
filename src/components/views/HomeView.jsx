@@ -123,21 +123,21 @@ const HomeView = ({
     <div className="space-y-3">
       {/* Hero — kompakter Greeting + Stats als Pills */}
       <div className={`${darkMode ? 'bg-gradient-to-br from-cyan-900/80 to-slate-800' : 'bg-gradient-to-br from-cyan-500 to-cyan-600'} text-white rounded-xl p-4 shadow-xl`}>
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-bold truncate">Hallo, {(user.name || '').split(/\s+/)[0]}!</h2>
-            <p className="text-xs text-white/60 mt-0.5 line-clamp-1">{dailyWisdom || DAILY_WISDOM[0] || DID_YOU_KNOW_FACTS[0] || ''}</p>
+            <h2 className="text-lg font-bold">Hallo, {(user.name || '').split(/\s+/)[0]}!</h2>
+            <p className="text-xs text-white/70 mt-1 leading-relaxed">{dailyWisdom || DAILY_WISDOM[0] || DID_YOU_KNOW_FACTS[0] || ''}</p>
           </div>
           {userStats && (
-            <div className="flex gap-1.5 ml-3 flex-shrink-0">
+            <div className="flex flex-col gap-1 flex-shrink-0">
               {[
-                { val: userStats.wins, label: 'S', color: 'bg-green-500/30' },
-                { val: userStats.losses, label: 'N', color: 'bg-red-500/30' },
+                { val: userStats.wins, label: 'Siege', color: 'bg-green-500/30' },
+                { val: userStats.losses, label: 'Niederl.', color: 'bg-red-500/30' },
                 { val: totalXp, label: 'XP', color: 'bg-yellow-500/30' },
               ].map(s => (
-                <div key={s.label} className={`${s.color} rounded-lg px-2.5 py-1.5 text-center`}>
+                <div key={s.label} className={`${s.color} rounded-lg px-2.5 py-1 flex items-center gap-1.5`}>
                   <div className="text-sm font-bold leading-none">{s.val}</div>
-                  <div className="text-[9px] text-white/70 mt-0.5">{s.label}</div>
+                  <div className="text-[9px] text-white/70">{s.label}</div>
                 </div>
               ))}
             </div>
