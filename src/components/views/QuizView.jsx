@@ -156,16 +156,14 @@ const QuizView = ({
     const h2hTotal = duelResult.h2h.wins + duelResult.h2h.losses + duelResult.h2h.draws;
 
     return (
-      <div className="max-w-lg mx-auto text-center space-y-6 py-8">
+      <div className={`max-w-lg mx-auto text-center space-y-6 py-8 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
         {/* Ergebnis-Grafik */}
         <div className={`rounded-2xl p-8 shadow-xl ${
           iWon
             ? 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500'
             : isDraw
-              ? 'bg-gradient-to-br from-slate-400 via-gray-400 to-slate-500'
-              : darkMode
-                ? 'bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900'
-                : 'bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400'
+              ? 'bg-gradient-to-br from-slate-500 via-gray-500 to-slate-600'
+              : 'bg-gradient-to-br from-indigo-800 via-slate-700 to-slate-800'
         }`}>
           <div className="text-7xl mb-4">
             {iWon ? '🏊‍♂️🏆' : isDraw ? '🤝🏊' : '🌊😵'}
@@ -183,7 +181,7 @@ const QuizView = ({
         </div>
 
         {/* Score */}
-        <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-2xl p-6 shadow-lg`}>
+        <div className={`${darkMode ? 'bg-slate-800/90 backdrop-blur-sm border border-slate-600' : 'bg-white border border-gray-200'} rounded-2xl p-6 shadow-xl`}>
           <div className="flex items-center justify-center gap-6">
             <div className="text-center flex-1">
               <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Du</p>
@@ -209,7 +207,7 @@ const QuizView = ({
 
         {/* Head-to-Head Statistik */}
         {h2hTotal > 0 && (
-          <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-2xl p-6 shadow-lg`}>
+          <div className={`${darkMode ? 'bg-slate-800/90 backdrop-blur-sm border border-slate-600' : 'bg-white border border-gray-200'} rounded-2xl p-6 shadow-xl`}>
             <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
               Bilanz gegen {getFirstName(duelResult.opponentName)}
             </h3>
