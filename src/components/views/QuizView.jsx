@@ -2,9 +2,10 @@ import React from 'react';
 import { Target } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { CATEGORIES } from '../../data/constants';
+import { CATEGORIES, PERMISSIONS, getAvatarById } from '../../data/constants';
 import { getWhoAmIClueCount, getWhoAmIVisibleClues, WHO_AM_I_TIME_LIMIT } from '../../data/whoAmIChallenges';
 import { formatAnswerLabel } from '../../lib/utils';
+import AvatarBadge from '../ui/AvatarBadge';
 
 const DIFFICULTY_SETTINGS = {
   anfaenger: { time: 45, label: 'Anfaenger', icon: 'A', color: 'bg-green-500' },
@@ -311,7 +312,9 @@ const QuizView = ({
                 const vsStats = userStats?.opponents?.[u.name] || { wins: 0, losses: 0, draws: 0 };
                 const totalVs = vsStats.wins + vsStats.losses + vsStats.draws;
                 const winrate = totalVs > 0 ? Math.round((vsStats.wins / totalVs) * 100) : null;
-                const initials = u.name.slice(0, 2).toUpperCase();
+                const firstName = getFirstName(u.name);
+                const roleLabel = (PERMISSIONS[u.role] || PERMISSIONS.azubi).label;
+                const company = u.company ? ` · ${u.company}` : '';
                 const relatedGame = activeGames.find((g) => {
                   if (g.status === 'finished') return false;
                   const isPair = (g.player1 === user.name && g.player2 === u.name)
@@ -354,18 +357,19 @@ const QuizView = ({
                   : 'text-gray-500';
                 return (
                   <div key={u.name} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-3 p-3 rounded-xl transition-all min-[720px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[720px]:items-center ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
-                    {/* Initials Avatar */}
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 ${
-                      u.role === 'trainer' || u.role === 'admin' ? 'bg-purple-500' : 'bg-blue-500'
-                    }`}>
-                      {initials}
-                    </div>
-                    {/* Name + Winrate */}
+                    {/* Avatar */}
+                    <AvatarBadge
+                      avatar={u.avatar ? getAvatarById(u.avatar) : null}
+                      size="md"
+                      fallback={u.name.slice(0, 2).toUpperCase()}
+                      className="flex-shrink-0"
+                    />
+                    {/* Name + Rolle + Betrieb + Winrate */}
                     <div className="min-w-0">
-                      <p className={`font-bold break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>{u.name}</p>
-                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                      <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{firstName}</p>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
                         <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
-                          {u.role === 'admin' ? 'Administrator' : u.role === 'trainer' ? 'Ausbilder' : 'Azubi'}
+                          {roleLabel}{company}
                         </span>
                         {winrate !== null ? (
                           <span className={`font-medium ${winrate >= 50 ? 'text-green-400' : 'text-red-400'}`}>
