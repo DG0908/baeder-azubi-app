@@ -1009,7 +1009,8 @@ export default function BaederApp() {
   // App Config State (Admin UI Editor)
   const [appConfig, setAppConfig] = useState({
     menuItems: DEFAULT_MENU_ITEMS,
-    themeColors: DEFAULT_THEME_COLORS
+    themeColors: DEFAULT_THEME_COLORS,
+    companies: ['Freizeitbad Oktopus']
   });
   const [editingMenuItems, setEditingMenuItems] = useState([]);
   const [editingThemeColors, setEditingThemeColors] = useState({});
@@ -3104,7 +3105,10 @@ export default function BaederApp() {
           const loadedThemeColors = configResult.themeColors && Object.keys(configResult.themeColors).length > 0
             ? configResult.themeColors
             : DEFAULT_THEME_COLORS;
-          setAppConfig({ menuItems: loadedMenuItems, themeColors: loadedThemeColors });
+          const loadedCompanies = Array.isArray(configResult.companies) && configResult.companies.length > 0
+            ? configResult.companies
+            : ['Freizeitbad Oktopus'];
+          setAppConfig({ menuItems: loadedMenuItems, themeColors: loadedThemeColors, companies: loadedCompanies });
         }
         setConfigLoaded(true);
       } catch (err) {
@@ -8233,19 +8237,37 @@ export default function BaederApp() {
     try {
       await dsSaveAppConfig(supabase, {
         menuItems: editingMenuItems,
-        themeColors: editingThemeColors
+        themeColors: editingThemeColors,
+        companies: appConfig.companies
       });
 
       setAppConfig({
         menuItems: editingMenuItems,
-        themeColors: editingThemeColors
+        themeColors: editingThemeColors,
+        companies: appConfig.companies
       });
 
-      showToast('Konfiguration gespeichert! Alle Nutzer sehen jetzt die Änderungen.', 'success');
+      showToast('Konfiguration gespeichert.', 'success');
       playSound('splash');
     } catch (error) {
       console.error('Config save error:', error);
       showToast('Fehler beim Speichern der Konfiguration', 'error');
+    }
+  };
+
+  const saveCompanies = async (newCompanies) => {
+    const updated = { ...appConfig, companies: newCompanies };
+    try {
+      await dsSaveAppConfig(supabase, {
+        menuItems: appConfig.menuItems,
+        themeColors: appConfig.themeColors,
+        companies: newCompanies
+      });
+      setAppConfig(updated);
+      showToast('Betriebe gespeichert.', 'success');
+    } catch (error) {
+      console.error('Companies save error:', error);
+      showToast('Fehler beim Speichern der Betriebe', 'error');
     }
   };
 
@@ -8822,6 +8844,8 @@ export default function BaederApp() {
             updateThemeColor={updateThemeColor}
             saveAppConfig={saveAppConfig}
             resetAppConfig={resetAppConfig}
+            companies={appConfig.companies}
+            saveCompanies={saveCompanies}
           />
         )}
 
@@ -9312,6 +9336,7 @@ export default function BaederApp() {
             enablePushNotifications={enablePushNotifications}
             syncPushSubscription={syncPushSubscription}
             disablePushNotifications={disablePushNotifications}
+            companies={appConfig.companies}
           />
         )}
 
