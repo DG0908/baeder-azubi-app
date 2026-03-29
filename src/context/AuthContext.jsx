@@ -48,10 +48,14 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const checkSession = async () => {
       try {
-      // Prüfe ob es ein Password-Recovery-Link ist (type=recovery in URL)
+      // Prüfe Passwort-Reset-Links für Secure-Backend oder Legacy-Supabase.
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const urlParams = new URLSearchParams(window.location.search);
-      if (hashParams.get('type') === 'recovery' || urlParams.get('type') === 'recovery') {
+      if (
+        hashParams.get('type') === 'recovery'
+        || urlParams.get('type') === 'recovery'
+        || urlParams.get('password_reset_token')
+      ) {
         setAuthView('reset-password');
         return;
       }
@@ -214,6 +218,7 @@ export function AuthProvider({ children }) {
   };
 
   const handleRegister = async () => {
+    const minimumPasswordLength = USE_SECURE_API ? 12 : 6;
     if (!registerData.name.trim() || !registerData.email.trim() || !registerData.password) {
       alert('Bitte alle Felder ausfüllen!');
       return;
@@ -222,8 +227,8 @@ export function AuthProvider({ children }) {
       alert('Bitte gib deinen Einladungscode ein!');
       return;
     }
-    if (registerData.password.length < 6) {
-      alert('Das Passwort muss mindestens 6 Zeichen lang sein!');
+    if (registerData.password.length < minimumPasswordLength) {
+      alert(`Das Passwort muss mindestens ${minimumPasswordLength} Zeichen lang sein!`);
       return;
     }
 
@@ -232,6 +237,22 @@ export function AuthProvider({ children }) {
     const trimmedCode = registerData.invitationCode.trim().toUpperCase();
 
     try {
+      if (USE_SECURE_API) {
+        await secureAuthApi.register({
+          email: trimmedEmail,
+          displayName: trimmedName,
+          password: registerData.password,
+          invitationCode: trimmedCode,
+          ...(registerData.trainingEnd ? { trainingEnd: registerData.trainingEnd } : {})
+        });
+
+        alert('✅ Registrierung erfolgreich!\n\nDein Account wurde angelegt und wartet jetzt auf Freischaltung durch einen Administrator.');
+        setLoginEmail(trimmedEmail);
+        setAuthView('login');
+        setRegisterData({ name: '', email: '', password: '', role: 'azubi', trainingEnd: '', invitationCode: '' });
+        return;
+      }
+
       // 1. Einladungscode validieren
       const { data: codeResult, error: codeError } = await supabase
         .rpc('use_invitation_code', { p_code: trimmedCode });
@@ -334,7 +355,17 @@ export function AuthProvider({ children }) {
       setAuthView('login');
       setRegisterData({ name: '', email: '', password: '', role: 'azubi', trainingEnd: '', invitationCode: '' });
     } catch (error) {
-      alert('Fehler bei der Registrierung: ' + error.message);
+      let message = error.message;
+      if (USE_SECURE_API) {
+        if (/already registered/i.test(message)) {
+          message = 'Diese E-Mail ist bereits registriert!';
+        } else if (/invitation code/i.test(message)) {
+          message = 'Ungültiger oder abgelaufener Einladungscode!';
+        } else if (/password/i.test(message)) {
+          message = `Das Passwort muss mindestens ${minimumPasswordLength} Zeichen lang sein.`;
+        }
+      }
+      alert('Fehler bei der Registrierung: ' + message);
       console.error('Registration error:', error);
     }
   };

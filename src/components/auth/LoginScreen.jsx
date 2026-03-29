@@ -4,6 +4,9 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
 import { secureAuthApi } from '../../lib/secureApi';
 import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
+import { LegalImprintContent, LegalPrivacyContent } from '../legal/LegalContent';
+
+const USE_SECURE_API = isSecureBackendApiEnabled();
 
 const LoginScreen = () => {
   const {
@@ -25,15 +28,21 @@ const LoginScreen = () => {
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [newPasswordLoading, setNewPasswordLoading] = useState(false);
+  const minPasswordLength = USE_SECURE_API ? 12 : 6;
 
   // Live-Validierung des Einladungscodes
-  const [codeStatus, setCodeStatus] = useState(null); // null | 'checking' | { valid: true, orgName, role } | { valid: false }
+  const [codeStatus, setCodeStatus] = useState(null); // null | 'checking' | { valid: true, orgName, role } | { valid: false } | { secureValidation: true }
   const codeTimerRef = useRef(null);
 
   useEffect(() => {
     const code = registerData.invitationCode?.trim();
     if (!code || code.length < 4) {
       setCodeStatus(null);
+      return;
+    }
+
+    if (USE_SECURE_API) {
+      setCodeStatus({ secureValidation: true });
       return;
     }
 
@@ -81,7 +90,7 @@ const LoginScreen = () => {
     }
     setResetLoading(true);
     try {
-      if (isSecureBackendApiEnabled()) {
+      if (USE_SECURE_API) {
         await secureAuthApi.requestPasswordReset({ email: resetEmail.trim().toLowerCase() });
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim().toLowerCase(), {
@@ -112,26 +121,11 @@ const LoginScreen = () => {
           </button>
 
           <h2 className="text-2xl font-bold mb-6 text-gray-800">📜 Impressum</h2>
-
-          <div className="space-y-4 text-gray-700 text-sm">
-            <section>
-              <h3 className="font-bold text-gray-800">Angaben gemäß § 5 TMG</h3>
-              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">Kontakt</h3>
-              <p>E-Mail: denniegulbinski@gmail.com</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">Verantwortlich für den Inhalt</h3>
-              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg</p>
-            </section>
-          </div>
+          <LegalImprintContent />
         </div>
       </div>
     );
   }
-
   // Datenschutz
   if (authView === 'datenschutz') {
     return (
@@ -147,98 +141,11 @@ const LoginScreen = () => {
           </button>
 
           <h2 className="text-2xl font-bold mb-6 text-gray-800">🔒 Datenschutzerklärung</h2>
-          <p className="text-xs text-gray-500 mb-4">Stand: Januar 2025 | Diese Datenschutzerklärung gilt für die Nutzung von Bäder Azubi.</p>
-
-          <div className="space-y-4 text-gray-700 text-sm">
-            <section>
-              <h3 className="font-bold text-gray-800">1. Verantwortlicher</h3>
-              <p>Dennie Gulbinski<br/>Zeitstraße 108<br/>53721 Siegburg<br/>E-Mail: denniegulbinski@gmail.com</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">2. Zwecke der Datenverarbeitung</h3>
-              <p>Die Verarbeitung personenbezogener Daten erfolgt ausschließlich zur:</p>
-              <ul className="list-disc list-inside mt-1 ml-2">
-                <li>Bereitstellung der App-Funktionen</li>
-                <li>Unterstützung von Ausbildungsprozessen (Berichtsheft, Lernfortschritt, Kommunikation)</li>
-              </ul>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">3. Verarbeitete Datenarten</h3>
-              <ul className="list-disc list-inside mt-1 ml-2">
-                <li><strong>Stammdaten:</strong> Name, E-Mail-Adresse, optional Geburtsdatum</li>
-                <li><strong>Nutzungsdaten:</strong> Login-Zeitpunkte, aktive Module</li>
-                <li><strong>Lern- & Ausbildungsdaten:</strong> Quiz-Ergebnisse, Berichtshefteinträge, Schwimmeinheiten, Schulungsfortschritte</li>
-                <li><strong>Kommunikationsdaten:</strong> Chatnachrichten innerhalb der App</li>
-                <li><strong>Ausbilderdaten:</strong> Kontrollkarten, Kommentare, Freigaben</li>
-              </ul>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">4. Rechtsgrundlagen der Verarbeitung</h3>
-              <ul className="list-disc list-inside mt-1 ml-2">
-                <li>Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung/Ausbildungsverhältnis)</li>
-                <li>Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse: z. B. Systembetrieb, Support)</li>
-                <li>Art. 6 Abs. 1 lit. a DSGVO (Einwilligung, z. B. für Chatfunktion)</li>
-              </ul>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">5. Empfänger der Daten</h3>
-              <ul className="list-disc list-inside mt-1 ml-2">
-                <li>IT-Dienstleister (z. B. Hosting, Wartung)</li>
-                <li>Keine Weitergabe an Dritte zu Werbezwecken</li>
-                <li>Datenverarbeitung erfolgt ausschließlich innerhalb der EU</li>
-              </ul>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">6. Speicherdauer</h3>
-              <ul className="list-disc list-inside mt-1 ml-2">
-                <li><strong>Azubis:</strong> Löschung 3 Monate nach Ausbildungsende</li>
-                <li><strong>Ausbilder:innen:</strong> Löschung 6 Monate nach Inaktivität</li>
-                <li><strong>Admins:</strong> regelmäßige Löschprüfung jährlich</li>
-                <li><strong>Chatnachrichten:</strong> max. 12 Monate, dann automatische Löschung</li>
-                <li><strong>Berichtshefte:</strong> Löschung spätestens 1 Jahr nach Ausbildungsende</li>
-              </ul>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">7. Betroffenenrechte</h3>
-              <p>Du hast das Recht auf:</p>
-              <ul className="list-disc list-inside mt-1 ml-2">
-                <li>Auskunft (Art. 15 DSGVO)</li>
-                <li>Berichtigung (Art. 16 DSGVO)</li>
-                <li>Löschung (Art. 17 DSGVO)</li>
-                <li>Einschränkung (Art. 18 DSGVO)</li>
-                <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
-                <li>Widerspruch (Art. 21 DSGVO)</li>
-                <li>Widerruf einer Einwilligung (Art. 7 Abs. 3 DSGVO)</li>
-              </ul>
-              <p className="mt-2">Anfragen bitte per E-Mail an: denniegulbinski@gmail.com</p>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">8. Cookies und lokale Speicherung</h3>
-              <ul className="list-disc list-inside mt-1 ml-2">
-                <li>Die App nutzt kein Tracking</li>
-                <li>Es wird ausschließlich Local Storage verwendet (z. B. für Einstellungen und Anmeldedaten)</li>
-                <li>Es erfolgt keine Analyse oder Weitergabe dieser Daten</li>
-              </ul>
-            </section>
-            <section>
-              <h3 className="font-bold text-gray-800">9. Sicherheit der Verarbeitung</h3>
-              <p>Zum Schutz deiner Daten setzen wir technische und organisatorische Maßnahmen ein:</p>
-              <ul className="list-disc list-inside mt-1 ml-2">
-                <li>Verschlüsselte Übertragung (TLS)</li>
-                <li>Zugriffsrechte nach Rolle</li>
-                <li>Datensicherung</li>
-                <li>Regelmäßige Updates</li>
-              </ul>
-            </section>
-            <section className="pt-2 border-t border-gray-200 text-xs text-gray-500">
-              <p>Diese Datenschutzerklärung wird regelmäßig aktualisiert. Letzte Aktualisierung: Januar 2025</p>
-            </section>
-          </div>
+          <LegalPrivacyContent />
         </div>
       </div>
     );
   }
-
   // Neues Passwort setzen (nach Klick auf Reset-Link)
   if (authView === 'reset-password') {
     const handleSetNewPassword = async () => {
@@ -250,15 +157,18 @@ const LoginScreen = () => {
         alert('Die Passwörter stimmen nicht überein!');
         return;
       }
-      if (newPassword.length < 6) {
-        alert('Das Passwort muss mindestens 6 Zeichen lang sein.');
+      if (newPassword.length < minPasswordLength) {
+        alert(`Das Passwort muss mindestens ${minPasswordLength} Zeichen lang sein.`);
         return;
       }
       setNewPasswordLoading(true);
       try {
-        if (isSecureBackendApiEnabled()) {
+        if (USE_SECURE_API) {
           const params = new URLSearchParams(window.location.search);
-          const token = params.get('token') || window.location.hash?.match(/access_token=([^&]+)/)?.[1];
+          const token = params.get('password_reset_token') || params.get('token') || window.location.hash?.match(/access_token=([^&]+)/)?.[1];
+          if (!token) {
+            throw new Error('Der Passwort-Reset-Link ist unvollständig oder abgelaufen.');
+          }
           await secureAuthApi.confirmPasswordReset({ token, newPassword });
         } else {
           const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -286,7 +196,7 @@ const LoginScreen = () => {
               <Lock className="text-cyan-600" size={28} />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Neues Passwort setzen</h2>
-            <p className="text-gray-500 text-sm">Gib dein neues Passwort ein (mindestens 6 Zeichen).</p>
+            <p className="text-gray-500 text-sm">Gib dein neues Passwort ein (mindestens {minPasswordLength} Zeichen).</p>
           </div>
           <div className="space-y-4">
             <input
@@ -527,6 +437,12 @@ const LoginScreen = () => {
                 {codeStatus.reason || 'Ungültiger Einladungscode'}
               </div>
             )}
+            {codeStatus?.secureValidation && (
+              <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
+                <Shield className="inline mr-2" size={16} />
+                Der Einladungscode wird beim Absenden serverseitig geprüft.
+              </div>
+            )}
             {!codeStatus && (
               <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
                 <Shield className="inline mr-2" size={16} />
@@ -549,7 +465,7 @@ const LoginScreen = () => {
             />
             <input
               type="password"
-              placeholder="Passwort (mind. 6 Zeichen)"
+              placeholder={`Passwort (mind. ${minPasswordLength} Zeichen)`}
               value={registerData.password}
               onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -565,7 +481,7 @@ const LoginScreen = () => {
                 className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               />
               <p className="text-xs text-gray-500 mt-1">
-                <AlertTriangle className="inline" size={12} /> Deine Daten werden nach Ausbildungsende automatisch gelöscht.
+                <AlertTriangle className="inline" size={12} /> Das Datum dient der Zuordnung; konkrete Aufbewahrungs- und Löschfristen werden vom Betreiber festgelegt.
               </p>
             </div>
 

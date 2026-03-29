@@ -49,6 +49,7 @@ import {
   loadAppConfig as dsLoadAppConfig,
   loadGames as dsLoadGames,
   loadMessages as dsLoadMessages,
+  createChatMessage as dsCreateChatMessage,
   loadNotifications as dsLoadNotifications,
   sendNotification as dsSendNotification,
   markNotificationRead as dsMarkNotificationRead,
@@ -62,10 +63,14 @@ import {
   loadExams as dsLoadExams,
   loadFlashcards as dsLoadFlashcards,
   loadCustomQuestions as dsLoadCustomQuestions,
+  createQuestionSubmission as dsCreateQuestionSubmission,
+  approveQuestionSubmission as dsApproveQuestionSubmission,
   loadQuestionReports as dsLoadQuestionReports,
   approveUser as dsApproveUser,
   deleteUser as dsDeleteUser,
+  purgeUserData as dsPurgeUserData,
   changeUserRole as dsChangeUserRole,
+  updateUserPermission as dsUpdateUserPermission,
   loadSwimTrainingPlans as dsLoadSwimTrainingPlans,
   startTheoryExamSession as dsStartTheoryExamSession,
   saveTheoryExamAttempt as dsSaveTheoryExamAttempt,
@@ -119,7 +124,7 @@ import {
   loadSwimMonthlyResultEntries as dsLoadSwimMonthlyResults,
   upsertSwimMonthlyResultEntry as dsUpsertSwimMonthlyResult
 } from './lib/dataService';
-import { secureUsersApi, secureChatApi, secureQuestionWorkflowsApi, secureFlashcardsApi, secureContentApi, secureSchoolAttendanceApi, secureExamGradesApi, secureReportBooksApi, secureSwimSessionsApi, secureSwimTrainingPlansApi, secureDuelsApi, secureNotificationsApi, secureUserStatsApi } from './lib/secureApi';
+import { secureChatApi } from './lib/secureApi';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -2659,14 +2664,7 @@ export default function BaederApp() {
 
   const deleteUserData = async (userId, email, userName) => {
     try {
-      if (USE_SECURE_API) {
-        await secureUsersApi.deleteUser(userId);
-      } else {
-        await supabase.from('user_stats').delete().eq('user_id', userId);
-        await supabase.from('user_badges').delete().eq('user_name', userName);
-        await supabase.from('notifications').delete().eq('user_name', userName);
-        await supabase.from('profiles').delete().eq('id', userId);
-      }
+      await dsPurgeUserData(supabase, userId, userName);
 
       console.log(`Alle Daten für ${email} gelöscht`);
     } catch (error) {
@@ -2949,12 +2947,12 @@ export default function BaederApp() {
         });
         const mapped = (directMsgs || []).map(m => ({
           id: m.id,
-          sender: m.senderName || m.sender?.displayName || 'Unbekannt',
+          user: m.senderName || m.sender?.displayName || 'Unbekannt',
           text: m.content || m.text || '',
           time: new Date(m.createdAt || Date.now()).getTime(),
           avatar: m.senderAvatar || m.sender?.avatar || null,
           senderId: m.senderId || m.sender?.id || null,
-          senderRole: m.senderRole || m.sender?.role?.toLowerCase() || 'azubi',
+          senderRole: String(m.senderRole || m.sender?.role || 'azubi').toLowerCase(),
           scope: 'direct_staff',
           organizationId: m.organizationId || null,
           recipientId: m.recipientId || null
@@ -3414,18 +3412,7 @@ export default function BaederApp() {
 
   const togglePermission = async (userId, field, currentValue, labels) => {
     try {
-      if (USE_SECURE_API) {
-        await secureUsersApi.updatePermissions(userId, { [field]: !currentValue });
-      } else {
-        const supabaseField = field === 'canSignReports' ? 'can_sign_reports'
-          : field === 'canViewSchoolCards' ? 'can_view_school_cards'
-          : 'can_view_exam_grades';
-        const { error } = await supabase
-          .from('profiles')
-          .update({ [supabaseField]: !currentValue })
-          .eq('id', userId);
-        if (error) throw error;
-      }
+      await dsUpdateUserPermission(supabase, userId, field, !currentValue);
       loadData();
       showToast(!currentValue ? labels.granted : labels.revoked, 'success');
     } catch (error) {
@@ -3537,60 +3524,17 @@ export default function BaederApp() {
     }
 
     try {
-      let game;
-      if (USE_SECURE_API) {
-        game = await dsCreateDuel(supabase, {
-          player1: user.name, player2: opponent, difficulty: selectedDifficulty,
-          challengeTimeoutMinutes: timeoutMinutes, challengeExpiresAt,
-          opponentId: opponentId
-        }, user?.id);
-      } else {
-        let timerColumnsUnavailable = false;
-        const basePayload = {
-          player1: user.name, player2: opponent, difficulty: selectedDifficulty,
-          status: 'waiting', round: 0, player1_score: 0, player2_score: 0,
-          current_turn: user.name, rounds_data: []
-        };
-        const payloadWithTimer = {
-          ...basePayload,
-          challenge_timeout_minutes: timeoutMinutes,
-          challenge_expires_at: challengeExpiresAt
-        };
+      const game = await dsCreateDuel(supabase, {
+        player1: user.name,
+        player2: opponent,
+        difficulty: selectedDifficulty,
+        challengeTimeoutMinutes: timeoutMinutes,
+        challengeExpiresAt,
+        opponentId
+      }, user?.id);
 
-        let data = null;
-        let error = null;
-        const insertWithTimer = await supabase
-          .from('games').insert([payloadWithTimer]).select().single();
-        data = insertWithTimer.data;
-        error = insertWithTimer.error;
-
-        if (error && error.code === '42703' && (
-          String(error.message || '').includes('challenge_timeout_minutes')
-          || String(error.message || '').includes('challenge_expires_at')
-        )) {
-          timerColumnsUnavailable = true;
-          const legacyInsert = await supabase
-            .from('games').insert([basePayload]).select().single();
-          data = legacyInsert.data;
-          error = legacyInsert.error;
-        }
-        if (error) throw error;
-
-        game = {
-          id: data.id, player1: data.player1, player2: data.player2,
-          difficulty: data.difficulty, status: data.status,
-          categoryRound: 0, round: 0,
-          player1Score: data.player1_score, player2Score: data.player2_score,
-          currentTurn: data.current_turn, categoryRounds: [], questionHistory: [],
-          updatedAt: data.updated_at || new Date().toISOString(),
-          createdAt: data.created_at || new Date().toISOString(),
-          challengeTimeoutMinutes: timerColumnsUnavailable ? DEFAULT_CHALLENGE_TIMEOUT_MINUTES : timeoutMinutes,
-          challengeExpiresAt: timerColumnsUnavailable ? null : (data.challenge_expires_at || challengeExpiresAt)
-        };
-
-        if (timerColumnsUnavailable) {
-          showToast('Herausforderung gesendet. Timer-Spalten fehlen in Supabase, aktuell gilt 48h Standard.', 'warning');
-        }
+      if (game?.timerColumnsUnavailable) {
+        showToast('Herausforderung gesendet. Timer-Spalten fehlen in Supabase, aktuell gilt 48h Standard.', 'warning');
       }
 
       setActiveGames([...activeGames, game]);
@@ -3787,18 +3731,10 @@ export default function BaederApp() {
         return false;
       }
 
-      const { error } = await supabase
-        .from('user_stats')
-        .upsert([{
-          user_id: identity.userId,
-          wins: safeStats.wins,
-          losses: safeStats.losses,
-          draws: safeStats.draws,
-          category_stats: safeStats.categoryStats || {},
-          opponents: safeStats.opponents || {}
-        }], { onConflict: 'user_id' });
-
-      if (error) throw error;
+      await dsSaveUserStats(supabase, {
+        id: identity.userId,
+        name: identity.userName
+      }, safeStats);
       return true;
     } catch (error) {
       console.error('Save stats error:', error);
@@ -4496,11 +4432,11 @@ export default function BaederApp() {
         setActiveGames(prev => prev.filter(g => g.id !== game.id));
         return;
       }
-      await supabase.from('games').update({
+      await dsSaveDuelState(supabase, {
+        ...game,
         status: 'finished',
-        winner,
-        updated_at: new Date().toISOString()
-      }).eq('id', game.id);
+        winner
+      });
 
       const opponent = game.player1 === loser ? game.player2 : game.player1;
       const timeoutLabel = formatDurationMinutesCompact(game.challengeTimeoutMinutes || DEFAULT_CHALLENGE_TIMEOUT_MINUTES);
@@ -4807,44 +4743,16 @@ export default function BaederApp() {
     }
 
     try {
-      let msg;
-      if (USE_SECURE_API) {
-        const chatPayload = {
-          content: newMessage.trim(),
-          scope: activeScope.toUpperCase()
-        };
-        if (recipient?.id) chatPayload.recipientId = recipient.id;
-        const result = await secureChatApi.create(chatPayload);
-        msg = {
-          id: result.id,
-          sender: user.name,
-          text: result.content || newMessage.trim(),
-          time: new Date(result.createdAt || Date.now()).getTime(),
-          avatar: user.avatar || null,
-          senderId: user.id,
-          senderRole: user.role,
-          scope: activeScope,
-          organizationId: user.organizationId,
-          recipientId: recipient?.id || null
-        };
-      } else {
-        const { data, error } = await supabase
-          .from('messages')
-          .insert([{
-            user_name: user.name,
-            user_avatar: user.avatar || null,
-            user_role: user.role,
-            sender_id: user.id,
-            organization_id: user.organizationId,
-            chat_scope: activeScope,
-            recipient_id: recipient?.id || null,
-            content: newMessage.trim()
-          }])
-          .select('*')
-          .single();
-        if (error) throw error;
-        msg = normalizeChatMessageRow(data);
-      }
+      const msg = await dsCreateChatMessage(supabase, {
+        content: newMessage.trim(),
+        scope: activeScope,
+        userName: user.name,
+        avatar: user.avatar || null,
+        senderRole: user.role,
+        senderId: user.id,
+        organizationId: user.organizationId,
+        recipientId: recipient?.id || null
+      });
 
       setMessages((prev) => [...prev, msg]);
       setNewMessage('');
@@ -4879,39 +4787,13 @@ export default function BaederApp() {
     }
 
     try {
-      let q;
-      if (USE_SECURE_API) {
-        const result = await secureQuestionWorkflowsApi.createSubmission({
-          category: newQuestionCategory,
-          question: newQuestionText,
-          answers: newQuestionAnswers,
-          correct: newQuestionCorrect
-        });
-        q = {
-          id: result.id, text: result.question || newQuestionText,
-          category: result.category || newQuestionCategory,
-          answers: result.answers || newQuestionAnswers,
-          correct: result.correctIndex ?? result.correct ?? newQuestionCorrect,
-          submittedBy: user.name, approved: false,
-          time: new Date(result.createdAt || Date.now()).getTime()
-        };
-      } else {
-        const { data, error } = await supabase
-          .from('custom_questions')
-          .insert([{
-            category: newQuestionCategory, question: newQuestionText,
-            answers: newQuestionAnswers, correct: newQuestionCorrect,
-            created_by: user.name, approved: false
-          }])
-          .select().single();
-        if (error) throw error;
-        q = {
-          id: data.id, text: data.question, category: data.category,
-          answers: data.answers, correct: data.correct,
-          submittedBy: data.created_by, approved: data.approved,
-          time: new Date(data.created_at).getTime()
-        };
-      }
+      const q = await dsCreateQuestionSubmission(supabase, {
+        category: newQuestionCategory,
+        question: newQuestionText,
+        answers: newQuestionAnswers,
+        correct: newQuestionCorrect,
+        createdBy: user.name
+      });
 
       setSubmittedQuestions([...submittedQuestions, q]);
       setNewQuestionText('');
@@ -4925,15 +4807,7 @@ export default function BaederApp() {
 
   const approveQuestion = async (qId) => {
     try {
-      if (USE_SECURE_API) {
-        await secureQuestionWorkflowsApi.approveSubmission(qId);
-      } else {
-        const { error } = await supabase
-          .from('custom_questions')
-          .update({ approved: true })
-          .eq('id', qId);
-        if (error) throw error;
-      }
+      await dsApproveQuestionSubmission(supabase, qId);
       setSubmittedQuestions(submittedQuestions.map(sq => sq.id === qId ? { ...sq, approved: true } : sq));
     } catch (error) {
       console.error('Approve error:', error);
@@ -6207,12 +6081,7 @@ export default function BaederApp() {
     if (!hasContent) {
       if (existingDraft?.id) {
         try {
-          if (USE_SECURE_API) {
-            await dsDeleteBerichtsheftDraft(supabase, targetWeek);
-          } else {
-            const { error } = await supabase.from('berichtsheft').delete().eq('id', existingDraft.id);
-            if (error) throw error;
-          }
+          await dsDeleteBerichtsheftDraft(supabase, targetWeek, { draftId: existingDraft.id });
           removeBerichtsheftServerDraft(targetWeek);
         } catch (error) {
           disableBerichtsheftRemoteDrafts(error);
@@ -6243,20 +6112,10 @@ export default function BaederApp() {
     };
 
     try {
-      let savedRow = null;
-      if (USE_SECURE_API) {
-        savedRow = await dsUpsertBerichtsheftDraft(supabase, payload);
-      } else if (existingDraft?.id) {
-        const { data, error } = await supabase.from('berichtsheft')
-          .update(payload).eq('id', existingDraft.id).select('*').single();
-        if (error) throw error;
-        savedRow = data || null;
-      } else {
-        const { data, error } = await supabase.from('berichtsheft')
-          .insert(payload).select('*').single();
-        if (error) throw error;
-        savedRow = data || null;
-      }
+      const savedRow = await dsUpsertBerichtsheftDraft(supabase, {
+        ...payload,
+        existingDraftId: existingDraft?.id || undefined
+      });
       if (savedRow) upsertBerichtsheftServerDraft(savedRow);
     } catch (error) {
       disableBerichtsheftRemoteDrafts(error);
@@ -6287,12 +6146,7 @@ export default function BaederApp() {
     }
 
     try {
-      if (USE_SECURE_API) {
-        await dsDeleteBerichtsheftDraft(supabase, week);
-      } else {
-        const { error } = await supabase.from('berichtsheft').delete().eq('id', existingDraft.id);
-        if (error) throw error;
-      }
+      await dsDeleteBerichtsheftDraft(supabase, week, { draftId: existingDraft.id });
       removeBerichtsheftServerDraft(week);
     } catch (error) {
       disableBerichtsheftRemoteDrafts(error);
