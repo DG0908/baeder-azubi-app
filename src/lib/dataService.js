@@ -68,6 +68,43 @@ const normalizeSignatureField = (field) => {
   return normalized;
 };
 
+const mapChatMessageToFrontend = (message, fallback = {}) => ({
+  id: message?.id,
+  user: fallback.userName || message?.senderName || message?.user_name || message?.sender?.displayName || 'Unbekannt',
+  text: message?.content || message?.text || '',
+  time: new Date(message?.createdAt || message?.created_at || Date.now()).getTime(),
+  avatar: fallback.avatar ?? message?.senderAvatar ?? message?.user_avatar ?? message?.sender?.avatar ?? null,
+  senderId: fallback.senderId || message?.senderId || message?.sender_id || message?.sender?.id || null,
+  senderRole: String(
+    fallback.senderRole || message?.senderRole || message?.user_role || message?.sender?.role || 'azubi'
+  ).toLowerCase(),
+  scope: String(
+    fallback.scope || message?.scope || message?.chatScope || message?.chat_scope || 'public'
+  ).toLowerCase(),
+  organizationId: fallback.organizationId ?? message?.organizationId ?? message?.organization_id ?? null,
+  recipientId: fallback.recipientId ?? message?.recipientId ?? message?.recipient_id ?? null
+});
+
+const mapQuestionSubmissionToFrontend = (question, fallback = {}) => ({
+  id: question?.id,
+  text: question?.question || question?.text || fallback.question || '',
+  category: question?.category || fallback.category || '',
+  answers: Array.isArray(question?.answers)
+    ? question.answers
+    : (Array.isArray(fallback.answers) ? fallback.answers : []),
+  correct: question?.correctIndex ?? question?.correct ?? fallback.correct ?? 0,
+  submittedBy: question?.createdBy || question?.creator?.displayName || question?.created_by || fallback.createdBy || '',
+  approved: question?.approved ?? fallback.approved ?? false,
+  time: new Date(question?.createdAt || question?.created_at || Date.now()).getTime()
+});
+
+const mapPermissionFieldToProfileColumn = (field) => {
+  if (field === 'canSignReports') return 'can_sign_reports';
+  if (field === 'canViewSchoolCards') return 'can_view_school_cards';
+  if (field === 'canViewExamGrades') return 'can_view_exam_grades';
+  return field;
+};
+
 const mapSecureReportBookToFrontendEntry = (entry) => ({
   id: entry.id,
   user_name: entry.userName,
@@ -458,18 +495,6 @@ export const loadGames = async (supabase, limit = 200, currentUserId = null) => 
 
 export const loadMessages = async (supabase, normalizeFn, userDirectory, userRole) => {
   if (USE_SECURE_API) {
-    const mapMsg = (m) => ({
-      id: m.id,
-      sender: m.senderName || m.sender?.displayName || 'Unbekannt',
-      text: m.content || m.text || '',
-      time: new Date(m.createdAt || Date.now()).getTime(),
-      avatar: m.senderAvatar || m.sender?.avatar || null,
-      senderId: m.senderId || m.sender?.id || null,
-      senderRole: m.senderRole || m.sender?.role?.toLowerCase() || 'azubi',
-      scope: (m.scope || m.chatScope || 'public').toLowerCase(),
-      organizationId: m.organizationId || null,
-      recipientId: m.recipientId || null
-    });
     // Load room scopes in parallel (backend returns one scope at a time)
     // DIRECT_STAFF requires recipientId so it's loaded on-demand in the chat view
     // AZUBI_ROOM is only accessible by apprentices; staff/admin only see STAFF_ROOM
@@ -481,7 +506,7 @@ export const loadMessages = async (supabase, normalizeFn, userDirectory, userRol
     const allMessages = [];
     for (const result of results) {
       if (result.status === 'fulfilled' && Array.isArray(result.value)) {
-        allMessages.push(...result.value.map(mapMsg));
+        allMessages.push(...result.value.map((message) => mapChatMessageToFrontend(message)));
       }
     }
     return allMessages;
@@ -495,6 +520,49 @@ export const loadMessages = async (supabase, normalizeFn, userDirectory, userRol
 
   if (!data) return [];
   return data.map(row => normalizeFn(row, userDirectory));
+};
+
+export const createChatMessage = async (supabase, payload) => {
+  const messagePayload = {
+    content: payload?.content || '',
+    scope: String(payload?.scope || 'public').trim(),
+    userName: payload?.userName || 'Unbekannt',
+    avatar: payload?.avatar || null,
+    senderRole: payload?.senderRole || 'azubi',
+    senderId: payload?.senderId || null,
+    organizationId: payload?.organizationId || null,
+    recipientId: payload?.recipientId || null
+  };
+
+  if (USE_SECURE_API) {
+    const requestPayload = {
+      content: messagePayload.content,
+      scope: messagePayload.scope.toUpperCase()
+    };
+    if (messagePayload.recipientId) {
+      requestPayload.recipientId = messagePayload.recipientId;
+    }
+    const result = await secureChatApi.create(requestPayload);
+    return mapChatMessageToFrontend(result, messagePayload);
+  }
+
+  const { data, error } = await supabase
+    .from('messages')
+    .insert([{
+      user_name: messagePayload.userName,
+      user_avatar: messagePayload.avatar,
+      user_role: messagePayload.senderRole,
+      sender_id: messagePayload.senderId,
+      organization_id: messagePayload.organizationId,
+      chat_scope: messagePayload.scope,
+      recipient_id: messagePayload.recipientId,
+      content: messagePayload.content
+    }])
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return mapChatMessageToFrontend(data, messagePayload);
 };
 
 // ─── Notifications ───────────────────────────────────────────────────
@@ -774,14 +842,7 @@ export const loadFlashcards = async (supabase) => {
 export const loadCustomQuestions = async (supabase) => {
   if (USE_SECURE_API) {
     const data = await secureQuestionWorkflowsApi.listSubmissions();
-    return (data || []).map(q => ({
-      id: q.id, text: q.question || q.text,
-      category: q.category, answers: q.answers,
-      correct: q.correct ?? q.correctIndex,
-      submittedBy: q.createdBy || q.creator?.displayName || '',
-      approved: q.approved ?? false,
-      time: new Date(q.createdAt || Date.now()).getTime()
-    }));
+    return (data || []).map((question) => mapQuestionSubmissionToFrontend(question));
   }
 
   const { data } = await supabase
@@ -790,12 +851,47 @@ export const loadCustomQuestions = async (supabase) => {
     .order('created_at', { ascending: false })
     .limit(200);
 
-  return (data || []).map(q => ({
-    id: q.id, text: q.question, category: q.category,
-    answers: q.answers, correct: q.correct,
-    submittedBy: q.created_by, approved: q.approved,
-    time: new Date(q.created_at).getTime()
-  }));
+  return (data || []).map((question) => mapQuestionSubmissionToFrontend(question));
+};
+
+export const createQuestionSubmission = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureQuestionWorkflowsApi.createSubmission({
+      category: payload?.category,
+      question: payload?.question,
+      answers: payload?.answers,
+      correct: payload?.correct
+    });
+    return mapQuestionSubmissionToFrontend(result, payload);
+  }
+
+  const { data, error } = await supabase
+    .from('custom_questions')
+    .insert([{
+      category: payload?.category,
+      question: payload?.question,
+      answers: payload?.answers,
+      correct: payload?.correct,
+      created_by: payload?.createdBy,
+      approved: false
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return mapQuestionSubmissionToFrontend(data, payload);
+};
+
+export const approveQuestionSubmission = async (supabase, questionId) => {
+  if (USE_SECURE_API) {
+    return secureQuestionWorkflowsApi.approveSubmission(questionId);
+  }
+
+  const { error } = await supabase
+    .from('custom_questions')
+    .update({ approved: true })
+    .eq('id', questionId);
+  if (error) throw error;
 };
 
 export const loadQuestionReports = async (supabase) => {
@@ -898,6 +994,21 @@ export const deleteUser = async (supabase, email, allUsers) => {
   if (error) throw error;
 };
 
+export const purgeUserData = async (supabase, userId, userName) => {
+  if (USE_SECURE_API) {
+    return secureUsersApi.deleteUser(userId);
+  }
+
+  const results = await Promise.all([
+    supabase.from('user_stats').delete().eq('user_id', userId),
+    supabase.from('user_badges').delete().eq('user_name', userName),
+    supabase.from('notifications').delete().eq('user_name', userName),
+    supabase.from('profiles').delete().eq('id', userId)
+  ]);
+  const firstError = results.find((result) => result?.error)?.error;
+  if (firstError) throw firstError;
+};
+
 export const changeUserRole = async (supabase, email, newRole, allUsers) => {
   if (USE_SECURE_API) {
     const target = (allUsers || []).find(
@@ -914,6 +1025,19 @@ export const changeUserRole = async (supabase, email, newRole, allUsers) => {
     .from('profiles')
     .update({ role: newRole })
     .eq('email', String(email || '').trim().toLowerCase());
+  if (error) throw error;
+};
+
+export const updateUserPermission = async (supabase, userId, field, enabled) => {
+  if (USE_SECURE_API) {
+    return secureUsersApi.updatePermissions(userId, { [field]: enabled });
+  }
+
+  const profileColumn = mapPermissionFieldToProfileColumn(field);
+  const { error } = await supabase
+    .from('profiles')
+    .update({ [profileColumn]: enabled })
+    .eq('id', userId);
   if (error) throw error;
 };
 
@@ -1253,8 +1377,70 @@ export const createDuel = async (supabase, payload, currentUserId = null) => {
     });
     return mapDuelToGame(result, currentUserId);
   }
-  // Supabase path handled in App.jsx (complex fallback logic)
-  return null;
+
+  let timerColumnsUnavailable = false;
+  const basePayload = {
+    player1: payload.player1,
+    player2: payload.player2,
+    difficulty: payload.difficulty,
+    status: 'waiting',
+    round: 0,
+    player1_score: 0,
+    player2_score: 0,
+    current_turn: payload.player1,
+    rounds_data: []
+  };
+  const payloadWithTimer = {
+    ...basePayload,
+    challenge_timeout_minutes: payload.challengeTimeoutMinutes,
+    challenge_expires_at: payload.challengeExpiresAt
+  };
+
+  let data = null;
+  let error = null;
+  const insertWithTimer = await supabase
+    .from('games')
+    .insert([payloadWithTimer])
+    .select()
+    .single();
+  data = insertWithTimer.data;
+  error = insertWithTimer.error;
+
+  if (error && error.code === '42703' && (
+    String(error.message || '').includes('challenge_timeout_minutes')
+    || String(error.message || '').includes('challenge_expires_at')
+  )) {
+    timerColumnsUnavailable = true;
+    const legacyInsert = await supabase
+      .from('games')
+      .insert([basePayload])
+      .select()
+      .single();
+    data = legacyInsert.data;
+    error = legacyInsert.error;
+  }
+
+  if (error) throw error;
+
+  return {
+    id: data.id,
+    player1: data.player1,
+    player2: data.player2,
+    difficulty: data.difficulty,
+    status: data.status,
+    categoryRound: 0,
+    round: 0,
+    player1Score: data.player1_score,
+    player2Score: data.player2_score,
+    currentTurn: data.current_turn,
+    categoryRounds: [],
+    questionHistory: [],
+    updatedAt: data.updated_at || new Date().toISOString(),
+    createdAt: data.created_at || new Date().toISOString(),
+    challengeTimeoutMinutes: timerColumnsUnavailable ? (48 * 60) : payload.challengeTimeoutMinutes,
+    challengeExpiresAt: timerColumnsUnavailable ? null : (data.challenge_expires_at || payload.challengeExpiresAt || null),
+    timerColumnsUnavailable
+  };
 };
 
 export const acceptDuel = async (supabase, gameId, currentUserId = null) => {
@@ -1470,16 +1656,30 @@ export const upsertBerichtsheftDraft = async (supabase, payload) => {
     const result = await secureReportBooksApi.upsertDraft(toSecureReportBookPayload(payload));
     return mapSecureReportBookToFrontendEntry(result?.entry || result);
   }
-  // Supabase path handled in App.jsx (complex insert/update logic)
-  return null;
+
+  const existingDraftId = pickPayloadValue(payload, 'existingDraftId');
+  const { existingDraftId: _existingDraftId, ...draftPayload } = payload || {};
+  const query = existingDraftId
+    ? supabase.from('berichtsheft').update(draftPayload).eq('id', existingDraftId).select('*').single()
+    : supabase.from('berichtsheft').insert(draftPayload).select('*').single();
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || null;
 };
 
-export const deleteBerichtsheftDraftByWeek = async (supabase, weekStart) => {
+export const deleteBerichtsheftDraftByWeek = async (supabase, weekStart, options = {}) => {
   if (USE_SECURE_API) {
     return secureReportBooksApi.deleteDraftByWeek(weekStart);
   }
-  // Supabase path handled in App.jsx
-  return null;
+
+  let query = supabase.from('berichtsheft').delete();
+  if (options?.draftId) {
+    query = query.eq('id', options.draftId);
+  } else {
+    query = query.eq('week_start', weekStart).eq('status', 'draft');
+  }
+  const { error } = await query;
+  if (error) throw error;
 };
 
 export const loadBerichtsheftProfile = async (supabase) => {

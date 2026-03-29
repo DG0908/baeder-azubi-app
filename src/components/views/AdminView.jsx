@@ -35,7 +35,7 @@ const OrganizationManager = () => {
           organization_id: c.organizationId,
           organizations: c.organization ? { name: c.organization.name } : null,
           role: (c.role || '').toLowerCase(),
-          max_uses: c.maxUses, current_uses: c.currentUses || 0,
+          max_uses: c.maxUses, used_count: c.currentUses || 0,
           is_active: c.isActive ?? true,
           created_at: c.createdAt, expires_at: c.expiresAt
         })));
@@ -441,8 +441,7 @@ const UserOrgAssign = ({ userId, currentOrgId, onChanged }) => {
     setLoading(true);
     try {
       if (USE_SECURE_API) {
-        const { secureUsersApi } = await import('../../lib/secureApi');
-        await secureUsersApi.updateRole(userId, { organizationId: newOrgId || null });
+        await secureUsersApi.updateOrganization(userId, { organizationId: newOrgId || null });
       } else {
         const { error } = await supabase
           .from('profiles')
@@ -849,7 +848,6 @@ const AdminView = ({
                         if (confirm(`Account von ${acc.name} wirklich ablehnen und löschen?`)) {
                           try {
                             if (USE_SECURE_API && acc.id) {
-                              const { secureUsersApi } = await import('../../lib/secureApi');
                               await secureUsersApi.deleteUser(acc.id);
                             } else {
                               await supabase.from('profiles').delete().eq('email', acc.email);

@@ -27,6 +27,7 @@ const ProfileView = ({
   const { darkMode, showToast, playSound } = useApp();
 
   const [profileEditName, setProfileEditName] = useState('');
+  const [profileCurrentPassword, setProfileCurrentPassword] = useState('');
   const [profileEditPassword, setProfileEditPassword] = useState('');
   const [profileEditPasswordConfirm, setProfileEditPasswordConfirm] = useState('');
   const [profileEditCompany, setProfileEditCompany] = useState('');
@@ -233,8 +234,12 @@ const ProfileView = ({
   };
 
   const updateProfilePassword = async () => {
+    if (USE_SECURE_API && !profileCurrentPassword) {
+      showToast('Bitte gib dein aktuelles Passwort ein.', 'warning');
+      return;
+    }
     if (!profileEditPassword || !profileEditPasswordConfirm) {
-      showToast('Bitte beide Passwort-Felder ausfüllen.', 'warning');
+      showToast('Bitte alle Passwort-Felder ausfüllen.', 'warning');
       return;
     }
     if (profileEditPassword !== profileEditPasswordConfirm) {
@@ -248,12 +253,16 @@ const ProfileView = ({
     setProfileSaving(true);
     try {
       if (USE_SECURE_API) {
-        await secureAuthApi.changePassword({ newPassword: profileEditPassword });
+        await secureAuthApi.changePassword({
+          currentPassword: profileCurrentPassword,
+          newPassword: profileEditPassword
+        });
       } else {
         const { error } = await supabase.auth.updateUser({ password: profileEditPassword });
         if (error) throw error;
       }
       showToast('Passwort erfolgreich geändert!', 'success');
+      setProfileCurrentPassword('');
       setProfileEditPassword('');
       setProfileEditPasswordConfirm('');
     } catch (error) {
@@ -940,6 +949,21 @@ const ProfileView = ({
           Sicherheit
         </h3>
         <form onSubmit={(e) => { e.preventDefault(); updateProfilePassword(); }} className="space-y-4">
+          {USE_SECURE_API && (
+            <div>
+              <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Aktuelles Passwort
+              </label>
+              <input
+                type="password"
+                autoComplete="current-password"
+                placeholder="Aktuelles Passwort"
+                value={profileCurrentPassword}
+                onChange={(e) => setProfileCurrentPassword(e.target.value)}
+                className={`w-full px-4 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+              />
+            </div>
+          )}
           <div>
             <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Neues Passwort
@@ -986,7 +1010,7 @@ const ProfileView = ({
           </div>
           <button
             type="submit"
-            disabled={profileSaving || !profileEditPassword || !profileEditPasswordConfirm}
+            disabled={profileSaving || (USE_SECURE_API && !profileCurrentPassword) || !profileEditPassword || !profileEditPasswordConfirm}
             className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white text-sm font-bold rounded-lg transition-all"
           >
             {profileSaving ? 'Speichern...' : 'Passwort ändern'}
