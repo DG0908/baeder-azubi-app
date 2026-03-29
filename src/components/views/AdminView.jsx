@@ -507,11 +507,14 @@ const AdminView = ({
   updateThemeColor,
   saveAppConfig,
   resetAppConfig,
+  companies = [],
+  saveCompanies,
 }) => {
   const { darkMode, showToast } = useApp();
   const { user } = useAuth();
   const [repairingQuizStats, setRepairingQuizStats] = React.useState(false);
   const [lastQuizRepairResult, setLastQuizRepairResult] = React.useState(null);
+  const [newCompanyName, setNewCompanyName] = React.useState('');
   const [sendingTestPush, setSendingTestPush] = React.useState(false);
   const [lastTestPushResult, setLastTestPushResult] = React.useState(null);
   const [testPushTargetScope, setTestPushTargetScope] = React.useState('self');
@@ -1024,6 +1027,58 @@ const AdminView = ({
         {!canEditAppConfig && (
           <div className={`mb-4 rounded-lg border px-4 py-3 text-sm ${darkMode ? 'border-amber-600 bg-amber-900/30 text-amber-200' : 'border-amber-300 bg-amber-50 text-amber-800'}`}>
             Nur der Hauptadmin darf Navigation/Farben bearbeiten und speichern.
+          </div>
+        )}
+
+        {/* Betriebe verwalten */}
+        {canEditAppConfig && (
+          <div className={`mb-6 p-4 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} shadow-sm`}>
+            <h3 className={`font-bold text-base mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>🏢 Betriebe verwalten</h3>
+            <div className="space-y-2 mb-3">
+              {companies.map((c, idx) => (
+                <div key={idx} className={`flex items-center justify-between px-3 py-2 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                  <span className={`text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>{c}</span>
+                  <button
+                    onClick={() => {
+                      const updated = companies.filter((_, i) => i !== idx);
+                      saveCompanies(updated);
+                    }}
+                    className="text-red-400 hover:text-red-600 text-xs font-bold px-2 py-1 rounded"
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              ))}
+              {companies.length === 0 && (
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Noch keine Betriebe angelegt.</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newCompanyName}
+                onChange={(e) => setNewCompanyName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newCompanyName.trim()) {
+                    saveCompanies([...companies, newCompanyName.trim()]);
+                    setNewCompanyName('');
+                  }
+                }}
+                placeholder="Neuer Betrieb..."
+                className={`flex-1 px-3 py-2 rounded-lg text-sm border ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'}`}
+              />
+              <button
+                onClick={() => {
+                  if (newCompanyName.trim()) {
+                    saveCompanies([...companies, newCompanyName.trim()]);
+                    setNewCompanyName('');
+                  }
+                }}
+                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-bold rounded-lg"
+              >
+                Hinzufügen
+              </button>
+            </div>
           </div>
         )}
 

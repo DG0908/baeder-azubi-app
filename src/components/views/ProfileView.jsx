@@ -20,7 +20,8 @@ const ProfileView = ({
   pushDeviceState,
   enablePushNotifications,
   syncPushSubscription,
-  disablePushNotifications
+  disablePushNotifications,
+  companies = []
 }) => {
   const { user, setUser, handleLogout } = useAuth();
   const { darkMode, showToast, playSound } = useApp();
@@ -641,13 +642,26 @@ const ProfileView = ({
               </p>
             )}
             <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                placeholder={user.company || "z.B. Stadtbad München, Hallenbad Köln..."}
-                value={profileEditCompany}
-                onChange={(e) => setProfileEditCompany(e.target.value)}
-                className={`flex-1 px-4 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
-              />
+              {companies.length > 0 ? (
+                <select
+                  value={profileEditCompany || user.company || ''}
+                  onChange={(e) => setProfileEditCompany(e.target.value)}
+                  className={`flex-1 px-4 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+                >
+                  <option value="">-- Betrieb wählen --</option>
+                  {companies.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  placeholder={user.company || "z.B. Stadtbad München, Hallenbad Köln..."}
+                  value={profileEditCompany}
+                  onChange={(e) => setProfileEditCompany(e.target.value)}
+                  className={`flex-1 px-4 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
+                />
+              )}
               <button
                 onClick={updateProfileCompany}
                 disabled={profileSaving}
