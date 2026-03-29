@@ -4667,6 +4667,7 @@ export default function BaederApp() {
       }
 
       // Nur eigene Stats aktualisieren (RLS erlaubt nur eigene Stats)
+      let updatedH2h = { wins: 0, losses: 0, draws: 0 };
       try {
         const existingStats = await getUserStatsFromSupabase(user);
         let stats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
@@ -4724,12 +4725,15 @@ export default function BaederApp() {
             }
           };
         });
+
+        // H2H aus den aktualisierten Stats lesen (inkl. aktuelles Spiel)
+        updatedH2h = stats.opponents[opponent] || { wins: 0, losses: 0, draws: 0 };
       } catch (error) {
         console.error('Stats update error:', error);
       }
 
       // Ergebnis-Screen anzeigen statt sofort zurückzusetzen
-      const h2h = userStats?.opponents?.[opponentName] || { wins: 0, losses: 0, draws: 0 };
+      const h2h = updatedH2h;
 
       setDuelResult({
         player1: currentGame.player1,
