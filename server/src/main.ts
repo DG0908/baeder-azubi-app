@@ -16,6 +16,44 @@ async function bootstrap() {
     .map((value) => value.trim())
     .filter(Boolean);
 
+  const normalizeOrigin = (value: string) => String(value || '').trim().replace(/\/+$/, '');
+
+  const isAllowedOrigin = (origin: string | undefined) => {
+    if (!origin || corsOrigins.length === 0) {
+      return true;
+    }
+
+    const normalizedOrigin = normalizeOrigin(origin);
+
+    return corsOrigins.some((allowedOrigin) => {
+      const normalizedAllowedOrigin = normalizeOrigin(allowedOrigin);
+      if (!normalizedAllowedOrigin) {
+        return false;
+      }
+
+      if (normalizedAllowedOrigin === '*' || normalizedAllowedOrigin === normalizedOrigin) {
+        return true;
+      }
+
+      const wildcardMatch = normalizedAllowedOrigin.match(/^(https?):\/\/\*\.(.+)$/i);
+      if (!wildcardMatch) {
+        return false;
+      }
+
+      try {
+        const originUrl = new URL(normalizedOrigin);
+        const allowedProtocol = wildcardMatch[1].toLowerCase();
+        const allowedHostSuffix = wildcardMatch[2].toLowerCase();
+        const originProtocol = originUrl.protocol.replace(':', '').toLowerCase();
+        const originHost = originUrl.hostname.toLowerCase();
+
+        return originProtocol === allowedProtocol && originHost.endsWith(`.${allowedHostSuffix}`);
+      } catch {
+        return false;
+      }
+    });
+  };
+
   app.setGlobalPrefix('api');
   app.use(
     helmet({
@@ -49,7 +87,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors({
     origin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-      if (!origin || corsOrigins.length === 0 || corsOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }
