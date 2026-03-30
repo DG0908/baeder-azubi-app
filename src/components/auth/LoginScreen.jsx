@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
-import { secureAuthApi } from '../../lib/secureApi';
-import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
+import {
+  USE_SECURE_API,
+  previewInvitationCodeStatus as dsPreviewInvitationCodeStatus,
+  requestPasswordReset as dsRequestPasswordReset,
+  confirmPasswordReset as dsConfirmPasswordReset
+} from '../../lib/dataService';
 import { LegalImprintContent, LegalPrivacyContent } from '../legal/LegalContent';
-
-const USE_SECURE_API = isSecureBackendApiEnabled();
 
 const LoginScreen = () => {
   const {
@@ -52,29 +54,8 @@ const LoginScreen = () => {
 
     codeTimerRef.current = setTimeout(async () => {
       try {
-        const { data, error } = await supabase
-          .from('invitation_codes')
-          .select('role, is_active, used_count, max_uses, expires_at, organizations(name)')
-          .eq('code', code.toUpperCase())
-          .single();
-
-        if (error || !data) {
-          setCodeStatus({ valid: false });
-          return;
-        }
-
-        const expired = data.expires_at && new Date(data.expires_at) < new Date();
-        const maxReached = data.max_uses > 0 && data.used_count >= data.max_uses;
-
-        if (!data.is_active || expired || maxReached) {
-          setCodeStatus({ valid: false, reason: expired ? 'Code abgelaufen' : maxReached ? 'Code vollständig genutzt' : 'Code deaktiviert' });
-        } else {
-          setCodeStatus({
-            valid: true,
-            orgName: data.organizations?.name || 'Unbekannt',
-            role: data.role
-          });
-        }
+        const nextStatus = await dsPreviewInvitationCodeStatus(supabase, code);
+        setCodeStatus(nextStatus || { valid: false });
       } catch {
         setCodeStatus({ valid: false });
       }
@@ -90,14 +71,7 @@ const LoginScreen = () => {
     }
     setResetLoading(true);
     try {
-      if (USE_SECURE_API) {
-        await secureAuthApi.requestPasswordReset({ email: resetEmail.trim().toLowerCase() });
-      } else {
-        const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim().toLowerCase(), {
-          redirectTo: window.location.origin
-        });
-        if (error) throw error;
-      }
+      await dsRequestPasswordReset(supabase, resetEmail, { redirectTo: window.location.origin });
       setResetSent(true);
     } catch (error) {
       alert('Fehler: ' + error.message);
@@ -163,18 +137,9 @@ const LoginScreen = () => {
       }
       setNewPasswordLoading(true);
       try {
-        if (USE_SECURE_API) {
-          const params = new URLSearchParams(window.location.search);
-          const token = params.get('password_reset_token') || params.get('token') || window.location.hash?.match(/access_token=([^&]+)/)?.[1];
-          if (!token) {
-            throw new Error('Der Passwort-Reset-Link ist unvollständig oder abgelaufen.');
-          }
-          await secureAuthApi.confirmPasswordReset({ token, newPassword });
-        } else {
-          const { error } = await supabase.auth.updateUser({ password: newPassword });
-          if (error) throw error;
-          await supabase.auth.signOut();
-        }
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('password_reset_token') || params.get('token') || window.location.hash?.match(/access_token=([^&]+)/)?.[1];
+        await dsConfirmPasswordReset(supabase, { token, newPassword });
         alert('Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.');
         setNewPassword('');
         setNewPasswordConfirm('');
