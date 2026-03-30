@@ -49,6 +49,7 @@ import {
   loadAppConfig as dsLoadAppConfig,
   loadGames as dsLoadGames,
   loadMessages as dsLoadMessages,
+  loadDirectMessages as dsLoadDirectMessages,
   createChatMessage as dsCreateChatMessage,
   loadNotifications as dsLoadNotifications,
   sendNotification as dsSendNotification,
@@ -121,10 +122,14 @@ import {
   sendTestPushRemote as dsSendTestPush,
   getAuthorizedReviewers as dsGetAuthorizedReviewers,
   saveBadges as dsSaveBadges,
+  loadUserBadges as dsLoadUserBadges,
   loadSwimMonthlyResultEntries as dsLoadSwimMonthlyResults,
-  upsertSwimMonthlyResultEntry as dsUpsertSwimMonthlyResult
+  upsertSwimMonthlyResultEntry as dsUpsertSwimMonthlyResult,
+  loadBerichtsheftProfile as dsLoadBerichtsheftProfile,
+  resolveUserIdentity as dsResolveUserIdentity,
+  loadRetentionCandidates as dsLoadRetentionCandidates,
+  exportUserDataBundle as dsExportUserDataBundle
 } from './lib/dataService';
-import { secureChatApi } from './lib/secureApi';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -2014,14 +2019,10 @@ export default function BaederApp() {
       if (user.id && (!azubiProfile.vorname || !azubiProfile.nachname)) {
         (async () => {
           try {
-            const { data } = await supabase
-              .from('profiles')
-              .select('berichtsheft_profile')
-              .eq('id', user.id)
-              .single();
-            if (data?.berichtsheft_profile) {
-              setAzubiProfile(data.berichtsheft_profile);
-              localStorage.setItem('azubi_profile', JSON.stringify(data.berichtsheft_profile));
+            const profile = await dsLoadBerichtsheftProfile(supabase, user.id);
+            if (profile) {
+              setAzubiProfile(profile);
+              localStorage.setItem('azubi_profile', JSON.stringify(profile));
             }
           } catch (err) {
             console.warn('Azubi-Profil nachladen fehlgeschlagen:', err);
@@ -2616,12 +2617,9 @@ export default function BaederApp() {
 
   const checkDataRetention = async () => {
     try {
-      const { data: users, error } = await supabase
-        .from('profiles')
-        .select('id, name, email, role, training_end, last_login')
-        .in('role', ['azubi', 'trainer']);
+      const users = await dsLoadRetentionCandidates(supabase);
 
-      if (error || !users) {
+      if (!users || users.length === 0) {
         if (import.meta.env.DEV) console.log('No users found or Supabase error');
         return;
       }
@@ -2674,64 +2672,7 @@ export default function BaederApp() {
 
   const exportUserData = async (email, userName) => {
     try {
-      const exportData = {
-        exportDate: new Date().toISOString(),
-        user: userName,
-        email: email,
-        data: {}
-      };
-
-      // Get account data from Supabase
-      const { data: userData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', email)
-        .single();
-
-      if (userData) {
-        exportData.data.account = userData;
-
-        // Get stats
-        const { data: statsData } = await supabase
-          .from('user_stats')
-          .select('*')
-          .eq('user_id', userData.id)
-          .single();
-
-        if (statsData) exportData.data.stats = statsData;
-      }
-
-      // Get user games
-      const { data: gamesData } = await supabase
-        .from('games')
-        .select('*')
-        .or(`player1.eq.${userName},player2.eq.${userName}`);
-
-      exportData.data.games = gamesData || [];
-
-      // Get user exams
-      const { data: examsData } = await supabase
-        .from('exams')
-        .select('*')
-        .eq('created_by', userName);
-
-      exportData.data.exams = examsData || [];
-
-      // Get submitted questions
-      const { data: questionsData } = await supabase
-        .from('custom_questions')
-        .select('*')
-        .eq('created_by', userName);
-
-      exportData.data.questions = questionsData || [];
-
-      // Get badges
-      const { data: badgesData } = await supabase
-        .from('user_badges')
-        .select('*')
-        .eq('user_name', userName);
-
-      exportData.data.badges = badgesData || [];
+      const exportData = await dsExportUserDataBundle(supabase, email, userName);
 
       // Create download
       const dataStr = JSON.stringify(exportData, null, 2);
@@ -2940,23 +2881,10 @@ export default function BaederApp() {
     if (!USE_SECURE_API || chatScope !== 'direct_staff' || !selectedChatRecipientId) return;
     const loadDirectMessages = async () => {
       try {
-        const directMsgs = await secureChatApi.list({
-          scope: 'DIRECT_STAFF',
+        const mapped = await dsLoadDirectMessages(supabase, {
           recipientId: selectedChatRecipientId,
-          limit: 100
+          currentUserId: user?.id
         });
-        const mapped = (directMsgs || []).map(m => ({
-          id: m.id,
-          user: m.senderName || m.sender?.displayName || 'Unbekannt',
-          text: m.content || m.text || '',
-          time: new Date(m.createdAt || Date.now()).getTime(),
-          avatar: m.senderAvatar || m.sender?.avatar || null,
-          senderId: m.senderId || m.sender?.id || null,
-          senderRole: String(m.senderRole || m.sender?.role || 'azubi').toLowerCase(),
-          scope: 'direct_staff',
-          organizationId: m.organizationId || null,
-          recipientId: m.recipientId || null
-        }));
         setMessages(prev => {
           // Remove old direct_staff messages for this recipient, add new ones
           const withoutOldDirect = prev.filter(msg =>
@@ -3254,31 +3182,7 @@ export default function BaederApp() {
 
       // Load user badges from Supabase
       if (user?.id) {
-        // Versuche zuerst nach user_id zu suchen, dann nach user_name (Abwärtskompatibilität)
-        let badgesData = null;
-        const { data: byId } = await supabase
-          .from('user_badges')
-          .select('badge_id, earned_at')
-          .eq('user_id', user.id);
-
-        if (byId && byId.length > 0) {
-          badgesData = byId;
-        } else if (user.name) {
-          // Fallback für alte Einträge ohne user_id
-          const { data: byName } = await supabase
-            .from('user_badges')
-            .select('badge_id, earned_at')
-            .eq('user_name', user.name);
-          badgesData = byName;
-        }
-
-        if (badgesData) {
-          const badges = badgesData.map(b => ({
-            id: b.badge_id,
-            earnedAt: new Date(b.earned_at).getTime()
-          }));
-          setUserBadges(badges);
-        }
+        setUserBadges(await dsLoadUserBadges(supabase, user));
       }
     } catch (error) {
       console.log('Loading data - some features may not work:', error.message);
@@ -3693,31 +3597,17 @@ export default function BaederApp() {
     const userName = String(userInput || '').trim();
     if (!userName) return null;
 
+    const identity = await dsResolveUserIdentity(supabase, userName);
+    if (identity) {
+      return identity;
+    }
+
     if (USE_SECURE_API) {
-      // In secure mode, try to find user in allUsers state
       const match = allUsers.find(u => String(u.name || '').toLowerCase() === userName.toLowerCase());
       return match ? { userId: match.id, userName: match.name } : null;
     }
 
-    const { data: matchingProfiles, error } = await supabase
-      .from('profiles')
-      .select('id, name')
-      .ilike('name', userName)
-      .limit(2);
-
-    if (error) throw error;
-
-    if (!Array.isArray(matchingProfiles) || matchingProfiles.length !== 1) {
-      if (Array.isArray(matchingProfiles) && matchingProfiles.length > 1) {
-        console.warn(`Mehrdeutiger Stats-Lookup für Profilname "${userName}"`);
-      }
-      return null;
-    }
-
-    return {
-      userId: matchingProfiles[0].id,
-      userName: matchingProfiles[0].name || userName
-    };
+    return null;
   };
 
   // Helper function to save user stats
@@ -3747,21 +3637,13 @@ export default function BaederApp() {
   // Helper function to get user stats
   const getUserStatsFromSupabase = async (userInput) => {
     try {
-      if (USE_SECURE_API) {
-        const data = await dsGetUserStats(supabase, userInput);
-        return data ? buildUserStatsFromRow(data) : null;
-      }
       const identity = await resolveUserStatsIdentity(userInput);
       if (!identity?.userId) return null;
-
-      const { data, error } = await supabase
-        .from('user_stats')
-        .select('*')
-        .eq('user_id', identity.userId)
-        .single();
-
-      if (error) return null;
-
+      const data = await dsGetUserStats(supabase, {
+        id: identity.userId,
+        name: identity.userName
+      });
+      if (!data) return null;
       return buildUserStatsFromRow(data);
     } catch (error) {
       console.error('Get stats error:', error);
@@ -5985,17 +5867,8 @@ export default function BaederApp() {
     }
 
     try {
-      let data;
-      if (USE_SECURE_API) {
-        const entries = await dsLoadBerichtsheftEntries(supabase, user.name);
-        data = entries.filter(e => e.status === 'draft');
-      } else {
-        const result = await supabase
-          .from('berichtsheft').select('*').eq('user_name', user.name)
-          .eq('status', 'draft').order('updated_at', { ascending: false });
-        if (result.error) throw result.error;
-        data = result.data;
-      }
+      const entries = await dsLoadBerichtsheftEntries(supabase, user.name);
+      const data = entries.filter((entry) => entry.status === 'draft');
 
       const map = {};
       (Array.isArray(data) ? data : []).forEach((row) => {
@@ -6026,19 +5899,13 @@ export default function BaederApp() {
     if (cached?.id) return cached;
 
     try {
-      let row = null;
-      if (USE_SECURE_API) {
-        const entries = await dsLoadBerichtsheftEntries(supabase, user.name);
-        const drafts = entries.filter(e => e.status === 'draft' && String(e.week_start || '').trim() === week);
-        row = drafts.length > 0 ? drafts[0] : null;
-      } else {
-        const { data, error } = await supabase
-          .from('berichtsheft').select('*').eq('user_name', user.name)
-          .eq('week_start', week).eq('status', 'draft')
-          .order('updated_at', { ascending: false }).limit(1);
-        if (error) throw error;
-        row = Array.isArray(data) && data.length > 0 ? data[0] : null;
-      }
+      const entries = await dsLoadBerichtsheftEntries(supabase, user.name);
+      const row = entries
+        .filter((entry) => entry.status === 'draft' && String(entry.week_start || '').trim() === week)
+        .reduce((latest, entry) => {
+          if (!latest) return entry;
+          return toTimestampMs(entry.updated_at) >= toTimestampMs(latest.updated_at) ? entry : latest;
+        }, null);
       if (row) upsertBerichtsheftServerDraft(row);
       return row;
     } catch (error) {

@@ -1,6 +1,6 @@
 # Repo Status
 
-Stand: 2026-03-29
+Stand: 2026-03-30
 
 ## Zweck
 
@@ -16,9 +16,9 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 ## Aktueller Fokus
 
 - NestJS-Backend ist live auf `https://api.smartbaden.de`
-- letzte produktiv kritische Legacy-Fallbacks im Frontend entfernen
-- `src/App.jsx` weiter von direkten Supabase-Pfaden auf `secureApi.js` und `dataService.js` ziehen
-- rechtliche Texte, Datenschutz-Hinweise und Auth-Flows an den echten Systemstand angleichen
+- Frontend-Adapter-Migration praktisch abschliessen und Kernflows jetzt real testen
+- Commit + Frontend-Deploy fuer den bereinigten Auth-/App-/Login-Stand
+- rechtliche Texte, Datenschutz-Hinweise und Go-Live-Nachweise an den echten Systemstand angleichen
 
 ## Was bereits vorliegt
 
@@ -38,60 +38,51 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 
 ## Tatsaechlicher Code-Stand dieses Branches
 
-- `src/supabase.js` ist jetzt build-stabiler und erzeugt ohne Credentials keinen erzwungenen Client mehr.
-- `src/context/AuthContext.jsx` hat Dual-Mode fuer Login, Logout und Session-Pruefung.
-- `src/context/AuthContext.jsx` nutzt im Secure-Modus jetzt auch die Backend-Registrierung statt direktem Supabase-Sign-up.
-- `src/lib/dataService.js` ist die neue Adapter-Schicht fuer Supabase oder NestJS.
-- `src/components/auth/LoginScreen.jsx` validiert Einladungscodes im Secure-Modus nicht mehr direkt gegen Supabase und nutzt den korrekten `password_reset_token` fuer Backend-Reset-Links.
+- `src/supabase.js` ist build-stabiler und erzeugt ohne Credentials keinen erzwungenen Client mehr.
+- `src/lib/dataService.js` ist jetzt auch fuer Auth-, Session-, Register-, Login-, Logout- und Passwort-Reset-Flows die gemeinsame Dual-Mode-Schicht.
+- `src/context/AuthContext.jsx` spricht fuer Session-Restore, Register, Login und Logout nur noch den Adapter und raeumt lokale Session-/Profilreste konsistenter auf.
+- `src/components/auth/LoginScreen.jsx` spricht fuer Einladungscode-Vorschau und Passwort-Reset nur noch den Adapter und kennt keine direkten `supabase.auth`- oder `secureAuthApi`-Aufrufe mehr.
 - `src/components/views/ProfileView.jsx` verlangt im Secure-Modus jetzt das aktuelle Passwort fuer Passwortwechsel.
 - `src/components/legal/LegalContent.jsx` ist die gemeinsame Quelle fuer Impressum und Datenschutztexte; Login- und Profilpfade verwenden jetzt dieselbe Textbasis.
-- `src/App.jsx` nutzt bereits Dual-Mode fuer mehrere Kernpfade:
-  - Daten laden
-  - Notifications
-  - UserStats-Schreibpfade
-  - AppConfig
-  - Teile der Exam-Historie
-  - Duel-Erstellung und Duel-State-Speicherung
-  - Chat-Nachricht senden
-  - Fragen einreichen/freigeben
-  - Berechtigungs-Toggles
-  - Berichtsheft-Remote-Drafts
-  - Retention-Loeschpfad fuer Nutzer
-- `src/lib/dataService.js` kapselt jetzt auch die letzten produktiven Schreibpfade aus `src/App.jsx`, sodass dort keine direkten `supabase.from(...).insert/update/delete/upsert`-Aufrufe mehr uebrig sind.
+- `src/App.jsx` spricht fuer die produktiven Kernpfade nur noch ueber `dataService.js`, inklusive:
+  - Staff-Direct-Chat
+  - User-Badges
+  - Berichtsheft-Profil und Berichtsheft-Drafts
+  - Retention-Check und Datenexport
+  - Duel-Erstellung/-State, Chat-Senden, Fragen einreichen/freigeben, Berechtigungs-Toggles
+- ausserhalb von `src/lib/dataService.js`, `src/lib/secureApi.js` und `src/lib/pushNotifications.js` finde ich im Frontend aktuell keine direkten `supabase.from(...)`, `supabase.auth...` oder `secure*Api`-Zugriffe mehr.
 - `src/components/views/AdminView.jsx` nutzt im Secure-Modus fuer die Betriebszuweisung jetzt den richtigen Organization-Endpoint; die Code-Nutzungsanzeige ist wieder konsistent.
-- Letzter Commit `0035c51` korrigiert das Duel-/Quiz-Mapping fuer die NestJS-API.
 - `server/src/modules/auth/auth.service.ts` unterstuetzt bcrypt-Fallback fuer migrierte Supabase-Passwoerter und rehashed bei erfolgreichem Login auf Argon2.
 
-## Noch nicht fertig migriert
+## Noch nicht fertig
 
-- in `src/App.jsx` weiterhin viele direkte oder Supabase-nahe Pfade, vor allem:
-  - Quiz-Spiel-Funktionen
-  - einzelne Berichtsheft-Lese-/Fallback-Pfade
-  - Kontrollkarten und Klausurnoten
-  - Schwimm-Funktionen
-- weiterhin eigene Supabase-Imports in:
-  - `src/components/views/AdminView.jsx`
-  - `src/components/views/CollectionView.jsx`
-  - `src/components/views/FlashcardsView.jsx`
-  - `src/components/views/ForumView.jsx`
-  - `src/components/views/ProfileView.jsx` (Legacy-Fallback noch vorhanden)
+- praktische Smoke-Tests fuer die kritischen Auth-/Kernflows fehlen noch
+- Commit, Push und Frontend-Deploy fuer den aktuellen Adapter-Stand fehlen noch
+- rechtliche und betriebliche Go-Live-Nachweise sind weiter offen
+- automatisierte Tests fuer Auth, Approval, Chat-Scope und Duel-Abschluss fehlen weiterhin
 
 ## Naechster konkreter Schritt
 
-Phase 3 fortsetzen:
-
-1. Quiz-Spiel-Funktionen in `src/App.jsx` fertig migrieren
-2. restliche Berichtsheft-Lese-/Review-Pfade migrieren
-3. Kontrollkarten und Klausurnoten migrieren
-4. Schwimm-Funktionen migrieren
-5. Legacy-Imports in Einzelviews weiter abbauen
-6. rechtliche Texte spaeter konfigurierbar pro Betreiber/Instanz machen
+1. kritische Flows praktisch testen:
+   - Registrierung
+   - Login
+   - Passwort-Reset
+   - Kontoloeschung
+   - Admin-Loeschung
+   - Duel-Ergebnis-Screen
+   - Berichtsheft-Drafts
+2. danach Commit + Push + Frontend-Deploy
+3. anschliessend Go-Live-Block:
+   - AVV / TOM / Incident-Runbook
+   - Restore-Drill
+   - formale Loesch-/Auskunftsprozesse
+   - Preisblatt / Vertrag / SLA
 
 ## Offene Risiken
 
-- viele Supabase-Referenzen im Frontend noch nicht hinter sauberem Dual-Mode
-- SMTP noch nicht produktiv konfiguriert, Passwort-Reset-Mailfluss daher noch fraglich
-- Push-Subscriptions und Push-Auslieferung laut letzter Handoff noch teils am Legacy-Pfad
+- kritische Kernflows sind build-gruen, aber noch nicht praktisch fuer diesen Adapter-Stand durchgetestet
+- SMTP noch nicht produktiv konfiguriert, Passwort-Reset-Mailfluss daher weiter fraglich
+- Push-Subscriptions und Push-Auslieferung muessen im echten Zielbetrieb weiter praktisch verifiziert werden
 - Datenmigration Supabase -> NestJS-DB ist noch nicht praktisch abgeschlossen
 - Restore-Drill, formale Loesch-/Auskunftsprozesse und externer Security-Nachweis sind weiter offen
 - `server/scripts/reset-marcel-pw.js` ist ein temporaeres Hilfsskript mit festem Passwort und echter E-Mail-Adresse und sollte vor Produktion entfernt oder ersetzt werden

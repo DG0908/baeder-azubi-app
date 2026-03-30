@@ -11,7 +11,7 @@
  * imports will get their own adapters later.
  */
 
-import { isSecureBackendApiEnabled } from './secureApiClient';
+import { getApiAccessToken, isSecureBackendApiEnabled } from './secureApiClient';
 import {
   secureAuthApi,
   secureUsersApi,
@@ -35,6 +35,8 @@ import {
   mapBackendUserToFrontendUser,
   mapFrontendRoleToBackendRole
 } from './secureApi';
+import { PERMISSIONS } from '../data/constants';
+import { triggerWebPushNotification } from './pushNotifications';
 
 const USE_SECURE_API = isSecureBackendApiEnabled();
 
@@ -49,7 +51,161 @@ const safe = async (fn, fallback) => {
   }
 };
 
+const createAuthFlowError = (code, message) => {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+};
+
 const isPlainObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const withPermissions = (frontendUser) => {
+  if (!frontendUser) return null;
+  return {
+    ...frontendUser,
+    permissions: PERMISSIONS[frontendUser.role] || PERMISSIONS.azubi
+  };
+};
+
+const buildLegacyAuthUser = (userId, profile, organizationName = null) => withPermissions({
+  id: userId,
+  name: profile?.name || '',
+  email: profile?.email || '',
+  role: profile?.role || 'azubi',
+  approved: Boolean(profile?.approved),
+  status: profile?.approved ? 'APPROVED' : 'PENDING',
+  isOwner: Boolean(profile?.is_owner),
+  is_owner: Boolean(profile?.is_owner),
+  avatar: profile?.avatar || null,
+  company: profile?.company || null,
+  birthDate: profile?.birth_date || null,
+  birth_date: profile?.birth_date || null,
+  organizationId: profile?.organization_id || null,
+  organization_id: profile?.organization_id || null,
+  organizationName: organizationName || null,
+  trainingEnd: profile?.training_end || null,
+  training_end: profile?.training_end || null,
+  canViewSchoolCards: Boolean(profile?.can_view_school_cards),
+  can_view_school_cards: Boolean(profile?.can_view_school_cards),
+  canViewExamGrades: Boolean(profile?.can_view_exam_grades),
+  can_view_exam_grades: Boolean(profile?.can_view_exam_grades),
+  canSignReports: Boolean(profile?.can_sign_reports),
+  can_sign_reports: Boolean(profile?.can_sign_reports),
+  berichtsheft_profile: profile?.berichtsheft_profile || null
+});
+
+const loadLegacyOrganizationName = async (supabase, organizationId) => {
+  if (!organizationId) return null;
+
+  const { data } = await supabase
+    .from('organizations')
+    .select('name')
+    .eq('id', organizationId)
+    .single();
+
+  return data?.name || null;
+};
+
+const loadLegacyAuthState = async (supabase, userId) => {
+  if (!userId) {
+    return { profile: null, user: null, azubiProfile: null };
+  }
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+
+  if (error || !profile) {
+    return { profile: null, user: null, azubiProfile: null };
+  }
+
+  const organizationName = await loadLegacyOrganizationName(supabase, profile.organization_id);
+  return {
+    profile,
+    user: buildLegacyAuthUser(userId, profile, organizationName),
+    azubiProfile: profile.berichtsheft_profile || null
+  };
+};
+
+const ensureLegacyUserStatsRow = async (supabase, userId) => {
+  if (!userId) return;
+
+  const { data: existingStats } = await supabase
+    .from('user_stats')
+    .select('user_id')
+    .eq('user_id', userId)
+    .single();
+
+  if (existingStats) return;
+
+  await supabase
+    .from('user_stats')
+    .insert([{
+      user_id: userId,
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      category_stats: {},
+      opponents: {}
+    }]);
+};
+
+const notifyAdminsAboutPendingRegistration = async (supabase, { name, email, role }) => {
+  try {
+    const { data: admins, error: adminsError } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('role', 'admin')
+      .eq('approved', true);
+
+    if (adminsError) throw adminsError;
+
+    const adminNames = [...new Set(
+      (admins || [])
+        .map((admin) => String(admin?.name || '').trim())
+        .filter(Boolean)
+    )];
+
+    if (!adminNames.length) return;
+
+    const title = '🆕 Neue Registrierung';
+    const message = `${name} (${email}) hat sich als ${role} registriert und wartet auf Freischaltung.`;
+
+    const rows = adminNames.map((adminName) => ({
+      user_name: adminName,
+      title,
+      message,
+      type: 'user_approval',
+      read: false
+    }));
+
+    const { data: inserted, error: insertError } = await supabase
+      .from('notifications')
+      .insert(rows)
+      .select('id,user_name');
+
+    if (insertError) throw insertError;
+
+    for (const notification of inserted || []) {
+      try {
+        await triggerWebPushNotification({
+          supabase,
+          userName: notification.user_name,
+          title,
+          message,
+          type: 'user_approval',
+          notificationId: notification.id
+        });
+      } catch (pushError) {
+        console.warn('Registration push dispatch failed:', pushError);
+      }
+    }
+  } catch (error) {
+    console.warn('Admin notification for registration failed:', error);
+  }
+};
 
 const pickPayloadValue = (payload, ...keys) => {
   if (!isPlainObject(payload)) return undefined;
@@ -464,6 +620,320 @@ export const changeMyPassword = async (supabase, payload) => {
   if (error) throw error;
 };
 
+export const previewInvitationCodeStatus = async (supabase, invitationCode) => {
+  const code = String(invitationCode || '').trim().toUpperCase();
+  if (!code || code.length < 4) return null;
+
+  if (USE_SECURE_API) {
+    return { secureValidation: true };
+  }
+
+  const { data, error } = await supabase
+    .from('invitation_codes')
+    .select('role, is_active, used_count, max_uses, expires_at, organizations(name)')
+    .eq('code', code)
+    .single();
+
+  if (error || !data) {
+    return { valid: false };
+  }
+
+  const expired = data.expires_at && new Date(data.expires_at) < new Date();
+  const maxReached = Number(data.max_uses || 0) > 0 && Number(data.used_count || 0) >= Number(data.max_uses || 0);
+
+  if (!data.is_active || expired || maxReached) {
+    return {
+      valid: false,
+      reason: expired ? 'Code abgelaufen' : maxReached ? 'Code vollstÃ¤ndig genutzt' : 'Code deaktiviert'
+    };
+  }
+
+  return {
+    valid: true,
+    orgName: data.organizations?.name || 'Unbekannt',
+    role: data.role
+  };
+};
+
+export const requestPasswordReset = async (supabase, email, options = {}) => {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (USE_SECURE_API) {
+    return secureAuthApi.requestPasswordReset({ email: normalizedEmail });
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+    redirectTo: options?.redirectTo || window.location.origin
+  });
+  if (error) throw error;
+};
+
+export const confirmPasswordReset = async (supabase, payload = {}) => {
+  if (USE_SECURE_API) {
+    const token = payload?.token || null;
+    if (!token) {
+      throw new Error('Der Passwort-Reset-Link ist unvollstÃ¤ndig oder abgelaufen.');
+    }
+    return secureAuthApi.confirmPasswordReset({
+      token,
+      newPassword: payload?.newPassword || ''
+    });
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: payload?.newPassword || '' });
+  if (error) throw error;
+  await supabase.auth.signOut();
+};
+
+export const loadCurrentAuthSession = async (supabase) => {
+  if (USE_SECURE_API) {
+    let backendUser = null;
+
+    if (getApiAccessToken()) {
+      try {
+        backendUser = await secureAuthApi.me();
+      } catch {
+        backendUser = null;
+      }
+    }
+
+    if (!backendUser) {
+      try {
+        const refreshResult = await secureAuthApi.refreshSession();
+        backendUser = refreshResult?.user || null;
+      } catch {
+        backendUser = null;
+      }
+    }
+
+    const user = withPermissions(mapBackendUserToFrontendUser(backendUser));
+    return {
+      user,
+      azubiProfile: user?.berichtsheft_profile || null
+    };
+  }
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user?.id) {
+    return { user: null, azubiProfile: null };
+  }
+
+  const legacyState = await loadLegacyAuthState(supabase, session.user.id);
+  if (!legacyState.profile) {
+    await supabase.auth.signOut();
+    return { user: null, azubiProfile: null, reason: 'missing_profile' };
+  }
+
+  if (!legacyState.profile.approved) {
+    await supabase.auth.signOut();
+    return { user: null, azubiProfile: null, reason: 'not_approved' };
+  }
+
+  return {
+    user: legacyState.user,
+    azubiProfile: legacyState.azubiProfile
+  };
+};
+
+export const subscribeAuthStateChanges = (supabase, onEvent) => {
+  if (USE_SECURE_API || !supabase?.auth?.onAuthStateChange) {
+    return () => {};
+  }
+
+  const { data: { subscription } = {} } = supabase.auth.onAuthStateChange(async (event, session) => {
+    await onEvent?.(event, session);
+  });
+
+  return () => subscription?.unsubscribe?.();
+};
+
+export const registerAuthAccount = async (supabase, payload = {}) => {
+  const trimmedEmail = String(payload?.email || '').trim().toLowerCase();
+  const trimmedName = String(payload?.name || payload?.displayName || '').trim();
+  const trimmedCode = String(payload?.invitationCode || '').trim().toUpperCase();
+  const trainingEnd = payload?.trainingEnd || null;
+  const password = payload?.password || '';
+
+  if (USE_SECURE_API) {
+    await secureAuthApi.register({
+      email: trimmedEmail,
+      displayName: trimmedName,
+      password,
+      invitationCode: trimmedCode,
+      ...(trainingEnd ? { trainingEnd } : {})
+    });
+
+    return {
+      email: trimmedEmail,
+      organizationName: null,
+      assignedRole: payload?.role || 'azubi',
+      emailConfirmRequired: false
+    };
+  }
+
+  const { data: codeResult, error: codeError } = await supabase
+    .rpc('use_invitation_code', { p_code: trimmedCode });
+
+  if (codeError) {
+    throw createAuthFlowError('invalid_invitation', 'UngÃ¼ltiger oder abgelaufener Einladungscode!');
+  }
+
+  const invitation = codeResult?.[0];
+  if (!invitation) {
+    throw createAuthFlowError('invalid_invitation', 'UngÃ¼ltiger oder abgelaufener Einladungscode!');
+  }
+
+  const assignedRole = invitation.assigned_role || 'azubi';
+  const organizationId = invitation.org_id || null;
+
+  const { data, error } = await supabase.auth.signUp({
+    email: trimmedEmail,
+    password,
+    options: {
+      data: {
+        name: trimmedName,
+        role: assignedRole,
+        training_end: trainingEnd
+      }
+    }
+  });
+
+  if (error) {
+    if (/already registered/i.test(error.message || '')) {
+      throw createAuthFlowError('already_registered', 'Diese E-Mail ist bereits registriert!');
+    }
+    throw error;
+  }
+
+  if (import.meta.env.DEV) console.log('User created via Supabase Auth');
+
+  if (data?.user) {
+    try {
+      const { error: rpcError } = await supabase.rpc('create_user_profile', {
+        user_id: data.user.id,
+        user_name: trimmedName,
+        user_email: trimmedEmail,
+        user_role: assignedRole,
+        user_training_end: trainingEnd
+      });
+
+      if (rpcError) {
+        console.warn('RPC Profil-Erstellung Info:', rpcError.message);
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: data.user.id,
+            name: trimmedName,
+            email: trimmedEmail,
+            role: assignedRole,
+            training_end: trainingEnd,
+            approved: false,
+            organization_id: organizationId
+          }, { onConflict: 'id' });
+
+        if (profileError) {
+          console.warn('Profil-Fallback Info:', profileError.message);
+        }
+      } else if (import.meta.env.DEV) {
+        console.log('Profil erfolgreich via RPC erstellt');
+      }
+
+      await supabase
+        .from('profiles')
+        .update({ organization_id: organizationId })
+        .eq('id', data.user.id);
+    } catch (profileError) {
+      console.warn('Profil-Erstellung fehlgeschlagen:', profileError);
+    }
+
+    await notifyAdminsAboutPendingRegistration(supabase, {
+      name: trimmedName,
+      email: trimmedEmail,
+      role: assignedRole
+    });
+  }
+
+  await supabase.auth.signOut();
+
+  return {
+    email: trimmedEmail,
+    organizationName: invitation.org_name || null,
+    assignedRole,
+    emailConfirmRequired: Boolean(data?.user && !data?.session)
+  };
+};
+
+export const loginAuthAccount = async (supabase, payload = {}) => {
+  const email = String(payload?.email || '').trim();
+  const password = payload?.password || '';
+
+  if (USE_SECURE_API) {
+    const result = await secureAuthApi.login({ email, password });
+    const backendUser = result?.user || (await secureAuthApi.me());
+    const user = withPermissions(mapBackendUserToFrontendUser(backendUser));
+
+    if (!user?.approved) {
+      await secureAuthApi.logout();
+      throw createAuthFlowError('not_approved', 'Dein Account wurde noch nicht freigeschaltet.');
+    }
+
+    return {
+      user,
+      azubiProfile: user?.berichtsheft_profile || null
+    };
+  }
+
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (authError) {
+    if (/Invalid login/i.test(authError.message || '')) {
+      throw createAuthFlowError('invalid_login', 'E-Mail oder Passwort falsch!');
+    }
+    if (/Email not confirmed/i.test(authError.message || '')) {
+      throw createAuthFlowError('email_not_confirmed', 'Bitte bestÃ¤tige zuerst deine E-Mail-Adresse.');
+    }
+    throw authError;
+  }
+
+  const legacyState = await loadLegacyAuthState(supabase, authData?.user?.id);
+  if (!legacyState.profile) {
+    await supabase.auth.signOut();
+    throw createAuthFlowError('missing_profile', 'Profil nicht gefunden. Bitte kontaktiere den Administrator.');
+  }
+
+  if (!legacyState.profile.approved) {
+    await supabase.auth.signOut();
+    throw createAuthFlowError('not_approved', 'Dein Account wurde noch nicht freigeschaltet.');
+  }
+
+  await supabase
+    .from('profiles')
+    .update({ last_login: new Date().toISOString() })
+    .eq('id', authData.user.id);
+
+  await ensureLegacyUserStatsRow(supabase, authData.user.id);
+
+  return {
+    user: legacyState.user,
+    azubiProfile: legacyState.azubiProfile
+  };
+};
+
+export const logoutAuthSession = async (supabase) => {
+  if (USE_SECURE_API) {
+    try {
+      await secureAuthApi.logout();
+    } catch {
+      // ignore logout cleanup failures
+    }
+    return;
+  }
+
+  await supabase.auth.signOut();
+};
+
 export const deleteMyAccount = async (supabase, userId) => {
   if (USE_SECURE_API) {
     return secureUsersApi.deleteSelf();
@@ -645,6 +1115,57 @@ export const adminResetUserPassword = async (supabase, userId, userEmail, newPas
   if (error) throw error;
 };
 
+export const loadRetentionCandidates = async (supabase) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, name, email, role, training_end, last_login')
+    .in('role', ['azubi', 'trainer']);
+
+  if (error) throw error;
+  return data || [];
+};
+
+export const exportUserDataBundle = async (supabase, email, userName) => {
+  const exportData = {
+    exportDate: new Date().toISOString(),
+    user: userName,
+    email,
+    data: {}
+  };
+
+  const { data: userData } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('email', email)
+    .single();
+
+  if (userData) {
+    exportData.data.account = userData;
+
+    const { data: statsData } = await supabase
+      .from('user_stats')
+      .select('*')
+      .eq('user_id', userData.id)
+      .single();
+
+    if (statsData) exportData.data.stats = statsData;
+  }
+
+  const [{ data: gamesData }, { data: examsData }, { data: questionsData }, { data: badgesData }] = await Promise.all([
+    supabase.from('games').select('*').or(`player1.eq.${userName},player2.eq.${userName}`),
+    supabase.from('exams').select('*').eq('created_by', userName),
+    supabase.from('custom_questions').select('*').eq('created_by', userName),
+    supabase.from('user_badges').select('*').eq('user_name', userName)
+  ]);
+
+  exportData.data.games = gamesData || [];
+  exportData.data.exams = examsData || [];
+  exportData.data.questions = questionsData || [];
+  exportData.data.badges = badgesData || [];
+
+  return exportData;
+};
+
 export const loadAppConfig = async (supabase) => {
   if (USE_SECURE_API) {
     const config = await safe(() => secureAppConfigApi.get(), null);
@@ -791,6 +1312,56 @@ export const loadMessages = async (supabase, normalizeFn, userDirectory, userRol
 
   if (!data) return [];
   return data.map(row => normalizeFn(row, userDirectory));
+};
+
+export const loadDirectMessages = async (supabase, { recipientId, currentUserId } = {}) => {
+  if (!recipientId) return [];
+
+  if (USE_SECURE_API) {
+    const directMsgs = await secureChatApi.list({
+      scope: 'DIRECT_STAFF',
+      recipientId,
+      limit: 100
+    });
+
+    return (directMsgs || []).map((message) => ({
+      id: message?.id,
+      user: message?.senderName || message?.sender?.displayName || 'Unbekannt',
+      text: message?.content || message?.text || '',
+      time: new Date(message?.createdAt || Date.now()).getTime(),
+      avatar: message?.senderAvatar || message?.sender?.avatar || null,
+      senderId: message?.senderId || message?.sender?.id || null,
+      senderRole: String(message?.senderRole || message?.sender?.role || 'azubi').toLowerCase(),
+      scope: 'direct_staff',
+      organizationId: message?.organizationId || null,
+      recipientId: message?.recipientId || null
+    }));
+  }
+
+  if (!currentUserId) return [];
+
+  const { data, error } = await supabase
+    .from('messages')
+    .select('id, content, user_name, sender_id, created_at, chat_scope, recipient_id, user_avatar, user_role, organization_id')
+    .eq('chat_scope', 'direct_staff')
+    .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId})`)
+    .order('created_at', { ascending: true })
+    .limit(100);
+
+  if (error) throw error;
+
+  return (data || []).map((message) => ({
+    id: message?.id,
+    user: message?.user_name || 'Unbekannt',
+    text: message?.content || '',
+    time: new Date(message?.created_at || Date.now()).getTime(),
+    avatar: message?.user_avatar || null,
+    senderId: message?.sender_id || null,
+    senderRole: String(message?.user_role || 'azubi').toLowerCase(),
+    scope: 'direct_staff',
+    organizationId: message?.organization_id || null,
+    recipientId: message?.recipient_id || null
+  }));
 };
 
 export const createChatMessage = async (supabase, payload) => {
@@ -1102,6 +1673,35 @@ export const getAllUserStats = async (supabase) => {
     .from('user_stats')
     .select('user_id, wins, losses, draws, category_stats');
   return data || [];
+};
+
+export const loadUserBadges = async (supabase, userInput) => {
+  if (!userInput?.id && !userInput?.name) return [];
+
+  let badgesData = null;
+
+  if (userInput?.id) {
+    const { data } = await supabase
+      .from('user_badges')
+      .select('badge_id, earned_at')
+      .eq('user_id', userInput.id);
+    if (Array.isArray(data) && data.length > 0) {
+      badgesData = data;
+    }
+  }
+
+  if ((!badgesData || badgesData.length === 0) && userInput?.name) {
+    const { data } = await supabase
+      .from('user_badges')
+      .select('badge_id, earned_at')
+      .eq('user_name', userInput.name);
+    badgesData = data || [];
+  }
+
+  return (badgesData || []).map((badge) => ({
+    id: badge.badge_id,
+    earnedAt: new Date(badge.earned_at).getTime()
+  }));
 };
 
 export const saveUserStats = async (supabase, userInput, stats) => {
@@ -2167,11 +2767,18 @@ export const deleteBerichtsheftDraftByWeek = async (supabase, weekStart, options
   if (error) throw error;
 };
 
-export const loadBerichtsheftProfile = async (supabase) => {
+export const loadBerichtsheftProfile = async (supabase, userId = null) => {
   if (USE_SECURE_API) {
     return secureReportBooksApi.getProfile();
   }
-  return null;
+  if (!userId) return null;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('berichtsheft_profile')
+    .eq('id', userId)
+    .single();
+  if (error) return null;
+  return data?.berichtsheft_profile || null;
 };
 
 export const updateBerichtsheftProfile = async (supabase, userId, profile) => {
@@ -2289,15 +2896,33 @@ export const saveBadges = async (supabase, badges, userId, userName) => {
 };
 
 export const resolveUserIdentity = async (supabase, userInput) => {
+  if (userInput && typeof userInput === 'object' && userInput.id) {
+    return {
+      userId: userInput.id,
+      userName: userInput.name || ''
+    };
+  }
+
   if (USE_SECURE_API) {
-    // In secure mode, identity resolution happens server-side
-    if (userInput && typeof userInput === 'object') {
-      return { userId: userInput.id, userName: userInput.name };
-    }
     return null;
   }
-  // Supabase path handled in App.jsx (complex query)
-  return null;
+
+  const userName = String(userInput || '').trim();
+  if (!userName) return null;
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, name')
+    .ilike('name', userName)
+    .limit(2);
+
+  if (error) throw error;
+  if (!Array.isArray(data) || data.length !== 1) return null;
+
+  return {
+    userId: data[0].id,
+    userName: data[0].name || userName
+  };
 };
 
 // ─── Swim Monthly Results ───────────────────────────────────────────
