@@ -23,15 +23,16 @@ Es ist bewusst technisch ehrlich gehalten:
 - Berichtigung des eigenen Profils ist ueber `PATCH /users/me` serverseitig vorhanden.
 - Selbstloeschung ist ueber `DELETE /users/me` serverseitig vorhanden.
 - Admin-Loeschung ist ueber `DELETE /users/:id` serverseitig vorhanden.
+- Datenexport ist ueber `GET /users/me/export` und `GET /users/:id/export` serverseitig vorhanden.
 - Loeschung ist aktuell eine kontrollierte Soft-Delete-Deaktivierung:
   - `isDeleted = true`
   - `status = DISABLED`
   - `refreshTokenHash = null`
 - Relevante Admin- und Loeschaktionen werden ueber Audit-Logs protokolliert.
 - Wichtige Einschraenkung:
-  - Der Datenexport ist noch nicht ueber einen dedizierten Secure-Backend-Endpunkt umgesetzt.
-  - Der aktuelle Admin-Export im Frontend nutzt noch einen Legacy-Supabase-Lesepfad in `src/lib/dataService.js`.
-  - Damit ist der Exportprozess fuer einen finalen DSGVO-/B2B-Go-Live noch nicht freigegeben.
+  - Der Exportpfad ist neu umgesetzt, aber noch nicht praktisch smoke-getestet.
+  - Die alte Badge-Historie aus `user_badges` ist im aktuellen Prisma-Zielmodell nicht enthalten und wird im Secure-Export daher bewusst nicht mitgeliefert.
+  - Der Prozess ist technisch deutlich belastbarer, aber fuer einen finalen DSGVO-/B2B-Go-Live weiterhin erst nach Test und Betreiberfreigabe freizugeben.
 
 ## Rollen und Verantwortung
 
@@ -105,17 +106,18 @@ Vor Abschluss einer Anfrage muessen mindestens diese Nachweise vorliegen:
 
 Aktueller Stand:
 
-- Ein technischer Export ist im Frontend vorhanden.
-- Dieser Export basiert aber noch auf einem Legacy-Supabase-Lesepfad.
-- Deshalb gilt:
-  - kein final freigegebener Standardprozess fuer produktive Betroffenenanfragen
-  - vor Pilot/Produktion muss entweder ein Secure-Backend-Export gebaut oder ein kontrolliertes Operator-Verfahren schriftlich freigegeben werden
+- Ein technischer Export ist jetzt ueber das NestJS-Backend vorhanden.
+- Der Admin-Download in der App kann den Export damit ueber den Secure-API-Pfad ziehen.
+- Der Export deckt den aktuellen Produktdatenbestand des Prisma-Zielmodells ab.
+- Wichtige Restwahrheit:
+  - praktische Verifikation im Zielbetrieb fehlt noch
+  - die historische Badge-Tabelle `user_badges` ist noch nicht Teil des Secure-Zielmodells
 
 Bis zur finalen Freigabe:
 
-- Auskunftsanfragen nicht als "voll automatisiert gelost" darstellen.
-- Jede Auskunftsanfrage als Sonderfall behandeln.
-- Nur mit dokumentierter Betreiberfreigabe und Nachweisbearbeitung ausfuehren.
+- jede Anfrage mit Ticket, Bearbeiter und Exportdatei dokumentieren
+- den Export mindestens einmal im Zielbetrieb praktisch pruefen
+- vor Pilot/Produktion die organisatorische Betreiberfreigabe schriftlich festhalten
 
 ## No-Go fuer produktive Freigabe
 

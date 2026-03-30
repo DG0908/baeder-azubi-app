@@ -860,7 +860,7 @@ const AdminView = ({
                     <UserOrgAssign userId={acc.id} currentOrgId={acc.organization_id} onChanged={loadData} />
                   )}
                   <button
-                    onClick={() => exportUserData(acc.email, acc.name)}
+                    onClick={() => exportUserData(acc)}
                     className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg"
                     title="Daten exportieren"
                   >

@@ -35,6 +35,14 @@ export class UsersController {
     return this.usersService.listOrganizationContacts(user);
   }
 
+  @Get('me/export')
+  exportMe(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: Request
+  ) {
+    return this.usersService.exportUserData(user, user.id, request);
+  }
+
   @Roles(AppRole.ADMIN)
   @Get()
   list() {
@@ -100,6 +108,16 @@ export class UsersController {
     @Req() request: Request
   ) {
     return this.usersService.adminResetPassword(actor, userId, dto.newPassword, request);
+  }
+
+  @Roles(AppRole.ADMIN)
+  @Get(':id/export')
+  exportUser(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') userId: string,
+    @Req() request: Request
+  ) {
+    return this.usersService.exportUserData(actor, userId, request);
   }
 
   @Delete('me')

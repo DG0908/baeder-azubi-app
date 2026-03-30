@@ -71,6 +71,17 @@ const adminUserSelect = {
   approvedAt: true
 } satisfies Prisma.UserSelect;
 
+const exportRelatedUserSelect = {
+  id: true,
+  displayName: true,
+  role: true
+} satisfies Prisma.UserSelect;
+
+const exportAccountSelect = {
+  ...currentUserSelect,
+  isDeleted: true
+} satisfies Prisma.UserSelect;
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -435,6 +446,390 @@ export class UsersService {
     );
 
     return { reset: true };
+  }
+
+  async exportUserData(actor: AuthenticatedUser, targetUserId: string, request: Request) {
+    if (actor.id !== targetUserId && actor.role !== AppRole.ADMIN) {
+      throw new ForbiddenException('You are not allowed to export this user.');
+    }
+
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: exportAccountSelect
+    });
+
+    if (!targetUser || targetUser.isDeleted) {
+      throw new NotFoundException('User not found.');
+    }
+
+    const [
+      stats,
+      duels,
+      duelAnswers,
+      scheduledExamsCreated,
+      examGrades,
+      theoryExamSessions,
+      theoryExamAttempts,
+      practicalExamAttempts,
+      submittedQuestions,
+      questionReports,
+      flashcards,
+      reportBookEntries,
+      schoolAttendanceEntries,
+      swimSessions,
+      swimTrainingPlans,
+      forumPosts,
+      forumReplies,
+      sentChatMessages,
+      receivedChatMessages,
+      notifications,
+      pushSubscriptions,
+      xpEvents,
+      auditLogs,
+      learningMaterialsCreated,
+      resourcesCreated,
+      newsPostsCreated
+    ] = await Promise.all([
+      this.prisma.userStats.findUnique({
+        where: { userId: targetUserId }
+      }),
+      this.prisma.duel.findMany({
+        where: {
+          OR: [
+            { challengerId: targetUserId },
+            { opponentId: targetUserId }
+          ]
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        select: {
+          id: true,
+          status: true,
+          questionCount: true,
+          gameState: true,
+          expiresAt: true,
+          startedAt: true,
+          completedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          challengerId: true,
+          opponentId: true,
+          winnerUserId: true,
+          challenger: {
+            select: exportRelatedUserSelect
+          },
+          opponent: {
+            select: exportRelatedUserSelect
+          },
+          winnerUser: {
+            select: exportRelatedUserSelect
+          }
+        }
+      }),
+      this.prisma.duelAnswer.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          answeredAt: 'desc'
+        },
+        select: {
+          id: true,
+          duelId: true,
+          duelQuestionId: true,
+          selectedOptionIndex: true,
+          isCorrect: true,
+          durationMs: true,
+          answeredAt: true
+        }
+      }),
+      this.prisma.scheduledExam.findMany({
+        where: {
+          createdById: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.examGrade.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.theoryExamSession.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.theoryExamAttempt.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.practicalExamAttempt.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.submittedQuestion.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.questionReport.findMany({
+        where: {
+          reportedById: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.flashcard.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.reportBookEntry.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          weekStart: 'desc'
+        }
+      }),
+      this.prisma.schoolAttendanceEntry.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          date: 'desc'
+        }
+      }),
+      this.prisma.swimSession.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          date: 'desc'
+        }
+      }),
+      this.prisma.swimTrainingPlan.findMany({
+        where: {
+          OR: [
+            { assignedUserId: targetUserId },
+            { createdById: targetUserId }
+          ]
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.forumPost.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.forumReply.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.chatMessage.findMany({
+        where: {
+          senderId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        select: {
+          id: true,
+          scope: true,
+          content: true,
+          createdAt: true,
+          recipientId: true,
+          recipient: {
+            select: exportRelatedUserSelect
+          }
+        }
+      }),
+      this.prisma.chatMessage.findMany({
+        where: {
+          recipientId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        select: {
+          id: true,
+          scope: true,
+          content: true,
+          createdAt: true,
+          senderId: true,
+          sender: {
+            select: exportRelatedUserSelect
+          }
+        }
+      }),
+      this.prisma.appNotification.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.pushSubscription.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          updatedAt: 'desc'
+        },
+        select: {
+          id: true,
+          endpoint: true,
+          userAgent: true,
+          deviceLabel: true,
+          lastSeenAt: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      }),
+      this.prisma.userXpEvent.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.auditLog.findMany({
+        where: {
+          actorUserId: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        select: {
+          id: true,
+          action: true,
+          entityType: true,
+          entityId: true,
+          metadata: true,
+          ipAddress: true,
+          userAgent: true,
+          createdAt: true
+        }
+      }),
+      this.prisma.learningMaterial.findMany({
+        where: {
+          createdById: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.resource.findMany({
+        where: {
+          createdById: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      this.prisma.newsPost.findMany({
+        where: {
+          createdById: targetUserId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      })
+    ]);
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'user.data_exported',
+      'user',
+      targetUserId,
+      {
+        targetEmail: targetUser.email,
+        targetDisplayName: targetUser.displayName,
+        exportScope: actor.id === targetUserId ? 'self' : 'admin'
+      },
+      request
+    );
+
+    const { isDeleted: _isDeleted, ...account } = targetUser;
+
+    return {
+      exportDate: new Date().toISOString(),
+      user: targetUser.displayName,
+      email: targetUser.email,
+      meta: {
+        exportVersion: 2,
+        exportedVia: 'secure-backend',
+        requestedByUserId: actor.id,
+        requestedByRole: actor.role,
+        exportScope: actor.id === targetUserId ? 'self' : 'admin',
+        badgeExportStatus: 'not_available_in_current_prisma_model'
+      },
+      data: {
+        account,
+        stats,
+        games: duels,
+        exams: scheduledExamsCreated,
+        questions: submittedQuestions,
+        badges: [],
+        duelAnswers,
+        examGrades,
+        theoryExamSessions,
+        theoryExamAttempts,
+        practicalExamAttempts,
+        questionReports,
+        flashcards,
+        reportBookEntries,
+        schoolAttendanceEntries,
+        swimSessions,
+        swimTrainingPlans,
+        forumPosts,
+        forumReplies,
+        sentChatMessages,
+        receivedChatMessages,
+        notifications,
+        pushSubscriptions,
+        xpEvents,
+        auditLogs,
+        learningMaterialsCreated,
+        resourcesCreated,
+        newsPostsCreated
+      }
+    };
   }
 
   async deleteSelf(actor: AuthenticatedUser, request: Request) {
