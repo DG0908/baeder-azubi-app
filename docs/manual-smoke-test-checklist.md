@@ -70,6 +70,15 @@ Stand: 2026-03-30
    - Konto ist nicht mehr in der Nutzerliste sichtbar.
    - Login mit dem geloeschten Konto funktioniert nicht mehr.
 
+### Admin-Datenexport
+
+1. Im Admin-Bereich einen aktiven Testnutzer exportieren.
+2. JSON-Datei herunterladen.
+3. Erwartung:
+   - Download startet ohne Fehler.
+   - Datei enthaelt `account`, `stats` und weitere Datenbereiche.
+   - `meta.exportedVia` steht auf `secure-backend`.
+
 ## Profil / Selbstbedienung
 
 ### Passwortwechsel im Profil

@@ -1125,11 +1125,27 @@ export const loadRetentionCandidates = async (supabase) => {
   return data || [];
 };
 
-export const exportUserDataBundle = async (supabase, email, userName) => {
+export const exportUserDataBundle = async (supabase, userInput, fallbackUserName = null) => {
+  const targetUser = isPlainObject(userInput) ? userInput : null;
+  const targetUserId = String(targetUser?.id || '').trim();
+  const email = String(targetUser?.email ?? userInput ?? '').trim();
+  const userName = String(targetUser?.name ?? targetUser?.displayName ?? fallbackUserName ?? '').trim();
+
+  if (USE_SECURE_API) {
+    if (targetUserId) {
+      return secureUsersApi.exportUserData(targetUserId);
+    }
+    return secureUsersApi.exportMe();
+  }
+
   const exportData = {
     exportDate: new Date().toISOString(),
     user: userName,
     email,
+    meta: {
+      exportVersion: 1,
+      exportedVia: 'legacy-supabase'
+    },
     data: {}
   };
 

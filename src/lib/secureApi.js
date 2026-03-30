@@ -145,6 +145,7 @@ export const secureAuthApi = {
 
 export const secureUsersApi = {
   me: () => apiRequest('/users/me', { method: 'GET' }),
+  exportMe: () => apiRequest('/users/me/export', { method: 'GET' }),
   list: () => apiRequest('/users', { method: 'GET' }),
   pending: () => apiRequest('/users/pending', { method: 'GET' }),
   contacts: () => apiRequest('/users/contacts', { method: 'GET' }),
@@ -163,6 +164,9 @@ export const secureUsersApi = {
   updateOrganization: (userId, payload) => apiRequest(`/users/${userId}/organization`, {
     method: 'PATCH',
     body: JSON.stringify(payload)
+  }),
+  exportUserData: (userId) => apiRequest(`/users/${userId}/export`, {
+    method: 'GET'
   }),
   deleteUser: (userId) => apiRequest(`/users/${userId}`, {
     method: 'DELETE'

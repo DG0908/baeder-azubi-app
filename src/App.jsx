@@ -2670,9 +2670,14 @@ export default function BaederApp() {
     }
   };
 
-  const exportUserData = async (email, userName) => {
+  const exportUserData = async (targetInput, fallbackName = '') => {
+    const targetUser = targetInput && typeof targetInput === 'object'
+      ? targetInput
+      : { email: targetInput, name: fallbackName };
+    const targetLabel = String(targetUser?.name || targetUser?.displayName || targetUser?.email || 'nutzer').trim();
+    const userName = targetLabel;
     try {
-      const exportData = await dsExportUserDataBundle(supabase, email, userName);
+      const exportData = await dsExportUserDataBundle(supabase, targetUser);
 
       // Create download
       const dataStr = JSON.stringify(exportData, null, 2);
@@ -2680,7 +2685,7 @@ export default function BaederApp() {
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${userName}_daten_export_${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `${targetLabel}_daten_export_${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

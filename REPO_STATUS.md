@@ -19,7 +19,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - Frontend-Adapter-Migration ist im Code abgeschlossen; Live-Deploy und Kernflow-Tests stehen an
 - praktische Smoke-Tests fuer Auth, Profil, Admin, Duel-Ergebnis und Berichtsheft jetzt real fahren
 - Datenschutz-/Go-Live-Doku auf den echten Systemstand ziehen, ohne bestehende Luecken zu beschoenigen
-- offenen Datenexport-/Betroffenenrechte-Prozess fuer marktreifen Betrieb sauber schliessen
+- neuen Secure-Datenexport praktisch pruefen und danach die restlichen Betreiber-/Datenschutzprozesse schliessen
 
 ## Was bereits vorliegt
 
@@ -55,7 +55,9 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - `src/components/views/AdminView.jsx` nutzt im Secure-Modus fuer die Betriebszuweisung jetzt den richtigen Organization-Endpoint; die Code-Nutzungsanzeige ist wieder konsistent.
 - `server/src/modules/auth/auth.service.ts` unterstuetzt bcrypt-Fallback fuer migrierte Supabase-Passwoerter und rehashed bei erfolgreichem Login auf Argon2.
 - `docs/manual-smoke-test-checklist.md` beschreibt jetzt den praktischen Testlauf fuer die kritischen Kernflows.
-- `docs/privacy-rights-runbook.md` dokumentiert den aktuellen operativen Mindestprozess fuer Berichtigung, Loeschung und die noch offene Export-Luecke.
+- `server/src/modules/users/users.controller.ts` und `server/src/modules/users/users.service.ts` stellen jetzt einen Secure-Backend-Export fuer `me` und Admin-Exports bereit.
+- `src/lib/secureApi.js`, `src/lib/dataService.js`, `src/App.jsx` und `src/components/views/AdminView.jsx` ziehen den Admin-Datenexport jetzt ueber den Secure-API-Pfad statt ueber den Legacy-Supabase-Read.
+- `docs/privacy-rights-runbook.md` dokumentiert jetzt den operativen Mindestprozess fuer Berichtigung, Loeschung und den neuen Exportpfad inklusive verbleibender Restluecken.
 
 ## Noch nicht fertig
 
@@ -63,7 +65,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - Frontend-Deploy des aktuellen `main`-Stands auf dem Zielserver ist noch offen
 - rechtliche und betriebliche Go-Live-Nachweise sind weiter offen
 - automatisierte Tests fuer Auth, Approval, Chat-Scope und Duel-Abschluss fehlen weiterhin
-- der Auskunfts-/Datenexport ist noch kein final freigegebener Secure-Backend-Prozess
+- der neue Secure-Datenexport ist noch nicht praktisch im Zielbetrieb getestet
 
 ## Naechster konkreter Schritt
 
@@ -74,11 +76,12 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
    - Passwort-Reset
    - Kontoloeschung
    - Admin-Loeschung
+   - Admin-Datenexport
    - Duel-Ergebnis-Screen
    - Berichtsheft-Drafts
-3. anschliessend Export-/Betroffenenrechte-Luecke schliessen:
-   - Secure-Backend-Export oder schriftlich freigegebenes Operator-Verfahren
+3. anschliessend Betreiber-/Datenschutzblock schliessen:
    - Aufbewahrungs-, Purge- und Backup-Regeln je Instanz
+   - Betreiberfreigabe fuer Auskunfts-/Loeschprozess
 4. danach Go-Live-Block:
    - AVV / TOM / Incident-Runbook
    - Restore-Drill
@@ -91,7 +94,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - SMTP noch nicht produktiv konfiguriert, Passwort-Reset-Mailfluss daher weiter fraglich
 - Push-Subscriptions und Push-Auslieferung muessen im echten Zielbetrieb weiter praktisch verifiziert werden
 - Datenmigration Supabase -> NestJS-DB ist noch nicht praktisch abgeschlossen
-- der Admin-Datenexport nutzt aktuell noch einen Legacy-Supabase-Lesepfad in `src/lib/dataService.js` und ist damit kein finaler Secure-Go-Live-Nachweis
+- Badge-Historie haengt noch an der alten `user_badges`-Tabelle und ist im neuen Secure-Export aktuell bewusst leer
 - Restore-Drill, formale Loesch-/Auskunftsprozesse und externer Security-Nachweis sind weiter offen
 - `server/scripts/reset-marcel-pw.js` ist ein temporaeres Hilfsskript mit festem Passwort und echter E-Mail-Adresse und sollte vor Produktion entfernt oder ersetzt werden
 
