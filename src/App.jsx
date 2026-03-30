@@ -3610,6 +3610,7 @@ export default function BaederApp() {
         );
       }
 
+      setDuelResult(null);
       setCurrentGame(game);
       setCategoryRound(0);
       setQuestionInCategory(0);
@@ -3637,6 +3638,7 @@ export default function BaederApp() {
     const game = activeGames.find(g => g.id === gameId);
     if (!game) return;
 
+    setDuelResult(null);
     setCurrentGame(game);
     setCategoryRound(game.categoryRound || 0);
     setQuestionInCategory(0);
@@ -4702,7 +4704,7 @@ export default function BaederApp() {
       resetQuizKeywordState();
 
       loadData();
-      setCurrentView('quizduell');
+      setCurrentView('quiz');
       checkBadges();
     } catch (error) {
       console.error('Finish error:', error);
