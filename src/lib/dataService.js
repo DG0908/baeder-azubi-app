@@ -13,10 +13,14 @@
 
 import { isSecureBackendApiEnabled } from './secureApiClient';
 import {
+  secureAuthApi,
   secureUsersApi,
+  secureOrganizationsApi,
+  secureInvitationsApi,
   secureAppConfigApi,
   secureDuelsApi,
   secureChatApi,
+  secureForumApi,
   secureNotificationsApi,
   secureContentApi,
   secureFlashcardsApi,
@@ -104,6 +108,39 @@ const mapPermissionFieldToProfileColumn = (field) => {
   if (field === 'canViewExamGrades') return 'can_view_exam_grades';
   return field;
 };
+
+const mapBackendRole = (role) => {
+  const normalized = String(role || '').toUpperCase();
+  if (normalized === 'ADMIN') return 'admin';
+  if (normalized === 'AUSBILDER') return 'trainer';
+  if (normalized === 'RETTUNGSSCHWIMMER_AZUBI') return 'rettungsschwimmer_azubi';
+  return 'azubi';
+};
+
+const mapForumPostToFrontend = (post) => ({
+  id: post?.id,
+  category: post?.category,
+  title: post?.title,
+  content: post?.content,
+  pinned: Boolean(post?.pinned),
+  locked: Boolean(post?.locked),
+  user_id: post?.userId || post?.user_id || null,
+  user_name: post?.user?.displayName || post?.user_name || '',
+  user_role: post?.user ? mapBackendRole(post.user.role) : mapBackendRole(post?.user_role),
+  reply_count: post?.replyCount ?? post?.reply_count ?? 0,
+  created_at: post?.createdAt || post?.created_at || null,
+  last_reply_at: post?.lastReplyAt || post?.last_reply_at || null
+});
+
+const mapForumReplyToFrontend = (reply) => ({
+  id: reply?.id,
+  post_id: reply?.postId || reply?.post_id || null,
+  content: reply?.content,
+  user_id: reply?.userId || reply?.user_id || null,
+  user_name: reply?.user?.displayName || reply?.user_name || '',
+  user_role: reply?.user ? mapBackendRole(reply.user.role) : mapBackendRole(reply?.user_role),
+  created_at: reply?.createdAt || reply?.created_at || null
+});
 
 const mapSecureReportBookToFrontendEntry = (entry) => ({
   id: entry.id,
@@ -372,7 +409,241 @@ export const loadUsers = async (supabase, currentUser) => {
   return { allUsers: data || [], pendingUsers: [] };
 };
 
+export const updateMyProfile = async (supabase, userId, payload) => {
+  if (USE_SECURE_API) {
+    const securePayload = {};
+    if (payload?.displayName !== undefined || payload?.name !== undefined) {
+      securePayload.displayName = payload?.displayName ?? payload?.name ?? '';
+    }
+    if (payload?.avatar !== undefined) {
+      securePayload.avatar = payload.avatar;
+    }
+    if (payload?.company !== undefined) {
+      securePayload.company = payload.company;
+    }
+    if (payload?.birthDate !== undefined || payload?.birth_date !== undefined) {
+      securePayload.birthDate = payload?.birthDate ?? payload?.birth_date ?? null;
+    }
+    return secureUsersApi.updateMe(securePayload);
+  }
+
+  const legacyPayload = {};
+  if (payload?.displayName !== undefined || payload?.name !== undefined) {
+    legacyPayload.name = payload?.displayName ?? payload?.name ?? '';
+  }
+  if (payload?.avatar !== undefined) {
+    legacyPayload.avatar = payload.avatar;
+  }
+  if (payload?.company !== undefined) {
+    legacyPayload.company = payload.company;
+  }
+  if (payload?.birthDate !== undefined || payload?.birth_date !== undefined) {
+    legacyPayload.birth_date = payload?.birthDate ?? payload?.birth_date ?? null;
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update(legacyPayload)
+    .eq('id', userId);
+  if (error) throw error;
+};
+
+export const updateMyAvatar = async (supabase, userId, avatarId) => {
+  return updateMyProfile(supabase, userId, { avatar: avatarId });
+};
+
+export const changeMyPassword = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    return secureAuthApi.changePassword({
+      currentPassword: payload?.currentPassword,
+      newPassword: payload?.newPassword
+    });
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: payload?.newPassword || '' });
+  if (error) throw error;
+};
+
+export const deleteMyAccount = async (supabase, userId) => {
+  if (USE_SECURE_API) {
+    return secureUsersApi.deleteSelf();
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .delete()
+    .eq('id', userId);
+  if (error) throw error;
+};
+
 // ─── App Config ──────────────────────────────────────────────────────
+
+export const loadOrganizationsAndInvitations = async (supabase) => {
+  if (USE_SECURE_API) {
+    const [organizations, invitations] = await Promise.all([
+      secureOrganizationsApi.list(),
+      secureInvitationsApi.list()
+    ]);
+
+    return {
+      organizations: (organizations || []).map((organization) => ({
+        id: organization.id,
+        name: organization.name,
+        slug: organization.slug,
+        contact_name: organization.contactName,
+        contact_email: organization.contactEmail,
+        max_azubis: organization.maxAzubis || 50,
+        is_active: organization.isActive ?? true,
+        created_at: organization.createdAt
+      })),
+      invitations: (invitations || []).map((invitation) => ({
+        id: invitation.id,
+        code: invitation.code,
+        organization_id: invitation.organizationId,
+        organizations: invitation.organization ? { name: invitation.organization.name } : null,
+        role: String(invitation.role || '').toLowerCase(),
+        max_uses: invitation.maxUses,
+        used_count: invitation.currentUses || 0,
+        is_active: invitation.isActive ?? true,
+        created_at: invitation.createdAt,
+        expires_at: invitation.expiresAt
+      }))
+    };
+  }
+
+  const [{ data: organizations, error: organizationsError }, { data: invitations, error: invitationsError }] = await Promise.all([
+    supabase.from('organizations').select('*').order('created_at', { ascending: true }),
+    supabase.from('invitation_codes').select('*, organizations(name)').order('created_at', { ascending: false })
+  ]);
+
+  if (organizationsError) throw organizationsError;
+  if (invitationsError) throw invitationsError;
+
+  return {
+    organizations: organizations || [],
+    invitations: invitations || []
+  };
+};
+
+export const createOrganizationEntry = async (supabase, payload) => {
+  const slug = String(payload?.slug || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-');
+
+  if (USE_SECURE_API) {
+    return secureOrganizationsApi.create({
+      name: String(payload?.name || '').trim(),
+      slug,
+      contactName: payload?.contact_name || payload?.contactName || undefined,
+      contactEmail: payload?.contact_email || payload?.contactEmail || undefined
+    });
+  }
+
+  const { data, error } = await supabase
+    .from('organizations')
+    .insert({
+      ...payload,
+      slug,
+      name: String(payload?.name || '').trim()
+    })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const createInvitationEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    return secureInvitationsApi.create({
+      role: mapFrontendRoleToBackendRole(payload?.role),
+      organizationId: payload?.organization_id || payload?.organizationId,
+      maxUses: payload?.max_uses || payload?.maxUses || 30
+    });
+  }
+
+  const { data, error } = await supabase
+    .from('invitation_codes')
+    .insert({
+      organization_id: payload?.organization_id || payload?.organizationId,
+      code: String(payload?.code || '').trim().toUpperCase(),
+      role: payload?.role,
+      max_uses: payload?.max_uses || payload?.maxUses,
+      created_by: payload?.created_by ?? null
+    })
+    .select('*, organizations(name)')
+    .single();
+  if (error) throw error;
+  return data;
+};
+
+export const toggleInvitationEntryActive = async (supabase, invitationId, currentActive) => {
+  if (USE_SECURE_API) {
+    if (currentActive) {
+      return secureInvitationsApi.revoke(invitationId);
+    }
+    return null;
+  }
+
+  const { error } = await supabase
+    .from('invitation_codes')
+    .update({ is_active: !currentActive })
+    .eq('id', invitationId);
+  if (error) throw error;
+};
+
+export const deleteInvitationEntry = async (supabase, invitationId) => {
+  if (USE_SECURE_API) {
+    return secureInvitationsApi.revoke(invitationId);
+  }
+
+  const { error } = await supabase
+    .from('invitation_codes')
+    .delete()
+    .eq('id', invitationId);
+  if (error) throw error;
+};
+
+export const loadActiveOrganizations = async (supabase) => {
+  if (USE_SECURE_API) {
+    const organizations = await secureOrganizationsApi.list();
+    return (organizations || []).map((organization) => ({
+      id: organization.id,
+      name: organization.name
+    }));
+  }
+
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('id, name')
+    .eq('is_active', true)
+    .order('name');
+  if (error) throw error;
+  return data || [];
+};
+
+export const assignUserOrganization = async (supabase, userId, organizationId) => {
+  if (USE_SECURE_API) {
+    return secureUsersApi.updateOrganization(userId, { organizationId: organizationId || null });
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ organization_id: organizationId || null })
+    .eq('id', userId);
+  if (error) throw error;
+};
+
+export const adminResetUserPassword = async (supabase, userId, userEmail, newPassword) => {
+  if (USE_SECURE_API) {
+    return secureUsersApi.adminResetPassword(userId, newPassword);
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+    redirectTo: window.location.origin
+  });
+  if (error) throw error;
+};
 
 export const loadAppConfig = async (supabase) => {
   if (USE_SECURE_API) {
@@ -563,6 +834,170 @@ export const createChatMessage = async (supabase, payload) => {
 
   if (error) throw error;
   return mapChatMessageToFrontend(data, messagePayload);
+};
+
+// ─── Forum ───────────────────────────────────────────────────────────
+
+export const loadForumCategoryCounts = async (supabase) => {
+  if (USE_SECURE_API) {
+    const data = await secureForumApi.listCategories();
+    const counts = {};
+    (data || []).forEach((entry) => {
+      counts[entry.category] = entry.count || 0;
+    });
+    return counts;
+  }
+
+  const { data, error } = await supabase
+    .from('forum_posts')
+    .select('category');
+  if (error) throw error;
+
+  const counts = {};
+  (data || []).forEach((post) => {
+    const category = String(post?.category || '').trim();
+    if (!category) return;
+    counts[category] = (counts[category] || 0) + 1;
+  });
+  return counts;
+};
+
+export const loadForumPosts = async (supabase, categoryId) => {
+  if (USE_SECURE_API) {
+    const data = await secureForumApi.listPosts({ category: categoryId });
+    return (data || []).map(mapForumPostToFrontend);
+  }
+
+  const { data, error } = await supabase
+    .from('forum_posts')
+    .select('*')
+    .eq('category', categoryId)
+    .order('pinned', { ascending: false })
+    .order('last_reply_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map(mapForumPostToFrontend);
+};
+
+export const loadForumThread = async (supabase, postId) => {
+  if (USE_SECURE_API) {
+    const data = await secureForumApi.getThread(postId);
+    return {
+      post: data?.post ? mapForumPostToFrontend(data.post) : null,
+      replies: (data?.replies || []).map(mapForumReplyToFrontend)
+    };
+  }
+
+  const [{ data: posts, error: postError }, { data: replies, error: replyError }] = await Promise.all([
+    supabase.from('forum_posts').select('*').eq('id', postId).limit(1),
+    supabase.from('forum_replies').select('*').eq('post_id', postId).order('created_at', { ascending: true })
+  ]);
+  if (postError) throw postError;
+  if (replyError) throw replyError;
+
+  return {
+    post: Array.isArray(posts) && posts.length > 0 ? mapForumPostToFrontend(posts[0]) : null,
+    replies: (replies || []).map(mapForumReplyToFrontend)
+  };
+};
+
+export const createForumPost = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureForumApi.createPost({
+      category: payload?.category,
+      title: payload?.title,
+      content: payload?.content
+    });
+    return mapForumPostToFrontend(result?.post || result);
+  }
+
+  const { data, error } = await supabase
+    .from('forum_posts')
+    .insert({
+      user_id: payload?.userId,
+      user_name: payload?.userName,
+      user_role: payload?.userRole,
+      user_avatar: payload?.userAvatar,
+      category: payload?.category,
+      title: payload?.title,
+      content: payload?.content
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return mapForumPostToFrontend(data);
+};
+
+export const createForumReply = async (supabase, postId, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureForumApi.createReply(postId, {
+      content: payload?.content
+    });
+    return mapForumReplyToFrontend(result?.reply || result);
+  }
+
+  const { data, error } = await supabase
+    .from('forum_replies')
+    .insert({
+      post_id: postId,
+      user_id: payload?.userId,
+      user_name: payload?.userName,
+      user_role: payload?.userRole,
+      user_avatar: payload?.userAvatar,
+      content: payload?.content
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return mapForumReplyToFrontend(data);
+};
+
+export const deleteForumPost = async (supabase, postId) => {
+  if (USE_SECURE_API) {
+    return secureForumApi.removePost(postId);
+  }
+
+  const { error } = await supabase
+    .from('forum_posts')
+    .delete()
+    .eq('id', postId);
+  if (error) throw error;
+};
+
+export const deleteForumReply = async (supabase, replyId) => {
+  if (USE_SECURE_API) {
+    return secureForumApi.removeReply(replyId);
+  }
+
+  const { error } = await supabase
+    .from('forum_replies')
+    .delete()
+    .eq('id', replyId);
+  if (error) throw error;
+};
+
+export const toggleForumPostPin = async (supabase, postId, currentPinned) => {
+  if (USE_SECURE_API) {
+    return secureForumApi.togglePin(postId);
+  }
+
+  const { error } = await supabase
+    .from('forum_posts')
+    .update({ pinned: !currentPinned })
+    .eq('id', postId);
+  if (error) throw error;
+};
+
+export const toggleForumPostLock = async (supabase, postId, currentLocked) => {
+  if (USE_SECURE_API) {
+    return secureForumApi.toggleLock(postId);
+  }
+
+  const { error } = await supabase
+    .from('forum_posts')
+    .update({ locked: !currentLocked })
+    .eq('id', postId);
+  if (error) throw error;
 };
 
 // ─── Notifications ───────────────────────────────────────────────────
@@ -809,7 +1244,9 @@ export const loadFlashcards = async (supabase) => {
       front: fc.question || fc.front,
       back: fc.answer || fc.back,
       approved: fc.approved ?? true,
-      userId: fc.userId || fc.creatorId
+      userId: fc.userId || fc.creatorId || fc.user_id,
+      createdBy: fc.createdBy || fc.created_by || fc.creator?.displayName || '',
+      time: new Date(fc.createdAt || fc.created_at || Date.now()).getTime()
     });
     return {
       approved: (approved || []).map(mapFc),
@@ -829,7 +1266,9 @@ export const loadFlashcards = async (supabase) => {
     const card = {
       id: fc.id, category: fc.category,
       front: fc.question, back: fc.answer,
-      approved: fc.approved, userId: fc.user_id
+      approved: fc.approved, userId: fc.user_id,
+      createdBy: fc.created_by || '',
+      time: new Date(fc.created_at || Date.now()).getTime()
     };
     if (fc.approved) approvedCards.push(card);
     else pendingCards.push(card);
@@ -838,6 +1277,52 @@ export const loadFlashcards = async (supabase) => {
 };
 
 // ─── Custom Questions + Reports ──────────────────────────────────────
+
+export const createFlashcardEntry = async (supabase, payload) => {
+  if (USE_SECURE_API) {
+    const result = await secureFlashcardsApi.create({
+      category: payload?.category,
+      question: payload?.question,
+      answer: payload?.answer
+    });
+    const flashcard = result?.flashcard || result;
+    return {
+      id: flashcard?.id,
+      category: flashcard?.category,
+      front: flashcard?.question || flashcard?.front || '',
+      back: flashcard?.answer || flashcard?.back || '',
+      approved: flashcard?.approved ?? false,
+      userId: flashcard?.userId || flashcard?.creatorId || flashcard?.user_id || null,
+      createdBy: flashcard?.createdBy || flashcard?.created_by || flashcard?.creator?.displayName || payload?.createdBy || '',
+      time: new Date(flashcard?.createdAt || flashcard?.created_at || Date.now()).getTime()
+    };
+  }
+
+  const { data, error } = await supabase
+    .from('flashcards')
+    .insert([{
+      user_id: payload?.userId,
+      category: payload?.category,
+      question: payload?.question,
+      answer: payload?.answer,
+      approved: Boolean(payload?.approved)
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return {
+    id: data.id,
+    category: data.category,
+    front: data.question,
+    back: data.answer,
+    approved: Boolean(data.approved),
+    userId: data.user_id,
+    createdBy: payload?.createdBy || data.created_by || '',
+    time: new Date(data.created_at || Date.now()).getTime()
+  };
+};
 
 export const loadCustomQuestions = async (supabase) => {
   if (USE_SECURE_API) {

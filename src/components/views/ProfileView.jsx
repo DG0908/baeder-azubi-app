@@ -3,14 +3,18 @@ import { Eye, EyeOff, Trash2, Pencil, X as XIcon, AlertTriangle } from 'lucide-r
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
-import { secureUsersApi, secureAuthApi } from '../../lib/secureApi';
 import { supabase } from '../../supabase';
+import {
+  updateMyProfile as dsUpdateMyProfile,
+  changeMyPassword as dsChangeMyPassword,
+  deleteMyAccount as dsDeleteMyAccount
+} from '../../lib/dataService';
 import { AVATARS, PERMISSIONS, getAvatarById, getLevel } from '../../data/constants';
-
-const USE_SECURE_API = isSecureBackendApiEnabled();
 import AvatarBadge from '../ui/AvatarBadge';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
+
+const USE_SECURE_API = isSecureBackendApiEnabled();
 
 const ProfileView = ({
   userStats,
@@ -211,15 +215,7 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      if (USE_SECURE_API) {
-        await secureUsersApi.updateMe({ displayName: profileEditName.trim() });
-      } else {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ name: profileEditName.trim() })
-          .eq('id', user.id);
-        if (error) throw error;
-      }
+      await dsUpdateMyProfile(supabase, user.id, { displayName: profileEditName.trim() });
       const updatedUser = { ...user, name: profileEditName.trim() };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -252,15 +248,10 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      if (USE_SECURE_API) {
-        await secureAuthApi.changePassword({
-          currentPassword: profileCurrentPassword,
-          newPassword: profileEditPassword
-        });
-      } else {
-        const { error } = await supabase.auth.updateUser({ password: profileEditPassword });
-        if (error) throw error;
-      }
+      await dsChangeMyPassword(supabase, {
+        currentPassword: profileCurrentPassword,
+        newPassword: profileEditPassword
+      });
       showToast('Passwort erfolgreich geändert!', 'success');
       setProfileCurrentPassword('');
       setProfileEditPassword('');
@@ -286,15 +277,7 @@ const ProfileView = ({
 
     setProfileSaving(true);
     try {
-      if (USE_SECURE_API) {
-        await secureUsersApi.updateMe({ avatar: avatarId });
-      } else {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ avatar: avatarId })
-          .eq('id', user.id);
-        if (error) throw error;
-      }
+      await dsUpdateMyProfile(supabase, user.id, { avatar: avatarId });
       const updatedUser = { ...user, avatar: avatarId };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -310,15 +293,7 @@ const ProfileView = ({
   const updateProfileCompany = async () => {
     setProfileSaving(true);
     try {
-      if (USE_SECURE_API) {
-        await secureUsersApi.updateMe({ company: profileEditCompany.trim() || null });
-      } else {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ company: profileEditCompany.trim() || null })
-          .eq('id', user.id);
-        if (error) throw error;
-      }
+      await dsUpdateMyProfile(supabase, user.id, { company: profileEditCompany.trim() || null });
       const updatedUser = { ...user, company: profileEditCompany.trim() || null };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -339,15 +314,7 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      if (USE_SECURE_API) {
-        await secureUsersApi.updateMe({ birthDate: profileEditBirthDate });
-      } else {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ birth_date: profileEditBirthDate })
-          .eq('id', user.id);
-        if (error) throw error;
-      }
+      await dsUpdateMyProfile(supabase, user.id, { birthDate: profileEditBirthDate });
       const updatedUser = { ...user, birthDate: profileEditBirthDate };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -1091,11 +1058,7 @@ const ProfileView = ({
                       }
                       setDeleting(true);
                       try {
-                        if (isSecureBackendApiEnabled()) {
-                          await secureUsersApi.deleteSelf();
-                        } else {
-                          await supabase.from('profiles').delete().eq('id', user.id);
-                        }
+                        await dsDeleteMyAccount(supabase, user.id);
                         showToast('Dein Konto wurde gelöscht.', 'success');
                         handleLogout();
                       } catch (err) {

@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
-import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
-import { secureUsersApi } from '../../lib/secureApi';
-import { AVATARS, getAvatarById, getLevel } from '../../data/constants';
+import { updateMyAvatar as dsUpdateMyAvatar } from '../../lib/dataService';
+import { AVATARS, getLevel } from '../../data/constants';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 
 const RARITY_ORDER = ['common', 'bronze', 'silver', 'gold', 'legendary'];
@@ -119,12 +118,7 @@ const CollectionView = ({ userStats, swimSessions, userBadges, setCurrentView })
       return;
     }
     try {
-      if (isSecureBackendApiEnabled()) {
-        await secureUsersApi.updateMe({ avatar: avatarId });
-      } else {
-        const { error } = await supabase.from('profiles').update({ avatar: avatarId }).eq('id', user.id);
-        if (error) throw error;
-      }
+      await dsUpdateMyAvatar(supabase, user.id, avatarId);
       const updated = { ...user, avatar: avatarId };
       setUser(updated);
       localStorage.setItem('bäder_user', JSON.stringify(updated));

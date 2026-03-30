@@ -3,11 +3,8 @@ import { Plus, Check, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../supabase';
-import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
-import { secureFlashcardsApi } from '../../lib/secureApi';
+import { createFlashcardEntry as dsCreateFlashcardEntry } from '../../lib/dataService';
 import { CATEGORIES } from '../../data/constants';
-
-const USE_SECURE_API = isSecureBackendApiEnabled();
 import { getWhoAmIClueCount, getWhoAmIVisibleClues, WHO_AM_I_TIME_LIMIT } from '../../data/whoAmIChallenges';
 
 const FlashcardsView = ({
@@ -171,53 +168,20 @@ const FlashcardsView = ({
             }
 
             try {
-              let flashcard;
-              if (USE_SECURE_API) {
-                const result = await secureFlashcardsApi.create({
-                  category: newFlashcardCategory,
-                  question: newFlashcardFront.trim(),
-                  answer: newFlashcardBack.trim()
-                });
-                const card = result.flashcard || result;
-                flashcard = {
-                  id: card.id,
-                  front: card.question,
-                  back: card.answer,
-                  category: card.category,
-                  approved: card.approved ?? false,
-                  userId: card.userId || card.user_id
-                };
-              } else {
-                const isApproved = user.permissions.canApproveQuestions;
-                const { data, error } = await supabase
-                  .from('flashcards')
-                  .insert([{
-                    user_id: user.id,
-                    category: newFlashcardCategory,
-                    question: newFlashcardFront.trim(),
-                    answer: newFlashcardBack.trim(),
-                    approved: isApproved
-                  }])
-                  .select()
-                  .single();
-
-                if (error) throw error;
-
-                flashcard = {
-                  id: data.id,
-                  front: data.question,
-                  back: data.answer,
-                  category: data.category,
-                  approved: data.approved,
-                  userId: data.user_id
-                };
-              }
+              const flashcard = await dsCreateFlashcardEntry(supabase, {
+                userId: user.id,
+                createdBy: user.name,
+                category: newFlashcardCategory,
+                question: newFlashcardFront.trim(),
+                answer: newFlashcardBack.trim(),
+                approved: user.permissions.canApproveQuestions
+              });
 
               if (flashcard.approved) {
-                setUserFlashcards([...userFlashcards, flashcard]);
+                setUserFlashcards((current) => [...current, flashcard]);
                 alert('Karteikarte hinzugefuegt!');
               } else {
-                setPendingFlashcards([...pendingFlashcards, flashcard]);
+                setPendingFlashcards((current) => [...current, flashcard]);
                 alert('Karteikarte eingereicht! Sie wird nach Pruefung freigeschaltet.');
               }
 
