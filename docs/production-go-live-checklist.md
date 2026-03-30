@@ -8,7 +8,8 @@
 - [ ] `/healthz` erreichbar
 - [ ] `/api/health` erreichbar
 - [ ] `VITE_ENABLE_SECURE_BACKEND_API=true` gesetzt
-- [ ] Keine produktiven Direktzugriffe des Frontends auf die Datenbank mehr erforderlich
+- [ ] Kritische Kernpfade laufen produktiv ueber Backend-API
+- [ ] Verbleibende Legacy-Sonderpfade sind dokumentiert und fuer Go-Live bewertet
 
 ## Sicherheitsfreigabe
 
@@ -26,11 +27,14 @@
 - [ ] AVV-/Dienstleisterliste aktualisiert
 - [ ] Loesch- und Aufbewahrungsregeln freigegeben
 - [ ] Incident-Kontakt benannt
+- [ ] `docs/privacy-rights-runbook.md` freigegeben
+- [ ] Auskunfts-/Datenexport-Prozess technisch und organisatorisch freigegeben
 - [ ] Backup erfolgreich erstellt
 - [ ] Restore-Drill erfolgreich dokumentiert
 
 ## Fachliche Stichprobe
 
+- [ ] `docs/manual-smoke-test-checklist.md` einmal gruener Durchlauf
 - [ ] Login
 - [ ] Rollenpruefung Admin/Ausbilder/Azubi
 - [ ] Chat
