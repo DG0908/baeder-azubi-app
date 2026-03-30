@@ -3,10 +3,17 @@ import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, S
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
-import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
-import { secureOrganizationsApi, secureInvitationsApi, secureUsersApi, mapFrontendRoleToBackendRole } from '../../lib/secureApi';
-
-const USE_SECURE_API = isSecureBackendApiEnabled();
+import {
+  loadOrganizationsAndInvitations as dsLoadOrganizationsAndInvitations,
+  createOrganizationEntry as dsCreateOrganizationEntry,
+  createInvitationEntry as dsCreateInvitationEntry,
+  toggleInvitationEntryActive as dsToggleInvitationEntryActive,
+  deleteInvitationEntry as dsDeleteInvitationEntry,
+  adminResetUserPassword as dsAdminResetUserPassword,
+  loadActiveOrganizations as dsLoadActiveOrganizations,
+  assignUserOrganization as dsAssignUserOrganization,
+  deleteUser as dsDeleteUser
+} from '../../lib/dataService';
 
 // ─── Betriebe & Einladungscodes Verwaltung (nur Owner) ───
 const OrganizationManager = () => {
@@ -22,36 +29,9 @@ const OrganizationManager = () => {
   const loadOrgs = async () => {
     setLoading(true);
     try {
-      if (USE_SECURE_API) {
-        const orgsData = await secureOrganizationsApi.list();
-        setOrgs((orgsData || []).map(o => ({
-          id: o.id, name: o.name, slug: o.slug,
-          contact_name: o.contactName, contact_email: o.contactEmail,
-          max_azubis: o.maxAzubis || 50, created_at: o.createdAt
-        })));
-        const codesData = await secureInvitationsApi.list();
-        setCodes((codesData || []).map(c => ({
-          id: c.id, code: c.code,
-          organization_id: c.organizationId,
-          organizations: c.organization ? { name: c.organization.name } : null,
-          role: (c.role || '').toLowerCase(),
-          max_uses: c.maxUses, used_count: c.currentUses || 0,
-          is_active: c.isActive ?? true,
-          created_at: c.createdAt, expires_at: c.expiresAt
-        })));
-      } else {
-        const { data: orgsData } = await supabase
-          .from('organizations')
-          .select('*')
-          .order('created_at', { ascending: true });
-        setOrgs(orgsData || []);
-
-        const { data: codesData } = await supabase
-          .from('invitation_codes')
-          .select('*, organizations(name)')
-          .order('created_at', { ascending: false });
-        setCodes(codesData || []);
-      }
+      const result = await dsLoadOrganizationsAndInvitations(supabase);
+      setOrgs(result.organizations || []);
+      setCodes(result.invitations || []);
     } catch (error) {
       showToast('Fehler beim Laden: ' + error.message, 'error');
     }
@@ -67,21 +47,11 @@ const OrganizationManager = () => {
     }
     const slug = newOrg.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
     try {
-      if (USE_SECURE_API) {
-        await secureOrganizationsApi.create({
-          name: newOrg.name.trim(),
-          slug,
-          contactName: newOrg.contact_name || undefined,
-          contactEmail: newOrg.contact_email || undefined
-        });
-      } else {
-        const { error } = await supabase.from('organizations').insert({
-          ...newOrg,
-          slug,
-          name: newOrg.name.trim()
-        });
-        if (error) throw error;
-      }
+      await dsCreateOrganizationEntry(supabase, {
+        ...newOrg,
+        slug,
+        name: newOrg.name.trim()
+      });
       showToast(`Betrieb "${newOrg.name}" angelegt!`, 'success');
       setNewOrg({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
       setShowNewOrg(false);
@@ -104,33 +74,12 @@ const OrganizationManager = () => {
       return;
     }
     try {
-      if (USE_SECURE_API) {
-        const result = await secureInvitationsApi.create({
-          role: mapFrontendRoleToBackendRole(newCode.role),
-          organizationId: newCode.organization_id,
-          maxUses: newCode.max_uses || 30
-        });
-        const createdCode = result?.code || 'Erstellt';
-        showToast(`Code "${createdCode}" erstellt!`, 'success');
-      } else {
-        const code = newCode.code.trim().toUpperCase() || generateCode();
-        const { error } = await supabase.from('invitation_codes').insert({
-          organization_id: newCode.organization_id,
-          code,
-          role: newCode.role,
-          max_uses: newCode.max_uses,
-          created_by: null
-        });
-        if (error) {
-          if (error.message.includes('duplicate')) {
-            showToast('Dieser Code existiert bereits!', 'error');
-          } else {
-            throw error;
-          }
-          return;
-        }
-        showToast(`Code "${code}" erstellt!`, 'success');
-      }
+      const code = newCode.code.trim().toUpperCase() || generateCode();
+      const result = await dsCreateInvitationEntry(supabase, {
+        ...newCode,
+        code
+      });
+      showToast(`Code "${result?.code || code || 'Erstellt'}" erstellt!`, 'success');
       setNewCode({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
       setShowNewCode(false);
       loadOrgs();
@@ -141,14 +90,7 @@ const OrganizationManager = () => {
 
   const toggleCodeActive = async (codeId, currentActive) => {
     try {
-      if (USE_SECURE_API) {
-        // Secure API only supports revoke (delete), not toggle
-        if (currentActive) {
-          await secureInvitationsApi.revoke(codeId);
-        }
-      } else {
-        await supabase.from('invitation_codes').update({ is_active: !currentActive }).eq('id', codeId);
-      }
+      await dsToggleInvitationEntryActive(supabase, codeId, currentActive);
       loadOrgs();
     } catch (error) {
       showToast('Fehler: ' + error.message, 'error');
@@ -158,11 +100,7 @@ const OrganizationManager = () => {
   const deleteCode = async (codeId, codeText) => {
     if (!confirm(`Code "${codeText}" wirklich löschen?`)) return;
     try {
-      if (USE_SECURE_API) {
-        await secureInvitationsApi.revoke(codeId);
-      } else {
-        await supabase.from('invitation_codes').delete().eq('id', codeId);
-      }
+      await dsDeleteInvitationEntry(supabase, codeId);
       showToast('Code gelöscht', 'success');
       loadOrgs();
     } catch (error) {
@@ -390,14 +328,7 @@ const AdminPasswordReset = ({ userId, userEmail, userName }) => {
     if (!confirm(`Neues Passwort für ${userName || userEmail} setzen?\n\nDas generierte Passwort wird: ${tempPassword}\n\nBitte notiere es und teile es dem User mit.`)) return;
     setLoading(true);
     try {
-      if (USE_SECURE_API) {
-        await secureUsersApi.adminResetPassword(userId, tempPassword);
-      } else {
-        const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-          redirectTo: window.location.origin
-        });
-        if (error) throw error;
-      }
+      await dsAdminResetUserPassword(supabase, userId, userEmail, tempPassword);
       alert(`Neues Passwort für ${userName || userEmail}:\n\n${tempPassword}\n\nBitte dem User mitteilen!`);
       showToast(`Passwort für ${userName || userEmail} zurückgesetzt!`, 'success');
     } catch (err) {
@@ -427,28 +358,15 @@ const UserOrgAssign = ({ userId, currentOrgId, onChanged }) => {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (USE_SECURE_API) {
-      secureOrganizationsApi.list()
-        .then(data => setOrgs((data || []).map(o => ({ id: o.id, name: o.name }))))
-        .catch(() => {});
-    } else {
-      supabase.from('organizations').select('id, name').eq('is_active', true).order('name')
-        .then(({ data }) => setOrgs(data || []));
-    }
+    dsLoadActiveOrganizations(supabase)
+      .then((data) => setOrgs(data || []))
+      .catch(() => {});
   }, []);
 
   const handleChange = async (newOrgId) => {
     setLoading(true);
     try {
-      if (USE_SECURE_API) {
-        await secureUsersApi.updateOrganization(userId, { organizationId: newOrgId || null });
-      } else {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ organization_id: newOrgId || null })
-          .eq('id', userId);
-        if (error) throw error;
-      }
+      await dsAssignUserOrganization(supabase, userId, newOrgId || null);
       showToast('Betrieb zugewiesen!', 'success');
       if (onChanged) onChanged();
     } catch (error) {
@@ -847,11 +765,7 @@ const AdminView = ({
                       onClick={async () => {
                         if (confirm(`Account von ${acc.name} wirklich ablehnen und löschen?`)) {
                           try {
-                            if (USE_SECURE_API && acc.id) {
-                              await secureUsersApi.deleteUser(acc.id);
-                            } else {
-                              await supabase.from('profiles').delete().eq('email', acc.email);
-                            }
+                            await dsDeleteUser(supabase, acc.email, [...(allUsers || []), ...(pendingUsers || [])]);
                             loadData();
                             alert('Account abgelehnt und gelöscht.');
                           } catch (error) {
