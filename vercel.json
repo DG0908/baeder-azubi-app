@@ -6,6 +6,10 @@
   "framework": null,
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://api.smartbaden.de/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
