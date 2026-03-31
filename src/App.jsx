@@ -9185,6 +9185,22 @@ export default function BaederApp() {
                     </div>
                   );
                 })}
+              <div className={`pt-2 border-t ${darkMode ? 'border-slate-700' : 'border-gray-100'}`}>
+                <button
+                  onClick={() => {
+                    setShowMehrDrawer(false);
+                    handleLogout();
+                  }}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-colors ${
+                    darkMode
+                      ? 'bg-red-500/10 text-red-300 hover:bg-red-500/20'
+                      : 'bg-red-50 text-red-600 hover:bg-red-100'
+                  }`}
+                >
+                  <span className="text-lg">🚪</span>
+                  <span className="font-medium">Abmelden</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
