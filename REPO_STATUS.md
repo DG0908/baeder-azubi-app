@@ -16,8 +16,9 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 ## Aktueller Fokus
 
 - NestJS-Backend ist live auf `https://api.smartbaden.de`
-- Frontend-Adapter-Migration ist im Code abgeschlossen; Live-Deploy und Kernflow-Tests stehen an
+- Frontend-Adapter-Migration ist im Code abgeschlossen; praktischer Kernflow-Test ist jetzt der Engpass
 - praktische Smoke-Tests fuer Auth, Profil, Admin, Duel-Ergebnis und Berichtsheft jetzt real fahren
+- Quizduell-Ergebnisanzeige, Home-Duel-Statistik und Duel-Haertung gegen triviale Manipulationen praktisch gegen den Live-Stand pruefen
 - Datenschutz-/Go-Live-Doku auf den echten Systemstand ziehen, ohne bestehende Luecken zu beschoenigen
 - neuen Secure-Datenexport praktisch pruefen und danach die restlichen Betreiber-/Datenschutzprozesse schliessen
 
@@ -58,24 +59,30 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - `server/src/modules/auth/auth.service.ts` unterstuetzt bcrypt-Fallback fuer migrierte Supabase-Passwoerter und rehashed bei erfolgreichem Login auf Argon2.
 - `docs/manual-smoke-test-checklist.md` beschreibt jetzt den praktischen Testlauf fuer die kritischen Kernflows.
 - `scripts/run-smoke-checks.mjs` und `npm run smoke:api` decken jetzt Frontend-Shell, API-Health, Login, `auth/me`, Refresh und `users/me/export` fuer konfigurierte Testkonten ab.
+- `scripts/run-smoke-checks.mjs` deckt jetzt zusaetzlich read-only Kernpfade je Rolle ab: `users/me`, `notifications`, `duels`, `duels/leaderboard`, `user-stats/me`, `report-books/profile`; fuer Admins ausserdem `users` und `users/pending`.
+- der Basis-Schnellcheck gegen `https://azubi.smartbaden.de/` und `https://api.smartbaden.de/api/health` lief am 31.03.2026 grün; die Rollenchecks sind nur noch von echten Testkonten abhaengig.
 - `server/src/common/services/mailer.service.ts` schreibt ohne SMTP keine Passwort-Reset-Links mehr in Logs; stattdessen scheitert der Reset-Pfad jetzt explizit mit `ServiceUnavailable`.
 - `server/src/modules/users/users.controller.ts` und `server/src/modules/users/users.service.ts` stellen jetzt einen Secure-Backend-Export fuer `me` und Admin-Exports bereit.
 - `src/lib/secureApi.js`, `src/lib/dataService.js`, `src/App.jsx` und `src/components/views/AdminView.jsx` ziehen den Admin-Datenexport jetzt ueber den Secure-API-Pfad statt ueber den Legacy-Supabase-Read.
 - `docs/privacy-rights-runbook.md` dokumentiert jetzt den operativen Mindestprozess fuer Berichtigung, Loeschung und den neuen Exportpfad inklusive verbleibender Restluecken.
+- `server/src/modules/duels/duels.service.ts` leakt bei aktiven Duellen die richtige Antwort nicht mehr, normalisiert Duel-State serverseitig und blockiert mehrere triviale Cheat-/Manipulationspfade.
+- `src/App.jsx` stabilisiert den Duel-Ergebnis-Screen ueber fertige Spielstaende und synchronisiert Siege/Remis/Niederlagen fuer Home-/Profil-Statistiken aus den tatsaechlich beendeten Duellen.
+- `src/components/views/HomeView.jsx` zeigt auf der Startseite wieder eine konsistente Duel-Zusammenfassung mit `Siege`, `Remis` und `Niederl.`.
 
 ## Noch nicht fertig
 
 - praktische Smoke-Tests fuer die kritischen Auth-/Kernflows fehlen noch
-- die neue API-Smoke-Hilfe braucht noch echte Testkonten per Env, bevor Login-/Export-Pfade praktisch geprueft werden koennen
-- Frontend-Deploy des aktuellen `main`-Stands auf dem Zielserver ist noch offen
+- die erweiterte API-Smoke-Hilfe braucht noch echte Testkonten per Env, bevor die Rollenchecks praktisch grün sein koennen
 - rechtliche und betriebliche Go-Live-Nachweise sind weiter offen
 - automatisierte Tests fuer Auth, Approval, Chat-Scope und Duel-Abschluss fehlen weiterhin
 - der neue Secure-Datenexport ist noch nicht praktisch im Zielbetrieb getestet
+- Quizduell ist trotz Hardening noch nicht vollstaendig server-autoritativ; Fragen-/Antwortfluss wird weiter teils clientseitig synchronisiert
 
 ## Naechster konkreter Schritt
 
 1. aktuellen Frontend-Stand auf dem Zielserver deployen
-2. kritische Flows praktisch testen:
+2. API-Schnellcheck mit echten Testkonten grün fahren
+3. kritische Flows praktisch testen:
    - Registrierung
    - Login
    - Passwort-Reset
@@ -84,10 +91,10 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
    - Admin-Datenexport
    - Duel-Ergebnis-Screen
    - Berichtsheft-Drafts
-3. anschliessend Betreiber-/Datenschutzblock schliessen:
+4. anschliessend Betreiber-/Datenschutzblock schliessen:
    - Aufbewahrungs-, Purge- und Backup-Regeln je Instanz
    - Betreiberfreigabe fuer Auskunfts-/Loeschprozess
-4. danach Go-Live-Block:
+5. danach Go-Live-Block:
    - AVV / TOM / Incident-Runbook
    - Restore-Drill
    - formale Loesch-/Auskunftsprozesse
@@ -101,6 +108,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - Datenmigration Supabase -> NestJS-DB ist noch nicht praktisch abgeschlossen
 - Badge-Historie haengt noch an der alten `user_badges`-Tabelle und ist im neuen Secure-Export aktuell bewusst leer
 - Restore-Drill, formale Loesch-/Auskunftsprozesse und externer Security-Nachweis sind weiter offen
+- Quizduell ist gegen triviale Client-Manipulationen deutlich gehaertet, aber noch nicht auf einem voll server-autoritativem Modell
 
 ## Arbeitsregel
 
