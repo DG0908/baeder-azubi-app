@@ -96,7 +96,13 @@ const runCheck = async (label, fn, options = {}) => {
       return result;
     }
 
-    if (typeof result === 'string' && result.length > 0) {
+    const successMessage = typeof options.successMessage === 'function'
+      ? options.successMessage(result)
+      : options.successMessage;
+
+    if (typeof successMessage === 'string' && successMessage.length > 0) {
+      logResult('OK', label, successMessage);
+    } else if (typeof result === 'string' && result.length > 0) {
       logResult('OK', label, result);
     } else {
       logResult('OK', label, 'ok');
@@ -258,8 +264,11 @@ const runRoleCheck = async (roleCheck) => {
       fail(`${roleCheck.label} login returned role ${loginRole}`);
     }
 
-    return email;
-  }, { skipSuccessLog: false });
+    return body;
+  }, {
+    skipSuccessLog: false,
+    successMessage: () => email
+  });
 
   if (!loginBody?.accessToken || !loginBody?.refreshToken) {
     return;
@@ -291,8 +300,11 @@ const runRoleCheck = async (roleCheck) => {
       fail(`${roleCheck.label} refresh did not return a new access token`);
     }
 
-    return 'refresh token accepted';
-  }, { skipSuccessLog: false });
+    return body;
+  }, {
+    skipSuccessLog: false,
+    successMessage: () => 'refresh token accepted'
+  });
 
   const accessToken = refreshBody?.accessToken || loginBody.accessToken;
   if (!accessToken) {
