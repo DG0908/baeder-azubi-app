@@ -17,6 +17,17 @@ import { SubmitAnswerDto } from './dto/submit-answer.dto';
 
 const REMINDER_LEAD_MIN_MS = 15 * 60 * 1000;
 const REMINDER_LEAD_MAX_MS = 24 * 60 * 60 * 1000;
+const MAX_DUEL_GAME_STATE_BYTES = 200_000;
+const MAX_DUEL_CATEGORY_ROUNDS = 4;
+const MAX_DUEL_QUESTIONS_PER_ROUND = 5;
+const MAX_DUEL_ANSWERS_PER_ROUND = 5;
+const MAX_DUEL_OPTIONS_PER_QUESTION = 8;
+const MAX_DUEL_KEYWORD_GROUPS = 10;
+const MAX_DUEL_KEYWORD_TERMS = 12;
+const MAX_DUEL_CLUES = 8;
+const MAX_DUEL_TEXT_LENGTH = 600;
+const MAX_DUEL_ANSWER_POINTS = 10;
+const ALLOWED_DUEL_DIFFICULTIES = new Set(['anfaenger', 'profi', 'experte', 'extra', 'normal']);
 
 const duelParticipantSelect = {
   id: true,
@@ -259,7 +270,7 @@ export class DuelsService {
   async updateGameState(actor: AuthenticatedUser, duelId: string, gameState: Record<string, unknown>) {
     const duel = await this.prisma.duel.findUnique({
       where: { id: duelId },
-      select: { challengerId: true, opponentId: true, status: true }
+      include: duelInclude
     });
 
     if (!duel) {
@@ -270,14 +281,26 @@ export class DuelsService {
       throw new ForbiddenException('You are not a participant in this duel.');
     }
 
-    // Allow updates for both active and pending duels (to sync game state)
+    if (duel.status === DuelStatus.COMPLETED || duel.status === DuelStatus.EXPIRED) {
+      return this.toDuelSummary(duel, actor.id);
+    }
+
+    this.assertGameStatePayloadSize(gameState);
+    const normalizedGameState = this.normalizeGameState(duel, gameState);
+    const shouldComplete = duel.status === DuelStatus.ACTIVE && normalizedGameState.status === 'finished';
+    const winnerUserId = shouldComplete
+      ? this.resolveWinnerUserId(duel, this.readString(normalizedGameState.winner))
+      : undefined;
+
     const updated = await this.prisma.duel.update({
       where: { id: duelId },
       data: {
-        gameState: gameState as Prisma.JsonObject,
-        status: gameState.status === 'finished' ? DuelStatus.COMPLETED : undefined,
-        winnerUserId: gameState.winner ? await this.resolveWinnerUserId(duelId, gameState.winner as string) : undefined,
-        completedAt: gameState.status === 'finished' ? new Date() : undefined
+        gameState: normalizedGameState,
+        status: shouldComplete ? DuelStatus.COMPLETED : undefined,
+        winnerUserId,
+        completedAt: shouldComplete ? new Date() : undefined,
+        expiresAt: shouldComplete ? null : undefined,
+        reminderSentAt: shouldComplete ? null : undefined
       },
       include: duelInclude
     });
@@ -285,15 +308,13 @@ export class DuelsService {
     return this.toDuelSummary(updated, actor.id);
   }
 
-  private async resolveWinnerUserId(duelId: string, winnerDisplayName: string): Promise<string | undefined> {
-    const duel = await this.prisma.duel.findUnique({
-      where: { id: duelId },
-      include: {
-        challenger: { select: { id: true, displayName: true } },
-        opponent: { select: { id: true, displayName: true } }
-      }
-    });
-    if (!duel) return undefined;
+  private resolveWinnerUserId(
+    duel: Pick<DuelWithRelations, 'challenger' | 'opponent'>,
+    winnerDisplayName?: string | null
+  ): string | null | undefined {
+    if (!winnerDisplayName) {
+      return null;
+    }
     if (duel.challenger.displayName === winnerDisplayName) return duel.challenger.id;
     if (duel.opponent.displayName === winnerDisplayName) return duel.opponent.id;
     return undefined;
@@ -770,7 +791,9 @@ export class DuelsService {
           category: assignment.question.category,
           prompt: assignment.question.prompt,
           options: this.extractOptions(assignment.question.options),
-          correctOptionIndex: assignment.question.correctOptionIndex,
+          correctOptionIndex: duel.status === DuelStatus.COMPLETED
+            ? assignment.question.correctOptionIndex
+            : null,
           explanation: duel.status === DuelStatus.COMPLETED ? assignment.question.explanation : null
         },
         myAnswer: answersByQuestion.get(assignment.id) ?? null
@@ -780,6 +803,7 @@ export class DuelsService {
   }
 
   private toDuelSummary(duel: DuelWithRelations, actorId: string) {
+    const normalizedGameState = this.normalizeGameState(duel, duel.gameState);
     const score = this.computeScore(duel);
     const myUserId = actorId;
     const opponentUserId = duel.challengerId === actorId ? duel.opponentId : duel.challengerId;
@@ -788,7 +812,7 @@ export class DuelsService {
       id: duel.id,
       status: duel.status,
       questionCount: duel.questionCount,
-      gameState: duel.gameState,
+      gameState: normalizedGameState,
       expiresAt: duel.expiresAt,
       startedAt: duel.startedAt,
       completedAt: duel.completedAt,
@@ -797,6 +821,8 @@ export class DuelsService {
       challenger: duel.challenger,
       opponent: duel.opponent,
       winnerUser: duel.winnerUser,
+      challengerScore: score[duel.challengerId] ?? 0,
+      duelOpponentScore: score[duel.opponentId] ?? 0,
       myScore: score[myUserId] ?? 0,
       opponentScore: score[opponentUserId] ?? 0,
       myAnsweredCount: duel.answers.filter((answer) => answer.userId === myUserId).length
@@ -804,6 +830,14 @@ export class DuelsService {
   }
 
   private computeScore(duel: DuelWithRelations) {
+    const gameStateScore = this.computeGameStateScore(duel.gameState);
+    if (gameStateScore) {
+      return {
+        [duel.challengerId]: gameStateScore.player1Score,
+        [duel.opponentId]: gameStateScore.player2Score
+      };
+    }
+
     const scoreboard: Record<string, number> = {};
     for (const answer of duel.answers) {
       if (!scoreboard[answer.userId]) {
@@ -818,6 +852,337 @@ export class DuelsService {
 
   private extractOptions(options: Prisma.JsonValue): string[] {
     return Array.isArray(options) ? options.map((entry) => String(entry)) : [];
+  }
+
+  private assertGameStatePayloadSize(gameState: Record<string, unknown>) {
+    const payloadSize = Buffer.byteLength(JSON.stringify(gameState ?? {}), 'utf8');
+    if (payloadSize > MAX_DUEL_GAME_STATE_BYTES) {
+      throw new BadRequestException('Duel game state payload is too large.');
+    }
+  }
+
+  private normalizeGameState(
+    duel: DuelWithRelations,
+    input: Prisma.JsonValue | Record<string, unknown> | null | undefined
+  ): Prisma.InputJsonObject {
+    const raw = this.asRecord(input);
+    const categoryRounds = this.normalizeCategoryRounds(raw.categoryRounds);
+    const scoreboard = this.computeCategoryRoundScores(categoryRounds);
+    const requestedStatus = this.normalizeClientGameStatus(raw.status);
+    const actualStatus = this.mapClientStatusFromDuelStatus(duel.status);
+    const isComplete = duel.status === DuelStatus.ACTIVE
+      && requestedStatus === 'finished'
+      && this.isCategoryRoundSetComplete(categoryRounds);
+    const status = duel.status === DuelStatus.ACTIVE
+      ? (isComplete ? 'finished' : 'active')
+      : actualStatus;
+    const winner = status === 'finished'
+      ? this.resolveWinnerDisplayName(duel, scoreboard.player1Score, scoreboard.player2Score)
+      : null;
+    const currentTurn = status === 'finished'
+      ? ''
+      : (this.normalizeParticipantName(raw.currentTurn, duel) ?? this.getFallbackCurrentTurn(duel));
+    const difficulty = this.normalizeDifficulty(raw.difficulty);
+    const categoryRound = this.normalizeCategoryRound(raw.categoryRound, categoryRounds.length, status);
+    const timeoutMinutes = this.normalizeRequestTimeoutMinutes(
+      this.readInteger(raw.challengeTimeoutMinutes)
+        ?? this.readInteger(this.asRecord(duel.gameState).challengeTimeoutMinutes)
+        ?? undefined
+    );
+
+    return {
+      player1Score: scoreboard.player1Score,
+      player2Score: scoreboard.player2Score,
+      currentTurn,
+      categoryRound,
+      status,
+      difficulty,
+      categoryRounds,
+      winner,
+      challengeTimeoutMinutes: timeoutMinutes
+    };
+  }
+
+  private computeGameStateScore(input: Prisma.JsonValue | null | undefined) {
+    const raw = this.asRecord(input);
+    const categoryRounds = this.normalizeCategoryRounds(raw.categoryRounds);
+    if (categoryRounds.length === 0) {
+      return null;
+    }
+    return this.computeCategoryRoundScores(categoryRounds);
+  }
+
+  private computeCategoryRoundScores(categoryRounds: Prisma.InputJsonArray) {
+    let player1Score = 0;
+    let player2Score = 0;
+
+    for (const round of categoryRounds) {
+      const roundRecord = this.asRecord(round);
+      player1Score += this.sumAnswerPoints(roundRecord.player1Answers);
+      player2Score += this.sumAnswerPoints(roundRecord.player2Answers);
+    }
+
+    return { player1Score, player2Score };
+  }
+
+  private sumAnswerPoints(input: unknown) {
+    if (!Array.isArray(input)) {
+      return 0;
+    }
+
+    return input
+      .slice(0, MAX_DUEL_ANSWERS_PER_ROUND)
+      .reduce((total, answer) => {
+        const answerRecord = this.asRecord(answer);
+        const points = this.readInteger(answerRecord.points);
+        if (points !== null) {
+          return total + Math.max(0, Math.min(MAX_DUEL_ANSWER_POINTS, points));
+        }
+        return total + (answerRecord.correct === true ? 1 : 0);
+      }, 0);
+  }
+
+  private normalizeCategoryRounds(input: unknown): Prisma.InputJsonArray {
+    if (!Array.isArray(input)) {
+      return [];
+    }
+
+    return input
+      .slice(0, MAX_DUEL_CATEGORY_ROUNDS)
+      .map((round) => this.normalizeCategoryRoundEntry(round));
+  }
+
+  private normalizeCategoryRoundEntry(input: unknown): Prisma.InputJsonObject {
+    const round = this.asRecord(input);
+    return {
+      categoryId: this.readString(round.categoryId) ?? '',
+      categoryName: this.sanitizeText(round.categoryName, 120),
+      chooser: this.sanitizeText(round.chooser, 120),
+      questions: this.normalizeQuestionArray(round.questions),
+      player1Answers: this.normalizeAnswerArray(round.player1Answers),
+      player2Answers: this.normalizeAnswerArray(round.player2Answers)
+    };
+  }
+
+  private normalizeQuestionArray(input: unknown): Prisma.InputJsonArray {
+    if (!Array.isArray(input)) {
+      return [];
+    }
+
+    return input
+      .slice(0, MAX_DUEL_QUESTIONS_PER_ROUND)
+      .map((question) => this.normalizeQuestionEntry(question));
+  }
+
+  private normalizeQuestionEntry(input: unknown): Prisma.InputJsonObject {
+    const question = this.asRecord(input);
+    return {
+      id: this.readString(question.id) ?? '',
+      category: this.sanitizeText(question.category, 80),
+      type: this.sanitizeText(question.type, 24),
+      prompt: this.sanitizeText(question.prompt, MAX_DUEL_TEXT_LENGTH),
+      q: this.sanitizeText(question.q, MAX_DUEL_TEXT_LENGTH),
+      answerGuide: this.sanitizeText(question.answerGuide, MAX_DUEL_TEXT_LENGTH),
+      a: this.normalizeStringArray(question.a, MAX_DUEL_OPTIONS_PER_QUESTION, 240),
+      clues: this.normalizeStringArray(question.clues, MAX_DUEL_CLUES, 240),
+      multi: Boolean(question.multi),
+      correct: this.normalizeCorrectAnswer(question.correct),
+      keywordGroups: this.normalizeKeywordGroups(question.keywordGroups),
+      minKeywordGroups: this.normalizeBoundedInteger(question.minKeywordGroups, 1, MAX_DUEL_KEYWORD_GROUPS, 1),
+      minWords: this.normalizeBoundedInteger(question.minWords, 0, 20, 0),
+      timeLimit: this.normalizeBoundedInteger(question.timeLimit, 5, 300, 30)
+    };
+  }
+
+  private normalizeAnswerArray(input: unknown): Prisma.InputJsonArray {
+    if (!Array.isArray(input)) {
+      return [];
+    }
+
+    return input
+      .slice(0, MAX_DUEL_ANSWERS_PER_ROUND)
+      .map((answer) => this.normalizeAnswerEntry(answer));
+  }
+
+  private normalizeAnswerEntry(input: unknown): Prisma.InputJsonObject {
+    const answer = this.asRecord(input);
+    return {
+      questionIndex: this.normalizeBoundedInteger(answer.questionIndex, 0, MAX_DUEL_QUESTIONS_PER_ROUND - 1, 0),
+      correct: Boolean(answer.correct),
+      timeout: Boolean(answer.timeout),
+      points: this.normalizeBoundedInteger(answer.points, 0, MAX_DUEL_ANSWER_POINTS, 0),
+      answerType: this.sanitizeText(answer.answerType, 24),
+      selectedAnswer: this.normalizeBoundedInteger(answer.selectedAnswer, 0, MAX_DUEL_OPTIONS_PER_QUESTION - 1, 0),
+      selectedAnswers: this.normalizeIntegerArray(answer.selectedAnswers, MAX_DUEL_OPTIONS_PER_QUESTION, 0, MAX_DUEL_OPTIONS_PER_QUESTION - 1),
+      keywordText: this.sanitizeText(answer.keywordText, 240)
+    };
+  }
+
+  private normalizeKeywordGroups(input: unknown): Prisma.InputJsonArray {
+    if (!Array.isArray(input)) {
+      return [];
+    }
+
+    return input
+      .slice(0, MAX_DUEL_KEYWORD_GROUPS)
+      .map((entry) => {
+        if (Array.isArray(entry)) {
+          const terms = this.normalizeStringArray(entry, MAX_DUEL_KEYWORD_TERMS, 120);
+          return {
+            label: terms[0] ?? 'Schlagwort',
+            terms
+          };
+        }
+
+        const record = this.asRecord(entry);
+        const terms = this.normalizeStringArray(record.terms, MAX_DUEL_KEYWORD_TERMS, 120);
+        const label = this.sanitizeText(record.label ?? record.name, 120) || terms[0] || 'Schlagwort';
+        return {
+          label,
+          terms
+        };
+      });
+  }
+
+  private normalizeCorrectAnswer(input: unknown): number | Prisma.InputJsonArray {
+    if (Array.isArray(input)) {
+      return this.normalizeIntegerArray(input, MAX_DUEL_OPTIONS_PER_QUESTION, 0, MAX_DUEL_OPTIONS_PER_QUESTION - 1);
+    }
+
+    return this.normalizeBoundedInteger(input, 0, MAX_DUEL_OPTIONS_PER_QUESTION - 1, 0);
+  }
+
+  private normalizeStringArray(input: unknown, maxItems: number, maxTextLength: number): Prisma.InputJsonArray {
+    if (!Array.isArray(input)) {
+      return [];
+    }
+
+    return input
+      .slice(0, maxItems)
+      .map((value) => this.sanitizeText(value, maxTextLength))
+      .filter((value) => value.length > 0);
+  }
+
+  private normalizeIntegerArray(input: unknown, maxItems: number, min: number, max: number): Prisma.InputJsonArray {
+    if (!Array.isArray(input)) {
+      return [];
+    }
+
+    return input
+      .slice(0, maxItems)
+      .map((value) => this.normalizeBoundedInteger(value, min, max, min));
+  }
+
+  private normalizeBoundedInteger(input: unknown, min: number, max: number, fallback: number) {
+    const parsed = this.readInteger(input);
+    if (parsed === null) {
+      return fallback;
+    }
+    return Math.max(min, Math.min(max, parsed));
+  }
+
+  private normalizeClientGameStatus(input: unknown) {
+    const normalized = String(input || '').trim().toLowerCase();
+    return normalized === 'finished' ? 'finished' : normalized === 'waiting' ? 'waiting' : 'active';
+  }
+
+  private mapClientStatusFromDuelStatus(status: DuelStatus) {
+    if (status === DuelStatus.PENDING) {
+      return 'waiting';
+    }
+    if (status === DuelStatus.COMPLETED || status === DuelStatus.EXPIRED) {
+      return 'finished';
+    }
+    return 'active';
+  }
+
+  private isCategoryRoundSetComplete(categoryRounds: Prisma.InputJsonArray) {
+    if (categoryRounds.length !== MAX_DUEL_CATEGORY_ROUNDS) {
+      return false;
+    }
+
+    return categoryRounds.every((round) => {
+      const roundRecord = this.asRecord(round);
+      const questions = Array.isArray(roundRecord.questions) ? roundRecord.questions : [];
+      const player1Answers = Array.isArray(roundRecord.player1Answers) ? roundRecord.player1Answers : [];
+      const player2Answers = Array.isArray(roundRecord.player2Answers) ? roundRecord.player2Answers : [];
+      return questions.length > 0
+        && player1Answers.length === questions.length
+        && player2Answers.length === questions.length;
+    });
+  }
+
+  private resolveWinnerDisplayName(duel: DuelWithRelations, player1Score: number, player2Score: number) {
+    if (player1Score > player2Score) {
+      return duel.challenger.displayName;
+    }
+    if (player2Score > player1Score) {
+      return duel.opponent.displayName;
+    }
+    return null;
+  }
+
+  private getFallbackCurrentTurn(duel: DuelWithRelations) {
+    if (duel.status === DuelStatus.PENDING) {
+      return duel.challenger.displayName;
+    }
+    if (duel.status === DuelStatus.ACTIVE) {
+      return duel.challenger.displayName;
+    }
+    return '';
+  }
+
+  private normalizeParticipantName(input: unknown, duel: DuelWithRelations) {
+    const candidate = this.readString(input);
+    if (!candidate) {
+      return null;
+    }
+    if (candidate === duel.challenger.displayName || candidate === duel.opponent.displayName) {
+      return candidate;
+    }
+    return null;
+  }
+
+  private normalizeDifficulty(input: unknown) {
+    const value = String(input || '').trim().toLowerCase();
+    return ALLOWED_DUEL_DIFFICULTIES.has(value) ? value : 'profi';
+  }
+
+  private normalizeCategoryRound(input: unknown, categoryRoundCount: number, status: string) {
+    if (status === 'finished') {
+      return Math.max(0, Math.min(MAX_DUEL_CATEGORY_ROUNDS - 1, categoryRoundCount - 1));
+    }
+    return this.normalizeBoundedInteger(input, 0, MAX_DUEL_CATEGORY_ROUNDS - 1, 0);
+  }
+
+  private sanitizeText(input: unknown, maxLength: number) {
+    return String(input ?? '')
+      .trim()
+      .slice(0, maxLength);
+  }
+
+  private readString(input: unknown) {
+    const value = String(input ?? '').trim();
+    return value.length > 0 ? value : null;
+  }
+
+  private readInteger(input: unknown) {
+    if (typeof input === 'number' && Number.isFinite(input)) {
+      return Math.trunc(input);
+    }
+    if (typeof input === 'string' && input.trim().length > 0) {
+      const parsed = Number(input);
+      if (Number.isFinite(parsed)) {
+        return Math.trunc(parsed);
+      }
+    }
+    return null;
+  }
+
+  private asRecord(input: unknown): Record<string, unknown> {
+    return input && typeof input === 'object' && !Array.isArray(input)
+      ? (input as Record<string, unknown>)
+      : {};
   }
 
   private assertDuelParticipant(
