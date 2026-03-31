@@ -1233,20 +1233,22 @@ const mapDuelToGame = (d, currentUserId) => {
   const effectiveStatus = gs.status || status;
   // If game is active but no currentTurn saved, default to player1 (challenger picks first)
   const currentTurn = gs.currentTurn || (effectiveStatus === 'active' ? player1 : '');
+  const player1Score = Number(d.challengerScore ?? gs.player1Score ?? 0);
+  const player2Score = Number(d.duelOpponentScore ?? gs.player2Score ?? 0);
 
   return {
     id: d.id,
     player1,
     player2,
-    player1Score: gs.player1Score ?? 0,
-    player2Score: gs.player2Score ?? 0,
+    player1Score,
+    player2Score,
     currentTurn,
     categoryRound: gs.categoryRound ?? 0,
     round: gs.categoryRound ?? 0,
     status: effectiveStatus,
     difficulty: gs.difficulty || 'normal',
     categoryRounds: gs.categoryRounds || [],
-    winner: gs.winner || d.winnerUser?.displayName || null,
+    winner: d.winnerUser?.displayName || gs.winner || null,
     questionHistory: [],
     updatedAt: d.updatedAt,
     createdAt: d.createdAt,
@@ -2566,16 +2568,13 @@ export const getDuelWithQuestions = async (supabase, duelId, currentUserId = nul
 
 export const saveDuelState = async (supabase, game) => {
   if (USE_SECURE_API) {
-    // Save client-managed game state to NestJS backend as JSON
+    // Persist only the client state the backend still needs for continuity.
     const gameState = {
-      player1Score: game.player1Score,
-      player2Score: game.player2Score,
       currentTurn: game.currentTurn,
       categoryRound: game.categoryRound || 0,
       status: game.status,
       difficulty: game.difficulty,
       categoryRounds: game.categoryRounds || [],
-      winner: game.winner || null,
       challengeTimeoutMinutes: game.challengeTimeoutMinutes
     };
     await secureDuelsApi.updateGameState(game.id, gameState);

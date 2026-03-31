@@ -4,6 +4,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { CreateDuelDto } from './dto/create-duel.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
+import { UpdateDuelStateDto } from './dto/update-duel-state.dto';
 import { DuelsService } from './duels.service';
 
 @Controller('duels')
@@ -47,7 +48,7 @@ export class DuelsController {
   updateGameState(
     @CurrentUser() actor: AuthenticatedUser,
     @Param('id') duelId: string,
-    @Body() body: { gameState: Record<string, unknown> }
+    @Body() body: UpdateDuelStateDto
   ) {
     return this.duelsService.updateGameState(actor, duelId, body.gameState);
   }
