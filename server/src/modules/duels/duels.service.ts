@@ -286,7 +286,9 @@ export class DuelsService {
     }
 
     this.assertGameStatePayloadSize(gameState);
+    const previousGameState = this.normalizeGameState(duel, duel.gameState);
     const normalizedGameState = this.normalizeGameState(duel, gameState);
+    this.assertValidGameStateTransition(duel, previousGameState, normalizedGameState, actor);
     const shouldComplete = duel.status === DuelStatus.ACTIVE && normalizedGameState.status === 'finished';
     const winnerUserId = shouldComplete
       ? this.resolveWinnerUserId(duel, this.readString(normalizedGameState.winner))
@@ -925,6 +927,79 @@ export class DuelsService {
     return { player1Score, player2Score };
   }
 
+  private assertValidGameStateTransition(
+    duel: DuelWithRelations,
+    previousGameState: Prisma.InputJsonObject,
+    nextGameState: Prisma.InputJsonObject,
+    actor: AuthenticatedUser
+  ) {
+    const previousRounds = Array.isArray(previousGameState.categoryRounds)
+      ? previousGameState.categoryRounds
+      : [];
+    const nextRounds = Array.isArray(nextGameState.categoryRounds)
+      ? nextGameState.categoryRounds
+      : [];
+
+    if (nextRounds.length < previousRounds.length) {
+      throw new BadRequestException('Duel rounds cannot be removed once stored.');
+    }
+
+    if (nextRounds.length > previousRounds.length + 1) {
+      throw new BadRequestException('Duel state may only add one new round at a time.');
+    }
+
+    const actorIsChallenger = duel.challengerId === actor.id;
+    const actorAnswerKey = actorIsChallenger ? 'player1Answers' : 'player2Answers';
+    const opponentAnswerKey = actorIsChallenger ? 'player2Answers' : 'player1Answers';
+    const expectedNextChooser = this.getExpectedNextChooserName(duel, previousRounds);
+    const seenCategories = new Set<string>();
+
+    for (let index = 0; index < nextRounds.length; index += 1) {
+      const nextRound = this.asRecord(nextRounds[index]);
+      const categoryId = this.readString(nextRound.categoryId);
+      if (categoryId) {
+        if (seenCategories.has(categoryId)) {
+          throw new BadRequestException('Each duel category may only be used once.');
+        }
+        seenCategories.add(categoryId);
+      }
+
+      if (index < previousRounds.length) {
+        const previousRound = this.asRecord(previousRounds[index]);
+        this.assertRoundMetadataUnchanged(previousRound, nextRound);
+        this.assertQuestionsUnchanged(previousRound, nextRound);
+        this.assertAnswersUnchangedForOtherParticipant(previousRound, nextRound, opponentAnswerKey);
+        this.assertAnswersAppendOnly(previousRound, nextRound, actorAnswerKey);
+        continue;
+      }
+
+      if (previousRounds.length > 0 && !this.isRoundComplete(this.asRecord(previousRounds[previousRounds.length - 1]))) {
+        throw new BadRequestException('A new duel round can only start after the current round is complete.');
+      }
+
+      if ((this.readString(nextRound.chooser) ?? '') !== expectedNextChooser) {
+        throw new BadRequestException('Only the expected chooser may start the next duel round.');
+      }
+
+      if ((this.readString(nextRound.categoryId) ?? '').length === 0) {
+        throw new BadRequestException('New duel rounds require a category.');
+      }
+
+      const opponentAnswers = Array.isArray(nextRound[opponentAnswerKey]) ? nextRound[opponentAnswerKey] : [];
+      if (opponentAnswers.length > 0) {
+        throw new BadRequestException('A newly created duel round cannot already contain opponent answers.');
+      }
+    }
+
+    if (nextGameState.status === 'finished' && !this.isCategoryRoundSetComplete(nextRounds)) {
+      throw new BadRequestException('Duel can only be finished after all rounds are complete.');
+    }
+
+    if (duel.status === DuelStatus.ACTIVE && nextGameState.status === 'waiting') {
+      throw new BadRequestException('An active duel cannot transition back to waiting.');
+    }
+  }
+
   private sumAnswerPoints(input: unknown) {
     if (!Array.isArray(input)) {
       return 0;
@@ -1110,6 +1185,92 @@ export class DuelsService {
         && player1Answers.length === questions.length
         && player2Answers.length === questions.length;
     });
+  }
+
+  private isRoundComplete(round: Record<string, unknown>) {
+    const questions = Array.isArray(round.questions) ? round.questions : [];
+    const player1Answers = Array.isArray(round.player1Answers) ? round.player1Answers : [];
+    const player2Answers = Array.isArray(round.player2Answers) ? round.player2Answers : [];
+    return questions.length > 0
+      && player1Answers.length === questions.length
+      && player2Answers.length === questions.length;
+  }
+
+  private getExpectedNextChooserName(duel: DuelWithRelations, previousRounds: Prisma.InputJsonArray) {
+    if (previousRounds.length === 0) {
+      return duel.challenger.displayName;
+    }
+
+    const lastRound = this.asRecord(previousRounds[previousRounds.length - 1]);
+    const lastChooser = this.readString(lastRound.chooser);
+    if (lastChooser === duel.challenger.displayName) {
+      return duel.opponent.displayName;
+    }
+    if (lastChooser === duel.opponent.displayName) {
+      return duel.challenger.displayName;
+    }
+    return duel.challenger.displayName;
+  }
+
+  private assertRoundMetadataUnchanged(previousRound: Record<string, unknown>, nextRound: Record<string, unknown>) {
+    const metadataKeys = ['categoryId', 'categoryName', 'chooser'];
+    for (const key of metadataKeys) {
+      const previousValue = this.readString(previousRound[key]) ?? '';
+      const nextValue = this.readString(nextRound[key]) ?? '';
+      if (previousValue !== nextValue) {
+        throw new BadRequestException(`Stored duel round ${key} cannot be changed.`);
+      }
+    }
+  }
+
+  private assertQuestionsUnchanged(previousRound: Record<string, unknown>, nextRound: Record<string, unknown>) {
+    const previousQuestions = Array.isArray(previousRound.questions) ? previousRound.questions : [];
+    const nextQuestions = Array.isArray(nextRound.questions) ? nextRound.questions : [];
+    if (!this.isSameJsonValue(previousQuestions, nextQuestions)) {
+      throw new BadRequestException('Stored duel questions cannot be changed after creation.');
+    }
+  }
+
+  private assertAnswersUnchangedForOtherParticipant(
+    previousRound: Record<string, unknown>,
+    nextRound: Record<string, unknown>,
+    answerKey: 'player1Answers' | 'player2Answers'
+  ) {
+    const previousAnswers = Array.isArray(previousRound[answerKey]) ? previousRound[answerKey] : [];
+    const nextAnswers = Array.isArray(nextRound[answerKey]) ? nextRound[answerKey] : [];
+    if (!this.isSameJsonValue(previousAnswers, nextAnswers)) {
+      throw new BadRequestException('You cannot modify your opponent\'s stored duel answers.');
+    }
+  }
+
+  private assertAnswersAppendOnly(
+    previousRound: Record<string, unknown>,
+    nextRound: Record<string, unknown>,
+    answerKey: 'player1Answers' | 'player2Answers'
+  ) {
+    const previousAnswers = Array.isArray(previousRound[answerKey]) ? previousRound[answerKey] : [];
+    const nextAnswers = Array.isArray(nextRound[answerKey]) ? nextRound[answerKey] : [];
+
+    if (nextAnswers.length < previousAnswers.length) {
+      throw new BadRequestException('Stored duel answers cannot be removed.');
+    }
+
+    if (!this.isJsonPrefix(previousAnswers, nextAnswers)) {
+      throw new BadRequestException('Stored duel answers cannot be changed retroactively.');
+    }
+  }
+
+  private isJsonPrefix(previousValues: unknown[], nextValues: unknown[]) {
+    for (let index = 0; index < previousValues.length; index += 1) {
+      if (!this.isSameJsonValue(previousValues[index], nextValues[index])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private isSameJsonValue(left: unknown, right: unknown) {
+    return JSON.stringify(left) === JSON.stringify(right);
   }
 
   private resolveWinnerDisplayName(duel: DuelWithRelations, player1Score: number, player2Score: number) {
