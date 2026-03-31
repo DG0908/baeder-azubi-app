@@ -43,6 +43,10 @@ Stand: 2026-03-30
 
 ### Passwort-Reset
 
+Voraussetzung:
+- SMTP ist konfiguriert oder ein Test-Mailcatcher ist aktiv.
+- Reset-Links werden nicht aus Logs oder Shell-History gelesen.
+
 1. "Passwort vergessen" oeffnen.
 2. Reset-Mail anfordern.
 3. Reset-Link oeffnen.
