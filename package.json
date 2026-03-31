@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "check:questions": "node scripts/validate-questions.mjs",
+    "smoke:api": "node scripts/run-smoke-checks.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },
