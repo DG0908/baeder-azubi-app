@@ -15,7 +15,6 @@ const HomeView = ({
   rotateGeneralKnowledge,
   dailyWisdom,
   userStats,
-  getTotalXpFromStats,
   setCurrentView,
   dailyChallenges,
   getChallengeProgress,
@@ -114,8 +113,6 @@ const HomeView = ({
     return `${minutes}m`;
   };
 
-  const totalXp = getTotalXpFromStats(userStats);
-
   // Actionable items count
   const actionCount = actionableChallenges.length + (dueCards > 0 ? 1 : 0);
 
@@ -132,8 +129,8 @@ const HomeView = ({
             <div className="flex flex-col gap-1 flex-shrink-0">
               {[
                 { val: userStats.wins, label: 'Siege', color: 'bg-green-500/30' },
+                { val: userStats.draws, label: 'Remis', color: 'bg-slate-500/30' },
                 { val: userStats.losses, label: 'Niederl.', color: 'bg-red-500/30' },
-                { val: totalXp, label: 'XP', color: 'bg-yellow-500/30' },
               ].map(s => (
                 <div key={s.label} className={`${s.color} rounded-lg px-2.5 py-1 flex items-center gap-1.5`}>
                   <div className="text-sm font-bold leading-none">{s.val}</div>
