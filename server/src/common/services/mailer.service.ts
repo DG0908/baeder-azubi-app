@@ -22,13 +22,9 @@ export class MailerService {
 
   async sendPasswordResetEmail(input: PasswordResetMailInput): Promise<void> {
     if (!this.isSmtpConfigured()) {
-      if (this.configService.get<string>('NODE_ENV') !== 'production') {
-        this.logger.warn(
-          `SMTP not configured. Password reset URL for ${input.email}: ${input.resetUrl}`
-        );
-        return;
-      }
-
+      this.logger.error(
+        `SMTP not configured. Password reset mail for ${input.email} could not be sent.`
+      );
       throw new ServiceUnavailableException('Password reset mail service is not configured.');
     }
 

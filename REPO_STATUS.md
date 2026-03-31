@@ -1,6 +1,6 @@
 # Repo Status
 
-Stand: 2026-03-30
+Stand: 2026-03-31
 
 ## Zweck
 
@@ -43,6 +43,8 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - `src/lib/dataService.js` ist jetzt auch fuer Auth-, Session-, Register-, Login-, Logout- und Passwort-Reset-Flows die gemeinsame Dual-Mode-Schicht.
 - `src/context/AuthContext.jsx` spricht fuer Session-Restore, Register, Login und Logout nur noch den Adapter und raeumt lokale Session-/Profilreste konsistenter auf.
 - `src/components/auth/LoginScreen.jsx` spricht fuer Einladungscode-Vorschau und Passwort-Reset nur noch den Adapter und kennt keine direkten `supabase.auth`- oder `secureAuthApi`-Aufrufe mehr.
+- `src/components/auth/LoginScreen.jsx` nutzt fuer Login, Registrierung und Passwort-Reset jetzt echte HTML-Formulare statt Tastatur-Workarounds; die Reset-Hinweise nennen keinen Supabase-Sender mehr.
+- `index.html` nutzt das aktuelle `mobile-web-app-capable`-Meta-Tag statt des veralteten Apple-Pendants.
 - `src/components/views/ProfileView.jsx` verlangt im Secure-Modus jetzt das aktuelle Passwort fuer Passwortwechsel.
 - `src/components/legal/LegalContent.jsx` ist die gemeinsame Quelle fuer Impressum und Datenschutztexte; Login- und Profilpfade verwenden jetzt dieselbe Textbasis.
 - `src/App.jsx` spricht fuer die produktiven Kernpfade nur noch ueber `dataService.js`, inklusive:
@@ -55,6 +57,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - `src/components/views/AdminView.jsx` nutzt im Secure-Modus fuer die Betriebszuweisung jetzt den richtigen Organization-Endpoint; die Code-Nutzungsanzeige ist wieder konsistent.
 - `server/src/modules/auth/auth.service.ts` unterstuetzt bcrypt-Fallback fuer migrierte Supabase-Passwoerter und rehashed bei erfolgreichem Login auf Argon2.
 - `docs/manual-smoke-test-checklist.md` beschreibt jetzt den praktischen Testlauf fuer die kritischen Kernflows.
+- `server/src/common/services/mailer.service.ts` schreibt ohne SMTP keine Passwort-Reset-Links mehr in Logs; stattdessen scheitert der Reset-Pfad jetzt explizit mit `ServiceUnavailable`.
 - `server/src/modules/users/users.controller.ts` und `server/src/modules/users/users.service.ts` stellen jetzt einen Secure-Backend-Export fuer `me` und Admin-Exports bereit.
 - `src/lib/secureApi.js`, `src/lib/dataService.js`, `src/App.jsx` und `src/components/views/AdminView.jsx` ziehen den Admin-Datenexport jetzt ueber den Secure-API-Pfad statt ueber den Legacy-Supabase-Read.
 - `docs/privacy-rights-runbook.md` dokumentiert jetzt den operativen Mindestprozess fuer Berichtigung, Loeschung und den neuen Exportpfad inklusive verbleibender Restluecken.
@@ -96,7 +99,6 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - Datenmigration Supabase -> NestJS-DB ist noch nicht praktisch abgeschlossen
 - Badge-Historie haengt noch an der alten `user_badges`-Tabelle und ist im neuen Secure-Export aktuell bewusst leer
 - Restore-Drill, formale Loesch-/Auskunftsprozesse und externer Security-Nachweis sind weiter offen
-- `server/scripts/reset-marcel-pw.js` ist ein temporaeres Hilfsskript mit festem Passwort und echter E-Mail-Adresse und sollte vor Produktion entfernt oder ersetzt werden
 
 ## Arbeitsregel
 

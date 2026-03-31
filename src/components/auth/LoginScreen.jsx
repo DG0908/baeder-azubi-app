@@ -32,6 +32,21 @@ const LoginScreen = () => {
   const [newPasswordLoading, setNewPasswordLoading] = useState(false);
   const minPasswordLength = USE_SECURE_API ? 12 : 6;
 
+  const handleLoginSubmit = (event) => {
+    event.preventDefault();
+    handleLogin();
+  };
+
+  const handleRegisterSubmit = (event) => {
+    event.preventDefault();
+    handleRegister();
+  };
+
+  const handlePasswordResetSubmit = (event) => {
+    event.preventDefault();
+    handlePasswordReset();
+  };
+
   // Live-Validierung des Einladungscodes
   const [codeStatus, setCodeStatus] = useState(null); // null | 'checking' | { valid: true, orgName, role } | { valid: false } | { secureValidation: true }
   const codeTimerRef = useRef(null);
@@ -151,6 +166,11 @@ const LoginScreen = () => {
       }
     };
 
+    const handleSetNewPasswordSubmit = (event) => {
+      event.preventDefault();
+      handleSetNewPassword();
+    };
+
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{
         background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
@@ -163,7 +183,7 @@ const LoginScreen = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Neues Passwort setzen</h2>
             <p className="text-gray-500 text-sm">Gib dein neues Passwort ein (mindestens {minPasswordLength} Zeichen).</p>
           </div>
-          <div className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSetNewPasswordSubmit}>
             <input
               type="password"
               placeholder="Neues Passwort"
@@ -176,17 +196,16 @@ const LoginScreen = () => {
               placeholder="Passwort wiederholen"
               value={newPasswordConfirm}
               onChange={(e) => setNewPasswordConfirm(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSetNewPassword()}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
             <button
-              onClick={handleSetNewPassword}
+              type="submit"
               disabled={newPasswordLoading}
               className="w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors"
             >
               {newPasswordLoading ? 'Wird gespeichert...' : 'Passwort ändern'}
             </button>
-          </div>
+          </form>
         </div>
       </div>
     );
@@ -219,7 +238,7 @@ const LoginScreen = () => {
               <div className="text-4xl mb-3">✅</div>
               <h3 className="font-bold text-green-800 mb-2">E-Mail gesendet!</h3>
               <p className="text-sm text-green-700">
-                Prüfe dein Postfach (auch den Spam-Ordner) nach einer E-Mail von Supabase.
+                Prüfe dein Postfach (auch den Spam-Ordner) nach einer E-Mail mit dem Zurücksetzen-Link.
                 Klicke auf den Link in der E-Mail, um ein neues Passwort zu setzen.
               </p>
               <button
@@ -230,23 +249,22 @@ const LoginScreen = () => {
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <form className="space-y-4" onSubmit={handlePasswordResetSubmit}>
               <input
                 type="email"
                 placeholder="Deine E-Mail-Adresse"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handlePasswordReset()}
                 className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               />
               <button
-                onClick={handlePasswordReset}
+                type="submit"
                 disabled={resetLoading}
                 className="w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors"
               >
                 {resetLoading ? 'Wird gesendet...' : 'Reset-Link senden'}
               </button>
-            </div>
+            </form>
           )}
         </div>
       </div>
@@ -336,13 +354,12 @@ const LoginScreen = () => {
         </div>
 
         {authView === 'login' ? (
-          <div className="space-y-4">
+          <form className="space-y-4" onSubmit={handleLoginSubmit}>
             <input
               type="text"
               placeholder="E-Mail oder Name"
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
             <input
@@ -350,11 +367,10 @@ const LoginScreen = () => {
               placeholder="Passwort"
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
             <button
-              onClick={handleLogin}
+              type="submit"
               className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-lg transition-colors"
             >
               <Lock className="inline mr-2" size={20} />
@@ -362,15 +378,16 @@ const LoginScreen = () => {
             </button>
             <div className="text-center">
               <button
+                type="button"
                 onClick={() => setAuthView('forgot')}
                 className="text-sm text-cyan-600 hover:text-cyan-700 transition-colors"
               >
                 Passwort vergessen?
               </button>
             </div>
-          </div>
+          </form>
         ) : (
-          <div className="space-y-4">
+          <form className="space-y-4" onSubmit={handleRegisterSubmit}>
             <input
               type="text"
               placeholder="Einladungscode"
@@ -451,7 +468,7 @@ const LoginScreen = () => {
             </div>
 
             <button
-              onClick={handleRegister}
+              type="submit"
               className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition-colors"
             >
               <Shield className="inline mr-2" size={20} />
@@ -461,7 +478,7 @@ const LoginScreen = () => {
               <AlertTriangle className="inline mr-2" size={16} />
               Nach der Registrierung muss dein Account noch freigeschaltet werden.
             </div>
-          </div>
+          </form>
         )}
 
         <div className="mt-6 pt-6 border-t border-gray-200">
