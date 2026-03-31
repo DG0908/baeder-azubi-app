@@ -800,6 +800,26 @@ export default function BaederApp() {
     bestWinStreak: row.bestWinStreak ?? row.best_win_streak ?? 0
   } : createEmptyUserStats());
 
+  const getResolvedGameScores = (gameInput) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
+    return {
+      player1Score: getFirstSafeInt(game.player1Score, game.player1_score, game.challengerScore) ?? 0,
+      player2Score: getFirstSafeInt(game.player2Score, game.player2_score, game.duelOpponentScore) ?? 0
+    };
+  };
+
+  const resolveFinishedGameWinner = (gameInput) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
+    if (game.winner) {
+      return game.winner;
+    }
+
+    const { player1Score, player2Score } = getResolvedGameScores(game);
+    if (player1Score > player2Score) return game.player1 || null;
+    if (player2Score > player1Score) return game.player2 || null;
+    return null;
+  };
+
   const buildQuizTotalsFromFinishedGames = (gamesInput, currentUserName, existingStats = null) => {
     const baseStats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
     const finishedGames = Array.isArray(gamesInput) ? gamesInput : [];
@@ -816,9 +836,7 @@ export default function BaederApp() {
       const player2 = normalizePlayerName(game.player2);
       if (player1 !== normalizedUserName && player2 !== normalizedUserName) return;
 
-      let winner = game.winner || null;
-      if (!winner && game.player1_score > game.player2_score) winner = game.player1;
-      else if (!winner && game.player2_score > game.player1_score) winner = game.player2;
+      const winner = resolveFinishedGameWinner(game);
 
       const opponent = player1 === normalizedUserName ? game.player2 : game.player1;
       if (!opponents[opponent]) {
@@ -844,6 +862,137 @@ export default function BaederApp() {
       draws,
       opponents
     };
+  };
+
+  const buildHeadToHeadFromFinishedGames = (gamesInput, currentUserName, opponentName) => {
+    const safeOpponentName = String(opponentName || '').trim();
+    if (!currentUserName || !safeOpponentName) {
+      return { wins: 0, losses: 0, draws: 0 };
+    }
+
+    const finishedGames = Array.isArray(gamesInput) ? gamesInput : [];
+    const normalizedUserName = normalizePlayerName(currentUserName);
+    const normalizedOpponentName = normalizePlayerName(safeOpponentName);
+    let wins = 0;
+    let losses = 0;
+    let draws = 0;
+
+    finishedGames.forEach((game) => {
+      if (!isFinishedGameStatus(game?.status)) return;
+
+      const player1 = normalizePlayerName(game.player1);
+      const player2 = normalizePlayerName(game.player2);
+      const hasCurrentUser = player1 === normalizedUserName || player2 === normalizedUserName;
+      const hasOpponent = player1 === normalizedOpponentName || player2 === normalizedOpponentName;
+      if (!hasCurrentUser || !hasOpponent) return;
+
+      const winner = resolveFinishedGameWinner(game);
+      const normalizedWinner = normalizePlayerName(winner);
+      if (!normalizedWinner) {
+        draws += 1;
+      } else if (normalizedWinner === normalizedUserName) {
+        wins += 1;
+      } else {
+        losses += 1;
+      }
+    });
+
+    return { wins, losses, draws };
+  };
+
+  const haveQuizTotalsChanged = (currentStatsInput, syncedStatsInput) => {
+    const currentStats = ensureUserStatsStructure(currentStatsInput || createEmptyUserStats());
+    const syncedStats = ensureUserStatsStructure(syncedStatsInput || createEmptyUserStats());
+    if (
+      currentStats.wins !== syncedStats.wins
+      || currentStats.losses !== syncedStats.losses
+      || currentStats.draws !== syncedStats.draws
+    ) {
+      return true;
+    }
+
+    const currentOpponents = currentStats.opponents || {};
+    const syncedOpponents = syncedStats.opponents || {};
+    const opponentNames = new Set([
+      ...Object.keys(currentOpponents),
+      ...Object.keys(syncedOpponents)
+    ]);
+
+    for (const opponentName of opponentNames) {
+      const currentOpponent = currentOpponents[opponentName] || {};
+      const syncedOpponent = syncedOpponents[opponentName] || {};
+      if (
+        toSafeInt(currentOpponent.wins) !== toSafeInt(syncedOpponent.wins)
+        || toSafeInt(currentOpponent.losses) !== toSafeInt(syncedOpponent.losses)
+        || toSafeInt(currentOpponent.draws) !== toSafeInt(syncedOpponent.draws)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  const syncQuizTotalsIntoStats = (statsInput, gamesInput, currentUserName) => {
+    const stats = ensureUserStatsStructure(statsInput || createEmptyUserStats());
+    const syncedQuizStats = buildQuizTotalsFromFinishedGames(gamesInput, currentUserName, stats);
+    if (!haveQuizTotalsChanged(stats, syncedQuizStats)) {
+      return stats;
+    }
+
+    return ensureUserStatsStructure({
+      ...stats,
+      wins: syncedQuizStats.wins,
+      losses: syncedQuizStats.losses,
+      draws: syncedQuizStats.draws,
+      opponents: syncedQuizStats.opponents
+    });
+  };
+
+  const resetQuizDuelRuntimeState = () => {
+    setCurrentGame(null);
+    setQuizCategory(null);
+    setCurrentQuestion(null);
+    setCurrentCategoryQuestions([]);
+    setCategoryRound(0);
+    setQuestionInCategory(0);
+    setPlayerTurn(null);
+    setWaitingForOpponent(false);
+    setAnswered(false);
+    setSelectedAnswers([]);
+    setLastSelectedAnswer(null);
+    setTimerActive(false);
+    resetQuizKeywordState();
+  };
+
+  const showDuelResultForGame = (gameInput, gamesSource = null, h2hOverride = null) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : null;
+    if (!game || !user?.name) return;
+
+    const opponentName = namesMatch(game.player1, user.name) ? game.player2 : game.player1;
+    const { player1Score, player2Score } = getResolvedGameScores(game);
+    const winner = resolveFinishedGameWinner(game);
+    const h2h = h2hOverride || buildHeadToHeadFromFinishedGames(gamesSource || allGames, user.name, opponentName);
+
+    setDuelResult({
+      gameId: game.id,
+      player1: game.player1,
+      player2: game.player2,
+      player1Score,
+      player2Score,
+      winner,
+      myName: user.name,
+      opponentName,
+      h2h: {
+        wins: h2h.wins || 0,
+        losses: h2h.losses || 0,
+        draws: h2h.draws || 0
+      }
+    });
+
+    resetQuizDuelRuntimeState();
+    setCategoryRoundResult(null);
+    setCurrentView('quiz');
   };
 
   const mergeOpponentStatsByMax = (storedOpponentsInput, syncedOpponentsInput) => {
@@ -1976,8 +2125,15 @@ export default function BaederApp() {
   useEffect(() => {
     if (!currentGame?.id || !user?.name || !waitingForOpponent) return;
 
-    const updatedGame = activeGames.find(g => g.id === currentGame.id);
+    const updatedGame = allGames.find(g => g.id === currentGame.id) || activeGames.find(g => g.id === currentGame.id);
     if (!updatedGame) return;
+
+    if (isFinishedGameStatus(updatedGame.status)) {
+      if (duelResult?.gameId !== updatedGame.id) {
+        showDuelResultForGame(updatedGame, allGames);
+      }
+      return;
+    }
 
     const serverRound = updatedGame.categoryRound || 0;
     const localRound = currentGame.categoryRound || 0;
@@ -2041,7 +2197,7 @@ export default function BaederApp() {
         }
       }
     }
-  }, [activeGames]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeGames, allGames, duelResult]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (timerActive && timeLeft > 0 && !answered) {
@@ -3083,6 +3239,9 @@ export default function BaederApp() {
         setAllGames(normalized);
         setActiveGames(normalized.filter(g => g.status !== 'finished'));
         updateLeaderboard(normalized, allUsers);
+        if (USE_SECURE_API && user?.name) {
+          setUserStats(prevStats => syncQuizTotalsIntoStats(prevStats, normalized, user.name));
+        }
       }
 
       // Messages aktualisieren
@@ -3185,7 +3344,12 @@ export default function BaederApp() {
             (storedTotalGames === 0 && syncedTotalGames > 0) ||
             syncedTotalGames > storedTotalGames;
 
-          if (shouldRestoreQuizTotals) {
+          if (USE_SECURE_API) {
+            const syncedTotals = syncQuizTotalsIntoStats(stats, finishedGames, currentUserName);
+            if (haveQuizTotalsChanged(stats, syncedTotals)) {
+              stats = syncedTotals;
+            }
+          } else if (shouldRestoreQuizTotals) {
             stats = {
               ...stats,
               wins: Math.max(stats.wins, syncedStats.wins),
