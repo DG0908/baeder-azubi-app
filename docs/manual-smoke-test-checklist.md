@@ -1,6 +1,6 @@
 # Manual Smoke Test Checklist
 
-Stand: 2026-03-30
+Stand: 2026-03-31
 
 ## Vorbedingungen
 
@@ -18,6 +18,17 @@ Stand: 2026-03-30
 2. `docker compose up -d web`
 3. `https://smartbaden.de/healthz` oder die produktive Frontend-URL laedt ohne White Screen.
 4. `https://api.smartbaden.de/api/health` antwortet erfolgreich.
+
+## Optionaler API-Schnellcheck
+
+- `npm run smoke:api` prueft Frontend-Shell, API-Health, Login, `auth/me`, Refresh und `users/me/export`.
+- Fuer die Rollenchecks muessen Testkonten per Env gesetzt sein:
+  - `SMOKE_ADMIN_EMAIL`, `SMOKE_ADMIN_PASSWORD`
+  - `SMOKE_TRAINER_EMAIL`, `SMOKE_TRAINER_PASSWORD`
+  - `SMOKE_AZUBI_EMAIL`, `SMOKE_AZUBI_PASSWORD`
+- Standardziele:
+  - `SMOKE_FRONTEND_URL=https://azubi.smartbaden.de`
+  - `SMOKE_API_BASE_URL=https://api.smartbaden.de/api`
 
 ## Auth
 

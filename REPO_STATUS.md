@@ -57,6 +57,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - `src/components/views/AdminView.jsx` nutzt im Secure-Modus fuer die Betriebszuweisung jetzt den richtigen Organization-Endpoint; die Code-Nutzungsanzeige ist wieder konsistent.
 - `server/src/modules/auth/auth.service.ts` unterstuetzt bcrypt-Fallback fuer migrierte Supabase-Passwoerter und rehashed bei erfolgreichem Login auf Argon2.
 - `docs/manual-smoke-test-checklist.md` beschreibt jetzt den praktischen Testlauf fuer die kritischen Kernflows.
+- `scripts/run-smoke-checks.mjs` und `npm run smoke:api` decken jetzt Frontend-Shell, API-Health, Login, `auth/me`, Refresh und `users/me/export` fuer konfigurierte Testkonten ab.
 - `server/src/common/services/mailer.service.ts` schreibt ohne SMTP keine Passwort-Reset-Links mehr in Logs; stattdessen scheitert der Reset-Pfad jetzt explizit mit `ServiceUnavailable`.
 - `server/src/modules/users/users.controller.ts` und `server/src/modules/users/users.service.ts` stellen jetzt einen Secure-Backend-Export fuer `me` und Admin-Exports bereit.
 - `src/lib/secureApi.js`, `src/lib/dataService.js`, `src/App.jsx` und `src/components/views/AdminView.jsx` ziehen den Admin-Datenexport jetzt ueber den Secure-API-Pfad statt ueber den Legacy-Supabase-Read.
@@ -65,6 +66,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 ## Noch nicht fertig
 
 - praktische Smoke-Tests fuer die kritischen Auth-/Kernflows fehlen noch
+- die neue API-Smoke-Hilfe braucht noch echte Testkonten per Env, bevor Login-/Export-Pfade praktisch geprueft werden koennen
 - Frontend-Deploy des aktuellen `main`-Stands auf dem Zielserver ist noch offen
 - rechtliche und betriebliche Go-Live-Nachweise sind weiter offen
 - automatisierte Tests fuer Auth, Approval, Chat-Scope und Duel-Abschluss fehlen weiterhin
