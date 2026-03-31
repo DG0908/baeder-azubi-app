@@ -316,6 +316,7 @@ export default function BaederApp() {
   const quizActiveRef = useRef(false);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
   const [duelResult, setDuelResult] = useState(null); // Ergebnis-Screen nach Spielende
+  const [categoryRoundResult, setCategoryRoundResult] = useState(null); // Kategorie-Vergleich zwischen Runden
   const [selectedAnswers, setSelectedAnswers] = useState([]); // Für Multi-Select Fragen
   const [lastSelectedAnswer, setLastSelectedAnswer] = useState(null); // Für Single-Choice Feedback
   const [keywordAnswerText, setKeywordAnswerText] = useState('');
@@ -1970,6 +1971,77 @@ export default function BaederApp() {
   useEffect(() => {
     quizActiveRef.current = timerActive && currentView === 'quiz';
   }, [timerActive, currentView]);
+
+  // Automatisch reagieren wenn Gegner fertig gespielt hat (waitingForOpponent)
+  useEffect(() => {
+    if (!currentGame?.id || !user?.name || !waitingForOpponent) return;
+
+    const updatedGame = activeGames.find(g => g.id === currentGame.id);
+    if (!updatedGame) return;
+
+    const serverRound = updatedGame.categoryRound || 0;
+    const localRound = currentGame.categoryRound || 0;
+    const myTurnNow = updatedGame.currentTurn === user.name;
+
+    // Nur reagieren wenn sich der Serverstand tatsächlich geändert hat
+    if (!myTurnNow && serverRound <= localRound) return;
+
+    // Spiel-State mit aktuellen Server-Daten synchronisieren
+    setCurrentGame(updatedGame);
+    setCategoryRound(serverRound);
+    setPlayerTurn(updatedGame.currentTurn);
+    setWaitingForOpponent(false);
+    setAnswered(false);
+    setSelectedAnswers([]);
+    setLastSelectedAnswer(null);
+    setCurrentQuestion(null);
+    setQuizCategory(null);
+    setCurrentCategoryQuestions([]);
+    setTimerActive(false);
+    resetQuizKeywordState();
+
+    // Prüfen ob die gerade abgeschlossene Runde (localRound) für uns darstellbar ist:
+    // Beide Antwort-Sets vorhanden → Runden-Ergebnis-Screen nachträglich zeigen
+    const finishedCatRound = updatedGame.categoryRounds?.[localRound];
+    if (finishedCatRound && serverRound > localRound) {
+      const isP1 = user.name === updatedGame.player1;
+      const myAnswers = isP1 ? finishedCatRound.player1Answers : finishedCatRound.player2Answers;
+      const oppAnswers = isP1 ? finishedCatRound.player2Answers : finishedCatRound.player1Answers;
+      if (myAnswers.length > 0 && oppAnswers.length > 0) {
+        setCategoryRoundResult({
+          round: localRound,
+          categoryId: finishedCatRound.categoryId,
+          categoryName: finishedCatRound.categoryName,
+          questions: finishedCatRound.questions,
+          myAnswers,
+          opponentAnswers: oppAnswers,
+          myName: user.name,
+          opponentName: isP1 ? updatedGame.player2 : updatedGame.player1,
+          player1Score: updatedGame.player1Score,
+          player2Score: updatedGame.player2Score,
+          player1Name: updatedGame.player1,
+          player2Name: updatedGame.player2,
+          isLastRound: localRound >= 3,
+        });
+        return; // proceedAfterCategoryResult übernimmt die restliche State-Transition
+      }
+    }
+
+    // Prüfen ob ich noch in der aktuellen Runde spielen muss
+    // (Gegner hat Kategorie gewählt und gespielt → gleiche Fragen für mich)
+    if (myTurnNow && serverRound === localRound) {
+      const currentCatRound = updatedGame.categoryRounds?.[serverRound];
+      if (currentCatRound) {
+        const isP1 = user.name === updatedGame.player1;
+        const myAnswers = isP1 ? currentCatRound.player1Answers : currentCatRound.player2Answers;
+        const oppAnswers = isP1 ? currentCatRound.player2Answers : currentCatRound.player1Answers;
+        if (myAnswers.length === 0 && oppAnswers.length > 0 && currentCatRound.questions.length > 0) {
+          setQuizCategory(currentCatRound.categoryId);
+          setCurrentCategoryQuestions(currentCatRound.questions);
+        }
+      }
+    }
+  }, [activeGames]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (timerActive && timeLeft > 0 && !answered) {
@@ -4249,12 +4321,46 @@ export default function BaederApp() {
     }
 
     // Beide Spieler haben diese Kategorie abgeschlossen
-    // Nächste Kategorie oder Spielende?
+    // Runden-Ergebnis anzeigen bevor weitergemacht wird
+    setCategoryRoundResult({
+      round: currentGame.categoryRound,
+      categoryId: currentCategoryRound.categoryId,
+      categoryName: currentCategoryRound.categoryName,
+      questions: currentCategoryRound.questions,
+      myAnswers: isPlayer1 ? currentCategoryRound.player1Answers : currentCategoryRound.player2Answers,
+      opponentAnswers: isPlayer1 ? currentCategoryRound.player2Answers : currentCategoryRound.player1Answers,
+      myName: user.name,
+      opponentName: isPlayer1 ? currentGame.player2 : currentGame.player1,
+      player1Score: currentGame.player1Score,
+      player2Score: currentGame.player2Score,
+      player1Name: currentGame.player1,
+      player2Name: currentGame.player2,
+      isLastRound: currentGame.categoryRound >= 3,
+    });
+    setQuizCategory(null);
+    setCurrentQuestion(null);
+    setTimerActive(false);
+  };
+
+  // Weiter nach dem Runden-Ergebnis-Screen
+  const proceedAfterCategoryResult = async () => {
+    // Wenn der Result-Screen nachträglich per Polling angezeigt wurde (Spieler hat zuerst gespielt
+    // und gewartet), ist die Runde auf dem Server bereits verarbeitet. Nur State clearen.
+    const alreadyProcessed = categoryRoundResult &&
+      (currentGame.categoryRound || 0) > (categoryRoundResult.round || 0);
+
+    setCategoryRoundResult(null);
+
+    if (alreadyProcessed) {
+      // Game-State ist bereits korrekt aus dem Polling-Sync gesetzt
+      return;
+    }
+
+    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
+
     if (currentGame.categoryRound < 3) {
-      // Nächste Kategorie-Runde (insgesamt 4)
       currentGame.categoryRound++;
 
-      // Der Spieler der NICHT die letzte Kategorie gewählt hat, wählt jetzt
       const nextChooser = currentCategoryRound.chooser === currentGame.player1
         ? currentGame.player2
         : currentGame.player1;
@@ -4285,7 +4391,6 @@ export default function BaederApp() {
         );
       }
     } else {
-      // Spiel beendet (4 Kategorien gespielt)
       await finishGame();
     }
   };
@@ -8652,6 +8757,8 @@ export default function BaederApp() {
             userStats={userStats}
             duelResult={duelResult}
             setDuelResult={setDuelResult}
+            categoryRoundResult={categoryRoundResult}
+            proceedAfterCategoryResult={proceedAfterCategoryResult}
           />
         )}
 
