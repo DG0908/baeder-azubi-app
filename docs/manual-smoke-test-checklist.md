@@ -21,7 +21,7 @@ Stand: 2026-03-31
 
 ## Optionaler API-Schnellcheck
 
-- `npm run smoke:api` prueft Frontend-Shell, API-Health, Login, `auth/me`, Refresh und `users/me/export`.
+- `npm run smoke:api` prueft Frontend-Shell, API-Health, Login, `auth/me`, Refresh, `users/me/export` und mehrere read-only Kernendpunkte je Rolle.
 - Fuer die Rollenchecks muessen Testkonten per Env gesetzt sein:
   - `SMOKE_ADMIN_EMAIL`, `SMOKE_ADMIN_PASSWORD`
   - `SMOKE_TRAINER_EMAIL`, `SMOKE_TRAINER_PASSWORD`
@@ -29,6 +29,17 @@ Stand: 2026-03-31
 - Standardziele:
   - `SMOKE_FRONTEND_URL=https://azubi.smartbaden.de`
   - `SMOKE_API_BASE_URL=https://api.smartbaden.de/api`
+- Der Scriptlauf prueft nach erfolgreichem Login zusaetzlich:
+  - `GET /users/me`
+  - `GET /notifications`
+  - `GET /duels`
+  - `GET /duels/leaderboard`
+  - `GET /user-stats/me`
+  - `GET /report-books/profile`
+- Fuer Admin-Konten kommen zusaetzlich dazu:
+  - `GET /users`
+  - `GET /users/pending`
+- Der API-Schnellcheck ersetzt die manuellen UI-Tests nicht; er ist nur die technische Vorpruefung vor dem eigentlichen Kernflow-Durchlauf.
 
 ## Auth
 

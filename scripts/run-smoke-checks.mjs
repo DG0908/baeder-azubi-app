@@ -25,6 +25,7 @@ const roleChecks = [
 ];
 
 const results = [];
+let hasFailures = false;
 
 const trimTrailingSlash = (value) => String(value || '').replace(/\/+$/, '');
 
@@ -49,6 +50,9 @@ const toErrorMessage = (error) => {
 const logResult = (status, label, message) => {
   const line = `[${status}] ${label}: ${message}`;
   results.push({ status, label, message });
+  if (status === 'FAIL') {
+    hasFailures = true;
+  }
   console.log(line);
 };
 
@@ -84,6 +88,90 @@ const request = async (label, url, options = {}) => {
 
   return body;
 };
+
+const runCheck = async (label, fn, options = {}) => {
+  try {
+    const result = await fn();
+    if (options.skipSuccessLog) {
+      return result;
+    }
+
+    if (typeof result === 'string' && result.length > 0) {
+      logResult('OK', label, result);
+    } else {
+      logResult('OK', label, 'ok');
+    }
+    return result;
+  } catch (error) {
+    logResult('FAIL', label, toErrorMessage(error));
+    return null;
+  }
+};
+
+const validateArrayBody = (label, body) => {
+  if (!Array.isArray(body)) {
+    fail(`${label} did not return an array`);
+  }
+  return `${body.length} entries`;
+};
+
+const validateObjectBody = (label, body) => {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    fail(`${label} did not return an object`);
+  }
+  return 'object returned';
+};
+
+const roleReadChecks = [
+  {
+    labelSuffix: 'users-me',
+    path: '/users/me',
+    validate: (body) => {
+      if (!body?.id) {
+        fail('users/me did not return a user id');
+      }
+      return body.email || body.displayName || body.id;
+    }
+  },
+  {
+    labelSuffix: 'notifications',
+    path: '/notifications',
+    validate: (body) => validateArrayBody('notifications', body)
+  },
+  {
+    labelSuffix: 'duels',
+    path: '/duels',
+    validate: (body) => validateArrayBody('duels', body)
+  },
+  {
+    labelSuffix: 'duel-leaderboard',
+    path: '/duels/leaderboard',
+    validate: (body) => validateArrayBody('duel leaderboard', body)
+  },
+  {
+    labelSuffix: 'user-stats',
+    path: '/user-stats/me',
+    validate: (body) => validateObjectBody('user stats', body)
+  },
+  {
+    labelSuffix: 'report-book-profile',
+    path: '/report-books/profile',
+    validate: (body) => validateObjectBody('report book profile', body)
+  }
+];
+
+const adminReadChecks = [
+  {
+    labelSuffix: 'users-list',
+    path: '/users',
+    validate: (body) => validateArrayBody('users list', body)
+  },
+  {
+    labelSuffix: 'users-pending',
+    path: '/users/pending',
+    validate: (body) => validateArrayBody('pending users', body)
+  }
+];
 
 const checkFrontendShell = async () => {
   const url = buildUrl(FRONTEND_URL, FRONTEND_PATH);
@@ -150,67 +238,108 @@ const runRoleCheck = async (roleCheck) => {
   }
 
   const loginUrl = buildUrl(API_BASE_URL, '/auth/login');
-  const loginBody = await request(
-    `${roleCheck.label}-login`,
-    loginUrl,
-    buildJsonRequest({ email, password })
-  );
+  const loginBody = await runCheck(`${roleCheck.label}-login`, async () => {
+    const body = await request(
+      `${roleCheck.label}-login`,
+      loginUrl,
+      buildJsonRequest({ email, password })
+    );
 
-  if (!loginBody?.accessToken) {
-    fail(`${roleCheck.label} login did not return an access token`);
+    if (!body?.accessToken) {
+      fail(`${roleCheck.label} login did not return an access token`);
+    }
+
+    if (!body?.refreshToken) {
+      fail(`${roleCheck.label} login did not return a refresh token`);
+    }
+
+    const loginRole = String(body?.user?.role || '').toLowerCase();
+    if (loginRole && loginRole !== roleCheck.expectedRole) {
+      fail(`${roleCheck.label} login returned role ${loginRole}`);
+    }
+
+    return email;
+  }, { skipSuccessLog: false });
+
+  if (!loginBody?.accessToken || !loginBody?.refreshToken) {
+    return;
   }
-
-  if (!loginBody?.refreshToken) {
-    fail(`${roleCheck.label} login did not return a refresh token`);
-  }
-
-  const loginRole = String(loginBody?.user?.role || '').toLowerCase();
-  if (loginRole && loginRole !== roleCheck.expectedRole) {
-    fail(`${roleCheck.label} login returned role ${loginRole}`);
-  }
-
-  logResult('OK', `${roleCheck.label}-login`, email);
 
   const meUrl = buildUrl(API_BASE_URL, '/auth/me');
-  const meBody = await request(`${roleCheck.label}-me`, meUrl, {
-    method: 'GET',
-    headers: buildAuthHeaders(loginBody.accessToken)
+  await runCheck(`${roleCheck.label}-me`, async () => {
+    const body = await request(`${roleCheck.label}-me`, meUrl, {
+      method: 'GET',
+      headers: buildAuthHeaders(loginBody.accessToken)
+    });
+
+    if (!body?.id) {
+      fail(`${roleCheck.label} auth/me did not return a user id`);
+    }
+
+    return body.email || body.displayName || body.id;
   });
-
-  if (!meBody?.id) {
-    fail(`${roleCheck.label} auth/me did not return a user id`);
-  }
-
-  logResult('OK', `${roleCheck.label}-me`, meBody.email || meBody.displayName || meBody.id);
 
   const refreshUrl = buildUrl(API_BASE_URL, '/auth/refresh');
-  const refreshBody = await request(
-    `${roleCheck.label}-refresh`,
-    refreshUrl,
-    buildJsonRequest({ refreshToken: loginBody.refreshToken })
-  );
+  const refreshBody = await runCheck(`${roleCheck.label}-refresh`, async () => {
+    const body = await request(
+      `${roleCheck.label}-refresh`,
+      refreshUrl,
+      buildJsonRequest({ refreshToken: loginBody.refreshToken })
+    );
 
-  if (!refreshBody?.accessToken) {
-    fail(`${roleCheck.label} refresh did not return a new access token`);
+    if (!body?.accessToken) {
+      fail(`${roleCheck.label} refresh did not return a new access token`);
+    }
+
+    return 'refresh token accepted';
+  }, { skipSuccessLog: false });
+
+  const accessToken = refreshBody?.accessToken || loginBody.accessToken;
+  if (!accessToken) {
+    return;
   }
 
-  logResult('OK', `${roleCheck.label}-refresh`, 'refresh token accepted');
+  for (const readCheck of roleReadChecks) {
+    const url = buildUrl(API_BASE_URL, readCheck.path);
+    await runCheck(`${roleCheck.label}-${readCheck.labelSuffix}`, async () => {
+      const body = await request(`${roleCheck.label}-${readCheck.labelSuffix}`, url, {
+        method: 'GET',
+        headers: buildAuthHeaders(accessToken)
+      });
+      return readCheck.validate(body);
+    });
+  }
 
   const exportUrl = buildUrl(API_BASE_URL, '/users/me/export');
-  const exportBody = await request(`${roleCheck.label}-export`, exportUrl, {
-    method: 'GET',
-    headers: buildAuthHeaders(refreshBody.accessToken)
+  await runCheck(`${roleCheck.label}-export`, async () => {
+    const exportBody = await request(`${roleCheck.label}-export`, exportUrl, {
+      method: 'GET',
+      headers: buildAuthHeaders(accessToken)
+    });
+
+    if (!exportBody?.account) {
+      fail(`${roleCheck.label} export is missing account data`);
+    }
+
+    if (exportBody?.meta?.exportedVia !== 'secure-backend') {
+      fail(`${roleCheck.label} export meta.exportedVia is not secure-backend`);
+    }
+
+    return exportBody.meta.exportedVia;
   });
 
-  if (!exportBody?.account) {
-    fail(`${roleCheck.label} export is missing account data`);
+  if (roleCheck.expectedRole === 'admin') {
+    for (const adminCheck of adminReadChecks) {
+      const url = buildUrl(API_BASE_URL, adminCheck.path);
+      await runCheck(`${roleCheck.label}-${adminCheck.labelSuffix}`, async () => {
+        const body = await request(`${roleCheck.label}-${adminCheck.labelSuffix}`, url, {
+          method: 'GET',
+          headers: buildAuthHeaders(accessToken)
+        });
+        return adminCheck.validate(body);
+      });
+    }
   }
-
-  if (exportBody?.meta?.exportedVia !== 'secure-backend') {
-    fail(`${roleCheck.label} export meta.exportedVia is not secure-backend`);
-  }
-
-  logResult('OK', `${roleCheck.label}-export`, exportBody.meta.exportedVia);
 };
 
 const main = async () => {
@@ -227,8 +356,9 @@ const main = async () => {
   }
 
   const failures = results.filter((entry) => entry.status === 'FAIL');
-  if (failures.length > 0) {
+  if (failures.length > 0 || hasFailures) {
     process.exitCode = 1;
+    console.log(`Smoke checks completed with ${failures.length} failure(s).`);
     return;
   }
 
