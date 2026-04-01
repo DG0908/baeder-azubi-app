@@ -4464,6 +4464,8 @@ export default function BaederApp() {
   // Speichert die Antwort des aktuellen Spielers
   const savePlayerAnswer = async (isCorrect, isTimeout, answerMeta = {}) => {
     const isPlayer1 = user.name === currentGame.player1;
+    const currentRoundIndex = currentGame.categoryRound;
+    const currentQuestionIndex = questionInCategory;
     const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
     const answerType = String(answerMeta?.answerType || '');
     const correctnessKnown = answerType === 'keyword'
@@ -4531,7 +4533,15 @@ export default function BaederApp() {
 
     await saveUserStatsToSupabase(user, stats);
     setUserStats(stats);
-    await saveGameToSupabase(currentGame);
+    const persistedGame = await saveGameToSupabase(currentGame);
+    const persistedRound = persistedGame?.categoryRounds?.[currentRoundIndex];
+    const persistedQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : null;
+    if (persistedQuestions?.length) {
+      setCurrentCategoryQuestions(persistedQuestions);
+      if (persistedQuestions[currentQuestionIndex]) {
+        setCurrentQuestion(persistedQuestions[currentQuestionIndex]);
+      }
+    }
   };
 
   // Funktion zum Weitergehen zur nächsten Frage/Runde
