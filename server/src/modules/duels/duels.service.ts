@@ -13,6 +13,7 @@ import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateDuelDto } from './dto/create-duel.dto';
+import { EXTRA_DUEL_QUESTION_BANK, STANDARD_DUEL_QUESTION_BANK } from './duel-question-bank';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
 
 const REMINDER_LEAD_MIN_MS = 15 * 60 * 1000;
@@ -349,7 +350,10 @@ export class DuelsService {
       return nextGameState;
     }
 
-    const generatedQuestions = await this.generateAuthoritativeRoundQuestions(categoryId);
+    const generatedQuestions = await this.generateAuthoritativeRoundQuestions(
+      categoryId,
+      this.normalizeDifficulty(nextGameState.difficulty)
+    );
     if (!generatedQuestions) {
       return nextGameState;
     }
@@ -1047,7 +1051,17 @@ export class DuelsService {
     return { player1Score, player2Score };
   }
 
-  private async generateAuthoritativeRoundQuestions(categoryId: string): Promise<Prisma.InputJsonArray | null> {
+  private async generateAuthoritativeRoundQuestions(
+    categoryId: string,
+    difficulty: string
+  ): Promise<Prisma.InputJsonArray | null> {
+    const questionBank = this.getAuthoritativeQuestionBank(categoryId, difficulty);
+    if (questionBank.length >= MAX_DUEL_QUESTIONS_PER_ROUND) {
+      return this.shuffle(questionBank)
+        .slice(0, MAX_DUEL_QUESTIONS_PER_ROUND)
+        .map((question) => this.prepareAuthoritativeQuestionEntry(question, categoryId));
+    }
+
     const availableQuestions = await this.prisma.question.findMany({
       where: {
         category: categoryId,
@@ -1068,10 +1082,45 @@ export class DuelsService {
 
     return this.shuffle(availableQuestions)
       .slice(0, MAX_DUEL_QUESTIONS_PER_ROUND)
-      .map((question) => this.buildAuthoritativeQuestionEntry(question));
+      .map((question) => this.buildAuthoritativeDbQuestionEntry(question));
   }
 
-  private buildAuthoritativeQuestionEntry(question: {
+  private getAuthoritativeQuestionBank(categoryId: string, difficulty: string) {
+    const standardBank = STANDARD_DUEL_QUESTION_BANK as Record<string, unknown[]>;
+    const extraBank = EXTRA_DUEL_QUESTION_BANK as Record<string, unknown[]>;
+    const standardQuestions = Array.isArray(standardBank[categoryId])
+      ? standardBank[categoryId]
+      : [];
+    if (difficulty === 'extra') {
+      const extraQuestions = Array.isArray(extraBank[categoryId])
+        ? extraBank[categoryId]
+        : [];
+      if (extraQuestions.length > 0) {
+        return extraQuestions;
+      }
+    }
+    return standardQuestions;
+  }
+
+  private prepareAuthoritativeQuestionEntry(questionInput: unknown, categoryId: string): Prisma.InputJsonObject {
+    const question = this.asRecord(questionInput);
+    const answers = Array.isArray(question.a) ? question.a.map((entry) => String(entry)) : [];
+    const normalizedQuestion = {
+      ...question,
+      category: this.readString(question.category) ?? categoryId,
+      prompt: this.readString(question.prompt) ?? this.readString(question.q) ?? '',
+      q: this.readString(question.q) ?? this.readString(question.prompt) ?? '',
+      a: answers
+    };
+
+    if (answers.length === 0) {
+      return this.normalizeQuestionEntry(normalizedQuestion);
+    }
+
+    return this.normalizeQuestionEntry(this.shuffleAuthoritativeQuestionAnswers(normalizedQuestion));
+  }
+
+  private buildAuthoritativeDbQuestionEntry(question: {
     id: string;
     category: string;
     prompt: string;
@@ -1101,6 +1150,41 @@ export class DuelsService {
       multi: false,
       timeLimit: 30
     };
+  }
+
+  private shuffleAuthoritativeQuestionAnswers(question: Record<string, unknown>) {
+    const indexedAnswers = this.shuffle(
+      (Array.isArray(question.a) ? question.a : []).map((answer, originalIndex) => ({
+        text: String(answer),
+        originalIndex
+      }))
+    );
+
+    const shuffledQuestion: Record<string, unknown> = {
+      ...question,
+      a: indexedAnswers.map((entry) => entry.text)
+    };
+
+    if (Array.isArray(question.correct)) {
+      const correctIndexes = new Set(
+        (question.correct as unknown[])
+          .map((value) => this.readInteger(value))
+          .filter((value): value is number => value !== null)
+      );
+
+      shuffledQuestion.correct = indexedAnswers
+        .map((entry, newIndex) => (correctIndexes.has(entry.originalIndex) ? newIndex : -1))
+        .filter((value) => value >= 0);
+      shuffledQuestion.multi = true;
+      return shuffledQuestion;
+    }
+
+    const originalCorrect = this.readInteger(question.correct) ?? 0;
+    shuffledQuestion.correct = Math.max(
+      0,
+      indexedAnswers.findIndex((entry) => entry.originalIndex === originalCorrect)
+    );
+    return shuffledQuestion;
   }
 
   private assertValidGameStateTransition(
