@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../supabase';
 import {
-  USE_SECURE_API,
   previewInvitationCodeStatus as dsPreviewInvitationCodeStatus,
   requestPasswordReset as dsRequestPasswordReset,
   confirmPasswordReset as dsConfirmPasswordReset
@@ -30,7 +28,7 @@ const LoginScreen = () => {
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [newPasswordLoading, setNewPasswordLoading] = useState(false);
-  const minPasswordLength = USE_SECURE_API ? 12 : 6;
+  const minPasswordLength = 12;
 
   const handleLoginSubmit = (event) => {
     event.preventDefault();
@@ -58,25 +56,8 @@ const LoginScreen = () => {
       return;
     }
 
-    if (USE_SECURE_API) {
-      setCodeStatus({ secureValidation: true });
-      return;
-    }
-
-    // Debounce: 500ms nach letztem Tippen
-    if (codeTimerRef.current) clearTimeout(codeTimerRef.current);
-    setCodeStatus('checking');
-
-    codeTimerRef.current = setTimeout(async () => {
-      try {
-        const nextStatus = await dsPreviewInvitationCodeStatus(supabase, code);
-        setCodeStatus(nextStatus || { valid: false });
-      } catch {
-        setCodeStatus({ valid: false });
-      }
-    }, 500);
-
-    return () => { if (codeTimerRef.current) clearTimeout(codeTimerRef.current); };
+    setCodeStatus({ secureValidation: true });
+    return () => {};
   }, [registerData.invitationCode]);
 
   const handlePasswordReset = async () => {
@@ -86,7 +67,7 @@ const LoginScreen = () => {
     }
     setResetLoading(true);
     try {
-      await dsRequestPasswordReset(supabase, resetEmail, { redirectTo: window.location.origin });
+      await dsRequestPasswordReset(resetEmail, { redirectTo: window.location.origin });
       setResetSent(true);
     } catch (error) {
       alert('Fehler: ' + error.message);
@@ -154,7 +135,7 @@ const LoginScreen = () => {
       try {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('password_reset_token') || params.get('token') || window.location.hash?.match(/access_token=([^&]+)/)?.[1];
-        await dsConfirmPasswordReset(supabase, { token, newPassword });
+        await dsConfirmPasswordReset({ token, newPassword });
         alert('Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.');
         setNewPassword('');
         setNewPasswordConfirm('');

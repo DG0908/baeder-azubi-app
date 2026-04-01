@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { supabase } from '../../supabase';
+
 import { updateMyAvatar as dsUpdateMyAvatar } from '../../lib/dataService';
 import { AVATARS, getLevel } from '../../data/constants';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
@@ -118,7 +118,7 @@ const CollectionView = ({ userStats, swimSessions, userBadges, setCurrentView })
       return;
     }
     try {
-      await dsUpdateMyAvatar(supabase, user.id, avatarId);
+      await dsUpdateMyAvatar(user.id, avatarId);
       const updated = { ...user, avatar: avatarId };
       setUser(updated);
       localStorage.setItem('bäder_user', JSON.stringify(updated));

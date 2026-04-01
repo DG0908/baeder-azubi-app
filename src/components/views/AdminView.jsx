@@ -2,7 +2,7 @@ import React from 'react';
 import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound, Building2, Ticket, Copy, Plus, RefreshCw } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../supabase';
+
 import {
   loadOrganizationsAndInvitations as dsLoadOrganizationsAndInvitations,
   createOrganizationEntry as dsCreateOrganizationEntry,
@@ -29,7 +29,7 @@ const OrganizationManager = () => {
   const loadOrgs = async () => {
     setLoading(true);
     try {
-      const result = await dsLoadOrganizationsAndInvitations(supabase);
+      const result = await dsLoadOrganizationsAndInvitations();
       setOrgs(result.organizations || []);
       setCodes(result.invitations || []);
     } catch (error) {
@@ -47,7 +47,7 @@ const OrganizationManager = () => {
     }
     const slug = newOrg.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
     try {
-      await dsCreateOrganizationEntry(supabase, {
+      await dsCreateOrganizationEntry({
         ...newOrg,
         slug,
         name: newOrg.name.trim()
@@ -75,7 +75,7 @@ const OrganizationManager = () => {
     }
     try {
       const code = newCode.code.trim().toUpperCase() || generateCode();
-      const result = await dsCreateInvitationEntry(supabase, {
+      const result = await dsCreateInvitationEntry({
         ...newCode,
         code
       });
@@ -90,7 +90,7 @@ const OrganizationManager = () => {
 
   const toggleCodeActive = async (codeId, currentActive) => {
     try {
-      await dsToggleInvitationEntryActive(supabase, codeId, currentActive);
+      await dsToggleInvitationEntryActive(codeId, currentActive);
       loadOrgs();
     } catch (error) {
       showToast('Fehler: ' + error.message, 'error');
@@ -100,7 +100,7 @@ const OrganizationManager = () => {
   const deleteCode = async (codeId, codeText) => {
     if (!confirm(`Code "${codeText}" wirklich löschen?`)) return;
     try {
-      await dsDeleteInvitationEntry(supabase, codeId);
+      await dsDeleteInvitationEntry(codeId);
       showToast('Code gelöscht', 'success');
       loadOrgs();
     } catch (error) {
@@ -328,7 +328,7 @@ const AdminPasswordReset = ({ userId, userEmail, userName }) => {
     if (!confirm(`Neues Passwort für ${userName || userEmail} setzen?\n\nDas generierte Passwort wird: ${tempPassword}\n\nBitte notiere es und teile es dem User mit.`)) return;
     setLoading(true);
     try {
-      await dsAdminResetUserPassword(supabase, userId, userEmail, tempPassword);
+      await dsAdminResetUserPassword(userId, userEmail, tempPassword);
       alert(`Neues Passwort für ${userName || userEmail}:\n\n${tempPassword}\n\nBitte dem User mitteilen!`);
       showToast(`Passwort für ${userName || userEmail} zurückgesetzt!`, 'success');
     } catch (err) {
@@ -358,7 +358,7 @@ const UserOrgAssign = ({ userId, currentOrgId, onChanged }) => {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    dsLoadActiveOrganizations(supabase)
+    dsLoadActiveOrganizations()
       .then((data) => setOrgs(data || []))
       .catch(() => {});
   }, []);
@@ -366,7 +366,7 @@ const UserOrgAssign = ({ userId, currentOrgId, onChanged }) => {
   const handleChange = async (newOrgId) => {
     setLoading(true);
     try {
-      await dsAssignUserOrganization(supabase, userId, newOrgId || null);
+      await dsAssignUserOrganization(userId, newOrgId || null);
       showToast('Betrieb zugewiesen!', 'success');
       if (onChanged) onChanged();
     } catch (error) {
@@ -765,7 +765,7 @@ const AdminView = ({
                       onClick={async () => {
                         if (confirm(`Account von ${acc.name} wirklich ablehnen und löschen?`)) {
                           try {
-                            await dsDeleteUser(supabase, acc.email, [...(allUsers || []), ...(pendingUsers || [])]);
+                            await dsDeleteUser(acc.email, [...(allUsers || []), ...(pendingUsers || [])]);
                             loadData();
                             alert('Account abgelehnt und gelöscht.');
                           } catch (error) {

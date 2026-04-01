@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Trash2, Pencil, X as XIcon, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { isSecureBackendApiEnabled } from '../../lib/secureApiClient';
-import { supabase } from '../../supabase';
 import {
   updateMyProfile as dsUpdateMyProfile,
   changeMyPassword as dsChangeMyPassword,
@@ -13,8 +11,6 @@ import { AVATARS, PERMISSIONS, getAvatarById, getLevel } from '../../data/consta
 import AvatarBadge from '../ui/AvatarBadge';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
-
-const USE_SECURE_API = isSecureBackendApiEnabled();
 
 const ProfileView = ({
   userStats,
@@ -215,7 +211,7 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      await dsUpdateMyProfile(supabase, user.id, { displayName: profileEditName.trim() });
+      await dsUpdateMyProfile(user.id, { displayName: profileEditName.trim() });
       const updatedUser = { ...user, name: profileEditName.trim() };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -230,7 +226,7 @@ const ProfileView = ({
   };
 
   const updateProfilePassword = async () => {
-    if (USE_SECURE_API && !profileCurrentPassword) {
+    if (!profileCurrentPassword) {
       showToast('Bitte gib dein aktuelles Passwort ein.', 'warning');
       return;
     }
@@ -248,7 +244,7 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      await dsChangeMyPassword(supabase, {
+      await dsChangeMyPassword({
         currentPassword: profileCurrentPassword,
         newPassword: profileEditPassword
       });
@@ -277,7 +273,7 @@ const ProfileView = ({
 
     setProfileSaving(true);
     try {
-      await dsUpdateMyProfile(supabase, user.id, { avatar: avatarId });
+      await dsUpdateMyProfile(user.id, { avatar: avatarId });
       const updatedUser = { ...user, avatar: avatarId };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -293,7 +289,7 @@ const ProfileView = ({
   const updateProfileCompany = async () => {
     setProfileSaving(true);
     try {
-      await dsUpdateMyProfile(supabase, user.id, { company: profileEditCompany.trim() || null });
+      await dsUpdateMyProfile(user.id, { company: profileEditCompany.trim() || null });
       const updatedUser = { ...user, company: profileEditCompany.trim() || null };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -314,7 +310,7 @@ const ProfileView = ({
     }
     setProfileSaving(true);
     try {
-      await dsUpdateMyProfile(supabase, user.id, { birthDate: profileEditBirthDate });
+      await dsUpdateMyProfile(user.id, { birthDate: profileEditBirthDate });
       const updatedUser = { ...user, birthDate: profileEditBirthDate };
       setUser(updatedUser);
       localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
@@ -916,8 +912,7 @@ const ProfileView = ({
           Sicherheit
         </h3>
         <form onSubmit={(e) => { e.preventDefault(); updateProfilePassword(); }} className="space-y-4">
-          {USE_SECURE_API && (
-            <div>
+          <div>
               <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Aktuelles Passwort
               </label>
@@ -930,7 +925,6 @@ const ProfileView = ({
                 className={`w-full px-4 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-slate-700 text-white border-slate-600' : 'bg-gray-100 border-gray-300'} border focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none`}
               />
             </div>
-          )}
           <div>
             <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Neues Passwort
@@ -977,7 +971,7 @@ const ProfileView = ({
           </div>
           <button
             type="submit"
-            disabled={profileSaving || (USE_SECURE_API && !profileCurrentPassword) || !profileEditPassword || !profileEditPasswordConfirm}
+            disabled={profileSaving || !profileCurrentPassword || !profileEditPassword || !profileEditPasswordConfirm}
             className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white text-sm font-bold rounded-lg transition-all"
           >
             {profileSaving ? 'Speichern...' : 'Passwort ändern'}
@@ -1058,7 +1052,7 @@ const ProfileView = ({
                       }
                       setDeleting(true);
                       try {
-                        await dsDeleteMyAccount(supabase, user.id);
+                        await dsDeleteMyAccount(user.id);
                         showToast('Dein Konto wurde gelöscht.', 'success');
                         handleLogout();
                       } catch (err) {

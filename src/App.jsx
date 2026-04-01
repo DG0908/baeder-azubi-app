@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
-import { supabase } from './supabase';
 import { useAuth } from './context/AuthContext';
 import { useApp } from './context/AppContext';
 import LoginScreen from './components/auth/LoginScreen';
@@ -44,7 +43,6 @@ import { shuffleAnswers } from './lib/utils';
 import SignatureCanvas from './components/ui/SignatureCanvas';
 import { clearUserPushSubscription, ensureUserPushSubscription, fetchPushBackendWithAuth, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
 import {
-  USE_SECURE_API,
   loadUsers as dsLoadUsers,
   loadAppConfig as dsLoadAppConfig,
   loadGames as dsLoadGames,
@@ -1466,7 +1464,6 @@ export default function BaederApp() {
   const syncPushSubscription = useCallback(async (requestPermission = false) => {
     try {
       const result = await ensureUserPushSubscription({
-        supabase,
         user,
         requestPermission
       });
@@ -1482,7 +1479,6 @@ export default function BaederApp() {
   const disablePushNotifications = useCallback(async () => {
     try {
       const result = await clearUserPushSubscription({
-        supabase,
         user
       });
       await refreshPushDeviceState();
@@ -2253,7 +2249,7 @@ export default function BaederApp() {
 
   // Check data retention only once on login (not on every view change)
   useEffect(() => {
-    if (!authReady || !user || USE_SECURE_API) return;
+    if (!authReady || !user) return;
     checkDataRetention();
   }, [authReady, user]);
 
@@ -2288,7 +2284,7 @@ export default function BaederApp() {
       if (user.id && (!azubiProfile.vorname || !azubiProfile.nachname)) {
         (async () => {
           try {
-            const profile = await dsLoadBerichtsheftProfile(supabase, user.id);
+            const profile = await dsLoadBerichtsheftProfile(user.id);
             if (profile) {
               setAzubiProfile(profile);
               localStorage.setItem('azubi_profile', JSON.stringify(profile));
@@ -2886,7 +2882,7 @@ export default function BaederApp() {
 
   const checkDataRetention = async () => {
     try {
-      const users = await dsLoadRetentionCandidates(supabase);
+      const users = await dsLoadRetentionCandidates();
 
       if (!users || users.length === 0) {
         if (import.meta.env.DEV) console.log('No users found or Supabase error');
@@ -2931,7 +2927,7 @@ export default function BaederApp() {
 
   const deleteUserData = async (userId, email, userName) => {
     try {
-      await dsPurgeUserData(supabase, userId, userName);
+      await dsPurgeUserData(userId, userName);
 
       console.log(`Alle Daten für ${email} gelöscht`);
     } catch (error) {
@@ -2946,7 +2942,7 @@ export default function BaederApp() {
     const targetLabel = String(targetUser?.name || targetUser?.displayName || targetUser?.email || 'nutzer').trim();
     const userName = targetLabel;
     try {
-      const exportData = await dsExportUserDataBundle(supabase, targetUser);
+      const exportData = await dsExportUserDataBundle(targetUser);
 
       // Create download
       const dataStr = JSON.stringify(exportData, null, 2);
@@ -2971,7 +2967,7 @@ export default function BaederApp() {
     if (!user) return;
 
     try {
-      const rawNotifs = await dsLoadNotifications(supabase, user.name);
+      const rawNotifs = await dsLoadNotifications(user.name);
       const notifs = rawNotifs.map(n => ({
         id: n.id,
         title: n.title,
@@ -3004,38 +3000,9 @@ export default function BaederApp() {
     }
   };
 
-  const sendNotification = async (userName, title, message, type = 'info') => {
-    if (USE_SECURE_API) {
-      return null;
-    }
-
-    try {
-      const result = await dsSendNotification(supabase, { userName, title, message, type });
-
-      // Trigger Web-Push für Zielnutzer (wenn konfiguriert und nicht im Secure-API-Modus,
-      // da das NestJS-Backend Push-Versand selbst übernimmt)
-      if (!USE_SECURE_API) {
-        try {
-          await triggerWebPushNotification({
-            supabase,
-            userName,
-            title,
-            message,
-            type,
-            notificationId: result?.id
-          });
-        } catch (pushError) {
-          console.warn('Push dispatch failed:', pushError);
-        }
-      }
-
-      // Lokale Notification nur dann, wenn die Nachricht den aktuellen User betrifft
-      if (userName === user?.name) {
-        playSound('whistle');
-      }
-    } catch (error) {
-      console.error('Notification error:', error);
-    }
+  const sendNotification = async () => {
+    // NestJS backend handles notifications server-side
+    return null;
   };
 
   const sendNotificationToApprovedUsers = async ({
@@ -3071,7 +3038,7 @@ export default function BaederApp() {
 
   const markNotificationAsRead = async (notifId) => {
     try {
-      await dsMarkNotificationRead(supabase, notifId);
+      await dsMarkNotificationRead(notifId);
       setNotifications(notifications.map(n => n.id === notifId ? { ...n, read: true } : n));
     } catch (error) {
       console.error('Mark read error:', error);
@@ -3080,7 +3047,7 @@ export default function BaederApp() {
 
   const clearAllNotifications = async () => {
     try {
-      await dsClearAllNotifications(supabase, user.name);
+      await dsClearAllNotifications(user.name);
       setNotifications([]);
     } catch (error) {
       console.error('Clear notifications error:', error);
@@ -3152,10 +3119,10 @@ export default function BaederApp() {
 
   // Load direct messages on-demand when switching to direct_staff scope
   useEffect(() => {
-    if (!USE_SECURE_API || chatScope !== 'direct_staff' || !selectedChatRecipientId) return;
+    if (chatScope !== 'direct_staff' || !selectedChatRecipientId) return;
     const loadDirectMessages = async () => {
       try {
-        const mapped = await dsLoadDirectMessages(supabase, {
+        const mapped = await dsLoadDirectMessages({
           recipientId: selectedChatRecipientId,
           currentUserId: user?.id
         });
@@ -3271,7 +3238,7 @@ export default function BaederApp() {
   const loadLightData = async () => {
     try {
       // Games aktualisieren
-      const games = await dsLoadGames(supabase, 100, user?.id);
+      const games = await dsLoadGames(100, user?.id);
       if (games.length > 0) {
         const normalized = games.map(g => ({
           ...g,
@@ -3280,7 +3247,7 @@ export default function BaederApp() {
         setAllGames(normalized);
         setActiveGames(normalized.filter(g => g.status !== 'finished'));
         updateLeaderboard(normalized, allUsers);
-        if (USE_SECURE_API && user?.name) {
+        if (user?.name) {
           setUserStats(prevStats => syncQuizTotalsIntoStats(prevStats, normalized, user.name));
         }
       }
@@ -3289,7 +3256,7 @@ export default function BaederApp() {
       const userDirectory = Object.fromEntries(
         (allUsers || []).filter(a => a?.id).map(a => [a.id, a])
       );
-      const msgs = await dsLoadMessages(supabase, normalizeChatMessageRow, userDirectory, user?.role);
+      const msgs = await dsLoadMessages(normalizeChatMessageRow, userDirectory, user?.role);
       setMessages(msgs);
     } catch (error) {
       console.log('Light data refresh error:', error.message);
@@ -3302,7 +3269,7 @@ export default function BaederApp() {
 
       // Load App Config
       try {
-        const configResult = await dsLoadAppConfig(supabase);
+        const configResult = await dsLoadAppConfig();
         if (configResult) {
           const loadedMenuItems = mergeMenuItemsWithDefaults(configResult.menuItems);
           const loadedThemeColors = configResult.themeColors && Object.keys(configResult.themeColors).length > 0
@@ -3320,7 +3287,7 @@ export default function BaederApp() {
       }
 
       // Load users
-      const usersResult = await dsLoadUsers(supabase, user);
+      const usersResult = await dsLoadUsers(user);
       visibleUsers = usersResult.allUsers;
       setAllUsers(usersResult.allUsers);
       if (usersResult.pendingUsers.length > 0) {
@@ -3330,7 +3297,7 @@ export default function BaederApp() {
       await loadCustomSwimTrainingPlans();
 
       // Load games
-      const gamesRaw = await dsLoadGames(supabase, 200, user?.id);
+      const gamesRaw = await dsLoadGames(200, user?.id);
       const gamesData = gamesRaw; // keep reference for stats sync below
       if (gamesRaw.length > 0) {
         const games = gamesRaw.map(g => ({
@@ -3345,7 +3312,7 @@ export default function BaederApp() {
 
       // Load all user stats for trainer dashboard cards
       try {
-        const allStatsData = await dsGetAllUserStats(supabase);
+        const allStatsData = await dsGetAllUserStats();
         const nextStatsByUserId = {};
         (allStatsData || []).forEach(row => {
           const wins = row.wins || 0;
@@ -3368,7 +3335,7 @@ export default function BaederApp() {
       // Load user stats — restore from finished games if needed
       if (user && user.id && gamesData) {
         try {
-          const statsData = await dsGetUserStats(supabase, user);
+          const statsData = await dsGetUserStats(user);
           let stats = buildUserStatsFromRow(statsData);
           let shouldPersistStats = doesUserStatsRowNeedRepair(statsData, stats);
           const currentUserName = normalizePlayerName(user.name);
@@ -3385,20 +3352,9 @@ export default function BaederApp() {
             (storedTotalGames === 0 && syncedTotalGames > 0) ||
             syncedTotalGames > storedTotalGames;
 
-          if (USE_SECURE_API) {
-            const syncedTotals = syncQuizTotalsIntoStats(stats, finishedGames, currentUserName);
-            if (haveQuizTotalsChanged(stats, syncedTotals)) {
-              stats = syncedTotals;
-            }
-          } else if (shouldRestoreQuizTotals) {
-            stats = {
-              ...stats,
-              wins: Math.max(stats.wins, syncedStats.wins),
-              losses: Math.max(stats.losses, syncedStats.losses),
-              draws: Math.max(stats.draws, syncedStats.draws),
-              opponents: mergeOpponentStatsByMax(stats.opponents, syncedStats.opponents)
-            };
-            shouldPersistStats = true;
+          const syncedTotals = syncQuizTotalsIntoStats(stats, finishedGames, currentUserName);
+          if (haveQuizTotalsChanged(stats, syncedTotals)) {
+            stats = syncedTotals;
           }
 
           if (shouldPersistStats) {
@@ -3416,17 +3372,17 @@ export default function BaederApp() {
       const userDirectory = Object.fromEntries(
         (visibleUsers || []).filter(a => a?.id).map(a => [a.id, a])
       );
-      const msgs = await dsLoadMessages(supabase, normalizeChatMessageRow, userDirectory, user?.role);
+      const msgs = await dsLoadMessages(normalizeChatMessageRow, userDirectory, user?.role);
       setMessages(msgs);
 
       // Load custom questions
-      const customQuestions = await dsLoadCustomQuestions(supabase);
+      const customQuestions = await dsLoadCustomQuestions();
       setSubmittedQuestions(customQuestions);
 
       // Load reported question feedback
       if (user?.permissions?.canManageUsers) {
         try {
-          const remoteReports = await dsLoadQuestionReports(supabase);
+          const remoteReports = await dsLoadQuestionReports();
           // Enrich with questionKey if missing
           const enriched = remoteReports.map(r => ({
             ...r,
@@ -3445,26 +3401,26 @@ export default function BaederApp() {
       }
 
       // Load materials
-      setMaterials(await dsLoadMaterials(supabase));
+      setMaterials(await dsLoadMaterials());
 
       // Load resources
-      try { setResources(await dsLoadResources(supabase)); }
+      try { setResources(await dsLoadResources()); }
       catch (err) { console.error('Resources fetch failed:', err); }
 
       // Load news
-      setNews(await dsLoadNews(supabase));
+      setNews(await dsLoadNews());
 
       // Load exams
-      setExams(await dsLoadExams(supabase));
+      setExams(await dsLoadExams());
 
       // Load flashcards
-      const flashcardsResult = await dsLoadFlashcards(supabase);
+      const flashcardsResult = await dsLoadFlashcards();
       setUserFlashcards(flashcardsResult.approved);
       setPendingFlashcards(flashcardsResult.pending);
 
       // Load user badges from Supabase
       if (user?.id) {
-        setUserBadges(await dsLoadUserBadges(supabase, user));
+        setUserBadges(await dsLoadUserBadges(user));
       }
     } catch (error) {
       console.log('Loading data - some features may not work:', error.message);
@@ -3512,7 +3468,7 @@ export default function BaederApp() {
 
   const approveUser = async (email) => {
     try {
-      const result = await dsApproveUser(supabase, email, allUsers);
+      const result = await dsApproveUser(email, allUsers);
       loadData();
       playSound('whistle');
       showToast(`${result.account?.name || email} wurde freigeschaltet!`, 'success');
@@ -3539,7 +3495,7 @@ export default function BaederApp() {
         return;
       }
 
-      await dsDeleteUser(supabase, email, allUsers);
+      await dsDeleteUser(email, allUsers);
       loadData();
       showToast('Nutzerprofil und Daten wurden gelöscht', 'success');
     } catch (error) {
@@ -3586,7 +3542,7 @@ export default function BaederApp() {
         }
       }
 
-      await dsChangeUserRole(supabase, targetEmail, newRole, allUsers);
+      await dsChangeUserRole(targetEmail, newRole, allUsers);
 
       loadData();
       showToast(`Rolle geändert zu: ${PERMISSIONS[newRole].label}`, 'success');
@@ -3598,7 +3554,7 @@ export default function BaederApp() {
 
   const togglePermission = async (userId, field, currentValue, labels) => {
     try {
-      await dsUpdateUserPermission(supabase, userId, field, !currentValue);
+      await dsUpdateUserPermission(userId, field, !currentValue);
       loadData();
       showToast(!currentValue ? labels.granted : labels.revoked, 'success');
     } catch (error) {
@@ -3630,7 +3586,7 @@ export default function BaederApp() {
       throw new Error('Keine Berechtigung für den Statistik-Repair.');
     }
 
-    const responseData = await dsRepairQuizStats(supabase, fetchPushBackendWithAuth);
+    const responseData = await dsRepairQuizStats(fetchPushBackendWithAuth);
     await loadData();
     return responseData;
   };
@@ -3657,7 +3613,7 @@ export default function BaederApp() {
       targetUserNames: requestedTargetUserNames
     };
 
-    return dsSendTestPush(supabase, fetchPushBackendWithAuth, payload);
+    return dsSendTestPush(fetchPushBackendWithAuth, payload);
   };
 
   // Profil-Bearbeitung: Name ändern
@@ -3710,7 +3666,7 @@ export default function BaederApp() {
     }
 
     try {
-      const game = await dsCreateDuel(supabase, {
+      const game = await dsCreateDuel({
         player1: user.name,
         player2: opponent,
         difficulty: selectedDifficulty,
@@ -3754,7 +3710,7 @@ export default function BaederApp() {
 
     try {
       const acceptedAt = new Date().toISOString();
-      await dsAcceptDuel(supabase, gameId, user?.id);
+      await dsAcceptDuel(gameId, user?.id);
 
       game.status = 'active';
       game.categoryRound = 0;
@@ -3860,7 +3816,7 @@ export default function BaederApp() {
 
     let game = cloneDuelGameSnapshot(activeGame);
     try {
-      const latestGame = await dsGetDuelWithQuestions(supabase, gameId, user?.id);
+      const latestGame = await dsGetDuelWithQuestions(gameId, user?.id);
       if (latestGame?.id === gameId) {
         game = latestGame;
       }
@@ -3917,8 +3873,8 @@ export default function BaederApp() {
   const saveGameToSupabase = async (game) => {
     const syncedGame = syncLocalDuelGame(game);
     try {
-      await dsSaveDuelState(supabase, syncedGame);
-      const persistedGame = await dsGetDuelWithQuestions(supabase, syncedGame.id, user?.id);
+      await dsSaveDuelState(syncedGame);
+      const persistedGame = await dsGetDuelWithQuestions(syncedGame.id, user?.id);
       return persistedGame?.id ? syncLocalDuelGame(persistedGame) : syncedGame;
     } catch (error) {
       console.error('Save game error:', error);
@@ -3942,41 +3898,19 @@ export default function BaederApp() {
     const userName = String(userInput || '').trim();
     if (!userName) return null;
 
-    const identity = await dsResolveUserIdentity(supabase, userName);
+    const identity = await dsResolveUserIdentity(userName);
     if (identity) {
       return identity;
     }
 
-    if (USE_SECURE_API) {
-      const match = allUsers.find(u => String(u.name || '').toLowerCase() === userName.toLowerCase());
-      return match ? { userId: match.id, userName: match.name } : null;
-    }
-
-    return null;
+    const match = allUsers.find(u => String(u.name || '').toLowerCase() === userName.toLowerCase());
+    return match ? { userId: match.id, userName: match.name } : null;
   };
 
   // Helper function to save user stats
-  const saveUserStatsToSupabase = async (userInput, stats) => {
-    try {
-      if (USE_SECURE_API) {
-        // NestJS backend manages stats server-side
-        return true;
-      }
-      const safeStats = ensureUserStatsStructure(stats);
-      const identity = await resolveUserStatsIdentity(userInput);
-      if (!identity?.userId) {
-        return false;
-      }
-
-      await dsSaveUserStats(supabase, {
-        id: identity.userId,
-        name: identity.userName
-      }, safeStats);
-      return true;
-    } catch (error) {
-      console.error('Save stats error:', error);
-      return false;
-    }
+  const saveUserStatsToSupabase = async () => {
+    // NestJS backend manages stats server-side
+    return true;
   };
 
   // Helper function to get user stats
@@ -3984,7 +3918,7 @@ export default function BaederApp() {
     try {
       const identity = await resolveUserStatsIdentity(userInput);
       if (!identity?.userId) return null;
-      const data = await dsGetUserStats(supabase, {
+      const data = await dsGetUserStats({
         id: identity.userId,
         name: identity.userName
       });
@@ -4238,7 +4172,7 @@ export default function BaederApp() {
 
     let savedRemotely = false;
     try {
-      await dsReportQuestion(supabase, {
+      await dsReportQuestion({
         questionKey: payload.questionKey, questionText: payload.questionText,
         category: payload.category, source: payload.source,
         note: payload.note || null, answers: payload.answers,
@@ -4274,7 +4208,7 @@ export default function BaederApp() {
     )));
     if (!String(reportId).startsWith('local-')) {
       try {
-        await dsUpdateQuestionReportStatus(supabase, reportId, nextStatus);
+        await dsUpdateQuestionReportStatus(reportId, nextStatus);
       } catch {
         // local state remains source of truth when remote update fails
       }
@@ -4736,71 +4670,10 @@ export default function BaederApp() {
     setTimerActive(true);
   };
 
-  const autoForfeitGame = async (game, loser, winner, reason = 'turn_timeout') => {
+  const autoForfeitGame = async (game, loser, winner) => {
     try {
-      if (USE_SECURE_API) {
-        // NestJS backend handles duel expiry via its lifecycle cron.
-        // Just update local UI state — the backend already marked it expired.
-        setAllGames(prev => prev.map(g => g.id === game.id ? { ...g, status: 'finished', winner } : g));
-        setActiveGames(prev => prev.filter(g => g.id !== game.id));
-        return;
-      }
-      await dsSaveDuelState(supabase, {
-        ...game,
-        status: 'finished',
-        winner
-      });
-
-      const opponent = game.player1 === loser ? game.player2 : game.player1;
-      const timeoutLabel = formatDurationMinutesCompact(game.challengeTimeoutMinutes || DEFAULT_CHALLENGE_TIMEOUT_MINUTES);
-      const loserMessage = reason === 'challenge_expired'
-        ? `Die Herausforderung gegen ${opponent} ist abgelaufen (${timeoutLabel}) und wurde als Niederlage gewertet.`
-        : `Dein Quizduell gegen ${opponent} wurde nach 48h Inaktivität als Niederlage gewertet.`;
-      const winnerMessage = reason === 'challenge_expired'
-        ? `${loser} hat die Herausforderung (${timeoutLabel}) nicht rechtzeitig angenommen. Du gewinnst das Quizduell!`
-        : `${loser} hat 48 Stunden nicht gespielt. Du gewinnst das Quizduell!`;
-
-      await sendNotification(
-        loser,
-        '⏰ Zeit abgelaufen – Niederlage',
-        loserMessage,
-        'error'
-      );
-      await sendNotification(
-        winner,
-        '🏆 Sieg durch Aufgabe',
-        winnerMessage,
-        'success'
-      );
-
-      // Nur eigene Stats aktualisieren (RLS erlaubt nur eigene Stats)
-      if (user.name === loser || user.name === winner) {
-        const existingStats = await getUserStatsFromSupabase(user);
-        let stats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
-        const opponentName = user.name === loser ? winner : loser;
-        if (!stats.opponents[opponentName]) {
-          stats.opponents[opponentName] = { wins: 0, losses: 0, draws: 0 };
-        }
-        if (user.name === winner) {
-          stats.wins++;
-          stats.opponents[opponentName].wins++;
-          stats.winStreak = (stats.winStreak || 0) + 1;
-          if (stats.winStreak > (stats.bestWinStreak || 0)) stats.bestWinStreak = stats.winStreak;
-        } else {
-          stats.losses++;
-          stats.opponents[opponentName].losses++;
-          stats.winStreak = 0;
-          // 100 XP Strafe für den Verlierer
-          const xpResult = deductXpFromStats(stats, 100);
-          stats = xpResult.stats;
-          if (xpResult.deductedXp > 0) {
-            showToast(`-${xpResult.deductedXp} XP Strafe • Quizduell-Aufgabe`, 'error', 3500);
-          }
-        }
-        await saveUserStatsToSupabase(user, stats);
-        setUserStats(stats);
-      }
-
+      // NestJS backend handles duel expiry via its lifecycle cron.
+      // Just update local UI state — the backend already marked it expired.
       setAllGames(prev => prev.map(g => g.id === game.id ? { ...g, status: 'finished', winner } : g));
       setActiveGames(prev => prev.filter(g => g.id !== game.id));
       localStorage.removeItem(`quiz_reminder_${game.id}_${game.currentTurn}`);
@@ -5056,7 +4929,7 @@ export default function BaederApp() {
     }
 
     try {
-      const msg = await dsCreateChatMessage(supabase, {
+      const msg = await dsCreateChatMessage({
         content: newMessage.trim(),
         scope: activeScope,
         userName: user.name,
@@ -5100,7 +4973,7 @@ export default function BaederApp() {
     }
 
     try {
-      const q = await dsCreateQuestionSubmission(supabase, {
+      const q = await dsCreateQuestionSubmission({
         category: newQuestionCategory,
         question: newQuestionText,
         answers: newQuestionAnswers,
@@ -5120,7 +4993,7 @@ export default function BaederApp() {
 
   const approveQuestion = async (qId) => {
     try {
-      await dsApproveQuestionSubmission(supabase, qId);
+      await dsApproveQuestionSubmission(qId);
       setSubmittedQuestions(submittedQuestions.map(sq => sq.id === qId ? { ...sq, approved: true } : sq));
     } catch (error) {
       console.error('Approve error:', error);
@@ -5138,49 +5011,31 @@ export default function BaederApp() {
     setExamKeywordInput('');
     setExamKeywordEvaluation(null);
 
-    if (USE_SECURE_API) {
-      try {
-        const result = await dsStartTheoryExamSession(supabase, examKeywordMode);
-        const examQuestions = Array.isArray(result?.questions) ? result.questions : [];
-        if (examQuestions.length === 0) {
-          throw new Error('Keine Theoriefragen vom Backend erhalten.');
-        }
-
-        setExamSimulator({
-          sessionId: result.sessionId,
-          questions: examQuestions,
-          answers: [],
-          startTime: Date.now(),
-          keywordMode: Boolean(result.keywordMode),
-          expiresAt: result.expiresAt || null
-        });
-        setExamQuestionIndex(0);
-        setExamCurrentQuestion(examQuestions[0]);
-        return;
-      } catch (error) {
-        console.error('Fehler beim Starten der Theorieprüfung:', error);
-        setExamSimulator(null);
-        setExamCurrentQuestion(null);
-        showToast('Theorieprüfung konnte nicht gestartet werden.', 'error');
-        return;
+    try {
+      const result = await dsStartTheoryExamSession(examKeywordMode);
+      const examQuestions = Array.isArray(result?.questions) ? result.questions : [];
+      if (examQuestions.length === 0) {
+        throw new Error('Keine Theoriefragen vom Backend erhalten.');
       }
-    }
 
-    const allQuestions = [];
-    Object.entries(SAMPLE_QUESTIONS).forEach(([catId, questions]) => {
-      if (catId === WHO_AM_I_CATEGORY.id) return;
-      questions.forEach(q => { allQuestions.push({ ...q, category: catId }); });
-    });
-    const selectedQuestions = pickLearningQuestions(
-      allQuestions,
-      Math.min(30, allQuestions.length),
-      (question) => question.category
-    );
-    // Mische die Antworten jeder Frage, damit die richtige Antwort nicht immer an der gleichen Stelle ist
-    const examQuestions = selectedQuestions.map(q => shuffleAnswers(q));
-    setExamSimulator({ questions: examQuestions, answers: [], startTime: Date.now() });
-    setExamQuestionIndex(0);
-    setExamCurrentQuestion(examQuestions[0]);
+      setExamSimulator({
+        sessionId: result.sessionId,
+        questions: examQuestions,
+        answers: [],
+        startTime: Date.now(),
+        keywordMode: Boolean(result.keywordMode),
+        expiresAt: result.expiresAt || null
+      });
+      setExamQuestionIndex(0);
+      setExamCurrentQuestion(examQuestions[0]);
+      return;
+    } catch (error) {
+      console.error('Fehler beim Starten der Theorieprüfung:', error);
+      setExamSimulator(null);
+      setExamCurrentQuestion(null);
+      showToast('Theorieprüfung konnte nicht gestartet werden.', 'error');
+      return;
+    }
   };
 
   const toIsoDateTime = (value) => {
@@ -5188,6 +5043,7 @@ export default function BaederApp() {
     if (Number.isNaN(date.getTime())) return new Date().toISOString();
     return date.toISOString();
   };
+
 
   const toPracticalAttemptId = () => `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -5341,7 +5197,7 @@ export default function BaederApp() {
     const canManageAll = Boolean(user?.permissions?.canViewAllStats);
 
     try {
-      const rawAttempts = await dsLoadPracticalExamAttempts(supabase, user.id, canManageAll);
+      const rawAttempts = await dsLoadPracticalExamAttempts(user.id, canManageAll);
 
       const remoteAttempts = (rawAttempts || [])
         .map(normalizePracticalAttempt)
@@ -5402,7 +5258,7 @@ export default function BaederApp() {
         )
       };
 
-      const data = await dsSavePracticalExamAttempt(supabase, insertPayload);
+      const data = await dsSavePracticalExamAttempt(insertPayload);
 
       const savedAttempt = normalizePracticalAttempt({ ...data, source: 'remote' });
       if (savedAttempt) {
@@ -5432,7 +5288,7 @@ export default function BaederApp() {
     saveLocalPracticalAttempts(existingLocal.filter(entry => entry.id !== attemptId));
     // Try to remove from backend
     try {
-      await dsDsPracticalExamAttempt(supabase, attemptId);
+      await dsDsPracticalExamAttempt(attemptId);
     } catch {
       // Local removal already done, ignore remote error
     }
@@ -5769,17 +5625,6 @@ export default function BaederApp() {
       void saveTheoryExamAttempt(examProgress, newAnswers, examSimulator?.sessionId);
       if (percentage >= 50) playSound('whistle');
 
-      if (!USE_SECURE_API) {
-        const earnedXp =
-          XP_REWARDS.EXAM_COMPLETION +
-          (correctAnswers * XP_REWARDS.EXAM_CORRECT_ANSWER) +
-          (percentage >= 50 ? XP_REWARDS.EXAM_PASS_BONUS : 0);
-        void queueXpAward('examSimulator', earnedXp, {
-          eventKey: `exam_run_${examSimulator.startTime}`,
-          reason: 'Prüfungssimulator',
-          showXpToast: true
-        });
-      }
     }
   };
 
@@ -5799,7 +5644,6 @@ export default function BaederApp() {
     if (!user?.id) return;
     try {
       const result = await dsSaveTheoryExamAttempt(
-        supabase,
         user.id,
         user.name,
         progress,
@@ -5809,7 +5653,7 @@ export default function BaederApp() {
           answers
         }
       );
-      if (!USE_SECURE_API || !result) {
+      if (!result) {
         return;
       }
 
@@ -5873,7 +5717,7 @@ export default function BaederApp() {
     if (!user?.id) return;
     setTheoryExamHistoryLoading(true);
     try {
-      const data = await dsLoadTheoryExamHistory(supabase, user.id, user.permissions?.canViewAllStats);
+      const data = await dsLoadTheoryExamHistory(user.id, user.permissions?.canViewAllStats);
       setTheoryExamHistory(data);
     } catch (e) {
       console.warn('Fehler beim Laden der Prüfungshistorie:', e);
@@ -5890,7 +5734,7 @@ export default function BaederApp() {
   const loadAzubisForSchoolCard = async () => {
     if (!canViewAllSchoolCards()) return;
     try {
-      const data = await dsLoadSchoolAttendanceAzubis(supabase);
+      const data = await dsLoadSchoolAttendanceAzubis();
       setAllAzubisForSchoolCard(data);
     } catch (err) {
       console.error('Fehler beim Laden der Azubis:', err);
@@ -5901,7 +5745,7 @@ export default function BaederApp() {
     if (!user) return;
     try {
       const userIdToLoad = targetUserId || selectedSchoolCardUser?.id || user.id;
-      const data = await dsLoadSchoolAttendance(supabase, userIdToLoad);
+      const data = await dsLoadSchoolAttendance(userIdToLoad);
       setSchoolAttendance(data);
     } catch (err) {
       console.error('Fehler beim Laden der Kontrollkarte:', err);
@@ -5915,7 +5759,7 @@ export default function BaederApp() {
     }
 
     try {
-      await dsAddSchoolAttendance(supabase, {
+      await dsAddSchoolAttendance({
         userId: user.id, userName: user.name, date: newAttendanceDate,
         startTime: newAttendanceStart, endTime: newAttendanceEnd,
         teacherSignature: newAttendanceTeacherSig, trainerSignature: newAttendanceTrainerSig,
@@ -5925,7 +5769,7 @@ export default function BaederApp() {
         teacher_signature: newAttendanceTeacherSig, trainer_signature: newAttendanceTrainerSig
       });
 
-      const authorizedUsers = await dsGetAuthorizedReviewers(supabase, 'can_view_school_cards');
+      const authorizedUsers = await dsGetAuthorizedReviewers('can_view_school_cards');
       for (const authUser of authorizedUsers) {
         if (authUser.id !== user.id && authUser.name) {
           await sendNotification(
@@ -5952,7 +5796,7 @@ export default function BaederApp() {
 
   const updateAttendanceSignature = async (id, field, value) => {
     try {
-      await dsUpdateAttendanceSignature(supabase, id, field, value);
+      await dsUpdateAttendanceSignature(id, field, value);
       loadSchoolAttendance();
     } catch (err) {
       console.error('Fehler beim Aktualisieren:', err);
@@ -5962,7 +5806,7 @@ export default function BaederApp() {
   const deleteSchoolAttendance = async (id) => {
     if (!confirm('Eintrag wirklich löschen?')) return;
     try {
-      await dsDeleteSchoolAttendance(supabase, id);
+      await dsDeleteSchoolAttendance(id);
       loadSchoolAttendance();
     } catch (err) {
       console.error('Fehler beim Löschen:', err);
@@ -5978,7 +5822,7 @@ export default function BaederApp() {
   const loadAzubisForExamGrades = async () => {
     if (!canViewAllExamGrades()) return;
     try {
-      const data = await dsLoadExamGradesAzubis(supabase);
+      const data = await dsLoadExamGradesAzubis();
       setAllAzubisForExamGrades(data);
     } catch (err) {
       console.error('Fehler beim Laden der Azubis für Klasuren:', err);
@@ -5989,7 +5833,7 @@ export default function BaederApp() {
     if (!user) return;
     try {
       const userIdToLoad = targetUserId || selectedExamGradesUser?.id || user.id;
-      const data = await dsLoadExamGrades(supabase, userIdToLoad);
+      const data = await dsLoadExamGrades(userIdToLoad);
       setExamGrades(data);
     } catch (err) {
       console.error('Fehler beim Laden der Klasuren:', err);
@@ -5998,12 +5842,12 @@ export default function BaederApp() {
 
   const addExamGrade = async ({ date, subject, topic, grade, notes }) => {
     try {
-      await dsAddExamGrade(supabase, {
+      await dsAddExamGrade({
         userId: user.id, userName: user.name, date, subject, topic, grade, notes,
         user_id: user.id, user_name: user.name
       });
 
-      const authorizedUsers = await dsGetAuthorizedReviewers(supabase, 'can_view_exam_grades');
+      const authorizedUsers = await dsGetAuthorizedReviewers('can_view_exam_grades');
       for (const authUser of authorizedUsers) {
         if (authUser.id !== user.id && authUser.name) {
           await sendNotification(
@@ -6026,7 +5870,7 @@ export default function BaederApp() {
   const deleteExamGrade = async (id) => {
     if (!confirm('Klasur wirklich löschen?')) return;
     try {
-      await dsDeleteExamGrade(supabase, id);
+      await dsDeleteExamGrade(id);
       showToast('Klasur gelöscht', 'success');
       loadExamGrades();
     } catch (err) {
@@ -6040,7 +5884,7 @@ export default function BaederApp() {
   const loadBerichtsheftEntries = async () => {
     if (!user) return;
     try {
-      const data = await dsLoadBerichtsheftEntries(supabase, user.name);
+      const data = await dsLoadBerichtsheftEntries(user.name);
       const allEntries = Array.isArray(data) ? data : [];
       const submittedEntries = allEntries.filter((entry) => !isBerichtsheftDraft(entry));
       setBerichtsheftEntries(submittedEntries);
@@ -6075,7 +5919,7 @@ export default function BaederApp() {
     if (!normalizedAzubiName) return;
 
     try {
-      const reviewers = await dsGetAuthorizedReviewers(supabase, 'can_sign_reports');
+      const reviewers = await dsGetAuthorizedReviewers('can_sign_reports');
       const reviewerNames = [...new Set(
         reviewers.map((r) => String(r?.name || '').trim()).filter(Boolean)
       )].filter((name) => name !== normalizedAzubiName);
@@ -6113,7 +5957,7 @@ export default function BaederApp() {
 
     setBerichtsheftPendingLoading(true);
     try {
-      const data = await dsLoadBerichtsheftPending(supabase);
+      const data = await dsLoadBerichtsheftPending();
       const allEntries = Array.isArray(data) ? data : [];
       let pending = allEntries.filter((entry) =>
         !isBerichtsheftDraft(entry)
@@ -6159,7 +6003,7 @@ export default function BaederApp() {
         trainerId, trainerName: trainer.name || null
       };
 
-      await dsAssignBerichtsheftTrainer(supabase, entryId, payload);
+      await dsAssignBerichtsheftTrainer(entryId, payload);
 
       setBerichtsheftPendingSignatures((prev) => prev.map((entry) => (
         entry.id === entryId
@@ -6296,7 +6140,7 @@ export default function BaederApp() {
     }
 
     try {
-      const entries = await dsLoadBerichtsheftEntries(supabase, user.name);
+      const entries = await dsLoadBerichtsheftEntries(user.name);
       const data = entries.filter((entry) => entry.status === 'draft');
 
       const map = {};
@@ -6328,7 +6172,7 @@ export default function BaederApp() {
     if (cached?.id) return cached;
 
     try {
-      const entries = await dsLoadBerichtsheftEntries(supabase, user.name);
+      const entries = await dsLoadBerichtsheftEntries(user.name);
       const row = entries
         .filter((entry) => entry.status === 'draft' && String(entry.week_start || '').trim() === week)
         .reduce((latest, entry) => {
@@ -6379,7 +6223,7 @@ export default function BaederApp() {
     if (!hasContent) {
       if (existingDraft?.id) {
         try {
-          await dsDeleteBerichtsheftDraft(supabase, targetWeek, { draftId: existingDraft.id });
+          await dsDeleteBerichtsheftDraft(targetWeek, { draftId: existingDraft.id });
           removeBerichtsheftServerDraft(targetWeek);
         } catch (error) {
           disableBerichtsheftRemoteDrafts(error);
@@ -6410,7 +6254,7 @@ export default function BaederApp() {
     };
 
     try {
-      const savedRow = await dsUpsertBerichtsheftDraft(supabase, {
+      const savedRow = await dsUpsertBerichtsheftDraft({
         ...payload,
         existingDraftId: existingDraft?.id || undefined
       });
@@ -6444,7 +6288,7 @@ export default function BaederApp() {
     }
 
     try {
-      await dsDeleteBerichtsheftDraft(supabase, week, { draftId: existingDraft.id });
+      await dsDeleteBerichtsheftDraft(week, { draftId: existingDraft.id });
       removeBerichtsheftServerDraft(week);
     } catch (error) {
       disableBerichtsheftRemoteDrafts(error);
@@ -6539,7 +6383,7 @@ export default function BaederApp() {
     azubiProfileSaveTimerRef.current = setTimeout(async () => {
       if (user?.id) {
         try {
-          await dsUpdateBerichtsheftProfile(supabase, user.id, newProfile);
+          await dsUpdateBerichtsheftProfile(user.id, newProfile);
         } catch (err) {
           console.warn('Berichtsheft-Profil Sync fehlgeschlagen:', err);
         }
@@ -6673,7 +6517,7 @@ export default function BaederApp() {
     }
 
     try {
-      const data = await dsLoadCustomSwimPlans(supabase);
+      const data = await dsLoadCustomSwimPlans();
       const normalizedPlans = (Array.isArray(data) ? data : []).map(normalizeCustomSwimTrainingPlan);
       const canManageAllPlans = Boolean(
         user?.permissions?.canViewAllStats
@@ -6763,7 +6607,7 @@ export default function BaederApp() {
     };
 
     try {
-      const data = await dsCreateCustomSwimPlan(supabase, insertPayload);
+      const data = await dsCreateCustomSwimPlan(insertPayload);
       const normalized = normalizeCustomSwimTrainingPlan(data);
       setCustomSwimTrainingPlans((prev) => [normalized, ...prev]);
 
@@ -6897,7 +6741,7 @@ export default function BaederApp() {
     try {
       const parsedYear = Number(yearInput);
       const year = Number.isFinite(parsedYear) ? Math.max(0, Math.round(parsedYear)) : new Date().getFullYear();
-      const data = await dsLoadSwimMonthlyResults(supabase, year);
+      const data = await dsLoadSwimMonthlyResults(year);
       setSwimMonthlyResults(data);
     } catch (err) {
       console.warn('Monatsergebnisse konnten nicht geladen werden:', err);
@@ -6909,7 +6753,7 @@ export default function BaederApp() {
     const payload = buildSwimMonthlyResultPayload(monthDateInput);
     if (!payload) return;
     try {
-      await dsUpsertSwimMonthlyResult(supabase, payload);
+      await dsUpsertSwimMonthlyResult(payload);
     } catch (err) {
       console.warn('Monatsergebnis konnte nicht gespeichert werden:', err);
     }
@@ -7229,7 +7073,7 @@ export default function BaederApp() {
   const loadSwimSessions = async () => {
     setSwimSessionsLoaded(false);
     try {
-      const data = await dsLoadSwimSessions(supabase);
+      const data = await dsLoadSwimSessions();
       if (import.meta.env.DEV) console.log('Schwimm-Sessions geladen:', data?.length || 0);
       setSwimSessions(data);
 
@@ -7267,7 +7111,7 @@ export default function BaederApp() {
       };
 
       if (import.meta.env.DEV) console.log('Speichere Schwimm-Session');
-      const savedSession = await dsSaveSwimSession(supabase, newSession);
+      const savedSession = await dsSaveSwimSession(newSession);
       if (import.meta.env.DEV) console.log('Session gespeichert');
 
       setSwimSessions(prev => [savedSession, ...prev]);
@@ -7279,7 +7123,7 @@ export default function BaederApp() {
         : 'ohne Datum';
 
       try {
-        const reviewers = await dsGetAuthorizedReviewers(supabase);
+        const reviewers = await dsGetAuthorizedReviewers();
         const reviewerNames = [...new Set(reviewers.map(r => String(r.name || '').trim()).filter(Boolean))];
         for (const reviewerName of reviewerNames) {
           if (reviewerName === user.name) continue;
@@ -7305,7 +7149,7 @@ export default function BaederApp() {
   const confirmSwimSession = async (sessionId) => {
     try {
       const sessionToConfirm = swimSessions.find(s => s.id === sessionId) || null;
-      const confirmationResult = await dsConfirmSwimSession(supabase, sessionId, user.name);
+      const confirmationResult = await dsConfirmSwimSession(sessionId, user.name);
       const confirmedSession = confirmationResult?.id ? confirmationResult : sessionToConfirm;
 
       // Aktualisiere lokale Listen
@@ -7322,27 +7166,6 @@ export default function BaederApp() {
       ));
       setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
 
-      if (!USE_SECURE_API && sessionToConfirm?.user_id && sessionToConfirm?.user_name) {
-        const { trainingPlanId, trainingPlanUnitId } = extractSwimTrainingPlanSelectionFromNotes(sessionToConfirm.notes);
-        if (trainingPlanId) {
-          const trainingPlan = getSwimTrainingPlanById(trainingPlanId);
-          if (trainingPlan && doesSessionFulfillTrainingPlan(sessionToConfirm, trainingPlan, trainingPlanUnitId)) {
-            const xpAmount = toSafeInt(trainingPlan.xpReward);
-            if (xpAmount > 0) {
-              void queueXpAwardForUser(
-                { id: sessionToConfirm.user_id, name: sessionToConfirm.user_name },
-                'swimTrainingPlans',
-                xpAmount,
-                {
-                  eventKey: `swim_training_plan_${trainingPlan.id}_${sessionId}`,
-                  reason: `Trainingsplan erfuellt: ${trainingPlan.name}`,
-                  showXpToast: true
-                }
-              );
-            }
-          }
-        }
-      }
 
       return { success: true };
     } catch (err) {
@@ -7354,7 +7177,7 @@ export default function BaederApp() {
   // Trainingseinheit ablehnen (Trainer)
   const rejectSwimSession = async (sessionId) => {
     try {
-      await dsRejectSwimSession(supabase, sessionId);
+      await dsRejectSwimSession(sessionId);
       setSwimSessions(prev => prev.filter(s => s.id !== sessionId));
       setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
       return { success: true };
@@ -7366,7 +7189,7 @@ export default function BaederApp() {
 
   const withdrawSwimSession = async (sessionId) => {
     try {
-      await dsWithdrawSwimSession(supabase, sessionId);
+      await dsWithdrawSwimSession(sessionId);
       setSwimSessions(prev => prev.filter(s => s.id !== sessionId));
       setPendingSwimConfirmations(prev => prev.filter(s => s.id !== sessionId));
       return { success: true };
@@ -7402,7 +7225,7 @@ export default function BaederApp() {
       const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       await upsertSwimMonthlyResult(previousMonth);
       if (!cancelled) {
-        if (USE_SECURE_API && swimSessions.length > 0) {
+        if (swimSessions.length > 0) {
           // Compute monthly results client-side from swim sessions (no backend endpoint)
           const year = now.getFullYear();
           const results = [];
@@ -7656,11 +7479,11 @@ export default function BaederApp() {
         berichtsheftData.assigned_by_id = persistedEntry.assigned_by_id || null;
         berichtsheftData.assigned_at = persistedEntry.assigned_at || null;
 
-        await dsSaveBerichtsheft(supabase, berichtsheftData, persistedEntry.id);
+        await dsSaveBerichtsheft(berichtsheftData, persistedEntry.id);
         removeBerichtsheftServerDraft(berichtsheftWeek);
         showToast(selectedBerichtsheft ? 'Berichtsheft aktualisiert!' : 'Berichtsheft gespeichert!', 'success');
       } else {
-        await dsSaveBerichtsheft(supabase, berichtsheftData);
+        await dsSaveBerichtsheft(berichtsheftData);
         showToast('Berichtsheft gespeichert!', 'success');
         setBerichtsheftNr(prev => prev + 1);
       }
@@ -7702,7 +7525,7 @@ export default function BaederApp() {
   const deleteBerichtsheft = async (id) => {
     if (!confirm('Berichtsheft wirklich löschen?')) return;
     try {
-      await dsDeleteBerichtsheft(supabase, id);
+      await dsDeleteBerichtsheft(id);
       loadBerichtsheftEntries();
       loadBerichtsheftPendingSignatures();
     } catch (err) {
@@ -8200,7 +8023,7 @@ export default function BaederApp() {
 
   const approveFlashcard = async (fcId) => {
     try {
-      await dsApproveFlashcard(supabase, fcId);
+      await dsApproveFlashcard(fcId);
       const fc = pendingFlashcards.find(f => f.id === fcId);
       if (fc) {
         fc.approved = true;
@@ -8215,7 +8038,7 @@ export default function BaederApp() {
 
   const deleteFlashcard = async (fcId) => {
     try {
-      await dsDeleteFlashcard(supabase, fcId);
+      await dsDeleteFlashcard(fcId);
       setPendingFlashcards(pendingFlashcards.filter(f => f.id !== fcId));
       setUserFlashcards(userFlashcards.filter(f => f.id !== fcId));
     } catch (error) {
@@ -8353,7 +8176,7 @@ export default function BaederApp() {
     if (newBadges.length > 0) {
       setUserBadges(earnedBadges);
       try {
-        await dsSaveBadges(supabase, newBadges, user.id, user.name);
+        await dsSaveBadges(newBadges, user.id, user.name);
       } catch (error) {
         console.error('Save badges error:', error);
       }
@@ -8365,7 +8188,7 @@ export default function BaederApp() {
     if (!materialTitle.trim() || !user?.permissions.canUploadMaterials) return;
 
     try {
-      const mat = await dsAddMaterial(supabase, {
+      const mat = await dsAddMaterial({
         title: materialTitle, category: materialCategory, createdBy: user.name
       });
       setMaterials([...materials, mat]);
@@ -8387,7 +8210,7 @@ export default function BaederApp() {
     }
 
     try {
-      await dsSaveAppConfig(supabase, {
+      await dsSaveAppConfig({
         menuItems: editingMenuItems,
         themeColors: editingThemeColors,
         companies: appConfig.companies
@@ -8410,7 +8233,7 @@ export default function BaederApp() {
   const saveCompanies = async (newCompanies) => {
     const updated = { ...appConfig, companies: newCompanies };
     try {
-      await dsSaveAppConfig(supabase, {
+      await dsSaveAppConfig({
         menuItems: appConfig.menuItems,
         themeColors: appConfig.themeColors,
         companies: newCompanies
@@ -8518,7 +8341,7 @@ export default function BaederApp() {
     }
 
     try {
-      const resource = await dsAddResource(supabase, {
+      const resource = await dsAddResource({
         title: resourceTitle, url: resourceUrl, category: resourceType,
         description: resourceDescription, createdBy: user.name
       });
@@ -8541,7 +8364,7 @@ export default function BaederApp() {
     }
     if (!confirm('Ressource wirklich löschen?')) return;
     try {
-      await dsDeleteResource(supabase, resourceId);
+      await dsDeleteResource(resourceId);
       setResources(resources.filter(r => r.id !== resourceId));
     } catch (error) {
       console.error('Delete resource error:', error);
@@ -8561,7 +8384,7 @@ export default function BaederApp() {
     }
 
     try {
-      const newsItem = await dsAddNews(supabase, {
+      const newsItem = await dsAddNews({
         title: newsTitle.trim(), content: newsContent.trim(), author: user.name
       });
 
@@ -8584,7 +8407,7 @@ export default function BaederApp() {
     if (!user?.permissions.canPostNews) return;
     if (!confirm('Diese Ankündigung wirklich löschen?')) return;
     try {
-      await dsDeleteNews(supabase, newsId);
+      await dsDeleteNews(newsId);
       setNews(news.filter(n => n.id !== newsId));
     } catch (error) {
       console.error('Delete news error:', error);
@@ -8596,7 +8419,7 @@ export default function BaederApp() {
     if (!examTitle.trim() || !user) return;
 
     try {
-      const exam = await dsAddExam(supabase, {
+      const exam = await dsAddExam({
         title: examTitle, description: examTopics,
         examDate: examDate || null, createdBy: user.name
       });
@@ -8625,7 +8448,7 @@ export default function BaederApp() {
     if (!examId) return;
     if (!confirm('Klausur wirklich löschen?')) return;
     try {
-      await dsDeleteExam(supabase, examId);
+      await dsDeleteExam(examId);
       setExams(prev => prev.filter(exam => exam.id !== examId));
       showToast('Klausur gelöscht.', 'success');
     } catch (error) {

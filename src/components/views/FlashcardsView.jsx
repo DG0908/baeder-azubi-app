@@ -2,7 +2,7 @@ import React from 'react';
 import { Plus, Check, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { supabase } from '../../supabase';
+
 import { createFlashcardEntry as dsCreateFlashcardEntry } from '../../lib/dataService';
 import { CATEGORIES } from '../../data/constants';
 import { getWhoAmIClueCount, getWhoAmIVisibleClues, WHO_AM_I_TIME_LIMIT } from '../../data/whoAmIChallenges';
@@ -168,7 +168,7 @@ const FlashcardsView = ({
             }
 
             try {
-              const flashcard = await dsCreateFlashcardEntry(supabase, {
+              const flashcard = await dsCreateFlashcardEntry({
                 userId: user.id,
                 createdBy: user.name,
                 category: newFlashcardCategory,
