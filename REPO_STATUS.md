@@ -66,6 +66,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - `src/lib/secureApi.js`, `src/lib/dataService.js`, `src/App.jsx` und `src/components/views/AdminView.jsx` ziehen den Admin-Datenexport jetzt ueber den Secure-API-Pfad statt ueber den Legacy-Supabase-Read.
 - `docs/privacy-rights-runbook.md` dokumentiert jetzt den operativen Mindestprozess fuer Berichtigung, Loeschung und den neuen Exportpfad inklusive verbleibender Restluecken.
 - `server/src/modules/duels/duels.service.ts` leakt bei aktiven Duellen die richtige Antwort nicht mehr, normalisiert Duel-State serverseitig und blockiert mehrere triviale Cheat-/Manipulationspfade.
+- `server/src/modules/duels/duels.service.ts` bewertet jetzt auch Keyword-/WhoAmI-Antworten serverseitig neu; `correct` und `points` aus dem Client zaehlen dafuer nicht mehr.
 - `src/App.jsx` stabilisiert den Duel-Ergebnis-Screen ueber fertige Spielstaende und synchronisiert Siege/Remis/Niederlagen fuer Home-/Profil-Statistiken aus den tatsaechlich beendeten Duellen.
 - `src/components/views/HomeView.jsx` zeigt auf der Startseite wieder eine konsistente Duel-Zusammenfassung mit `Siege`, `Remis` und `Niederl.`.
 
@@ -77,6 +78,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - automatisierte Tests fuer Auth, Approval, Chat-Scope und Duel-Abschluss fehlen weiterhin
 - der neue Secure-Datenexport ist noch nicht praktisch im Zielbetrieb getestet
 - Quizduell ist trotz Hardening noch nicht vollstaendig server-autoritativ; Fragen-/Antwortfluss wird weiter teils clientseitig synchronisiert
+- die Kategorien-/Fragenwahl eines neuen Duel-Rounds kommt weiter aus dem Client; damit bleibt dort noch ein Manipulationsrest, bis die Rundenerzeugung server-autoritativ ist
 
 ## Naechster konkreter Schritt
 
@@ -109,6 +111,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - Badge-Historie haengt noch an der alten `user_badges`-Tabelle und ist im neuen Secure-Export aktuell bewusst leer
 - Restore-Drill, formale Loesch-/Auskunftsprozesse und externer Security-Nachweis sind weiter offen
 - Quizduell ist gegen triviale Client-Manipulationen deutlich gehaertet, aber noch nicht auf einem voll server-autoritativem Modell
+- insbesondere neue Duel-Runden vertrauen noch auf clientgelieferte Fragen; das naechste P1-Thema bleibt daher serverseitige Rundenerzeugung statt reinem Client-Sync
 
 ## Arbeitsregel
 

@@ -1107,19 +1107,24 @@ export class DuelsService {
    */
   private revalidateAnswerEntry(entry: Prisma.InputJsonObject, question: Record<string, unknown>): Prisma.InputJsonObject {
     const answerType = entry.answerType as string;
+    const isTimeout = Boolean(entry.timeout);
 
-    // Keyword- und WhoAmI-Antworten können wir serverseitig nicht neu bewerten
     if (answerType === 'keyword' || answerType === 'whoami') {
-      return entry;
+      const evaluation = this.evaluateKeywordAnswer(question, entry.keywordText, isTimeout);
+      return {
+        ...entry,
+        correct: evaluation.isCorrect,
+        points: answerType === 'whoami'
+          ? (evaluation.isCorrect ? 1 : 0)
+          : evaluation.awardedPoints
+      };
     }
 
     const storedCorrect = question.correct;
     if (storedCorrect === undefined || storedCorrect === null) {
-      // Keine Frage gefunden — keep as-is aber cap points
-      return { ...entry, points: entry.correct ? 1 : 0 };
+      return { ...entry, correct: false, points: 0 };
     }
 
-    const isTimeout = Boolean(entry.timeout);
     let isCorrect: boolean;
 
     if (Array.isArray(storedCorrect)) {
@@ -1137,6 +1142,48 @@ export class DuelsService {
     }
 
     return { ...entry, correct: isCorrect, points: isCorrect ? 1 : 0 };
+  }
+
+  private evaluateKeywordAnswer(
+    question: Record<string, unknown>,
+    answerInput: unknown,
+    isTimeout: boolean
+  ) {
+    const groups = this.getKeywordGroupsFromQuestion(question);
+    const normalizedAnswer = this.normalizeKeywordText(answerInput);
+    const answerVariantTokens = this.buildKeywordTokenVariants(answerInput);
+    const wordCount = normalizedAnswer ? normalizedAnswer.split(' ').filter(Boolean).length : 0;
+    const requiredWordCount = Math.max(0, Number(question.minWords) || 0);
+    const requiredGroups = Math.max(
+      1,
+      Math.min(groups.length || 1, Number(question.minKeywordGroups) || groups.length || 1)
+    );
+
+    if (isTimeout || !normalizedAnswer || groups.length === 0) {
+      return {
+        isCorrect: false,
+        awardedPoints: 0
+      };
+    }
+
+    let matchedCount = 0;
+    for (const group of groups) {
+      const matched = group.normalizedTerms.some((term) =>
+        this.matchesKeywordTerm(normalizedAnswer, answerVariantTokens, term)
+      );
+      if (matched) {
+        matchedCount += 1;
+      }
+    }
+
+    const hasEnoughWords = wordCount >= requiredWordCount;
+    const isCorrect = matchedCount >= requiredGroups && hasEnoughWords;
+    const basePoints = matchedCount;
+    const bonusPoints = isCorrect ? 2 : 0;
+    return {
+      isCorrect,
+      awardedPoints: Math.max(0, Math.min(MAX_DUEL_ANSWER_POINTS, basePoints + bonusPoints))
+    };
   }
 
   private normalizeQuestionArray(input: unknown): Prisma.InputJsonArray {
@@ -1225,6 +1272,135 @@ export class DuelsService {
           terms
         };
       });
+  }
+
+  private getKeywordGroupsFromQuestion(question: Record<string, unknown>) {
+    const groups = Array.isArray(question.keywordGroups) ? question.keywordGroups : [];
+    return groups
+      .map((groupInput) => this.normalizeKeywordGroupRecord(groupInput))
+      .filter((group) => group.terms.length > 0)
+      .map((group) => ({
+        ...group,
+        normalizedTerms: [...new Set(group.terms.map((term) => this.normalizeKeywordText(term)).filter(Boolean))]
+      }))
+      .filter((group) => group.normalizedTerms.length > 0);
+  }
+
+  private normalizeKeywordGroupRecord(input: unknown) {
+    if (typeof input === 'string') {
+      return {
+        label: input,
+        terms: [input]
+      };
+    }
+
+    if (Array.isArray(input)) {
+      const terms = input
+        .map((term) => String(term || '').trim())
+        .filter(Boolean);
+      return {
+        label: terms[0] || 'Schlagwort',
+        terms
+      };
+    }
+
+    const record = this.asRecord(input);
+    const label = String(record.label || record.name || '').trim();
+    const terms = Array.isArray(record.terms)
+      ? record.terms.map((term) => String(term || '').trim()).filter(Boolean)
+      : [];
+
+    return {
+      label: label || terms[0] || 'Schlagwort',
+      terms
+    };
+  }
+
+  private normalizeKeywordText(value: unknown) {
+    return String(value || '')
+      .toLowerCase()
+      .replace(/ß/g, 'ss')
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private getKeywordWordVariants(normalizedWord: string) {
+    const variants = [normalizedWord];
+    const addVariant = (candidate: string) => {
+      if (candidate && !variants.includes(candidate)) {
+        variants.push(candidate);
+      }
+    };
+
+    addVariant(
+      normalizedWord
+        .replace(/ae/g, 'a')
+        .replace(/oe/g, 'o')
+        .replace(/ue/g, 'u')
+    );
+
+    if (normalizedWord.endsWith('en') && normalizedWord.length - 2 >= 4) {
+      const stem = normalizedWord.slice(0, -2);
+      addVariant(stem);
+      if (stem.endsWith('e') && stem.length - 1 >= 4) {
+        addVariant(stem.slice(0, -1));
+      }
+    } else if (normalizedWord.endsWith('e') && normalizedWord.length - 1 >= 4) {
+      addVariant(normalizedWord.slice(0, -1));
+    } else if (normalizedWord.endsWith('s') && normalizedWord.length - 1 >= 4) {
+      addVariant(normalizedWord.slice(0, -1));
+    }
+
+    return variants;
+  }
+
+  private tokenizeKeywordText(value: unknown) {
+    return this.normalizeKeywordText(value)
+      .split(' ')
+      .map((token) => token.trim())
+      .filter(Boolean);
+  }
+
+  private buildKeywordTokenVariants(value: unknown) {
+    const variants = new Set<string>();
+    this.tokenizeKeywordText(value).forEach((token) => {
+      this.getKeywordWordVariants(token).forEach((variant) => {
+        if (variant) {
+          variants.add(variant);
+        }
+      });
+    });
+    return variants;
+  }
+
+  private matchesKeywordTerm(
+    normalizedAnswer: string,
+    answerVariantTokens: Set<string>,
+    term: string
+  ) {
+    const normalizedTerm = this.normalizeKeywordText(term);
+    if (!normalizedTerm) return false;
+    if (normalizedAnswer.includes(normalizedTerm)) return true;
+
+    const termTokens = this.tokenizeKeywordText(normalizedTerm);
+    if (termTokens.length === 0) return false;
+
+    return termTokens.every((token) => {
+      const tokenVariants = this.getKeywordWordVariants(token);
+      return tokenVariants.some((variant) => {
+        if (!variant) return false;
+        if (answerVariantTokens.has(variant)) return true;
+        return Array.from(answerVariantTokens).some((answerToken) =>
+          answerToken.startsWith(variant) || variant.startsWith(answerToken)
+        );
+      });
+    });
   }
 
   private normalizeCorrectAnswer(input: unknown): number | Prisma.InputJsonArray {
