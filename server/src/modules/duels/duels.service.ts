@@ -28,6 +28,17 @@ const MAX_DUEL_CLUES = 8;
 const MAX_DUEL_TEXT_LENGTH = 600;
 const MAX_DUEL_ANSWER_POINTS = 10;
 const ALLOWED_DUEL_DIFFICULTIES = new Set(['anfaenger', 'profi', 'experte', 'extra', 'normal']);
+const DUEL_CATEGORY_NAMES: Record<string, string> = {
+  org: 'Bäderorganisation',
+  pol: 'Politik & Wirtschaft',
+  aevo: 'Ausbildereignung',
+  guess: 'Was bin ich?',
+  tech: 'Bädertechnik',
+  swim: 'Schwimm- & Rettungslehre',
+  first: 'Erste Hilfe',
+  hygiene: 'Hygiene',
+  health: 'Gesundheitslehre'
+};
 
 const duelParticipantSelect = {
   id: true,
@@ -288,16 +299,21 @@ export class DuelsService {
     this.assertGameStatePayloadSize(gameState);
     const previousGameState = this.normalizeGameState(duel, duel.gameState);
     const normalizedGameState = this.normalizeGameState(duel, gameState);
-    this.assertValidGameStateTransition(duel, previousGameState, normalizedGameState, actor);
-    const shouldComplete = duel.status === DuelStatus.ACTIVE && normalizedGameState.status === 'finished';
+    const authoritativeGameState = await this.applyAuthoritativeRoundGeneration(
+      duel,
+      previousGameState,
+      normalizedGameState
+    );
+    this.assertValidGameStateTransition(duel, previousGameState, authoritativeGameState, actor);
+    const shouldComplete = duel.status === DuelStatus.ACTIVE && authoritativeGameState.status === 'finished';
     const winnerUserId = shouldComplete
-      ? this.resolveWinnerUserId(duel, this.readString(normalizedGameState.winner))
+      ? this.resolveWinnerUserId(duel, this.readString(authoritativeGameState.winner))
       : undefined;
 
     const updated = await this.prisma.duel.update({
       where: { id: duelId },
       data: {
-        gameState: normalizedGameState,
+        gameState: authoritativeGameState,
         status: shouldComplete ? DuelStatus.COMPLETED : undefined,
         winnerUserId,
         completedAt: shouldComplete ? new Date() : undefined,
@@ -308,6 +324,52 @@ export class DuelsService {
     });
 
     return this.toDuelSummary(updated, actor.id);
+  }
+
+  private async applyAuthoritativeRoundGeneration(
+    duel: DuelWithRelations,
+    previousGameState: Prisma.InputJsonObject,
+    nextGameState: Prisma.InputJsonObject
+  ): Promise<Prisma.InputJsonObject> {
+    const previousRounds = Array.isArray(previousGameState.categoryRounds)
+      ? previousGameState.categoryRounds
+      : [];
+    const nextRounds = Array.isArray(nextGameState.categoryRounds)
+      ? nextGameState.categoryRounds
+      : [];
+
+    if (nextRounds.length !== previousRounds.length + 1) {
+      return nextGameState;
+    }
+
+    const newRoundIndex = nextRounds.length - 1;
+    const newRound = this.asRecord(nextRounds[newRoundIndex]);
+    const categoryId = this.readString(newRound.categoryId) ?? '';
+    if (!categoryId) {
+      return nextGameState;
+    }
+
+    const generatedQuestions = await this.generateAuthoritativeRoundQuestions(categoryId);
+    if (!generatedQuestions) {
+      return nextGameState;
+    }
+
+    const chooser = this.getExpectedNextChooserName(duel, previousRounds);
+    const authoritativeRound: Prisma.InputJsonObject = {
+      categoryId,
+      categoryName: DUEL_CATEGORY_NAMES[categoryId] ?? (this.sanitizeText(newRound.categoryName, 120) || categoryId),
+      chooser,
+      questions: generatedQuestions,
+      player1Answers: this.normalizeAnswerArray([]),
+      player2Answers: this.normalizeAnswerArray([])
+    };
+
+    return {
+      ...nextGameState,
+      currentTurn: chooser,
+      categoryRound: newRoundIndex,
+      categoryRounds: [...previousRounds, authoritativeRound]
+    } as Prisma.InputJsonObject;
   }
 
   private resolveWinnerUserId(
@@ -983,6 +1045,62 @@ export class DuelsService {
     }
 
     return { player1Score, player2Score };
+  }
+
+  private async generateAuthoritativeRoundQuestions(categoryId: string): Promise<Prisma.InputJsonArray | null> {
+    const availableQuestions = await this.prisma.question.findMany({
+      where: {
+        category: categoryId,
+        isActive: true
+      },
+      select: {
+        id: true,
+        category: true,
+        prompt: true,
+        options: true,
+        correctOptionIndex: true
+      }
+    });
+
+    if (availableQuestions.length < MAX_DUEL_QUESTIONS_PER_ROUND) {
+      return null;
+    }
+
+    return this.shuffle(availableQuestions)
+      .slice(0, MAX_DUEL_QUESTIONS_PER_ROUND)
+      .map((question) => this.buildAuthoritativeQuestionEntry(question));
+  }
+
+  private buildAuthoritativeQuestionEntry(question: {
+    id: string;
+    category: string;
+    prompt: string;
+    options: Prisma.JsonValue;
+    correctOptionIndex: number;
+  }): Prisma.InputJsonObject {
+    const shuffledOptions = this.shuffle(
+      this.extractOptions(question.options).map((text, originalIndex) => ({
+        text,
+        originalIndex
+      }))
+    );
+
+    const correct = Math.max(
+      0,
+      shuffledOptions.findIndex((entry) => entry.originalIndex === question.correctOptionIndex)
+    );
+
+    return {
+      id: question.id,
+      category: question.category,
+      type: 'single',
+      prompt: question.prompt,
+      q: question.prompt,
+      a: shuffledOptions.map((entry) => entry.text),
+      correct,
+      multi: false,
+      timeLimit: 30
+    };
   }
 
   private assertValidGameStateTransition(

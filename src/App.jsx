@@ -4244,6 +4244,7 @@ export default function BaederApp() {
 
     // Speichere die Fragen im Game für beide Spieler
     if (!currentGame.categoryRounds) currentGame.categoryRounds = [];
+    const roundIndex = currentGame.categoryRound;
     currentGame.categoryRounds.push({
       categoryId: catId,
       categoryName: CATEGORIES.find(c => c.id === catId)?.name || catId,
@@ -4253,18 +4254,28 @@ export default function BaederApp() {
       chooser: user.name  // Wer hat die Kategorie gewählt
     });
 
-    setCurrentCategoryQuestions(preparedQuestions);
+    setCurrentCategoryQuestions([]);
     setQuestionInCategory(0);
-    setCurrentQuestion(preparedQuestions[0]);
+    setCurrentQuestion(null);
     setAnswered(false);
     setSelectedAnswers([]); // Reset für Multi-Select
     setLastSelectedAnswer(null); // Reset für Single-Choice
 
-    const timeLimit = getQuizTimeLimit(preparedQuestions[0], currentGame.difficulty);
-    setTimeLeft(timeLimit);
-    setTimerActive(true);
+    setTimerActive(false);
 
-    await saveGameToSupabase(currentGame);
+    const persistedGame = await saveGameToSupabase(currentGame);
+    const persistedRound = persistedGame?.categoryRounds?.[roundIndex];
+    const liveQuestions = Array.isArray(persistedRound?.questions) && persistedRound.questions.length > 0
+      ? persistedRound.questions
+      : preparedQuestions;
+
+    setCurrentCategoryQuestions(liveQuestions);
+    if (liveQuestions[0]) {
+      setCurrentQuestion(liveQuestions[0]);
+      const timeLimit = getQuizTimeLimit(liveQuestions[0], persistedGame?.difficulty || currentGame.difficulty);
+      setTimeLeft(timeLimit);
+      setTimerActive(true);
+    }
   };
 
   const handleTimeUp = async () => {
