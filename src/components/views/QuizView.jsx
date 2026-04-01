@@ -90,6 +90,27 @@ const QuizView = ({
   const questionTimeLimit = questionIsWhoAmI
     ? Number(currentQuestion?.timeLimit) || WHO_AM_I_TIME_LIMIT
     : (currentDifficulty.time || 30);
+  const activeCategoryRound = currentGame?.categoryRounds?.[currentGame?.categoryRound || 0] || null;
+  const isCurrentPlayer1 = Boolean(currentGame && user?.name === currentGame.player1);
+  const myCurrentRoundAnswers = activeCategoryRound
+    ? (isCurrentPlayer1 ? activeCategoryRound.player1Answers : activeCategoryRound.player2Answers) || []
+    : [];
+  const opponentCurrentRoundAnswers = activeCategoryRound
+    ? (isCurrentPlayer1 ? activeCategoryRound.player2Answers : activeCategoryRound.player1Answers) || []
+    : [];
+  const nextPendingQuestionIndex = myCurrentRoundAnswers.length || 0;
+  const hasPendingCategoryRound = Boolean(
+    currentGame
+    && activeCategoryRound
+    && playerTurn === user?.name
+    && Array.isArray(activeCategoryRound.questions)
+    && activeCategoryRound.questions.length > 0
+    && nextPendingQuestionIndex < activeCategoryRound.questions.length
+  );
+  const isResumingCategoryRound = hasPendingCategoryRound && nextPendingQuestionIndex > 0;
+  const isOpponentReplayRound = hasPendingCategoryRound
+    && opponentCurrentRoundAnswers.length > 0
+    && nextPendingQuestionIndex === 0;
   React.useEffect(() => {
     if (currentGame) return undefined;
     const intervalId = window.setInterval(() => {
@@ -591,7 +612,7 @@ const QuizView = ({
             </div>
           )}
 
-          {!quizCategory && playerTurn === user.name && !waitingForOpponent && (
+          {!quizCategory && playerTurn === user.name && !waitingForOpponent && !hasPendingCategoryRound && (
             <div>
               <div className={`mb-4 flex items-center justify-between gap-3 rounded-lg border p-3 ${darkMode ? 'border-slate-600 bg-slate-700' : 'border-gray-200 bg-gray-50'}`}>
                 <div>
@@ -631,29 +652,24 @@ const QuizView = ({
             </div>
           )}
 
-          {!currentQuestion && playerTurn === user.name && currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && (() => {
-            const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
-            if (!currentCatRound) return false;
-            const isPlayer1 = user.name === currentGame.player1;
-            const myAnswers = isPlayer1 ? currentCatRound.player1Answers : currentCatRound.player2Answers;
-            return myAnswers.length === 0 && currentCatRound.questions.length > 0;
-          })() && (
+          {!currentQuestion && hasPendingCategoryRound && (
             <div className="text-center py-8">
               <div className="text-4xl font-black mb-4 text-emerald-500">START</div>
               <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : ''}`}>
-                {(() => {
-                  const currentCatRound = currentGame.categoryRounds[currentGame.categoryRound || 0];
-                  return currentCatRound?.categoryName || 'Kategorie';
-                })()}
+                {activeCategoryRound?.categoryName || 'Kategorie'}
               </p>
               <p className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                {getFirstName(currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1)} hat diese Kategorie gespielt. Jetzt bist du dran mit den gleichen 5 Fragen!
+                {isResumingCategoryRound
+                  ? `Du warst bereits bei Frage ${nextPendingQuestionIndex + 1}/${activeCategoryRound?.questions?.length || 5}. Setze diese Kategorie genau dort fort.`
+                  : isOpponentReplayRound
+                    ? `${getFirstName(currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1)} hat diese Kategorie gespielt. Jetzt bist du dran mit den gleichen ${activeCategoryRound?.questions?.length || 5} Fragen!`
+                    : 'Diese Kategorie ist bereits gestartet. Du setzt jetzt deine laufende Runde fort, statt eine neue Kategorie zu waehlen.'}
               </p>
               <button
                 onClick={startCategoryAsSecondPlayer}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
               >
-                Los geht's
+                {isResumingCategoryRound ? 'Fortsetzen' : "Los geht's"}
               </button>
             </div>
           )}

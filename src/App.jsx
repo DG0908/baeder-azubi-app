@@ -98,6 +98,7 @@ import {
   deleteFlashcardEntry as dsDeleteFlashcard,
   createDuel as dsCreateDuel,
   acceptDuel as dsAcceptDuel,
+  getDuelWithQuestions as dsGetDuelWithQuestions,
   saveDuelState as dsSaveDuelState,
   loadSwimSessionEntries as dsLoadSwimSessions,
   saveSwimSessionEntry as dsSaveSwimSession,
@@ -963,6 +964,46 @@ export default function BaederApp() {
     setLastSelectedAnswer(null);
     setTimerActive(false);
     resetQuizKeywordState();
+  };
+
+  const cloneDuelGameSnapshot = (gameInput) => {
+    if (!gameInput || typeof gameInput !== 'object') {
+      return gameInput;
+    }
+    if (typeof structuredClone === 'function') {
+      return structuredClone(gameInput);
+    }
+    return JSON.parse(JSON.stringify(gameInput));
+  };
+
+  const syncLocalDuelGame = (gameInput) => {
+    const nextGame = cloneDuelGameSnapshot(gameInput);
+    if (!nextGame?.id) {
+      return nextGame;
+    }
+
+    setCurrentGame((prev) => (prev?.id === nextGame.id ? nextGame : prev));
+    setActiveGames((prev) => {
+      const existingIndex = prev.findIndex((entry) => entry.id === nextGame.id);
+      if (isFinishedGameStatus(nextGame.status)) {
+        return existingIndex === -1
+          ? prev
+          : prev.filter((entry) => entry.id !== nextGame.id);
+      }
+      if (existingIndex === -1) {
+        return [nextGame, ...prev];
+      }
+      return prev.map((entry) => (entry.id === nextGame.id ? nextGame : entry));
+    });
+    setAllGames((prev) => {
+      const existingIndex = prev.findIndex((entry) => entry.id === nextGame.id);
+      if (existingIndex === -1) {
+        return [nextGame, ...prev];
+      }
+      return prev.map((entry) => (entry.id === nextGame.id ? nextGame : entry));
+    });
+
+    return nextGame;
   };
 
   const showDuelResultForGame = (gameInput, gamesSource = null, h2hOverride = null) => {
@@ -3813,12 +3854,74 @@ export default function BaederApp() {
     setCurrentView('quiz');
   };
 
+  const continueGameSafe = async (gameId) => {
+    const activeGame = activeGames.find(g => g.id === gameId);
+    if (!activeGame) return;
+
+    let game = cloneDuelGameSnapshot(activeGame);
+    try {
+      const latestGame = await dsGetDuelWithQuestions(supabase, gameId, user?.id);
+      if (latestGame?.id === gameId) {
+        game = latestGame;
+      }
+    } catch (error) {
+      console.warn('Aktuellen Duel-Stand konnte nicht nachgeladen werden:', error);
+    }
+
+    const syncedGame = syncLocalDuelGame(game);
+    const gameToContinue = syncedGame?.id ? syncedGame : game;
+
+    setDuelResult(null);
+    setCurrentGame(gameToContinue);
+    setCategoryRound(gameToContinue.categoryRound || 0);
+    setQuestionInCategory(0);
+    setPlayerTurn(gameToContinue.currentTurn);
+    setQuizCategory(null);
+    setCurrentQuestion(null);
+    setCurrentCategoryQuestions([]);
+    setAnswered(false);
+    setSelectedAnswers([]);
+    setLastSelectedAnswer(null);
+    setTimerActive(false);
+    setWaitingForOpponent(false);
+    resetQuizKeywordState();
+
+    if (gameToContinue.categoryRounds && gameToContinue.categoryRounds.length > 0) {
+      const currentCatRound = gameToContinue.categoryRounds[gameToContinue.categoryRound || 0];
+      if (currentCatRound) {
+        const isPlayer1 = user.name === gameToContinue.player1;
+        const myAnswers = isPlayer1 ? currentCatRound.player1Answers : currentCatRound.player2Answers;
+        const nextQuestionIndex = Math.max(0, myAnswers.length || 0);
+        const hasPendingQuestions = currentCatRound.questions.length > 0
+          && nextQuestionIndex < currentCatRound.questions.length;
+
+        if (hasPendingQuestions) {
+          setQuizCategory(currentCatRound.categoryId);
+          setCurrentCategoryQuestions(currentCatRound.questions);
+
+          if (nextQuestionIndex > 0) {
+            setQuestionInCategory(nextQuestionIndex);
+            setCurrentQuestion(currentCatRound.questions[nextQuestionIndex]);
+            const timeLimit = getQuizTimeLimit(currentCatRound.questions[nextQuestionIndex], gameToContinue.difficulty);
+            setTimeLeft(timeLimit);
+            setTimerActive(true);
+          }
+        }
+      }
+    }
+
+    setCurrentView('quiz');
+  };
+
   // Helper function to save game state
   const saveGameToSupabase = async (game) => {
+    const syncedGame = syncLocalDuelGame(game);
     try {
-      await dsSaveDuelState(supabase, game);
+      await dsSaveDuelState(supabase, syncedGame);
+      return syncedGame;
     } catch (error) {
       console.error('Save game error:', error);
+      return syncedGame;
     }
   };
 
@@ -4584,6 +4687,32 @@ export default function BaederApp() {
     resetQuizKeywordState();
 
     const timeLimit = getQuizTimeLimit(currentCategoryRound.questions[0], currentGame.difficulty);
+    setTimeLeft(timeLimit);
+    setTimerActive(true);
+  };
+
+  const resumeCategoryRound = () => {
+    if (!currentGame || !currentGame.categoryRounds) return;
+
+    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
+    if (!currentCategoryRound) return;
+
+    const isPlayer1 = user.name === currentGame.player1;
+    const myAnswers = isPlayer1 ? currentCategoryRound.player1Answers : currentCategoryRound.player2Answers;
+    const nextQuestionIndex = Math.max(0, myAnswers.length || 0);
+    if (nextQuestionIndex >= currentCategoryRound.questions.length) return;
+
+    setQuizCategory(currentCategoryRound.categoryId);
+    setCurrentCategoryQuestions(currentCategoryRound.questions);
+    setQuestionInCategory(nextQuestionIndex);
+    setCurrentQuestion(currentCategoryRound.questions[nextQuestionIndex]);
+    setAnswered(false);
+    setSelectedAnswers([]);
+    setLastSelectedAnswer(null);
+    setWaitingForOpponent(false);
+    resetQuizKeywordState();
+
+    const timeLimit = getQuizTimeLimit(currentCategoryRound.questions[nextQuestionIndex], currentGame.difficulty);
     setTimeLeft(timeLimit);
     setTimerActive(true);
   };
@@ -8876,7 +9005,7 @@ export default function BaederApp() {
             setSpacedRepetitionMode={setSpacedRepetitionMode}
             activeGames={activeGames}
             acceptChallenge={acceptChallenge}
-            continueGame={continueGame}
+            continueGame={continueGameSafe}
             news={news}
             exams={exams}
             setExamSimulatorMode={setExamSimulatorMode}
@@ -8898,7 +9027,7 @@ export default function BaederApp() {
             activeGames={activeGames}
             challengePlayer={challengePlayer}
             acceptChallenge={acceptChallenge}
-            continueGame={continueGame}
+            continueGame={continueGameSafe}
             currentGame={currentGame}
             quizCategory={quizCategory}
             questionInCategory={questionInCategory}
@@ -8907,7 +9036,7 @@ export default function BaederApp() {
             setAdaptiveLearningEnabled={setAdaptiveLearningEnabled}
             selectCategory={selectCategory}
             waitingForOpponent={waitingForOpponent}
-            startCategoryAsSecondPlayer={startCategoryAsSecondPlayer}
+            startCategoryAsSecondPlayer={resumeCategoryRound}
             currentQuestion={currentQuestion}
             timeLeft={timeLeft}
             answered={answered}
