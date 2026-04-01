@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MessageSquare, Plus, Send, ArrowLeft, Pin, Lock, Trash2, ChevronRight, Clock, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { supabase } from '../../supabase';
+
 import {
   loadForumCategoryCounts as dsLoadForumCategoryCounts,
   loadForumPosts as dsLoadForumPosts,
@@ -64,7 +64,7 @@ const ForumView = () => {
 
   const loadCounts = async () => {
     try {
-      setCategoryCounts(await dsLoadForumCategoryCounts(supabase));
+      setCategoryCounts(await dsLoadForumCategoryCounts());
     } catch (error) {
       console.error('Forum counts error:', error);
     }
@@ -79,7 +79,7 @@ const ForumView = () => {
   const loadPosts = async (categoryId) => {
     setLoading(true);
     try {
-      setPosts(await dsLoadForumPosts(supabase, categoryId));
+      setPosts(await dsLoadForumPosts(categoryId));
     } catch (error) {
       showToast('Fehler beim Laden: ' + error.message, 'error');
     }
@@ -90,7 +90,7 @@ const ForumView = () => {
   const loadReplies = async (postId) => {
     setLoading(true);
     try {
-      const thread = await dsLoadForumThread(supabase, postId);
+      const thread = await dsLoadForumThread(postId);
       setReplies(thread?.replies || []);
       if (thread?.post) {
         setActivePost(thread.post);
@@ -119,7 +119,7 @@ const ForumView = () => {
       return;
     }
     try {
-      await dsCreateForumPost(supabase, {
+      await dsCreateForumPost({
         userId: user.id,
         userName: user.name,
         userRole: user.role,
@@ -146,7 +146,7 @@ const ForumView = () => {
       return;
     }
     try {
-      await dsCreateForumReply(supabase, activePost.id, {
+      await dsCreateForumReply(activePost.id, {
         userId: user.id,
         userName: user.name,
         userRole: user.role,
@@ -164,7 +164,7 @@ const ForumView = () => {
   const deletePost = async (postId) => {
     if (!confirm('Beitrag wirklich löschen? Alle Antworten werden ebenfalls gelöscht.')) return;
     try {
-      await dsDeleteForumPost(supabase, postId);
+      await dsDeleteForumPost(postId);
       showToast('Beitrag gelöscht', 'success');
       loadCounts();
       if (view === 'thread') {
@@ -181,7 +181,7 @@ const ForumView = () => {
   const deleteReply = async (replyId) => {
     if (!confirm('Antwort löschen?')) return;
     try {
-      await dsDeleteForumReply(supabase, replyId);
+      await dsDeleteForumReply(replyId);
       showToast('Antwort gelöscht', 'success');
       loadReplies(activePost.id);
       setActivePost(prev => ({ ...prev, reply_count: Math.max((prev.reply_count || 1) - 1, 0) }));
@@ -192,7 +192,7 @@ const ForumView = () => {
 
   const togglePin = async (postId, currentPinned) => {
     try {
-      await dsToggleForumPostPin(supabase, postId, currentPinned);
+      await dsToggleForumPostPin(postId, currentPinned);
       loadPosts(activeCategory.id);
     } catch (error) {
       showToast('Fehler: ' + error.message, 'error');
@@ -201,7 +201,7 @@ const ForumView = () => {
 
   const toggleLock = async (postId, currentLocked) => {
     try {
-      await dsToggleForumPostLock(supabase, postId, currentLocked);
+      await dsToggleForumPostLock(postId, currentLocked);
       if (view === 'thread') {
         setActivePost(prev => ({ ...prev, locked: !currentLocked }));
       }

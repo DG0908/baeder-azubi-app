@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../supabase';
 import {
-  USE_SECURE_API,
   loadCurrentAuthSession as dsLoadCurrentAuthSession,
   subscribeAuthStateChanges as dsSubscribeAuthStateChanges,
   registerAuthAccount as dsRegisterAuthAccount,
@@ -64,7 +62,7 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        const { user: sessionUser, azubiProfile } = await dsLoadCurrentAuthSession(supabase);
+        const { user: sessionUser, azubiProfile } = await dsLoadCurrentAuthSession();
         if (!active) return;
 
         if (sessionUser) {
@@ -79,18 +77,7 @@ export function AuthProvider({ children }) {
 
     checkSession();
 
-    const unsubscribe = dsSubscribeAuthStateChanges(supabase, async (event) => {
-      if (!active) return;
-      if (import.meta.env.DEV) console.log('Auth state changed:', event);
-
-      if (event === 'SIGNED_OUT') {
-        resetStoredSession();
-      }
-
-      if (event === 'PASSWORD_RECOVERY') {
-        setAuthView('reset-password');
-      }
-    });
+    const unsubscribe = dsSubscribeAuthStateChanges();
 
     return () => {
       active = false;
@@ -99,7 +86,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const handleRegister = async () => {
-    const minimumPasswordLength = USE_SECURE_API ? 12 : 6;
+    const minimumPasswordLength = 12;
 
     if (!registerData.name.trim() || !registerData.email.trim() || !registerData.password) {
       alert('Bitte alle Felder ausfuellen!');
@@ -117,27 +104,13 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const result = await dsRegisterAuthAccount(supabase, registerData);
+      const result = await dsRegisterAuthAccount(registerData);
 
       setLoginEmail(result?.email || registerData.email.trim().toLowerCase());
       setAuthView('login');
       setRegisterData(EMPTY_REGISTER_DATA);
 
-      if (USE_SECURE_API) {
-        alert('Registrierung erfolgreich!\n\nDein Account wurde angelegt und wartet jetzt auf Freischaltung durch einen Administrator.');
-        return;
-      }
-
-      const assignedRoleLabel = result?.assignedRole === 'azubi' ? 'Azubi' : 'Ausbilder';
-      if (result?.emailConfirmRequired) {
-        alert(
-          `Registrierung erfolgreich!\n\nBetrieb: ${result?.organizationName || 'Unbekannt'}\nRolle: ${assignedRoleLabel}\n\nBitte bestaetige zuerst deine E-Mail-Adresse (pruefe auch den Spam-Ordner).\n\nDanach muss dein Account noch von einem Administrator freigeschaltet werden.`
-        );
-      } else {
-        alert(
-          `Registrierung erfolgreich!\n\nBetrieb: ${result?.organizationName || 'Unbekannt'}\nRolle: ${assignedRoleLabel}\n\nDein Account muss von einem Administrator freigeschaltet werden.`
-        );
-      }
+      alert('Registrierung erfolgreich!\n\nDein Account wurde angelegt und wartet jetzt auf Freischaltung durch einen Administrator.');
     } catch (error) {
       let message = error?.message || 'Unbekannter Fehler';
 
@@ -161,7 +134,7 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const { user: nextUser, azubiProfile } = await dsLoginAuthAccount(supabase, {
+      const { user: nextUser, azubiProfile } = await dsLoginAuthAccount({
         email: loginEmail,
         password: loginPassword
       });
@@ -172,10 +145,6 @@ export function AuthProvider({ children }) {
     } catch (error) {
       if (error?.code === 'invalid_login') {
         alert('E-Mail oder Passwort falsch!');
-      } else if (error?.code === 'email_not_confirmed') {
-        alert(
-          'Bitte bestaetige zuerst deine E-Mail-Adresse.\n\nPruefe dein E-Mail-Postfach (auch den Spam-Ordner) nach einer Bestaetigungs-Mail von Supabase.\n\nFalls du keine E-Mail erhalten hast, wende dich an den Administrator.'
-        );
       } else if (error?.code === 'missing_profile') {
         alert('Profil nicht gefunden. Bitte kontaktiere den Administrator.');
       } else if (error?.code === 'not_approved') {
@@ -189,7 +158,7 @@ export function AuthProvider({ children }) {
   };
 
   const handleLogout = async () => {
-    await dsLogoutAuthSession(supabase);
+    await dsLogoutAuthSession();
     resetStoredSession();
   };
 

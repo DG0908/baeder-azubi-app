@@ -1,10 +1,8 @@
-import { isSecureBackendApiEnabled, getApiAccessToken } from './secureApiClient';
+import { getApiAccessToken } from './secureApiClient';
 import { secureNotificationsApi } from './secureApi';
 
 const WEB_PUSH_PUBLIC_KEY = import.meta.env.VITE_WEB_PUSH_PUBLIC_KEY || '';
-const PUSH_FUNCTION_NAME = import.meta.env.VITE_PUSH_FUNCTION_NAME || 'send-web-push';
 const SMARTBADEN_PUSH_BACKEND_URL = 'https://push.smartbaden.de/api/push/send';
-const USE_SECURE_API = isSecureBackendApiEnabled();
 
 export const getPushBackendUrl = () => {
   const configuredUrl = String(import.meta.env.VITE_PUSH_BACKEND_URL || '').trim();
@@ -40,38 +38,7 @@ const parseBackendResponse = async (response) => {
     : response.text();
 };
 
-const getAccessTokenForBackendRequest = async (supabase, { forceRefresh = false } = {}) => {
-  // NestJS path: use stored JWT token
-  if (USE_SECURE_API) {
-    return getApiAccessToken() || '';
-  }
-
-  // Legacy Supabase path
-  if (!supabase?.auth) return '';
-
-  if (forceRefresh && typeof supabase.auth.refreshSession === 'function') {
-    const { data, error } = await supabase.auth.refreshSession();
-    if (!error && data?.session?.access_token) {
-      return data.session.access_token;
-    }
-  }
-
-  const { data: sessionData } = await supabase.auth.getSession();
-  const sessionToken = String(sessionData?.session?.access_token || '').trim();
-  if (sessionToken) return sessionToken;
-
-  if (typeof supabase.auth.refreshSession === 'function') {
-    const { data, error } = await supabase.auth.refreshSession();
-    if (!error && data?.session?.access_token) {
-      return data.session.access_token;
-    }
-  }
-
-  return '';
-};
-
 export const fetchPushBackendWithAuth = async ({
-  supabase,
   pathname,
   method = 'POST',
   body
@@ -90,14 +57,14 @@ export const fetchPushBackendWithAuth = async ({
     body: body === undefined ? undefined : JSON.stringify(body)
   });
 
-  let accessToken = await getAccessTokenForBackendRequest(supabase);
+  let accessToken = getApiAccessToken() || '';
   if (!accessToken) {
     throw new Error('Keine aktive Sitzung für den Backend-Request gefunden.');
   }
 
   let response = await doRequest(accessToken);
   if (response.status === 401) {
-    accessToken = await getAccessTokenForBackendRequest(supabase, { forceRefresh: true });
+    accessToken = getApiAccessToken() || '';
     if (!accessToken) {
       throw new Error('Sitzung auf diesem Gerät abgelaufen. Bitte einmal neu einloggen.');
     }
@@ -173,11 +140,10 @@ export const getCurrentPushDeviceState = async () => {
 };
 
 export const ensureUserPushSubscription = async ({
-  supabase,
   user,
   requestPermission = false
 }) => {
-  if ((!USE_SECURE_API && !supabase) || !user?.id || !user?.name) return { enabled: false, reason: 'missing-user' };
+  if (!user?.id || !user?.name) return { enabled: false, reason: 'missing-user' };
   if (!isWebPushSupported()) return { enabled: false, reason: 'unsupported' };
   if (!isWebPushConfigured()) return { enabled: false, reason: 'missing-vapid-key' };
 
@@ -202,39 +168,18 @@ export const ensureUserPushSubscription = async ({
     return { enabled: false, reason: 'invalid-subscription' };
   }
 
-  if (USE_SECURE_API) {
-    await secureNotificationsApi.upsertPushSubscription({
-      endpoint: serialized.endpoint,
-      p256dh: keys.p256dh,
-      auth: keys.auth,
-      userAgent: navigator.userAgent
-    });
-  } else {
-    const { error } = await supabase
-      .from('push_subscriptions')
-      .upsert(
-        {
-          user_id: user.id,
-          user_name: user.name,
-          endpoint: serialized.endpoint,
-          p256dh: keys.p256dh,
-          auth: keys.auth,
-          user_agent: navigator.userAgent,
-          last_seen_at: new Date().toISOString()
-        },
-        { onConflict: 'endpoint' }
-      );
+  await secureNotificationsApi.upsertPushSubscription({
+    endpoint: serialized.endpoint,
+    p256dh: keys.p256dh,
+    auth: keys.auth,
+    userAgent: navigator.userAgent
+  });
 
-    if (error) throw error;
-  }
   return { enabled: true, subscription: serialized };
 };
 
-export const clearUserPushSubscription = async ({
-  supabase,
-  user
-}) => {
-  if ((!USE_SECURE_API && !supabase) || !user?.id) return { cleared: false, reason: 'missing-user' };
+export const clearUserPushSubscription = async ({ user }) => {
+  if (!user?.id) return { cleared: false, reason: 'missing-user' };
   if (!isWebPushSupported()) return { cleared: false, reason: 'unsupported' };
 
   const registration = await navigator.serviceWorker.ready;
@@ -243,17 +188,7 @@ export const clearUserPushSubscription = async ({
   const endpoint = String(serialized?.endpoint || '').trim();
 
   if (endpoint) {
-    if (USE_SECURE_API) {
-      await secureNotificationsApi.removePushSubscription({ endpoint });
-    } else {
-      const { error } = await supabase
-        .from('push_subscriptions')
-        .delete()
-        .eq('endpoint', endpoint)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-    }
+    await secureNotificationsApi.removePushSubscription({ endpoint });
   }
 
   if (subscription) {
@@ -268,54 +203,35 @@ export const clearUserPushSubscription = async ({
 };
 
 export const triggerWebPushNotification = async ({
-  supabase,
   userName,
   title,
   message,
   type = 'info',
   notificationId
 }) => {
-  if ((!USE_SECURE_API && !supabase) || !userName || !title) return { sent: false, reason: 'missing-input' };
+  if (!userName || !title) return { sent: false, reason: 'missing-input' };
 
-  const body = {
-    userName,
-    title,
-    message,
-    type
-  };
+  const body = { userName, title, message, type };
   if (notificationId) body.notificationId = notificationId;
 
-  let backendError = null;
   const pushBackendUrl = getPushBackendUrl();
   if (String(pushBackendUrl || '').trim()) {
     try {
       const responseData = await fetchPushBackendWithAuth({
-        supabase,
         pathname: '/api/push/send',
         method: 'POST',
         body
       });
       return { sent: true, data: responseData };
     } catch (error) {
-      backendError = error;
       console.warn('Push backend dispatch failed:', error);
+      if (!isWebPushConfigured()) throw error;
     }
   }
 
-  if (!isWebPushConfigured() || USE_SECURE_API) {
-    if (backendError) throw backendError;
-    return { sent: false, reason: USE_SECURE_API ? 'no-supabase-fallback' : 'missing-vapid-key' };
+  if (!isWebPushConfigured()) {
+    return { sent: false, reason: 'missing-vapid-key' };
   }
 
-  // Legacy Supabase Edge Function fallback
-  try {
-    const { data, error } = await supabase.functions.invoke(PUSH_FUNCTION_NAME, { body });
-    if (error) throw error;
-    return { sent: true, data };
-  } catch (error) {
-    if (backendError) {
-      throw backendError;
-    }
-    throw error;
-  }
+  return { sent: false, reason: 'push-backend-unavailable' };
 };
