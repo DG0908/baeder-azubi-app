@@ -3918,7 +3918,8 @@ export default function BaederApp() {
     const syncedGame = syncLocalDuelGame(game);
     try {
       await dsSaveDuelState(supabase, syncedGame);
-      return syncedGame;
+      const persistedGame = await dsGetDuelWithQuestions(supabase, syncedGame.id, user?.id);
+      return persistedGame?.id ? syncLocalDuelGame(persistedGame) : syncedGame;
     } catch (error) {
       console.error('Save game error:', error);
       return syncedGame;
@@ -4464,10 +4465,14 @@ export default function BaederApp() {
   const savePlayerAnswer = async (isCorrect, isTimeout, answerMeta = {}) => {
     const isPlayer1 = user.name === currentGame.player1;
     const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
+    const answerType = String(answerMeta?.answerType || '');
+    const correctnessKnown = answerType === 'keyword'
+      || answerType === 'whoami'
+      || currentQuestion?.correct !== undefined;
 
     // Daily Challenge Progress
     updateChallengeProgress('answer_questions', 1);
-    if (isCorrect) {
+    if (correctnessKnown && isCorrect) {
       updateChallengeProgress('correct_answers', 1);
     }
     if (quizCategory) {
@@ -4475,11 +4480,13 @@ export default function BaederApp() {
     }
     updateChallengeProgress('quiz_play', 1);
     updateWeeklyProgress('quizAnswers', 1);
-    trackQuestionPerformance(currentQuestion, quizCategory, isCorrect);
+    if (correctnessKnown) {
+      trackQuestionPerformance(currentQuestion, quizCategory, isCorrect);
+    }
 
-    const answerPoints = answerMeta.answerType === 'keyword'
+    const answerPoints = answerType === 'keyword'
       ? Math.max(0, Number(answerMeta?.keywordEvaluation?.awardedPoints) || 0)
-      : answerMeta.answerType === 'whoami'
+      : answerType === 'whoami'
         ? (isCorrect ? 1 : 0)
       : (isCorrect ? 1 : 0);
 
@@ -4494,9 +4501,9 @@ export default function BaederApp() {
     // Antwort speichern
     const answer = {
       questionIndex: questionInCategory,
-      correct: isCorrect,
+      correct: correctnessKnown ? isCorrect : null,
       timeout: isTimeout,
-      points: answerPoints,
+      points: correctnessKnown ? answerPoints : 0,
       ...answerMeta
     };
 
@@ -4513,10 +4520,12 @@ export default function BaederApp() {
       stats.categoryStats[quizCategory] = { correct: 0, incorrect: 0, total: 0 };
     }
 
-    if (isCorrect) {
-      stats.categoryStats[quizCategory].correct++;
-    } else {
-      stats.categoryStats[quizCategory].incorrect++;
+    if (correctnessKnown) {
+      if (isCorrect) {
+        stats.categoryStats[quizCategory].correct++;
+      } else {
+        stats.categoryStats[quizCategory].incorrect++;
+      }
     }
     stats.categoryStats[quizCategory].total++;
 
