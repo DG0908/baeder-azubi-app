@@ -857,10 +857,26 @@ export class DuelsService {
       const r = this.asRecord(round);
       const questions = Array.isArray(r.questions) ? r.questions : [];
       const actorAnswers = Array.isArray(r[actorAnswerKey]) ? r[actorAnswerKey] : [];
+      const answeredQuestionIndexes = new Set<number>();
 
-      // Spieler hat diese Runde noch nicht vollständig beantwortet
-      if ((actorAnswers as unknown[]).length < questions.length) {
-        const redactedQuestions = questions.map((q) => {
+      (actorAnswers as unknown[]).forEach((answer, answerIndex) => {
+        const answerRecord = this.asRecord(answer);
+        const questionIndex = this.readInteger(answerRecord.questionIndex);
+        if (questionIndex !== null && questionIndex >= 0 && questionIndex < questions.length) {
+          answeredQuestionIndexes.add(questionIndex);
+          return;
+        }
+        if (answerIndex < questions.length) {
+          answeredQuestionIndexes.add(answerIndex);
+        }
+      });
+
+      // Nur noch unbeantwortete Fragen bleiben redaktiert.
+      if (answeredQuestionIndexes.size < questions.length) {
+        const redactedQuestions = questions.map((q, questionIndex) => {
+          if (answeredQuestionIndexes.has(questionIndex)) {
+            return q as Prisma.InputJsonObject;
+          }
           const { correct: _correct, keywordGroups: _kg, minKeywordGroups: _mkg, ...rest } = this.asRecord(q);
           return rest as Prisma.InputJsonObject;
         });
