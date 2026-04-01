@@ -186,6 +186,8 @@ const LoginScreen = () => {
           <form className="space-y-4" onSubmit={handleSetNewPasswordSubmit}>
             <input
               type="password"
+              name="new-password"
+              autoComplete="new-password"
               placeholder="Neues Passwort"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -193,6 +195,8 @@ const LoginScreen = () => {
             />
             <input
               type="password"
+              name="confirm-new-password"
+              autoComplete="new-password"
               placeholder="Passwort wiederholen"
               value={newPasswordConfirm}
               onChange={(e) => setNewPasswordConfirm(e.target.value)}
@@ -252,6 +256,8 @@ const LoginScreen = () => {
             <form className="space-y-4" onSubmit={handlePasswordResetSubmit}>
               <input
                 type="email"
+                name="reset-email"
+                autoComplete="email"
                 placeholder="Deine E-Mail-Adresse"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
@@ -357,6 +363,8 @@ const LoginScreen = () => {
           <form className="space-y-4" onSubmit={handleLoginSubmit}>
             <input
               type="text"
+              name="username"
+              autoComplete="username"
               placeholder="E-Mail oder Name"
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
@@ -364,6 +372,8 @@ const LoginScreen = () => {
             />
             <input
               type="password"
+              name="current-password"
+              autoComplete="current-password"
               placeholder="Passwort"
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
@@ -390,6 +400,8 @@ const LoginScreen = () => {
           <form className="space-y-4" onSubmit={handleRegisterSubmit}>
             <input
               type="text"
+              name="invitation-code"
+              autoComplete="one-time-code"
               placeholder="Einladungscode"
               value={registerData.invitationCode}
               onChange={(e) => setRegisterData({...registerData, invitationCode: e.target.value.toUpperCase()})}
@@ -433,6 +445,8 @@ const LoginScreen = () => {
             )}
             <input
               type="text"
+              name="name"
+              autoComplete="name"
               placeholder="Vollständiger Name"
               value={registerData.name}
               onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
@@ -440,6 +454,8 @@ const LoginScreen = () => {
             />
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="E-Mail"
               value={registerData.email}
               onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
@@ -447,6 +463,8 @@ const LoginScreen = () => {
             />
             <input
               type="password"
+              name="new-password"
+              autoComplete="new-password"
               placeholder={`Passwort (mind. ${minPasswordLength} Zeichen)`}
               value={registerData.password}
               onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
