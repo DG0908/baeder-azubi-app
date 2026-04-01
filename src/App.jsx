@@ -4275,11 +4275,14 @@ export default function BaederApp() {
     setAnswered(true);
     setTimerActive(false);
 
-    // Prüfe ob alle richtigen Antworten ausgewählt wurden (und keine falschen)
+    // Prüfe ob alle richtigen Antworten ausgewählt wurden (und keine falschen).
+    // Wenn correct serverseitig redaktiert wurde (undefined), senden wir false —
+    // der Server berechnet das korrekte Ergebnis selbst.
     const correctAnswers = currentQuestion.correct;
-    const isCorrect =
-      selectedAnswers.length === correctAnswers.length &&
-      selectedAnswers.every(idx => correctAnswers.includes(idx));
+    const isCorrect = correctAnswers !== undefined
+      ? (selectedAnswers.length === correctAnswers.length &&
+         selectedAnswers.every(idx => correctAnswers.includes(idx)))
+      : false;
 
     await savePlayerAnswer(isCorrect, false, {
       answerType: 'multi',
@@ -4302,7 +4305,11 @@ export default function BaederApp() {
     setTimerActive(false);
     setLastSelectedAnswer(answerIndex); // Speichere gewählte Antwort für Feedback
 
-    const isCorrect = answerIndex === currentQuestion.correct;
+    // Wenn correct serverseitig redaktiert wurde (undefined), senden wir false —
+    // der Server berechnet das korrekte Ergebnis selbst.
+    const isCorrect = currentQuestion.correct !== undefined
+      ? answerIndex === currentQuestion.correct
+      : false;
     await savePlayerAnswer(isCorrect, false, {
       answerType: 'single',
       selectedAnswer: answerIndex

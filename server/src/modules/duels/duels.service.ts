@@ -806,6 +806,7 @@ export class DuelsService {
 
   private toDuelSummary(duel: DuelWithRelations, actorId: string) {
     const normalizedGameState = this.normalizeGameState(duel, duel.gameState);
+    const redactedGameState = this.redactUnansweredQuestionsForActor(normalizedGameState, actorId, duel);
     const score = this.computeScore(duel);
     const myUserId = actorId;
     const opponentUserId = duel.challengerId === actorId ? duel.opponentId : duel.challengerId;
@@ -814,7 +815,7 @@ export class DuelsService {
       id: duel.id,
       status: duel.status,
       questionCount: duel.questionCount,
-      gameState: normalizedGameState,
+      gameState: redactedGameState,
       expiresAt: duel.expiresAt,
       startedAt: duel.startedAt,
       completedAt: duel.completedAt,
@@ -829,6 +830,47 @@ export class DuelsService {
       opponentScore: score[opponentUserId] ?? 0,
       myAnsweredCount: duel.answers.filter((answer) => answer.userId === myUserId).length
     };
+  }
+
+  /**
+   * Entfernt `correct`, `keywordGroups` und `minKeywordGroups` aus Fragen,
+   * die der Spieler noch nicht beantwortet hat. So kann ein Spieler per
+   * DevTools nicht die richtigen Antworten aus der API-Response ablesen,
+   * bevor er die Runde gespielt hat.
+   *
+   * Eine Runde gilt für den Akteur als "noch offen", wenn seine eigene
+   * Antwortliste kürzer ist als die Fragenliste der Runde.
+   */
+  private redactUnansweredQuestionsForActor(
+    gameState: Prisma.InputJsonObject,
+    actorId: string,
+    duel: DuelWithRelations
+  ): Prisma.InputJsonObject {
+    const categoryRounds = Array.isArray(gameState.categoryRounds)
+      ? gameState.categoryRounds
+      : [];
+
+    const actorIsChallenger = duel.challengerId === actorId;
+    const actorAnswerKey = actorIsChallenger ? 'player1Answers' : 'player2Answers';
+
+    const redactedRounds = categoryRounds.map((round) => {
+      const r = this.asRecord(round);
+      const questions = Array.isArray(r.questions) ? r.questions : [];
+      const actorAnswers = Array.isArray(r[actorAnswerKey]) ? r[actorAnswerKey] : [];
+
+      // Spieler hat diese Runde noch nicht vollständig beantwortet
+      if ((actorAnswers as unknown[]).length < questions.length) {
+        const redactedQuestions = questions.map((q) => {
+          const { correct: _correct, keywordGroups: _kg, minKeywordGroups: _mkg, ...rest } = this.asRecord(q);
+          return rest as Prisma.InputJsonObject;
+        });
+        return { ...r, questions: redactedQuestions } as Prisma.InputJsonObject;
+      }
+
+      return round as Prisma.InputJsonObject;
+    });
+
+    return { ...gameState, categoryRounds: redactedRounds };
   }
 
   private computeScore(duel: DuelWithRelations) {
@@ -1029,14 +1071,72 @@ export class DuelsService {
 
   private normalizeCategoryRoundEntry(input: unknown): Prisma.InputJsonObject {
     const round = this.asRecord(input);
+    const questions = this.normalizeQuestionArray(round.questions);
     return {
       categoryId: this.readString(round.categoryId) ?? '',
       categoryName: this.sanitizeText(round.categoryName, 120),
       chooser: this.sanitizeText(round.chooser, 120),
-      questions: this.normalizeQuestionArray(round.questions),
-      player1Answers: this.normalizeAnswerArray(round.player1Answers),
-      player2Answers: this.normalizeAnswerArray(round.player2Answers)
+      questions,
+      player1Answers: this.normalizeAndValidateAnswerArray(round.player1Answers, questions),
+      player2Answers: this.normalizeAndValidateAnswerArray(round.player2Answers, questions)
     };
+  }
+
+  /**
+   * Normalisiert Antworten und berechnet `correct` + `points` serverseitig,
+   * damit ein manipuliertes `correct: true` im Client-Payload ignoriert wird.
+   * Keyword- und WhoAmI-Antworten werden nicht neu bewertet (Text-Matching
+   * läuft bereits auf dem Client und die Bewertung ist im keywordEvaluation gespeichert).
+   */
+  private normalizeAndValidateAnswerArray(input: unknown, questions: Prisma.InputJsonArray): Prisma.InputJsonArray {
+    if (!Array.isArray(input)) return [];
+    return input
+      .slice(0, MAX_DUEL_ANSWERS_PER_ROUND)
+      .map((answer, index) => {
+        const normalized = this.normalizeAnswerEntry(answer);
+        const questionIndex = normalized.questionIndex as number;
+        const question = this.asRecord(questions[questionIndex] ?? questions[index] ?? {});
+        return this.revalidateAnswerEntry(normalized, question);
+      });
+  }
+
+  /**
+   * Überschreibt `correct` und `points` basierend auf der tatsächlichen Frage.
+   * Für Single-Choice und Multi-Select wird der gespeicherte `correct`-Wert
+   * aus der Frage (nicht aus dem Client-Payload) verwendet.
+   */
+  private revalidateAnswerEntry(entry: Prisma.InputJsonObject, question: Record<string, unknown>): Prisma.InputJsonObject {
+    const answerType = entry.answerType as string;
+
+    // Keyword- und WhoAmI-Antworten können wir serverseitig nicht neu bewerten
+    if (answerType === 'keyword' || answerType === 'whoami') {
+      return entry;
+    }
+
+    const storedCorrect = question.correct;
+    if (storedCorrect === undefined || storedCorrect === null) {
+      // Keine Frage gefunden — keep as-is aber cap points
+      return { ...entry, points: entry.correct ? 1 : 0 };
+    }
+
+    const isTimeout = Boolean(entry.timeout);
+    let isCorrect: boolean;
+
+    if (Array.isArray(storedCorrect)) {
+      // Multi-Select: selectedAnswers muss exakt mit storedCorrect übereinstimmen
+      const correctArr = (storedCorrect as unknown[]).map(Number);
+      const selectedArr = Array.isArray(entry.selectedAnswers)
+        ? (entry.selectedAnswers as unknown[]).map(Number)
+        : [];
+      isCorrect = !isTimeout &&
+        selectedArr.length === correctArr.length &&
+        selectedArr.every(idx => correctArr.includes(idx));
+    } else {
+      // Single-Choice: selectedAnswer muss mit storedCorrect übereinstimmen
+      isCorrect = !isTimeout && Number(entry.selectedAnswer) === Number(storedCorrect);
+    }
+
+    return { ...entry, correct: isCorrect, points: isCorrect ? 1 : 0 };
   }
 
   private normalizeQuestionArray(input: unknown): Prisma.InputJsonArray {

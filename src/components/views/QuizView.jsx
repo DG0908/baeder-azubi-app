@@ -749,16 +749,24 @@ const QuizView = ({
                       const isSelectedMulti = selectedAnswers.includes(idx);
                       const isSelectedSingle = lastSelectedAnswer === idx;
                       const answerLabel = formatAnswerLabel(currentQuestion.displayAnswers?.[idx] ?? answer);
-                      const isCorrectAnswer = isMulti
-                        ? currentQuestion.correct.includes(idx)
-                        : idx === currentQuestion.correct;
+                      // correct kann undefined sein, wenn der Server es noch nicht
+                      // preisgibt (Spieler hat diese Runde noch nicht fertig gespielt).
+                      const correctKnown = currentQuestion.correct !== undefined;
+                      const isCorrectAnswer = correctKnown
+                        ? (isMulti
+                            ? currentQuestion.correct.includes(idx)
+                            : idx === currentQuestion.correct)
+                        : false;
 
                       let buttonClass = '';
                       if (answered) {
-                        if (isCorrectAnswer) {
+                        if (correctKnown && isCorrectAnswer) {
                           buttonClass = 'bg-green-500 text-white animate-correct-flash';
-                        } else if ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle)) {
+                        } else if (correctKnown && ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle))) {
                           buttonClass = 'bg-red-500 text-white';
+                        } else if ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle)) {
+                          // Gewählt, aber correct nicht bekannt — neutral blau
+                          buttonClass = 'bg-blue-400 text-white';
                         } else {
                           buttonClass = darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-500';
                         }
@@ -870,7 +878,7 @@ const QuizView = ({
                           {questionIsWhoAmI ? `Gesucht war: ${currentQuestion.answerGuide}` : `Musterloesung: ${currentQuestion.answerGuide}`}
                         </p>
                       )}
-                      {quizMCKeywordMode && !questionIsKeyword && !questionIsWhoAmI && (
+                      {quizMCKeywordMode && !questionIsKeyword && !questionIsWhoAmI && currentQuestion.correct !== undefined && (
                         <p className={`text-sm mt-3 border-t pt-2 ${darkMode ? 'text-gray-300 border-slate-600' : 'text-gray-700 border-gray-300'}`}>
                           Korrekte Antwort: {
                             currentQuestion.multi && Array.isArray(currentQuestion.correct)
