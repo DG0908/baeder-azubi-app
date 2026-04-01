@@ -1,0 +1,65 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Jeden Montag um 08:00 Uhr
+    - cron: '0 8 * * 1'
+
+jobs:
+  audit-frontend:
+    name: Frontend Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: npm audit (high+critical)
+        run: npm audit --audit-level=high
+
+  audit-backend:
+    name: Backend Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - run: npm ci
+        working-directory: server
+
+      - name: npm audit (high+critical)
+        run: npm audit --audit-level=high
+        working-directory: server
+
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: TypeScript / Vite Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: /api
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder
+          VITE_ENABLE_SECURE_BACKEND_API: 'true'

@@ -1081,12 +1081,20 @@ export class DuelsService {
 
   private normalizeAnswerEntry(input: unknown): Prisma.InputJsonObject {
     const answer = this.asRecord(input);
+    const answerType = this.sanitizeText(answer.answerType, 24);
+    const isCorrect = Boolean(answer.correct);
+    const rawPoints = this.normalizeBoundedInteger(answer.points, 0, MAX_DUEL_ANSWER_POINTS, 0) ?? 0;
+    // Für Keyword-Antworten sind mehrere Punkte möglich (Schlagwort-Bonus).
+    // Für alle anderen Antworttypen darf ein Spieler maximal 1 Punkt erhalten —
+    // damit verhindert man, dass ein Client-seitig manipuliertes points-Feld
+    // den Score künstlich aufbläst.
+    const points = answerType === 'keyword' ? rawPoints : Math.min(1, rawPoints);
     return {
       questionIndex: this.normalizeBoundedInteger(answer.questionIndex, 0, MAX_DUEL_QUESTIONS_PER_ROUND - 1, 0),
-      correct: Boolean(answer.correct),
+      correct: isCorrect,
       timeout: Boolean(answer.timeout),
-      points: this.normalizeBoundedInteger(answer.points, 0, MAX_DUEL_ANSWER_POINTS, 0),
-      answerType: this.sanitizeText(answer.answerType, 24),
+      points,
+      answerType,
       selectedAnswer: this.normalizeBoundedInteger(answer.selectedAnswer, 0, MAX_DUEL_OPTIONS_PER_QUESTION - 1, 0),
       selectedAnswers: this.normalizeIntegerArray(answer.selectedAnswers, MAX_DUEL_OPTIONS_PER_QUESTION, 0, MAX_DUEL_OPTIONS_PER_QUESTION - 1),
       keywordText: this.sanitizeText(answer.keywordText, 240)
