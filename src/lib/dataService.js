@@ -27,6 +27,7 @@ import {
   mapBackendUserToFrontendUser,
   mapFrontendRoleToBackendRole
 } from './secureApi';
+import { getApiAccessToken } from './secureApiClient';
 import { PERMISSIONS } from '../data/constants';
 import { triggerWebPushNotification } from './pushNotifications';
 
