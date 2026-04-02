@@ -8,11 +8,69 @@ import './index.css'
 // Prevent white-screen after deploy when a stale tab requests an old chunk.
 // Vite emits `vite:preloadError` for failed dynamic imports.
 const VITE_RELOAD_GUARD_KEY = '__vite_preload_reloaded__';
+const STALE_SW_RECOVERY_KEY = '__stale_sw_recovered__';
+
+const shouldRecoverFromStaleServiceWorker = (payload) => {
+  const messages = [];
+
+  const collect = (value) => {
+    if (!value) return;
+    if (typeof value === 'string') {
+      messages.push(value);
+      return;
+    }
+
+    if (typeof value.message === 'string') {
+      messages.push(value.message);
+    }
+  };
+
+  collect(payload);
+  collect(payload?.reason);
+  collect(payload?.error);
+
+  return messages.some((message) => (
+    message.includes('non-precached-url')
+    && message.includes('index.html')
+  ));
+};
+
+const recoverFromStaleServiceWorker = async () => {
+  if (sessionStorage.getItem(STALE_SW_RECOVERY_KEY)) return;
+  sessionStorage.setItem(STALE_SW_RECOVERY_KEY, '1');
+
+  try {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+    }
+
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+  } catch (error) {
+    console.warn('Stale service worker recovery failed:', error);
+  }
+
+  window.location.reload();
+};
+
 window.addEventListener('vite:preloadError', (event) => {
   event.preventDefault();
   if (sessionStorage.getItem(VITE_RELOAD_GUARD_KEY)) return;
   sessionStorage.setItem(VITE_RELOAD_GUARD_KEY, '1');
   window.location.reload();
+});
+window.addEventListener('unhandledrejection', (event) => {
+  if (!shouldRecoverFromStaleServiceWorker(event)) return;
+  event.preventDefault();
+  void recoverFromStaleServiceWorker();
+});
+window.addEventListener('error', (event) => {
+  if (!shouldRecoverFromStaleServiceWorker(event)) return;
+  event.preventDefault();
+  void recoverFromStaleServiceWorker();
 });
 window.addEventListener('load', () => sessionStorage.removeItem(VITE_RELOAD_GUARD_KEY));
 

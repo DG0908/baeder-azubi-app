@@ -78,6 +78,9 @@ export default defineConfig({
         importScripts: ['push-notifications-sw.js'],
         // Do not precache index.html. A stale HTML shell can reference removed hashed bundles
         // after deployment and lead to a white screen until site data is cleared.
+        // Also disable the default SPA navigation fallback, otherwise Workbox will still try
+        // to serve index.html from the precache and throw `non-precached-url` for old clients.
+        navigateFallback: null,
         globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
