@@ -26,11 +26,13 @@ import BerichtsheftView from './components/views/BerichtsheftView';
 import CollectionView from './components/views/CollectionView';
 import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
+import AGBView from './components/views/AGBView';
 import InteractiveLearningView from './components/views/InteractiveLearningView';
 import AvatarBadge from './components/ui/AvatarBadge';
 import { useInactivityTimeout } from './hooks/useInactivityTimeout';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
+import { useCookieNotice } from './hooks/useCookieNotice';
 
 import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, MENU_GROUP_LABELS, getAvatarById, getLevel, getLevelProgress } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
@@ -297,6 +299,7 @@ export default function BaederApp() {
 
   const isOnline = useOnlineStatus();
   const { showBanner: showInstallBanner, triggerInstall, dismiss: dismissInstall } = useInstallPrompt();
+  const { showNotice: showCookieNotice, acknowledge: acknowledgeCookie } = useCookieNotice();
   const [showInactivityWarning, setShowInactivityWarning] = useState(false);
 
   useInactivityTimeout({
@@ -8674,6 +8677,29 @@ export default function BaederApp() {
         </div>
       )}
 
+      {/* Cookie-Hinweis */}
+      {showCookieNotice && (
+        <div className="fixed bottom-0 left-0 right-0 z-[9995] bg-gray-900/97 text-white px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3"
+             style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
+          <p className="text-xs text-gray-300 flex-1">
+            🍪 Diese App verwendet ausschließlich technisch notwendige Cookies für die sichere Anmeldung.
+            Kein Tracking, keine Werbung.{' '}
+            <button
+              onClick={() => setCurrentView('datenschutz')}
+              className="underline text-cyan-400 hover:text-cyan-300"
+            >
+              Mehr erfahren
+            </button>
+          </p>
+          <button
+            onClick={acknowledgeCookie}
+            className="shrink-0 bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors"
+          >
+            Verstanden
+          </button>
+        </div>
+      )}
+
       {/* Ankündigungs-Banner */}
       {appConfig.announcement?.enabled && appConfig.announcement?.message && (
         <div className="fixed top-0 left-0 right-0 z-[9997] bg-amber-400 text-amber-900 text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
@@ -9471,6 +9497,12 @@ export default function BaederApp() {
         {/* Datenschutzerkl?rung */}
         {currentView === 'datenschutz' && (
           <DatenschutzView
+            setCurrentView={setCurrentView}
+          />
+        )}
+
+        {currentView === 'agb' && (
+          <AGBView
             setCurrentView={setCurrentView}
           />
         )}
