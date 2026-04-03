@@ -103,6 +103,7 @@ import {
   createDuel as dsCreateDuel,
   acceptDuel as dsAcceptDuel,
   getDuelWithQuestions as dsGetDuelWithQuestions,
+  submitDuelAnswer as dsSubmitDuelAnswer,
   saveDuelState as dsSaveDuelState,
   loadSwimSessionEntries as dsLoadSwimSessions,
   saveSwimSessionEntry as dsSaveSwimSession,
@@ -4500,6 +4501,21 @@ export default function BaederApp() {
 
     await saveUserStatsToSupabase(user, stats);
     setUserStats(stats);
+
+    // Duel: Antwort an Backend übermitteln (enthüllt correctOptionIndex für nächsten API-Aufruf)
+    if (currentQuestion?.duelQuestionId && currentGame?.id && !isTimeout) {
+      const selectedOptionIndex = answerMeta?.answerType === 'single'
+        ? answerMeta.selectedAnswer
+        : null;
+      if (selectedOptionIndex != null) {
+        try {
+          await dsSubmitDuelAnswer(currentGame.id, currentQuestion.duelQuestionId, selectedOptionIndex);
+        } catch (e) {
+          console.warn('submitDuelAnswer fehlgeschlagen:', e);
+        }
+      }
+    }
+
     const persistedGame = await saveGameToSupabase(currentGame);
     const persistedRound = persistedGame?.categoryRounds?.[currentRoundIndex];
     const persistedQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : null;

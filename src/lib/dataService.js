@@ -1244,22 +1244,20 @@ export const getDuelWithQuestions = async (duelId, currentUserId = null) => {
   const result = await secureDuelsApi.getById(duelId);
   const game = mapDuelToGame(result, currentUserId);
 
-  // Merge correctOptionIndex and myAnswer back into categoryRound questions.
-  // The backend reveals correctOptionIndex once the current player has answered.
+  // Store duelQuestionId and revealed correctOptionIndex in categoryRound questions.
+  // Questions are ordered sequentially (orderIndex 0,1,2,...) across all rounds.
   if (Array.isArray(result.questions) && result.questions.length > 0) {
-    const byOrder = new Map(result.questions.map(q => [q.orderIndex, q]));
-    game.categoryRounds = (game.categoryRounds || []).map((round, roundIdx) => ({
+    let globalIdx = 0;
+    game.categoryRounds = (game.categoryRounds || []).map((round) => ({
       ...round,
-      questions: (round.questions || []).map((q, qIdx) => {
-        const globalIdx = roundIdx * (round.questions?.length || 0) + qIdx;
-        const apiQ = byOrder.get(globalIdx) || result.questions[globalIdx];
+      questions: (round.questions || []).map((q) => {
+        const apiQ = result.questions[globalIdx++];
         if (!apiQ) return q;
-        const merged = { ...q };
+        const merged = { ...q, duelQuestionId: apiQ.id };
         if (apiQ.question?.correctOptionIndex != null) {
           merged.correct = apiQ.question.correctOptionIndex;
         }
         if (apiQ.myAnswer != null) {
-          merged.myAnswerIndex = apiQ.myAnswer.selectedOptionIndex ?? null;
           merged.myAnswerCorrect = apiQ.myAnswer.isCorrect ?? null;
         }
         return merged;
@@ -1268,6 +1266,10 @@ export const getDuelWithQuestions = async (duelId, currentUserId = null) => {
   }
 
   return game;
+};
+
+export const submitDuelAnswer = async (duelId, duelQuestionId, selectedOptionIndex) => {
+  return secureDuelsApi.submitAnswer(duelId, { duelQuestionId, selectedOptionIndex });
 };
 
 export const saveDuelState = async (game) => {
