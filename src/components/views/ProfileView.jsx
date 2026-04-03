@@ -1009,6 +1009,12 @@ const ProfileView = ({
           >
             Datenschutzerklärung
           </button>
+          <button
+            onClick={() => setCurrentView('agb')}
+            className={`px-4 py-2 rounded-lg ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-300' : 'bg-white hover:bg-gray-100 text-gray-700'} transition-all`}
+          >
+            Nutzungsbedingungen
+          </button>
         </div>
 
         {/* Konto löschen (Art. 17 DSGVO) */}
