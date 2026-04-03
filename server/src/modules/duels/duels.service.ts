@@ -1024,8 +1024,19 @@ export class DuelsService {
           if (answeredQuestionIndexes.has(questionIndex)) {
             return q as Prisma.InputJsonObject;
           }
-          const { correct: _correct, keywordGroups: _kg, minKeywordGroups: _mkg, ...rest } = this.asRecord(q);
-          return rest as Prisma.InputJsonObject;
+          const qRecord = this.asRecord(q);
+          // WhoAmI/keyword questions require keywordGroups for client-side evaluation
+          // (the player types the answer). Keeping them does not reveal more than the
+          // visible clues already do. Only 'correct' (MC answer index) is redacted.
+          const isTextAnswer = this.readString(qRecord.type) === 'whoami'
+            || Array.isArray(qRecord.keywordGroups);
+          const { correct: _c, keywordGroups: _kg, minKeywordGroups: _mkg, ...rest } = qRecord;
+          const redacted: Record<string, unknown> = { ...rest };
+          if (isTextAnswer) {
+            redacted.keywordGroups = _kg;
+            redacted.minKeywordGroups = _mkg;
+          }
+          return redacted as Prisma.InputJsonObject;
         });
         return { ...r, questions: redactedQuestions } as Prisma.InputJsonObject;
       }
