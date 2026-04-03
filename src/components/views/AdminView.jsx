@@ -306,16 +306,9 @@ const OrganizationManager = () => {
                     <Copy size={16} />
                   </span>
                   <button
-                    onClick={() => toggleCodeActive(c.id, c.is_active)}
-                    className={`p-2 rounded-lg ${c.is_active ? 'bg-green-100 hover:bg-green-200 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}
-                    title={c.is_active ? 'Deaktivieren' : 'Aktivieren'}
-                  >
-                    {c.is_active ? <Check size={16} /> : <X size={16} />}
-                  </button>
-                  <button
                     onClick={() => deleteCode(c.id, c.code)}
                     className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg"
-                    title="Code löschen"
+                    title="Code widerrufen"
                   >
                     <Trash2 size={16} />
                   </button>
