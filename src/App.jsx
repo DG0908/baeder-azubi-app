@@ -8542,6 +8542,27 @@ export default function BaederApp() {
   );
 
   // Login/Register/Impressum/Datenschutz – ausgelagert in LoginScreen
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
+      }}>
+        <div className="text-8xl mb-6 animate-bounce">🏊‍♂️</div>
+        <h1 className="text-white text-2xl font-bold mb-2">Bäder-Azubi App</h1>
+        <p className="text-white/70 text-sm mb-8">Wird geladen...</p>
+        <div className="flex gap-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="w-2.5 h-2.5 bg-white/80 rounded-full animate-bounce"
+              style={{ animationDelay: `${i * 0.15}s` }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return <LoginScreen />;
   }
