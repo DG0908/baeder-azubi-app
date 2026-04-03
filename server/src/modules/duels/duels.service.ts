@@ -327,6 +327,58 @@ export class DuelsService {
     return this.toDuelSummary(updated, actor.id);
   }
 
+  async forfeit(actor: AuthenticatedUser, duelId: string, request: Request) {
+    const duel = await this.prisma.duel.findUnique({
+      where: { id: duelId },
+      include: duelInclude
+    });
+
+    if (!duel) {
+      throw new NotFoundException('Duel not found.');
+    }
+
+    if (duel.challengerId !== actor.id && duel.opponentId !== actor.id) {
+      throw new ForbiddenException('You are not a participant in this duel.');
+    }
+
+    if (duel.status !== DuelStatus.ACTIVE && duel.status !== DuelStatus.PENDING) {
+      throw new ConflictException('This duel cannot be forfeited.');
+    }
+
+    const winnerId = duel.challengerId === actor.id ? duel.opponentId : duel.challengerId;
+    const winner = duel.challengerId === actor.id ? duel.opponent : duel.challenger;
+
+    const updated = await this.prisma.duel.update({
+      where: { id: duelId },
+      data: {
+        status: DuelStatus.COMPLETED,
+        winnerUserId: winnerId,
+        completedAt: new Date(),
+        expiresAt: null,
+        reminderSentAt: null
+      },
+      include: duelInclude
+    });
+
+    await this.notificationsService.createForUser(winnerId, {
+      title: 'Quizduell gewonnen!',
+      message: `${actor.displayName} hat das Duell aufgegeben. Du gewinnst!`,
+      type: NotificationType.SUCCESS,
+      metadata: { duelId: duel.id, status: updated.status }
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'duel.forfeited',
+      'duel',
+      duel.id,
+      { winnerId, winnerName: winner.displayName },
+      request
+    );
+
+    return this.toDuelSummary(updated, actor.id);
+  }
+
   private async applyAuthoritativeRoundGeneration(
     duel: DuelWithRelations,
     previousGameState: Prisma.InputJsonObject,

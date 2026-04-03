@@ -65,11 +65,13 @@ const QuizView = ({
   setDuelResult,
   categoryRoundResult,
   proceedAfterCategoryResult,
+  onForfeit,
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
   const [challengeTimeoutMinutes, setChallengeTimeoutMinutes] = React.useState(1440);
   const [countdownNow, setCountdownNow] = React.useState(() => Date.now());
+  const [showForfeitConfirm, setShowForfeitConfirm] = React.useState(false);
   const currentDifficulty = getDifficulty(currentGame?.difficulty);
   const questionIsKeyword = Boolean(currentQuestion && isKeywordQuestion?.(currentQuestion));
   const questionIsWhoAmI = Boolean(currentQuestion && isWhoAmIQuestion?.(currentQuestion));
@@ -598,6 +600,38 @@ const QuizView = ({
               <p className="text-3xl font-bold text-red-500">{currentGame.player2Score}</p>
             </div>
           </div>
+
+          {/* Aufgeben */}
+          {onForfeit && !duelResult && (
+            <div className="flex justify-end mb-2">
+              {!showForfeitConfirm ? (
+                <button
+                  onClick={() => setShowForfeitConfirm(true)}
+                  className={`text-xs px-3 py-1 rounded-lg border font-medium ${darkMode ? 'border-red-700 text-red-400 hover:bg-red-900/30' : 'border-red-300 text-red-500 hover:bg-red-50'}`}
+                >
+                  Aufgeben
+                </button>
+              ) : (
+                <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${darkMode ? 'border-red-700 bg-red-900/20' : 'border-red-300 bg-red-50'}`}>
+                  <span className={`text-xs font-medium ${darkMode ? 'text-red-300' : 'text-red-700'}`}>
+                    Wirklich aufgeben? Du verlierst das Duell.
+                  </span>
+                  <button
+                    onClick={() => { setShowForfeitConfirm(false); onForfeit(); }}
+                    className="text-xs px-3 py-1 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold"
+                  >
+                    Ja, aufgeben
+                  </button>
+                  <button
+                    onClick={() => setShowForfeitConfirm(false)}
+                    className={`text-xs px-3 py-1 rounded-lg font-medium ${darkMode ? 'bg-slate-600 hover:bg-slate-500 text-gray-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {currentGame.categoryRounds && currentGame.categoryRounds.length > 0 && !currentQuestion && (
             <div className="mb-4 flex justify-center gap-2 flex-wrap">
