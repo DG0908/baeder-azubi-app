@@ -557,13 +557,12 @@ export const loadOrganizationsAndInvitations = async () => {
     })),
     invitations: (invitations || []).map((invitation) => ({
       id: invitation.id,
-      code: invitation.code,
-      organization_id: invitation.organizationId,
+      organization_id: invitation.organization?.id,
       organizations: invitation.organization ? { name: invitation.organization.name } : null,
       role: String(invitation.role || '').toLowerCase(),
       max_uses: invitation.maxUses,
-      used_count: invitation.currentUses || 0,
-      is_active: invitation.isActive ?? true,
+      used_count: invitation.usedCount || 0,
+      is_active: invitation.revokedAt == null,
       created_at: invitation.createdAt,
       expires_at: invitation.expiresAt
     }))

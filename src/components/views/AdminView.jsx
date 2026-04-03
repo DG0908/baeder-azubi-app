@@ -25,6 +25,7 @@ const OrganizationManager = () => {
   const [showNewCode, setShowNewCode] = React.useState(false);
   const [newOrg, setNewOrg] = React.useState({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
   const [newCode, setNewCode] = React.useState({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
+  const [createdCode, setCreatedCode] = React.useState(null);
 
   const loadOrgs = async () => {
     setLoading(true);
@@ -74,12 +75,9 @@ const OrganizationManager = () => {
       return;
     }
     try {
-      const code = newCode.code.trim().toUpperCase() || generateCode();
-      const result = await dsCreateInvitationEntry({
-        ...newCode,
-        code
-      });
-      showToast(`Code "${result?.code || code || 'Erstellt'}" erstellt!`, 'success');
+      const result = await dsCreateInvitationEntry(newCode);
+      const plainCode = result?.code;
+      setCreatedCode(plainCode || null);
       setNewCode({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
       setShowNewCode(false);
       loadOrgs();
@@ -117,6 +115,26 @@ const OrganizationManager = () => {
 
   return (
     <div className="space-y-6">
+      {/* Einmal-Anzeige des neu erstellten Codes */}
+      {createdCode && (
+        <div className="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-6 shadow-lg">
+          <h3 className="text-lg font-bold text-emerald-800 mb-1">Einladungscode erstellt</h3>
+          <p className="text-sm text-emerald-700 mb-3">Dieser Code wird nur einmal angezeigt. Bitte jetzt kopieren und weitergeben.</p>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-2xl font-bold bg-white border-2 border-emerald-300 px-4 py-2 rounded-lg tracking-widest">{createdCode}</span>
+            <button
+              onClick={() => { navigator.clipboard.writeText(createdCode); showToast('Code kopiert!', 'success'); }}
+              className="flex items-center gap-1 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium"
+            >
+              <Copy size={16} /> Kopieren
+            </button>
+          </div>
+          <button onClick={() => setCreatedCode(null)} className="mt-3 text-sm text-emerald-600 hover:underline">
+            Ich habe den Code notiert — schließen
+          </button>
+        </div>
+      )}
+
       {/* Betriebe */}
       <div className="bg-white rounded-xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-4">
@@ -281,13 +299,12 @@ const OrganizationManager = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => copyCode(c.code)}
-                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
-                    title="Code kopieren"
+                  <span
+                    className="p-2 bg-gray-50 text-gray-300 rounded-lg cursor-not-allowed"
+                    title="Code wurde bei Erstellung angezeigt und ist nicht mehr abrufbar"
                   >
                     <Copy size={16} />
-                  </button>
+                  </span>
                   <button
                     onClick={() => toggleCodeActive(c.id, c.is_active)}
                     className={`p-2 rounded-lg ${c.is_active ? 'bg-green-100 hover:bg-green-200 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-500'}`}
