@@ -859,10 +859,10 @@ export class DuelsService {
           category: assignment.question.category,
           prompt: assignment.question.prompt,
           options: this.extractOptions(assignment.question.options),
-          correctOptionIndex: duel.status === DuelStatus.COMPLETED
+          correctOptionIndex: (duel.status === DuelStatus.COMPLETED || answersByQuestion.has(assignment.id))
             ? assignment.question.correctOptionIndex
             : null,
-          explanation: duel.status === DuelStatus.COMPLETED ? assignment.question.explanation : null
+          explanation: (duel.status === DuelStatus.COMPLETED || answersByQuestion.has(assignment.id)) ? assignment.question.explanation : null
         },
         myAnswer: answersByQuestion.get(assignment.id) ?? null
       })),

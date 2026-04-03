@@ -1242,7 +1242,32 @@ export const acceptDuel = async (gameId, currentUserId = null) => {
 
 export const getDuelWithQuestions = async (duelId, currentUserId = null) => {
   const result = await secureDuelsApi.getById(duelId);
-  return mapDuelToGame(result, currentUserId);
+  const game = mapDuelToGame(result, currentUserId);
+
+  // Merge correctOptionIndex and myAnswer back into categoryRound questions.
+  // The backend reveals correctOptionIndex once the current player has answered.
+  if (Array.isArray(result.questions) && result.questions.length > 0) {
+    const byOrder = new Map(result.questions.map(q => [q.orderIndex, q]));
+    game.categoryRounds = (game.categoryRounds || []).map((round, roundIdx) => ({
+      ...round,
+      questions: (round.questions || []).map((q, qIdx) => {
+        const globalIdx = roundIdx * (round.questions?.length || 0) + qIdx;
+        const apiQ = byOrder.get(globalIdx) || result.questions[globalIdx];
+        if (!apiQ) return q;
+        const merged = { ...q };
+        if (apiQ.question?.correctOptionIndex != null) {
+          merged.correct = apiQ.question.correctOptionIndex;
+        }
+        if (apiQ.myAnswer != null) {
+          merged.myAnswerIndex = apiQ.myAnswer.selectedOptionIndex ?? null;
+          merged.myAnswerCorrect = apiQ.myAnswer.isCorrect ?? null;
+        }
+        return merged;
+      })
+    }));
+  }
+
+  return game;
 };
 
 export const saveDuelState = async (game) => {
