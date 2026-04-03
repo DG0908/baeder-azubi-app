@@ -642,7 +642,9 @@ export const loadAppConfig = async () => {
   if (!config) return null;
   return {
     menuItems: config.menuItems || null,
-    themeColors: config.themeColors || null
+    themeColors: config.themeColors || null,
+    companies: config.companies || null,
+    announcement: config.announcement || null
   };
 };
 
