@@ -54,6 +54,8 @@ async function bootstrap() {
     });
   };
 
+  // Trust Traefik reverse proxy so rate limiting uses the real client IP
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
   app.setGlobalPrefix('api');
   app.use(
     helmet({
