@@ -74,6 +74,17 @@ window.addEventListener('error', (event) => {
 });
 window.addEventListener('load', () => sessionStorage.removeItem(VITE_RELOAD_GUARD_KEY));
 
+// Reload the page when a new service worker takes control so users always
+// run the latest build. The flag prevents an infinite reload loop.
+if ('serviceWorker' in navigator) {
+  let swReloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (swReloading) return;
+    swReloading = true;
+    window.location.reload();
+  });
+}
+
 // LocalStorage wrapper to match window.storage API
 window.storage = {
   set: async (key, value, global = false) => {
