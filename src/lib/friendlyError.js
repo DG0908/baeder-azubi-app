@@ -20,7 +20,12 @@ export function friendlyError(err) {
   }
 
   // HTTP-Statuscodes
-  if (status === 401) return 'Sitzung abgelaufen. Bitte erneut anmelden.';
+  if (status === 401) {
+    if (message.includes('invalid credentials')) return 'E-Mail oder Passwort falsch.';
+    if (message.includes('locked')) return 'Konto vorübergehend gesperrt. Bitte später erneut versuchen.';
+    if (message.includes('invalid') || message.includes('invitation')) return err.message;
+    return 'Sitzung abgelaufen. Bitte erneut anmelden.';
+  }
   if (status === 403) return 'Keine Berechtigung für diese Aktion.';
   if (status === 404) return 'Der angeforderte Inhalt wurde nicht gefunden.';
   if (status === 409) return 'Konflikt: Diese Aktion ist in der aktuellen Situation nicht möglich.';
