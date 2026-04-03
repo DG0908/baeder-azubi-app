@@ -149,7 +149,7 @@ export class DuelsService {
     }
 
     const questionCount =
-      dto.questionCount ?? Number(this.configService.get<number>('DUEL_DEFAULT_QUESTION_COUNT', 10));
+      dto.questionCount ?? Number(this.configService.get<number>('DUEL_DEFAULT_QUESTION_COUNT', MAX_DUEL_CATEGORY_ROUNDS * MAX_DUEL_QUESTIONS_PER_ROUND));
     const requestTimeoutMinutes = this.normalizeRequestTimeoutMinutes(dto.requestTimeoutMinutes);
     const availableQuestions = await this.prisma.question.findMany({
       where: {
