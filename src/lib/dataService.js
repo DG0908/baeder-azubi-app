@@ -1272,6 +1272,10 @@ export const submitDuelAnswer = async (duelId, duelQuestionId, selectedOptionInd
   return secureDuelsApi.submitAnswer(duelId, { duelQuestionId, selectedOptionIndex });
 };
 
+export const forfeitDuel = async (duelId) => {
+  return secureDuelsApi.forfeit(duelId);
+};
+
 export const saveDuelState = async (game) => {
   // Persist only the client state the backend still needs for continuity.
   const gameState = {
@@ -1286,9 +1290,6 @@ export const saveDuelState = async (game) => {
   return;
 };
 
-export const submitDuelAnswer = async (duelId, payload) => {
-  return secureDuelsApi.submitAnswer(duelId, payload);
-};
 
 // ─── Swim Sessions ──────────────────────────────────────────────────
 

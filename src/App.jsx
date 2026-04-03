@@ -104,6 +104,7 @@ import {
   acceptDuel as dsAcceptDuel,
   getDuelWithQuestions as dsGetDuelWithQuestions,
   submitDuelAnswer as dsSubmitDuelAnswer,
+  forfeitDuel as dsForfeitDuel,
   saveDuelState as dsSaveDuelState,
   loadSwimSessionEntries as dsLoadSwimSessions,
   saveSwimSessionEntry as dsSaveSwimSession,
@@ -981,6 +982,17 @@ export default function BaederApp() {
     setLastSelectedAnswer(null);
     setTimerActive(false);
     resetQuizKeywordState();
+  };
+
+  const handleForfeitDuel = async () => {
+    if (!currentGame?.id) return;
+    try {
+      await dsForfeitDuel(currentGame.id);
+    } catch (e) {
+      console.warn('Aufgeben fehlgeschlagen:', e);
+    }
+    resetQuizDuelRuntimeState();
+    setActiveGames(prev => prev.filter(g => g.id !== currentGame?.id));
   };
 
   const cloneDuelGameSnapshot = (gameInput) => {
@@ -9077,6 +9089,7 @@ export default function BaederApp() {
             setDuelResult={setDuelResult}
             categoryRoundResult={categoryRoundResult}
             proceedAfterCategoryResult={proceedAfterCategoryResult}
+            onForfeit={handleForfeitDuel}
           />
         )}
 

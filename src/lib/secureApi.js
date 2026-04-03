@@ -224,7 +224,8 @@ export const secureDuelsApi = {
   updateGameState: (duelId, gameState) => apiRequest(`/duels/${duelId}/state`, {
     method: 'PATCH',
     body: JSON.stringify({ gameState })
-  })
+  }),
+  forfeit: (duelId) => apiRequest(`/duels/${duelId}/forfeit`, { method: 'POST' })
 };
 
 const buildQueryString = (params = {}) => {

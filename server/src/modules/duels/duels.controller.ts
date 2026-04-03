@@ -53,6 +53,15 @@ export class DuelsController {
     return this.duelsService.updateGameState(actor, duelId, body.gameState);
   }
 
+  @Post(':id/forfeit')
+  forfeit(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') duelId: string,
+    @Req() request: Request
+  ) {
+    return this.duelsService.forfeit(actor, duelId, request);
+  }
+
   @Post(':id/answers')
   submitAnswer(
     @CurrentUser() actor: AuthenticatedUser,
