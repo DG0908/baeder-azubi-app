@@ -305,16 +305,17 @@ export class DuelsService {
       previousGameState,
       normalizedGameState
     );
-    this.assertValidGameStateTransition(duel, previousGameState, authoritativeGameState, actor);
-    const shouldComplete = duel.status === DuelStatus.ACTIVE && authoritativeGameState.status === 'finished';
+    const canonicalGameState = this.reuseStoredRoundDefinitions(previousGameState, authoritativeGameState);
+    this.assertValidGameStateTransition(duel, previousGameState, canonicalGameState, actor);
+    const shouldComplete = duel.status === DuelStatus.ACTIVE && canonicalGameState.status === 'finished';
     const winnerUserId = shouldComplete
-      ? this.resolveWinnerUserId(duel, this.readString(authoritativeGameState.winner))
+      ? this.resolveWinnerUserId(duel, this.readString(canonicalGameState.winner))
       : undefined;
 
     const updated = await this.prisma.duel.update({
       where: { id: duelId },
       data: {
-        gameState: authoritativeGameState,
+        gameState: canonicalGameState,
         status: shouldComplete ? DuelStatus.COMPLETED : undefined,
         winnerUserId,
         completedAt: shouldComplete ? new Date() : undefined,
@@ -1094,6 +1095,41 @@ export class DuelsService {
       ...normalizedGameState,
       categoryRounds
     });
+  }
+
+  private reuseStoredRoundDefinitions(
+    previousGameState: Prisma.InputJsonObject,
+    nextGameState: Prisma.InputJsonObject
+  ): Prisma.InputJsonObject {
+    const previousRounds = Array.isArray(previousGameState.categoryRounds)
+      ? previousGameState.categoryRounds
+      : [];
+    const nextRounds = Array.isArray(nextGameState.categoryRounds)
+      ? nextGameState.categoryRounds
+      : [];
+
+    if (previousRounds.length === 0 || nextRounds.length === 0) {
+      return nextGameState;
+    }
+
+    const categoryRounds = nextRounds.map((round, index) => {
+      if (index >= previousRounds.length) {
+        return round as Prisma.InputJsonObject;
+      }
+
+      const previousRound = this.asRecord(previousRounds[index]);
+      const nextRound = this.asRecord(round);
+      return {
+        ...previousRound,
+        player1Answers: Array.isArray(nextRound.player1Answers) ? nextRound.player1Answers : previousRound.player1Answers,
+        player2Answers: Array.isArray(nextRound.player2Answers) ? nextRound.player2Answers : previousRound.player2Answers
+      } as Prisma.InputJsonObject;
+    });
+
+    return {
+      ...nextGameState,
+      categoryRounds
+    } as Prisma.InputJsonObject;
   }
 
   private buildPayloadQuestionForAssignment(
