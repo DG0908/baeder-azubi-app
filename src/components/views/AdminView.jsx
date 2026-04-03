@@ -426,12 +426,15 @@ const AdminView = ({
   resetAppConfig,
   companies = [],
   saveCompanies,
+  announcement = { enabled: false, message: '' },
+  saveAnnouncement,
 }) => {
   const { darkMode, showToast } = useApp();
   const { user } = useAuth();
   const [repairingQuizStats, setRepairingQuizStats] = React.useState(false);
   const [lastQuizRepairResult, setLastQuizRepairResult] = React.useState(null);
   const [newCompanyName, setNewCompanyName] = React.useState('');
+  const [announcementText, setAnnouncementText] = React.useState(announcement?.message || '');
   const [sendingTestPush, setSendingTestPush] = React.useState(false);
   const [lastTestPushResult, setLastTestPushResult] = React.useState(null);
   const [testPushTargetScope, setTestPushTargetScope] = React.useState('self');
@@ -991,6 +994,44 @@ const AdminView = ({
                 Hinzufügen
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Ankündigung */}
+        {canEditAppConfig && (
+          <div className={`mb-6 p-4 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} shadow-sm`}>
+            <h3 className={`font-bold text-base mb-3 ${darkMode ? 'text-white' : 'text-gray-800'}`}>📢 Ankündigung für alle Nutzer</h3>
+            <p className={`text-xs mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Erscheint als gelbes Banner oben in der App — z.B. für geplante Wartungen oder neue Features.
+            </p>
+            <textarea
+              value={announcementText}
+              onChange={(e) => setAnnouncementText(e.target.value)}
+              placeholder="z.B. Achtung: Es wird gerade an etwas Neuem gearbeitet. Kurze Störungen möglich."
+              rows={2}
+              className={`w-full rounded-lg border px-3 py-2 text-sm mb-3 resize-none ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400'}`}
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => saveAnnouncement({ enabled: true, message: announcementText.trim() })}
+                disabled={!announcementText.trim()}
+                className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white text-sm font-bold py-2 rounded-lg transition-colors"
+              >
+                📢 Aktivieren
+              </button>
+              <button
+                onClick={() => saveAnnouncement({ enabled: false, message: announcementText.trim() })}
+                className={`flex-1 text-sm font-bold py-2 rounded-lg transition-colors ${announcement?.enabled ? 'bg-gray-500 hover:bg-gray-600 text-white' : 'bg-gray-200 text-gray-400 cursor-default'}`}
+                disabled={!announcement?.enabled}
+              >
+                ✕ Deaktivieren
+              </button>
+            </div>
+            {announcement?.enabled && (
+              <p className={`text-xs mt-2 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                Aktuell aktiv: „{announcement.message}"
+              </p>
+            )}
           </div>
         )}
 

@@ -28,6 +28,8 @@ import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
 import InteractiveLearningView from './components/views/InteractiveLearningView';
 import AvatarBadge from './components/ui/AvatarBadge';
+import { useInactivityTimeout } from './hooks/useInactivityTimeout';
+import { useOnlineStatus } from './hooks/useOnlineStatus';
 
 import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, MENU_GROUP_LABELS, getAvatarById, getLevel, getLevelProgress } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
@@ -290,6 +292,16 @@ export default function BaederApp() {
     handleRegister,
     handleLogout
   } = useAuth();
+
+  const isOnline = useOnlineStatus();
+  const [showInactivityWarning, setShowInactivityWarning] = useState(false);
+
+  useInactivityTimeout({
+    enabled: !!user,
+    onWarn: () => setShowInactivityWarning(true),
+    onDismissWarn: () => setShowInactivityWarning(false),
+    onLogout: handleLogout,
+  });
 
   const [currentView, setCurrentView] = useState('home');
   const [allUsers, setAllUsers] = useState([]);
@@ -1209,7 +1221,8 @@ export default function BaederApp() {
   const [appConfig, setAppConfig] = useState({
     menuItems: DEFAULT_MENU_ITEMS,
     themeColors: DEFAULT_THEME_COLORS,
-    companies: ['Freizeitbad Oktopus']
+    companies: ['Freizeitbad Oktopus'],
+    announcement: { enabled: false, message: '' }
   });
   const [editingMenuItems, setEditingMenuItems] = useState([]);
   const [editingThemeColors, setEditingThemeColors] = useState({});
@@ -3278,7 +3291,10 @@ export default function BaederApp() {
           const loadedCompanies = Array.isArray(configResult.companies) && configResult.companies.length > 0
             ? configResult.companies
             : ['Freizeitbad Oktopus'];
-          setAppConfig({ menuItems: loadedMenuItems, themeColors: loadedThemeColors, companies: loadedCompanies });
+          const loadedAnnouncement = configResult.announcement && typeof configResult.announcement === 'object'
+            ? configResult.announcement
+            : { enabled: false, message: '' };
+          setAppConfig({ menuItems: loadedMenuItems, themeColors: loadedThemeColors, companies: loadedCompanies, announcement: loadedAnnouncement });
         }
         setConfigLoaded(true);
       } catch (err) {
@@ -8224,13 +8240,15 @@ export default function BaederApp() {
       await dsSaveAppConfig({
         menuItems: editingMenuItems,
         themeColors: editingThemeColors,
-        companies: appConfig.companies
+        companies: appConfig.companies,
+        announcement: appConfig.announcement
       });
 
       setAppConfig({
         menuItems: editingMenuItems,
         themeColors: editingThemeColors,
-        companies: appConfig.companies
+        companies: appConfig.companies,
+        announcement: appConfig.announcement
       });
 
       showToast('Konfiguration gespeichert.', 'success');
@@ -8238,6 +8256,23 @@ export default function BaederApp() {
     } catch (error) {
       console.error('Config save error:', error);
       showToast('Fehler beim Speichern der Konfiguration', 'error');
+    }
+  };
+
+  const saveAnnouncement = async (announcement) => {
+    const updated = { ...appConfig, announcement };
+    try {
+      await dsSaveAppConfig({
+        menuItems: appConfig.menuItems,
+        themeColors: appConfig.themeColors,
+        companies: appConfig.companies,
+        announcement
+      });
+      setAppConfig(updated);
+      showToast(announcement.enabled ? 'Ankündigung aktiviert.' : 'Ankündigung deaktiviert.', 'success');
+    } catch (error) {
+      console.error('Announcement save error:', error);
+      showToast('Fehler beim Speichern der Ankündigung', 'error');
     }
   };
 
@@ -8580,6 +8615,41 @@ export default function BaederApp() {
         }
       `}</style>
 
+      {/* Offline-Banner */}
+      {!isOnline && (
+        <div className="fixed top-0 left-0 right-0 z-[9998] bg-gray-800 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
+          <span>📡</span>
+          <span>Keine Internetverbindung – Einige Funktionen sind nicht verfügbar</span>
+        </div>
+      )}
+
+      {/* Ankündigungs-Banner */}
+      {appConfig.announcement?.enabled && appConfig.announcement?.message && (
+        <div className="fixed top-0 left-0 right-0 z-[9997] bg-amber-400 text-amber-900 text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
+          <span>🚧</span>
+          <span>{appConfig.announcement.message}</span>
+        </div>
+      )}
+
+      {/* Inaktivitäts-Warnung */}
+      {showInactivityWarning && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 text-center">
+            <div className="text-5xl mb-3">⏱️</div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Noch da?</h2>
+            <p className="text-gray-600 mb-5 text-sm">
+              Du wirst in <strong>2 Minuten</strong> automatisch abgemeldet.
+            </p>
+            <button
+              onClick={() => window.dispatchEvent(new MouseEvent('mousemove'))}
+              className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 rounded-xl transition-colors"
+            >
+              Aktiv bleiben
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Toast Notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {toasts.map(toast => (
@@ -8832,6 +8902,8 @@ export default function BaederApp() {
             resetAppConfig={resetAppConfig}
             companies={appConfig.companies}
             saveCompanies={saveCompanies}
+            announcement={appConfig.announcement}
+            saveAnnouncement={saveAnnouncement}
           />
         )}
 
