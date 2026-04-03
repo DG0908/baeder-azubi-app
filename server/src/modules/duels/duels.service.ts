@@ -1947,8 +1947,23 @@ export class DuelsService {
   private assertQuestionsUnchanged(previousRound: Record<string, unknown>, nextRound: Record<string, unknown>) {
     const previousQuestions = Array.isArray(previousRound.questions) ? previousRound.questions : [];
     const nextQuestions = Array.isArray(nextRound.questions) ? nextRound.questions : [];
-    if (!this.isSameJsonValue(previousQuestions, nextQuestions)) {
+    if (previousQuestions.length !== nextQuestions.length) {
       throw new BadRequestException('Stored duel questions cannot be changed after creation.');
+    }
+    // Compare only the stable, non-redactable fields.
+    // The server legitimately strips 'correct', 'keywordGroups', 'minKeywordGroups' from
+    // unanswered questions before sending them to the client, so those fields may be absent
+    // in the client's payload and must not be compared here.
+    const REDACTABLE = new Set(['correct', 'keywordGroups', 'minKeywordGroups']);
+    for (let i = 0; i < previousQuestions.length; i++) {
+      const prev = this.asRecord(previousQuestions[i]);
+      const next = this.asRecord(nextQuestions[i]);
+      for (const key of Object.keys(prev)) {
+        if (REDACTABLE.has(key)) continue;
+        if (!this.isSameJsonValue(prev[key], next[key])) {
+          throw new BadRequestException('Stored duel questions cannot be changed after creation.');
+        }
+      }
     }
   }
 
