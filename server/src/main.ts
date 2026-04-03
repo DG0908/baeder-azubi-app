@@ -18,10 +18,14 @@ async function bootstrap() {
 
   const normalizeOrigin = (value: string) => String(value || '').trim().replace(/\/+$/, '');
 
+  if (corsOrigins.length === 0) {
+    logger.error('APP_CORS_ORIGINS is not configured — server will not start to prevent open CORS.');
+    process.exit(1);
+  }
+
   const isAllowedOrigin = (origin: string | undefined) => {
-    if (!origin || corsOrigins.length === 0) {
-      return true;
-    }
+    // No origin header = same-origin or non-browser request (curl, server-to-server) — allow
+    if (!origin) return true;
 
     const normalizedOrigin = normalizeOrigin(origin);
 
