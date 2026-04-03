@@ -242,15 +242,6 @@ export class AuthService {
     }
     if (!passwordMatches) {
       this.recordFailedLogin(email, request);
-
-      const record = loginAttempts.get(email);
-      const remaining = MAX_FAILED_ATTEMPTS - (record?.failedCount ?? 0);
-      if (remaining > 0 && remaining <= 2) {
-        throw new UnauthorizedException(
-          `Invalid credentials. ${remaining} attempt(s) remaining before lockout.`
-        );
-      }
-
       throw new UnauthorizedException('Invalid credentials.');
     }
 
@@ -285,7 +276,6 @@ export class AuthService {
 
     return {
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
       user: safeUser
     };
   }
@@ -335,7 +325,6 @@ export class AuthService {
 
     return {
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
       user: safeUser
     };
   }

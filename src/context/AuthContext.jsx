@@ -20,31 +20,25 @@ const EMPTY_REGISTER_DATA = {
 };
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('baeder_user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [authView, setAuthView] = useState('login');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [registerData, setRegisterData] = useState(EMPTY_REGISTER_DATA);
 
-  const resetStoredSession = () => {
-    setUser(null);
+  // Clean up legacy PII from localStorage (older app versions stored user profile there)
+  try {
     localStorage.removeItem('baeder_user');
     localStorage.removeItem('azubi_profile');
+  } catch { /* ignore */ }
+
+  const resetStoredSession = () => {
+    setUser(null);
   };
 
-  const persistStoredSession = (nextUser, azubiProfile = null) => {
+  const persistStoredSession = (nextUser) => {
     setUser(nextUser);
-    localStorage.setItem('baeder_user', JSON.stringify(nextUser));
-
-    if (azubiProfile) {
-      localStorage.setItem('azubi_profile', JSON.stringify(azubiProfile));
-    } else {
-      localStorage.removeItem('azubi_profile');
-    }
   };
 
   useEffect(() => {
@@ -67,7 +61,7 @@ export function AuthProvider({ children }) {
         if (!active) return;
 
         if (sessionUser) {
-          persistStoredSession(sessionUser, azubiProfile);
+          persistStoredSession(sessionUser);
         } else {
           resetStoredSession();
         }
@@ -135,12 +129,12 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const { user: nextUser, azubiProfile } = await dsLoginAuthAccount({
+      const { user: nextUser } = await dsLoginAuthAccount({
         email: loginEmail,
         password: loginPassword
       });
 
-      persistStoredSession(nextUser, azubiProfile);
+      persistStoredSession(nextUser);
       setLoginEmail('');
       setLoginPassword('');
     } catch (error) {

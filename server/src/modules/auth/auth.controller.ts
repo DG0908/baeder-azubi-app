@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res, Body } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -41,11 +41,10 @@ export class AuthController {
   @Post('refresh')
   refresh(
     @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-    @Body() body: RefreshDto
+    @Res({ passthrough: true }) response: Response
   ) {
-    // Accept refresh token from body (preferred, always fresh) or cookie (fallback)
-    const refreshToken = body?.refreshToken || request.cookies?.refresh_token;
+    // Refresh token is read exclusively from the HttpOnly cookie
+    const refreshToken = request.cookies?.refresh_token;
     return this.authService.refreshSession(refreshToken, response);
   }
 

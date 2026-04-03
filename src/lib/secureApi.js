@@ -1,11 +1,9 @@
 import {
   apiRequest,
   clearApiAccessToken,
-  clearRefreshToken,
   isSecureBackendApiEnabled,
   refreshApiSession,
-  setApiAccessToken,
-  setRefreshToken
+  setApiAccessToken
 } from './secureApiClient';
 
 const BACKEND_ROLE_TO_FRONTEND = {
@@ -89,9 +87,6 @@ export const secureAuthApi = {
     if (result?.accessToken) {
       setApiAccessToken(result.accessToken);
     }
-    if (result?.refreshToken) {
-      setRefreshToken(result.refreshToken);
-    }
 
     return result;
   },
@@ -103,7 +98,6 @@ export const secureAuthApi = {
       });
     } finally {
       clearApiAccessToken();
-      clearRefreshToken();
     }
   },
 

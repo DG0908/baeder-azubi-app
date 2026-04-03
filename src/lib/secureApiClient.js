@@ -4,8 +4,10 @@ const ENABLE_SECURE_BACKEND_API = String(import.meta.env.VITE_ENABLE_SECURE_BACK
   .toLowerCase() === 'true';
 
 let inMemoryAccessToken = '';
-const REFRESH_TOKEN_KEY = 'baeder_rt';
 let refreshPromise = null;
+
+// Clean up legacy localStorage refresh token if present from older app versions
+try { localStorage.removeItem('baeder_rt'); } catch { /* ignore */ }
 
 export class ApiRequestError extends Error {
   constructor(message, status = 500, details = null) {
@@ -44,28 +46,6 @@ export const clearApiAccessToken = () => {
   setApiAccessToken('');
 };
 
-export const setRefreshToken = (token) => {
-  try {
-    if (token) {
-      localStorage.setItem(REFRESH_TOKEN_KEY, token);
-    } else {
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-    }
-  } catch { /* localStorage unavailable */ }
-};
-
-export const getRefreshToken = () => {
-  try {
-    return localStorage.getItem(REFRESH_TOKEN_KEY) || '';
-  } catch {
-    return '';
-  }
-};
-
-export const clearRefreshToken = () => {
-  setRefreshToken(null);
-};
-
 export const isSecureBackendApiEnabled = () => ENABLE_SECURE_BACKEND_API;
 
 export const refreshApiSession = async () => {
@@ -74,22 +54,16 @@ export const refreshApiSession = async () => {
   }
 
   refreshPromise = (async () => {
-  // Send refresh token in body as fallback for browsers that block cross-origin cookies
     try {
-      const storedRefreshToken = getRefreshToken();
-      const fetchOptions = {
+      const response = await fetch(buildUrl('/auth/refresh'), {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: storedRefreshToken || undefined })
-      };
-
-      const response = await fetch(buildUrl('/auth/refresh'), fetchOptions);
+        headers: { 'Content-Type': 'application/json' }
+      });
       const body = await parseResponseBody(response);
 
       if (!response.ok) {
         clearApiAccessToken();
-        clearRefreshToken();
         throw new ApiRequestError(
           body?.message || body?.error || 'API session refresh failed.',
           response.status,
@@ -99,11 +73,6 @@ export const refreshApiSession = async () => {
 
       if (body?.accessToken) {
         setApiAccessToken(body.accessToken);
-      }
-
-      // Store new refresh token if returned (for token rotation)
-      if (body?.refreshToken) {
-        setRefreshToken(body.refreshToken);
       }
 
       return body;
@@ -120,7 +89,7 @@ export const apiRequest = async (path, options = {}, retry = true) => {
   const shouldSkipRefresh = skipRefreshPaths.some(p => String(path).startsWith(p));
   const accessToken = getApiAccessToken();
 
-  if (!accessToken && retry && !shouldSkipRefresh && getRefreshToken()) {
+  if (!accessToken && retry && !shouldSkipRefresh) {
     await refreshApiSession();
     return apiRequest(path, options, false);
   }
