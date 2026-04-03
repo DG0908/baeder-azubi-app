@@ -283,11 +283,11 @@ const OrganizationManager = () => {
           </div>
         )}
 
-        {codes.length === 0 ? (
+        {codes.filter(c => c.is_active).length === 0 ? (
           <p className="text-gray-500 text-sm">Noch keine Einladungscodes vorhanden.</p>
         ) : (
           <div className="space-y-2">
-            {codes.map(c => (
+            {codes.filter(c => c.is_active).map(c => (
               <div key={c.id} className={`flex items-center justify-between border rounded-lg p-3 ${c.is_active ? 'border-emerald-200' : 'border-gray-200 opacity-60'}`}>
                 <div className="flex items-center gap-3">
                   <span className="font-mono font-bold text-lg bg-gray-100 px-3 py-1 rounded-lg">{c.code}</span>
