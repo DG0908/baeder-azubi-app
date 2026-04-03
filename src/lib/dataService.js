@@ -1276,14 +1276,32 @@ export const forfeitDuel = async (duelId) => {
   return secureDuelsApi.forfeit(duelId);
 };
 
+// Fields merged client-side from getDuelWithQuestions that must NOT be sent back to the server
+const CLIENT_ONLY_QUESTION_FIELDS = ['correct', 'myAnswerCorrect', 'duelQuestionId'];
+
+const stripClientOnlyQuestionFields = (categoryRounds) => {
+  if (!Array.isArray(categoryRounds)) return categoryRounds;
+  return categoryRounds.map(round => ({
+    ...round,
+    questions: Array.isArray(round.questions)
+      ? round.questions.map(q => {
+          const cleaned = { ...q };
+          for (const field of CLIENT_ONLY_QUESTION_FIELDS) delete cleaned[field];
+          return cleaned;
+        })
+      : round.questions
+  }));
+};
+
 export const saveDuelState = async (game) => {
   // Persist only the client state the backend still needs for continuity.
+  // Strip client-side-only question fields so the backend assertQuestionsUnchanged check passes.
   const gameState = {
     currentTurn: game.currentTurn,
     categoryRound: game.categoryRound || 0,
     status: game.status,
     difficulty: game.difficulty,
-    categoryRounds: game.categoryRounds || [],
+    categoryRounds: stripClientOnlyQuestionFields(game.categoryRounds || []),
     challengeTimeoutMinutes: game.challengeTimeoutMinutes
   };
   await secureDuelsApi.updateGameState(game.id, gameState);
