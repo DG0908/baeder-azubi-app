@@ -42,6 +42,7 @@ import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, SWIM_BADGES, SWIM_TRAINING_P
 import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel, parseExamTimeToSeconds, formatSecondsAsTime } from './data/practicalExam';
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
+import { friendlyError } from './lib/friendlyError';
 import SignatureCanvas from './components/ui/SignatureCanvas';
 import { clearUserPushSubscription, ensureUserPushSubscription, fetchPushBackendWithAuth, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
 import {
@@ -3490,7 +3491,7 @@ export default function BaederApp() {
       showToast(`${result.account?.name || email} wurde freigeschaltet!`, 'success');
     } catch (error) {
       console.error('Error approving user:', error);
-      showToast('Fehler beim Freischalten', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -3516,7 +3517,7 @@ export default function BaederApp() {
       showToast('Nutzerprofil und Daten wurden gelöscht', 'success');
     } catch (error) {
       console.error('Delete user error:', error);
-      showToast('Fehler beim Löschen', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -3564,7 +3565,7 @@ export default function BaederApp() {
       showToast(`Rolle geändert zu: ${PERMISSIONS[newRole].label}`, 'success');
     } catch (error) {
       console.error('Error changing role:', error);
-      showToast('Fehler beim Ändern der Rolle', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -3575,7 +3576,7 @@ export default function BaederApp() {
       showToast(!currentValue ? labels.granted : labels.revoked, 'success');
     } catch (error) {
       console.error(`Error toggling ${field}:`, error);
-      showToast('Fehler beim Ändern der Berechtigung', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -3708,7 +3709,7 @@ export default function BaederApp() {
       showToast(`Herausforderung an ${opponent} gesendet! Frist: ${formatDurationMinutesCompact(game.challengeTimeoutMinutes || timeoutMinutes)}.`, 'success');
     } catch (error) {
       console.error('Challenge error:', error);
-      showToast('Fehler beim Senden der Herausforderung', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -5014,7 +5015,7 @@ export default function BaederApp() {
       showToast('Frage eingereicht!', 'success');
     } catch (error) {
       console.error('Question error:', error);
-      showToast('Fehler beim Einreichen der Frage', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -5736,7 +5737,7 @@ export default function BaederApp() {
       }
     } catch (e) {
       console.warn('Fehler beim Speichern des Prüfungsergebnisses:', e);
-      showToast('Fehler beim Speichern des Prüfungsergebnisses.', 'error');
+      showToast(friendlyError(e), 'error');
     }
   };
 
@@ -5890,7 +5891,7 @@ export default function BaederApp() {
       loadExamGrades();
     } catch (err) {
       console.error('Fehler beim Speichern der Klasur:', err);
-      showToast('Fehler beim Speichern', 'error');
+      showToast(friendlyError(err), 'error');
     }
   };
 
@@ -5902,7 +5903,7 @@ export default function BaederApp() {
       loadExamGrades();
     } catch (err) {
       console.error('Fehler beim Löschen:', err);
-      showToast('Fehler beim Löschen', 'error');
+      showToast(friendlyError(err), 'error');
     }
   };
 
@@ -7530,7 +7531,7 @@ export default function BaederApp() {
       setBerichtsheftViewMode('list');
     } catch (err) {
       console.error('Fehler beim Speichern:', err);
-      showToast('Fehler beim Speichern des Berichtshefts', 'error');
+      showToast(friendlyError(err), 'error');
     }
   };
 
@@ -8223,7 +8224,7 @@ export default function BaederApp() {
       showToast('Material hinzugefügt!', 'success');
     } catch (error) {
       console.error('Material error:', error);
-      showToast('Fehler beim Hinzufügen', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -8255,7 +8256,7 @@ export default function BaederApp() {
       playSound('splash');
     } catch (error) {
       console.error('Config save error:', error);
-      showToast('Fehler beim Speichern der Konfiguration', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -8272,7 +8273,7 @@ export default function BaederApp() {
       showToast(announcement.enabled ? 'Ankündigung aktiviert.' : 'Ankündigung deaktiviert.', 'success');
     } catch (error) {
       console.error('Announcement save error:', error);
-      showToast('Fehler beim Speichern der Ankündigung', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -8288,7 +8289,7 @@ export default function BaederApp() {
       showToast('Betriebe gespeichert.', 'success');
     } catch (error) {
       console.error('Companies save error:', error);
-      showToast('Fehler beim Speichern der Betriebe', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -8399,7 +8400,7 @@ export default function BaederApp() {
       showToast('Ressource hinzugefügt!', 'success');
     } catch (error) {
       console.error('Resource error:', error);
-      showToast('Fehler beim Hinzufügen', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -8499,7 +8500,7 @@ export default function BaederApp() {
       showToast('Klausur gelöscht.', 'success');
     } catch (error) {
       console.error('Delete exam error:', error);
-      showToast('Fehler beim Löschen der Klausur', 'error');
+      showToast(friendlyError(error), 'error');
     }
   };
 
