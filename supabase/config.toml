@@ -1,5 +1,0 @@
-[functions.send-web-push]
-verify_jwt = true
-
-[functions.send-berichtsheft-reminder]
-verify_jwt = true
