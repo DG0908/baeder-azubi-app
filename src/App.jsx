@@ -333,6 +333,7 @@ export default function BaederApp() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
   const quizActiveRef = useRef(false);
+  const answerSubmissionLockRef = useRef(false);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
   const [duelResult, setDuelResult] = useState(null); // Ergebnis-Screen nach Spielende
   const [categoryRoundResult, setCategoryRoundResult] = useState(null); // Kategorie-Vergleich zwischen Runden
@@ -968,7 +969,12 @@ export default function BaederApp() {
     });
   };
 
+  const resetAnswerSubmissionLock = () => {
+    answerSubmissionLockRef.current = false;
+  };
+
   const resetQuizDuelRuntimeState = () => {
+    resetAnswerSubmissionLock();
     setCurrentGame(null);
     setQuizCategory(null);
     setCurrentQuestion(null);
@@ -3795,6 +3801,7 @@ export default function BaederApp() {
       setQuizCategory(null);
       setCurrentQuestion(null);
       setCurrentCategoryQuestions([]);
+      resetAnswerSubmissionLock();
       setAnswered(false);
       setSelectedAnswers([]);
       setLastSelectedAnswer(null);
@@ -3821,6 +3828,7 @@ export default function BaederApp() {
     setQuestionInCategory(0);
     setPlayerTurn(game.currentTurn);
     setCurrentQuestion(null);
+    resetAnswerSubmissionLock();
     setAnswered(false);
     setSelectedAnswers([]);
     setLastSelectedAnswer(null);
@@ -3870,6 +3878,7 @@ export default function BaederApp() {
     setQuizCategory(null);
     setCurrentQuestion(null);
     setCurrentCategoryQuestions([]);
+    resetAnswerSubmissionLock();
     setAnswered(false);
     setSelectedAnswers([]);
     setLastSelectedAnswer(null);
@@ -4292,6 +4301,7 @@ export default function BaederApp() {
     setCurrentCategoryQuestions([]);
     setQuestionInCategory(0);
     setCurrentQuestion(null);
+    resetAnswerSubmissionLock();
     setAnswered(false);
     setSelectedAnswers([]); // Reset für Multi-Select
     setLastSelectedAnswer(null); // Reset für Single-Choice
@@ -4314,7 +4324,8 @@ export default function BaederApp() {
   };
 
   const handleTimeUp = async () => {
-    if (answered || !currentGame) return;
+    if (answered || answerSubmissionLockRef.current || !currentGame) return;
+    answerSubmissionLockRef.current = true;
     setAnswered(true);
     setTimerActive(false);
 
@@ -4355,7 +4366,8 @@ export default function BaederApp() {
 
   // Bestätigen der Multi-Select Antwort
   const confirmMultiSelectAnswer = async () => {
-    if (answered || !currentGame || !currentQuestion.multi) return;
+    if (answered || answerSubmissionLockRef.current || !currentGame || !currentQuestion.multi) return;
+    answerSubmissionLockRef.current = true;
     setAnswered(true);
     setTimerActive(false);
 
@@ -4375,7 +4387,7 @@ export default function BaederApp() {
   };
 
   const answerQuestion = async (answerIndex) => {
-    if (answered || !currentGame) return;
+    if (answered || answerSubmissionLockRef.current || !currentGame) return;
     if (isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion)) return;
 
     // Multi-Select: Nur togglen, nicht direkt antworten
@@ -4385,6 +4397,7 @@ export default function BaederApp() {
     }
 
     // Single-Choice: Direkt antworten
+    answerSubmissionLockRef.current = true;
     setAnswered(true);
     setTimerActive(false);
     setLastSelectedAnswer(answerIndex); // Speichere gewählte Antwort für Feedback
@@ -4401,7 +4414,7 @@ export default function BaederApp() {
   };
 
   const submitKeywordAnswer = async () => {
-    if (answered || !currentGame || !currentQuestion) return;
+    if (answered || answerSubmissionLockRef.current || !currentGame || !currentQuestion) return;
     if (!isKeywordQuestion(currentQuestion) && !isWhoAmIQuestion(currentQuestion) && !quizMCKeywordMode) return;
     const trimmedAnswer = keywordAnswerText.trim();
     if (!trimmedAnswer) {
@@ -4420,6 +4433,7 @@ export default function BaederApp() {
       evaluation = evaluateKeywordAnswer(fakeQ, keywordAnswerText);
     }
     setKeywordAnswerEvaluation(evaluation);
+    answerSubmissionLockRef.current = true;
     setAnswered(true);
     setTimerActive(false);
     const answerType = isWhoAmIQuestion(currentQuestion)
@@ -4575,6 +4589,7 @@ export default function BaederApp() {
       const nextQuestionIndex = questionInCategory + 1;
       setQuestionInCategory(nextQuestionIndex);
       setCurrentQuestion(currentCategoryQuestions[nextQuestionIndex]);
+      resetAnswerSubmissionLock();
       setAnswered(false);
       setSelectedAnswers([]); // Reset für Multi-Select
       setLastSelectedAnswer(null); // Reset für Single-Choice
@@ -4686,6 +4701,7 @@ export default function BaederApp() {
       setCurrentCategoryQuestions([]);
       setPlayerTurn(nextChooser);
       setWaitingForOpponent(false);
+      resetAnswerSubmissionLock();
       setAnswered(false);
       setSelectedAnswers([]);
       setLastSelectedAnswer(null);
@@ -4718,6 +4734,7 @@ export default function BaederApp() {
     setCurrentCategoryQuestions(currentCategoryRound.questions);
     setQuestionInCategory(0);
     setCurrentQuestion(currentCategoryRound.questions[0]);
+    resetAnswerSubmissionLock();
     setAnswered(false);
     setSelectedAnswers([]); // Reset für Multi-Select
     setLastSelectedAnswer(null); // Reset für Single-Choice
@@ -4744,6 +4761,7 @@ export default function BaederApp() {
     setCurrentCategoryQuestions(currentCategoryRound.questions);
     setQuestionInCategory(nextQuestionIndex);
     setCurrentQuestion(currentCategoryRound.questions[nextQuestionIndex]);
+    resetAnswerSubmissionLock();
     setAnswered(false);
     setSelectedAnswers([]);
     setLastSelectedAnswer(null);
