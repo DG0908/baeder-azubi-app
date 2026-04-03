@@ -702,6 +702,15 @@ model DuelQuestion {
   @@index([questionId])
 }
 
+model LoginAttempt {
+  email       String   @id
+  failedCount Int      @default(0)
+  lockedUntil DateTime?
+  updatedAt   DateTime @updatedAt
+
+  @@index([lockedUntil])
+}
+
 model DuelAnswer {
   id                  String       @id @default(cuid())
   duelId              String
