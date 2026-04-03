@@ -519,7 +519,21 @@ export class DuelsService {
       });
 
       if (existingAnswer) {
-        throw new ConflictException('This question has already been answered.');
+        const syncedGameState = this.mergePersistedAnswersIntoGameState(duel);
+        const duplicate = this.isSameJsonValue(duel.gameState, syncedGameState)
+          ? duel
+          : await tx.duel.update({
+              where: { id: duel.id },
+              data: {
+                gameState: syncedGameState
+              },
+              include: duelInclude
+            });
+
+        return {
+          duel: duplicate,
+          finalized: false
+        };
       }
 
       const optionCount = this.extractOptions(duelQuestion.question.options).length;
@@ -542,11 +556,15 @@ export class DuelsService {
         where: { id: duel.id },
         include: duelInclude
       });
+      const syncedGameState = this.mergePersistedAnswersIntoGameState(withLatestAnswers);
 
       if (withLatestAnswers.answers.length >= withLatestAnswers.questionCount * 2) {
         const finalized = await tx.duel.update({
           where: { id: duel.id },
-          data: this.buildFinalizationUpdate(withLatestAnswers),
+          data: {
+            ...this.buildFinalizationUpdate(withLatestAnswers),
+            gameState: syncedGameState
+          },
           include: duelInclude
         });
 
@@ -559,6 +577,7 @@ export class DuelsService {
       const continued = await tx.duel.update({
         where: { id: duel.id },
         data: {
+          gameState: syncedGameState,
           expiresAt: this.buildTurnExpiryDate(),
           reminderSentAt: null
         },
@@ -923,7 +942,7 @@ export class DuelsService {
   }
 
   private toDuelSummary(duel: DuelWithRelations, actorId: string) {
-    const normalizedGameState = this.normalizeGameState(duel, duel.gameState);
+    const normalizedGameState = this.mergePersistedAnswersIntoGameState(duel);
     const redactedGameState = this.redactUnansweredQuestionsForActor(normalizedGameState, actorId, duel);
     const score = this.computeScore(duel);
     const myUserId = actorId;
@@ -1008,7 +1027,9 @@ export class DuelsService {
   }
 
   private computeScore(duel: DuelWithRelations) {
-    const gameStateScore = this.computeGameStateScore(duel.gameState);
+    const gameStateScore = this.computeGameStateScore(
+      this.mergePersistedAnswersIntoGameState(duel) as Prisma.JsonObject
+    );
     if (gameStateScore) {
       return {
         [duel.challengerId]: gameStateScore.player1Score,
@@ -1026,6 +1047,73 @@ export class DuelsService {
       }
     }
     return scoreboard;
+  }
+
+  private mergePersistedAnswersIntoGameState(duel: DuelWithRelations): Prisma.InputJsonObject {
+    const normalizedGameState = this.normalizeGameState(duel, duel.gameState);
+    const categoryRounds = Array.isArray(normalizedGameState.categoryRounds)
+      ? normalizedGameState.categoryRounds.map((round) => this.asRecord(round))
+      : [];
+
+    for (const assignment of duel.duelQuestions) {
+      const roundIndex = Math.floor(assignment.orderIndex / MAX_DUEL_QUESTIONS_PER_ROUND);
+      const questionIndex = assignment.orderIndex % MAX_DUEL_QUESTIONS_PER_ROUND;
+      const round = categoryRounds[roundIndex];
+      if (!round) {
+        continue;
+      }
+
+      const questions = Array.isArray(round.questions) ? round.questions : [];
+      const question = this.asRecord(questions[questionIndex] ?? {});
+      for (const storedAnswer of duel.answers.filter((answer) => answer.duelQuestionId === assignment.id)) {
+        const answerEntry = this.revalidateAnswerEntry({
+          questionIndex,
+          correct: storedAnswer.isCorrect,
+          timeout: false,
+          points: storedAnswer.isCorrect ? 1 : 0,
+          answerType: 'single',
+          selectedAnswer: storedAnswer.selectedOptionIndex
+        } as Prisma.InputJsonObject, question);
+
+        if (storedAnswer.userId === duel.challengerId) {
+          const currentAnswers = Array.isArray(round.player1Answers) ? round.player1Answers : [];
+          round.player1Answers = this.upsertPersistedAnswer(currentAnswers, answerEntry);
+        } else if (storedAnswer.userId === duel.opponentId) {
+          const currentAnswers = Array.isArray(round.player2Answers) ? round.player2Answers : [];
+          round.player2Answers = this.upsertPersistedAnswer(currentAnswers, answerEntry);
+        }
+      }
+    }
+
+    return this.normalizeGameState(duel, {
+      ...normalizedGameState,
+      categoryRounds
+    });
+  }
+
+  private upsertPersistedAnswer(
+    answerList: unknown[],
+    answerEntry: Prisma.InputJsonObject
+  ): Prisma.InputJsonArray {
+    const nextAnswers = [...answerList];
+    const questionIndex = this.readInteger(answerEntry.questionIndex) ?? -1;
+    const existingIndex = nextAnswers.findIndex((entry) => (
+      this.readInteger(this.asRecord(entry).questionIndex) === questionIndex
+    ));
+
+    if (existingIndex >= 0) {
+      nextAnswers[existingIndex] = answerEntry;
+    } else {
+      nextAnswers.push(answerEntry);
+    }
+
+    nextAnswers.sort((left, right) => {
+      const leftIndex = this.readInteger(this.asRecord(left).questionIndex) ?? 0;
+      const rightIndex = this.readInteger(this.asRecord(right).questionIndex) ?? 0;
+      return leftIndex - rightIndex;
+    });
+
+    return nextAnswers as Prisma.InputJsonArray;
   }
 
   private extractOptions(options: Prisma.JsonValue): string[] {
