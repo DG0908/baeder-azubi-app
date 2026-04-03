@@ -509,6 +509,15 @@ export class DuelsService {
         throw new NotFoundException('Assigned duel question not found.');
       }
 
+      const authoritativeGameState = this.mergePersistedAnswersIntoGameState(duel);
+      const authoritativeQuestion = this.getQuestionByOrderIndex(authoritativeGameState, duelQuestion.orderIndex);
+      const authoritativeOptions = authoritativeQuestion
+        ? this.normalizeStringArray(authoritativeQuestion.a, MAX_DUEL_OPTIONS_PER_QUESTION, 240)
+        : this.extractOptions(duelQuestion.question.options);
+      const authoritativeCorrectIndex = authoritativeQuestion
+        ? (this.readInteger(authoritativeQuestion.correct) ?? duelQuestion.question.correctOptionIndex)
+        : duelQuestion.question.correctOptionIndex;
+
       const existingAnswer = await tx.duelAnswer.findUnique({
         where: {
           duelQuestionId_userId: {
@@ -536,7 +545,7 @@ export class DuelsService {
         };
       }
 
-      const optionCount = this.extractOptions(duelQuestion.question.options).length;
+      const optionCount = authoritativeOptions.length;
       if (dto.selectedOptionIndex >= optionCount) {
         throw new BadRequestException('selectedOptionIndex is outside the question option range.');
       }
@@ -547,7 +556,7 @@ export class DuelsService {
           duelQuestionId: duelQuestion.id,
           userId: actor.id,
           selectedOptionIndex: dto.selectedOptionIndex,
-          isCorrect: dto.selectedOptionIndex === duelQuestion.question.correctOptionIndex,
+          isCorrect: dto.selectedOptionIndex === authoritativeCorrectIndex,
           durationMs: dto.durationMs ?? 0
         }
       });
@@ -914,6 +923,7 @@ export class DuelsService {
 
   private toDuelPayload(duel: DuelWithRelations, actorId: string) {
     const score = this.computeScore(duel);
+    const authoritativeGameState = this.mergePersistedAnswersIntoGameState(duel);
     const answersByQuestion = new Map(
       duel.answers
         .filter((answer) => answer.userId === actorId)
@@ -925,16 +935,11 @@ export class DuelsService {
       questions: duel.duelQuestions.map((assignment) => ({
         id: assignment.id,
         orderIndex: assignment.orderIndex,
-        question: {
-          id: assignment.question.id,
-          category: assignment.question.category,
-          prompt: assignment.question.prompt,
-          options: this.extractOptions(assignment.question.options),
-          correctOptionIndex: (duel.status === DuelStatus.COMPLETED || answersByQuestion.has(assignment.id))
-            ? assignment.question.correctOptionIndex
-            : null,
-          explanation: (duel.status === DuelStatus.COMPLETED || answersByQuestion.has(assignment.id)) ? assignment.question.explanation : null
-        },
+        question: this.buildPayloadQuestionForAssignment(
+          assignment,
+          authoritativeGameState,
+          duel.status === DuelStatus.COMPLETED || answersByQuestion.has(assignment.id)
+        ),
         myAnswer: answersByQuestion.get(assignment.id) ?? null
       })),
       score
@@ -1089,6 +1094,44 @@ export class DuelsService {
       ...normalizedGameState,
       categoryRounds
     });
+  }
+
+  private buildPayloadQuestionForAssignment(
+    assignment: DuelWithRelations['duelQuestions'][number],
+    authoritativeGameState: Prisma.InputJsonObject,
+    mayRevealCorrect: boolean
+  ) {
+    const authoritativeQuestion = this.getQuestionByOrderIndex(authoritativeGameState, assignment.orderIndex);
+    const authoritativeOptions = authoritativeQuestion
+      ? this.normalizeStringArray(authoritativeQuestion.a, MAX_DUEL_OPTIONS_PER_QUESTION, 240)
+      : this.extractOptions(assignment.question.options);
+    const authoritativeCorrectIndex = authoritativeQuestion
+      ? this.readInteger(authoritativeQuestion.correct)
+      : assignment.question.correctOptionIndex;
+    const authoritativePrompt = authoritativeQuestion
+      ? (this.readString(authoritativeQuestion.prompt) ?? this.readString(authoritativeQuestion.q) ?? assignment.question.prompt)
+      : assignment.question.prompt;
+    const authoritativeCategory = authoritativeQuestion
+      ? (this.readString(authoritativeQuestion.category) ?? assignment.question.category)
+      : assignment.question.category;
+
+    return {
+      id: assignment.question.id,
+      category: authoritativeCategory,
+      prompt: authoritativePrompt,
+      options: authoritativeOptions,
+      correctOptionIndex: mayRevealCorrect ? authoritativeCorrectIndex : null,
+      explanation: mayRevealCorrect ? assignment.question.explanation : null
+    };
+  }
+
+  private getQuestionByOrderIndex(gameState: Prisma.InputJsonObject, orderIndex: number) {
+    const roundIndex = Math.floor(orderIndex / MAX_DUEL_QUESTIONS_PER_ROUND);
+    const questionIndex = orderIndex % MAX_DUEL_QUESTIONS_PER_ROUND;
+    const rounds = Array.isArray(gameState.categoryRounds) ? gameState.categoryRounds : [];
+    const round = this.asRecord(rounds[roundIndex]);
+    const questions = Array.isArray(round.questions) ? round.questions : [];
+    return this.asRecord(questions[questionIndex]);
   }
 
   private upsertPersistedAnswer(
