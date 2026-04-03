@@ -1991,8 +1991,18 @@ export class DuelsService {
       throw new BadRequestException('Stored duel answers cannot be removed.');
     }
 
-    if (!this.isJsonPrefix(previousAnswers, nextAnswers)) {
-      throw new BadRequestException('Stored duel answers cannot be changed retroactively.');
+    // Answer content integrity is guaranteed by the DuelAnswer records created via
+    // submitAnswer. The gameState answers may differ in shape between client-stored and
+    // authoritative (mergePersistedAnswersIntoGameState) formats, so we only verify that
+    // the selectedAnswer for each position hasn't changed — not a full deep-equal.
+    for (let i = 0; i < previousAnswers.length; i++) {
+      const prev = this.asRecord(previousAnswers[i]);
+      const next = this.asRecord(nextAnswers[i]);
+      const prevSelected = this.readInteger(prev.selectedAnswer);
+      const nextSelected = this.readInteger(next.selectedAnswer);
+      if (prevSelected !== null && nextSelected !== null && prevSelected !== nextSelected) {
+        throw new BadRequestException('Stored duel answers cannot be changed retroactively.');
+      }
     }
   }
 
