@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -29,6 +29,21 @@ const LoginScreen = () => {
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [newPasswordLoading, setNewPasswordLoading] = useState(false);
   const minPasswordLength = 12;
+
+  const getPasswordStrength = (pw) => {
+    if (!pw) return { score: 0, label: '', color: '' };
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    if (score <= 1) return { score, label: 'Sehr schwach', color: 'bg-red-500' };
+    if (score === 2) return { score, label: 'Schwach', color: 'bg-orange-400' };
+    if (score === 3) return { score, label: 'Mittel', color: 'bg-yellow-400' };
+    if (score === 4) return { score, label: 'Stark', color: 'bg-lime-500' };
+    return { score, label: 'Sehr stark', color: 'bg-green-500' };
+  };
 
   const handleLoginSubmit = (event) => {
     event.preventDefault();
@@ -174,6 +189,21 @@ const LoginScreen = () => {
               onChange={(e) => setNewPassword(e.target.value)}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
+            {newPassword.length > 0 && (() => {
+              const strength = getPasswordStrength(newPassword);
+              return (
+                <div className="mt-1.5">
+                  <div className="flex gap-1 mb-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i <= strength.score ? strength.color : 'bg-gray-200'}`} />
+                    ))}
+                  </div>
+                  <p className={`text-xs ${strength.score <= 2 ? 'text-red-500' : strength.score === 3 ? 'text-yellow-600' : 'text-green-600'}`}>
+                    {strength.label}
+                  </p>
+                </div>
+              );
+            })()}
             <input
               type="password"
               name="confirm-new-password"
@@ -451,6 +481,21 @@ const LoginScreen = () => {
               onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
+            {registerData.password.length > 0 && (() => {
+              const strength = getPasswordStrength(registerData.password);
+              return (
+                <div className="mt-1.5">
+                  <div className="flex gap-1 mb-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i <= strength.score ? strength.color : 'bg-gray-200'}`} />
+                    ))}
+                  </div>
+                  <p className={`text-xs ${strength.score <= 2 ? 'text-red-500' : strength.score === 3 ? 'text-yellow-600' : 'text-green-600'}`}>
+                    {strength.label}
+                  </p>
+                </div>
+              );
+            })()}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Voraussichtliches Ausbildungsende:
