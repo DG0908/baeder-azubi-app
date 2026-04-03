@@ -4515,16 +4515,40 @@ export default function BaederApp() {
     setUserStats(stats);
 
     // Duel: Antwort an Backend übermitteln (enthüllt correctOptionIndex für nächsten API-Aufruf)
-    if (currentQuestion?.duelQuestionId && currentGame?.id && !isTimeout) {
-      const selectedOptionIndex = answerMeta?.answerType === 'single'
-        ? answerMeta.selectedAnswer
-        : null;
-      if (selectedOptionIndex != null) {
-        try {
-          await dsSubmitDuelAnswer(currentGame.id, currentQuestion.duelQuestionId, selectedOptionIndex);
-        } catch (e) {
-          console.warn('submitDuelAnswer fehlgeschlagen:', e);
+    const shouldUseAuthoritativeDuelAnswer =
+      currentQuestion?.duelQuestionId
+      && currentGame?.id
+      && !isTimeout
+      && answerMeta?.answerType === 'single'
+      && Number.isInteger(answerMeta?.selectedAnswer);
+
+    if (shouldUseAuthoritativeDuelAnswer) {
+      try {
+        await dsSubmitDuelAnswer(currentGame.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
+      } catch (error) {
+        if (error?.status !== 409) {
+          console.warn('submitDuelAnswer fehlgeschlagen:', error);
         }
+      }
+
+      try {
+        const refreshedGame = await dsGetDuelWithQuestions(currentGame.id, user?.id);
+        const authoritativeGame = refreshedGame?.id ? syncLocalDuelGame(refreshedGame) : null;
+        const authoritativeRound = authoritativeGame?.categoryRounds?.[currentRoundIndex];
+        const authoritativeQuestions = Array.isArray(authoritativeRound?.questions)
+          ? authoritativeRound.questions
+          : null;
+
+        if (authoritativeQuestions?.length) {
+          setCurrentCategoryQuestions(authoritativeQuestions);
+          if (authoritativeQuestions[currentQuestionIndex]) {
+            setCurrentQuestion(authoritativeQuestions[currentQuestionIndex]);
+          }
+        }
+
+        return;
+      } catch (error) {
+        console.warn('Duel-Refresh nach Antwort fehlgeschlagen:', error);
       }
     }
 
