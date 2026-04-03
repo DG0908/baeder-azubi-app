@@ -1974,8 +1974,20 @@ export class DuelsService {
   ) {
     const previousAnswers = Array.isArray(previousRound[answerKey]) ? previousRound[answerKey] : [];
     const nextAnswers = Array.isArray(nextRound[answerKey]) ? nextRound[answerKey] : [];
-    if (!this.isSameJsonValue(previousAnswers, nextAnswers)) {
+    // Same format-tolerance as assertAnswersAppendOnly: compare only selectedAnswer and count.
+    // The authoritative format (mergePersistedAnswersIntoGameState) differs from the
+    // client-stored format, so a full deep-equal always fails on round-trip.
+    if (nextAnswers.length !== previousAnswers.length) {
       throw new BadRequestException('You cannot modify your opponent\'s stored duel answers.');
+    }
+    for (let i = 0; i < previousAnswers.length; i++) {
+      const prev = this.asRecord(previousAnswers[i]);
+      const next = this.asRecord(nextAnswers[i]);
+      const prevSelected = this.readInteger(prev.selectedAnswer);
+      const nextSelected = this.readInteger(next.selectedAnswer);
+      if (prevSelected !== null && nextSelected !== null && prevSelected !== nextSelected) {
+        throw new BadRequestException('You cannot modify your opponent\'s stored duel answers.');
+      }
     }
   }
 
