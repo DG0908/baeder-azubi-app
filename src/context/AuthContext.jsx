@@ -6,6 +6,7 @@ import {
   loginAuthAccount as dsLoginAuthAccount,
   logoutAuthSession as dsLogoutAuthSession
 } from '../lib/dataService';
+import { friendlyError } from '../lib/friendlyError';
 
 const AuthContext = createContext(null);
 
@@ -150,7 +151,7 @@ export function AuthProvider({ children }) {
       } else if (error?.code === 'not_approved') {
         alert('Dein Account wurde noch nicht freigeschaltet. Bitte warte auf die Freigabe durch einen Administrator.');
       } else {
-        alert(`Fehler beim Login: ${error?.message || 'Unbekannter Fehler'}`);
+        alert(friendlyError(error));
       }
 
       console.error('Login error:', error);
