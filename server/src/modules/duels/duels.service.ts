@@ -534,7 +534,7 @@ export class DuelsService {
           userId: actor.id,
           selectedOptionIndex: dto.selectedOptionIndex,
           isCorrect: dto.selectedOptionIndex === duelQuestion.question.correctOptionIndex,
-          durationMs: dto.durationMs
+          durationMs: dto.durationMs ?? 0
         }
       });
 
