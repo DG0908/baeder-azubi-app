@@ -3490,7 +3490,7 @@ export default function BaederApp() {
 
   const approveUser = async (email) => {
     try {
-      const result = await dsApproveUser(email, allUsers);
+      const result = await dsApproveUser(email, [...(allUsers || []), ...(pendingUsers || [])]);
       loadData();
       playSound('whistle');
       showToast(`${result.account?.name || email} wurde freigeschaltet!`, 'success');
