@@ -492,8 +492,8 @@ const AdminView = ({
         <div className="absolute bottom-2 right-3 text-xs opacity-60">v1.1.0</div>
       </div>
 
-      {/* Betriebe & Einladungscodes — nur für Owner */}
-      {user?.isOwner && <OrganizationManager />}
+      {/* Betriebe & Einladungscodes — für Admins */}
+      {user?.role === 'admin' && <OrganizationManager />}
 
       {/* Admin Statistics Dashboard */}
       <div className="grid md:grid-cols-4 gap-4">
@@ -859,7 +859,7 @@ const AdminView = ({
                     <option value="trainer">Ausbilder</option>
                     <option value="admin">Admin</option>
                   </select>
-                  {user?.isOwner && (
+                  {user?.role === 'admin' && (
                     <UserOrgAssign userId={acc.id} currentOrgId={acc.organization_id} onChanged={loadData} />
                   )}
                   <button
