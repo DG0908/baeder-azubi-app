@@ -299,6 +299,10 @@ export class DuelsService {
 
     this.assertGameStatePayloadSize(gameState);
     const previousGameState = this.normalizeGameState(duel, duel.gameState);
+    // Use the authoritative merged state (incorporates DuelAnswer records) as the
+    // baseline for transition validation. This ensures isRoundComplete works correctly
+    // even if earlier PATCH /state calls failed and the stored gameState is stale.
+    const mergedPreviousGameState = this.mergePersistedAnswersIntoGameState(duel);
     const normalizedGameState = this.normalizeGameState(duel, gameState);
     const authoritativeGameState = await this.applyAuthoritativeRoundGeneration(
       duel,
@@ -306,7 +310,7 @@ export class DuelsService {
       normalizedGameState
     );
     const canonicalGameState = this.reuseStoredRoundDefinitions(previousGameState, authoritativeGameState);
-    this.assertValidGameStateTransition(duel, previousGameState, canonicalGameState, actor);
+    this.assertValidGameStateTransition(duel, mergedPreviousGameState, canonicalGameState, actor);
     const shouldComplete = duel.status === DuelStatus.ACTIVE && canonicalGameState.status === 'finished';
     const winnerUserId = shouldComplete
       ? this.resolveWinnerUserId(duel, this.readString(canonicalGameState.winner))
