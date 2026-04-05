@@ -67,9 +67,15 @@ type TotpSetupJwtPayload = {
   tokenType: 'totp_setup';
 };
 
+type TotpRecoveryCodeRecord = {
+  hash: string;
+  usedAt: string | null;
+};
+
 // ─── Account Lockout ──────────────────────────────────────────────────
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const RECOVERY_CODE_COUNT = 8;
 
 @Injectable()
 export class AuthService {
@@ -128,6 +134,63 @@ export class AuthService {
 
   private async clearFailedLogins(email: string): Promise<void> {
     await this.prisma.loginAttempt.deleteMany({ where: { email } });
+  }
+
+  private assertAdminRole(actor: AuthenticatedUser): void {
+    if (actor.role !== 'ADMIN') {
+      throw new ForbiddenException('Only admins can manage two-factor authentication.');
+    }
+  }
+
+  private parseTotpRecoveryCodes(value: Prisma.JsonValue | null | undefined): TotpRecoveryCodeRecord[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((entry) => {
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+          return null;
+        }
+
+        const hash = 'hash' in entry && typeof entry.hash === 'string' ? entry.hash : '';
+        const usedAt = 'usedAt' in entry && typeof entry.usedAt === 'string' ? entry.usedAt : null;
+
+        return {
+          hash,
+          usedAt
+        };
+      })
+      .filter((entry): entry is TotpRecoveryCodeRecord => Boolean(entry?.hash));
+  }
+
+  private countUnusedRecoveryCodes(value: Prisma.JsonValue | null | undefined): number {
+    return this.parseTotpRecoveryCodes(value).filter((entry) => !entry.usedAt).length;
+  }
+
+  private buildRecoveryCodes() {
+    const recoveryCodes = this.totpService.generateRecoveryCodes(RECOVERY_CODE_COUNT);
+    const storedRecoveryCodes = recoveryCodes.map((code) => ({
+      hash: this.totpService.hashRecoveryCode(code),
+      usedAt: null
+    }));
+
+    return {
+      recoveryCodes,
+      storedRecoveryCodes
+    };
+  }
+
+  private async verifyPassword(user: Pick<User, 'passwordHash'>, password: string): Promise<boolean> {
+    const isBcryptHash = user.passwordHash.startsWith('$2');
+
+    try {
+      return isBcryptHash
+        ? await bcrypt.compare(password, user.passwordHash)
+        : await argon2.verify(user.passwordHash, password);
+    } catch {
+      return false;
+    }
   }
 
   async register(dto: RegisterDto, request: Request) {
@@ -244,9 +307,8 @@ export class AuthService {
     }
 
     // Successful login — clear lockout
-    await this.clearFailedLogins(email);
-
     if (user.status !== AccountStatus.APPROVED) {
+      await this.clearFailedLogins(email);
       throw new ForbiddenException('Account has not been approved for access.');
     }
 
@@ -261,6 +323,8 @@ export class AuthService {
       );
       return { requiresTotp: true, totpToken };
     }
+
+    await this.clearFailedLogins(email);
 
     const tokens = await this.issueTokens(user);
     await this.persistRefreshToken(user.id, tokens.refreshToken);
@@ -361,31 +425,39 @@ export class AuthService {
   async getTotpStatus(actor: AuthenticatedUser) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: actor.id },
-      select: { totpEnabled: true }
+      select: {
+        totpEnabled: true,
+        totpRecoveryCodes: true
+      }
     });
-    return { totpEnabled: user.totpEnabled };
+    return {
+      totpEnabled: user.totpEnabled,
+      recoveryCodesRemaining: this.countUnusedRecoveryCodes(user.totpRecoveryCodes)
+    };
   }
 
-  async generateTotpSetup(actor: AuthenticatedUser) {
+  async generateTotpSetup(actor: AuthenticatedUser, request: Request) {
     if (!this.totpService.isConfigured()) {
       throw new ServiceUnavailableException('Two-factor authentication is not configured on this server.');
     }
 
-    if (actor.role !== 'ADMIN') {
-      throw new ForbiddenException('Only admins can enable two-factor authentication.');
+    this.assertAdminRole(actor);
+
+    const currentUser = await this.prisma.user.findUniqueOrThrow({
+      where: { id: actor.id },
+      select: {
+        email: true,
+        totpEnabled: true
+      }
+    });
+
+    if (currentUser.totpEnabled) {
+      throw new ConflictException('Two-factor authentication is already enabled.');
     }
 
     const secret = this.totpService.generateSecret();
+    const qrCode = await this.totpService.generateQrCodeUrl(currentUser.email, secret);
 
-    // Load user email for the QR code label
-    const user = await this.prisma.user.findUniqueOrThrow({
-      where: { id: actor.id },
-      select: { email: true }
-    });
-
-    const qrCode = await this.totpService.generateQrCodeUrl(user.email, secret);
-
-    // Encode secret in a short-lived JWT to avoid server-side state
     const setupToken = await this.jwtService.signAsync(
       { sub: actor.id, secret, tokenType: 'totp_setup' },
       {
@@ -394,10 +466,21 @@ export class AuthService {
       }
     );
 
+    await this.auditLogService.writeForUser(
+      actor,
+      'auth.2fa.setup_requested',
+      'user',
+      actor.id,
+      {},
+      request
+    );
+
     return { qrCode, setupToken };
   }
 
-  async enableTotp(actor: AuthenticatedUser, setupToken: string, code: string) {
+  async enableTotp(actor: AuthenticatedUser, setupToken: string, code: string, request: Request) {
+    this.assertAdminRole(actor);
+
     let payload: TotpSetupJwtPayload;
     try {
       payload = await this.jwtService.verifyAsync<TotpSetupJwtPayload>(setupToken, {
@@ -417,39 +500,110 @@ export class AuthService {
     }
 
     const encryptedSecret = this.totpService.encrypt(payload.secret);
+    const { recoveryCodes, storedRecoveryCodes } = this.buildRecoveryCodes();
 
     await this.prisma.user.update({
       where: { id: actor.id },
-      data: { totpSecret: encryptedSecret, totpEnabled: true }
+      data: {
+        totpSecret: encryptedSecret,
+        totpEnabled: true,
+        totpRecoveryCodes: storedRecoveryCodes
+      }
     });
 
-    return { message: 'Two-factor authentication enabled.' };
+    await this.auditLogService.writeForUser(
+      actor,
+      'auth.2fa.enabled',
+      'user',
+      actor.id,
+      { recoveryCodeCount: recoveryCodes.length },
+      request
+    );
+
+    return {
+      message: 'Two-factor authentication enabled.',
+      recoveryCodes
+    };
   }
 
-  async disableTotp(actor: AuthenticatedUser, password: string) {
+  async disableTotp(actor: AuthenticatedUser, password: string, request: Request) {
+    this.assertAdminRole(actor);
+
     const user = await this.prisma.user.findUnique({ where: { id: actor.id } });
     if (!user) throw new UnauthorizedException('Account not found.');
 
-    const isBcryptHash = user.passwordHash.startsWith('$2');
-    let passwordMatches = false;
-    try {
-      passwordMatches = isBcryptHash
-        ? await bcrypt.compare(password, user.passwordHash)
-        : await argon2.verify(user.passwordHash, password);
-    } catch {
-      passwordMatches = false;
-    }
-
-    if (!passwordMatches) {
+    if (!(await this.verifyPassword(user, password))) {
       throw new UnauthorizedException('Password is incorrect.');
     }
 
     await this.prisma.user.update({
       where: { id: actor.id },
-      data: { totpSecret: null, totpEnabled: false }
+      data: {
+        totpSecret: null,
+        totpEnabled: false,
+        totpRecoveryCodes: Prisma.JsonNull
+      }
     });
 
+    await this.auditLogService.writeForUser(
+      actor,
+      'auth.2fa.disabled',
+      'user',
+      actor.id,
+      {},
+      request
+    );
+
     return { message: 'Two-factor authentication disabled.' };
+  }
+
+  async regenerateTotpRecoveryCodes(actor: AuthenticatedUser, password: string, request: Request) {
+    this.assertAdminRole(actor);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: actor.id },
+      select: {
+        id: true,
+        passwordHash: true,
+        totpEnabled: true,
+        totpSecret: true
+      }
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Account not found.');
+    }
+
+    if (!user.totpEnabled || !user.totpSecret) {
+      throw new BadRequestException('Two-factor authentication is not enabled.');
+    }
+
+    if (!(await this.verifyPassword(user, password))) {
+      throw new UnauthorizedException('Password is incorrect.');
+    }
+
+    const { recoveryCodes, storedRecoveryCodes } = this.buildRecoveryCodes();
+
+    await this.prisma.user.update({
+      where: { id: actor.id },
+      data: {
+        totpRecoveryCodes: storedRecoveryCodes
+      }
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'auth.2fa.recovery_codes_regenerated',
+      'user',
+      actor.id,
+      { recoveryCodeCount: recoveryCodes.length },
+      request
+    );
+
+    return {
+      recoveryCodes,
+      recoveryCodesRemaining: recoveryCodes.length
+    };
   }
 
   async authenticateWithTotp(dto: TotpAuthenticateDto, response: Response, request: Request) {
@@ -472,6 +626,8 @@ export class AuthService {
       throw new UnauthorizedException('Account is not available.');
     }
 
+    await this.checkLockout(user.email);
+
     if (user.status !== AccountStatus.APPROVED) {
       throw new ForbiddenException('Account has not been approved for access.');
     }
@@ -480,19 +636,55 @@ export class AuthService {
       throw new UnauthorizedException('Two-factor authentication is not enabled for this account.');
     }
 
-    const plainSecret = this.totpService.decrypt(user.totpSecret);
-    const isValid = await this.totpService.verifyToken(dto.code, plainSecret);
+    const trimmedCode = String(dto.code || '').trim();
+    const trimmedRecoveryCode = String(dto.recoveryCode || '').trim();
+    const usesRecoveryCode = trimmedRecoveryCode.length > 0;
+
+    if (!trimmedCode && !trimmedRecoveryCode) {
+      throw new BadRequestException('Authentication code is required.');
+    }
+
+    let nextRecoveryCodes: TotpRecoveryCodeRecord[] | null = null;
+    let isValid = false;
+    let auditAction = 'auth.login.totp';
+
+    if (usesRecoveryCode) {
+      const recoveryCodes = this.parseTotpRecoveryCodes(user.totpRecoveryCodes);
+      const recoveryCodeHash = this.totpService.hashRecoveryCode(trimmedRecoveryCode);
+      const recoveryCodeIndex = recoveryCodes.findIndex(
+        (entry) => !entry.usedAt && entry.hash === recoveryCodeHash
+      );
+
+      if (recoveryCodeIndex >= 0) {
+        recoveryCodes[recoveryCodeIndex] = {
+          ...recoveryCodes[recoveryCodeIndex],
+          usedAt: new Date().toISOString()
+        };
+        nextRecoveryCodes = recoveryCodes;
+        isValid = true;
+        auditAction = 'auth.login.recovery_code';
+      }
+    } else {
+      const plainSecret = this.totpService.decrypt(user.totpSecret);
+      isValid = await this.totpService.verifyToken(trimmedCode, plainSecret);
+    }
 
     if (!isValid) {
-      throw new UnauthorizedException('Invalid TOTP code.');
+      await this.recordFailedLogin(user.email, request);
+      throw new UnauthorizedException('Invalid authentication code.');
     }
+
+    await this.clearFailedLogins(user.email);
 
     const tokens = await this.issueTokens(user);
     await this.persistRefreshToken(user.id, tokens.refreshToken);
 
     const safeUser = await this.prisma.user.update({
       where: { id: user.id },
-      data: { lastLoginAt: new Date() },
+      data: {
+        lastLoginAt: new Date(),
+        ...(usesRecoveryCode && nextRecoveryCodes ? { totpRecoveryCodes: nextRecoveryCodes } : {})
+      },
       select: authUserSelect
     });
 
@@ -500,10 +692,15 @@ export class AuthService {
 
     await this.auditLogService.writeForUser(
       user,
-      'auth.login.totp',
+      auditAction,
       'user',
       user.id,
-      { email: safeUser.email },
+      usesRecoveryCode
+        ? {
+            email: safeUser.email,
+            recoveryCodesRemaining: this.countUnusedRecoveryCodes(nextRecoveryCodes ?? [])
+          }
+        : { email: safeUser.email },
       request
     );
 

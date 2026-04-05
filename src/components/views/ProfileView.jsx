@@ -45,14 +45,14 @@ const ProfileView = ({
   const [avatarFilter, setAvatarFilter] = useState('all');
   const [totpEnabled, setTotpEnabled] = useState(false);
 
-  const isAdminOrOwner = user?.role === 'admin' || user?.role === 'owner';
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
-    if (!isAdminOrOwner) return;
+    if (!isAdmin) return;
     dsGetTotpStatus().then((res) => {
       if (res?.totpEnabled !== undefined) setTotpEnabled(res.totpEnabled);
     }).catch(() => {});
-  }, [isAdminOrOwner]);
+  }, [isAdmin]);
 
   // Profil-Vervollständigung
   const profileNameLooksLikeEmail = /^[^@]+@[^@]+\.[^@]+$/.test(String(user?.name || '').trim());
@@ -1030,7 +1030,7 @@ const ProfileView = ({
         </div>
 
         {/* 2FA-Setup (nur Admins) */}
-        {isAdminOrOwner && (
+        {isAdmin && (
           <div className="mt-6">
             <TotpSetupView
               initialEnabled={totpEnabled}

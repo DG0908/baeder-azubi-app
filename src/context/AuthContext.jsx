@@ -159,13 +159,25 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const handleTotpAuthenticate = async () => {
-    if (!totpCode || totpCode.length !== 6) {
+  const handleTotpAuthenticate = async ({ code = totpCode, recoveryCode = '' } = {}) => {
+    const trimmedCode = String(code || '').trim();
+    const normalizedRecoveryCode = String(recoveryCode || '').trim().toUpperCase();
+
+    if (!trimmedCode && !normalizedRecoveryCode) {
+      alert('Bitte gib einen Authenticator- oder Recovery-Code ein.');
+      return;
+    }
+
+    if (trimmedCode && trimmedCode.length !== 6) {
       alert('Bitte 6-stelligen Code eingeben.');
       return;
     }
+
     try {
-      const { user: nextUser } = await dsAuthenticateWithTotp(totpPendingToken, totpCode);
+      const { user: nextUser } = await dsAuthenticateWithTotp(totpPendingToken, {
+        code: trimmedCode || undefined,
+        recoveryCode: normalizedRecoveryCode || undefined
+      });
       persistStoredSession(nextUser);
       setTotpPendingToken(null);
       setTotpCode('');
@@ -173,7 +185,7 @@ export function AuthProvider({ children }) {
       setLoginPassword('');
     } catch (error) {
       if (error?.status === 401) {
-        alert('Falscher oder abgelaufener Code. Bitte erneut versuchen.');
+        alert('Falscher oder abgelaufener Authenticator-/Recovery-Code. Bitte erneut versuchen.');
       } else {
         alert(friendlyError(error));
       }

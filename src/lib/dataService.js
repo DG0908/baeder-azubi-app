@@ -566,9 +566,10 @@ export const getTotpStatus = async () => secureAuthApi.getTotpStatus();
 export const generateTotpSetup = async () => secureAuthApi.generateTotpSetup();
 export const enableTotp = async (setupToken, code) => secureAuthApi.enableTotp(setupToken, code);
 export const disableTotp = async (password) => secureAuthApi.disableTotp(password);
+export const regenerateTotpRecoveryCodes = async (password) => secureAuthApi.regenerateTotpRecoveryCodes(password);
 
-export const authenticateWithTotp = async (totpToken, code) => {
-  const result = await secureAuthApi.authenticateWithTotp(totpToken, code);
+export const authenticateWithTotp = async (totpToken, payload = {}) => {
+  const result = await secureAuthApi.authenticateWithTotp(totpToken, payload);
   const backendUser = result?.user ?? null;
   const user = withPermissions(mapBackendUserToFrontendUser(backendUser));
   if (!user?.approved) {
