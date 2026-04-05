@@ -508,8 +508,27 @@ export const loginAuthAccount = async (payload = {}) => {
   const email = String(payload?.email || '').trim();
   const password = payload?.password || '';
 
-  const result = await secureAuthApi.login({ email, password });
-  const backendUser = result?.user || (await secureAuthApi.me());
+  let result;
+  try {
+    result = await secureAuthApi.login({ email, password });
+  } catch (error) {
+    // Re-map any 401 from the login endpoint to invalid_login so the UI
+    // never shows "Sitzung abgelaufen" when credentials are rejected.
+    if (error?.status === 401) {
+      throw createAuthFlowError('invalid_login', error.message || 'Invalid credentials');
+    }
+    throw error;
+  }
+
+  // The backend always returns { accessToken, user } on success.
+  // Only fall back to GET /me if the user is missing — and only when
+  // a fresh access token is actually available to avoid a spurious
+  // refresh-cookie lookup that would surface a confusing 401.
+  let backendUser = result?.user ?? null;
+  if (!backendUser && getApiAccessToken()) {
+    backendUser = await secureAuthApi.me();
+  }
+
   const user = withPermissions(mapBackendUserToFrontendUser(backendUser));
 
   if (!user?.approved) {

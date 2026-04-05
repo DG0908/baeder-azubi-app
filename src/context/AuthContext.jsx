@@ -144,6 +144,8 @@ export function AuthProvider({ children }) {
         alert('Profil nicht gefunden. Bitte kontaktiere den Administrator.');
       } else if (error?.code === 'not_approved') {
         alert('Dein Account wurde noch nicht freigeschaltet. Bitte warte auf die Freigabe durch einen Administrator.');
+      } else if (error?.status === 401) {
+        alert('E-Mail oder Passwort falsch.');
       } else {
         alert(friendlyError(error));
       }
