@@ -85,7 +85,7 @@ export const refreshApiSession = async () => {
 };
 
 export const apiRequest = async (path, options = {}, retry = true) => {
-  const skipRefreshPaths = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/password-reset'];
+  const skipRefreshPaths = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/password-reset', '/auth/2fa/authenticate'];
   const shouldSkipRefresh = skipRefreshPaths.some(p => String(path).startsWith(p));
   const accessToken = getApiAccessToken();
 

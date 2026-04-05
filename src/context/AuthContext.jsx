@@ -4,7 +4,8 @@ import {
   subscribeAuthStateChanges as dsSubscribeAuthStateChanges,
   registerAuthAccount as dsRegisterAuthAccount,
   loginAuthAccount as dsLoginAuthAccount,
-  logoutAuthSession as dsLogoutAuthSession
+  logoutAuthSession as dsLogoutAuthSession,
+  authenticateWithTotp as dsAuthenticateWithTotp
 } from '../lib/dataService';
 import { friendlyError } from '../lib/friendlyError';
 
@@ -26,6 +27,8 @@ export function AuthProvider({ children }) {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [registerData, setRegisterData] = useState(EMPTY_REGISTER_DATA);
+  const [totpPendingToken, setTotpPendingToken] = useState(null);
+  const [totpCode, setTotpCode] = useState('');
 
   // Clean up legacy PII from localStorage (older app versions stored user profile there)
   try {
@@ -138,7 +141,9 @@ export function AuthProvider({ children }) {
       setLoginEmail('');
       setLoginPassword('');
     } catch (error) {
-      if (error?.code === 'invalid_login') {
+      if (error?.code === 'totp_required') {
+        setTotpPendingToken(error.message); // message holds the totpToken
+      } else if (error?.code === 'invalid_login') {
         alert('E-Mail oder Passwort falsch!');
       } else if (error?.code === 'missing_profile') {
         alert('Profil nicht gefunden. Bitte kontaktiere den Administrator.');
@@ -152,6 +157,32 @@ export function AuthProvider({ children }) {
 
       console.error('Login error:', error);
     }
+  };
+
+  const handleTotpAuthenticate = async () => {
+    if (!totpCode || totpCode.length !== 6) {
+      alert('Bitte 6-stelligen Code eingeben.');
+      return;
+    }
+    try {
+      const { user: nextUser } = await dsAuthenticateWithTotp(totpPendingToken, totpCode);
+      persistStoredSession(nextUser);
+      setTotpPendingToken(null);
+      setTotpCode('');
+      setLoginEmail('');
+      setLoginPassword('');
+    } catch (error) {
+      if (error?.status === 401) {
+        alert('Falscher oder abgelaufener Code. Bitte erneut versuchen.');
+      } else {
+        alert(friendlyError(error));
+      }
+    }
+  };
+
+  const handleTotpCancel = () => {
+    setTotpPendingToken(null);
+    setTotpCode('');
   };
 
   const handleLogout = async () => {
@@ -174,7 +205,12 @@ export function AuthProvider({ children }) {
       setRegisterData,
       handleLogin,
       handleRegister,
-      handleLogout
+      handleLogout,
+      totpPendingToken,
+      totpCode,
+      setTotpCode,
+      handleTotpAuthenticate,
+      handleTotpCancel
     }}
     >
       {children}

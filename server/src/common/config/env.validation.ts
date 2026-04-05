@@ -29,5 +29,6 @@ export const envValidationSchema = Joi.object({
   DUEL_DEFAULT_QUESTION_COUNT: Joi.number().integer().min(3).max(20).default(10),
   DUEL_REQUEST_TTL_MINUTES: Joi.number().integer().min(15).max(10080).default(2880),
   DUEL_TURN_TTL_MINUTES: Joi.number().integer().min(15).max(10080).default(2880),
-  LOG_LEVEL: Joi.string().allow('').default('log,warn,error')
+  LOG_LEVEL: Joi.string().allow('').default('log,warn,error'),
+  APP_TOTP_ENCRYPTION_KEY: Joi.string().min(32).allow('').default('')
 });

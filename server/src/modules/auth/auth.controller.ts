@@ -11,6 +11,9 @@ import { LoginDto } from './dto/login.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
+import { TotpAuthenticateDto } from './dto/totp-authenticate.dto';
+import { TotpDisableDto } from './dto/totp-disable.dto';
+import { TotpEnableDto } from './dto/totp-enable.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -90,5 +93,39 @@ export class AuthController {
     @Req() request: Request
   ) {
     return this.authService.changePassword(user, dto, response, request);
+  }
+
+  // ─── 2FA endpoints ─────────────────────────────────────────────────
+
+  @Get('2fa/status')
+  getTotpStatus(@CurrentUser() actor: AuthenticatedUser) {
+    return this.authService.getTotpStatus(actor);
+  }
+
+  @Post('2fa/setup')
+  generateTotpSetup(@CurrentUser() actor: AuthenticatedUser) {
+    return this.authService.generateTotpSetup(actor);
+  }
+
+  @Post('2fa/enable')
+  enableTotp(@CurrentUser() actor: AuthenticatedUser, @Body() dto: TotpEnableDto) {
+    return this.authService.enableTotp(actor, dto.setupToken, dto.code);
+  }
+
+  @Post('2fa/disable')
+  disableTotp(@CurrentUser() actor: AuthenticatedUser, @Body() dto: TotpDisableDto) {
+    return this.authService.disableTotp(actor, dto.password);
+  }
+
+  @Public()
+  @Throttle({ default: { ttl: 600000, limit: 5 } })
+  @HttpCode(HttpStatus.OK)
+  @Post('2fa/authenticate')
+  authenticateWithTotp(
+    @Body() dto: TotpAuthenticateDto,
+    @Res({ passthrough: true }) response: Response,
+    @Req() request: Request
+  ) {
+    return this.authService.authenticateWithTotp(dto, response, request);
   }
 }

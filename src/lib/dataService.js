@@ -520,6 +520,11 @@ export const loginAuthAccount = async (payload = {}) => {
     throw error;
   }
 
+  // If server requires TOTP, propagate the pending token to the UI
+  if (result?.requiresTotp && result?.totpToken) {
+    throw createAuthFlowError('totp_required', result.totpToken);
+  }
+
   // The backend always returns { accessToken, user } on success.
   // Only fall back to GET /me if the user is missing — and only when
   // a fresh access token is actually available to avoid a spurious
@@ -553,6 +558,24 @@ export const logoutAuthSession = async () => {
 
 export const deleteMyAccount = async (userId) => {
   return secureUsersApi.deleteSelf();
+};
+
+// ─── TOTP / 2FA ──────────────────────────────────────────────────────
+
+export const getTotpStatus = async () => secureAuthApi.getTotpStatus();
+export const generateTotpSetup = async () => secureAuthApi.generateTotpSetup();
+export const enableTotp = async (setupToken, code) => secureAuthApi.enableTotp(setupToken, code);
+export const disableTotp = async (password) => secureAuthApi.disableTotp(password);
+
+export const authenticateWithTotp = async (totpToken, code) => {
+  const result = await secureAuthApi.authenticateWithTotp(totpToken, code);
+  const backendUser = result?.user ?? null;
+  const user = withPermissions(mapBackendUserToFrontendUser(backendUser));
+  if (!user?.approved) {
+    await secureAuthApi.logout();
+    throw createAuthFlowError('not_approved', 'Dein Account wurde noch nicht freigeschaltet.');
+  }
+  return { user, azubiProfile: user?.berichtsheft_profile || null };
 };
 
 // ─── App Config ──────────────────────────────────────────────────────

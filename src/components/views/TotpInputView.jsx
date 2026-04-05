@@ -1,0 +1,88 @@
+import React, { useEffect, useRef } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
+
+const TotpInputView = () => {
+  const { totpCode, setTotpCode, handleTotpAuthenticate, handleTotpCancel } = useAuth();
+  const { darkMode } = useApp();
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleCodeChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setTotpCode(value);
+    if (value.length === 6) {
+      // Auto-submit when 6 digits entered — slight delay to let state settle
+      setTimeout(() => {
+        handleTotpAuthenticate();
+      }, 80);
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleTotpAuthenticate();
+  };
+
+  return (
+    <div className={`min-h-screen flex items-center justify-center p-4 ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
+      <div className={`w-full max-w-sm rounded-2xl shadow-xl p-8 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+        <div className="text-center mb-6">
+          <div className="text-4xl mb-3">🔐</div>
+          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+            Zwei-Faktor-Authentifizierung
+          </h1>
+          <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            Bitte gib den 6-stelligen Code aus deiner Authenticator-App ein.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <input
+              ref={inputRef}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={totpCode}
+              onChange={handleCodeChange}
+              placeholder="000000"
+              className={`w-full text-center text-3xl font-mono tracking-widest px-4 py-4 rounded-xl border-2 outline-none transition-all ${
+                darkMode
+                  ? 'bg-slate-700 border-slate-600 text-white focus:border-cyan-500'
+                  : 'bg-gray-50 border-gray-300 text-gray-800 focus:border-cyan-500'
+              } focus:ring-2 focus:ring-cyan-500/20`}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={totpCode.length !== 6}
+            className="w-full py-3 px-4 rounded-xl font-bold text-white bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all"
+          >
+            Bestaetigen
+          </button>
+
+          <button
+            type="button"
+            onClick={handleTotpCancel}
+            className={`w-full py-3 px-4 rounded-xl font-medium transition-all ${
+              darkMode
+                ? 'bg-slate-700 hover:bg-slate-600 text-gray-300'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`}
+          >
+            Zurueck zur Anmeldung
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default TotpInputView;

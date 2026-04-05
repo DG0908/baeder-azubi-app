@@ -134,6 +134,39 @@ export const secureAuthApi = {
       method: 'POST',
       body: JSON.stringify(payload)
     });
+  },
+
+  async getTotpStatus() {
+    return apiRequest('/auth/2fa/status', { method: 'GET' });
+  },
+
+  async generateTotpSetup() {
+    return apiRequest('/auth/2fa/setup', { method: 'POST' });
+  },
+
+  async enableTotp(setupToken, code) {
+    return apiRequest('/auth/2fa/enable', {
+      method: 'POST',
+      body: JSON.stringify({ setupToken, code })
+    });
+  },
+
+  async disableTotp(password) {
+    return apiRequest('/auth/2fa/disable', {
+      method: 'POST',
+      body: JSON.stringify({ password })
+    });
+  },
+
+  async authenticateWithTotp(totpToken, code) {
+    const result = await apiRequest('/auth/2fa/authenticate', {
+      method: 'POST',
+      body: JSON.stringify({ totpToken, code })
+    });
+    if (result?.accessToken) {
+      setApiAccessToken(result.accessToken);
+    }
+    return result;
   }
 };
 
