@@ -14,6 +14,7 @@ import { RegisterDto } from './dto/register.dto';
 import { TotpAuthenticateDto } from './dto/totp-authenticate.dto';
 import { TotpDisableDto } from './dto/totp-disable.dto';
 import { TotpEnableDto } from './dto/totp-enable.dto';
+import { TotpRegenerateRecoveryCodesDto } from './dto/totp-regenerate-recovery-codes.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -103,18 +104,35 @@ export class AuthController {
   }
 
   @Post('2fa/setup')
-  generateTotpSetup(@CurrentUser() actor: AuthenticatedUser) {
-    return this.authService.generateTotpSetup(actor);
+  generateTotpSetup(@CurrentUser() actor: AuthenticatedUser, @Req() request: Request) {
+    return this.authService.generateTotpSetup(actor, request);
   }
 
   @Post('2fa/enable')
-  enableTotp(@CurrentUser() actor: AuthenticatedUser, @Body() dto: TotpEnableDto) {
-    return this.authService.enableTotp(actor, dto.setupToken, dto.code);
+  enableTotp(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Body() dto: TotpEnableDto,
+    @Req() request: Request
+  ) {
+    return this.authService.enableTotp(actor, dto.setupToken, dto.code, request);
   }
 
   @Post('2fa/disable')
-  disableTotp(@CurrentUser() actor: AuthenticatedUser, @Body() dto: TotpDisableDto) {
-    return this.authService.disableTotp(actor, dto.password);
+  disableTotp(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Body() dto: TotpDisableDto,
+    @Req() request: Request
+  ) {
+    return this.authService.disableTotp(actor, dto.password, request);
+  }
+
+  @Post('2fa/recovery-codes/regenerate')
+  regenerateRecoveryCodes(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Body() dto: TotpRegenerateRecoveryCodesDto,
+    @Req() request: Request
+  ) {
+    return this.authService.regenerateTotpRecoveryCodes(actor, dto.password, request);
   }
 
   @Public()

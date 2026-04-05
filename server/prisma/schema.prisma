@@ -116,6 +116,7 @@ model User {
   refreshTokenHash     String?
   totpSecret           String?
   totpEnabled          Boolean @default(false)
+  totpRecoveryCodes    Json?
   lastLoginAt          DateTime?
   isDeleted            Boolean          @default(false)
   createdAt            DateTime         @default(now())

@@ -158,10 +158,21 @@ export const secureAuthApi = {
     });
   },
 
-  async authenticateWithTotp(totpToken, code) {
+  async regenerateTotpRecoveryCodes(password) {
+    return apiRequest('/auth/2fa/recovery-codes/regenerate', {
+      method: 'POST',
+      body: JSON.stringify({ password })
+    });
+  },
+
+  async authenticateWithTotp(totpToken, payload = {}) {
     const result = await apiRequest('/auth/2fa/authenticate', {
       method: 'POST',
-      body: JSON.stringify({ totpToken, code })
+      body: JSON.stringify({
+        totpToken,
+        code: payload?.code,
+        recoveryCode: payload?.recoveryCode
+      })
     });
     if (result?.accessToken) {
       setApiAccessToken(result.accessToken);

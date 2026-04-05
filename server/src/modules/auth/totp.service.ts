@@ -26,6 +26,27 @@ export class TotpService {
     return generateSecret();
   }
 
+  generateRecoveryCodes(count = 8): string[] {
+    return Array.from({ length: count }, () => {
+      const value = randomBytes(4).toString('hex').toUpperCase();
+      return `${value.slice(0, 4)}-${value.slice(4)}`;
+    });
+  }
+
+  normalizeRecoveryCode(code: string): string {
+    return String(code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  }
+
+  hashRecoveryCode(code: string): string {
+    if (!this.encryptionKey) throw new Error('TOTP encryption key not configured.');
+    const normalized = this.normalizeRecoveryCode(code);
+    return createHash('sha256')
+      .update(this.encryptionKey)
+      .update(':')
+      .update(normalized)
+      .digest('hex');
+  }
+
   async generateQrCodeUrl(email: string, secret: string): Promise<string> {
     const otpAuthUrl = generateURI({ secret, label: email, issuer: 'Azubi-App' });
     return QRCode.toDataURL(otpAuthUrl);
