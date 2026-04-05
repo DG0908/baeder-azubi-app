@@ -114,6 +114,8 @@ model User {
   approvedBy           User?            @relation("ApprovalActor", fields: [approvedById], references: [id], onDelete: SetNull)
   approvedUsers        User[]           @relation("ApprovalActor")
   refreshTokenHash     String?
+  totpSecret           String?
+  totpEnabled          Boolean @default(false)
   lastLoginAt          DateTime?
   isDeleted            Boolean          @default(false)
   createdAt            DateTime         @default(now())

@@ -22,6 +22,8 @@ import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto';
 import { LoginDto } from './dto/login.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { RegisterDto } from './dto/register.dto';
+import { TotpAuthenticateDto } from './dto/totp-authenticate.dto';
+import { TotpService } from './totp.service';
 
 const authUserSelect = {
   id: true,
@@ -54,6 +56,17 @@ type RefreshJwtPayload = {
   tokenType: 'refresh';
 };
 
+type TotpPendingJwtPayload = {
+  sub: string;
+  tokenType: 'totp_pending';
+};
+
+type TotpSetupJwtPayload = {
+  sub: string;
+  secret: string;
+  tokenType: 'totp_setup';
+};
+
 // ─── Account Lockout ──────────────────────────────────────────────────
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
@@ -65,7 +78,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly auditLogService: AuditLogService,
-    private readonly mailerService: MailerService
+    private readonly mailerService: MailerService,
+    private readonly totpService: TotpService
   ) {}
 
   private async checkLockout(email: string): Promise<void> {
@@ -236,6 +250,18 @@ export class AuthService {
       throw new ForbiddenException('Account has not been approved for access.');
     }
 
+    // If TOTP is enabled, issue a short-lived pending token instead of real tokens
+    if (user.totpEnabled) {
+      const totpToken = await this.jwtService.signAsync(
+        { sub: user.id, tokenType: 'totp_pending' },
+        {
+          secret: this.configService.get<string>('JWT_ACCESS_SECRET')!,
+          expiresIn: '5m' as any
+        }
+      );
+      return { requiresTotp: true, totpToken };
+    }
+
     const tokens = await this.issueTokens(user);
     await this.persistRefreshToken(user.id, tokens.refreshToken);
 
@@ -330,6 +356,158 @@ export class AuthService {
       where: { id: user.id },
       select: authUserSelect
     });
+  }
+
+  async getTotpStatus(actor: AuthenticatedUser) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: actor.id },
+      select: { totpEnabled: true }
+    });
+    return { totpEnabled: user.totpEnabled };
+  }
+
+  async generateTotpSetup(actor: AuthenticatedUser) {
+    if (!this.totpService.isConfigured()) {
+      throw new ServiceUnavailableException('Two-factor authentication is not configured on this server.');
+    }
+
+    if (actor.role !== 'ADMIN') {
+      throw new ForbiddenException('Only admins can enable two-factor authentication.');
+    }
+
+    const secret = this.totpService.generateSecret();
+
+    // Load user email for the QR code label
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: actor.id },
+      select: { email: true }
+    });
+
+    const qrCode = await this.totpService.generateQrCodeUrl(user.email, secret);
+
+    // Encode secret in a short-lived JWT to avoid server-side state
+    const setupToken = await this.jwtService.signAsync(
+      { sub: actor.id, secret, tokenType: 'totp_setup' },
+      {
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET')!,
+        expiresIn: '10m' as any
+      }
+    );
+
+    return { qrCode, setupToken };
+  }
+
+  async enableTotp(actor: AuthenticatedUser, setupToken: string, code: string) {
+    let payload: TotpSetupJwtPayload;
+    try {
+      payload = await this.jwtService.verifyAsync<TotpSetupJwtPayload>(setupToken, {
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET')
+      });
+    } catch {
+      throw new UnauthorizedException('Setup token is invalid or expired.');
+    }
+
+    if (payload.tokenType !== 'totp_setup' || payload.sub !== actor.id) {
+      throw new UnauthorizedException('Setup token is invalid.');
+    }
+
+    const isValid = await this.totpService.verifyToken(code, payload.secret);
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid TOTP code.');
+    }
+
+    const encryptedSecret = this.totpService.encrypt(payload.secret);
+
+    await this.prisma.user.update({
+      where: { id: actor.id },
+      data: { totpSecret: encryptedSecret, totpEnabled: true }
+    });
+
+    return { message: 'Two-factor authentication enabled.' };
+  }
+
+  async disableTotp(actor: AuthenticatedUser, password: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: actor.id } });
+    if (!user) throw new UnauthorizedException('Account not found.');
+
+    const isBcryptHash = user.passwordHash.startsWith('$2');
+    let passwordMatches = false;
+    try {
+      passwordMatches = isBcryptHash
+        ? await bcrypt.compare(password, user.passwordHash)
+        : await argon2.verify(user.passwordHash, password);
+    } catch {
+      passwordMatches = false;
+    }
+
+    if (!passwordMatches) {
+      throw new UnauthorizedException('Password is incorrect.');
+    }
+
+    await this.prisma.user.update({
+      where: { id: actor.id },
+      data: { totpSecret: null, totpEnabled: false }
+    });
+
+    return { message: 'Two-factor authentication disabled.' };
+  }
+
+  async authenticateWithTotp(dto: TotpAuthenticateDto, response: Response, request: Request) {
+    let payload: TotpPendingJwtPayload;
+    try {
+      payload = await this.jwtService.verifyAsync<TotpPendingJwtPayload>(dto.totpToken, {
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET')
+      });
+    } catch {
+      throw new UnauthorizedException('TOTP session token is invalid or expired.');
+    }
+
+    if (payload.tokenType !== 'totp_pending') {
+      throw new UnauthorizedException('TOTP session token is invalid.');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+
+    if (!user || user.isDeleted) {
+      throw new UnauthorizedException('Account is not available.');
+    }
+
+    if (user.status !== AccountStatus.APPROVED) {
+      throw new ForbiddenException('Account has not been approved for access.');
+    }
+
+    if (!user.totpEnabled || !user.totpSecret) {
+      throw new UnauthorizedException('Two-factor authentication is not enabled for this account.');
+    }
+
+    const plainSecret = this.totpService.decrypt(user.totpSecret);
+    const isValid = await this.totpService.verifyToken(dto.code, plainSecret);
+
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid TOTP code.');
+    }
+
+    const tokens = await this.issueTokens(user);
+    await this.persistRefreshToken(user.id, tokens.refreshToken);
+
+    const safeUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+      select: authUserSelect
+    });
+
+    this.setRefreshCookie(response, tokens.refreshToken);
+
+    await this.auditLogService.writeForUser(
+      user,
+      'auth.login.totp',
+      'user',
+      user.id,
+      { email: safeUser.email },
+      request
+    );
+
+    return { accessToken: tokens.accessToken, user: safeUser };
   }
 
   async changePassword(

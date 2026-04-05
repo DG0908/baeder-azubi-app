@@ -7,6 +7,7 @@ import {
   confirmPasswordReset as dsConfirmPasswordReset
 } from '../../lib/dataService';
 import { LegalImprintContent, LegalPrivacyContent } from '../legal/LegalContent';
+import TotpInputView from '../views/TotpInputView';
 
 const LoginScreen = () => {
   const {
@@ -19,8 +20,14 @@ const LoginScreen = () => {
     registerData,
     setRegisterData,
     handleLogin,
-    handleRegister
+    handleRegister,
+    totpPendingToken
   } = useAuth();
+
+  // If a TOTP challenge is pending, show the TOTP input screen
+  if (totpPendingToken) {
+    return <TotpInputView />;
+  }
 
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);

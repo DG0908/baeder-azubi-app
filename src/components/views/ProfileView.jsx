@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Trash2, Pencil, X as XIcon, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import {
   updateMyProfile as dsUpdateMyProfile,
   changeMyPassword as dsChangeMyPassword,
-  deleteMyAccount as dsDeleteMyAccount
+  deleteMyAccount as dsDeleteMyAccount,
+  getTotpStatus as dsGetTotpStatus
 } from '../../lib/dataService';
 import { AVATARS, PERMISSIONS, getAvatarById, getLevel } from '../../data/constants';
 import AvatarBadge from '../ui/AvatarBadge';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
+import TotpSetupView from './TotpSetupView';
 
 const ProfileView = ({
   userStats,
@@ -41,6 +43,16 @@ const ProfileView = ({
   const [pushActionLoading, setPushActionLoading] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [avatarFilter, setAvatarFilter] = useState('all');
+  const [totpEnabled, setTotpEnabled] = useState(false);
+
+  const isAdminOrOwner = user?.role === 'admin' || user?.role === 'owner';
+
+  useEffect(() => {
+    if (!isAdminOrOwner) return;
+    dsGetTotpStatus().then((res) => {
+      if (res?.totpEnabled !== undefined) setTotpEnabled(res.totpEnabled);
+    }).catch(() => {});
+  }, [isAdminOrOwner]);
 
   // Profil-Vervollständigung
   const profileNameLooksLikeEmail = /^[^@]+@[^@]+\.[^@]+$/.test(String(user?.name || '').trim());
@@ -1016,6 +1028,16 @@ const ProfileView = ({
             Nutzungsbedingungen
           </button>
         </div>
+
+        {/* 2FA-Setup (nur Admins) */}
+        {isAdminOrOwner && (
+          <div className="mt-6">
+            <TotpSetupView
+              initialEnabled={totpEnabled}
+              onStatusChange={(enabled) => setTotpEnabled(enabled)}
+            />
+          </div>
+        )}
 
         {/* Konto löschen (Art. 17 DSGVO) */}
         {user?.role !== 'admin' && (
