@@ -15,14 +15,25 @@ export function useInactivityTimeout({ enabled, onWarn, onDismissWarn, onLogout 
   const warnTimer = useRef(null);
   const logoutTimer = useRef(null);
 
+  // Store callbacks in refs so the reset function never needs to change identity.
+  // Without this, inline lambdas passed from App.jsx would change on every render,
+  // causing reset to change, causing the useEffect to re-run and restart the timers.
+  const onWarnRef = useRef(onWarn);
+  const onDismissWarnRef = useRef(onDismissWarn);
+  const onLogoutRef = useRef(onLogout);
+
+  useEffect(() => { onWarnRef.current = onWarn; });
+  useEffect(() => { onDismissWarnRef.current = onDismissWarn; });
+  useEffect(() => { onLogoutRef.current = onLogout; });
+
   const reset = useCallback(() => {
     clearTimeout(warnTimer.current);
     clearTimeout(logoutTimer.current);
-    onDismissWarn();
+    onDismissWarnRef.current?.();
 
-    warnTimer.current = setTimeout(onWarn, WARNING_MS);
-    logoutTimer.current = setTimeout(onLogout, TIMEOUT_MS);
-  }, [onWarn, onDismissWarn, onLogout]);
+    warnTimer.current = setTimeout(() => onWarnRef.current?.(), WARNING_MS);
+    logoutTimer.current = setTimeout(() => onLogoutRef.current?.(), TIMEOUT_MS);
+  }, []); // Stable: refs handle callback updates without changing reset's identity.
 
   useEffect(() => {
     if (!enabled) return;
