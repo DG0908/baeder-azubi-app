@@ -123,7 +123,7 @@ const TotpInputView = () => {
 
           <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             {authMode === 'app'
-              ? 'Gib den aktuellen 6-stelligen Code aus deiner Authenticator-App ein.'
+              ? 'Bitte gib den 6-stelligen Code aus deiner Authenticator-App ein. Dieses Geraet wird nach erfolgreicher Bestaetigung fuer 30 Tage gespeichert.'
               : 'Recovery-Codes sind Einmalcodes fuer den Notfall. Nach der Nutzung musst du einen neuen Satz erzeugen.'}
           </p>
 
