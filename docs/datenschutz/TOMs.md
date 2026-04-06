@@ -109,7 +109,7 @@
 
 | Anbieter | Leistung | Standort | Rechtsgrundlage |
 |----------|----------|----------|-----------------|
-| Hostinger International Ltd. | VPS-Hosting und E-Mail-Versand (SMTP) | Frankfurt, EU | Art. 28 DSGVO, Standardvertragsklauseln |
+| Hostinger International Ltd. | VPS-Hosting und E-Mail-Versand (SMTP) | Frankfurt, EU (Unternehmenssitz: Zypern) | Art. 28 DSGVO, EU-Standardvertragsklauseln — DPA akzeptiert mit Vertragsabschluss, Stand 27.03.2026 (hostinger.com → Legal → Nachtrag zur Datenverarbeitung) |
 
 ---
 
