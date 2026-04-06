@@ -71,7 +71,7 @@ E-Mail: [deine E-Mail]
 
 | Anbieter | Zweck | Standort |
 |----------|-------|----------|
-| Hostinger International Ltd. | Serverbetrieb (VPS), Frankfurt | EU (Deutschland) |
+| Hostinger International Ltd. | Serverbetrieb (VPS) und E-Mail-Versand (SMTP), Frankfurt | EU (Deutschland) |
 
 (2) Der Auftragsverarbeiter informiert den Verantwortlichen über geplante Änderungen (Hinzufügung/Austausch von Unterauftragsverarbeitern) rechtzeitig, sodass der Verantwortliche Einwände erheben kann.
 
