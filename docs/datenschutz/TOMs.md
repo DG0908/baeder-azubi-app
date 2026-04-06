@@ -109,13 +109,13 @@
 
 | Anbieter | Leistung | Standort | Rechtsgrundlage |
 |----------|----------|----------|-----------------|
-| Hostinger International Ltd. | VPS-Hosting | Frankfurt, EU | Art. 28 DSGVO, Standardvertragsklauseln |
+| Hostinger International Ltd. | VPS-Hosting und E-Mail-Versand (SMTP) | Frankfurt, EU | Art. 28 DSGVO, Standardvertragsklauseln |
 
 ---
 
 ## Verantwortlicher für diese TOMs
 
-**[Dein Name]**
+**[Dennie Gulbinski**
 **Datenschutzbeauftragter (betrieblich bestellt)**
-E-Mail: [deine E-Mail]
+E-Mail: [noreply@smartbaden.de]
 Letzte Aktualisierung: April 2026
