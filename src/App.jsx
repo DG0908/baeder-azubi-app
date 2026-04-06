@@ -4540,8 +4540,19 @@ export default function BaederApp() {
       try {
         await dsSubmitDuelAnswer(currentGame.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
       } catch (error) {
-        if (error?.status !== 409) {
-          console.warn('submitDuelAnswer fehlgeschlagen:', error);
+        if (error?.status === 409) {
+          // Duplicate — already recorded, ignore
+        } else {
+          console.warn('submitDuelAnswer fehlgeschlagen, retry in 1.5s:', error);
+          // Retry once after a short delay (covers transient 401 refresh + network blips)
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          try {
+            await dsSubmitDuelAnswer(currentGame.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
+          } catch (retryError) {
+            if (retryError?.status !== 409) {
+              console.warn('submitDuelAnswer retry fehlgeschlagen:', retryError);
+            }
+          }
         }
       }
 
