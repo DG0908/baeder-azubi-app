@@ -155,7 +155,9 @@ export function AuthProvider({ children }) {
         alert(friendlyError(error));
       }
 
-      console.error('Login error:', error);
+      if (error?.code !== 'totp_required') {
+        console.error('Login error:', error);
+      }
     }
   };
 
