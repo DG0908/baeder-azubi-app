@@ -7,7 +7,7 @@ const OPERATOR = {
   email: 'denniegulbinski@gmail.com'
 };
 
-const LAST_UPDATED = '03.04.2026';
+const LAST_UPDATED = '06.04.2026';
 const listClassName = 'list-disc list-inside ml-2 space-y-1';
 
 export function LegalImprintContent({
@@ -126,7 +126,7 @@ export function LegalPrivacyContent({
             Es werden keine personenbezogenen Daten an Server außerhalb der EU übermittelt.
           </p>
           <ul className={`${listClassName} ${textClassName} mt-2`}>
-            <li>Hosting-Infrastruktur: Hostinger International Ltd., Kaunas, Litauen (EU) — Server-Standort Frankfurt, Deutschland</li>
+            <li>Hosting-Infrastruktur: Hostinger International Ltd., Zypern (EU) — Server-Standort Frankfurt, Deutschland</li>
             <li>E-Mail- und Push-Benachrichtigungsdienste, soweit für den Betrieb erforderlich</li>
             <li>Auftragsverarbeiter werden vertraglich gebunden und nur zweckgebunden eingesetzt</li>
             <li>Es erfolgt keine Weitergabe personenbezogener Daten zu Werbezwecken</li>
@@ -139,7 +139,7 @@ export function LegalPrivacyContent({
             <li>Daten werden nur so lange gespeichert, wie sie für Betrieb, Vertrag, Support, Sicherheit oder Nachweispflichten erforderlich sind</li>
             <li>Konkrete Aufbewahrungs- und Löschfristen werden je Betreiber-, Mandanten- und Vertragskontext festgelegt</li>
             <li>Lokal im Browser gespeicherte Einstellungen, Entwürfe und Lernstände bleiben auf dem Gerät, bis sie gelöscht, überschrieben oder vom Browser entfernt werden</li>
-            <li>Datenbankbackups werden automatisch nach 14 Tagen überschrieben</li>
+            <li>Datenbankbackups werden automatisch nach 7 Tagen überschrieben</li>
           </ul>
         </section>
 
@@ -179,15 +179,16 @@ export function LegalPrivacyContent({
             <li>Passwörter werden ausschließlich in gehashter Form (Argon2) gespeichert</li>
             <li>Protokollierung sicherheitsrelevanter und administrativer Vorgänge</li>
             <li>Automatisierte Backups und regelmäßige technische Aktualisierungen</li>
-            <li>Brute-Force-Schutz durch Rate-Limiting auf Authentifizierungsendpunkten</li>
+            <li>Brute-Force-Schutz durch Rate-Limiting und persistenten Lockout auf Authentifizierungsendpunkten</li>
+            <li>Zwei-Faktor-Authentifizierung (TOTP) für Administrator-Konten</li>
           </ul>
         </section>
 
         <section className={dividerClassName}>
           <p className={noteClassName}>
             Diese Hinweise werden aktualisiert, wenn sich Architektur, Dienstleister oder Datenflüsse
-            wesentlich ändern. Letzte Aktualisierung: {LAST_UPDATED} (Supabase und Vercel entfernt,
-            Hosting ausschließlich auf EU-Server in Frankfurt umgestellt).
+            wesentlich ändern. Letzte Aktualisierung: {LAST_UPDATED} (Hostinger-Sitz korrigiert auf Zypern,
+            Backup-Aufbewahrung auf 7 Tage aktualisiert, 2FA für Admins ergänzt).
           </p>
         </section>
       </div>
