@@ -312,16 +312,25 @@ export class AuthService {
       throw new ForbiddenException('Account has not been approved for access.');
     }
 
-    // If TOTP is enabled, issue a short-lived pending token instead of real tokens
+    // If TOTP is enabled, check if the device is already trusted
     if (user.totpEnabled) {
-      const totpToken = await this.jwtService.signAsync(
-        { sub: user.id, tokenType: 'totp_pending' },
-        {
-          secret: this.configService.get<string>('JWT_ACCESS_SECRET')!,
-          expiresIn: '5m' as any
-        }
-      );
-      return { requiresTotp: true, totpToken };
+      // Check if there are 3+ recent failed attempts — if so, require TOTP even on trusted device
+      const recentAttempts = await this.prisma.loginAttempt.findUnique({ where: { email } });
+      const hasRecentFailures = recentAttempts && recentAttempts.failedCount >= 3;
+
+      const deviceTrusted = !hasRecentFailures && await this.isDeviceTrusted(user.id, request);
+
+      if (!deviceTrusted) {
+        const totpToken = await this.jwtService.signAsync(
+          { sub: user.id, tokenType: 'totp_pending' },
+          {
+            secret: this.configService.get<string>('JWT_ACCESS_SECRET')!,
+            expiresIn: '5m' as any
+          }
+        );
+        return { requiresTotp: true, totpToken };
+      }
+      // Device is trusted — fall through to normal token issuance
     }
 
     await this.clearFailedLogins(email);
@@ -689,6 +698,7 @@ export class AuthService {
     });
 
     this.setRefreshCookie(response, tokens.refreshToken);
+    await this.setDeviceTrusted(user.id, request, response);
 
     await this.auditLogService.writeForUser(
       user,
@@ -906,6 +916,58 @@ export class AuthService {
     return {
       message: 'Password updated. Please sign in with the new password.'
     };
+  }
+
+  private async isDeviceTrusted(userId: string, request: Request): Promise<boolean> {
+    const rawToken = request.cookies?.trusted_device;
+    if (!rawToken) return false;
+
+    const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+    const device = await this.prisma.trustedDevice.findUnique({
+      where: { tokenHash }
+    });
+
+    if (!device) return false;
+    if (device.userId !== userId) return false;
+    if (device.expiresAt < new Date()) {
+      // Clean up expired token
+      await this.prisma.trustedDevice.delete({ where: { tokenHash } }).catch(() => {});
+      return false;
+    }
+
+    // Update lastUsedAt
+    await this.prisma.trustedDevice.update({
+      where: { tokenHash },
+      data: { lastUsedAt: new Date() }
+    }).catch(() => {});
+
+    return true;
+  }
+
+  private async setDeviceTrusted(userId: string, request: Request, response: Response): Promise<void> {
+    const rawToken = randomBytes(32).toString('hex');
+    const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const userAgent = String(request.headers?.['user-agent'] || '').slice(0, 500);
+    const cookieDomain = String(this.configService.get<string>('APP_COOKIE_DOMAIN', '')).trim();
+
+    // Clean up expired devices for this user (housekeeping)
+    await this.prisma.trustedDevice.deleteMany({
+      where: { userId, expiresAt: { lt: new Date() } }
+    }).catch(() => {});
+
+    await this.prisma.trustedDevice.create({
+      data: { userId, tokenHash, userAgent, expiresAt }
+    });
+
+    response.cookie('trusted_device', rawToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/api/auth',
+      domain: cookieDomain || undefined,
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
   }
 
   private normalizeEmail(value: string): string {

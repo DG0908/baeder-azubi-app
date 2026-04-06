@@ -159,6 +159,7 @@ model User {
   practicalExamAttempts PracticalExamAttempt[] @relation("OwnedPracticalExamAttempts")
   createdPracticalExamAttempts PracticalExamAttempt[] @relation("CreatedPracticalExamAttempts")
   pushSubscriptions    PushSubscription[]
+  trustedDevices       TrustedDevice[]
 
   @@index([organizationId, role, status])
 }
@@ -712,6 +713,20 @@ model LoginAttempt {
   updatedAt   DateTime @updatedAt
 
   @@index([lockedUntil])
+}
+
+model TrustedDevice {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String   @unique
+  userAgent  String?
+  lastUsedAt DateTime @default(now())
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model DuelAnswer {
