@@ -1467,7 +1467,17 @@ export class DuelsService {
         continue;
       }
 
-      if (previousRounds.length > 0 && !this.isRoundComplete(this.asRecord(previousRounds[previousRounds.length - 1]))) {
+      // A round is considered complete if the server's merged state OR the client's canonical
+      // payload shows it as complete. The client's payload is safe to trust here because:
+      // - assertAnswersUnchangedForOtherParticipant already enforced that the opponent answer
+      //   count in the payload cannot exceed what is in the DB.
+      // - assertAnswersAppendOnly only allows the actor to append their own answers.
+      // - answer correctness is always recomputed server-side via revalidateAnswerEntry.
+      // This tolerates the case where a POST /answers call failed silently on the client,
+      // leaving the DuelAnswer record missing in the DB even though both players finished.
+      const prevRoundServer = this.asRecord(previousRounds[previousRounds.length - 1]);
+      const prevRoundClient = this.asRecord(nextRounds[nextRounds.length - 2]);
+      if (previousRounds.length > 0 && !this.isRoundComplete(prevRoundServer) && !this.isRoundComplete(prevRoundClient)) {
         throw new BadRequestException('A new duel round can only start after the current round is complete.');
       }
 
