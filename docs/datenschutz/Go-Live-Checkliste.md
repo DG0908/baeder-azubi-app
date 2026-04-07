@@ -25,6 +25,7 @@
 - [x] Backup-Aufbewahrung: 7 Tage
 - [x] Backup-Restore getestet und dokumentiert
 - [x] Alle Prisma-Migrationen deployed
+- [x] **Lokales PC-Backup eingerichtet** — wöchentlich (Sonntag 10:00 Uhr) via Windows Aufgabenplaner, Script: `ops/pull-backup-to-local.ps1`, gespeichert unter `C:\Users\User\Backups\azubi-app\`, 8 Wochen Verlauf
 
 ---
 
@@ -96,7 +97,7 @@
 - [ ] Auth Smoke-Tests (automatisierte E2E-Tests mit Supertest)
 - [ ] Duel-Fallback serverseitig schließen
 - [ ] 2FA optional für Ausbilder
-- [ ] Monitoring/Alerting (z.B. Uptime-Kuma auf dem VPS)
+- [ ] **Monitoring/Alerting — Uptime-Kuma auf dem VPS einrichten** ← nächster Schritt
 - [ ] SMTP auf professionelle Adresse umstellen (statt Gmail)
 
 ---
