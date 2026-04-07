@@ -389,6 +389,7 @@ const HomeView = ({
               { icon: '\u{1F3B4}', title: 'Karteikarten', sub: dueCards > 0 ? `${dueCards} fällig` : 'Keine fällig', onClick: openFlashcards, color: 'purple' },
               { icon: '\u{1F9EE}', title: 'Rechner', sub: 'Praxis-Formeln', onClick: () => openView('calculator'), color: 'blue' },
               { icon: '\u{1F3AE}', title: 'Quizduell', sub: `${activeGamesForUser.length} aktiv`, onClick: () => openView('quiz'), color: 'green' },
+              { icon: '\u{1F393}', title: 'Interaktives Lernen', sub: 'Deep Dives & Simulationen', onClick: () => openView('interactive-learning'), color: 'violet' },
             ].map(c => (
               <button key={c.title} onClick={c.onClick} className={`p-4 rounded-xl text-left transition-all hover:-translate-y-0.5 ${
                 darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm'
@@ -409,6 +410,7 @@ const HomeView = ({
               { icon: '\u{1F3CA}', title: 'Schwimm-Challenge', sub: 'Disziplinen trainieren', onClick: () => openView('swim-challenge'), color: 'cyan' },
               { icon: '\u{1F4D6}', title: 'Berichtsheft', sub: 'Wochenberichte', onClick: () => openView('berichtsheft'), color: 'teal' },
               { icon: '\u{1F393}', title: 'Kontrollkarte', sub: 'Berufsschule', onClick: () => openView('school-card'), color: 'orange' },
+              { icon: '\u{1F4CB}', title: 'Klausuren', sub: exams.length > 0 ? `${exams.length} eingetragen` : 'Termine', onClick: () => openView('exams'), color: 'red' },
               { icon: '\u{1F4A1}', title: 'Fragen', sub: 'Pool erweitern', onClick: () => openView('questions'), color: 'amber' },
             ].map(c => (
               <button key={c.title} onClick={c.onClick} className={`p-4 rounded-xl text-left transition-all hover:-translate-y-0.5 ${
@@ -432,6 +434,8 @@ const HomeView = ({
               { icon: '\u{1F4DA}', title: 'Materialien', sub: `${materials.length} Dateien`, onClick: () => openView('materials') },
               { icon: '\u{1F517}', title: 'Ressourcen', sub: `${resources.length} Links`, onClick: () => openView('resources') },
               { icon: '\u{1F4AC}', title: 'Chat', sub: `${messages.length} Nachrichten`, onClick: () => openView('chat') },
+              { icon: '\u{1F4DD}', title: 'Forum', sub: 'Fragen & Diskussionen', onClick: () => openView('forum') },
+              { icon: '\u{1F4E2}', title: 'News', sub: news.length > 0 ? `${news.length} Beiträge` : 'Neuigkeiten', onClick: () => openView('news') },
             ].map(c => (
               <button key={c.title} onClick={c.onClick} className={`p-4 rounded-xl text-left transition-all hover:-translate-y-0.5 ${
                 darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm'
