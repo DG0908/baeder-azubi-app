@@ -97,7 +97,7 @@
 - [ ] Auth Smoke-Tests (automatisierte E2E-Tests mit Supertest)
 - [ ] Duel-Fallback serverseitig schließen
 - [ ] 2FA optional für Ausbilder
-- [ ] **Monitoring/Alerting — Uptime-Kuma auf dem VPS einrichten** ← nächster Schritt
+- [x] **Monitoring/Alerting — Uptime-Kuma läuft** auf Port 3002 (http://187.124.9.172:3002), überwacht API + Web, E-Mail-Alarm eingerichtet
 - [ ] SMTP auf professionelle Adresse umstellen (statt Gmail)
 
 ---
