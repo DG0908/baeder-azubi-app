@@ -180,10 +180,15 @@ const StatsView = ({ userStats, BADGES, userBadges, leaderboard }) => {
       </div>
 
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
-        <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          <Star className="mr-2 text-yellow-500" />
-          Bestenliste
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+            <Star className="mr-2 text-yellow-500" />
+            Bestenliste
+          </h3>
+          <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            Sieg +3 Pkt. • Unentschieden +1 Pkt.
+          </span>
+        </div>
         <div className="space-y-2">
           {leaderboard.map((player, idx) => (
             <div key={player.name} className={`flex items-center justify-between p-4 rounded-lg ${
@@ -198,11 +203,14 @@ const StatsView = ({ userStats, BADGES, userBadges, leaderboard }) => {
                 <div>
                   <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{player.name}</p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {player.wins}S • {player.losses}N • {player.draws}U
+                    {player.wins} Siege • {player.losses} Niederlagen • {player.draws} Unentschieden
                   </p>
                 </div>
               </div>
-              <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{player.points}</div>
+              <div className="text-right">
+                <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{player.points}</div>
+                <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Pkt.</div>
+              </div>
             </div>
           ))}
         </div>
