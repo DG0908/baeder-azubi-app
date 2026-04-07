@@ -98,7 +98,8 @@
 - [ ] Duel-Fallback serverseitig schließen
 - [ ] 2FA optional für Ausbilder
 - [x] **Monitoring/Alerting — Uptime-Kuma läuft** auf Port 3002 (http://187.124.9.172:3002), überwacht API + Web, E-Mail-Alarm eingerichtet
-- [ ] SMTP auf professionelle Adresse umstellen (statt Gmail)
+- [x] SMTP läuft bereits über noreply@smartbaden.de (Hostinger)
+- [ ] Uptime-Kuma Alarm auf noreply@smartbaden.de umstellen — wenn Diensthandy vorhanden
 
 ---
 
