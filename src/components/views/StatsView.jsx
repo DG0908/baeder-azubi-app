@@ -201,7 +201,7 @@ const StatsView = ({ userStats, BADGES, userBadges, leaderboard }) => {
                   {idx + 1}.
                 </div>
                 <div>
-                  <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{player.name}</p>
+                  <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{player.name?.split(' ')[0]}</p>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     {player.wins} Siege • {player.losses} Niederlagen • {player.draws} Unentschieden
                   </p>
