@@ -229,94 +229,7 @@ const TABS = {
     },
   },
 
-  ghs: {
-    id: 'ghs',
-    chip: 'GHS-Zeichen',
-    title: 'GHS-Kennzeichnung von Reinigungsmitteln im Schwimmbad',
-    intro: 'Alle Chemikalien und Reinigungsmittel im Schwimmbad müssen nach dem GHS/CLP-System (Globally Harmonised System / CLP-Verordnung EG 1272/2008) gekennzeichnet sein. Die rautenfoermigen Piktogramme mit rotem Rand zeigen auf einen Blick welche Gefahr von einem Stoff ausgeht. Als FaBB musst du die Zeichen auswendig kennen und sofort richtig reagieren koennen.',
-    motto: 'Kein Gefahrstoff ohne GHS-Zeichen — kein GHS-Zeichen ohne Betriebsanweisung.',
-    rules: [
-      'GHS-Piktogramme sind rautenfoermig (Quadrat auf Spitze), weiss mit rotem Rand und schwarzem Symbol.',
-      'CLP-Verordnung (EG) 1272/2008 schreibt die Kennzeichnung aller Gefahrstoffe in der EU vor.',
-      'Jeder Stoff kann mehrere GHS-Symbole haben — alle gelten gleichzeitig!',
-      'H-Saetze (Hazard) beschreiben die Gefahr, P-Saetze (Precautionary) die Schutzmassnahmen.',
-      'Sicherheitsdatenblatt (SDB) muss fuer jeden Gefahrstoff vorliegen — 16 Abschnitte, Abschnitt 2 = Gefahren.',
-    ],
-    steps: [
-      {
-        title: 'GHS01 — Explosivstoffe (Bombe)',
-        text: 'Symbol: explodierende Bombe. Bedeutung: Stoff kann explodieren oder deflagrieren. Im Schwimmbad: Calciumhypochlorit (Feststoffchlor) bei unsachgemaesser Lagerung — nicht mit Saeure, Oel oder organischen Stoffen lagern! Bei Brand sofort Feuerwehr — NIEMALS loeschen, Explosion moeglich.',
-      },
-      {
-        title: 'GHS02 — Entzuendliche Stoffe (Flamme)',
-        text: 'Symbol: Flamme. Bedeutung: leicht entzuendlich, selbstentzuendlich. Im Schwimmbad: Alkohol-Desinfektionsmittel (Haende, Flaechen). Wichtig: Fern von Waermequellen lagern. Nicht in der Naehe von Chlorgas einsetzen — explosives Gemisch moeglich.',
-      },
-      {
-        title: 'GHS03 — Oxidierende Stoffe (Flamme ueber Kreis)',
-        text: 'Symbol: Flamme ueber einem Kreis. Bedeutung: Stoff gibt Sauerstoff ab und foerdert Brände/Explosionen anderer Stoffe. Im Schwimmbad: Calciumhypochlorit (Ca(OCl)₂), Natriumhypochlorit. Absolut getrennt von brennbaren Stoffen lagern! Oxidationsmittel + Oel = sofortiger Brand.',
-      },
-      {
-        title: 'GHS04 — Gase unter Druck (Gasflasche)',
-        text: 'Symbol: Gasflasche. Bedeutung: Gas unter Druck — kann bei Erwaermung explodieren, ausstroemsames Gas kann sauerstoffverdraengend sein. Im Schwimmbad: CO₂-Flaschen fuer pH-Regulierung, Chlorgasflaschen. Flaschen stehend lagern, sichern, nicht kuenstlich erwaermen.',
-      },
-      {
-        title: 'GHS05 — Aetzende Stoffe (Hand + Material)',
-        text: 'Symbol: Hand und Material werden aufgeloest. Bedeutung: verursacht schwere Veraetzungen von Haut und Augen. Im Schwimmbad haeufig: Salzsaeure (pH-Minus), Natronlauge (pH-Plus), Natriumhypochlorit, Schwefelsaeure. PSA: Vollsichtbrille + Saeureschutzhandschuhe + Schuerze. Erste Hilfe: 15 Min. mit Wasser spuelen.',
-      },
-      {
-        title: 'GHS06 — Akut giftig (Totenkopf)',
-        text: 'Symbol: Totenkopf mit Knochen. Bedeutung: bereits kleine Mengen koennen toedlich wirken (orale, dermale oder inhalative Aufnahme). Im Schwimmbad: Chlorgas (Cl₂) — entsteht wenn Salzsaeure und Chlorprodukte gemischt werden! Beim kleinsten Verdacht: Raum sofort verlassen, 112 rufen.',
-      },
-      {
-        title: 'GHS07 — Gesundheitsschaedlich (Ausrufezeichen)',
-        text: 'Symbol: Ausrufezeichen. Bedeutung: gesundheitsschaedlich, reizend, kann Atemwege und Haut reizen. Im Schwimmbad: Aluminiumsulfat (Flockungsmittel), verduennte Saeuren, viele Reiniger. Weniger akut als GHS06 — aber bei regelmaessigem Kontakt chronisch schaedlich. PSA trotzdem tragen!',
-      },
-      {
-        title: 'GHS09 — Umweltgefaehrlich (toter Fisch + Baum)',
-        text: 'Symbol: toter Fisch und absterbender Baum. Bedeutung: Stoff ist giftig fuer Wasserorganismen, teils mit Langzeitwirkung. Im Schwimmbad: Natriumhypochlorit, Desinfektionsmittel (Quats). Niemals in den Abfluss oder Grundwasser — Sondermüll oder Neutralisierung. GefStoffV §16: Entsorgung dokumentieren.',
-      },
-    ],
-    examples: [
-      {
-        title: 'Natriumhypochlorit (Fluessigchlor, NaOCl)',
-        given: 'Kanister mit Natriumhypochlorit 13% im Technikraum. Etikett zeigt GHS05 und GHS09.',
-        question: 'Was bedeuten die Zeichen und was tust du?',
-        steps: [
-          ['GHS05 (Aetzend)', 'Direkter Kontakt aetzt Haut und Augen — schwere Schaeden moeglich'],
-          ['GHS09 (Umwelt)', 'Umweltgefaehrlich — NICHT in Abfluss, kein Grundwasserkontakt'],
-          ['PSA', 'Nitrilhandschuhe + Vollsichtbrille + Schuerze — immer!'],
-          ['Achtung', 'Mit Salzsaeure mischen erzeugt sofort Chlorgas (GHS06) — Lebensgefahr!'],
-        ],
-      },
-      {
-        title: 'Calciumhypochlorit (Chlorkalk, Ca(OCl)₂)',
-        given: 'Feststoff-Chloranlage mit Calciumhypochlorit. Etikett zeigt GHS03, GHS05, GHS09.',
-        question: 'Welche besondere Gefahr hat dieser Stoff?',
-        steps: [
-          ['GHS03 (Oxidierend)', 'Gibt aktiv Sauerstoff ab — foerdert Braende und Explosionen!'],
-          ['GHS05 (Aetzend)', 'Feststoff und Loesungen sind stark aetzend'],
-          ['Kritisch', 'Nie mit Oel, Fett, organischen Stoffen oder Saeure lagern — Brandgefahr!'],
-          ['Lagerung', 'Trocken, kuhl, in Originalbehaelter — getrennt von Sauren und Brennbarem'],
-        ],
-      },
-    ],
-    pitfalls: [
-      'GHS06 (Totenkopf) entsteht nicht nur aus dem Kanister — Chlorgas bildet sich wenn Chlor + Saeure gemischt werden!',
-      'Mehrere GHS-Symbole auf einem Etikett bedeuten mehrere Gefahren gleichzeitig — alle beachten!',
-      'GHS09 (Umwelt) wird oft ignoriert: auch kleine Mengen Chlor im Grundwasser koennen Oekosysteme schaedigen.',
-      'Verblasstes oder entferntes GHS-Etikett ist eine Ordnungswidrigkeit — Behaelter sofort neu beschriften!',
-    ],
-    quiz: {
-      question: 'Welche Gefahr zeigt das GHS03-Piktogramm (Flamme ueber Kreis)?',
-      options: [
-        'Der Stoff ist leicht entflammbar und kann selbst brennen',
-        'Der Stoff ist oxidierend — er gibt Sauerstoff ab und kann Braende anderer Stoffe foerdern',
-        'Der Stoff ist explosiv und kann detonieren',
-      ],
-      correctIndex: 1,
-      explanation: 'GHS03 (Flamme ueber einem Kreis) kennzeichnet oxidierende Stoffe wie Calciumhypochlorit oder Natriumhypochlorit. Sie brennen nicht selbst, foerdern aber die Verbrennung anderer Stoffe durch Sauerstoffabgabe. Deshalb muessen Oxidationsmittel absolut getrennt von Brennstoffen, Oelen und organischen Materialien gelagert werden.',
-    },
-  },
+  ghs: { id: 'ghs', chip: 'GHS-Zeichen' },
 
   hygieneplan: {
     id: 'hygieneplan',
@@ -393,6 +306,225 @@ const TABS = {
   }
 };
 
+// ─── GHS-Daten (CLP-Verordnung EG 1272/2008, amtliche Piktogramm-Codes) ────────
+// Quelle: ECHA (Europäische Chemikalienagentur), BAuA, GefStoffV Anlage 1
+const GHS_INFO = {
+  GHS01: { label: 'Explosiv',          symbol: 'Explodierende Bombe',       color: 'bg-orange-50 border-red-600' },
+  GHS02: { label: 'Entzuendlich',      symbol: 'Flamme',                    color: 'bg-orange-50 border-red-600' },
+  GHS03: { label: 'Oxidierend',        symbol: 'Flamme ueber Kreis',        color: 'bg-orange-50 border-red-600' },
+  GHS04: { label: 'Gas u. Druck',      symbol: 'Gasflasche',                color: 'bg-blue-50 border-red-600'   },
+  GHS05: { label: 'Aetzend',           symbol: 'Korrosion (Hand/Material)', color: 'bg-red-50 border-red-600'    },
+  GHS06: { label: 'Akut giftig',       symbol: 'Totenkopf mit Knochen',     color: 'bg-red-50 border-red-600'    },
+  GHS07: { label: 'Gesundheitsschaed.', symbol: 'Ausrufezeichen',           color: 'bg-yellow-50 border-red-600' },
+  GHS08: { label: 'Gefahr f. Gesundh.', symbol: 'Gesundheitsgefahr',        color: 'bg-orange-50 border-red-600' },
+  GHS09: { label: 'Umweltgefaehrl.',   symbol: 'Toter Fisch + Baum',        color: 'bg-green-50 border-red-600'  },
+};
+
+// Reinigungsmittel nach Kategorie — GHS-Codes nach SDB/CLP, wie auf echten Etiketten
+const GHS_CHEMICALS = [
+  {
+    id: 'alkalisch',
+    label: 'Alkalische Reiniger',
+    subtitle: 'pH > 8 · gegen Fett, Eiweiss, Biofilm',
+    headerColor: 'bg-blue-600',
+    chemicals: [
+      { name: 'Natriumhydroxid (NaOH)', formula: 'pH-Plus, Ablaugreiniger', ghs: ['GHS05'], note: 'Konzentriert stark aetzend. Schutzbrille + Handschuhe Pflicht.' },
+      { name: 'Kaliumhydroxid (KOH)', formula: 'Entfetter, Reiniger', ghs: ['GHS05', 'GHS07'], note: 'Aetzend und reizend. Wie NaOH behandeln.' },
+      { name: 'Allgemeiner Alkalireiniger', formula: 'gebrauchsfertig verdünnt', ghs: ['GHS07'], note: 'Verduennt nur reizend — trotzdem Handschuhe tragen.' },
+      { name: 'Ammoniakreiniger (NH₃)', formula: '>5% Ammoniak', ghs: ['GHS05', 'GHS07', 'GHS09'], note: 'Aetzend, reizend, umweltgefaehrlich. Nicht mit Chlor mischen — giftiges Gas!' },
+    ],
+  },
+  {
+    id: 'sauer',
+    label: 'Saure Reiniger',
+    subtitle: 'pH < 6 · gegen Kalk, Rost, Urinstein',
+    headerColor: 'bg-red-600',
+    chemicals: [
+      { name: 'Salzsaeure (HCl)', formula: '10–32% · pH-Minus', ghs: ['GHS05', 'GHS07'], note: 'NIE mit Chlorprodukten mischen — sofort Chlorgas (GHS06)!' },
+      { name: 'Phosphorsaeure (H₃PO₄)', formula: '25–85%', ghs: ['GHS05'], note: 'Kalkentferner. Maeßig aetzend — trotzdem Schutzbrille!' },
+      { name: 'Schwefelsaeure (H₂SO₄)', formula: 'konzentriert', ghs: ['GHS05'], note: 'Stark aetzend. Selten in Baedern, aber in Technikbetrieben moeglich.' },
+      { name: 'Zitronensaeure', formula: 'gebrauchsfertig', ghs: ['GHS07'], note: 'Milder Kalkentferner — bei hoeher Konzentration reizend.' },
+    ],
+  },
+  {
+    id: 'neutral',
+    label: 'Neutrale Reiniger',
+    subtitle: 'pH 6–8 · Allgemeinreinigung, schonend',
+    headerColor: 'bg-green-600',
+    chemicals: [
+      { name: 'Tensid-Allzweckreiniger', formula: 'gebrauchsfertig', ghs: [], note: 'Oft ohne GHS-Pflicht bei niedrigem Tensidgehalt (<5%).' },
+      { name: 'Bodenreiniger neutral', formula: 'gebrauchsfertig', ghs: ['GHS07'], note: 'Bei hoeherem Tensidgehalt als reizend eingestuft.' },
+      { name: 'Glasreiniger', formula: 'gebrauchsfertig', ghs: ['GHS07'], note: 'Alkohol- oder tensidhaltig — leicht reizend bei Augenkontakt.' },
+    ],
+  },
+  {
+    id: 'desinfektion',
+    label: 'Desinfektionsmittel',
+    subtitle: 'nach VAH-Liste · gezielt gegen Keime',
+    headerColor: 'bg-purple-600',
+    chemicals: [
+      { name: 'Natriumhypochlorit (NaOCl)', formula: '5–13% · Fluessigchlor', ghs: ['GHS05', 'GHS09'], note: 'Aetzend, umweltgefaehrlich. Mit Saeure → Chlorgas!' },
+      { name: 'Calciumhypochlorit Ca(OCl)₂', formula: 'Feststoff · Chlorkalk', ghs: ['GHS03', 'GHS05', 'GHS09'], note: 'OXIDIEREND — nie mit Brennbarem, Oel oder Saeure lagern!' },
+      { name: 'Chlorgas (Cl₂)', formula: 'Gas unter Druck', ghs: ['GHS04', 'GHS05', 'GHS06', 'GHS09'], note: 'Hoechste Gefahr — akut giftig, aetzend, umweltgefaehrlich.' },
+      { name: 'Ethanol / Isopropanol', formula: '70–80% · Haende/Flaechen', ghs: ['GHS02', 'GHS07'], note: 'Entflammbar! Nie in Naehe von Chlorgas oder Zuendquellen.' },
+      { name: 'Quats (QAV)', formula: 'Flaechendesinfektion', ghs: ['GHS05', 'GHS07', 'GHS09'], note: 'Nie mit anionischen Tensiden mischen — Wirkungsaufhebung.' },
+      { name: 'Peressigsaeure (PAA)', formula: '15% · Spezialdesinf.', ghs: ['GHS01', 'GHS02', 'GHS03', 'GHS05', 'GHS07'], note: 'Fuenf GHS-Symbole! Hoechste Vorsicht — oxidierend UND entzuendlich.' },
+    ],
+  },
+];
+
+// ─── GHS-Piktogramm Komponente (Diamantform nach CLP-VO) ─────────────────────
+const GHSBadge = ({ code, darkMode }) => {
+  const info = GHS_INFO[code];
+  if (!info) return null;
+  return (
+    <div className="flex flex-col items-center gap-0.5" title={`${code}: ${info.symbol}`}>
+      {/* Diamant-Form: weiss mit rotem Rand, schwarzer Text — entspricht offiziellem CLP-Piktogramm */}
+      <div className="relative w-10 h-10 flex items-center justify-center">
+        <div className={`absolute inset-0 rotate-45 rounded-sm border-2 border-red-600 bg-white`} />
+        <span className="relative z-10 text-xs font-black text-gray-900 leading-none select-none" style={{ fontSize: '9px' }}>
+          {code.replace('GHS', '')}
+        </span>
+      </div>
+      <span className="text-[8px] font-semibold text-center leading-tight max-w-[44px]"
+        style={{ color: darkMode ? '#9ca3af' : '#374151' }}>
+        {info.label}
+      </span>
+    </div>
+  );
+};
+
+// ─── GHS-Chemikalien-Ansicht ──────────────────────────────────────────────────
+function GHSChemicals({ darkMode }) {
+  const [selected, setSelected] = useState(null);
+
+  if (selected) {
+    const chem = selected;
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setSelected(null)}
+          className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg ${darkMode ? 'text-gray-300 hover:bg-slate-700' : 'text-gray-600 hover:bg-gray-100'}`}
+        >
+          ← Zurück zur Übersicht
+        </button>
+        <div className={`rounded-xl p-5 border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'}`}>
+          <p className={`text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{chem.formula}</p>
+          <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{chem.name}</h3>
+
+          {/* GHS-Symbole */}
+          {chem.ghs.length > 0 ? (
+            <div className={`rounded-xl p-4 mb-4 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+              <p className={`text-xs font-semibold mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                GHS-PIKTOGRAMME (CLP-Verordnung EG 1272/2008)
+              </p>
+              <div className="flex flex-wrap gap-4">
+                {chem.ghs.map(code => (
+                  <div key={code} className="flex flex-col items-center gap-2">
+                    <GHSBadge code={code} darkMode={darkMode} />
+                    <p className={`text-[10px] text-center max-w-[52px] ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {GHS_INFO[code]?.symbol}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className={`rounded-xl p-3 mb-4 text-sm ${darkMode ? 'bg-slate-700 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
+              Kein GHS-Piktogramm erforderlich (unter Einstufungsgrenzen der CLP-VO)
+            </div>
+          )}
+
+          {/* Hinweis */}
+          <div className={`rounded-xl p-3 border-l-4 border-yellow-500 ${darkMode ? 'bg-slate-700' : 'bg-yellow-50'}`}>
+            <p className={`text-sm ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{chem.note}</p>
+          </div>
+        </div>
+
+        {/* GHS-Legende */}
+        <div className={`rounded-xl p-4 ${darkMode ? 'bg-slate-700/60' : 'bg-gray-50'}`}>
+          <p className={`text-xs font-semibold mb-3 ${darkMode ? 'text-yellow-400' : 'text-yellow-700'}`}>
+            ALLE GHS-PIKTOGRAMME (offizielle Codes nach CLP-VO / ECHA)
+          </p>
+          <div className="grid grid-cols-3 gap-3">
+            {Object.entries(GHS_INFO).map(([code, info]) => (
+              <div key={code} className={`p-2 rounded-lg flex items-center gap-2 ${darkMode ? 'bg-slate-600' : 'bg-white'}`}>
+                <GHSBadge code={code} darkMode={darkMode} />
+                <p className={`text-[10px] leading-tight ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{info.symbol}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className={`rounded-xl p-4 border-l-4 border-yellow-500 ${darkMode ? 'bg-slate-800' : 'bg-yellow-50'}`}>
+        <h3 className="text-lg font-bold mb-1">GHS-Kennzeichnung nach Reinigungsmitteltyp</h3>
+        <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          Offizielle Piktogramm-Codes nach CLP-Verordnung (EG) Nr. 1272/2008 · ECHA · BAuA · GefStoffV.
+          Tippe auf ein Produkt fuer Details und vollstaendige Symbolerklaerung.
+        </p>
+      </div>
+
+      {/* GHS-Legende kompakt */}
+      <div className={`rounded-xl p-3 ${darkMode ? 'bg-slate-700/60' : 'bg-gray-50'}`}>
+        <p className={`text-xs font-semibold mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          GHS-SYMBOLE (Diamantform · weiss · roter Rand · schwarz — CLP-VO Anhang V)
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {Object.entries(GHS_INFO).map(([code, info]) => (
+            <GHSBadge key={code} code={code} darkMode={darkMode} />
+          ))}
+        </div>
+      </div>
+
+      {/* Kategorien */}
+      {GHS_CHEMICALS.map(cat => (
+        <div key={cat.id} className={`rounded-xl overflow-hidden border ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
+          <div className={`${cat.headerColor} px-4 py-2`}>
+            <p className="text-white font-bold text-sm">{cat.label}</p>
+            <p className="text-white/80 text-xs">{cat.subtitle}</p>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {cat.chemicals.map((chem, i) => (
+              <button
+                key={i}
+                onClick={() => setSelected(chem)}
+                className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
+                  darkMode ? 'bg-slate-800 hover:bg-slate-700 divide-slate-700' : 'bg-white hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{chem.name}</p>
+                  <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{chem.formula}</p>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  {chem.ghs.length === 0 ? (
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+                      kein GHS
+                    </span>
+                  ) : (
+                    chem.ghs.map(code => (
+                      <GHSBadge key={code} code={code} darkMode={darkMode} />
+                    ))
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <p className={`text-xs text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+        Quelle: CLP-Verordnung (EG) 1272/2008 · ECHA Guidance · BAuA · GefStoffV Anlage 1
+      </p>
+    </div>
+  );
+}
+
 const TabChip = ({ label, active, onClick, darkMode }) => (
   <button
     onClick={onClick}
@@ -439,13 +571,17 @@ export default function ReinigungDesinfektionDeepDiveView({ onBack }) {
         ))}
       </div>
 
+      {activeTab === 'ghs' && <GHSChemicals darkMode={darkMode} />}
+
+      {activeTab !== 'ghs' && (
       <div className={`rounded-xl p-4 border-l-4 border-yellow-500 ${darkMode ? 'bg-slate-800' : 'bg-yellow-50'}`}>
         <h3 className="text-lg font-bold mb-2">{tab.title}</h3>
         <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{tab.intro}</p>
         <p className={`mt-3 text-sm font-semibold italic ${darkMode ? 'text-yellow-400' : 'text-yellow-700'}`}>💡 {tab.motto}</p>
       </div>
+      )}
 
-      <Section title="📋 Das musst du wissen" darkMode={darkMode}>
+      {activeTab !== 'ghs' && <Section title="📋 Das musst du wissen" darkMode={darkMode}>
         <ul className="space-y-2">
           {tab.rules.map((r, i) => (
             <li key={i} className={`flex gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -453,9 +589,9 @@ export default function ReinigungDesinfektionDeepDiveView({ onBack }) {
             </li>
           ))}
         </ul>
-      </Section>
+      </Section>}
 
-      <Section title="🔢 Schritt fuer Schritt" darkMode={darkMode}>
+      {activeTab !== 'ghs' && <Section title="🔢 Schritt fuer Schritt" darkMode={darkMode}>
         <div className="space-y-3">
           {tab.steps.map((s, i) => (
             <div key={i} className={`p-3 rounded-lg ${darkMode ? 'bg-slate-600' : 'bg-white'}`}>
@@ -464,9 +600,9 @@ export default function ReinigungDesinfektionDeepDiveView({ onBack }) {
             </div>
           ))}
         </div>
-      </Section>
+      </Section>}
 
-      <Section title="📖 Beispiele aus der Praxis" darkMode={darkMode}>
+      {activeTab !== 'ghs' && <Section title="📖 Beispiele aus der Praxis" darkMode={darkMode}>
         <div className="space-y-4">
           {tab.examples.map((ex, i) => (
             <div key={i} className={`p-3 rounded-lg ${darkMode ? 'bg-slate-600' : 'bg-white'}`}>
@@ -484,9 +620,9 @@ export default function ReinigungDesinfektionDeepDiveView({ onBack }) {
             </div>
           ))}
         </div>
-      </Section>
+      </Section>}
 
-      <Section title="⚠️ Typische Fehler vermeiden" darkMode={darkMode}>
+      {activeTab !== 'ghs' && <Section title="⚠️ Typische Fehler vermeiden" darkMode={darkMode}>
         <ul className="space-y-2">
           {tab.pitfalls.map((p, i) => (
             <li key={i} className={`flex gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -494,9 +630,9 @@ export default function ReinigungDesinfektionDeepDiveView({ onBack }) {
             </li>
           ))}
         </ul>
-      </Section>
+      </Section>}
 
-      <Section title="🧠 Teste dein Wissen" darkMode={darkMode}>
+      {activeTab !== 'ghs' && <Section title="🧠 Teste dein Wissen" darkMode={darkMode}>
         <p className={`text-sm font-medium mb-3 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{tab.quiz.question}</p>
         <div className="space-y-2">
           {tab.quiz.options.map((opt, i) => {
@@ -520,7 +656,7 @@ export default function ReinigungDesinfektionDeepDiveView({ onBack }) {
             {quizAnswer === tab.quiz.correctIndex ? '✓ Richtig! ' : '✗ Leider falsch. '}{tab.quiz.explanation}
           </div>
         )}
-      </Section>
+      </Section>}
     </div>
   );
 }
