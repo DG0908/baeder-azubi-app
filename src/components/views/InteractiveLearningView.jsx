@@ -39,6 +39,9 @@ const LazyBeckenwasserdesinfektionDeepDiveView = lazy(() => import('./chemie/Bec
 const LazyElektrolyseDeepDiveView = lazy(() => import('./chemie/ElektrolyseDeepDiveView'));
 const LazyKorrosionDeepDiveView = lazy(() => import('./chemie/KorrosionDeepDiveView'));
 const LazyElektrolyseAnlageDeepDiveView = lazy(() => import('./chemie/ElektrolyseAnlageDeepDiveView'));
+const LazyBeschilderungDeepDiveView = lazy(() => import('./hygiene/BeschilderungDeepDiveView'));
+const LazyReinigungDesinfektionDeepDiveView = lazy(() => import('./hygiene/ReinigungDesinfektionDeepDiveView'));
+const LazyGefahrstoffeDeepDiveView = lazy(() => import('./hygiene/GefahrstoffeDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -376,21 +379,21 @@ const LEARNING_CATEGORIES = [
         name: 'Beschilderung & Kennzeichnungen',
         description: 'Sicherheitszeichen, Pflichtschilder und Orientierung im Bad',
         icon: '🪧',
-        available: false,
+        available: true,
       },
       {
         id: 'reinigung-desinfektion',
         name: 'Reinigung & Desinfektion',
         description: 'Reinigungsplaene, Verfahren, Kontaktzeiten und Kontrollen',
         icon: '🧼',
-        available: false,
+        available: true,
       },
       {
         id: 'gefahrstoffe',
         name: 'Gefahrstoffe',
         description: 'Lagerung, Handhabung, Schutzmassnahmen und Notfallablauf',
         icon: '☣️',
-        available: false,
+        available: true,
       },
     ],
   },
@@ -1016,6 +1019,87 @@ const InteractiveLearningView = () => {
           )}
         >
           <LazyHeartDeepDiveThree initialTab={initialTab} initialScene={initialScene} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'beschilderung-kennzeichnungen') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Hygiene & Sicherheit
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Beschilderung & Kennzeichnungen...
+            </div>
+          )}
+        >
+          <LazyBeschilderungDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'reinigung-desinfektion') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Hygiene & Sicherheit
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Reinigung & Desinfektion...
+            </div>
+          )}
+        >
+          <LazyReinigungDesinfektionDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'gefahrstoffe') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode
+              ? 'text-cyan-400 hover:bg-slate-800'
+              : 'text-cyan-700 hover:bg-cyan-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Hygiene & Sicherheit
+        </button>
+        <Suspense
+          fallback={(
+            <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
+              Lade Gefahrstoffe...
+            </div>
+          )}
+        >
+          <LazyGefahrstoffeDeepDiveView />
         </Suspense>
       </div>
     );
