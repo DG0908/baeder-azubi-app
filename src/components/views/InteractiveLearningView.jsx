@@ -47,6 +47,9 @@ const LazyStrafRechtBadDeepDiveView = lazy(() => import('./recht/StrafRechtBadDe
 const LazyJugendarbeitsschutzDeepDiveView = lazy(() => import('./recht/JugendarbeitsschutzDeepDiveView'));
 const LazyMutterschutzDeepDiveView = lazy(() => import('./recht/MutterschutzDeepDiveView'));
 const LazyKuendigungDeepDiveView = lazy(() => import('./recht/KuendigungDeepDiveView'));
+const LazyKommunalpolitikDeepDiveView = lazy(() => import('./recht/KommunalpolitikDeepDiveView'));
+const LazyGesellschaftsformenDeepDiveView = lazy(() => import('./recht/GesellschaftsformenDeepDiveView'));
+const LazySozialversicherungDeepDiveView = lazy(() => import('./recht/SozialversicherungDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -691,6 +694,27 @@ const LEARNING_CATEGORIES = [
         icon: '📄',
         available: true,
       },
+      {
+        id: 'kommunalpolitik',
+        name: 'Kommunalpolitik',
+        description: 'Gemeindeorgane, Haushalt, kommunale Bäder — Daseinsvorsorge & Querfinanzierung',
+        icon: '🏛️',
+        available: true,
+      },
+      {
+        id: 'gesellschaftsformen',
+        name: 'Gesellschaftsformen',
+        description: 'GbR, OHG, KG, GmbH, AG — Rechtsformen und ihre Bedeutung für kommunale Bäder',
+        icon: '🏦',
+        available: true,
+      },
+      {
+        id: 'sozialversicherung',
+        name: 'Sozialversicherung',
+        description: 'Die 5 Säulen: Kranken-, Renten-, Unfall-, Pflege-, Arbeitslosenversicherung',
+        icon: '🛡️',
+        available: true,
+      },
     ],
   },
 ];
@@ -1235,6 +1259,63 @@ const InteractiveLearningView = () => {
         </button>
         <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Kündigung...</div>}>
           <LazyKuendigungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'kommunalpolitik') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Kommunalpolitik...</div>}>
+          <LazyKommunalpolitikDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'gesellschaftsformen') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Gesellschaftsformen...</div>}>
+          <LazyGesellschaftsformenDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'sozialversicherung') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Sozialversicherung...</div>}>
+          <LazySozialversicherungDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
