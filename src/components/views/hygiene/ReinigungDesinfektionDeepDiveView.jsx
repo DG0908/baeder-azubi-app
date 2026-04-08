@@ -14,9 +14,14 @@ const TABS = {
       'Desinfektion = Abtoeung oder Inaktivierung von Krankheitserregern auf ein sicheres Mass. Entfernt keinen Schmutz.',
       'Reihenfolge: IMMER erst reinigen, dann desinfizieren. Schmutz blockiert die Wirkung von Desinfektionsmitteln.',
       'Einwirkzeit ist entscheidend: Desinfektionsmittel braucht Zeit. Zu frueh abwischen = keine Wirkung.',
-      'Reinigungsplan und Hygieneplan muessen schriftlich vorliegen und eingehalten werden.'
+      'Vorbenetzung: Flaechen immer zuerst mit Wasser anfeuchten — Tenside wirken sonst nur punktuell.',
+      'Reinigungsplan und Hygieneplan muessen schriftlich vorliegen und eingehalten werden.',
     ],
     steps: [
+      {
+        title: '0. Vorbenetzung — der oft vergessene erste Schritt',
+        text: 'Vor dem Reinigungsmittel kommt immer das Wasser. Trockene Flaechen lassen das Mittel abperlen — die waschaktiven Substanzen (Tenside) koennen sich nicht gleichmaessig verteilen. Mit feuchtem Mop oder Spruehflasche vorbefeuchten, dann erst Reiniger auftragen. Spart Mittel und verbessert die Wirkung deutlich.',
+      },
       {
         title: '1. Reinigung: Was und womit?',
         text: 'Reinigung loest Schmutz, Kalk, Fett, Hautschuppen und Biofilm. Mittel: Allzweckreiniger, alkalische Reiniger (gegen Fett), saure Reiniger (gegen Kalk). Mechanische Unterstuetzung durch Schrubben, Wischen oder Hochdruckreiniger. Ohne mechanischen Effekt wirken auch gute Mittel oft schlecht.'
@@ -148,6 +153,80 @@ const TABS = {
       correctIndex: 1,
       explanation: 'Saure Reiniger (pH < 6) loesen Kalk chemisch auf, weil Kalziumkarbonat in saurem Milieu reagiert und sich aufloest. Alkalische und neutrale Reiniger haben keinen Effekt auf Kalk.'
     }
+  },
+
+  tenside: {
+    id: 'tenside',
+    chip: 'Tenside & Benetzung',
+    title: 'Warum erst benetzen? — Tenside und waschaktive Substanzen',
+    intro: 'Bevor du ein Reinigungsmittel aufträgst, solltest du die Fläche immer erst mit Wasser vorbefeuchten (Vorbenetzung). Der Grund liegt in der Chemie: Schmutz auf trockenen Flächen wird vom Reinigungsmittel kaum gelöst, weil sich der Wirkstoff nicht gleichmäßig verteilen kann. Tenside — die waschaktiven Substanzen im Reinigungsmittel — brauchen Wasser als "Träger", um ihren Reinigungseffekt voll zu entfalten.',
+    motto: 'Trockene Fläche + Reinigungsmittel = halbe Wirkung. Feuchte Fläche + Reinigungsmittel = volle Wirkung.',
+    rules: [
+      'Vorbenetzung: Fläche vor dem Reinigungsmittel immer leicht anfeuchten — das senkt die Oberflächenspannung und lässt den Wirkstoff tiefer einziehen.',
+      'Tenside = "Tensidum" (lat.: spannen) — sie setzen die Oberflächenspannung des Wassers herab und ermöglichen so das Benetzen von Flächen.',
+      'Jedes Tensidmolekül hat einen wasserliebenden (hydrophilen) Kopf und einen fettliebenden (lipophilen) Schwanz.',
+      'Der lipophile Schwanz greift Fett und Schmutz an, der hydrophile Kopf hält ihn im Wasser — so wird Schmutz "herausgezogen" und weggespült.',
+      'Tenside gibt es in vier Typen: anionisch, kationisch, nichtionisch und amphoter — je nach Einsatzzweck.',
+    ],
+    steps: [
+      {
+        title: '1. Vorbenetzung — das Warum',
+        text: 'Wasser hat eine hohe Oberflächenspannung: Es "perlt" auf trockenen Flächen ab, statt sich zu verteilen. Schmutz und Biofilm auf Fliesen, Beckenrand oder Duschen haben oft fettartige Anteile, die Wasser abstoßen (hydrophob). Wenn du die Fläche zuerst mit Wasser befeuchtest, legst du eine dünne Schicht, in die das Reinigungsmittel gleichmäßig einziehen kann. Ohne Vorbenetzung bleibt das Mittel in Tropfen liegen — es wirkt nur dort, wo es direkt aufliegt.',
+      },
+      {
+        title: '2. Was sind Tenside?',
+        text: 'Tenside sind waschaktive Substanzen — der eigentliche Wirkstoff in Reinigungsmitteln. Der Name kommt von "Tensio" (lat. = Spannung): Sie senken die Grenzflächenspannung zwischen Wasser und Schmutz/Fett. Ein Tensidmolekül besteht aus zwei Teilen: einem hydrophilen (wasserliebenden) Kopf und einem lipophilen (fettliebenden) Schwanz. In der Reinigung ist genau diese Zweiteiligkeit entscheidend.',
+      },
+      {
+        title: '3. Wie wirken Tenside? — Das Mizellen-Prinzip',
+        text: 'Wenn Tenside ins Wasser kommen, lagern sich viele Tensidmoleküle zusammen: Die fettliebenden Schwänze zeigen nach innen (zum Schmutz), die wasserliebenden Köpfe nach außen (zum Wasser). Diese Kugeln heißen Mizellen. Die Mizelle "umhüllt" das Fett- oder Schmutzpartikel und zieht es aus der Fläche heraus — beim Abwischen oder Abspülen werden die Mizellen mit dem Schmutz weggespült.',
+      },
+      {
+        title: '4. Typen von Tensiden',
+        text: 'Anionische Tenside (negativ geladen): Sehr gute Schaum- und Reinigungswirkung. In den meisten Allzwein- und Badreinigern. Beispiel: Natriumlaurylsulfat (SDS). — Kationische Tenside (positiv geladen): Biozide Wirkung — töten Bakterien ab. Deshalb in Desinfektionsmitteln (Quats). Dürfen NICHT mit anionischen Tensiden gemischt werden! — Nichtionische Tenside (neutral): Schaumarm, gut verträglich, für empfindliche Flächen und Maschinenreiniger. — Amphotere Tenside: Wechseln je nach pH-Wert zwischen positiv und negativ. Gut hautverträglich — in Hand- und Körperreinigern.',
+      },
+    ],
+    examples: [
+      {
+        title: 'Beckenrand mit Biofilm',
+        given: 'Der Beckenrand ist mit einem glitschigen Biofilm (Algen, Hautschuppen, Fett) bedeckt. Du willst ihn reinigen.',
+        question: 'Warum erst benetzen, welches Mittel und welcher Schritt-für-Schritt-Ablauf?',
+        steps: [
+          ['Vorbenetzung', 'Fläche mit Wasser anfeuchten — Biofilm quillt auf, Oberfläche wird zugänglich'],
+          ['Mittel', 'Alkalischer Reiniger (Tenside + hoher pH) — löst Fett, Eiweiss und Biofilm'],
+          ['Einwirkzeit', '2–5 Min. einwirken lassen — Tenside bilden Mizellen um Schmutzpartikel'],
+          ['Schrubben', 'Mechanische Wirkung bricht den Biofilm auf — Tenside spülen ihn weg'],
+          ['Abspülen', 'Gründlich mit Wasser nachspülen — Mizellen mit Schmutz weggespült'],
+        ],
+      },
+      {
+        title: 'Trockene Kachelwand in der Umkleide',
+        given: 'Eine trockene Kachelwand hat Fettfinger und Schmutzflecken. Du sprühst direkt Reiniger drauf.',
+        question: 'Was passiert und was wäre besser gewesen?',
+        steps: [
+          ['Problem', 'Auf trockener Fläche perlt das Mittel ab — Tenside verteilen sich ungleichmäßig'],
+          ['Folge', 'Schmutz wird nur an den direkten Auftreffpunkten gelöst, nicht flächig'],
+          ['Richtig', 'Zuerst Fläche mit Wasser leicht anfeuchten — dann Reiniger auftragen'],
+          ['Ergebnis', 'Tenside verteilen sich gleichmäßig, bilden Mizellen und lösen den Schmutz vollständig'],
+        ],
+      },
+    ],
+    pitfalls: [
+      'Direkt auf trockene Flächen reinigen halbiert die Wirkung — immer erst vorbefeuchten!',
+      'Anionische und kationische Tenside neutralisieren sich gegenseitig — Reiniger und Desinfektionsmittel nie direkt mischen.',
+      'Zu viel Tensid = zu viel Schaum = schwer abzuspülen und Rückstände auf der Fläche.',
+      'Ohne mechanische Arbeit (Schrubben, Wischen) lösen Tenside den Schmutz zwar, tragen ihn aber nicht ab — Abspülen nicht vergessen!',
+    ],
+    quiz: {
+      question: 'Was ist der Hauptgrund für die Vorbenetzung einer Fläche vor dem Reinigen?',
+      options: [
+        'Damit das Reinigungsmittel nicht so schnell trocknet',
+        'Die Oberflächenspannung wird gesenkt, so dass sich das Reinigungsmittel gleichmäßig verteilt und die Tenside optimal wirken können',
+        'Wasser allein reicht schon — das Reinigungsmittel ist dann nur zur Sicherheit',
+      ],
+      correctIndex: 1,
+      explanation: 'Wasser senkt die Oberflächenspannung und macht die Fläche für Tenside zugänglich. Die Tensidmoleküle können sich dann gleichmäßig verteilen, Mizellen um Schmutzpartikel bilden und diese beim Abspülen mitnehmen. Auf trockenen Flächen perlt das Mittel ab und wirkt nur punktuell.',
+    },
   },
 
   hygieneplan: {
