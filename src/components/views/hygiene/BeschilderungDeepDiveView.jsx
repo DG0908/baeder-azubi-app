@@ -2,46 +2,48 @@ import { useState } from 'react';
 import { useApp } from '../../../context/AppContext';
 
 // ─── Schilder-Lexikon ────────────────────────────────────────────────────────
+// Normen: DIN EN ISO 7010 (Sicherheitszeichen), ASR A1.3 (Arbeitsstättenregel),
+//         DGUV Vorschrift 1, DGUV Information 211-010, GefStoffV, BetrSichV
 const SIGNS = [
-  // VERBOTSSCHILDER
-  { id: 'v1', cat: 'verbot', emoji: '🚷', name: 'Zutritt verboten', norm: 'ISO 7010 P001', location: 'Technikräume, Personalräume, gesperrte Bereiche', meaning: 'Kein Zutritt für Unbefugte. Dieser Bereich ist ausschließlich autorisiertem Personal zugänglich.', action: 'Bereich nicht betreten. Unbefugte ansprechen und ggf. Vorgesetzten informieren.' },
-  { id: 'v2', cat: 'verbot', emoji: '⬇️', name: 'Springen verboten', norm: 'ISO 7010 P019', location: 'Flachstellen, Nichtschwimmerbereiche, Rutschenende', meaning: 'Springen ins Wasser ist verboten — Verletzungsgefahr durch zu geringe Tiefe oder andere Badegäste.', action: 'Badegäste ansprechen. Bei Wiederholung Platzverweis.' },
-  { id: 'v3', cat: 'verbot', emoji: '🤸', name: 'Kopfsprung verboten', norm: 'ASR / Hausordnung', location: 'Beckenrand, Bereiche unter 1,80 m Tiefe', meaning: 'Kopfsprünge sind erst ab mind. 1,80 m Wassertiefe erlaubt. Bei geringerer Tiefe besteht Lebensgefahr durch Aufprall auf dem Beckenboden.', action: 'Badegast sofort ansprechen — gilt ohne Ausnahme auch für geübte Schwimmer.' },
-  { id: 'v4', cat: 'verbot', emoji: '📷', name: 'Fotografieren verboten', norm: 'DSGVO / Hausordnung', location: 'Umkleiden, Duschen, Beckenbereich', meaning: 'Fotografieren und Filmen ist verboten — Schutz der Persönlichkeitsrechte aller Badegäste, besonders Kinder.', action: 'Sofort ansprechen. In Umkleiden ist Kameranutzung strafbar (§ 201a StGB). Vorgesetzten einschalten.' },
-  { id: 'v5', cat: 'verbot', emoji: '🍔', name: 'Essen & Trinken verboten', norm: 'Hausordnung / Hygiene', location: 'Beckenrand, Badehalle, Umkleiden', meaning: 'Aus Hygienegründen verboten. Speisereste verschmutzen das Wasser und fördern Keimwachstum.', action: 'Auf den Verzehrbereich (Cafe/Außenbereich) hinweisen.' },
-  { id: 'v6', cat: 'verbot', emoji: '🚬', name: 'Rauchen verboten', norm: 'Hausordnung / NiSchG', location: 'Gesamtes Gebäude, Umkleiden, Badebereich', meaning: 'Schützt Nichtraucher und verhindert Brandgefahr im gesamten Hallenbad.', action: 'Auf das Rauchverbot hinweisen und ggf. Raucherbereich im Außenbereich zeigen.' },
-  { id: 'v7', cat: 'verbot', emoji: '🐕', name: 'Tiere verboten', norm: 'Hausordnung', location: 'Eingangsbereich, gesamte Anlage', meaning: 'Tiere (außer anerkannte Assistenzhunde) sind aus Hygiene- und Sicherheitsgründen verboten.', action: 'Freundlich aber bestimmt auf das Verbot hinweisen.' },
-  { id: 'v8', cat: 'verbot', emoji: '📱', name: 'Mobiltelefon verboten', norm: 'Hausordnung / DSGVO', location: 'Umkleiden, Duschbereich', meaning: 'Mobiltelefone mit Kamera in Umkleiden und Duschen verboten — Schutz der Privatsphäre.', action: 'Sofort ansprechen. Nutzung in Umkleiden kann strafbar sein.' },
+  // VERBOTSSCHILDER — roter Kreis mit Querstrich · ASR A1.3 Abschnitt 4.1
+  { id: 'v1', cat: 'verbot', emoji: '🚷', name: 'Zutritt verboten', norm: 'DIN EN ISO 7010 P001 · ASR A1.3', location: 'Technikräume, Chlorraum, Personalräume', meaning: 'Kein Zutritt für Unbefugte. Nur autorisiertes Personal darf diesen Bereich betreten — Gefährdung durch Anlagen oder Chemikalien.', action: 'Unbefugte ansprechen und herausbitten. Tür nach Betreten abschließen. DGUV Vorschrift 1 §4 verpflichtet zur Sicherung gefährlicher Bereiche.' },
+  { id: 'v2', cat: 'verbot', emoji: '⬇️', name: 'Springen verboten', norm: 'DIN EN ISO 7010 P019 · ASR A1.3', location: 'Flachstellen, Nichtschwimmerbereiche, Rutschenende', meaning: 'Springen ins Wasser ist verboten — Verletzungsgefahr durch zu geringe Tiefe oder andere Badegäste.', action: 'Badegäste ansprechen. Bei Wiederholung Platzverweis. Tiefenangabe muss daneben angebracht sein.' },
+  { id: 'v3', cat: 'verbot', emoji: '🤸', name: 'Kopfsprung verboten', norm: 'Hausordnung · DIN 19643 · ASR A1.3', location: 'Beckenrand, alle Bereiche unter 1,80 m Tiefe', meaning: 'Kopfsprünge erst ab mind. 1,80 m Wassertiefe erlaubt. Bei geringerer Tiefe besteht Lebensgefahr durch Aufprall auf dem Beckenboden.', action: 'Badegast sofort ansprechen — gilt ohne Ausnahme. Fehlende Tiefenangabe = Verletzung der Verkehrssicherungspflicht.' },
+  { id: 'v4', cat: 'verbot', emoji: '📷', name: 'Fotografieren verboten', norm: 'DSGVO Art. 6 · §201a StGB · Hausordnung', location: 'Umkleiden, Duschen, Beckenbereich', meaning: 'Schutz der Persönlichkeitsrechte aller Badegäste, besonders Kinder. In Umkleiden und Duschen ist Kameranutzung strafbar.', action: 'Sofort ansprechen. Bei Weigerung Vorgesetzten einschalten. Strafanzeige möglich (§201a StGB).' },
+  { id: 'v5', cat: 'verbot', emoji: '🍔', name: 'Essen & Trinken verboten', norm: 'Hausordnung · Hygienerecht', location: 'Beckenrand, Badehalle, Umkleiden', meaning: 'Aus Hygienegründen verboten. Speisereste verschmutzen das Wasser, erhöhen den Keimgehalt und belasten die Wasseraufbereitung.', action: 'Auf den Verzehrbereich (Café/Außenbereich) hinweisen.' },
+  { id: 'v6', cat: 'verbot', emoji: '🚬', name: 'Rauchen verboten', norm: 'NiSchG · ArbStättV · Hausordnung', location: 'Gesamtes Gebäude, Umkleiden, Badebereich', meaning: 'Schützt Nichtraucher (Passivrauch) und verhindert Brandgefahr. Gesetzlich vorgeschrieben in Arbeitsstätten (ArbStättV).', action: 'Auf das Rauchverbot hinweisen. Raucherbereich im Außenbereich zeigen falls vorhanden.' },
+  { id: 'v7', cat: 'verbot', emoji: '🐕', name: 'Tiere verboten', norm: 'Hausordnung · IfSG §36', location: 'Eingangsbereich, gesamte Anlage', meaning: 'Tiere (außer anerkannte Assistenzhunde) aus Hygiene- und Sicherheitsgründen verboten. Infektionsschutzgesetz schreibt hygienische Anforderungen vor.', action: 'Freundlich aber bestimmt auf das Verbot hinweisen. Ausnahme: anerkannte Assistenzhunde.' },
+  { id: 'v8', cat: 'verbot', emoji: '📱', name: 'Mobiltelefon verboten', norm: 'DSGVO Art. 6 · §201a StGB · Hausordnung', location: 'Umkleiden, Duschbereich', meaning: 'Mobiltelefone mit Kamerafunktion in Umkleiden und Duschen verboten — Schutz der Privatsphäre und Würde.', action: 'Sofort ansprechen. Bildaufnahmen in Umkleiden sind strafbar (§201a StGB Verletzung des höchstpersönlichen Lebensbereichs).' },
 
-  // WARNSCHILDER
-  { id: 'w1', cat: 'warnung', emoji: '🧊', name: 'Rutschgefahr', norm: 'ISO 7010 W011', location: 'Beckenrand, Duschen, nasse Flächen', meaning: 'Nasser Boden — Sturzgefahr, besonders für Kinder und ältere Gäste.', action: 'Leitkegel aufstellen. Boden regelmäßig abziehen. Badegäste auf Gehgeschwindigkeit hinweisen.' },
-  { id: 'w2', cat: 'warnung', emoji: '🌊', name: 'Tiefes Wasser', norm: 'ISO 7010 W016', location: 'Sprungbecken, tiefer Beckenbereich', meaning: 'Das Wasser ist hier tief. Nichtschwimmer dürfen diesen Bereich nicht betreten.', action: 'Tiefenangabe muss zusätzlich am Beckenrand angebracht sein. Nichtschwimmer ansprechen.' },
-  { id: 'w3', cat: 'warnung', emoji: '☠️', name: 'Chlorgas-Gefahr', norm: 'ISO 7010 / GHS', location: 'Technikraum, Chlorgasraum, Dosierkammer', meaning: 'Chlorgas kann auftreten — giftig, greift Atemwege an. Lebensgefahr bei hoher Konzentration!', action: 'Raum nur mit Atemschutz (Vollmaske) betreten. Gasdetektor prüfen. Bei Alarm sofort evakuieren.' },
-  { id: 'w4', cat: 'warnung', emoji: '⚡', name: 'Elektrische Spannung', norm: 'ISO 7010 W012', location: 'Technikräume, Schaltkästen, Pumpenbereiche', meaning: 'Lebensgefährliche elektrische Spannung. Berühren kann tödlich sein.', action: 'Nur Elektrofachkräfte dürfen diese Bereiche öffnen. Defekte sofort melden.' },
-  { id: 'w5', cat: 'warnung', emoji: '🧪', name: 'Ätzende Stoffe', norm: 'ISO 7010 W023', location: 'Chemikalienlager, Dosierstationen', meaning: 'Ätzende Chemikalien werden hier gehandhabt oder gelagert. Schutzausrüstung erforderlich.', action: 'PSA anlegen (Handschuhe, Schutzbrille, Schürze) bevor der Bereich betreten wird.' },
-  { id: 'w6', cat: 'warnung', emoji: '🌡️', name: 'Heiße Oberflächen', norm: 'ISO 7010 W017', location: 'Heizungsraum, Warmwasserleitungen, Sauna', meaning: 'Oberflächen können sehr heiß sein — Verbrennungsgefahr beim Anfassen.', action: 'Berühren vermeiden. Im Saunabereich Handtuch auf Holzbänke legen.' },
-  { id: 'w7', cat: 'warnung', emoji: '🦠', name: 'Biogefährdung', norm: 'ISO 7010 W009', location: 'Erste-Hilfe-Raum, bei Blutkontamination', meaning: 'Biologische Gefährdung z.B. durch Blut oder Körperflüssigkeiten. Infektionsgefahr.', action: 'Einmalhandschuhe tragen. Bereich nach Hygieneplan desinfizieren.' },
+  // WARNSCHILDER — gelbes Dreieck, schwarzes Symbol · ASR A1.3 Abschnitt 4.2
+  { id: 'w1', cat: 'warnung', emoji: '🧊', name: 'Rutschgefahr', norm: 'DIN EN ISO 7010 W011 · ASR A1.3', location: 'Beckenrand, Duschen, nasse Flächen', meaning: 'Nasser, rutschiger Boden — Sturzgefahr, besonders für Kinder und ältere Gäste. Häufigste Unfallursache im Schwimmbad.', action: 'Leitkegel aufstellen. Boden abziehen. Rutschhemmenden Belag prüfen (mind. GS/R10 nach DIN 51130).' },
+  { id: 'w2', cat: 'warnung', emoji: '🌊', name: 'Tiefes Wasser', norm: 'DIN EN ISO 7010 W016 · DIN 19643', location: 'Sprungbecken, tiefer Beckenbereich, Übergang', meaning: 'Das Wasser ist hier tief. Nichtschwimmer und schwache Schwimmer dürfen diesen Bereich nicht betreten — Ertrinkungsgefahr.', action: 'Tiefenangabe muss daneben stehen. Nichtschwimmer ansprechen und in flacheren Bereich leiten.' },
+  { id: 'w3', cat: 'warnung', emoji: '☠️', name: 'Chlorgas-Gefahr', norm: 'DIN EN ISO 7010 W016 · GefStoffV · DGUV V 1', location: 'Technikraum, Chlorgasraum, Dosierkammer', meaning: 'Chlorgas (Cl₂) kann auftreten — giftig (GHS06), greift Atemwege und Augen an. Lebensgefahr bei hoher Konzentration!', action: 'Nur mit Atemschutz (Vollmaske) betreten. Gasdetektor prüfen. Bei Alarm: Raum verlassen, andere warnen, 112 rufen.' },
+  { id: 'w4', cat: 'warnung', emoji: '⚡', name: 'Elektrische Spannung', norm: 'DIN EN ISO 7010 W012 · DGUV V 3', location: 'Technikräume, Schaltkästen, Pumpenbereiche', meaning: 'Lebensgefährliche elektrische Spannung. Berühren oder unbefugtes Öffnen kann tödlich sein.', action: 'Nur Elektrofachkräfte dürfen diese Bereiche öffnen (DGUV Vorschrift 3). Defekte sofort melden.' },
+  { id: 'w5', cat: 'warnung', emoji: '🧪', name: 'Ätzende Stoffe', norm: 'DIN EN ISO 7010 W023 · GefStoffV · GHS05', location: 'Chemikalienlager, Dosierstationen, pH-Minus-Lager', meaning: 'Ätzende Chemikalien werden hier gehandhabt oder gelagert. Kontakt verursacht schwere Haut- und Augenschäden.', action: 'PSA anlegen (Handschuhe, Schutzbrille, Schürze) vor Betreten. Betriebsanweisung nach §14 GefStoffV beachten.' },
+  { id: 'w6', cat: 'warnung', emoji: '🌡️', name: 'Heiße Oberflächen', norm: 'DIN EN ISO 7010 W017 · ASR A1.3', location: 'Heizungsraum, Warmwasserleitungen, Sauna', meaning: 'Oberflächen können sehr heiß sein — Verbrennungsgefahr beim Anfassen (> 60°C möglich).', action: 'Berühren vermeiden. Im Saunabereich Handtuch auf Holzbänke legen. Isolierung prüfen.' },
+  { id: 'w7', cat: 'warnung', emoji: '🦠', name: 'Biogefährdung', norm: 'DIN EN ISO 7010 W009 · BioStoffV', location: 'Erste-Hilfe-Raum, bei Blutkontamination', meaning: 'Biologische Gefährdung durch Blut, Körperflüssigkeiten. Infektionsgefahr (Hepatitis, MRSA, HIV). BioStoffV Schutzmaßnahmen nötig.', action: 'Einmalhandschuhe tragen. Flächen nach KRINKO-Empfehlung desinfizieren (VAH-gelistetes Mittel).' },
 
-  // GEBOTSCHILDER
-  { id: 'g1', cat: 'gebot', emoji: '🚿', name: 'Vor dem Baden duschen', norm: 'DIN 19643', location: 'Eingang Beckenbereich, Duschbereich', meaning: 'Pflichtdusche ist gesetzlich vorgeschrieben. Entfernt Schweiß, Körperpflege und Keime vor dem Baden.', action: 'Badegäste freundlich auf die Duschpflicht hinweisen. Kein Betreten ohne Dusche.' },
-  { id: 'g2', cat: 'gebot', emoji: '🦺', name: 'Schwimmhilfe tragen', norm: 'Hausordnung', location: 'Nichtschwimmerbereich, Freizeitbecken', meaning: 'Nichtschwimmer müssen in tiefen Bereichen eine Schwimmhilfe oder Schwimmweste tragen.', action: 'Nichtschwimmer ohne Schwimmhilfe aus tiefem Bereich bitten oder begleiten.' },
-  { id: 'g3', cat: 'gebot', emoji: '🧤', name: 'Schutzhandschuhe tragen', norm: 'ISO 7010 M009', location: 'Chemikalienraum, Dosierstationen, Reinigung', meaning: 'Beim Umgang mit Chemikalien Pflicht — schützt vor Verätzungen und Hautschäden.', action: 'Nitril oder Neopren für Chlorprodukte. Latexallergie bei Kollegen beachten!' },
-  { id: 'g4', cat: 'gebot', emoji: '🥽', name: 'Schutzbrille tragen', norm: 'ISO 7010 M004', location: 'Chemikaliendosierung, Filterspülung', meaning: 'Bei ätzenden Stoffen ist dichte Schutzbrille Pflicht. Spritzer können Erblindung verursachen.', action: 'Vollsichtbrille muss dicht anliegen — normale Brille reicht nicht!' },
-  { id: 'g5', cat: 'gebot', emoji: '😷', name: 'Atemschutz tragen', norm: 'ISO 7010 M017', location: 'Chlorgasraum, bei starker Staubentwicklung', meaning: 'Atemschutz vorgeschrieben — schützt vor giftigen Gasen oder gefährlichem Staub.', action: 'Vollschutzmaske für Chlorgasraum. Halbmaske für Staubschutz. Vor Betreten anlegen.' },
-  { id: 'g6', cat: 'gebot', emoji: '1️⃣', name: 'Einzeln benutzen', norm: 'DIN 19616 / Hausordnung', location: 'Wasserrutschen, Sprunganlagen', meaning: 'Rutsche oder Anlage darf immer nur von einer Person gleichzeitig genutzt werden.', action: 'Nächste Person erst loslassen wenn vorherige den Auslaufbereich verlassen hat. Aufsicht nötig.' },
+  // GEBOTSCHILDER — blauer Kreis, weißes Symbol · ASR A1.3 Abschnitt 4.3
+  { id: 'g1', cat: 'gebot', emoji: '🚿', name: 'Vor dem Baden duschen', norm: 'DIN 19643 · IfSG · ASR A1.3', location: 'Eingang zum Beckenbereich, Duschbereich', meaning: 'Pflichtdusche gesetzlich vorgeschrieben (DIN 19643 Abschnitt 4.3). Entfernt Schweiß, Körperpflege, Sonnencreme und Keime — schützt die Wasserqualität.', action: 'Badegäste freundlich auf die Duschpflicht hinweisen. Fehlende Dusche = erhöhter Chemikalienbedarf.' },
+  { id: 'g2', cat: 'gebot', emoji: '🦺', name: 'Schwimmhilfe tragen', norm: 'Hausordnung · DGUV V 1 §4', location: 'Nichtschwimmerbereich, Freizeitbecken', meaning: 'Nichtschwimmer müssen in tiefen Bereichen eine Schwimmhilfe tragen — Aufsichtspflicht des Betreibers.', action: 'Nichtschwimmer ohne Schwimmhilfe aus tiefem Bereich bitten. Schwimmhilfen ggf. verleihen.' },
+  { id: 'g3', cat: 'gebot', emoji: '🧤', name: 'Schutzhandschuhe tragen', norm: 'DIN EN ISO 7010 M009 · DGUV R 112-189 · GefStoffV', location: 'Chemikalienraum, Dosierstationen, Reinigungsarbeiten', meaning: 'Beim Umgang mit Gefahrstoffen Pflicht — schützt vor chemischen Verätzungen und Hautresorption. Vorgeschrieben in der Betriebsanweisung nach §14 GefStoffV.', action: 'Nitril für Chlorprodukte, Neopren für Säuren. Latexallergie prüfen. DGUV Regel 112-189 (PSA) beachten.' },
+  { id: 'g4', cat: 'gebot', emoji: '🥽', name: 'Schutzbrille tragen', norm: 'DIN EN ISO 7010 M004 · DGUV R 112-189', location: 'Chemikaliendosierung, Filterspülung, Säurearbeit', meaning: 'Bei ätzenden Stoffen ist eine dicht schließende Vollsichtbrille Pflicht. Spritzer können irreversible Augenschäden verursachen.', action: 'Vollsichtbrille (dicht anliegend) — normale Brille bietet keinen ausreichenden Schutz! DGUV Regel 112-189.' },
+  { id: 'g5', cat: 'gebot', emoji: '😷', name: 'Atemschutz tragen', norm: 'DIN EN ISO 7010 M017 · DGUV R 112-190 · GefStoffV', location: 'Chlorgasraum, Chlorkalkbereich, starke Stäube', meaning: 'Atemschutz vorgeschrieben — schützt vor giftigen Gasen (Chlor, Chlordioxid) oder gesundheitsschädlichem Staub (Chlorkalk).', action: 'Vollschutzmaske mit Filter B (Chlorgas) für Chlorraum. DGUV Regel 112-190 (Atemschutz) beachten.' },
+  { id: 'g6', cat: 'gebot', emoji: '1️⃣', name: 'Einzeln benutzen', norm: 'DIN EN 16582 · Hausordnung · DGUV V 1', location: 'Wasserrutschen, Sprunganlagen', meaning: 'Rutsche/Anlage darf nur von einer Person gleichzeitig genutzt werden — Kollisionsgefahr und Aufprall im Auffangbecken.', action: 'Nächste Person erst loslassen wenn vorherige den Auslaufbereich verlassen hat. Aufsicht ist Pflicht.' },
 
-  // RETTUNGSZEICHEN
-  { id: 'r1', cat: 'rettung', emoji: '🛟', name: 'Rettungsring', norm: 'ISO 7010 E017', location: 'An jedem Becken, Außenanlagen, Stege', meaning: 'Zeigt den Standort des Rettungsrings. Muss immer einsatzbereit am angegebenen Platz hängen.', action: 'Täglich prüfen: vorhanden? Unbeschädigt? Leine aufgerollt? Fehlendes Gerät sofort melden.' },
-  { id: 'r2', cat: 'rettung', emoji: '➕', name: 'Erste Hilfe', norm: 'ISO 7010 E003', location: 'Erste-Hilfe-Raum, Sanitätsecke, Eingang', meaning: 'Standort des Erste-Hilfe-Materials (Verbandkasten, Trage, AED). Im Notfall sofort aufsuchen.', action: 'Verbandkasten regelmäßig prüfen (vollständig, nicht abgelaufen). AED-Batterie und Pads prüfen.' },
-  { id: 'r3', cat: 'rettung', emoji: '🚪', name: 'Notausgang', norm: 'ISO 7010 E001/E002', location: 'Alle Ausgänge, Fluchtwege, Treppenhäuser', meaning: 'Zeigt den Fluchtweg im Notfall. Muss immer freigehalten und beleuchtet sein (auch bei Stromausfall).', action: 'Niemals blockieren. Nachleuchtend oder beleuchtet — bei Ausfall sofort melden.' },
-  { id: 'r4', cat: 'rettung', emoji: '❤️', name: 'Defibrillator (AED)', norm: 'ISO 7010 E010', location: 'Eingangsbereich, Aufsichtsraum, gut sichtbar', meaning: 'Standort des automatischen Defibrillators. Bei Herzstillstand sofort holen — AED erklärt die Bedienung selbst!', action: 'Standort auswendig kennen! Monatlich auf Betriebsbereitschaft prüfen.' },
-  { id: 'r5', cat: 'rettung', emoji: '📞', name: 'Notruftelefon', norm: 'ISO 7010 E004', location: 'Aufsichtsraum, Eingang, Technikraum', meaning: 'Standort des Notruftelefons. Im Notfall: 112 wählen (Feuerwehr/Rettungsdienst).', action: 'Notrufnummer 112 kennen. Adresse der Anlage für den Notruf auswendig kennen.' },
-  { id: 'r6', cat: 'rettung', emoji: '📍', name: 'Sammelstelle', norm: 'ISO 7010 E007', location: 'Außenbereich, Parkplatz, Evakuierungsplan', meaning: 'Treffpunkt im Notfall — alle Personen nach Evakuierung hier versammeln.', action: 'Allen Mitarbeitern bekannt machen. Bei Alarm alle dorthin führen und Personen zählen.' },
+  // RETTUNGSZEICHEN — grünes Rechteck, weißes Symbol · ASR A1.3 + DIN EN 1838
+  { id: 'r1', cat: 'rettung', emoji: '🛟', name: 'Rettungsring', norm: 'DIN EN ISO 7010 E017 · ASR A1.3 · DIN EN 13074', location: 'An jedem Becken, Außenanlagen, Stege', meaning: 'Zeigt den Standort des Rettungsrings mit Wurfleinen. Muss immer griffbereit hängen — tägliche Kontrolle Pflicht.', action: 'Täglich prüfen: vorhanden, unbeschädigt, Leine aufgerollt? Fehlendes Gerät sofort ersetzen. DGUV V 1 §4.' },
+  { id: 'r2', cat: 'rettung', emoji: '➕', name: 'Erste Hilfe', norm: 'DIN EN ISO 7010 E003 · ASR A1.3 · DGUV V 1 §26', location: 'Erste-Hilfe-Raum, Sanitätsecke, Eingang', meaning: 'Standort des Erste-Hilfe-Materials (Verbandkasten nach DIN 13157, Trage, AED). Im Notfall sofort aufsuchen.', action: 'Verbandkasten monatlich prüfen: vollständig, nicht abgelaufen. AED-Batterie und Pads prüfen. DGUV V 1 §26.' },
+  { id: 'r3', cat: 'rettung', emoji: '🚪', name: 'Notausgang / Fluchtweg', norm: 'DIN EN ISO 7010 E001/E002 · ASR A2.3 · ArbStättV', location: 'Alle Ausgänge, Fluchtwege, Treppenhäuser', meaning: 'Zeigt den Fluchtweg im Notfall (ArbStättV Anhang 2.3). Muss immer freigehalten und beleuchtet sein — auch bei Stromausfall (Sicherheitsbeleuchtung).', action: 'Niemals blockieren oder zustellen. Nachleuchtend oder mit Sicherheitsbeleuchtung (EN 1838). Bei Ausfall sofort melden.' },
+  { id: 'r4', cat: 'rettung', emoji: '❤️', name: 'Defibrillator (AED)', norm: 'DIN EN ISO 7010 E010 · ASR A1.3', location: 'Eingangsbereich, Aufsichtsraum, zentral zugänglich', meaning: 'Standort des automatischen Defibrillators. Bei Herzstillstand sofort holen und einschalten — AED führt durch die Bedienung.', action: 'Standort auswendig kennen! Monatliche Sichtkontrolle (Betriebsbereitschaft). Jährliche Wartung durch Fachkundigen.' },
+  { id: 'r5', cat: 'rettung', emoji: '📞', name: 'Notruftelefon', norm: 'DIN EN ISO 7010 E004 · ArbStättV · DGUV V 1', location: 'Aufsichtsraum, Eingang, Technikraum', meaning: 'Standort des Notruftelefons. Im Notfall: 112 (Feuerwehr/Rettungsdienst) — Adresse, Lage und Art des Notfalls nennen.', action: 'Vollständige Adresse auswendig kennen. DGUV V 1 §26: Notrufeinrichtungen müssen vorhanden und bekannt sein.' },
+  { id: 'r6', cat: 'rettung', emoji: '📍', name: 'Sammelstelle', norm: 'DIN EN ISO 7010 E007 · ASR A2.3', location: 'Außenbereich, Parkplatz, Evakuierungsplan', meaning: 'Treffpunkt im Notfall — alle Personen nach Evakuierung hier versammeln und zählen. Im Brandschutz- und Evakuierungskonzept verankert.', action: 'Allen Mitarbeitern und Aushilfen bekannt machen. Bei Alarm: alle zum Sammelplatz führen und Vollständigkeit prüfen.' },
 
-  // BRANDSCHUTZ
-  { id: 'b1', cat: 'brandschutz', emoji: '🧯', name: 'Feuerlöscher', norm: 'ISO 7010 F001', location: 'Fluchtwege, Technikräume, Eingangsbereich', meaning: 'Standort des Feuerlöschers. Im Brandfall einsetzen — nur wenn eigene Flucht noch möglich!', action: 'Jährliche Wartung prüfen (Plakette). Druckanzeige im grünen Bereich. Nicht verrücken ohne Ersatz.' },
-  { id: 'b2', cat: 'brandschutz', emoji: '🔔', name: 'Brandmelder / Auslöser', norm: 'ISO 7010 F005', location: 'Fluchtwege, alle Stockwerke', meaning: 'Manuelle Brandmeldeanlage — bei echtem Brand Scheibe einschlagen und auslösen. Alarmiert Feuerwehr automatisch.', action: 'Nur bei echtem Brand auslösen. Falscher Alarm kostet Geld und bindet Einsatzkräfte.' },
-  { id: 'b3', cat: 'brandschutz', emoji: '🚿', name: 'Wandhydrant', norm: 'ISO 7010 F002', location: 'Flure, Treppenhäuser', meaning: 'Standort des Wandhydranten für Feuerwehr oder eingewiesenes Personal zur Brandbekämpfung.', action: 'Nur durch eingewiesenes Personal benutzen. Tür niemals blockieren oder versperren.' },
+  // BRANDSCHUTZZEICHEN — rotes Rechteck, weißes Symbol · ASR A1.3 Abschnitt 4.4
+  { id: 'b1', cat: 'brandschutz', emoji: '🧯', name: 'Feuerlöscher', norm: 'DIN EN ISO 7010 F001 · ASR A1.3 · BetrSichV', location: 'Fluchtwege, Technikräume, Eingangsbereich', meaning: 'Standort des Feuerlöschers. Im Brandfall einsetzen — nur wenn Flucht noch sicher möglich! Selbstschutz geht vor.', action: 'Jährliche Wartung prüfen (Prüfplakette). Druckanzeige im grünen Bereich. Nicht verrücken ohne gleichwertigen Ersatz.' },
+  { id: 'b2', cat: 'brandschutz', emoji: '🔔', name: 'Brandmelder / Handauslöser', norm: 'DIN EN ISO 7010 F005 · DIN 14661 · ASR A1.3', location: 'Fluchtwege, alle Stockwerke, Ausgänge', meaning: 'Manuelle Brandmeldeanlage (Druckknopfmelder) — bei echtem Brand Glasscheibe einschlagen und Knopf drücken. Alarmiert automatisch Feuerwehr.', action: 'Nur bei echtem Brand auslösen! Falscher Alarm bindet Einsatzkräfte und kostet Gebühren.' },
+  { id: 'b3', cat: 'brandschutz', emoji: '🔧', name: 'Wandhydrant', norm: 'DIN EN ISO 7010 F002 · DIN 14461 · ASR A1.3', location: 'Flure, Treppenhäuser, Zugangspunkte', meaning: 'Standort des Wandhydranten (Löschwasseranschluss) für Feuerwehr oder eingewiesenes Personal zur Erstbrandbekämpfung.', action: 'Nur durch eingewiesenes Personal benutzen. Tür niemals versperren. Jährliche Prüfung nach BetrSichV.' },
 ];
 
 const SIGN_CATEGORIES = [
@@ -75,14 +77,14 @@ const TABS = {
     id: 'grundlagen',
     chip: 'Grundlagen',
     title: 'Warum sind Schilder so wichtig?',
-    intro: 'Im Schwimmbad kommen täglich viele Menschen zusammen — Kinder, Erwachsene, Nichtschwimmer, ältere Gäste. Schilder und Kennzeichnungen sind die erste Schutzlinie: Sie warnen vor Gefahren, zeigen Verbote, weisen Rettungswege aus und informieren über Regeln. Als FaBB musst du alle Schilder kennen, ihre Bedeutung erklären können und sicherstellen, dass sie lesbar, vollständig und korrekt angebracht sind.',
+    intro: 'Im Schwimmbad kommen täglich viele Menschen zusammen — Kinder, Erwachsene, Nichtschwimmer, ältere Gäste. Schilder und Kennzeichnungen sind die erste Schutzlinie. Die rechtliche Grundlage bilden die ASR A1.3 (Technische Regeln für Arbeitsstätten), DIN EN ISO 7010 (internationale Sicherheitszeichen) und die DGUV Vorschrift 1 (Grundsätze der Prävention). Als FaBB musst du alle Schilder kennen, ihre Bedeutung erklären können und deren ordnungsgemäßen Zustand sicherstellen.',
     motto: 'Ein fehlendes Schild kann ein Unfall sein, der nicht passiert wäre.',
     rules: [
-      'Sicherheitszeichen sind in der ASR A1.3 (Technische Regeln für Arbeitsstätten) und der ISO 7010 geregelt.',
-      'Farbe ist kein Zufall: Rot = Verbot/Gefahr, Gelb = Warnung, Grün = Rettung, Blau = Gebot.',
-      'Alle Schilder müssen gut sichtbar, lesbar und unbeschädigt sein. Verblasste Schilder sofort ersetzen.',
-      'Badeordnung und Hausordnung müssen gut sichtbar am Eingang und an den Becken ausgehängt sein.',
-      'Nichtschwimmerbereiche müssen klar gekennzeichnet sein — mit Tiefenangaben und Warnschildern.',
+      'Rechtsgrundlage: ASR A1.3 "Sicherheits- und Gesundheitsschutzkennzeichnung" + DIN EN ISO 7010 + DGUV Vorschrift 1.',
+      'Farbe ist normiert: Rot = Verbot/Brandschutz, Gelb = Warnung, Grün = Rettung/Erste Hilfe, Blau = Gebot.',
+      'Alle Schilder müssen gut sichtbar, lesbar und unbeschädigt sein. Verblasste Schilder sind rechtlich wertlos — sofort ersetzen.',
+      'Badeordnung und Hausordnung Pflicht: gut sichtbar am Eingang und an den Becken (IfSG, DIN 19643).',
+      'Nichtschwimmerbereiche mit Tiefenangaben kennzeichnen — fehlende Angaben verletzen die Verkehrssicherungspflicht.',
     ],
     steps: [
       { title: '1. Die vier Signalfarben', text: 'Rot = Verbot oder Brandschutz (Kreis mit Querstrich). Gelb/Orange = Warnung (Dreieck). Grün = Rettungsweg/Erste Hilfe (Rechteck). Blau = Gebot (Kreis, z.B. Schwimmweste tragen). International genormt!' },
@@ -243,6 +245,80 @@ const TABS = {
       ],
       correctIndex: 1,
       explanation: 'Erst sichern, dann melden, dann dokumentieren. Der Bereich muss sofort abgesichert werden. Dann schriftliche Dokumentation und Meldung an den Vorgesetzten.',
+    },
+  },
+
+  betriebsanweisungen: {
+    id: 'betriebsanweisungen',
+    chip: 'Betriebsanweisungen',
+    title: 'Betriebsanweisungen — Typen, Inhalt und Unterschiede',
+    intro: 'Eine Betriebsanweisung (BA) ist eine schriftliche, arbeitsplatzbezogene Anweisung für Mitarbeiter — sie erklärt konkret, wie sicher mit einem Gefahrstoff oder Arbeitsmittel umzugehen ist. Im Schwimmbad gibt es mehrere Typen, die sich in Rechtsgrundlage, Pflichtinhalt und Unterweisungsrhythmus unterscheiden. Alle müssen in verständlicher Sprache verfasst, am Arbeitsplatz zugänglich und Grundlage regelmäßiger Unterweisungen sein.',
+    motto: 'Ohne Betriebsanweisung, keine Unterweisung — ohne Unterweisung, keine Sicherheit.',
+    rules: [
+      'Betriebsanweisung Gefahrstoffe: Pflicht für jeden Gefahrstoff nach §14 GefStoffV — 7 Pflichtpunkte, jährliche Unterweisung.',
+      'Betriebsanweisung Arbeitsmittel: Pflicht für gefährliche Maschinen/Anlagen nach §12 BetrSichV — bei Einsatz und Änderungen.',
+      'Allgemeine Betriebsanweisung: Verhaltensregeln am Arbeitsplatz nach ArbSchG — z.B. Verhalten bei Unfall oder Brand.',
+      'Alle BA müssen am Arbeitsplatz ausgehängt oder sofort zugänglich sein — nicht im Büro-Ordner verstecken.',
+      'Unterweisung muss dokumentiert werden (Datum, Name, Unterschrift) — ohne Nachweis gilt sie als nicht durchgeführt.',
+    ],
+    steps: [
+      {
+        title: '1. Gefahrstoff-Betriebsanweisung (§14 GefStoffV)',
+        text: 'Pflicht für JEDEN Gefahrstoff im Betrieb (Chlor, Salzsäure, Natronlauge, Desinfektionsmittel…). 7 Pflichtpunkte: (1) Stoff-/Produktname + GHS-Symbole, (2) Gefahren für Mensch und Umwelt, (3) Schutzmaßnahmen und Verhaltensregeln, (4) Verhalten im Gefahrfall, (5) Erste Hilfe, (6) Instandhaltung/Kontrolle, (7) Entsorgung. Unterweisung: mindestens jährlich + bei Einstellung + bei Produktwechsel. Nachweis durch Unterschrift der Mitarbeiter.',
+      },
+      {
+        title: '2. Arbeitsmittel-Betriebsanweisung (§12 BetrSichV)',
+        text: 'Für jedes Arbeitsmittel mit Gefährdungspotenzial: Umwälzpumpen, Dosieranlagen, Hochdruckreiniger, Filteranlagen, Beckenhebeanlage. Pflichtinhalt: Bestimmungsgemäße Verwendung, verbotene Handlungen, Gefährdungen, Schutzmaßnahmen, Verhalten bei Störungen/Unfällen, Instandhaltung. KEIN festes Jahresintervall — Unterweisung bei Einsatz, bei Änderung der Anlage und bei Unfällen.',
+      },
+      {
+        title: '3. Unterschiede auf einen Blick',
+        text: 'Gefahrstoff-BA: Stoff-spezifisch · §14 GefStoffV · 7 Pflichtpunkte · jährliche Unterweisung. — Arbeitsmittel-BA: Gerät-spezifisch · §12 BetrSichV · bei Gefährdungsbeurteilung · Unterweisung bei Änderung. — Allgemeine BA: Verhaltensregeln/Organisatorisches · ArbSchG · z.B. Notfallplan, Arbeitszeiten. Der größte Unterschied: Rechtsgrundlage und der Rhythmus der Unterweisung.',
+      },
+      {
+        title: '4. Wer erstellt die Betriebsanweisung?',
+        text: 'Verantwortlich ist der Arbeitgeber (Betriebsleiter). In der Praxis: Fachkraft für Arbeitssicherheit (SiFa) erstellt sie gemeinsam mit dem Betriebsleiter. Basis: Sicherheitsdatenblatt (SDB) des Herstellers, Abschnitt 7 (Handhabung) und 8 (PSA). Mustervorlagen: DGUV Information 213-085 (Gefahrstoffe) und Vorlagen der Berufsgenossenschaft.',
+      },
+    ],
+    examples: [
+      {
+        title: 'BA für Natriumhypochlorit (Flüssigchlor)',
+        given: 'Im Chlorraum wird Natriumhypochlorit (NaOCl) für die Wasserdesinfektion eingesetzt.',
+        question: 'Was muss die Betriebsanweisung zwingend enthalten?',
+        steps: [
+          ['Stoff + GHS', 'Natriumhypochlorit, NaOCl — GHS05 (Ätzend), GHS09 (Umwelt)'],
+          ['Gefahren', 'Ätzend für Haut/Augen. Kontakt mit Säuren → sofort Chlorgas (GHS06, Lebensgefahr)!'],
+          ['PSA', 'Nitrilhandschuhe, Vollsichtbrille, Schürze, bei Leckage: Atemschutz Vollmaske'],
+          ['Erste Hilfe', 'Haut/Augen: sofort 15 Min. mit Wasser spülen, dann Arzt'],
+          ['Entsorgung', 'Nicht ins Abwasser — neutralisieren, als Sondermüll entsorgen'],
+        ],
+      },
+      {
+        title: 'BA für Hochdruckreiniger',
+        given: 'Ein Hochdruckreiniger wird für die Beckenrand- und Technikraumpflege eingesetzt.',
+        question: 'Was unterscheidet diese BA von der Gefahrstoff-BA?',
+        steps: [
+          ['Typ', 'Arbeitsmittel-BA nach §12 BetrSichV — nicht nach GefStoffV'],
+          ['Gefährdungen', 'Druckstrahl (> 100 bar) → Hautinjektionen, Abpraller, Lärm (> 85 dB)'],
+          ['Verbote', 'Niemals auf Personen richten. Nicht ohne PSA. Kein Einsatz im Becken'],
+          ['Kein Jahresintervall', 'Unterweisung bei Geräteeinsatz — nicht zwingend jährlich'],
+        ],
+      },
+    ],
+    pitfalls: [
+      'Eine BA die nur im Ordner liegt hilft niemandem — sie muss am Arbeitsplatz hängen oder sofort greifbar sein.',
+      'Jährliche Unterweisung ohne Unterschrift ist nicht nachweisbar — bei Unfällen haftet der Betrieb.',
+      'Eine BA für "Chlor allgemein" reicht nicht — Natriumhypochlorit, Calciumhypochlorit und Chlorgas sind verschiedene Stoffe mit eigener BA.',
+      'Produktwechsel vergessen: Neues Reinigungsmittel = sofort neue BA erstellen und neu unterweisen!',
+    ],
+    quiz: {
+      question: 'Wie oft muss ein Mitarbeiter laut §14 GefStoffV über eine Gefahrstoff-Betriebsanweisung unterwiesen werden?',
+      options: [
+        'Einmalig bei der Einstellung reicht aus',
+        'Mindestens einmal jährlich sowie bei Änderungen und bei der Einstellung — mit Unterschrift',
+        'Nur wenn ein Unfall passiert ist',
+      ],
+      correctIndex: 1,
+      explanation: '§14 Abs. 2 GefStoffV schreibt mindestens jährliche Unterweisung vor — plus sofort bei Einstellung und bei Produktänderungen. Die Unterschrift der Mitarbeiter ist Pflicht: ohne Nachweis gilt die Unterweisung als nicht erfolgt, der Betrieb haftet bei Unfällen.',
     },
   },
 
