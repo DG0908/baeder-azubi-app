@@ -42,6 +42,11 @@ const LazyElektrolyseAnlageDeepDiveView = lazy(() => import('./chemie/Elektrolys
 const LazyBeschilderungDeepDiveView = lazy(() => import('./hygiene/BeschilderungDeepDiveView'));
 const LazyReinigungDesinfektionDeepDiveView = lazy(() => import('./hygiene/ReinigungDesinfektionDeepDiveView'));
 const LazyGefahrstoffeDeepDiveView = lazy(() => import('./hygiene/GefahrstoffeDeepDiveView'));
+const LazyGewaltenteilungDeepDiveView = lazy(() => import('./recht/GewaltenteilungDeepDiveView'));
+const LazyStrafRechtBadDeepDiveView = lazy(() => import('./recht/StrafRechtBadDeepDiveView'));
+const LazyJugendarbeitsschutzDeepDiveView = lazy(() => import('./recht/JugendarbeitsschutzDeepDiveView'));
+const LazyMutterschutzDeepDiveView = lazy(() => import('./recht/MutterschutzDeepDiveView'));
+const LazyKuendigungDeepDiveView = lazy(() => import('./recht/KuendigungDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -651,6 +656,41 @@ const LEARNING_CATEGORIES = [
         icon: '📣',
         available: false,
       },
+      {
+        id: 'gewaltenteilung',
+        name: 'Gewaltenteilung & Staatsrecht',
+        description: 'Legislative, Exekutive, Judikative — Behörden im Bäderbetrieb',
+        icon: '🏛️',
+        available: true,
+      },
+      {
+        id: 'strafrecht-bad',
+        name: 'Strafrecht im Schwimmbad',
+        description: '§323c StGB, Garantenstellung, Fahrlässigkeit, Verkehrssicherungspflicht',
+        icon: '⚖️',
+        available: true,
+      },
+      {
+        id: 'jugendarbeitsschutz',
+        name: 'Jugendarbeitsschutzgesetz',
+        description: 'Arbeitszeiten, Verbote und Ausnahmen für Jugendliche (JArbSchG)',
+        icon: '👶',
+        available: true,
+      },
+      {
+        id: 'mutterschutz',
+        name: 'Mutterschutz & Elternzeit',
+        description: 'MuSchG, Beschäftigungsverbote, Elternzeit nach BEEG',
+        icon: '🤰',
+        available: true,
+      },
+      {
+        id: 'kuendigung',
+        name: 'Kündigung im Arbeitsrecht',
+        description: 'Ordentliche & außerordentliche Kündigung, Abmahnung, KSchG',
+        icon: '📄',
+        available: true,
+      },
     ],
   },
 ];
@@ -1100,6 +1140,101 @@ const InteractiveLearningView = () => {
           )}
         >
           <LazyGefahrstoffeDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'gewaltenteilung') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Gewaltenteilung...</div>}>
+          <LazyGewaltenteilungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'strafrecht-bad') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Strafrecht...</div>}>
+          <LazyStrafRechtBadDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'jugendarbeitsschutz') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Jugendarbeitsschutz...</div>}>
+          <LazyJugendarbeitsschutzDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'mutterschutz') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Mutterschutz...</div>}>
+          <LazyMutterschutzDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'kuendigung') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveModule(null)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'
+          }`}
+        >
+          <ArrowLeft size={16} />
+          Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Kündigung...</div>}>
+          <LazyKuendigungDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
