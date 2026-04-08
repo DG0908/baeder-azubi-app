@@ -229,6 +229,95 @@ const TABS = {
     },
   },
 
+  ghs: {
+    id: 'ghs',
+    chip: 'GHS-Zeichen',
+    title: 'GHS-Kennzeichnung von Reinigungsmitteln im Schwimmbad',
+    intro: 'Alle Chemikalien und Reinigungsmittel im Schwimmbad müssen nach dem GHS/CLP-System (Globally Harmonised System / CLP-Verordnung EG 1272/2008) gekennzeichnet sein. Die rautenfoermigen Piktogramme mit rotem Rand zeigen auf einen Blick welche Gefahr von einem Stoff ausgeht. Als FaBB musst du die Zeichen auswendig kennen und sofort richtig reagieren koennen.',
+    motto: 'Kein Gefahrstoff ohne GHS-Zeichen — kein GHS-Zeichen ohne Betriebsanweisung.',
+    rules: [
+      'GHS-Piktogramme sind rautenfoermig (Quadrat auf Spitze), weiss mit rotem Rand und schwarzem Symbol.',
+      'CLP-Verordnung (EG) 1272/2008 schreibt die Kennzeichnung aller Gefahrstoffe in der EU vor.',
+      'Jeder Stoff kann mehrere GHS-Symbole haben — alle gelten gleichzeitig!',
+      'H-Saetze (Hazard) beschreiben die Gefahr, P-Saetze (Precautionary) die Schutzmassnahmen.',
+      'Sicherheitsdatenblatt (SDB) muss fuer jeden Gefahrstoff vorliegen — 16 Abschnitte, Abschnitt 2 = Gefahren.',
+    ],
+    steps: [
+      {
+        title: 'GHS01 — Explosivstoffe (Bombe)',
+        text: 'Symbol: explodierende Bombe. Bedeutung: Stoff kann explodieren oder deflagrieren. Im Schwimmbad: Calciumhypochlorit (Feststoffchlor) bei unsachgemaesser Lagerung — nicht mit Saeure, Oel oder organischen Stoffen lagern! Bei Brand sofort Feuerwehr — NIEMALS loeschen, Explosion moeglich.',
+      },
+      {
+        title: 'GHS02 — Entzuendliche Stoffe (Flamme)',
+        text: 'Symbol: Flamme. Bedeutung: leicht entzuendlich, selbstentzuendlich. Im Schwimmbad: Alkohol-Desinfektionsmittel (Haende, Flaechen). Wichtig: Fern von Waermequellen lagern. Nicht in der Naehe von Chlorgas einsetzen — explosives Gemisch moeglich.',
+      },
+      {
+        title: 'GHS03 — Oxidierende Stoffe (Flamme ueber Kreis)',
+        text: 'Symbol: Flamme ueber einem Kreis. Bedeutung: Stoff gibt Sauerstoff ab und foerdert Brände/Explosionen anderer Stoffe. Im Schwimmbad: Calciumhypochlorit (Ca(OCl)₂), Natriumhypochlorit. Absolut getrennt von brennbaren Stoffen lagern! Oxidationsmittel + Oel = sofortiger Brand.',
+      },
+      {
+        title: 'GHS04 — Gase unter Druck (Gasflasche)',
+        text: 'Symbol: Gasflasche. Bedeutung: Gas unter Druck — kann bei Erwaermung explodieren, ausstroemsames Gas kann sauerstoffverdraengend sein. Im Schwimmbad: CO₂-Flaschen fuer pH-Regulierung, Chlorgasflaschen. Flaschen stehend lagern, sichern, nicht kuenstlich erwaermen.',
+      },
+      {
+        title: 'GHS05 — Aetzende Stoffe (Hand + Material)',
+        text: 'Symbol: Hand und Material werden aufgeloest. Bedeutung: verursacht schwere Veraetzungen von Haut und Augen. Im Schwimmbad haeufig: Salzsaeure (pH-Minus), Natronlauge (pH-Plus), Natriumhypochlorit, Schwefelsaeure. PSA: Vollsichtbrille + Saeureschutzhandschuhe + Schuerze. Erste Hilfe: 15 Min. mit Wasser spuelen.',
+      },
+      {
+        title: 'GHS06 — Akut giftig (Totenkopf)',
+        text: 'Symbol: Totenkopf mit Knochen. Bedeutung: bereits kleine Mengen koennen toedlich wirken (orale, dermale oder inhalative Aufnahme). Im Schwimmbad: Chlorgas (Cl₂) — entsteht wenn Salzsaeure und Chlorprodukte gemischt werden! Beim kleinsten Verdacht: Raum sofort verlassen, 112 rufen.',
+      },
+      {
+        title: 'GHS07 — Gesundheitsschaedlich (Ausrufezeichen)',
+        text: 'Symbol: Ausrufezeichen. Bedeutung: gesundheitsschaedlich, reizend, kann Atemwege und Haut reizen. Im Schwimmbad: Aluminiumsulfat (Flockungsmittel), verduennte Saeuren, viele Reiniger. Weniger akut als GHS06 — aber bei regelmaessigem Kontakt chronisch schaedlich. PSA trotzdem tragen!',
+      },
+      {
+        title: 'GHS09 — Umweltgefaehrlich (toter Fisch + Baum)',
+        text: 'Symbol: toter Fisch und absterbender Baum. Bedeutung: Stoff ist giftig fuer Wasserorganismen, teils mit Langzeitwirkung. Im Schwimmbad: Natriumhypochlorit, Desinfektionsmittel (Quats). Niemals in den Abfluss oder Grundwasser — Sondermüll oder Neutralisierung. GefStoffV §16: Entsorgung dokumentieren.',
+      },
+    ],
+    examples: [
+      {
+        title: 'Natriumhypochlorit (Fluessigchlor, NaOCl)',
+        given: 'Kanister mit Natriumhypochlorit 13% im Technikraum. Etikett zeigt GHS05 und GHS09.',
+        question: 'Was bedeuten die Zeichen und was tust du?',
+        steps: [
+          ['GHS05 (Aetzend)', 'Direkter Kontakt aetzt Haut und Augen — schwere Schaeden moeglich'],
+          ['GHS09 (Umwelt)', 'Umweltgefaehrlich — NICHT in Abfluss, kein Grundwasserkontakt'],
+          ['PSA', 'Nitrilhandschuhe + Vollsichtbrille + Schuerze — immer!'],
+          ['Achtung', 'Mit Salzsaeure mischen erzeugt sofort Chlorgas (GHS06) — Lebensgefahr!'],
+        ],
+      },
+      {
+        title: 'Calciumhypochlorit (Chlorkalk, Ca(OCl)₂)',
+        given: 'Feststoff-Chloranlage mit Calciumhypochlorit. Etikett zeigt GHS03, GHS05, GHS09.',
+        question: 'Welche besondere Gefahr hat dieser Stoff?',
+        steps: [
+          ['GHS03 (Oxidierend)', 'Gibt aktiv Sauerstoff ab — foerdert Braende und Explosionen!'],
+          ['GHS05 (Aetzend)', 'Feststoff und Loesungen sind stark aetzend'],
+          ['Kritisch', 'Nie mit Oel, Fett, organischen Stoffen oder Saeure lagern — Brandgefahr!'],
+          ['Lagerung', 'Trocken, kuhl, in Originalbehaelter — getrennt von Sauren und Brennbarem'],
+        ],
+      },
+    ],
+    pitfalls: [
+      'GHS06 (Totenkopf) entsteht nicht nur aus dem Kanister — Chlorgas bildet sich wenn Chlor + Saeure gemischt werden!',
+      'Mehrere GHS-Symbole auf einem Etikett bedeuten mehrere Gefahren gleichzeitig — alle beachten!',
+      'GHS09 (Umwelt) wird oft ignoriert: auch kleine Mengen Chlor im Grundwasser koennen Oekosysteme schaedigen.',
+      'Verblasstes oder entferntes GHS-Etikett ist eine Ordnungswidrigkeit — Behaelter sofort neu beschriften!',
+    ],
+    quiz: {
+      question: 'Welche Gefahr zeigt das GHS03-Piktogramm (Flamme ueber Kreis)?',
+      options: [
+        'Der Stoff ist leicht entflammbar und kann selbst brennen',
+        'Der Stoff ist oxidierend — er gibt Sauerstoff ab und kann Braende anderer Stoffe foerdern',
+        'Der Stoff ist explosiv und kann detonieren',
+      ],
+      correctIndex: 1,
+      explanation: 'GHS03 (Flamme ueber einem Kreis) kennzeichnet oxidierende Stoffe wie Calciumhypochlorit oder Natriumhypochlorit. Sie brennen nicht selbst, foerdern aber die Verbrennung anderer Stoffe durch Sauerstoffabgabe. Deshalb muessen Oxidationsmittel absolut getrennt von Brennstoffen, Oelen und organischen Materialien gelagert werden.',
+    },
+  },
+
   hygieneplan: {
     id: 'hygieneplan',
     chip: 'Hygieneplan',
