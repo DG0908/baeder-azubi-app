@@ -10,36 +10,24 @@
     {
       "id": "poolside-collapse-adult-001",
       "title": "Kollaps am Beckenrand",
-      "subtitle": "Bewusstlose erwachsene Person mit AED im Bad",
+      "subtitle": "Bewusstlose erwachsene Person – AED verfügbar",
+      "icon": "❤️",
       "mode": "einsatz",
       "difficulty": "mittel",
       "estimatedMinutes": 4,
       "timerSeconds": 150,
-      "audience": ["azubi", "trainer", "admin"],
       "category": "Erste Hilfe",
       "learningGoals": [
         "Bewusstlosigkeit sicher erkennen",
         "Normale Atmung beurteilen",
         "Notruf und AED ohne Zeitverlust organisieren",
         "Klare Teamdelegation unter Stress trainieren",
-        "Eine saubere Kurzuebergabe formulieren"
+        "Eine saubere Kurzübergabe formulieren"
       ],
       "criticalFailures": [
-        {
-          "id": "no_scene_check",
-          "label": "Eigenschutz und Ansprechkontrolle ausgelassen",
-          "effect": "hard_fail"
-        },
-        {
-          "id": "no_emergency_call",
-          "label": "Notruf nicht veranlasst",
-          "effect": "hard_fail"
-        },
-        {
-          "id": "no_cpr",
-          "label": "Keine Wiederbelebung trotz fehlender normaler Atmung begonnen",
-          "effect": "hard_fail"
-        }
+        { "id": "no_scene_check", "label": "Eigenschutz und Ansprechkontrolle ausgelassen", "effect": "hard_fail" },
+        { "id": "no_emergency_call", "label": "Notruf nicht veranlasst", "effect": "hard_fail" },
+        { "id": "no_cpr", "label": "Keine Wiederbelebung trotz fehlender normaler Atmung begonnen", "effect": "hard_fail" }
       ],
       "scoring": {
         "maxPoints": 100,
@@ -49,11 +37,11 @@
         "criticalFailurePenalty": "fail_case"
       },
       "debrief": {
-        "headline": "Pruefen, rufen, druecken",
+        "headline": "Prüfen – Rufen – Drücken",
         "summary": "Bei Bewusstlosigkeit ohne normale Atmung musst du sofort Hilfe organisieren, Herzdruckmassage starten und den AED einbinden. Klare Delegation spart Zeit.",
         "keyTakeaways": [
-          "Sichere zunaechst dich selbst und die Umgebung.",
-          "Pruefe Ansprechbarkeit und normale Atmung ohne Zeit zu verlieren.",
+          "Sichere zunächst dich selbst und die Umgebung.",
+          "Prüfe Ansprechbarkeit und normale Atmung ohne Zeit zu verlieren.",
           "Beauftrage konkret eine Person mit 112 und eine weitere mit dem AED.",
           "Wiederbelebung beginnt nicht erst nach langer Diskussion, sondern sofort."
         ],
@@ -69,144 +57,67 @@
           "id": "scene_check",
           "type": "single_choice",
           "title": "Lage erkennen",
-          "prompt": "Ein erwachsener Badegast sackt am Beckenrand zusammen und reagiert nicht. Zwei Kolleginnen sind in Hoerweite. Was tust du zuerst?",
+          "prompt": "Ein erwachsener Badegast sackt am Beckenrand zusammen und reagiert nicht. Zwei Kolleginnen sind in Hörweite. Was tust du zuerst?",
           "points": 25,
           "options": [
-            {
-              "id": "scene_check_a",
-              "text": "Eigenschutz beachten, Person ansprechen und Reaktion pruefen",
-              "isCorrect": true,
-              "feedback": "Richtig. Zuerst Eigenschutz und Bewusstseinskontrolle, bevor du weitere Schritte ausloest."
-            },
-            {
-              "id": "scene_check_b",
-              "text": "Die Person sofort alleine aufrichten und hinsetzen",
-              "isCorrect": false,
-              "feedback": "Falsch. Unkontrolliertes Aufrichten kostet Zeit und kann zusaetzlich schaedigen."
-            },
-            {
-              "id": "scene_check_c",
-              "text": "Erst den AED holen und dann zur Person gehen",
-              "isCorrect": false,
-              "feedback": "Falsch. Ohne kurze Lagebeurteilung weisst du noch nicht sicher, was vorliegt."
-            },
-            {
-              "id": "scene_check_d",
-              "text": "Zunaechst die Badegaeste beruhigen und dann spaeter nachsehen",
-              "isCorrect": false,
-              "feedback": "Falsch. Die betroffene Person hat jetzt Prioritaet."
-            }
+            { "id": "a", "text": "Eigenschutz beachten, Person ansprechen und Reaktion prüfen", "isCorrect": true, "feedback": "Richtig. Zuerst Eigenschutz und Bewusstseinskontrolle, bevor du weitere Schritte auslöst." },
+            { "id": "b", "text": "Die Person sofort alleine aufrichten und hinsetzen", "isCorrect": false, "feedback": "Falsch. Unkontrolliertes Aufrichten kostet Zeit und kann zusätzlich schädigen." },
+            { "id": "c", "text": "Erst den AED holen und dann zur Person gehen", "isCorrect": false, "feedback": "Falsch. Ohne kurze Lagebeurteilung weißt du noch nicht sicher, was vorliegt." },
+            { "id": "d", "text": "Zunächst die Badegäste beruhigen und dann später nachsehen", "isCorrect": false, "feedback": "Falsch. Die betroffene Person hat jetzt Priorität." }
           ]
         },
         {
           "id": "breathing_decision",
           "type": "single_choice",
           "title": "Atmung und Alarmierung",
-          "prompt": "Die Person reagiert nicht. Es ist keine normale Atmung erkennbar. Was ist jetzt die beste naechste Aktion?",
+          "prompt": "Die Person reagiert nicht. Es ist keine normale Atmung erkennbar. Was ist jetzt die beste nächste Aktion?",
           "points": 30,
           "options": [
-            {
-              "id": "breathing_decision_a",
-              "text": "Stabile Seitenlage und zunaechst zwei Minuten beobachten",
-              "isCorrect": false,
-              "feedback": "Falsch. Ohne normale Atmung braucht die Person keine Beobachtung, sondern sofort Notruf, AED und HLW."
-            },
-            {
-              "id": "breathing_decision_b",
-              "text": "Notruf/AED veranlassen und sofort mit Wiederbelebung beginnen",
-              "isCorrect": true,
-              "feedback": "Richtig. Bei fehlender normaler Atmung zaehlt jede Sekunde."
-            },
-            {
-              "id": "breathing_decision_c",
-              "text": "Die Person kurz mit Wasser kuehlen und erneut ansprechen",
-              "isCorrect": false,
-              "feedback": "Falsch. Das verzoegert lebenswichtige Sofortmassnahmen."
-            },
-            {
-              "id": "breathing_decision_d",
-              "text": "Erst die Personalunterlagen oder Vorerkrankungen suchen",
-              "isCorrect": false,
-              "feedback": "Falsch. Informationen kommen spaeter, jetzt geht es um die Rettungskette."
-            }
+            { "id": "a", "text": "Stabile Seitenlage und zunächst zwei Minuten beobachten", "isCorrect": false, "feedback": "Falsch. Ohne normale Atmung braucht die Person keine Beobachtung, sondern sofort Notruf, AED und HLW." },
+            { "id": "b", "text": "Notruf/AED veranlassen und sofort mit Wiederbelebung beginnen", "isCorrect": true, "feedback": "Richtig. Bei fehlender normaler Atmung zählt jede Sekunde." },
+            { "id": "c", "text": "Die Person kurz mit Wasser kühlen und erneut ansprechen", "isCorrect": false, "feedback": "Falsch. Das verzögert lebenswichtige Sofortmaßnahmen." },
+            { "id": "d", "text": "Erst die Personalunterlagen oder Vorerkrankungen suchen", "isCorrect": false, "feedback": "Falsch. Informationen kommen später, jetzt geht es um die Rettungskette." }
           ]
         },
         {
           "id": "team_delegation",
           "type": "single_choice",
-          "title": "Teamfuehrung",
+          "title": "Teamführung",
           "prompt": "Welche Ansage an dein Team ist jetzt am besten?",
           "points": 15,
           "options": [
-            {
-              "id": "team_delegation_a",
-              "text": "Jemand soll bitte mal 112 anrufen.",
-              "isCorrect": false,
-              "feedback": "Zu unklar. Ohne direkte Zuweisung fuehlt sich oft niemand verantwortlich."
-            },
-            {
-              "id": "team_delegation_b",
-              "text": "Du rufst 112, du holst den AED, du kommst zu mir zur Unterstuetzung.",
-              "isCorrect": true,
-              "feedback": "Richtig. Konkrete Aufgaben an konkrete Personen beschleunigen die Notfallkette."
-            },
-            {
-              "id": "team_delegation_c",
-              "text": "Alle bleiben bitte ruhig, ich mache das alleine.",
-              "isCorrect": false,
-              "feedback": "Falsch. Ein Teamnotfall sollte nicht allein abgearbeitet werden."
-            },
-            {
-              "id": "team_delegation_d",
-              "text": "Bitte wartet kurz, bis ich die Lage vollstaendig verstanden habe.",
-              "isCorrect": false,
-              "feedback": "Falsch. Die Lage ist fuer die Alarmierung bereits eindeutig genug."
-            }
+            { "id": "a", "text": "Jemand soll bitte mal 112 anrufen.", "isCorrect": false, "feedback": "Zu unklar. Ohne direkte Zuweisung fühlt sich oft niemand verantwortlich." },
+            { "id": "b", "text": "Du rufst 112, du holst den AED, du kommst zu mir zur Unterstützung.", "isCorrect": true, "feedback": "Richtig. Konkrete Aufgaben an konkrete Personen beschleunigen die Notfallkette." },
+            { "id": "c", "text": "Alle bleiben bitte ruhig, ich mache das alleine.", "isCorrect": false, "feedback": "Falsch. Ein Teamnotfall sollte nicht allein abgearbeitet werden." },
+            { "id": "d", "text": "Bitte wartet kurz, bis ich die Lage vollständig verstanden habe.", "isCorrect": false, "feedback": "Falsch. Die Lage ist für die Alarmierung bereits eindeutig genug." }
           ]
         },
         {
           "id": "action_order",
           "type": "ordering",
           "title": "Ablauf priorisieren",
-          "prompt": "Bringe die Massnahmen in die sinnvollste Reihenfolge.",
+          "prompt": "Bringe die Maßnahmen in die sinnvollste Reihenfolge.",
           "points": 20,
           "items": [
-            {
-              "id": "action_order_1",
-              "text": "Notruf 112 und AED konkret veranlassen"
-            },
-            {
-              "id": "action_order_2",
-              "text": "Herzdruckmassage beginnen"
-            },
-            {
-              "id": "action_order_3",
-              "text": "AED anschliessen, sobald er da ist"
-            },
-            {
-              "id": "action_order_4",
-              "text": "Sprachanweisungen befolgen und Reanimation fortfuehren"
-            }
+            { "id": "1", "text": "Notruf 112 und AED konkret veranlassen" },
+            { "id": "2", "text": "Herzdruckmassage beginnen" },
+            { "id": "3", "text": "AED anschließen, sobald er da ist" },
+            { "id": "4", "text": "Sprachanweisungen des AED befolgen und Reanimation fortführen" }
           ],
-          "correctOrder": [
-            "action_order_1",
-            "action_order_2",
-            "action_order_3",
-            "action_order_4"
-          ],
+          "correctOrder": ["1", "2", "3", "4"],
           "feedback": {
-            "success": "Richtig. Alarmierung, sofortige Druckmassage und fruehes Einbinden des AED folgen aufeinander.",
-            "partial": "Teilweise richtig. Achte darauf, Notruf/AED frueh auszulagern und die Herzdruckmassage nicht zu verzoegern.",
+            "success": "Richtig. Alarmierung, sofortige Druckmassage und frühes Einbinden des AED folgen aufeinander.",
+            "partial": "Teilweise richtig. Achte darauf, Notruf/AED früh auszulagern und die Herzdruckmassage nicht zu verzögern.",
             "failure": "Nicht optimal. Die HLW-Kette muss schnell und ohne unnötige Zwischenschritte anlaufen."
           }
         },
         {
           "id": "handover",
           "type": "keyword_input",
-          "title": "Kurzuebergabe",
-          "prompt": "Welche Informationen gibst du dem Rettungsdienst oder nachrueckenden Team weiter? Nenne mindestens vier Kernaussagen.",
+          "title": "Kurzübergabe",
+          "prompt": "Welche Informationen gibst du dem Rettungsdienst weiter? Nenne mindestens vier Kernaussagen.",
           "points": 10,
-          "placeholder": "z. B. bewusstlos, keine normale Atmung, HLW laeuft, AED ...",
+          "placeholder": "z. B. bewusstlos, keine normale Atmung, HLW läuft, AED ...",
           "keywordGroups": [
             ["bewusstlos", "ohne reaktion", "reagiert nicht"],
             ["keine normale atmung", "atmet nicht normal", "keine atmung"],
@@ -216,27 +127,424 @@
           "minimumGroupsRequired": 4,
           "feedback": {
             "success": "Gut. Du nennst die entscheidenden Informationen knapp und einsatzrelevant.",
-            "partial": "Teilweise gut. Fuer eine saubere Uebergabe fehlen noch ein oder zwei Kernpunkte.",
-            "failure": "Zu unpraezise. Uebergaben muessen kurz, klar und handlungsrelevant sein."
+            "partial": "Teilweise gut. Für eine saubere Übergabe fehlen noch ein oder zwei Kernpunkte.",
+            "failure": "Zu unpräzise. Übergaben müssen kurz, klar und handlungsrelevant sein."
           }
         }
+      ]
+    },
+    {
+      "id": "drowning-adult-002",
+      "title": "Ertrinkender im Becken",
+      "subtitle": "Stilles Ertrinken erkannt – Bergung und Rettungskette",
+      "icon": "🌊",
+      "mode": "einsatz",
+      "difficulty": "schwer",
+      "estimatedMinutes": 5,
+      "timerSeconds": 180,
+      "category": "Wasserrettung",
+      "learningGoals": [
+        "Stilles Ertrinken sicher erkennen",
+        "Richtige Bergung ohne Eigengefährdung wählen",
+        "Atemkontrolle nach Bergung durchführen",
+        "Rettungskette korrekt einleiten"
       ],
-      "sourceNotes": [
-        "Orientiert an den Kernprinzipien Pruefen-Rufen-Druecken und AED-Einsatz in der Wiederbelebung.",
-        "Im Live-Betrieb muessen betriebliche Alarmwege, AED-Standorte und interne Rollenverteilung zusaetzlich beruecksichtigt werden."
+      "criticalFailures": [
+        { "id": "no_recognition", "label": "Ertrinkenszeichen nicht erkannt oder zu lange abgewartet", "effect": "hard_fail" },
+        { "id": "wrong_rescue", "label": "Sprung ins Wasser ohne Hilfsmittel bei erreichbarer Stange/Leine", "effect": "hard_fail" },
+        { "id": "no_breathing_check", "label": "Keine Atemkontrolle nach der Bergung", "effect": "hard_fail" }
       ],
-      "references": [
+      "scoring": {
+        "maxPoints": 100,
+        "passThreshold": 65,
+        "timeBonusThresholdSeconds": 120,
+        "timeBonusPoints": 5,
+        "criticalFailurePenalty": "fail_case"
+      },
+      "debrief": {
+        "headline": "Bergen – Prüfen – Handeln",
+        "summary": "Stilles Ertrinken ist kaum sichtbar. Nach der sicheren Bergung kommt sofort die Atemkontrolle – nicht erst das Ausschütteln oder Hinsetzen.",
+        "keyTakeaways": [
+          "Ertrinkende winken NICHT und rufen NICHT um Hilfe – sie kämpfen schweigend ums Überleben.",
+          "Rette zuerst mit Hilfsmittel (Stange, Leine, Ring) – dann schwimmend, wenn nötig.",
+          "Nach der Bergung: sofort flach hinlegen und Atemkontrolle.",
+          "Kein Wasser ausschütteln – das kostet Zeit und bringt nichts."
+        ],
+        "commonMistakes": [
+          "Person aufrecht hinsetzen statt flach lagern",
+          "Zu langes Abwarten bei Anzeichen von Ertrinkungsnot",
+          "Wasser aus dem Körper drücken wollen – unnötig und zeitraubend"
+        ],
+        "merksatz": "Stilles Ertrinken: Senkrechte Haltung, kein Rufen, Arme seitwärts – sofort handeln!"
+      },
+      "steps": [
         {
-          "label": "DRK: Erste Hilfe - Wiederbelebung",
-          "url": "https://www.drk.de/hilfe-in-deutschland/erste-hilfe/erste-hilfe-massnahmen-zur-wiederbelebung-pruefen-rufen-druecken/"
+          "id": "recognition",
+          "type": "single_choice",
+          "title": "Ertrinkenszeichen erkennen",
+          "prompt": "Du beobachtest von der Aufsichtsposition: Ein Badegast schwimmt nicht mehr, steht senkrecht im Wasser, Arme kreisen seitlich, Mund immer wieder knapp unter und über der Wasseroberfläche. Was tust du?",
+          "points": 30,
+          "options": [
+            { "id": "a", "text": "Sofort Rettungsmaßnahmen einleiten – das sind klassische Ertrinkenszeichen", "isCorrect": true, "feedback": "Richtig. Senkrechte Haltung + seitliche Armbewegung + kein Rufen = stilles Ertrinken." },
+            { "id": "b", "text": "Noch 30 Sekunden beobachten, ob sich die Lage bessert", "isCorrect": false, "feedback": "Falsch. Beim Ertrinken können 30 Sekunden entscheidend sein. Sofort handeln." },
+            { "id": "c", "text": "Den Badegast laut ansprechen und auf Reaktion warten", "isCorrect": false, "feedback": "Teilweise – ansprechen ist ok, aber gleichzeitig bereits Hilfsmittel bereitmachen." },
+            { "id": "d", "text": "Erst prüfen, ob Schild 'Nicht-Schwimmer' beachtet wurde", "isCorrect": false, "feedback": "Falsch. Die unmittelbare Gefahr hat Priorität." }
+          ]
         },
         {
-          "label": "DRK: Herz-Lungen-Wiederbelebung",
-          "url": "https://www.drk.de/hilfe-in-deutschland/erste-hilfe/herz-lungen-wiederbelebung/"
+          "id": "rescue_method",
+          "type": "single_choice",
+          "title": "Bergungsmethode wählen",
+          "prompt": "Die Person ist ca. 3 Meter vom Beckenrand entfernt. Eine Rettungsstange hängt direkt neben dir. Was machst du?",
+          "points": 30,
+          "options": [
+            { "id": "a", "text": "Rettungsstange hinhalten – Person kann sich festhalten, dann ans Ufer ziehen", "isCorrect": true, "feedback": "Richtig. Hilfsmittel zuerst – sicherer, schneller und kein Eigengefährdungsrisiko." },
+            { "id": "b", "text": "Sofort ins Wasser springen und zur Person schwimmen", "isCorrect": false, "feedback": "Falsch. Sprung ins Wasser sollte letzte Option sein – Eigengefährdung und langsamer als Hilfsmittel." },
+            { "id": "c", "text": "Einen Rettungsring vom Haken nehmen und werfen", "isCorrect": false, "feedback": "Grundsätzlich richtig, aber die Stange ist bei 3m Abstand schneller und präziser." },
+            { "id": "d", "text": "Kollegen rufen und auf Unterstützung warten", "isCorrect": false, "feedback": "Kollegen alarmieren JA – aber selbst sofort handeln, nicht warten." }
+          ]
         },
         {
-          "label": "DLRG: Erste Hilfe Ausbildung",
-          "url": "https://www.dlrg.de/informieren/ausbildung/erste-hilfe/"
+          "id": "post_rescue",
+          "type": "single_choice",
+          "title": "Nach der Bergung",
+          "prompt": "Du hast die Person sicher ans Ufer gebracht. Sie ist bewusstlos. Was tust du als erstes?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "Person hinsetzen und auffordern, das Wasser auszuhusten", "isCorrect": false, "feedback": "Falsch. Aufrechte Lagerung und 'Aushusten' helfen nicht – zunächst Atemkontrolle in Rückenlage." },
+            { "id": "b", "text": "Person auf den Rücken legen, Atemwege freimachen, Atmung prüfen", "isCorrect": true, "feedback": "Richtig. Flachlagerung + Atemkontrolle ist der sofortige erste Schritt nach der Bergung." },
+            { "id": "c", "text": "Person kräftig schütteln, damit das Wasser herauskommt", "isCorrect": false, "feedback": "Falsch. Schütteln ist nicht hilfreich und kann bei HWS-Verdacht schaden." },
+            { "id": "d", "text": "Auf den Rettungsdienst warten, bevor etwas unternommen wird", "isCorrect": false, "feedback": "Falsch. Ohne Atmung hat die Person keine Zeit zu warten." }
+          ]
+        },
+        {
+          "id": "rescue_chain",
+          "type": "ordering",
+          "title": "Rettungskette ordnen",
+          "prompt": "Bringe die Maßnahmen nach der Bergung einer bewusstlosen, nicht atmenden Person in die richtige Reihenfolge.",
+          "points": 15,
+          "items": [
+            { "id": "1", "text": "5 initiale Beatmungen (Ertrinken: Beatmung vor HDM!)" },
+            { "id": "2", "text": "Atemkontrolle (max. 10 Sekunden)" },
+            { "id": "3", "text": "Notruf 112 und AED veranlassen" },
+            { "id": "4", "text": "HLW 30:2 fortführen bis AED da" }
+          ],
+          "correctOrder": ["2", "3", "1", "4"],
+          "feedback": {
+            "success": "Richtig. Beim Ertrinken kommen 5 Beatmungen VOR der Herzdruckmassage – Sauerstoffmangel ist das primäre Problem.",
+            "partial": "Fast. Denk daran: Beim Ertrinkungsunfall steht die Beatmung am Anfang – Sauerstoff hat Vorrang.",
+            "failure": "Nicht korrekt. Beim Ertrinken gilt: erst beatmen, dann HDM – im Gegensatz zum Herz-Kreislauf-Stillstand."
+          }
+        }
+      ]
+    },
+    {
+      "id": "child-unconscious-003",
+      "title": "Bewusstloses Kind am Beckenrand",
+      "subtitle": "Pädiatrische Erstversorgung – Besonderheiten bei Kindern",
+      "icon": "👦",
+      "mode": "einsatz",
+      "difficulty": "schwer",
+      "estimatedMinutes": 4,
+      "timerSeconds": 150,
+      "category": "Erste Hilfe",
+      "learningGoals": [
+        "Pädiatrische HLW-Besonderheiten kennen",
+        "Richtige Beatmungstechnik bei Kindern anwenden",
+        "Notruf mit relevanten Informationen absetzen",
+        "AED-Einsatz bei Kindern einordnen"
+      ],
+      "criticalFailures": [
+        { "id": "no_initial_breaths", "label": "Keine 5 initialen Beatmungen vor HDM bei Kind", "effect": "hard_fail" },
+        { "id": "no_emergency_call", "label": "Notruf nicht abgesetzt", "effect": "hard_fail" }
+      ],
+      "scoring": {
+        "maxPoints": 100,
+        "passThreshold": 70,
+        "timeBonusThresholdSeconds": 110,
+        "timeBonusPoints": 5,
+        "criticalFailurePenalty": "fail_case"
+      },
+      "debrief": {
+        "headline": "Kinder zuerst beatmen",
+        "summary": "Bei Kindern ist Sauerstoffmangel die häufigste Ursache – daher 5 Beatmungen vor der Herzdruckmassage. Technik und Kraft anpassen.",
+        "keyTakeaways": [
+          "Kinder: 5 initiale Beatmungen ZUERST, dann 30:2 oder 15:2 (2 Helfer).",
+          "Kopf nur leicht überstrecken – nicht so weit wie bei Erwachsenen.",
+          "Bei Säuglingen: Mund-zu-Mund-Nase, 2 Finger für HDM am Brustbein.",
+          "AED kann auch bei Kindern verwendet werden – Kinderpads nutzen wenn vorhanden."
+        ],
+        "commonMistakes": [
+          "Sofort mit HDM beginnen wie beim Erwachsenen",
+          "Zu kräftige Beatmung – Kinderlungen sind kleiner",
+          "Kopf zu stark überstrecken"
+        ],
+        "merksatz": "Kind ohne Atmung: 5 Atemhübe zuerst – dann 30:2 – AED holen lassen!"
+      },
+      "steps": [
+        {
+          "id": "child_assessment",
+          "type": "single_choice",
+          "title": "Ersteinschätzung",
+          "prompt": "Ein ca. 6-jähriges Kind liegt bewusstlos am Beckenrand. Es reagiert nicht auf Ansprechen und Schulterrütteln. Wie prüfst du die Atmung?",
+          "points": 20,
+          "options": [
+            { "id": "a", "text": "Kopf leicht überstrecken, Kinn anheben, max. 10 Sek. Sehen-Hören-Fühlen", "isCorrect": true, "feedback": "Richtig. Nur leicht überstrecken (nicht maximal wie beim Erwachsenen), dann Atemkontrolle." },
+            { "id": "b", "text": "Kopf stark nach hinten biegen wie beim Erwachsenen", "isCorrect": false, "feedback": "Falsch. Bei Kindern nur leichte Überstreckung – starkes Überstrecken kann Atemwege verengen." },
+            { "id": "c", "text": "Zunächst Puls am Handgelenk tasten", "isCorrect": false, "feedback": "Falsch. Pulstastung ist unzuverlässig und verzögert die Atemkontrolle. Direkt Atmung prüfen." },
+            { "id": "d", "text": "Kind aufrecht hinsetzen und ansprechen", "isCorrect": false, "feedback": "Falsch. Aufrechte Lagerung eines bewusstlosen Kindes ist gefährlich." }
+          ]
+        },
+        {
+          "id": "child_cpr_start",
+          "type": "single_choice",
+          "title": "HLW starten",
+          "prompt": "Das Kind atmet nicht normal. Du bist allein. Was machst du als erstes?",
+          "points": 35,
+          "options": [
+            { "id": "a", "text": "Sofort 30 Herzdruckmassagen beginnen, dann beatmen", "isCorrect": false, "feedback": "Falsch. Bei Kindern: 5 initiale Beatmungen ZUERST – Sauerstoffmangel ist die Hauptursache." },
+            { "id": "b", "text": "5 initiale Beatmungen, dann Notruf absetzen und 30:2 weiterführen", "isCorrect": true, "feedback": "Richtig. Beim Kind 5 Beatmungen zuerst, dann ca. 1 Minute HLW, dann Notruf wenn allein." },
+            { "id": "c", "text": "Zuerst 112 anrufen, dann mit der Wiederbelebung beginnen", "isCorrect": false, "feedback": "Teilweise – bei Kindern 1 Minute HLW zuerst wenn allein, dann Notruf. Bei Zeugen: sofort Notruf delegieren." },
+            { "id": "d", "text": "AED holen und auf dessen Anweisungen warten", "isCorrect": false, "feedback": "Falsch. HLW nicht verzögern – AED holen lassen, selbst mit 5 Beatmungen starten." }
+          ]
+        },
+        {
+          "id": "child_technique",
+          "type": "single_choice",
+          "title": "Technik bei Kindern",
+          "prompt": "Wie führst du die Herzdruckmassage bei einem 6-jährigen Kind durch?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "Zwei-Handtechnik wie beim Erwachsenen, volle Kraft", "isCorrect": false, "feedback": "Falsch. Volle Erwachsenenkraft kann bei Kindern Rippen brechen. Kraft anpassen." },
+            { "id": "b", "text": "Eine oder zwei Hände, ca. 4–5 cm Drucktiefe, 100–120/min", "isCorrect": true, "feedback": "Richtig. Drucktiefe ca. 1/3 des Brustkorbs, Frequenz gleich wie beim Erwachsenen." },
+            { "id": "c", "text": "Nur zwei Finger, weil das Kind klein ist", "isCorrect": false, "feedback": "Zwei Finger nur bei Säuglingen. Ab ca. Schulkindalter eine oder zwei Hände verwenden." },
+            { "id": "d", "text": "Druckmassage auf dem Bauch, weil der Brustkorb noch weich ist", "isCorrect": false, "feedback": "Falsch. HDM immer am Brustbein, nie auf dem Bauch." }
+          ]
+        },
+        {
+          "id": "emergency_call_child",
+          "type": "keyword_input",
+          "title": "Notruf bei Kind",
+          "prompt": "Was sagst du beim Notruf 112? Nenne mindestens 4 wesentliche Informationen.",
+          "points": 20,
+          "placeholder": "z. B. Kind, 6 Jahre, bewusstlos, keine Atmung, HLW läuft, Beckenrand ...",
+          "keywordGroups": [
+            ["kind", "jährig", "kleinkind", "6 jahre", "schulkind"],
+            ["bewusstlos", "reagiert nicht", "keine reaktion"],
+            ["keine atmung", "atmet nicht", "keine normale atmung"],
+            ["hlw", "reanimation", "herzdruckmassage", "wiederbelebung"],
+            ["standort", "schwimmbad", "beckenrand", "adresse"]
+          ],
+          "minimumGroupsRequired": 4,
+          "feedback": {
+            "success": "Sehr gut. Alter, Zustand, Maßnahmen und Standort – alle wichtigen Infos dabei.",
+            "partial": "Fast vollständig. Vergiss nicht: Alter des Kindes und genauen Standort immer nennen.",
+            "failure": "Zu unvollständig. Notruf braucht: Wer? Was? Wo? Wie viele? Was wird getan?"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chlorine-alarm-004",
+      "title": "Chlorgasgeruch im Technikraum",
+      "subtitle": "Chemischer Alarm – Evakuierung und Eigenschutz",
+      "icon": "☣️",
+      "mode": "einsatz",
+      "difficulty": "mittel",
+      "estimatedMinutes": 3,
+      "timerSeconds": 120,
+      "category": "Gefahrstoffe",
+      "learningGoals": [
+        "Chlorgasgeruch sicher erkennen und einordnen",
+        "Eigensicherung vor dem Betreten gefahrenverdächtiger Räume",
+        "Evakuierungsmaßnahmen korrekt auslösen",
+        "Richtigen Notruf absetzen"
+      ],
+      "criticalFailures": [
+        { "id": "entered_without_protection", "label": "Technikraum ohne Schutzausrüstung betreten", "effect": "hard_fail" },
+        { "id": "no_evacuation", "label": "Keine Evakuierung des Bades eingeleitet", "effect": "hard_fail" }
+      ],
+      "scoring": {
+        "maxPoints": 100,
+        "passThreshold": 70,
+        "timeBonusThresholdSeconds": 85,
+        "timeBonusPoints": 5,
+        "criticalFailurePenalty": "fail_case"
+      },
+      "debrief": {
+        "headline": "Chlorgas: Nicht betreten, sofort evakuieren",
+        "summary": "Chlorgas ist schwerer als Luft und sammelt sich am Boden. Schon kleine Mengen reizen die Atemwege stark. Eigenschutz geht vor – niemals ohne Atemschutz eintreten.",
+        "keyTakeaways": [
+          "Chlorgas riecht nach Chlor/Schwimmbad, aber viel intensiver und stechend.",
+          "Türen zum betroffenen Raum geschlossen lassen – Ausbreitung verhindern.",
+          "Sofort evakuieren und Bad sperren. Notruf Feuerwehr 112.",
+          "Betroffene Personen an frische Luft bringen, Atemwege kühlen."
+        ],
+        "commonMistakes": [
+          "Technikraum ohne PSA betreten wollen",
+          "Fenster im Technikraum öffnen – verstärkt Gasausbreitung ins Bad",
+          "Nur intern melden ohne Notruf 112 abzusetzen"
+        ],
+        "merksatz": "Chlorgas: Türen zu – raus – evakuieren – 112 rufen. Nicht heroisch eintreten!"
+      },
+      "steps": [
+        {
+          "id": "recognition_chlorine",
+          "type": "single_choice",
+          "title": "Gefahr erkennen",
+          "prompt": "Du bemerkst an der Tür zum Technikraum einen intensiven, stechenden Chlorgeruch. Die Tür ist zu. Was machst du?",
+          "points": 30,
+          "options": [
+            { "id": "a", "text": "Tür geschlossen lassen, Umgebung verlassen, Vorgesetzte und 112 verständigen", "isCorrect": true, "feedback": "Richtig. Tür zu lassen begrenzt die Ausbreitung. Sofortige Alarmierung ist richtig." },
+            { "id": "b", "text": "Tür vorsichtig öffnen und nachschauen, was im Technikraum passiert", "isCorrect": false, "feedback": "Falsch. Tür öffnen setzt dich dem Gas aus und verbreitet es in den Badebereich." },
+            { "id": "c", "text": "Fenster im Technikraum öffnen, um das Gas abzulüften", "isCorrect": false, "feedback": "Falsch. Kein Betreten ohne Schutzausrüstung – und Fenster öffnen kann Gas weiterverbreiten." },
+            { "id": "d", "text": "Erst selbst prüfen ob es wirklich Chlor ist, dann informieren", "isCorrect": false, "feedback": "Falsch. Bei Chlorgasverdacht sofort handeln – nicht selbst nachprüfen." }
+          ]
+        },
+        {
+          "id": "evacuation",
+          "type": "single_choice",
+          "title": "Evakuierung",
+          "prompt": "Du hast den Alarm ausgelöst. Was muss jetzt sofort im Bad geschehen?",
+          "points": 30,
+          "options": [
+            { "id": "a", "text": "Alle Badegäste und Mitarbeiter sofort und zügig ins Freie evakuieren, Bad sperren", "isCorrect": true, "feedback": "Richtig. Vollständige Räumung hat Priorität. Chlorgas breitet sich aus und gefährdet alle." },
+            { "id": "b", "text": "Nur den Technikbereich absperren, Badebetrieb läuft weiter", "isCorrect": false, "feedback": "Falsch. Chlorgas kann sich über Lüftungssysteme ins Bad ausbreiten." },
+            { "id": "c", "text": "Badegäste beruhigen und auf Anweisung der Feuerwehr warten, ohne zu evakuieren", "isCorrect": false, "feedback": "Falsch. Evakuierung sofort einleiten – nicht auf Feuerwehr warten." },
+            { "id": "d", "text": "Nur die Badegäste in der Nähe des Technikraums herausführen", "isCorrect": false, "feedback": "Falsch. Vollständige Räumung ist nötig – Gas kann überall hingelangen." }
+          ]
+        },
+        {
+          "id": "emergency_call_chlorine",
+          "type": "single_choice",
+          "title": "Notruf",
+          "prompt": "Wen rufst du an und was sagst du?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "112 – Schwimmbad [Name], Chlorgasaustritt im Technikraum, Bad evakuiert, niemand verletzt bisher, wir warten außen", "isCorrect": true, "feedback": "Richtig. 112 für die Feuerwehr (Gefahrstoff), klare Lagebeschreibung, Standort, aktueller Status." },
+            { "id": "b", "text": "Nur dem Stadtwerk / Betreiber intern melden, Feuerwehr ist zu viel", "isCorrect": false, "feedback": "Falsch. Chlorgasaustritt ist ein Gefahrstoffeinsatz – 112 (Feuerwehr) ist zwingend." },
+            { "id": "c", "text": "110 – Polizei informieren wegen möglichem Sabotageakt", "isCorrect": false, "feedback": "Falsch. Feuerwehr 112 ist für Gefahrstoffeinsätze zuständig. Polizei erst wenn nötig." },
+            { "id": "d", "text": "Zunächst den Lieferanten der Chloranlage anrufen, dann eventuell 112", "isCorrect": false, "feedback": "Falsch. 112 zuerst – Lieferant kann später informiert werden." }
+          ]
+        },
+        {
+          "id": "chlorine_victims",
+          "type": "single_choice",
+          "title": "Betroffene Personen",
+          "prompt": "Zwei Badegäste klagen über Husten und brennende Augen – sie waren in der Nähe. Was tust du?",
+          "points": 15,
+          "options": [
+            { "id": "a", "text": "An die frische Luft bringen, ruhig hinsetzen, Augen mit klarem Wasser spülen, auf Rettungsdienst warten", "isCorrect": true, "feedback": "Richtig. Frischluft, Ruhe, Augenbewässerung – und Rettungsdienst kümmert sich vor Ort." },
+            { "id": "b", "text": "Ins Bad zurückgehen und dort Wasser trinken lassen", "isCorrect": false, "feedback": "Falsch. Bad ist evakuiert. Immer an frische Luft bringen." },
+            { "id": "c", "text": "Sofort in den Technikraum gehen um die Quelle zu stoppen", "isCorrect": false, "feedback": "Falsch. Kein Betreten ohne Atemschutz – Feuerwehr macht das." },
+            { "id": "d", "text": "Beruhigen und sagen, dass es harmlos ist", "isCorrect": false, "feedback": "Falsch. Chlorgas-Exposition muss immer durch Rettungsdienst beurteilt werden." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fall-injury-005",
+      "title": "Schwerer Sturz am Beckenrand",
+      "subtitle": "Sturztrauma – Verdacht auf Wirbelsäulenverletzung",
+      "icon": "🦴",
+      "mode": "einsatz",
+      "difficulty": "mittel",
+      "estimatedMinutes": 4,
+      "timerSeconds": 150,
+      "category": "Erste Hilfe",
+      "learningGoals": [
+        "HWS-Trauma erkennen und richtig immobilisieren",
+        "Bewusste und bewusstlose Person mit Trauma unterschiedlich versorgen",
+        "Notruf mit Verletzungsmechanismus absetzen",
+        "Schock erkennen und Erstmaßnahmen einleiten"
+      ],
+      "criticalFailures": [
+        { "id": "moved_spine_injury", "label": "Person mit HWS-Verdacht ohne Fixierung bewegt oder aufgerichtet", "effect": "hard_fail" },
+        { "id": "no_emergency_call", "label": "Notruf nicht abgesetzt", "effect": "hard_fail" }
+      ],
+      "scoring": {
+        "maxPoints": 100,
+        "passThreshold": 70,
+        "timeBonusThresholdSeconds": 105,
+        "timeBonusPoints": 5,
+        "criticalFailurePenalty": "fail_case"
+      },
+      "debrief": {
+        "headline": "Bei Verdacht: Wirbelsäule schonen",
+        "summary": "Jeder Sturz auf den Beckenrand oder Kopfsprung kann zu einer Halswirbelsäulenverletzung führen. Im Zweifel: nicht bewegen, stabilisieren, 112 rufen.",
+        "keyTakeaways": [
+          "Sturz auf Kopf/Nacken = HWS-Verdacht bis zum Beweis des Gegenteils.",
+          "Bewusste Person: beruhigen, stabilisieren, nicht aufstehen lassen.",
+          "Bewusstlose Person mit HWS-Verdacht: Log-Roll-Technik falls Umlagerung nötig.",
+          "Schockzeichen: Blässe, Schweiß, schneller Puls, Verwirrtheit – Beine hoch, warm halten."
+        ],
+        "commonMistakes": [
+          "Person sofort aufstehen lassen, 'damit sie sich bewegt'",
+          "Kopf drehen oder zurechtlegen ohne Immobilisierung",
+          "Schock nicht erkannt, weil äußere Verletzungen gering wirken"
+        ],
+        "merksatz": "HWS-Verdacht: Nicht bewegen – Kopf halten – 112 – warten!"
+      },
+      "steps": [
+        {
+          "id": "fall_recognition",
+          "type": "single_choice",
+          "title": "Ersteinschätzung",
+          "prompt": "Ein Badegast ist am Beckenrand ausgerutscht und mit dem Kopf aufgeschlagen. Er liegt bewusst am Boden, klagt über Nackenschmerzen und Kribbeln in den Armen. Was tust du?",
+          "points": 30,
+          "options": [
+            { "id": "a", "text": "Person nicht bewegen, Kopf stabilisieren, Kollegen für 112 alarmieren", "isCorrect": true, "feedback": "Richtig. Nackenschmerzen + Kribbeln = HWS-Verdacht. Ruhighalten und Notruf." },
+            { "id": "b", "text": "Person vorsichtig aufhelfen und zur Seite setzen", "isCorrect": false, "feedback": "Falsch. Bei HWS-Verdacht keine Lageänderung – Bewegung kann Querschnittsverletzung verursachen." },
+            { "id": "c", "text": "Erst fragen, was passiert ist, bevor Maßnahmen eingeleitet werden", "isCorrect": false, "feedback": "Falsch. Gleichzeitig: kurze Befragung UND sofort Kollegen mit 112 beauftragen." },
+            { "id": "d", "text": "Person beruhigen und selbst entscheiden lassen, ob sie aufstehen möchte", "isCorrect": false, "feedback": "Falsch. Bei HWS-Verdacht darf die Person nicht selbstständig aufstehen – auch wenn sie das möchte." }
+          ]
+        },
+        {
+          "id": "spine_stabilization",
+          "type": "single_choice",
+          "title": "Stabilisierung",
+          "prompt": "Wie hältst du den Kopf der Person fachgerecht, bis der Rettungsdienst eintrifft?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "Kopf mit beiden Händen seitlich halten – in der Position in der er liegt, nicht drehen", "isCorrect": true, "feedback": "Richtig. Kopf in gefundener Position halten – nicht ausrichten oder drehen." },
+            { "id": "b", "text": "Kopf in Neutralposition drehen und dann halten", "isCorrect": false, "feedback": "Falsch. Kopf in der Position belassen, in der er liegt – Drehen ist Gefahr." },
+            { "id": "c", "text": "Einen Pullover als Stütze unter den Nacken legen", "isCorrect": false, "feedback": "Falsch. Polsterung unter den Nacken kann Fehlhaltung verstärken." },
+            { "id": "d", "text": "Den Kopf loslassen und beruhigende Worte sprechen", "isCorrect": false, "feedback": "Falsch. Physische Stabilisierung des Kopfes ist bis zum Rettungsdienst notwendig." }
+          ]
+        },
+        {
+          "id": "shock_recognition",
+          "type": "single_choice",
+          "title": "Schockerkennung",
+          "prompt": "Nach einigen Minuten wird die Person zunehmend blass, schwitzt kalt und wirkt verwirrt. Was erkennst du und was tust du?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "Schockzeichen – warm halten, beruhigen, Beine hochlagern wenn möglich, 112 über Zustandsverschlechterung informieren", "isCorrect": true, "feedback": "Richtig. Blässe + Kaltschweiss + Verwirrtheit = Schock. Wärme und ggf. Hochlagerung der Beine." },
+            { "id": "b", "text": "Schock – sofort Kopf tief lagern und Beine hochstellen", "isCorrect": false, "feedback": "Teilweise richtig: Beine hoch ist korrekt – aber nicht den Kopf tief lagern bei HWS-Verdacht!" },
+            { "id": "c", "text": "Etwas zu trinken anbieten, damit der Kreislauf stabilisiert wird", "isCorrect": false, "feedback": "Falsch. Im Schock nichts trinken lassen – OP-Narkose, Verschluckungs- und Aspirationsgefahr." },
+            { "id": "d", "text": "Abwarten, ob sich der Zustand selbst verbessert", "isCorrect": false, "feedback": "Falsch. Schockzeichen sind ein medizinischer Notfall – sofort handeln und 112 informieren." }
+          ]
+        },
+        {
+          "id": "handover_trauma",
+          "type": "keyword_input",
+          "title": "Übergabe an den Rettungsdienst",
+          "prompt": "Was meldest du beim Eintreffen des Rettungsdienstes? Nenne mindestens 4 relevante Informationen.",
+          "points": 20,
+          "placeholder": "z. B. Sturz, Kopfaufprall, Nackenschmerzen, Kribbeln, Schockzeichen, Kopf stabilisiert ...",
+          "keywordGroups": [
+            ["sturz", "ausgerutscht", "aufgeschlagen", "unfallhergang"],
+            ["hws", "nacken", "nackenschmerzen", "wirbelsäule"],
+            ["kribbeln", "taubheit", "sensibilitätsstörung", "arme"],
+            ["schock", "blass", "schweiss", "verwirrt", "kreislauf"],
+            ["stabilisiert", "kopf gehalten", "nicht bewegt", "ruhiggestellt"]
+          ],
+          "minimumGroupsRequired": 4,
+          "feedback": {
+            "success": "Vollständig. Unfallhergang, Verletzungszeichen, Schocksymptome und Maßnahmen – perfekte Übergabe.",
+            "partial": "Gut, aber ergänze: Unfallhergang (wie ist er gestürzt?) und was du bereits gemacht hast.",
+            "failure": "Zu wenig. Der Rettungsdienst braucht: Wie passiert? Was verletzt? Was gemacht?"
+          }
         }
       ]
     }
