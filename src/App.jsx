@@ -55,6 +55,7 @@ import {
   loadMessages as dsLoadMessages,
   loadDirectMessages as dsLoadDirectMessages,
   createChatMessage as dsCreateChatMessage,
+  deleteChatMessage as dsDeleteChatMessage,
   loadNotifications as dsLoadNotifications,
   sendNotification as dsSendNotification,
   markNotificationRead as dsMarkNotificationRead,
@@ -5072,6 +5073,32 @@ export default function BaederApp() {
     }
   };
 
+  const deleteChatMessage = async (message) => {
+    if (!message?.id || message?.isDeleted) return;
+
+    if (user?.role !== 'admin') {
+      showToast('Nur Admins können Nachrichten moderieren.', 'warning');
+      return;
+    }
+
+    if (!confirm('Nachricht für alle Chatteilnehmer als entfernt markieren?')) {
+      return;
+    }
+
+    try {
+      const updatedMessage = await dsDeleteChatMessage(message.id);
+      setMessages((prev) => prev.map((entry) => (
+        entry.id === updatedMessage.id
+          ? { ...entry, ...updatedMessage }
+          : entry
+      )));
+      showToast('Nachricht wurde moderiert.', 'success');
+    } catch (error) {
+      console.error('Chat moderation error:', error);
+      showToast(friendlyError(error), 'error');
+    }
+  };
+
   const submitQuestion = async () => {
     if (!newQuestionText.trim() || !user) return;
 
@@ -9163,12 +9190,14 @@ export default function BaederApp() {
             newMessage={newMessage}
             setNewMessage={setNewMessage}
             sendMessage={sendMessage}
+            deleteMessage={deleteChatMessage}
             chatScope={chatScope}
             setChatScope={setChatScope}
             selectedChatRecipientId={selectedChatRecipientId}
             setSelectedChatRecipientId={setSelectedChatRecipientId}
             directChatCandidates={directChatCandidates}
             hasChatOrganization={hasChatOrganization}
+            canModerateChat={user?.role === 'admin'}
           />
         )}
 

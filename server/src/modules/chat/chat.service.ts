@@ -5,39 +5,53 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { AccountStatus, AppRole, ChatScope, NotificationType, Prisma } from '@prisma/client';
+import { Request } from 'express';
 import sanitizeHtml from 'sanitize-html';
+import { AuditLogService } from '../../common/services/audit-log.service';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateChatMessageDto } from './dto/create-chat-message.dto';
 import { ListChatMessagesQueryDto } from './dto/list-chat-messages-query.dto';
 
+const DELETED_MESSAGE_PLACEHOLDER = 'Nachricht wurde von einem Admin entfernt.';
+
 const messageSelect = {
   id: true,
+  organizationId: true,
   scope: true,
   content: true,
+  senderId: true,
+  recipientId: true,
   createdAt: true,
+  deletedAt: true,
+  deletedByUserId: true,
   sender: {
     select: {
       id: true,
       displayName: true,
-      role: true
+      role: true,
+      avatar: true
     }
   },
   recipient: {
     select: {
       id: true,
       displayName: true,
-      role: true
+      role: true,
+      avatar: true
     }
   }
 } satisfies Prisma.ChatMessageSelect;
+
+type ChatMessageRecord = Prisma.ChatMessageGetPayload<{ select: typeof messageSelect }>;
 
 @Injectable()
 export class ChatService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly notificationsService: NotificationsService
+    private readonly notificationsService: NotificationsService,
+    private readonly auditLogService: AuditLogService
   ) {}
 
   async listMessages(actor: AuthenticatedUser, query: ListChatMessagesQueryDto) {
@@ -68,7 +82,7 @@ export class ChatService {
       ];
     }
 
-    return this.prisma.chatMessage.findMany({
+    const messages = await this.prisma.chatMessage.findMany({
       where,
       take: query.limit ?? 50,
       orderBy: {
@@ -76,6 +90,8 @@ export class ChatService {
       },
       select: messageSelect
     });
+
+    return messages.map((message) => this.serializeMessage(message));
   }
 
   async createMessage(actor: AuthenticatedUser, dto: CreateChatMessageDto) {
@@ -122,7 +138,59 @@ export class ChatService {
       });
     }
 
-    return message;
+    return this.serializeMessage(message);
+  }
+
+  async deleteMessage(actor: AuthenticatedUser, messageId: string, request: Request) {
+    if (!actor.organizationId) {
+      throw new BadRequestException('Your account is not assigned to an organization.');
+    }
+
+    if (actor.role !== AppRole.ADMIN) {
+      throw new ForbiddenException('Only admins may moderate chat messages.');
+    }
+
+    const message = await this.prisma.chatMessage.findFirst({
+      where: {
+        id: messageId,
+        organizationId: actor.organizationId
+      },
+      select: messageSelect
+    });
+
+    if (!message) {
+      throw new NotFoundException('Chat message not found.');
+    }
+
+    if (message.deletedAt) {
+      return this.serializeMessage(message);
+    }
+
+    const updatedMessage = await this.prisma.chatMessage.update({
+      where: {
+        id: message.id
+      },
+      data: {
+        deletedAt: new Date(),
+        deletedByUserId: actor.id
+      },
+      select: messageSelect
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'chat_message.moderated',
+      'ChatMessage',
+      updatedMessage.id,
+      {
+        scope: updatedMessage.scope,
+        senderId: updatedMessage.senderId,
+        recipientId: updatedMessage.recipientId
+      },
+      request
+    );
+
+    return this.serializeMessage(updatedMessage);
   }
 
   private async assertScopeAccess(
@@ -178,5 +246,12 @@ export class ChatService {
 
   private isStaff(role: AppRole): boolean {
     return role === AppRole.ADMIN || role === AppRole.AUSBILDER;
+  }
+
+  private serializeMessage(message: ChatMessageRecord) {
+    return {
+      ...message,
+      content: message.deletedAt ? DELETED_MESSAGE_PLACEHOLDER : message.content
+    };
   }
 }

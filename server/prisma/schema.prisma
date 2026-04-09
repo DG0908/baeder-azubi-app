@@ -232,6 +232,8 @@ model ChatMessage {
   recipient      User?        @relation("ReceivedChatMessages", fields: [recipientId], references: [id], onDelete: SetNull)
   content        String
   createdAt      DateTime     @default(now())
+  deletedAt      DateTime?
+  deletedByUserId String?
 
   @@index([organizationId, scope, createdAt])
   @@index([senderId, createdAt])

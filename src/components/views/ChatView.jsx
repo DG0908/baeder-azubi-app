@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, Lock, MessageCircle, Send, Shield, Users } from 'lucide-react';
+import { Building2, Lock, MessageCircle, Send, Shield, Trash2, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { getAvatarById, PERMISSIONS } from '../../data/constants';
@@ -40,12 +40,14 @@ const ChatView = ({
   newMessage,
   setNewMessage,
   sendMessage,
+  deleteMessage,
   chatScope,
   setChatScope,
   selectedChatRecipientId,
   setSelectedChatRecipientId,
   directChatCandidates,
-  hasChatOrganization
+  hasChatOrganization,
+  canModerateChat
 }) => {
   const { user } = useAuth();
   const { darkMode } = useApp();
@@ -260,6 +262,21 @@ const ChatView = ({
                   const isMine = message.senderId === user?.id || message.user === user?.name;
                   const senderIsStaff = STAFF_ROLES.has(getRoleKey(message.senderRole));
                   const senderLabel = (PERMISSIONS[message.senderRole] || PERMISSIONS.azubi).label;
+                  const isDeleted = Boolean(message.isDeleted);
+                  const bubbleClass = isDeleted
+                    ? (darkMode ? 'bg-slate-900 border border-slate-800 text-slate-400' : 'bg-slate-100 border border-gray-200 text-gray-500')
+                    : isMine
+                      ? 'bg-cyan-500 text-white'
+                      : senderIsStaff
+                        ? (darkMode ? 'bg-violet-900/55 text-violet-50' : 'bg-violet-100 text-violet-900')
+                        : (darkMode ? 'bg-slate-800 text-slate-100' : 'bg-white text-gray-900');
+                  const badgeClass = isDeleted
+                    ? (darkMode ? 'bg-slate-800 text-slate-300' : 'bg-white text-gray-500')
+                    : isMine
+                      ? 'bg-white/20 text-white'
+                      : senderIsStaff
+                        ? (darkMode ? 'bg-violet-800 text-violet-100' : 'bg-white/70 text-violet-800')
+                        : (darkMode ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600');
 
                   return (
                     <div
@@ -276,30 +293,39 @@ const ChatView = ({
                       )}
 
                       <div
-                        className={`max-w-xl rounded-2xl px-4 py-3 shadow-sm ${
-                          isMine
-                            ? 'bg-cyan-500 text-white'
-                            : senderIsStaff
-                              ? (darkMode ? 'bg-violet-900/55 text-violet-50' : 'bg-violet-100 text-violet-900')
-                              : (darkMode ? 'bg-slate-800 text-slate-100' : 'bg-white text-gray-900')
-                        }`}
+                        className={`max-w-xl rounded-2xl px-4 py-3 shadow-sm ${bubbleClass}`}
                       >
                         <div className="flex flex-wrap items-center gap-2 mb-1.5">
                           <span className="text-sm font-semibold">{getFirstName(message.user)}</span>
-                          <span className={`text-[11px] px-2 py-0.5 rounded-full ${
-                            isMine
-                              ? 'bg-white/20 text-white'
-                              : senderIsStaff
-                                ? (darkMode ? 'bg-violet-800 text-violet-100' : 'bg-white/70 text-violet-800')
-                                : (darkMode ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600')
-                          }`}>
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full ${badgeClass}`}>
                             {senderLabel}
                           </span>
-                          <span className={`text-[11px] ${isMine ? 'text-white/80' : darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                          {isDeleted && (
+                            <span className={`text-[11px] px-2 py-0.5 rounded-full ${
+                              darkMode ? 'bg-slate-800 text-slate-300' : 'bg-white text-gray-500'
+                            }`}>
+                              Entfernt
+                            </span>
+                          )}
+                          <span className={`text-[11px] ${!isDeleted && isMine ? 'text-white/80' : darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                             {formatChatTime(message.time)}
                           </span>
+                          {canModerateChat && !isDeleted && (
+                            <button
+                              type="button"
+                              onClick={() => deleteMessage?.(message)}
+                              className={`ml-auto inline-flex items-center justify-center rounded-lg p-1.5 transition-colors ${
+                                darkMode
+                                  ? 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                                  : 'text-gray-500 hover:bg-gray-200 hover:text-gray-900'
+                              }`}
+                              title="Nachricht moderieren"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
-                        <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
+                        <p className={`text-sm whitespace-pre-wrap break-words ${isDeleted ? 'italic' : ''}`}>{message.text}</p>
                       </div>
 
                       {isMine && (
