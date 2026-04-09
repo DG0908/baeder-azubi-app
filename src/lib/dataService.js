@@ -25,6 +25,7 @@ import {
   secureSwimSessionsApi,
   secureSwimTrainingPlansApi,
   mapBackendUserToFrontendUser,
+  mapBackendRoleToFrontendRole,
   mapFrontendRoleToBackendRole
 } from './secureApi';
 import { getApiAccessToken } from './secureApiClient';
@@ -81,6 +82,18 @@ const normalizeSignatureField = (field) => {
   return normalized;
 };
 
+const normalizeChatRole = (role) => {
+  const normalized = String(role || '').trim();
+  if (!normalized) return 'azubi';
+
+  const lowerCaseRole = normalized.toLowerCase();
+  if (['admin', 'trainer', 'azubi', 'rettungsschwimmer_azubi'].includes(lowerCaseRole)) {
+    return lowerCaseRole;
+  }
+
+  return mapBackendRoleToFrontendRole(normalized);
+};
+
 const mapChatMessageToFrontend = (message, fallback = {}) => ({
   id: message?.id,
   user: fallback.userName || message?.senderName || message?.user_name || message?.sender?.displayName || 'Unbekannt',
@@ -88,9 +101,9 @@ const mapChatMessageToFrontend = (message, fallback = {}) => ({
   time: new Date(message?.createdAt || message?.created_at || Date.now()).getTime(),
   avatar: fallback.avatar ?? message?.senderAvatar ?? message?.user_avatar ?? message?.sender?.avatar ?? null,
   senderId: fallback.senderId || message?.senderId || message?.sender_id || message?.sender?.id || null,
-  senderRole: String(
+  senderRole: normalizeChatRole(
     fallback.senderRole || message?.senderRole || message?.user_role || message?.sender?.role || 'azubi'
-  ).toLowerCase(),
+  ),
   scope: String(
     fallback.scope || message?.scope || message?.chatScope || message?.chat_scope || 'public'
   ).toLowerCase(),
@@ -766,7 +779,11 @@ export const loadMessages = async (normalizeFn, userDirectory, userRole) => {
   const allMessages = [];
   for (const result of results) {
     if (result.status === 'fulfilled' && Array.isArray(result.value)) {
-      allMessages.push(...result.value.map((message) => mapChatMessageToFrontend(message)));
+      allMessages.push(
+        ...result.value
+          .map((message) => mapChatMessageToFrontend(message))
+          .filter((message) => !message.isDeleted)
+      );
     }
   }
   return allMessages;
@@ -781,7 +798,9 @@ export const loadDirectMessages = async ({ recipientId, currentUserId } = {}) =>
     limit: 100
   });
 
-  return (directMsgs || []).map((message) => mapChatMessageToFrontend(message, { scope: 'direct_staff' }));
+  return (directMsgs || [])
+    .map((message) => mapChatMessageToFrontend(message, { scope: 'direct_staff' }))
+    .filter((message) => !message.isDeleted);
 };
 
 export const createChatMessage = async (payload) => {
@@ -809,7 +828,9 @@ export const createChatMessage = async (payload) => {
 
 export const deleteChatMessage = async (messageId) => {
   const result = await secureChatApi.remove(messageId);
-  return mapChatMessageToFrontend(result);
+  return {
+    id: result?.id || messageId
+  };
 };
 
 // ─── Forum ───────────────────────────────────────────────────────────

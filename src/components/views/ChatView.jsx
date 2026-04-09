@@ -63,6 +63,7 @@ const ChatView = ({
   const selectedPartner = directChatCandidates.find((account) => account.id === selectedChatRecipientId) || null;
 
   const filteredMessages = (Array.isArray(messages) ? messages : [])
+    .filter((message) => !message?.isDeleted)
     .filter((message) => {
       if (hasChatOrganization && user?.organizationId && message.organizationId && message.organizationId !== user.organizationId) {
         return false;

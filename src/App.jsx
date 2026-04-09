@@ -5087,12 +5087,8 @@ export default function BaederApp() {
     }
 
     try {
-      const updatedMessage = await dsDeleteChatMessage(message.id);
-      setMessages((prev) => prev.map((entry) => (
-        entry.id === updatedMessage.id
-          ? { ...entry, ...updatedMessage }
-          : entry
-      )));
+      const deletedMessage = await dsDeleteChatMessage(message.id);
+      setMessages((prev) => prev.filter((entry) => entry.id !== deletedMessage.id));
       showToast(isAdminModeration ? 'Nachricht wurde moderiert.' : 'Nachricht wurde gelöscht.', 'success');
     } catch (error) {
       console.error('Chat moderation error:', error);

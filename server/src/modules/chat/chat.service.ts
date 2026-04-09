@@ -68,7 +68,8 @@ export class ChatService {
 
     const where: Prisma.ChatMessageWhereInput = {
       organizationId: actor.organizationId,
-      scope
+      scope,
+      deletedAt: null
     };
 
     if (scope === ChatScope.DIRECT_STAFF && recipientId) {
@@ -260,9 +261,7 @@ export class ChatService {
   private serializeMessage(message: ChatMessageRecord) {
     return {
       ...message,
-      content: message.deletedAt
-        ? (message.deletedByUserId === message.senderId ? DELETED_MESSAGE_PLACEHOLDER : MODERATED_MESSAGE_PLACEHOLDER)
-        : message.content
+      content: message.content
     };
   }
 }
