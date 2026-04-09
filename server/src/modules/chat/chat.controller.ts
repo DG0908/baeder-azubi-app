@@ -1,8 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, Req } from '@nestjs/common';
-import { AppRole } from '@prisma/client';
 import { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { ChatService } from './chat.service';
 import { CreateChatMessageDto } from './dto/create-chat-message.dto';
@@ -25,7 +23,6 @@ export class ChatController {
     return this.chatService.createMessage(actor, dto);
   }
 
-  @Roles(AppRole.ADMIN)
   @Delete('messages/:id')
   deleteMessage(
     @CurrentUser() actor: AuthenticatedUser,
