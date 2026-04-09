@@ -1,0 +1,244 @@
+{
+  "version": 1,
+  "module": {
+    "id": "notfall_trainer",
+    "title": "Notfall-Trainer",
+    "subtitle": "Situatives Entscheiden unter Zeitdruck im Badbetrieb",
+    "disclaimer": "Trainingssimulation fuer interne Schulung. Ersetzt keine Erste-Hilfe-, Rettungsschwimmer- oder AED-Ausbildung und keine betrieblichen Notfallanweisungen."
+  },
+  "scenarios": [
+    {
+      "id": "poolside-collapse-adult-001",
+      "title": "Kollaps am Beckenrand",
+      "subtitle": "Bewusstlose erwachsene Person mit AED im Bad",
+      "mode": "einsatz",
+      "difficulty": "mittel",
+      "estimatedMinutes": 4,
+      "timerSeconds": 150,
+      "audience": ["azubi", "trainer", "admin"],
+      "category": "Erste Hilfe",
+      "learningGoals": [
+        "Bewusstlosigkeit sicher erkennen",
+        "Normale Atmung beurteilen",
+        "Notruf und AED ohne Zeitverlust organisieren",
+        "Klare Teamdelegation unter Stress trainieren",
+        "Eine saubere Kurzuebergabe formulieren"
+      ],
+      "criticalFailures": [
+        {
+          "id": "no_scene_check",
+          "label": "Eigenschutz und Ansprechkontrolle ausgelassen",
+          "effect": "hard_fail"
+        },
+        {
+          "id": "no_emergency_call",
+          "label": "Notruf nicht veranlasst",
+          "effect": "hard_fail"
+        },
+        {
+          "id": "no_cpr",
+          "label": "Keine Wiederbelebung trotz fehlender normaler Atmung begonnen",
+          "effect": "hard_fail"
+        }
+      ],
+      "scoring": {
+        "maxPoints": 100,
+        "passThreshold": 70,
+        "timeBonusThresholdSeconds": 105,
+        "timeBonusPoints": 5,
+        "criticalFailurePenalty": "fail_case"
+      },
+      "debrief": {
+        "headline": "Pruefen, rufen, druecken",
+        "summary": "Bei Bewusstlosigkeit ohne normale Atmung musst du sofort Hilfe organisieren, Herzdruckmassage starten und den AED einbinden. Klare Delegation spart Zeit.",
+        "keyTakeaways": [
+          "Sichere zunaechst dich selbst und die Umgebung.",
+          "Pruefe Ansprechbarkeit und normale Atmung ohne Zeit zu verlieren.",
+          "Beauftrage konkret eine Person mit 112 und eine weitere mit dem AED.",
+          "Wiederbelebung beginnt nicht erst nach langer Diskussion, sondern sofort."
+        ],
+        "commonMistakes": [
+          "Aufrichten oder Umsetzen vor der Lagebeurteilung",
+          "Unklare Ansagen wie 'Jemand soll mal helfen'",
+          "Zu langes Beobachten statt sofortiger Notruf-/HLW-Kette"
+        ],
+        "merksatz": "Keine normale Atmung = Reanimation sofort starten und AED holen lassen."
+      },
+      "steps": [
+        {
+          "id": "scene_check",
+          "type": "single_choice",
+          "title": "Lage erkennen",
+          "prompt": "Ein erwachsener Badegast sackt am Beckenrand zusammen und reagiert nicht. Zwei Kolleginnen sind in Hoerweite. Was tust du zuerst?",
+          "points": 25,
+          "options": [
+            {
+              "id": "scene_check_a",
+              "text": "Eigenschutz beachten, Person ansprechen und Reaktion pruefen",
+              "isCorrect": true,
+              "feedback": "Richtig. Zuerst Eigenschutz und Bewusstseinskontrolle, bevor du weitere Schritte ausloest."
+            },
+            {
+              "id": "scene_check_b",
+              "text": "Die Person sofort alleine aufrichten und hinsetzen",
+              "isCorrect": false,
+              "feedback": "Falsch. Unkontrolliertes Aufrichten kostet Zeit und kann zusaetzlich schaedigen."
+            },
+            {
+              "id": "scene_check_c",
+              "text": "Erst den AED holen und dann zur Person gehen",
+              "isCorrect": false,
+              "feedback": "Falsch. Ohne kurze Lagebeurteilung weisst du noch nicht sicher, was vorliegt."
+            },
+            {
+              "id": "scene_check_d",
+              "text": "Zunaechst die Badegaeste beruhigen und dann spaeter nachsehen",
+              "isCorrect": false,
+              "feedback": "Falsch. Die betroffene Person hat jetzt Prioritaet."
+            }
+          ]
+        },
+        {
+          "id": "breathing_decision",
+          "type": "single_choice",
+          "title": "Atmung und Alarmierung",
+          "prompt": "Die Person reagiert nicht. Es ist keine normale Atmung erkennbar. Was ist jetzt die beste naechste Aktion?",
+          "points": 30,
+          "options": [
+            {
+              "id": "breathing_decision_a",
+              "text": "Stabile Seitenlage und zunaechst zwei Minuten beobachten",
+              "isCorrect": false,
+              "feedback": "Falsch. Ohne normale Atmung braucht die Person keine Beobachtung, sondern sofort Notruf, AED und HLW."
+            },
+            {
+              "id": "breathing_decision_b",
+              "text": "Notruf/AED veranlassen und sofort mit Wiederbelebung beginnen",
+              "isCorrect": true,
+              "feedback": "Richtig. Bei fehlender normaler Atmung zaehlt jede Sekunde."
+            },
+            {
+              "id": "breathing_decision_c",
+              "text": "Die Person kurz mit Wasser kuehlen und erneut ansprechen",
+              "isCorrect": false,
+              "feedback": "Falsch. Das verzoegert lebenswichtige Sofortmassnahmen."
+            },
+            {
+              "id": "breathing_decision_d",
+              "text": "Erst die Personalunterlagen oder Vorerkrankungen suchen",
+              "isCorrect": false,
+              "feedback": "Falsch. Informationen kommen spaeter, jetzt geht es um die Rettungskette."
+            }
+          ]
+        },
+        {
+          "id": "team_delegation",
+          "type": "single_choice",
+          "title": "Teamfuehrung",
+          "prompt": "Welche Ansage an dein Team ist jetzt am besten?",
+          "points": 15,
+          "options": [
+            {
+              "id": "team_delegation_a",
+              "text": "Jemand soll bitte mal 112 anrufen.",
+              "isCorrect": false,
+              "feedback": "Zu unklar. Ohne direkte Zuweisung fuehlt sich oft niemand verantwortlich."
+            },
+            {
+              "id": "team_delegation_b",
+              "text": "Du rufst 112, du holst den AED, du kommst zu mir zur Unterstuetzung.",
+              "isCorrect": true,
+              "feedback": "Richtig. Konkrete Aufgaben an konkrete Personen beschleunigen die Notfallkette."
+            },
+            {
+              "id": "team_delegation_c",
+              "text": "Alle bleiben bitte ruhig, ich mache das alleine.",
+              "isCorrect": false,
+              "feedback": "Falsch. Ein Teamnotfall sollte nicht allein abgearbeitet werden."
+            },
+            {
+              "id": "team_delegation_d",
+              "text": "Bitte wartet kurz, bis ich die Lage vollstaendig verstanden habe.",
+              "isCorrect": false,
+              "feedback": "Falsch. Die Lage ist fuer die Alarmierung bereits eindeutig genug."
+            }
+          ]
+        },
+        {
+          "id": "action_order",
+          "type": "ordering",
+          "title": "Ablauf priorisieren",
+          "prompt": "Bringe die Massnahmen in die sinnvollste Reihenfolge.",
+          "points": 20,
+          "items": [
+            {
+              "id": "action_order_1",
+              "text": "Notruf 112 und AED konkret veranlassen"
+            },
+            {
+              "id": "action_order_2",
+              "text": "Herzdruckmassage beginnen"
+            },
+            {
+              "id": "action_order_3",
+              "text": "AED anschliessen, sobald er da ist"
+            },
+            {
+              "id": "action_order_4",
+              "text": "Sprachanweisungen befolgen und Reanimation fortfuehren"
+            }
+          ],
+          "correctOrder": [
+            "action_order_1",
+            "action_order_2",
+            "action_order_3",
+            "action_order_4"
+          ],
+          "feedback": {
+            "success": "Richtig. Alarmierung, sofortige Druckmassage und fruehes Einbinden des AED folgen aufeinander.",
+            "partial": "Teilweise richtig. Achte darauf, Notruf/AED frueh auszulagern und die Herzdruckmassage nicht zu verzoegern.",
+            "failure": "Nicht optimal. Die HLW-Kette muss schnell und ohne unnötige Zwischenschritte anlaufen."
+          }
+        },
+        {
+          "id": "handover",
+          "type": "keyword_input",
+          "title": "Kurzuebergabe",
+          "prompt": "Welche Informationen gibst du dem Rettungsdienst oder nachrueckenden Team weiter? Nenne mindestens vier Kernaussagen.",
+          "points": 10,
+          "placeholder": "z. B. bewusstlos, keine normale Atmung, HLW laeuft, AED ...",
+          "keywordGroups": [
+            ["bewusstlos", "ohne reaktion", "reagiert nicht"],
+            ["keine normale atmung", "atmet nicht normal", "keine atmung"],
+            ["hlw", "reanimation", "herzdruckmassage"],
+            ["aed", "defibrillator"]
+          ],
+          "minimumGroupsRequired": 4,
+          "feedback": {
+            "success": "Gut. Du nennst die entscheidenden Informationen knapp und einsatzrelevant.",
+            "partial": "Teilweise gut. Fuer eine saubere Uebergabe fehlen noch ein oder zwei Kernpunkte.",
+            "failure": "Zu unpraezise. Uebergaben muessen kurz, klar und handlungsrelevant sein."
+          }
+        }
+      ],
+      "sourceNotes": [
+        "Orientiert an den Kernprinzipien Pruefen-Rufen-Druecken und AED-Einsatz in der Wiederbelebung.",
+        "Im Live-Betrieb muessen betriebliche Alarmwege, AED-Standorte und interne Rollenverteilung zusaetzlich beruecksichtigt werden."
+      ],
+      "references": [
+        {
+          "label": "DRK: Erste Hilfe - Wiederbelebung",
+          "url": "https://www.drk.de/hilfe-in-deutschland/erste-hilfe/erste-hilfe-massnahmen-zur-wiederbelebung-pruefen-rufen-druecken/"
+        },
+        {
+          "label": "DRK: Herz-Lungen-Wiederbelebung",
+          "url": "https://www.drk.de/hilfe-in-deutschland/erste-hilfe/herz-lungen-wiederbelebung/"
+        },
+        {
+          "label": "DLRG: Erste Hilfe Ausbildung",
+          "url": "https://www.dlrg.de/informieren/ausbildung/erste-hilfe/"
+        }
+      ]
+    }
+  ]
+}
