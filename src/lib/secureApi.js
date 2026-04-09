@@ -292,6 +292,9 @@ export const secureChatApi = {
   create: (payload) => apiRequest('/chat/messages', {
     method: 'POST',
     body: JSON.stringify(payload)
+  }),
+  remove: (messageId) => apiRequest(`/chat/messages/${messageId}`, {
+    method: 'DELETE'
   })
 };
 

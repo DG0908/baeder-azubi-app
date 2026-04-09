@@ -95,7 +95,10 @@ const mapChatMessageToFrontend = (message, fallback = {}) => ({
     fallback.scope || message?.scope || message?.chatScope || message?.chat_scope || 'public'
   ).toLowerCase(),
   organizationId: fallback.organizationId ?? message?.organizationId ?? message?.organization_id ?? null,
-  recipientId: fallback.recipientId ?? message?.recipientId ?? message?.recipient_id ?? null
+  recipientId: fallback.recipientId ?? message?.recipientId ?? message?.recipient_id ?? null,
+  deletedAt: message?.deletedAt || message?.deleted_at || null,
+  deletedByUserId: message?.deletedByUserId || message?.deleted_by_user_id || null,
+  isDeleted: Boolean(message?.deletedAt || message?.deleted_at)
 });
 
 const mapQuestionSubmissionToFrontend = (question, fallback = {}) => ({
@@ -778,18 +781,7 @@ export const loadDirectMessages = async ({ recipientId, currentUserId } = {}) =>
     limit: 100
   });
 
-  return (directMsgs || []).map((message) => ({
-    id: message?.id,
-    user: message?.senderName || message?.sender?.displayName || 'Unbekannt',
-    text: message?.content || message?.text || '',
-    time: new Date(message?.createdAt || Date.now()).getTime(),
-    avatar: message?.senderAvatar || message?.sender?.avatar || null,
-    senderId: message?.senderId || message?.sender?.id || null,
-    senderRole: String(message?.senderRole || message?.sender?.role || 'azubi').toLowerCase(),
-    scope: 'direct_staff',
-    organizationId: message?.organizationId || null,
-    recipientId: message?.recipientId || null
-  }));
+  return (directMsgs || []).map((message) => mapChatMessageToFrontend(message, { scope: 'direct_staff' }));
 };
 
 export const createChatMessage = async (payload) => {
@@ -813,6 +805,11 @@ export const createChatMessage = async (payload) => {
   }
   const result = await secureChatApi.create(requestPayload);
   return mapChatMessageToFrontend(result, messagePayload);
+};
+
+export const deleteChatMessage = async (messageId) => {
+  const result = await secureChatApi.remove(messageId);
+  return mapChatMessageToFrontend(result);
 };
 
 // ─── Forum ───────────────────────────────────────────────────────────
