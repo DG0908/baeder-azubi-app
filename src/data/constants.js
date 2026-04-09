@@ -23,6 +23,7 @@ export const DEFAULT_MENU_ITEMS = [
   { id: 'forum', icon: '\u{1F4DD}', label: 'Forum', visible: true, order: 8.5, requiresPermission: null, group: 'sozial' },
   { id: 'materials', icon: '\u{1F4DA}', label: 'Lernen', visible: true, order: 9, requiresPermission: null, group: 'lernen' },
   { id: 'interactive-learning', icon: '\u{1F393}', label: 'Interaktives Lernen', visible: true, order: 9.5, requiresPermission: null, group: 'lernen' },
+  { id: 'notfall-trainer', icon: '\u{1F6A8}', label: 'Notfall-Trainer', visible: true, order: 9.8, requiresPermission: null, group: 'lernen' },
   { id: 'resources', icon: '\u{1F517}', label: 'Ressourcen', visible: true, order: 10, requiresPermission: null, group: 'lernen' },
   { id: 'news', icon: '\u{1F4E2}', label: 'News', visible: true, order: 11, requiresPermission: null, group: 'sozial' },
   { id: 'exams', icon: '\u{1F4CB}', label: 'Klausuren', visible: true, order: 12, requiresPermission: null, group: 'dokumentieren' },

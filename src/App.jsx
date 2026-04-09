@@ -28,6 +28,7 @@ import ImpressumView from './components/views/ImpressumView';
 import DatenschutzView from './components/views/DatenschutzView';
 import AGBView from './components/views/AGBView';
 import InteractiveLearningView from './components/views/InteractiveLearningView';
+import NotfallTrainerView from './components/views/NotfallTrainerView';
 import AvatarBadge from './components/ui/AvatarBadge';
 import { useInactivityTimeout } from './hooks/useInactivityTimeout';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -9218,6 +9219,11 @@ export default function BaederApp() {
         {/* Interactive Learning Hub (includes Water Cycle) */}
         {currentView === 'interactive-learning' && (
           <InteractiveLearningView />
+        )}
+
+        {/* Notfall-Trainer */}
+        {currentView === 'notfall-trainer' && (
+          <NotfallTrainerView />
         )}
 
                 {/* Resources View */}
