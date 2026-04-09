@@ -49,6 +49,9 @@ const LazySinnesorganeDeepDiveView = lazy(() => import('./health/SinnesorganeDee
 const LazyBeschilderungDeepDiveView = lazy(() => import('./hygiene/BeschilderungDeepDiveView'));
 const LazyReinigungDesinfektionDeepDiveView = lazy(() => import('./hygiene/ReinigungDesinfektionDeepDiveView'));
 const LazyGefahrstoffeDeepDiveView = lazy(() => import('./hygiene/GefahrstoffeDeepDiveView'));
+const LazyRechtsnormenDeepDiveView = lazy(() => import('./recht/RechtsnormenDeepDiveView'));
+const LazyBadevertagHausordnungDeepDiveView = lazy(() => import('./recht/BadevertagHausordnungDeepDiveView'));
+const LazyAufsichtspflichtDeepDiveView = lazy(() => import('./recht/AufsichtspflichtDeepDiveView'));
 const LazyGewaltenteilungDeepDiveView = lazy(() => import('./recht/GewaltenteilungDeepDiveView'));
 const LazyStrafRechtBadDeepDiveView = lazy(() => import('./recht/StrafRechtBadDeepDiveView'));
 const LazyJugendarbeitsschutzDeepDiveView = lazy(() => import('./recht/JugendarbeitsschutzDeepDiveView'));
@@ -667,6 +670,27 @@ const LEARNING_CATEGORIES = [
         available: false,
       },
       {
+        id: 'rechtsnormen',
+        name: 'Rechtsnormen & Rechtsaufbau',
+        description: 'Normenhierarchie, Gerichtssystem, EU-Recht, öffentliches Recht vs. Zivilrecht',
+        icon: '📜',
+        available: true,
+      },
+      {
+        id: 'badevertrag-hausordnung',
+        name: 'Badevertrag & Hausordnung',
+        description: 'Konkludenter Vertragsschluss, Haus- & Badeordnung als AGB, Rechte & Pflichten, Hausverbot',
+        icon: '🤝',
+        available: true,
+      },
+      {
+        id: 'aufsichtspflicht',
+        name: 'Aufsichts- & Verkehrssicherungspflicht',
+        description: 'Betriebsaufsicht, Beckenaufsicht, DGUV 107-004, Dokumentationspflichten, Dienstkleidung',
+        icon: '👁️',
+        available: true,
+      },
+      {
         id: 'gewaltenteilung',
         name: 'Gewaltenteilung & Staatsrecht',
         description: 'Legislative, Exekutive, Judikative — Behörden im Bäderbetrieb',
@@ -1171,6 +1195,45 @@ const InteractiveLearningView = () => {
           )}
         >
           <LazyGefahrstoffeDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'rechtsnormen') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Rechtsnormen...</div>}>
+          <LazyRechtsnormenDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'badevertrag-hausordnung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Badevertrag...</div>}>
+          <LazyBadevertagHausordnungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'aufsichtspflicht') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Aufsichtspflicht...</div>}>
+          <LazyAufsichtspflichtDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
