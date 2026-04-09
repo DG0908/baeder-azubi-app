@@ -39,6 +39,13 @@ const LazyBeckenwasserdesinfektionDeepDiveView = lazy(() => import('./chemie/Bec
 const LazyElektrolyseDeepDiveView = lazy(() => import('./chemie/ElektrolyseDeepDiveView'));
 const LazyKorrosionDeepDiveView = lazy(() => import('./chemie/KorrosionDeepDiveView'));
 const LazyElektrolyseAnlageDeepDiveView = lazy(() => import('./chemie/ElektrolyseAnlageDeepDiveView'));
+const LazyHlwAedDeepDiveView = lazy(() => import('./health/HlwAedDeepDiveView'));
+const LazyBewusstseinAtmungDeepDiveView = lazy(() => import('./health/BewusstseinAtmungDeepDiveView'));
+const LazyStabileSeitenlageDeepDiveView = lazy(() => import('./health/StabileSeitenlageDeepDiveView'));
+const LazyBadeunfallDeepDiveView = lazy(() => import('./health/BadeunfallDeepDiveView'));
+const LazyHyperventilationDeepDiveView = lazy(() => import('./health/HyperventilationDeepDiveView'));
+const LazyHautDeepDiveView = lazy(() => import('./health/HautDeepDiveView'));
+const LazySinnesorganeDeepDiveView = lazy(() => import('./health/SinnesorganeDeepDiveView'));
 const LazyBeschilderungDeepDiveView = lazy(() => import('./hygiene/BeschilderungDeepDiveView'));
 const LazyReinigungDesinfektionDeepDiveView = lazy(() => import('./hygiene/ReinigungDesinfektionDeepDiveView'));
 const LazyGefahrstoffeDeepDiveView = lazy(() => import('./hygiene/GefahrstoffeDeepDiveView'));
@@ -284,49 +291,49 @@ const LEARNING_CATEGORIES = [
         name: 'Hyperventilation',
         description: 'Ursachen, Symptome und Erstmaßnahmen im Badebetrieb',
         icon: '🌬️',
-        available: false,
+        available: true,
       },
       {
         id: 'haut',
         name: 'Die Haut',
         description: 'Schutzfunktion, Aufbau und Relevanz in der Ersten Hilfe',
         icon: '🧍',
-        available: false,
+        available: true,
       },
       {
         id: 'sinnesorgane',
         name: 'Sinnesorgane',
         description: 'Auge, Ohr und weitere Sinne mit Bezug zu Badeunfaellen',
         icon: '👁️',
-        available: false,
+        available: true,
       },
       {
         id: 'hlw-aed',
         name: 'HLW & AED',
         description: 'Algorithmus 30:2, Defibrillator und Teamablauf',
         icon: '❤️',
-        available: false,
+        available: true,
       },
       {
         id: 'bewusstsein-atmung',
         name: 'Bewusstsein & Atmung',
         description: 'Ansprechen, Atemkontrolle und Entscheidungspfade',
         icon: '🫁',
-        available: false,
+        available: true,
       },
       {
         id: 'stabile-seitenlage',
         name: 'Stabile Seitenlage',
         description: 'Sichere Lagerung und kontinuierliche Überwachung',
         icon: '🧍',
-        available: false,
+        available: true,
       },
       {
         id: 'badeunfall-erstversorgung',
         name: 'Badeunfall-Erstversorgung',
         description: 'Typische Notfallbilder im Bad und Erstmassnahmen',
         icon: '🚑',
-        available: false,
+        available: true,
       },
     ],
   },
@@ -1316,6 +1323,97 @@ const InteractiveLearningView = () => {
         </button>
         <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Sozialversicherung...</div>}>
           <LazySozialversicherungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'hlw-aed') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade HLW & AED...</div>}>
+          <LazyHlwAedDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'bewusstsein-atmung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Bewusstsein & Atmung...</div>}>
+          <LazyBewusstseinAtmungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'stabile-seitenlage') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Stabile Seitenlage...</div>}>
+          <LazyStabileSeitenlageDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'badeunfall-erstversorgung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Badeunfall-Erstversorgung...</div>}>
+          <LazyBadeunfallDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'hyperventilation') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Hyperventilation...</div>}>
+          <LazyHyperventilationDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'haut') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Die Haut...</div>}>
+          <LazyHautDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'sinnesorgane') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Sinnesorgane...</div>}>
+          <LazySinnesorganeDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
