@@ -49,6 +49,9 @@ const LazySinnesorganeDeepDiveView = lazy(() => import('./health/SinnesorganeDee
 const LazyBeschilderungDeepDiveView = lazy(() => import('./hygiene/BeschilderungDeepDiveView'));
 const LazyReinigungDesinfektionDeepDiveView = lazy(() => import('./hygiene/ReinigungDesinfektionDeepDiveView'));
 const LazyGefahrstoffeDeepDiveView = lazy(() => import('./hygiene/GefahrstoffeDeepDiveView'));
+const LazyStrafrechtBadVertieftDeepDiveView = lazy(() => import('./recht/StrafrechtBadVertieftDeepDiveView'));
+const LazyNotwehrNothilfeDeepDiveView = lazy(() => import('./recht/NotwehrNothilfeDeepDiveView'));
+const LazyPersonalfuehrungDeepDiveView = lazy(() => import('./recht/PersonalfuehrungDeepDiveView'));
 const LazyRechtsnormenDeepDiveView = lazy(() => import('./recht/RechtsnormenDeepDiveView'));
 const LazyBadevertagHausordnungDeepDiveView = lazy(() => import('./recht/BadevertagHausordnungDeepDiveView'));
 const LazyAufsichtspflichtDeepDiveView = lazy(() => import('./recht/AufsichtspflichtDeepDiveView'));
@@ -670,6 +673,27 @@ const LEARNING_CATEGORIES = [
         available: false,
       },
       {
+        id: 'strafrecht-bad-vertieft',
+        name: 'Strafrecht im Bad — Vertiefung',
+        description: 'Körperverletzung (§223–229), Diebstahl, Voyeurismus (§201a), Hausfriedensbruch, Sachbeschädigung',
+        icon: '⚖️',
+        available: true,
+      },
+      {
+        id: 'notwehr-nothilfe',
+        name: 'Notwehr, Nothilfe & Notstand',
+        description: '§32 Notwehr, §34/35 Notstand, §323c Hilfeleistung, §127 StPO Jedermanns-Festnahme',
+        icon: '🛡️',
+        available: true,
+      },
+      {
+        id: 'personalfuehrung',
+        name: 'Personalführung im Bäderbetrieb',
+        description: 'Organigramm, Führungsstile, Betriebsklima, Mobbing, Dienstplanung',
+        icon: '👔',
+        available: true,
+      },
+      {
         id: 'rechtsnormen',
         name: 'Rechtsnormen & Rechtsaufbau',
         description: 'Normenhierarchie, Gerichtssystem, EU-Recht, öffentliches Recht vs. Zivilrecht',
@@ -1195,6 +1219,45 @@ const InteractiveLearningView = () => {
           )}
         >
           <LazyGefahrstoffeDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'strafrecht-bad-vertieft') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Strafrecht...</div>}>
+          <LazyStrafrechtBadVertieftDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'notwehr-nothilfe') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Notwehr & Nothilfe...</div>}>
+          <LazyNotwehrNothilfeDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'personalfuehrung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Personalführung...</div>}>
+          <LazyPersonalfuehrungDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
