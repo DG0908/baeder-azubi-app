@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext';
 
 const LazyWaterCycleView = lazy(() => import('./WaterCycleView'));
 const LazyHeartDeepDiveThree = lazy(() => import('./health/HeartDeepDiveThree'));
-const LazyCrawlTechniqueDeepDiveThree = lazy(() => import('./swim/CrawlTechniqueDeepDiveThree'));
+const LazySchwimmtechnikenDeepDiveView = lazy(() => import('./swim/SchwimmtechnikenDeepDiveView'));
 const LazyCalciumHypochloriteDeepDiveView = lazy(() => import('./chlorine/CalciumHypochloriteDeepDiveView'));
 const LazyStartblockDeepDiveView = lazy(() => import('./bauliches/StartblockDeepDiveView'));
 const LazyUmwaelzpumpeDeepDiveView = lazy(() => import('./pumpen/UmwaelzpumpeDeepDiveView'));
@@ -1003,11 +1003,11 @@ const InteractiveLearningView = () => {
         <Suspense
           fallback={(
             <div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>
-              Lade 3D-Kraultechnik...
+              Lade Schwimmtechniken...
             </div>
           )}
         >
-          <LazyCrawlTechniqueDeepDiveThree />
+          <LazySchwimmtechnikenDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
