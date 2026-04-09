@@ -14,7 +14,9 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateChatMessageDto } from './dto/create-chat-message.dto';
 import { ListChatMessagesQueryDto } from './dto/list-chat-messages-query.dto';
 
-const DELETED_MESSAGE_PLACEHOLDER = 'Nachricht wurde von einem Admin entfernt.';
+const SELF_DELETE_WINDOW_MS = 10 * 60 * 1000;
+const DELETED_MESSAGE_PLACEHOLDER = 'Nachricht wurde gelöscht.';
+const MODERATED_MESSAGE_PLACEHOLDER = 'Nachricht wurde von einem Admin entfernt.';
 
 const messageSelect = {
   id: true,
@@ -146,10 +148,6 @@ export class ChatService {
       throw new BadRequestException('Your account is not assigned to an organization.');
     }
 
-    if (actor.role !== AppRole.ADMIN) {
-      throw new ForbiddenException('Only admins may moderate chat messages.');
-    }
-
     const message = await this.prisma.chatMessage.findFirst({
       where: {
         id: messageId,
@@ -166,6 +164,16 @@ export class ChatService {
       return this.serializeMessage(message);
     }
 
+    const now = Date.now();
+    const messageCreatedAt = new Date(message.createdAt).getTime();
+    const isOwner = message.senderId === actor.id;
+    const isAdmin = actor.role === AppRole.ADMIN;
+    const canDeleteOwnMessage = isOwner && now - messageCreatedAt <= SELF_DELETE_WINDOW_MS;
+
+    if (!isAdmin && !canDeleteOwnMessage) {
+      throw new ForbiddenException('You may only delete your own messages shortly after sending them.');
+    }
+
     const updatedMessage = await this.prisma.chatMessage.update({
       where: {
         id: message.id
@@ -179,13 +187,14 @@ export class ChatService {
 
     await this.auditLogService.writeForUser(
       actor,
-      'chat_message.moderated',
+      isAdmin && !isOwner ? 'chat_message.moderated' : 'chat_message.deleted',
       'ChatMessage',
       updatedMessage.id,
       {
         scope: updatedMessage.scope,
         senderId: updatedMessage.senderId,
-        recipientId: updatedMessage.recipientId
+        recipientId: updatedMessage.recipientId,
+        deleteMode: isAdmin && !isOwner ? 'admin_moderation' : 'self_delete'
       },
       request
     );
@@ -251,7 +260,9 @@ export class ChatService {
   private serializeMessage(message: ChatMessageRecord) {
     return {
       ...message,
-      content: message.deletedAt ? DELETED_MESSAGE_PLACEHOLDER : message.content
+      content: message.deletedAt
+        ? (message.deletedByUserId === message.senderId ? DELETED_MESSAGE_PLACEHOLDER : MODERATED_MESSAGE_PLACEHOLDER)
+        : message.content
     };
   }
 }

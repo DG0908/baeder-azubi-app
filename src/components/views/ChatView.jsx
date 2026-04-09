@@ -35,6 +35,8 @@ const formatChatTime = (timeInput) => {
   return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 };
 
+const SELF_DELETE_WINDOW_MS = 10 * 60 * 1000;
+
 const ChatView = ({
   messages,
   newMessage,
@@ -263,6 +265,8 @@ const ChatView = ({
                   const senderIsStaff = STAFF_ROLES.has(getRoleKey(message.senderRole));
                   const senderLabel = (PERMISSIONS[message.senderRole] || PERMISSIONS.azubi).label;
                   const isDeleted = Boolean(message.isDeleted);
+                  const isWithinOwnDeleteWindow = isMine && (Date.now() - Number(message.time || 0)) <= SELF_DELETE_WINDOW_MS;
+                  const canDeleteMessage = !isDeleted && (canModerateChat || isWithinOwnDeleteWindow);
                   const bubbleClass = isDeleted
                     ? (darkMode ? 'bg-slate-900 border border-slate-800 text-slate-400' : 'bg-slate-100 border border-gray-200 text-gray-500')
                     : isMine
@@ -310,7 +314,7 @@ const ChatView = ({
                           <span className={`text-[11px] ${!isDeleted && isMine ? 'text-white/80' : darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                             {formatChatTime(message.time)}
                           </span>
-                          {canModerateChat && !isDeleted && (
+                          {canDeleteMessage && (
                             <button
                               type="button"
                               onClick={() => deleteMessage?.(message)}
@@ -319,7 +323,7 @@ const ChatView = ({
                                   ? 'text-slate-300 hover:bg-slate-800 hover:text-white'
                                   : 'text-gray-500 hover:bg-gray-200 hover:text-gray-900'
                               }`}
-                              title="Nachricht moderieren"
+                              title={canModerateChat && !isMine ? 'Nachricht moderieren' : 'Nachricht löschen'}
                             >
                               <Trash2 size={14} />
                             </button>

@@ -5076,12 +5076,13 @@ export default function BaederApp() {
   const deleteChatMessage = async (message) => {
     if (!message?.id || message?.isDeleted) return;
 
-    if (user?.role !== 'admin') {
-      showToast('Nur Admins können Nachrichten moderieren.', 'warning');
-      return;
-    }
+    const isMine = message.senderId === user?.id;
+    const isAdminModeration = user?.role === 'admin' && !isMine;
+    const confirmText = isAdminModeration
+      ? 'Nachricht für alle Chatteilnehmer als entfernt markieren?'
+      : 'Eigene Nachricht wirklich löschen?';
 
-    if (!confirm('Nachricht für alle Chatteilnehmer als entfernt markieren?')) {
+    if (!confirm(confirmText)) {
       return;
     }
 
@@ -5092,7 +5093,7 @@ export default function BaederApp() {
           ? { ...entry, ...updatedMessage }
           : entry
       )));
-      showToast('Nachricht wurde moderiert.', 'success');
+      showToast(isAdminModeration ? 'Nachricht wurde moderiert.' : 'Nachricht wurde gelöscht.', 'success');
     } catch (error) {
       console.error('Chat moderation error:', error);
       showToast(friendlyError(error), 'error');
