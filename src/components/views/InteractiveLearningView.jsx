@@ -63,6 +63,8 @@ const LazyKuendigungDeepDiveView = lazy(() => import('./recht/KuendigungDeepDive
 const LazyKommunalpolitikDeepDiveView = lazy(() => import('./recht/KommunalpolitikDeepDiveView'));
 const LazyGesellschaftsformenDeepDiveView = lazy(() => import('./recht/GesellschaftsformenDeepDiveView'));
 const LazySozialversicherungDeepDiveView = lazy(() => import('./recht/SozialversicherungDeepDiveView'));
+const LazyKostenmanagementDeepDiveView = lazy(() => import('./recht/KostenmanagementDeepDiveView'));
+const LazyMarketingDeepDiveView = lazy(() => import('./recht/MarketingDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -770,6 +772,20 @@ const LEARNING_CATEGORIES = [
         icon: '🛡️',
         available: true,
       },
+      {
+        id: 'kostenmanagement',
+        name: 'Kostenmanagement & Bäderkasse',
+        description: 'Kostenarten, Kalkulation, Bäderkasse, Controlling, Kostendeckungsgrad',
+        icon: '💰',
+        available: true,
+      },
+      {
+        id: 'marketing',
+        name: 'Marketing im Bäderbetrieb',
+        description: 'SWOT-Analyse, 4P-Mix, Zielgruppen, Öffentlichkeitsarbeit, Datenschutz',
+        icon: '📣',
+        available: true,
+      },
     ],
   },
 ];
@@ -1449,6 +1465,32 @@ const InteractiveLearningView = () => {
         </button>
         <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Sozialversicherung...</div>}>
           <LazySozialversicherungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'kostenmanagement') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Kostenmanagement...</div>}>
+          <LazyKostenmanagementDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'marketing') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Marketing...</div>}>
+          <LazyMarketingDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
