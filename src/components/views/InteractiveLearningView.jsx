@@ -39,6 +39,11 @@ const LazyBeckenwasserdesinfektionDeepDiveView = lazy(() => import('./chemie/Bec
 const LazyElektrolyseDeepDiveView = lazy(() => import('./chemie/ElektrolyseDeepDiveView'));
 const LazyKorrosionDeepDiveView = lazy(() => import('./chemie/KorrosionDeepDiveView'));
 const LazyElektrolyseAnlageDeepDiveView = lazy(() => import('./chemie/ElektrolyseAnlageDeepDiveView'));
+const LazyLungeAtmungDeepDiveView = lazy(() => import('./health/LungeAtmungDeepDiveView'));
+const LazyZellatmungDeepDiveView = lazy(() => import('./health/ZellatmungDeepDiveView'));
+const LazyMuskulaturDeepDiveView = lazy(() => import('./health/MuskulaturDeepDiveView'));
+const LazyNervensystemDeepDiveView = lazy(() => import('./health/NervensystemDeepDiveView'));
+const LazyBlutDeepDiveView = lazy(() => import('./health/BlutDeepDiveView'));
 const LazyHlwAedDeepDiveView = lazy(() => import('./health/HlwAedDeepDiveView'));
 const LazyBewusstseinAtmungDeepDiveView = lazy(() => import('./health/BewusstseinAtmungDeepDiveView'));
 const LazyStabileSeitenlageDeepDiveView = lazy(() => import('./health/StabileSeitenlageDeepDiveView'));
@@ -292,6 +297,41 @@ const LEARNING_CATEGORIES = [
         name: 'Großer & kleiner Blutkreislauf',
         description: 'Weg des Blutes durch Körper- und Lungenkreislauf',
         icon: '🩸',
+        available: true,
+      },
+      {
+        id: 'blut',
+        name: 'Blut',
+        description: 'Bestandteile, Blutgruppen, Gerinnung und Sauerstofftransport',
+        icon: '🩸',
+        available: true,
+      },
+      {
+        id: 'lunge-atmung',
+        name: 'Lunge & Atemphysiologie',
+        description: 'Aufbau, Atemvolumina, Gasaustausch und Atemregulation',
+        icon: '🫁',
+        available: true,
+      },
+      {
+        id: 'zellatmung',
+        name: 'Zellatmung & Energiestoffwechsel',
+        description: 'Aerob, anaerob, ATP, Laktat, Schwelle im Schwimmsport',
+        icon: '⚡',
+        available: true,
+      },
+      {
+        id: 'muskulatur',
+        name: 'Muskulatur',
+        description: 'Muskeltypen, Kontraktion, Krämpfe und Verletzungen',
+        icon: '💪',
+        available: true,
+      },
+      {
+        id: 'nervensystem',
+        name: 'Nervensystem',
+        description: 'ZNS/PNS, Neuron, Reflexe, vegetatives Nervensystem',
+        icon: '🧠',
         available: true,
       },
       {
@@ -1491,6 +1531,71 @@ const InteractiveLearningView = () => {
         </button>
         <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Marketing...</div>}>
           <LazyMarketingDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'lunge-atmung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Lunge & Atmung...</div>}>
+          <LazyLungeAtmungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'zellatmung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Zellatmung...</div>}>
+          <LazyZellatmungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'muskulatur') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Muskulatur...</div>}>
+          <LazyMuskulaturDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'nervensystem') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Nervensystem...</div>}>
+          <LazyNervensystemDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'blut') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-red-400 hover:bg-slate-800' : 'text-red-700 hover:bg-red-50'}`}>
+          <ArrowLeft size={16} /> Zurück zu Erste Hilfe & Gesundheitslehre
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Blut...</div>}>
+          <LazyBlutDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
