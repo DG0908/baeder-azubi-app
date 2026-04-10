@@ -5,6 +5,11 @@ import { useApp } from '../../context/AppContext';
 const LazyWaterCycleView = lazy(() => import('./WaterCycleView'));
 const LazyHeartDeepDiveThree = lazy(() => import('./health/HeartDeepDiveThree'));
 const LazySchwimmtechnikenDeepDiveView = lazy(() => import('./swim/SchwimmtechnikenDeepDiveView'));
+const LazyStartsWendenDeepDiveView = lazy(() => import('./swim/StartsWendenDeepDiveView'));
+const LazyRettungsriffeDeepDiveView = lazy(() => import('./swim/RettungsriffeDeepDiveView'));
+const LazyRettungsgeraeteDeepDiveView = lazy(() => import('./swim/RettungsgeraeteDeepDiveView'));
+const LazyRettungsketteDeepDiveView = lazy(() => import('./swim/RettungsketteDeepDiveView'));
+const LazyWettkampfDeepDiveView = lazy(() => import('./swim/WettkampfDeepDiveView'));
 const LazyCalciumHypochloriteDeepDiveView = lazy(() => import('./chlorine/CalciumHypochloriteDeepDiveView'));
 const LazyStartblockDeepDiveView = lazy(() => import('./bauliches/StartblockDeepDiveView'));
 const LazyUmwaelzpumpeDeepDiveView = lazy(() => import('./pumpen/UmwaelzpumpeDeepDiveView'));
@@ -247,30 +252,37 @@ const LEARNING_CATEGORIES = [
       {
         id: 'starts-wenden',
         name: 'Starts & Wenden',
-        description: 'Startsprung, Rollwende, Anschlag und Zeitgewinn',
+        description: 'Startsprung, Rückenstart, Rollwende, Anschläge und Unterwasserphase',
         icon: '🚀',
-        available: false,
+        available: true,
       },
       {
         id: 'rettungsgriffe',
         name: 'Rettungsgriffe',
-        description: 'Anschwimmen, Befreiungsgriffe und Transportschwimmen',
+        description: 'Anschwimmen, Befreiungsgriffe, Transportschwimmen und Bergung',
         icon: '🆘',
-        available: false,
+        available: true,
       },
       {
         id: 'rettungsgeraete',
-        name: 'Rettungsgeraete',
-        description: 'Rettungsstange, Gurtretter, Wurfleine und Einsatzgrenzen',
+        name: 'Rettungsgeräte',
+        description: 'Rettungsstange, Ring, Gurtretter, Wurfleine, Spineboard und O₂',
         icon: '🛟',
-        available: false,
+        available: true,
       },
       {
         id: 'rettungskette',
         name: 'Rettungskette',
-        description: 'Erkennen, alarmieren, bergen, übergeben',
+        description: 'Die 4 Glieder: Erkennen, Alarmieren, Bergen, Ersthelfen',
         icon: '⛑️',
-        available: false,
+        available: true,
+      },
+      {
+        id: 'wettkampf',
+        name: 'Wettkampfschwimmen',
+        description: 'Schwimmlagen, Rückenstartleine, Kampfrichter, Zeitnehmer, Regelwerk',
+        icon: '🏆',
+        available: true,
       },
     ],
   },
@@ -1048,6 +1060,71 @@ const InteractiveLearningView = () => {
           )}
         >
           <LazySchwimmtechnikenDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'starts-wenden') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Schwimmen & Rettung
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Starts & Wenden...</div>}>
+          <LazyStartsWendenDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'rettungsgriffe') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Schwimmen & Rettung
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Rettungsgriffe...</div>}>
+          <LazyRettungsriffeDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'rettungsgeraete') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Schwimmen & Rettung
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Rettungsgeräte...</div>}>
+          <LazyRettungsgeraeteDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'rettungskette') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Schwimmen & Rettung
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Rettungskette...</div>}>
+          <LazyRettungsketteDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'wettkampf') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Schwimmen & Rettung
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Wettkampfschwimmen...</div>}>
+          <LazyWettkampfDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
