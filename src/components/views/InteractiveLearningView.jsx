@@ -10,6 +10,10 @@ const LazyRettungsriffeDeepDiveView = lazy(() => import('./swim/RettungsriffeDee
 const LazyRettungsgeraeteDeepDiveView = lazy(() => import('./swim/RettungsgeraeteDeepDiveView'));
 const LazyRettungsketteDeepDiveView = lazy(() => import('./swim/RettungsketteDeepDiveView'));
 const LazyWettkampfDeepDiveView = lazy(() => import('./swim/WettkampfDeepDiveView'));
+const LazyAufsichtGrundrissDeepDiveView = lazy(() => import('./betrieb/AufsichtGrundrissDeepDiveView'));
+const LazyVerkehrssicherungDeepDiveView = lazy(() => import('./betrieb/VerkehrssicherungDeepDiveView'));
+const LazyBetriebChecklistenDeepDiveView = lazy(() => import('./betrieb/BetriebChecklistenDeepDiveView'));
+const LazyGaestekommunikationDeepDiveView = lazy(() => import('./betrieb/GaestekommunikationDeepDiveView'));
 const LazyCalciumHypochloriteDeepDiveView = lazy(() => import('./chlorine/CalciumHypochloriteDeepDiveView'));
 const LazyStartblockDeepDiveView = lazy(() => import('./bauliches/StartblockDeepDiveView'));
 const LazyUmwaelzpumpeDeepDiveView = lazy(() => import('./pumpen/UmwaelzpumpeDeepDiveView'));
@@ -411,30 +415,30 @@ const LEARNING_CATEGORIES = [
       {
         id: 'aufsicht-grundriss',
         name: 'Aufsicht im Grundriss',
-        description: 'Aufsichtspositionen, Sichtlinien und Gefahrenzonen',
+        description: 'Aufsichtspositionen, Sichtlinien, Gefahrenzonen, DGUV 107-004',
         icon: '🗺️',
-        available: false,
+        available: true,
       },
       {
         id: 'verkehrssicherung',
         name: 'Verkehrssicherungspflicht',
-        description: 'Kontrollen, Dokumentation und Haftungsrisiken',
+        description: 'Kontrollen, Haftung, Dokumentation und Maßnahmen bei Mängeln',
         icon: '⚠️',
-        available: false,
+        available: true,
       },
       {
         id: 'betrieb-checklisten',
         name: 'Betriebs-Checklisten',
-        description: 'Öffnungs-, Schicht- und Schliessroutinen',
+        description: 'Öffnungs-, Schicht- und Schließroutinen, Wasserqualität, Fristen',
         icon: '📋',
-        available: false,
+        available: true,
       },
       {
-        id: 'gästekommunikation',
+        id: 'gaestekommunikation',
         name: 'Gästekommunikation',
-        description: 'Konfliktmanagement, Deeskalation und Service',
+        description: 'Deeskalation, Badeordnung durchsetzen, Beschwerdemanagement',
         icon: '🗣️',
-        available: false,
+        available: true,
       },
     ],
   },
@@ -1112,6 +1116,58 @@ const InteractiveLearningView = () => {
         </button>
         <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Rettungskette...</div>}>
           <LazyRettungsketteDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'aufsicht-grundriss') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-purple-400 hover:bg-slate-800' : 'text-purple-700 hover:bg-purple-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bäderbetrieb
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Aufsicht im Grundriss...</div>}>
+          <LazyAufsichtGrundrissDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'verkehrssicherung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-purple-400 hover:bg-slate-800' : 'text-purple-700 hover:bg-purple-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bäderbetrieb
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Verkehrssicherungspflicht...</div>}>
+          <LazyVerkehrssicherungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'betrieb-checklisten') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-purple-400 hover:bg-slate-800' : 'text-purple-700 hover:bg-purple-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bäderbetrieb
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Betriebs-Checklisten...</div>}>
+          <LazyBetriebChecklistenDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'gaestekommunikation') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-purple-400 hover:bg-slate-800' : 'text-purple-700 hover:bg-purple-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bäderbetrieb
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Gästekommunikation...</div>}>
+          <LazyGaestekommunikationDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
