@@ -14,6 +14,10 @@ const LazyAufsichtGrundrissDeepDiveView = lazy(() => import('./betrieb/AufsichtG
 const LazyVerkehrssicherungDeepDiveView = lazy(() => import('./betrieb/VerkehrssicherungDeepDiveView'));
 const LazyBetriebChecklistenDeepDiveView = lazy(() => import('./betrieb/BetriebChecklistenDeepDiveView'));
 const LazyGaestekommunikationDeepDiveView = lazy(() => import('./betrieb/GaestekommunikationDeepDiveView'));
+const LazyBerufsrechtBasisDeepDiveView = lazy(() => import('./recht/BerufsrechtBasisDeepDiveView'));
+const LazyDienstplanungArbeitszeitDeepDiveView = lazy(() => import('./recht/DienstplanungArbeitszeitDeepDiveView'));
+const LazyKasseAbrechnungDeepDiveView = lazy(() => import('./recht/KasseAbrechnungDeepDiveView'));
+const LazyDatenschutzOeaDeepDiveView = lazy(() => import('./recht/DatenschutzOeaDeepDiveView'));
 const LazyCalciumHypochloriteDeepDiveView = lazy(() => import('./chlorine/CalciumHypochloriteDeepDiveView'));
 const LazyStartblockDeepDiveView = lazy(() => import('./bauliches/StartblockDeepDiveView'));
 const LazyUmwaelzpumpeDeepDiveView = lazy(() => import('./pumpen/UmwaelzpumpeDeepDiveView'));
@@ -705,30 +709,30 @@ const LEARNING_CATEGORIES = [
       {
         id: 'berufsrecht-basis',
         name: 'Berufsrecht-Basis',
-        description: 'Ausbildungsvertrag, Rechte, Pflichten, Mitbestimmung',
+        description: 'Ausbildungsvertrag, Rechte & Pflichten, Mitbestimmung, TVöD',
         icon: '📘',
-        available: false,
+        available: true,
       },
       {
         id: 'dienstplanung-arbeitszeit',
         name: 'Dienstplanung & Arbeitszeit',
-        description: 'Schichtmodelle, Zeitkonten, Einsatzplanung',
+        description: 'ArbZG, Schichtmodelle, Dienstplan, Zeitkonten, Feiertage',
         icon: '🗓️',
-        available: false,
+        available: true,
       },
       {
         id: 'kasse-abrechnung',
         name: 'Kasse & Abrechnung',
-        description: 'Buchungen, Tagesabschluss und Kassenkontrolle',
+        description: 'Kassenbuch, Ticketsysteme, Tagesabschluss, Buchführung',
         icon: '💳',
-        available: false,
+        available: true,
       },
       {
         id: 'datenschutz-oea',
         name: 'Datenschutz & Öffentlichkeitsarbeit',
-        description: 'DSGVO-Basics, Kommunikation und Medienarbeit',
+        description: 'DSGVO, Videoüberwachung, PR vs. Werbung, Social Media',
         icon: '📣',
-        available: false,
+        available: true,
       },
       {
         id: 'strafrecht-bad-vertieft',
@@ -1116,6 +1120,58 @@ const InteractiveLearningView = () => {
         </button>
         <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Rettungskette...</div>}>
           <LazyRettungsketteDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'berufsrecht-basis') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Berufsrecht-Basis...</div>}>
+          <LazyBerufsrechtBasisDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'dienstplanung-arbeitszeit') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Dienstplanung & Arbeitszeit...</div>}>
+          <LazyDienstplanungArbeitszeitDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'kasse-abrechnung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Kasse & Abrechnung...</div>}>
+          <LazyKasseAbrechnungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'datenschutz-oea') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-emerald-400 hover:bg-slate-800' : 'text-emerald-700 hover:bg-emerald-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Verwaltung & Recht
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Datenschutz & Öffentlichkeitsarbeit...</div>}>
+          <LazyDatenschutzOeaDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
