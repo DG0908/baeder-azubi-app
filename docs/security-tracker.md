@@ -14,9 +14,9 @@
 | Frontend-Architektur | Mangelhaft | **4.0 / 10** |
 | Deployment/Infrastruktur | Gut | **7.5 / 10** |
 | Testabdeckung | Ausbaufähig | **5.0 / 10** |
-| Wartbarkeit / Code-Qualität | Gut | **6.5 / 10** |
+| Wartbarkeit / Code-Qualität | Gut | **7.0 / 10** |
 | Dokumentation | Sehr gut | **9.0 / 10** |
-| **Gesamt** | | **7.6 / 10** |
+| **Gesamt** | | **7.8 / 10** |
 
 ---
 
@@ -73,11 +73,11 @@
 
 | # | Maßnahme | Status | Anmerkungen |
 |---|----------|--------|-------------|
-| 2.1 | **API-Versionierung (`/api/v1/`)** | ❌ | Breaking Changes später schwer migrierbar |
+| 2.1 | **API-Versionierung (`/api/v1/`)** | ✅ | NestJS URI versioning + defaultVersion '1', Frontend VITE_API_BASE_URL angepasst |
 | 2.2 | **Pagination überall (limit/offset)** | ✅ | Chat, Forum, Exam-Grades, Report-Books mit limit/offset (max 100) |
 | 2.3 | **Passwort-Komplexitätsprüfung** | ✅ | Custom Validator: 12+ Zeichen, Groß/Klein, Ziffer, Sonderzeichen |
 | 2.4 | **SSRF-Validierung bei Content-URLs** | ✅ | Blockiert private IPs, localhost, metadata.google.internal |
-| 2.5 | **Duel-Rundenerzeugung server-autoritativ** | ⚠️ | Teilweise hart, aber Client liefert noch Fragen für neue Rounds |
+| 2.5 | **Duel-Rundenerzeugung server-autoritativ** | ✅ | Server generiert Fragen aus Bank/DB, validiert Übergänge, prüft Antworten |
 | 2.6 | **Badge-Historie in Secure-Export migrieren** | ❌ | Hängt noch an alter Supabase-Tabelle |
 | 2.7 | **PrismaService Query-Middleware** | ❌ | Kein zentrales Query-Logging, keine Multi-Tenant-Isolation auf DB-Ebene |
 

@@ -1,4 +1,4 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
@@ -61,6 +61,10 @@ async function bootstrap() {
   // Trust Traefik reverse proxy so rate limiting uses the real client IP
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
   app.setGlobalPrefix('api');
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1'
+  });
   app.use(
     helmet({
       contentSecurityPolicy: {
