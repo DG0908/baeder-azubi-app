@@ -47,7 +47,7 @@ Sie soll nach groesseren Sessions aktualisiert werden und festhalten:
 - `src/components/auth/LoginScreen.jsx` nutzt fuer Login, Registrierung und Passwort-Reset jetzt echte HTML-Formulare statt Tastatur-Workarounds; die Reset-Hinweise nennen keinen Supabase-Sender mehr.
 - `src/components/auth/LoginScreen.jsx` setzt fuer Login-, Register- und Reset-Felder jetzt passende `name`-/`autocomplete`-Attribute, damit Browser-Autofill sauber arbeitet und keine Passwort-Warnungen wirft.
 - `index.html` nutzt das aktuelle `mobile-web-app-capable`-Meta-Tag statt des veralteten Apple-Pendants.
-- `index.html` erlaubt in der Produktions-CSP kein `vercel.live` mehr; damit ist das Vercel-Toolbar-Overlay nicht mehr Teil des regulären Live-CSP-Surfaces.
+- `index.html` blockiert in der Produktions-CSP Preview-/Toolbar-Overlays externer Hosting-Domains; damit gehoeren solche Helfer nicht mehr zur regulaeren Live-CSP-Surface.
 - `src/components/views/ProfileView.jsx` verlangt im Secure-Modus jetzt das aktuelle Passwort fuer Passwortwechsel.
 - `src/components/legal/LegalContent.jsx` ist die gemeinsame Quelle fuer Impressum und Datenschutztexte; Login- und Profilpfade verwenden jetzt dieselbe Textbasis.
 - `src/App.jsx` spricht fuer die produktiven Kernpfade nur noch ueber `dataService.js`, inklusive:

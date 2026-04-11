@@ -8,9 +8,13 @@ Diese Skripte installieren und konfigurieren eine vollständige Supabase-Instanz
 |--------|-----|
 | API (PostgREST, Auth, Realtime, Storage) | `https://db.smartbaden.de` |
 | Studio (Dashboard) | `https://studio.smartbaden.de` |
-| App | `https://azubi.smartbaden.de` (bleibt auf Netlify/Vercel) |
+| App | `https://azubi.smartbaden.de` (aktueller Produktivpfad: VPS/Coolify/Docker, nicht Netlify/Vercel) |
 
 ---
+
+> Hinweis: Diese Anleitung ist ein Legacy-Dokument fuer den frueheren Supabase-Selbsthosting-Pfad.
+> Fuer den aktuellen Produktivbetrieb der Azubi-App ist sie nicht mehr der massgebliche Deploy-Guide.
+> Verbindlich sind stattdessen `README.md`, `DEPLOYMENT.md` und `docs/operations-runbook.md`.
 
 ## Voraussetzungen
 
@@ -159,7 +163,7 @@ Den neuen ANON_KEY findest du in `/opt/supabase/docker/.env` (Zeile `ANON_KEY=..
 
 ### Environment-Variablen (falls verwendet)
 
-Falls du `.env`-Dateien oder Netlify/Vercel Environment Variables verwendest:
+Falls du `.env`-Dateien fuer lokale Altpfade verwendest:
 
 ```
 VITE_SUPABASE_URL=https://db.smartbaden.de
@@ -170,7 +174,8 @@ VITE_SUPABASE_ANON_KEY=NEUER_ANON_KEY
 
 ```bash
 npm run build
-# Deploy auf Netlify/Vercel wie gewohnt
+# Frontend-/Web-Deployment erfolgt im aktuellen Produktivbetrieb nicht ueber Netlify/Vercel,
+# sondern gemeinsam mit dem Stack ueber den VPS-/Docker-/Coolify-Pfad.
 ```
 
 ---
