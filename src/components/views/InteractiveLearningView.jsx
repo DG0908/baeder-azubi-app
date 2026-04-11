@@ -83,6 +83,19 @@ const LazyGesellschaftsformenDeepDiveView = lazy(() => import('./recht/Gesellsch
 const LazySozialversicherungDeepDiveView = lazy(() => import('./recht/SozialversicherungDeepDiveView'));
 const LazyKostenmanagementDeepDiveView = lazy(() => import('./recht/KostenmanagementDeepDiveView'));
 const LazyMarketingDeepDiveView = lazy(() => import('./recht/MarketingDeepDiveView'));
+const LazyBeckenartenDeepDiveView = lazy(() => import('./technik/BeckenartenDeepDiveView'));
+const LazySprunganlagenDeepDiveView = lazy(() => import('./technik/SprunganlagenDeepDiveView'));
+const LazyHubbodenDeepDiveView = lazy(() => import('./technik/HubbodenDeepDiveView'));
+const LazyEinAuswinterungDeepDiveView = lazy(() => import('./technik/EinAuswinterungDeepDiveView'));
+const LazyChemieBadewasserDeepDiveView = lazy(() => import('./technik/ChemieBadewasserDeepDiveView'));
+const LazyAnlagenBadewasserDeepDiveView = lazy(() => import('./technik/AnlagenBadewasserDeepDiveView'));
+const LazyMessRegeltechnikDeepDiveView = lazy(() => import('./technik/MessRegeltechnikDeepDiveView'));
+const LazyFlockungsmittelDeepDiveView = lazy(() => import('./technik/FlockungsmittelDeepDiveView'));
+const LazyFiltrationFiltertechnikDeepDiveView = lazy(() => import('./technik/FiltrationFiltertechnikDeepDiveView'));
+const LazyDesinfektionsverfahrenDeepDiveView = lazy(() => import('./technik/DesinfektionsverfahrenDeepDiveView'));
+const LazyChlorGasanlageDeepDiveView = lazy(() => import('./technik/ChlorGasanlageDeepDiveView'));
+const LazyUvAnlageDeepDiveView = lazy(() => import('./technik/UvAnlageDeepDiveView'));
+const LazyHeizungLueftungDeepDiveView = lazy(() => import('./technik/HeizungLueftungDeepDiveView'));
 
 // ─── Learning categories based on Ausbildungsrahmenplan §3 FaBB ─────────────
 const LEARNING_CATEGORIES = [
@@ -109,7 +122,7 @@ const LEARNING_CATEGORIES = [
         name: 'Beckenarten & Einrichtungen',
         description: 'Übersicht zu Beckenformen, Ausstattung und Betriebseinrichtungen',
         icon: '🏗️',
-        available: false,
+        available: true,
       },
       {
         id: 'startblock-startwand-bauliches',
@@ -123,42 +136,42 @@ const LEARNING_CATEGORIES = [
         name: 'Sprunganlagen',
         description: 'Sprungturm, Bretter, Sicherheitsbereiche und Prüfpunkte',
         icon: '🏊‍♂️',
-        available: false,
+        available: true,
       },
       {
         id: 'hubboden',
         name: 'Hubboden',
         description: 'Funktion, Sicherheit und Bedienung von Hubbodensystemen',
         icon: '⬆️',
-        available: false,
+        available: true,
       },
       {
         id: 'ein-auswinterung',
         name: 'Ein- & Auswinterung',
         description: 'Saisonvorbereitung, Stilllegung und Wiederinbetriebnahme',
         icon: '❄️',
-        available: false,
+        available: true,
       },
       {
         id: 'chemie-badewasser',
         name: 'Chemie der Badewasseraufbereitung',
         description: 'Unterthemen: Das Wasser, pH-Wert, Redox-Spannung, Saeuren und Basen, Oxidierbarkeit, Wasserhaerte, Korrosion und Korrosionsschutz',
         icon: '⚗️',
-        available: false,
+        available: true,
       },
       {
         id: 'anlagen-badewasseraufbereitung',
         name: 'Anlagen Badewasseraufbereitung',
         description: 'Struktur und Zusammenspiel der zentralen Aufbereitungsstufen',
         icon: '🏭',
-        available: false,
+        available: true,
       },
       {
         id: 'mess-und-regeltechnik',
         name: 'Mess- und Regeltechnik',
         description: 'Sensorik, Regler, Sollwerte und sicherer Anlagenbetrieb',
         icon: '📟',
-        available: false,
+        available: true,
       },
       {
         id: 'pumpen',
@@ -186,14 +199,14 @@ const LEARNING_CATEGORIES = [
         name: 'Flockungsmittel',
         description: 'Dosierung, Wirkung und Einbindung in den Prozess',
         icon: '🧫',
-        available: false,
+        available: true,
       },
       {
         id: 'filtration-filtertechnik',
         name: 'Filtration & Filtertechnik',
         description: 'Filteraufbau, Schichtmaterialien und Filtrationsprinzipien',
         icon: '🗂️',
-        available: false,
+        available: true,
       },
       {
         id: 'filterspuelung',
@@ -207,7 +220,7 @@ const LEARNING_CATEGORIES = [
         name: 'Desinfektionsverfahren',
         description: 'Verfahren und Betriebsgrenzen in der Badewasserdesinfektion',
         icon: '⚗️',
-        available: false,
+        available: true,
       },
       {
         id: 'feststoff-chloranlage-calciumhypochlorid',
@@ -221,21 +234,21 @@ const LEARNING_CATEGORIES = [
         name: 'Chlorgasanlage & Chlorgasraum',
         description: 'Sicherheitsanforderungen, Raumkonzept und Notfallmassnahmen',
         icon: '☢️',
-        available: false,
+        available: true,
       },
       {
         id: 'uv-anlage',
         name: 'UV-Anlage',
         description: 'UV-Desinfektion, Wirkprinzip und Kombination mit Chlor',
         icon: '💡',
-        available: false,
+        available: true,
       },
       {
         id: 'heizung-lueftung',
         name: 'Heizung & Lueftung',
         description: 'Wärmeuebertragung, Hallenklima und Entfeuchtung',
         icon: '🌬️',
-        available: false,
+        available: true,
       },
     ],
   },
@@ -1041,6 +1054,175 @@ const InteractiveLearningView = () => {
           )}
         >
           <LazyFilterSpuelungDeepDiveView />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'beckenarten-einrichtungen') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Beckenarten...</div>}>
+          <LazyBeckenartenDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'sprunganlagen') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Sprunganlagen...</div>}>
+          <LazySprunganlagenDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'hubboden') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Hubboden...</div>}>
+          <LazyHubbodenDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'ein-auswinterung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Ein- & Auswinterung...</div>}>
+          <LazyEinAuswinterungDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'chemie-badewasser') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Chemie Badewasser...</div>}>
+          <LazyChemieBadewasserDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'anlagen-badewasseraufbereitung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Anlagen Badewasseraufbereitung...</div>}>
+          <LazyAnlagenBadewasserDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'mess-und-regeltechnik') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Mess- und Regeltechnik...</div>}>
+          <LazyMessRegeltechnikDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'flockungsmittel') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Flockungsmittel...</div>}>
+          <LazyFlockungsmittelDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'filtration-filtertechnik') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Filtration & Filtertechnik...</div>}>
+          <LazyFiltrationFiltertechnikDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'desinfektionsverfahren') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Desinfektionsverfahren...</div>}>
+          <LazyDesinfektionsverfahrenDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'chlorgasanlage-raum') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Chlorgasanlage...</div>}>
+          <LazyChlorGasanlageDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'uv-anlage') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade UV-Anlage...</div>}>
+          <LazyUvAnlageDeepDiveView darkMode={darkMode} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (activeModule === 'heizung-lueftung') {
+    return (
+      <div>
+        <button onClick={() => setActiveModule(null)} className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'text-cyan-400 hover:bg-slate-800' : 'text-cyan-700 hover:bg-cyan-50'}`}>
+          <ArrowLeft size={16} />Zurück zu Bädertechnik
+        </button>
+        <Suspense fallback={<div className={`rounded-xl border p-6 text-sm ${darkMode ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-gray-200 text-gray-600'}`}>Lade Heizung & Lüftung...</div>}>
+          <LazyHeizungLueftungDeepDiveView darkMode={darkMode} />
         </Suspense>
       </div>
     );
