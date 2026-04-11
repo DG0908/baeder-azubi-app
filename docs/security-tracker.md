@@ -12,11 +12,11 @@
 |-----------|-------|--------|
 | Backend-Sicherheit | Exzellent | **9.5 / 10** |
 | Frontend-Architektur | Mangelhaft | **4.0 / 10** |
-| Deployment/Infrastruktur | Gut | **7.5 / 10** |
+| Deployment/Infrastruktur | Sehr gut | **8.5 / 10** |
 | Testabdeckung | Ausbaufähig | **5.0 / 10** |
 | Wartbarkeit / Code-Qualität | Gut | **7.5 / 10** |
-| Dokumentation | Sehr gut | **9.0 / 10** |
-| **Gesamt** | | **8.0 / 10** |
+| Dokumentation | Exzellent | **9.5 / 10** |
+| **Gesamt** | | **8.3 / 10** |
 
 ---
 
@@ -92,8 +92,8 @@
 | 3.3 | **App.jsx aufteilen** | ❌ | ~9.700 Zeilen, 200+ State-Variablen |
 | 3.4 | **React Query für API-Caching** | ❌ | Jeder View-Wechsel = neuer API-Call |
 | 3.5 | **Prop-Drilling eliminieren** | ❌ | 20–40 Props pro View-Komponente |
-| 3.6 | **CI/CD Pipeline mit Approval Gates** | ❌ | Manuelles Deployment |
-| 3.7 | **Restore-Drill dokumentieren** | ❌ | Backup-Skripte vorhanden, aber nie getestet |
+| 3.6 | **CI/CD Pipeline mit Approval Gates** | ✅ | GitHub Actions: Type-Check, Build, Docker, Secret-Scan, Production-Approval |
+| 3.7 | **Restore-Drill dokumentieren** | ✅ | Vollständiges Runbook mit Drill-Umgebung, Verifikation, Zeitplan |
 | 3.8 | **Automatisierte Tests** | ❌ | Keine Tests für Auth, Approval, Chat, Duels |
 
 ---
@@ -167,3 +167,5 @@
 | 2026-04-11 | **2.1 API-Versionierung** – `/api/v1/` für alle Endpunkte, NestJS enableVersioning | Qwen |
 | 2026-04-11 | **2.5 Duel-Runden server-autoritativ** – Bereits implementiert, validiert und dokumentiert | Qwen |
 | 2026-04-11 | **2.7 Prisma Query-Middleware** – Slow-Query-Logging, Error-Logging, konfigurierbarer Threshold | Qwen |
+| 2026-04-11 | **3.6 CI/CD Pipeline** – GitHub Actions: Type-Check, Build, Docker, Secret-Scan, Production-Approval | Qwen |
+| 2026-04-11 | **3.7 Restore-Drill** – Vollständiges Runbook mit Drill-Umgebung, Verifikation, Zeitplan | Qwen |
