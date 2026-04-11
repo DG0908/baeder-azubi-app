@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
+import { Allow } from '../../common/decorators/allow.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
@@ -14,11 +16,14 @@ import { ReportBooksService } from './report-books.service';
 export class ReportBooksController {
   constructor(private readonly reportBooksService: ReportBooksService) {}
 
+  @Allow()
   @Get('profile')
   getProfile(@CurrentUser() actor: AuthenticatedUser) {
     return this.reportBooksService.getProfile(actor);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 10 } })
   @Patch('profile')
   updateProfile(
     @CurrentUser() actor: AuthenticatedUser,
@@ -34,11 +39,14 @@ export class ReportBooksController {
     return this.reportBooksService.listPendingReview(actor);
   }
 
+  @Allow()
   @Get()
   list(@CurrentUser() actor: AuthenticatedUser, @Query() query: ListReportBooksQueryDto) {
     return this.reportBooksService.list(actor, query);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 20 } })
   @Put('draft')
   upsertDraft(
     @CurrentUser() actor: AuthenticatedUser,
@@ -48,6 +56,8 @@ export class ReportBooksController {
     return this.reportBooksService.upsertDraft(actor, dto, request);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 10 } })
   @Delete('drafts/:weekStart')
   deleteDraftByWeek(
     @CurrentUser() actor: AuthenticatedUser,
@@ -57,6 +67,8 @@ export class ReportBooksController {
     return this.reportBooksService.deleteDraftByWeek(actor, weekStart, request);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 10 } })
   @Post('submit')
   submit(
     @CurrentUser() actor: AuthenticatedUser,

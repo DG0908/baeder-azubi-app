@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AppRole } from '@prisma/client';
+import { ALLOW_KEY } from '../decorators/allow.decorator';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { AuthenticatedUser } from '../interfaces/authenticated-user.interface';
 
@@ -14,15 +15,29 @@ export class RolesGuard implements CanActivate {
       context.getClass()
     ]);
 
-    if (!requiredRoles || requiredRoles.length === 0) {
+    const isExplicitlyAllowed = this.reflector.getAllAndOverride<boolean>(ALLOW_KEY, [
+      context.getHandler(),
+      context.getClass()
+    ]);
+
+    // If neither @Roles() nor @Allow() is set → deny by default
+    if (!requiredRoles && !isExplicitlyAllowed) {
+      throw new ForbiddenException('Access denied by security policy.');
+    }
+
+    // @Allow() grants access to any authenticated user
+    if (isExplicitlyAllowed && !requiredRoles) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<{ user?: AuthenticatedUser }>();
-    const user = request.user;
+    // @Roles() check
+    if (requiredRoles && requiredRoles.length > 0) {
+      const request = context.switchToHttp().getRequest<{ user?: AuthenticatedUser }>();
+      const user = request.user;
 
-    if (!user || !requiredRoles.includes(user.role)) {
-      throw new ForbiddenException('Insufficient permissions.');
+      if (!user || !requiredRoles.includes(user.role)) {
+        throw new ForbiddenException('Insufficient permissions.');
+      }
     }
 
     return true;

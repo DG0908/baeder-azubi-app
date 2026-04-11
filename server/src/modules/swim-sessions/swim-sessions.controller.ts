@@ -1,6 +1,8 @@
 import { Controller, Get, Param, Patch, Post, Body, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
+import { Allow } from '../../common/decorators/allow.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
@@ -11,6 +13,7 @@ import { SwimSessionsService } from './swim-sessions.service';
 export class SwimSessionsController {
   constructor(private readonly swimSessionsService: SwimSessionsService) {}
 
+  @Allow()
   @Get()
   list(@CurrentUser() actor: AuthenticatedUser) {
     return this.swimSessionsService.list(actor);
@@ -22,6 +25,8 @@ export class SwimSessionsController {
     return this.swimSessionsService.listPending(actor);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 20 } })
   @Post()
   create(
     @CurrentUser() actor: AuthenticatedUser,
@@ -51,6 +56,8 @@ export class SwimSessionsController {
     return this.swimSessionsService.reject(actor, sessionId, request);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 10 } })
   @Patch(':id/withdraw')
   withdraw(
     @CurrentUser() actor: AuthenticatedUser,
