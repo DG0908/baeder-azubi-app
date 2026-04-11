@@ -19,10 +19,11 @@ ssh root@smartbaden.de
 docker ps
 ```
 
-Typische Namen (können sich nach Coolify-Rebuild ändern!):
-- Server (NestJS): z.B. `baeder-azubi-app-server-1`
-- Frontend (Nginx): z.B. `baeder-azubi-app-frontend-1`
-- Datenbank (Postgres): z.B. `baeder-azubi-app-db-1`
+Bekannte Namen (Stand 11.04.2026):
+- Server (NestJS):  `azubi-app-server-1`
+- Frontend (Nginx): `azubi-app-web-1`
+- Datenbank:        `azubi-app-postgres-1`
+- Push-Backend:     `azubi-push-backend`
 
 ---
 
@@ -34,8 +35,8 @@ Typische Namen (können sich nach Coolify-Rebuild ändern!):
 # Container-Name aus `docker ps` ermitteln, dann:
 docker exec <server-container-name> npx prisma migrate deploy
 
-# Beispiel:
-docker exec baeder-azubi-app-server-1 npx prisma migrate deploy
+# Aktueller Container-Name:
+docker exec azubi-app-server-1 npx prisma migrate deploy
 ```
 
 > Wann nötig? Immer wenn in `server/prisma/migrations/` ein neues Verzeichnis
