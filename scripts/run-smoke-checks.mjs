@@ -163,6 +163,17 @@ const roleReadChecks = [
     labelSuffix: 'report-book-profile',
     path: '/report-books/profile',
     validate: (body) => validateObjectBody('report book profile', body)
+  },
+  {
+    labelSuffix: 'app-config',
+    path: '/app-config',
+    validate: (body) => {
+      validateObjectBody('app-config', body);
+      if (typeof body.featureFlags !== 'object' || body.featureFlags === null) {
+        fail('app-config is missing featureFlags object');
+      }
+      return `featureFlags present (quizMaintenance=${body.featureFlags.quizMaintenance ?? 'undefined'})`;
+    }
   }
 ];
 
@@ -354,6 +365,61 @@ const runRoleCheck = async (roleCheck) => {
   }
 };
 
+/**
+ * Security smoke checks (3.8.4):
+ *  - Protected endpoints must return 401 without a token
+ *  - Admin-only endpoints must return 403 for azubi tokens
+ *  - App-config must expose featureFlags
+ */
+const PROTECTED_PATHS = [
+  '/users/me',
+  '/duels',
+  '/duels/leaderboard',
+  '/notifications',
+  '/user-stats/me',
+  '/report-books/profile',
+  '/app-config'
+];
+
+// Endpoints where azubi role must receive 403
+const ADMIN_ONLY_PATHS = [
+  '/users',
+  '/users/pending'
+];
+
+const checkUnauthenticated401s = async () => {
+  for (const path of PROTECTED_PATHS) {
+    const url = buildUrl(API_BASE_URL, path);
+    await runCheck(`unauth-401-${path}`, async () => {
+      const response = await fetchWithTimeout(url, { method: 'GET' });
+      if (response.status !== 401) {
+        fail(`expected 401 but got ${response.status}`);
+      }
+      return `${response.status} as expected`;
+    });
+  }
+};
+
+const checkAzubiRbac403s = async (azubiToken) => {
+  if (!azubiToken) {
+    logResult('SKIP', 'rbac-403', 'no azubi token — SMOKE_AZUBI_EMAIL/PASSWORD not set');
+    return;
+  }
+  for (const path of ADMIN_ONLY_PATHS) {
+    const url = buildUrl(API_BASE_URL, path);
+    await runCheck(`rbac-403-${path}`, async () => {
+      const response = await fetchWithTimeout(url, {
+        method: 'GET',
+        headers: buildAuthHeaders(azubiToken)
+      });
+      if (response.status !== 403) {
+        fail(`expected 403 but got ${response.status}`);
+      }
+      return `${response.status} as expected`;
+    });
+  }
+};
+
 const main = async () => {
   console.log('Running smoke checks...');
   console.log(`Frontend: ${buildUrl(FRONTEND_URL, FRONTEND_PATH)}`);
@@ -362,6 +428,26 @@ const main = async () => {
   validateRoleEnv();
   await checkFrontendShell();
   await checkApiHealth();
+  await checkUnauthenticated401s();
+
+  // Collect azubi token for RBAC check before full role loop
+  let azubiToken = null;
+  const azubiRoleCheck = roleChecks.find((r) => r.label === 'azubi');
+  const azubiEmail = String(azubiRoleCheck?.email || '').trim();
+  const azubiPassword = String(azubiRoleCheck?.password || '');
+  if (azubiEmail && azubiPassword) {
+    const loginUrl = buildUrl(API_BASE_URL, '/auth/login');
+    try {
+      const response = await fetchWithTimeout(loginUrl, buildJsonRequest({ email: azubiEmail, password: azubiPassword }));
+      const body = await parseBody(response);
+      if (response.ok && body?.accessToken) {
+        azubiToken = body.accessToken;
+      }
+    } catch {
+      // token acquisition failed — checkAzubiRbac403s will SKIP
+    }
+  }
+  await checkAzubiRbac403s(azubiToken);
 
   for (const roleCheck of roleChecks) {
     await runRoleCheck(roleCheck);
