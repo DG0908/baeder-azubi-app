@@ -390,6 +390,7 @@ const HomeView = ({
               { icon: '\u{1F9EE}', title: 'Rechner', sub: 'Praxis-Formeln', onClick: () => openView('calculator'), color: 'blue' },
               { icon: '\u{1F3AE}', title: 'Quizduell', sub: `${activeGamesForUser.length} aktiv`, onClick: () => openView('quiz'), color: 'green' },
               { icon: '\u{1F393}', title: 'Interaktives Lernen', sub: 'Deep Dives & Simulationen', onClick: () => openView('interactive-learning'), color: 'violet' },
+              { icon: '\u{1F6A8}', title: 'Notfall-Trainer', sub: 'Einsatzsimulationen', onClick: () => openView('notfall-trainer'), color: 'red' },
             ].map(c => (
               <button key={c.title} onClick={c.onClick} className={`p-4 rounded-xl text-left transition-all hover:-translate-y-0.5 ${
                 darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm'
