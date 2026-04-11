@@ -15,6 +15,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateDuelDto } from './dto/create-duel.dto';
 import { EXTRA_DUEL_QUESTION_BANK, STANDARD_DUEL_QUESTION_BANK } from './duel-question-bank';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
+import { GameStateDto } from './dto/update-duel-state.dto';
 
 const REMINDER_LEAD_MIN_MS = 15 * 60 * 1000;
 const REMINDER_LEAD_MAX_MS = 24 * 60 * 60 * 1000;
@@ -279,7 +280,9 @@ export class DuelsService {
     return this.toDuelPayload(updated, actor.id);
   }
 
-  async updateGameState(actor: AuthenticatedUser, duelId: string, gameState: Record<string, unknown>) {
+  async updateGameState(actor: AuthenticatedUser, duelId: string, rawGameState: GameStateDto) {
+    // Cast after DTO validation — all top-level keys are now constrained to known fields.
+    const gameState = rawGameState as unknown as Record<string, unknown>;
     const duel = await this.prisma.duel.findUnique({
       where: { id: duelId },
       include: duelInclude

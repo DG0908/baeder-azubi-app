@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { AppRole } from '@prisma/client';
 import { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { EmitNotificationEventDto } from './dto/emit-notification-event.dto';
 import { RemovePushSubscriptionDto } from './dto/remove-push-subscription.dto';
@@ -54,6 +56,7 @@ export class NotificationsController {
     return this.pushNotificationsService.removeSubscription(actor, dto, request);
   }
 
+  @Roles(AppRole.ADMIN, AppRole.AUSBILDER)
   @Post('push/test')
   sendTestPush(
     @CurrentUser() actor: AuthenticatedUser,
