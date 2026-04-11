@@ -58,7 +58,10 @@ export const refreshApiSession = async () => {
       const response = await fetch(buildUrl('/auth/refresh'), {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
       });
       const body = await parseResponseBody(response);
 
