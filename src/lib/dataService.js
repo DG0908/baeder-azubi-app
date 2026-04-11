@@ -701,6 +701,7 @@ export const loadAppConfig = async () => {
   return {
     menuItems: config.menuItems || null,
     themeColors: config.themeColors || null,
+    featureFlags: config.featureFlags || {},
     companies: config.companies || null,
     announcement: config.announcement || null
   };

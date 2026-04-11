@@ -1248,6 +1248,7 @@ export default function BaederApp() {
   const [appConfig, setAppConfig] = useState({
     menuItems: DEFAULT_MENU_ITEMS,
     themeColors: DEFAULT_THEME_COLORS,
+    featureFlags: { quizMaintenance: false },
     companies: ['Freizeitbad Oktopus'],
     announcement: { enabled: false, message: '' }
   });
@@ -3321,7 +3322,10 @@ export default function BaederApp() {
           const loadedAnnouncement = configResult.announcement && typeof configResult.announcement === 'object'
             ? configResult.announcement
             : { enabled: false, message: '' };
-          setAppConfig({ menuItems: loadedMenuItems, themeColors: loadedThemeColors, companies: loadedCompanies, announcement: loadedAnnouncement });
+          const loadedFeatureFlags = configResult.featureFlags && typeof configResult.featureFlags === 'object'
+            ? { quizMaintenance: false, ...configResult.featureFlags }
+            : { quizMaintenance: false };
+          setAppConfig({ menuItems: loadedMenuItems, themeColors: loadedThemeColors, featureFlags: loadedFeatureFlags, companies: loadedCompanies, announcement: loadedAnnouncement });
         }
         setConfigLoaded(true);
       } catch (err) {
@@ -8352,6 +8356,7 @@ export default function BaederApp() {
       await dsSaveAppConfig({
         menuItems: editingMenuItems,
         themeColors: editingThemeColors,
+        featureFlags: appConfig.featureFlags,
         companies: appConfig.companies,
         announcement: appConfig.announcement
       });
@@ -8359,6 +8364,7 @@ export default function BaederApp() {
       setAppConfig({
         menuItems: editingMenuItems,
         themeColors: editingThemeColors,
+        featureFlags: appConfig.featureFlags,
         companies: appConfig.companies,
         announcement: appConfig.announcement
       });
@@ -8377,6 +8383,7 @@ export default function BaederApp() {
       await dsSaveAppConfig({
         menuItems: appConfig.menuItems,
         themeColors: appConfig.themeColors,
+        featureFlags: appConfig.featureFlags,
         companies: appConfig.companies,
         announcement
       });
@@ -8384,6 +8391,25 @@ export default function BaederApp() {
       showToast(announcement.enabled ? 'Ankündigung aktiviert.' : 'Ankündigung deaktiviert.', 'success');
     } catch (error) {
       console.error('Announcement save error:', error);
+      showToast(friendlyError(error), 'error');
+    }
+  };
+
+  const saveFeatureFlag = async (key, value) => {
+    const nextFlags = { ...appConfig.featureFlags, [key]: value };
+    const updated = { ...appConfig, featureFlags: nextFlags };
+    try {
+      await dsSaveAppConfig({
+        menuItems: appConfig.menuItems,
+        themeColors: appConfig.themeColors,
+        featureFlags: nextFlags,
+        companies: appConfig.companies,
+        announcement: appConfig.announcement
+      });
+      setAppConfig(updated);
+      showToast(value ? 'Wartungsmodus aktiviert.' : 'Wartungsmodus deaktiviert.', 'success');
+    } catch (error) {
+      console.error('Feature flag save error:', error);
       showToast(friendlyError(error), 'error');
     }
   };
@@ -9087,6 +9113,8 @@ export default function BaederApp() {
             saveCompanies={saveCompanies}
             announcement={appConfig.announcement}
             saveAnnouncement={saveAnnouncement}
+            featureFlags={appConfig.featureFlags}
+            saveFeatureFlag={saveFeatureFlag}
           />
         )}
 
@@ -9127,7 +9155,24 @@ export default function BaederApp() {
         )}
 
         {/* Quiz View */}
-        {currentView === 'quiz' && (
+        {currentView === 'quiz' && appConfig.featureFlags?.quizMaintenance && (
+          <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center"
+               style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
+            <div className="text-7xl mb-6">🚧</div>
+            <h1 className="text-2xl font-bold text-white mb-3">Am Quiz wird gearbeitet</h1>
+            <p className="text-slate-400 max-w-sm mb-2">
+              Wir verbessern das Quizduell gerade für euch.
+            </p>
+            <p className="text-slate-500 text-sm">Bitte bald wieder vorbeischauen!</p>
+            <button
+              onClick={() => setCurrentView('home')}
+              className="mt-8 px-6 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium transition-colors"
+            >
+              Zurück zur Startseite
+            </button>
+          </div>
+        )}
+        {currentView === 'quiz' && !appConfig.featureFlags?.quizMaintenance && (
           <QuizView
             selectedDifficulty={selectedDifficulty}
             setSelectedDifficulty={setSelectedDifficulty}

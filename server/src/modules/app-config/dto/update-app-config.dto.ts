@@ -1,4 +1,4 @@
-import { IsArray, IsObject } from 'class-validator';
+import { IsArray, IsObject, IsOptional } from 'class-validator';
 
 export class UpdateAppConfigDto {
   @IsArray()
@@ -6,4 +6,8 @@ export class UpdateAppConfigDto {
 
   @IsObject()
   themeColors!: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  featureFlags?: Record<string, unknown>;
 }

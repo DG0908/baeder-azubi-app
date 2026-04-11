@@ -438,6 +438,8 @@ const AdminView = ({
   saveCompanies,
   announcement = { enabled: false, message: '' },
   saveAnnouncement,
+  featureFlags = {},
+  saveFeatureFlag,
 }) => {
   const { darkMode, showToast } = useApp();
   const { user } = useAuth();
@@ -1002,6 +1004,27 @@ const AdminView = ({
                 className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-bold rounded-lg"
               >
                 Hinzufügen
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Quiz-Wartungsmodus */}
+        {canEditAppConfig && (
+          <div className={`mb-6 p-4 rounded-xl border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} shadow-sm`}>
+            <h3 className={`font-bold text-base mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>🚧 Quiz-Wartungsmodus</h3>
+            <p className={`text-xs mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Wenn aktiviert, sehen Nutzer im Quiz-Bereich eine Wartungsseite statt des Spiels. Du kannst so ungestört am Quiz arbeiten.
+            </p>
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-medium ${featureFlags?.quizMaintenance ? 'text-amber-400' : (darkMode ? 'text-gray-300' : 'text-gray-600')}`}>
+                {featureFlags?.quizMaintenance ? '⚠️ Wartungsmodus aktiv — Nutzer sehen Baustellenseite' : 'Quiz läuft normal'}
+              </span>
+              <button
+                onClick={() => saveFeatureFlag('quizMaintenance', !featureFlags?.quizMaintenance)}
+                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${featureFlags?.quizMaintenance ? 'bg-amber-500' : (darkMode ? 'bg-slate-600' : 'bg-gray-300')}`}
+              >
+                <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${featureFlags?.quizMaintenance ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
             </div>
           </div>
