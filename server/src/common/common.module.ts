@@ -1,7 +1,11 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { CsrfMiddleware } from './middleware/csrf.middleware';
+import { AuditLogService } from './services/audit-log.service';
 
-@Module({})
+@Module({
+  providers: [AuditLogService],
+  exports: [AuditLogService]
+})
 export class CommonModule implements NestModule
 {
   configure(consumer: MiddlewareConsumer) {
