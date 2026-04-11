@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -31,6 +32,8 @@ export class ForumController {
     return this.forumService.getThread(actor, postId);
   }
 
+  // 5 posts per 10 minutes per user
+  @Throttle({ default: { ttl: 600000, limit: 5 } })
   @Post('posts')
   createPost(
     @CurrentUser() actor: AuthenticatedUser,
@@ -40,6 +43,8 @@ export class ForumController {
     return this.forumService.createPost(actor, dto, request);
   }
 
+  // 15 replies per 10 minutes per user
+  @Throttle({ default: { ttl: 600000, limit: 15 } })
   @Post('posts/:id/replies')
   createReply(
     @CurrentUser() actor: AuthenticatedUser,

@@ -35,7 +35,7 @@ import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { useCookieNotice } from './hooks/useCookieNotice';
 
-import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, DEMO_ACCOUNTS, MENU_GROUP_LABELS, getAvatarById, getLevel, getLevelProgress } from './data/constants';
+import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, MENU_GROUP_LABELS, getAvatarById, getLevel, getLevelProgress } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
 import { AUSBILDUNGSRAHMENPLAN, WOCHEN_PRO_JAHR } from './data/ausbildungsrahmenplan';
 import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
@@ -3719,7 +3719,7 @@ export default function BaederApp() {
       }, user?.id);
 
       if (game?.timerColumnsUnavailable) {
-        showToast('Herausforderung gesendet. Timer-Spalten fehlen in Supabase, aktuell gilt 48h Standard.', 'warning');
+        showToast('Herausforderung gesendet. Zeitlimit: 48 Stunden.', 'info');
       }
 
       setActiveGames([...activeGames, game]);
@@ -5070,7 +5070,7 @@ export default function BaederApp() {
       }
     } catch (error) {
       console.error('Message error:', error);
-      showToast('Nachricht konnte nicht gesendet werden. Pruefe ggf. die Chat-Migration in Supabase.', 'error');
+      showToast('Nachricht konnte nicht gesendet werden. Bitte erneut versuchen.', 'error');
     }
   };
 
@@ -6237,7 +6237,7 @@ export default function BaederApp() {
     setBerichtsheftRemoteDraftsEnabled(false);
     setBerichtsheftServerDraftsByWeek({});
     if (!berichtsheftRemoteDraftWarningShownRef.current) {
-      showToast('Server-Entwurfs-Sync ist erst nach der Supabase-Migration aktiv.', 'warning');
+      showToast('Server-Entwurfs-Sync ist vorübergehend nicht verfügbar.', 'warning');
       berichtsheftRemoteDraftWarningShownRef.current = true;
     }
     console.warn('Berichtsheft Remote-Drafts deaktiviert (status-Spalte fehlt).', error);

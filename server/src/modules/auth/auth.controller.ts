@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res, Body } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, HttpCode, HttpStatus, Patch, Post, Req, Res, Body } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -47,6 +47,11 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response
   ) {
+    // CSRF protection: browsers cannot set X-Requested-With in cross-origin requests
+    // without a CORS preflight, which our strict CORS policy blocks.
+    if (!request.headers['x-requested-with']) {
+      throw new ForbiddenException('Missing required request header.');
+    }
     // Refresh token is read exclusively from the HttpOnly cookie
     const refreshToken = request.cookies?.refresh_token;
     return this.authService.refreshSession(refreshToken, response);
