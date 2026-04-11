@@ -13,10 +13,10 @@
 | Backend-Sicherheit | Exzellent | **9.5 / 10** |
 | Frontend-Architektur | Mangelhaft | **4.0 / 10** |
 | Deployment/Infrastruktur | Sehr gut | **8.5 / 10** |
-| Testabdeckung | Ausbaufähig | **5.0 / 10** |
-| Wartbarkeit / Code-Qualität | Gut | **7.5 / 10** |
+| Testabdeckung | Gut | **7.0 / 10** |
+| Wartbarkeit / Code-Qualität | Sehr gut | **8.0 / 10** |
 | Dokumentation | Exzellent | **9.5 / 10** |
-| **Gesamt** | | **8.3 / 10** |
+| **Gesamt** | | **8.5 / 10** |
 
 ---
 
@@ -94,7 +94,7 @@
 | 3.5 | **Prop-Drilling eliminieren** | ❌ | 20–40 Props pro View-Komponente |
 | 3.6 | **CI/CD Pipeline mit Approval Gates** | ✅ | GitHub Actions: Type-Check, Build, Docker, Secret-Scan, Production-Approval |
 | 3.7 | **Restore-Drill dokumentieren** | ✅ | Vollständiges Runbook mit Drill-Umgebung, Verifikation, Zeitplan |
-| 3.8 | **Automatisierte Tests** | ❌ | Keine Tests für Auth, Approval, Chat, Duels |
+| 3.8 | **Automatisierte Tests** | ✅ | 34 Unit-Tests (Validators, Middleware), Jest-Konfiguration, CI-Integration |
 
 ---
 

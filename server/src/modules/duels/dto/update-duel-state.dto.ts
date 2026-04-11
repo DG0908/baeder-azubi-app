@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsDefined,
   IsIn,
   IsInt,
   IsOptional,
@@ -57,6 +58,7 @@ export class GameStateDto {
 }
 
 export class UpdateDuelStateDto {
+  @IsDefined()
   @ValidateNested()
   @Type(() => GameStateDto)
   gameState!: GameStateDto;
