@@ -119,9 +119,20 @@ export class AppConfigService {
       throw new BadRequestException('Your account is not assigned to an organization.');
     }
 
-    const menuItems = this.normalizeMenuItems(dto.menuItems);
-    const themeColors = this.normalizeThemeColors(dto.themeColors);
-    const featureFlags = this.normalizeFeatureFlags(dto.featureFlags ?? {});
+    const currentConfig = await this.getConfig(actor);
+    const tolerateLegacyPayloadForFeatureFlags = dto.featureFlags !== undefined;
+
+    const menuItems = this.normalizeMenuItemsWithFallback(
+      dto.menuItems,
+      currentConfig.menuItems,
+      tolerateLegacyPayloadForFeatureFlags
+    );
+    const themeColors = this.normalizeThemeColorsWithFallback(
+      dto.themeColors,
+      currentConfig.themeColors,
+      tolerateLegacyPayloadForFeatureFlags
+    );
+    const featureFlags = this.normalizeFeatureFlags(dto.featureFlags ?? currentConfig.featureFlags ?? {});
     const persistedThemeColors = this.attachFeatureFlagsMeta(themeColors, featureFlags);
 
     let updatedPayload: ReturnType<AppConfigService['toPayload']>;
@@ -372,6 +383,52 @@ export class AppConfigService {
 
     const source = value as Record<string, unknown>;
     return this.normalizeThemeColors(source);
+  }
+
+  private normalizeMenuItemsWithFallback(
+    value: unknown[] | undefined,
+    fallback: unknown[] | undefined,
+    allowFallbackOnError: boolean
+  ) {
+    if (value === undefined) {
+      return this.normalizeMenuItems(Array.isArray(fallback) ? fallback : []);
+    }
+
+    try {
+      return this.normalizeMenuItems(value);
+    } catch (error) {
+      if (!allowFallbackOnError) {
+        throw error;
+      }
+      return this.normalizeMenuItems(Array.isArray(fallback) ? fallback : []);
+    }
+  }
+
+  private normalizeThemeColorsWithFallback(
+    value: Record<string, unknown> | undefined,
+    fallback: Record<string, unknown> | undefined,
+    allowFallbackOnError: boolean
+  ) {
+    if (value === undefined) {
+      return this.normalizeThemeColors(
+        fallback && typeof fallback === 'object' && !Array.isArray(fallback)
+          ? fallback
+          : { ...APP_CONFIG_DEFAULT_THEME_COLORS }
+      );
+    }
+
+    try {
+      return this.normalizeThemeColors(value);
+    } catch (error) {
+      if (!allowFallbackOnError) {
+        throw error;
+      }
+      return this.normalizeThemeColors(
+        fallback && typeof fallback === 'object' && !Array.isArray(fallback)
+          ? fallback
+          : { ...APP_CONFIG_DEFAULT_THEME_COLORS }
+      );
+    }
   }
 
   private sanitizeUiString(value: unknown, fieldName: string, maxLength: number) {

@@ -1,11 +1,13 @@
 import { IsArray, IsObject, IsOptional } from 'class-validator';
 
 export class UpdateAppConfigDto {
+  @IsOptional()
   @IsArray()
-  menuItems!: unknown[];
+  menuItems?: unknown[];
 
+  @IsOptional()
   @IsObject()
-  themeColors!: Record<string, unknown>;
+  themeColors?: Record<string, unknown>;
 
   @IsOptional()
   @IsObject()

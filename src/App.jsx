@@ -8395,11 +8395,7 @@ export default function BaederApp() {
     const nextFlags = { ...appConfig.featureFlags, [key]: value };
     const updated = { ...appConfig, featureFlags: nextFlags };
     try {
-      await dsSaveAppConfig({
-        menuItems: appConfig.menuItems,
-        themeColors: appConfig.themeColors,
-        featureFlags: nextFlags
-      });
+      await dsSaveAppConfig({ featureFlags: nextFlags });
       setAppConfig(updated);
       showToast(value ? 'Wartungsmodus aktiviert.' : 'Wartungsmodus deaktiviert.', 'success');
     } catch (error) {
