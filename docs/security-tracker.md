@@ -14,9 +14,9 @@
 | Frontend-Architektur | Mangelhaft | **4.0 / 10** |
 | Deployment/Infrastruktur | Gut | **7.5 / 10** |
 | Testabdeckung | Ausbaufähig | **5.0 / 10** |
-| Wartbarkeit / Code-Qualität | Gut | **7.0 / 10** |
+| Wartbarkeit / Code-Qualität | Gut | **7.5 / 10** |
 | Dokumentation | Sehr gut | **9.0 / 10** |
-| **Gesamt** | | **7.8 / 10** |
+| **Gesamt** | | **8.0 / 10** |
 
 ---
 
@@ -79,7 +79,7 @@
 | 2.4 | **SSRF-Validierung bei Content-URLs** | ✅ | Blockiert private IPs, localhost, metadata.google.internal |
 | 2.5 | **Duel-Rundenerzeugung server-autoritativ** | ✅ | Server generiert Fragen aus Bank/DB, validiert Übergänge, prüft Antworten |
 | 2.6 | **Badge-Historie in Secure-Export migrieren** | ❌ | Hängt noch an alter Supabase-Tabelle |
-| 2.7 | **PrismaService Query-Middleware** | ❌ | Kein zentrales Query-Logging, keine Multi-Tenant-Isolation auf DB-Ebene |
+| 2.7 | **PrismaService Query-Middleware** | ✅ | Slow-Query-Logging (>500ms), Error-Logging mit Model/Action-Kontext, konfigurierbar |
 
 ---
 
@@ -144,9 +144,12 @@
 4. ~~**Passwort-Komplexitätsprüfung** (2.3)~~ → ✅ **Erledigt**
 5. ~~**SSRF-Validierung bei Content-URLs** (2.4)~~ → ✅ **Erledigt**
 6. ~~**Pagination bei Chat/Forum/Content** (2.2)~~ → ✅ **Erledigt**
-7. **API-Versionierung** (2.1) → Breaking-Change-Sicherheit
-8. **Duel-Runden server-autoritativ** (2.5) → Manipulationssicherheit
-9. **Automatisierte Tests** (3.8) → Qualitätssicherung
+7. ~~**API-Versionierung** (2.1)~~ → ✅ **Erledigt**
+8. ~~**Duel-Runden server-autoritativ** (2.5)~~ → ✅ **Erledigt**
+9. ~~**Prisma Query-Middleware** (2.7)~~ → ✅ **Erledigt**
+10. **Automatisierte Tests** (3.8) → Qualitätssicherung
+11. **Badge-Historie migrieren** (2.6) → Export-Vollständigkeit
+12. **Restore-Drill dokumentieren** (3.7) → Notfallbereitschaft
 
 ---
 
@@ -161,3 +164,6 @@
 | 2026-04-11 | **2.2 Pagination** – limit/offset (max 100) für Chat, Forum, Exam-Grades, Report-Books | Qwen |
 | 2026-04-11 | **2.3 Passwort-Komplexität** – Custom Validator: 12+ Zeichen, Groß/Klein, Ziffer, Sonderzeichen | Qwen |
 | 2026-04-11 | **2.4 SSRF-Schutz** – Blockiert private IPs, localhost, metadata.google.internal bei Content-URLs | Qwen |
+| 2026-04-11 | **2.1 API-Versionierung** – `/api/v1/` für alle Endpunkte, NestJS enableVersioning | Qwen |
+| 2026-04-11 | **2.5 Duel-Runden server-autoritativ** – Bereits implementiert, validiert und dokumentiert | Qwen |
+| 2026-04-11 | **2.7 Prisma Query-Middleware** – Slow-Query-Logging, Error-Logging, konfigurierbarer Threshold | Qwen |
