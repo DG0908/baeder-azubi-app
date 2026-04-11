@@ -79,3 +79,30 @@ body {
 .animate-slide-in-up {
   animation: slideInUp 0.25s ease-out;
 }
+
+/* Live-Ticker */
+@keyframes ticker {
+  0%   { transform: translateX(100vw); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes tickerPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.animate-ticker {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 18s linear infinite;
+}
+
+.animate-ticker-slow {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 28s linear infinite;
+}
+
+.animate-live-pulse {
+  animation: tickerPulse 1.4s ease-in-out infinite;
+}
