@@ -44,7 +44,7 @@ Vom Auftragnehmer im Einzelfall auszufuellen, z. B.:
 Nicht mehr passend fuer diese Vorlage:
 
 - Supabase als Primärdatenbank
-- Vercel als Haupt-Hosting fuer die Produktivarchitektur
+- Frontend-Hosting als getrennte Vercel-/Netlify-Produktivarchitektur
 
 ## Sicherheitsmassnahmen
 
