@@ -13,10 +13,10 @@
 | Backend-Sicherheit | Exzellent | **9.5 / 10** |
 | Frontend-Architektur | Mangelhaft | **4.0 / 10** |
 | Deployment/Infrastruktur | Gut | **7.5 / 10** |
-| Testabdeckung | Ausbaufähig | **4.0 / 10** |
-| Wartbarkeit / Code-Qualität | Gut | **6.0 / 10** |
+| Testabdeckung | Ausbaufähig | **5.0 / 10** |
+| Wartbarkeit / Code-Qualität | Gut | **6.5 / 10** |
 | Dokumentation | Sehr gut | **9.0 / 10** |
-| **Gesamt** | | **7.3 / 10** |
+| **Gesamt** | | **7.6 / 10** |
 
 ---
 
@@ -74,9 +74,9 @@
 | # | Maßnahme | Status | Anmerkungen |
 |---|----------|--------|-------------|
 | 2.1 | **API-Versionierung (`/api/v1/`)** | ❌ | Breaking Changes später schwer migrierbar |
-| 2.2 | **Pagination überall (cursor-basiert)** | ❌ | Aktuell fix 100/200/250 Ergebnisse bei Chat, Forum, Content |
-| 2.3 | **Passwort-Komplexitätsprüfung** | ❌ | Nur 12 Zeichen Minimum, keine weitere Prüfung |
-| 2.4 | **SSRF-Validierung bei Content-URLs** | ❌ | Nur `http/https` Check, keine Internal-IP-Blockliste |
+| 2.2 | **Pagination überall (limit/offset)** | ✅ | Chat, Forum, Exam-Grades, Report-Books mit limit/offset (max 100) |
+| 2.3 | **Passwort-Komplexitätsprüfung** | ✅ | Custom Validator: 12+ Zeichen, Groß/Klein, Ziffer, Sonderzeichen |
+| 2.4 | **SSRF-Validierung bei Content-URLs** | ✅ | Blockiert private IPs, localhost, metadata.google.internal |
 | 2.5 | **Duel-Rundenerzeugung server-autoritativ** | ⚠️ | Teilweise hart, aber Client liefert noch Fragen für neue Rounds |
 | 2.6 | **Badge-Historie in Secure-Export migrieren** | ❌ | Hängt noch an alter Supabase-Tabelle |
 | 2.7 | **PrismaService Query-Middleware** | ❌ | Kein zentrales Query-Logging, keine Multi-Tenant-Isolation auf DB-Ebene |
@@ -141,7 +141,12 @@
 1. ~~**CSRF-Schutz global einführen** (1.7)~~ → ✅ **Erledigt**
 2. ~~**RolesGuard systematisch auditieren** (1.8)~~ → ✅ **Erledigt**
 3. ~~**Rate-Limits für alle state-changing Endpunkte** (1.9)~~ → ✅ **Erledigt**
-4. **P1 komplett abgeschlossen!** → Nächste: P2 (API-Versionierung, Pagination, Passwort-Policy)
+4. ~~**Passwort-Komplexitätsprüfung** (2.3)~~ → ✅ **Erledigt**
+5. ~~**SSRF-Validierung bei Content-URLs** (2.4)~~ → ✅ **Erledigt**
+6. ~~**Pagination bei Chat/Forum/Content** (2.2)~~ → ✅ **Erledigt**
+7. **API-Versionierung** (2.1) → Breaking-Change-Sicherheit
+8. **Duel-Runden server-autoritativ** (2.5) → Manipulationssicherheit
+9. **Automatisierte Tests** (3.8) → Qualitätssicherung
 
 ---
 
@@ -153,3 +158,6 @@
 | 2026-04-11 | **1.7 CSRF-Schutz global** – `CsrfMiddleware`, `apiRequest()`, Docs aktualisiert | Qwen |
 | 2026-04-11 | **1.8 RolesGuard Default-Deny** – `@Allow()` Decorator, RolesGuard umgestellt, alle 119 Endpunkte explizit mit `@Roles()` oder `@Allow()` markiert | Qwen |
 | 2026-04-11 | **1.9 Rate-Limits flächendeckend** – 58 state-changing Endpunkte mit `@Throttle` versehen, nach Risiko gestaffelt (5–30/10min) | Qwen |
+| 2026-04-11 | **2.2 Pagination** – limit/offset (max 100) für Chat, Forum, Exam-Grades, Report-Books | Qwen |
+| 2026-04-11 | **2.3 Passwort-Komplexität** – Custom Validator: 12+ Zeichen, Groß/Klein, Ziffer, Sonderzeichen | Qwen |
+| 2026-04-11 | **2.4 SSRF-Schutz** – Blockiert private IPs, localhost, metadata.google.internal bei Content-URLs | Qwen |
