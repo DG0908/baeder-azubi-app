@@ -31,6 +31,15 @@ type AppConfigRecord = {
   updatedAt: Date;
 };
 
+type LegacyAppConfigRecord = {
+  id: string;
+  organizationId: string;
+  menuItems: Prisma.JsonValue;
+  themeColors: Prisma.JsonValue;
+  updatedById: string | null;
+  updatedAt: Date;
+};
+
 type MenuItemPayload = {
   id: string;
   icon: string;
@@ -40,6 +49,8 @@ type MenuItemPayload = {
   requiresPermission: string | null;
   group: string;
 };
+
+const APP_CONFIG_THEME_META_KEY = '__appConfigMeta';
 
 @Injectable()
 export class AppConfigService {
@@ -53,26 +64,52 @@ export class AppConfigService {
       return this.buildDefaultPayload(null);
     }
 
-    const config = await this.prisma.appConfig.findUnique({
-      where: {
-        organizationId: actor.organizationId
-      },
-      select: {
-        id: true,
-        organizationId: true,
-        menuItems: true,
-        themeColors: true,
-        featureFlags: true,
-        updatedById: true,
-        updatedAt: true
+    try {
+      const config = await this.prisma.appConfig.findUnique({
+        where: {
+          organizationId: actor.organizationId
+        },
+        select: {
+          id: true,
+          organizationId: true,
+          menuItems: true,
+          themeColors: true,
+          featureFlags: true,
+          updatedById: true,
+          updatedAt: true
+        }
+      });
+
+      if (!config) {
+        return this.buildDefaultPayload(actor.organizationId);
       }
-    });
 
-    if (!config) {
-      return this.buildDefaultPayload(actor.organizationId);
+      return this.toPayload(config);
+    } catch (error) {
+      if (!this.isMissingFeatureFlagsColumnError(error)) {
+        throw error;
+      }
+
+      const legacyConfig = await this.prisma.appConfig.findUnique({
+        where: {
+          organizationId: actor.organizationId
+        },
+        select: {
+          id: true,
+          organizationId: true,
+          menuItems: true,
+          themeColors: true,
+          updatedById: true,
+          updatedAt: true
+        }
+      });
+
+      if (!legacyConfig) {
+        return this.buildDefaultPayload(actor.organizationId);
+      }
+
+      return this.toPayloadFromLegacy(legacyConfig);
     }
-
-    return this.toPayload(config);
   }
 
   async updateConfig(actor: AuthenticatedUser, dto: UpdateAppConfigDto, request: Request) {
@@ -85,40 +122,81 @@ export class AppConfigService {
     const menuItems = this.normalizeMenuItems(dto.menuItems);
     const themeColors = this.normalizeThemeColors(dto.themeColors);
     const featureFlags = this.normalizeFeatureFlags(dto.featureFlags ?? {});
+    const persistedThemeColors = this.attachFeatureFlagsMeta(themeColors, featureFlags);
 
-    const updated = await this.prisma.appConfig.upsert({
-      where: {
-        organizationId: actor.organizationId
-      },
-      create: {
-        organizationId: actor.organizationId,
-        menuItems,
-        themeColors,
-        featureFlags,
-        updatedById: actor.id
-      },
-      update: {
-        menuItems,
-        themeColors,
-        featureFlags,
-        updatedById: actor.id
-      },
-      select: {
-        id: true,
-        organizationId: true,
-        menuItems: true,
-        themeColors: true,
-        featureFlags: true,
-        updatedById: true,
-        updatedAt: true
+    let updatedPayload: ReturnType<AppConfigService['toPayload']>;
+    let updatedConfigId: string;
+
+    try {
+      const updated = await this.prisma.appConfig.upsert({
+        where: {
+          organizationId: actor.organizationId
+        },
+        create: {
+          organizationId: actor.organizationId,
+          menuItems,
+          themeColors: persistedThemeColors,
+          featureFlags,
+          updatedById: actor.id
+        },
+        update: {
+          menuItems,
+          themeColors: persistedThemeColors,
+          featureFlags,
+          updatedById: actor.id
+        },
+        select: {
+          id: true,
+          organizationId: true,
+          menuItems: true,
+          themeColors: true,
+          featureFlags: true,
+          updatedById: true,
+          updatedAt: true
+        }
+      });
+
+      updatedConfigId = updated.id;
+      updatedPayload = this.toPayload(updated);
+    } catch (error) {
+      if (!this.isMissingFeatureFlagsColumnError(error)) {
+        throw error;
       }
-    });
+
+      const updated = await this.prisma.appConfig.upsert({
+        where: {
+          organizationId: actor.organizationId
+        },
+        create: {
+          organizationId: actor.organizationId,
+          menuItems,
+          themeColors: persistedThemeColors,
+          updatedById: actor.id
+        },
+        update: {
+          menuItems,
+          themeColors: persistedThemeColors,
+          updatedById: actor.id
+        },
+        select: {
+          id: true,
+          organizationId: true,
+          menuItems: true,
+          themeColors: true,
+          updatedById: true,
+          updatedAt: true
+        }
+      });
+
+      updatedConfigId = updated.id;
+      updatedPayload = this.toPayloadFromLegacy(updated);
+    }
 
     await this.auditLogService.writeForUser(
       actor,
       'app_config.updated',
       'AppConfig',
-      updated.id,
+      updatedConfigId,
       {
         organizationId: actor.organizationId,
         menuItemCount: menuItems.length,
@@ -127,7 +205,7 @@ export class AppConfigService {
       request
     );
 
-    return this.toPayload(updated);
+    return updatedPayload;
   }
 
   private buildDefaultPayload(organizationId: string | null) {
@@ -146,7 +224,18 @@ export class AppConfigService {
       organizationId: config.organizationId,
       menuItems: this.normalizeMenuItemsFromStorage(config.menuItems),
       themeColors: this.normalizeThemeColorsFromStorage(config.themeColors),
-      featureFlags: this.normalizeFeatureFlagsFromStorage(config.featureFlags),
+      featureFlags: this.normalizeFeatureFlagsFromSources(config.featureFlags, config.themeColors),
+      updatedById: config.updatedById,
+      updatedAt: config.updatedAt.toISOString()
+    };
+  }
+
+  private toPayloadFromLegacy(config: LegacyAppConfigRecord) {
+    return {
+      organizationId: config.organizationId,
+      menuItems: this.normalizeMenuItemsFromStorage(config.menuItems),
+      themeColors: this.normalizeThemeColorsFromStorage(config.themeColors),
+      featureFlags: this.normalizeFeatureFlagsFromSources(null, config.themeColors),
       updatedById: config.updatedById,
       updatedAt: config.updatedAt.toISOString()
     };
@@ -317,6 +406,73 @@ export class AppConfigService {
       return { ...APP_CONFIG_DEFAULT_FEATURE_FLAGS };
     }
     return this.normalizeFeatureFlags(value as Record<string, unknown>);
+  }
+
+  private normalizeFeatureFlagsFromSources(
+    featureFlagsValue: Prisma.JsonValue | null | undefined,
+    themeColorsValue: Prisma.JsonValue | null | undefined
+  ): Record<AppFeatureFlagKey, boolean> {
+    const fallback = this.extractFeatureFlagsMeta(themeColorsValue);
+    const persisted = this.extractFeatureFlagsOverrides(featureFlagsValue);
+    return {
+      ...APP_CONFIG_DEFAULT_FEATURE_FLAGS,
+      ...fallback,
+      ...persisted
+    };
+  }
+
+  private extractFeatureFlagsOverrides(
+    value: Prisma.JsonValue | null | undefined
+  ): Partial<Record<AppFeatureFlagKey, boolean>> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return {};
+    }
+
+    const source = value as Record<string, unknown>;
+    const overrides: Partial<Record<AppFeatureFlagKey, boolean>> = {};
+    for (const key of APP_CONFIG_FEATURE_FLAG_KEYS) {
+      if (key in source) {
+        overrides[key] = Boolean(source[key]);
+      }
+    }
+    return overrides;
+  }
+
+  private extractFeatureFlagsMeta(themeColorsValue: Prisma.JsonValue | null | undefined) {
+    if (!themeColorsValue || typeof themeColorsValue !== 'object' || Array.isArray(themeColorsValue)) {
+      return { ...APP_CONFIG_DEFAULT_FEATURE_FLAGS };
+    }
+
+    const source = themeColorsValue as Record<string, unknown>;
+    const meta = source[APP_CONFIG_THEME_META_KEY];
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
+      return { ...APP_CONFIG_DEFAULT_FEATURE_FLAGS };
+    }
+
+    const featureFlags = (meta as Record<string, unknown>).featureFlags;
+    return this.normalizeFeatureFlagsFromStorage((featureFlags ?? null) as Prisma.JsonValue);
+  }
+
+  private attachFeatureFlagsMeta(
+    themeColors: Record<string, string>,
+    featureFlags: Record<AppFeatureFlagKey, boolean>
+  ) {
+    return {
+      ...themeColors,
+      [APP_CONFIG_THEME_META_KEY]: {
+        featureFlags
+      }
+    };
+  }
+
+  private isMissingFeatureFlagsColumnError(error: unknown) {
+    if (!error || typeof error !== 'object') {
+      return false;
+    }
+
+    const candidate = error as { code?: string; message?: string };
+    const message = String(candidate.message || '');
+    return candidate.code === 'P2022' && message.toLowerCase().includes('featureflags');
   }
 
   private assertAdmin(actor: AuthenticatedUser) {

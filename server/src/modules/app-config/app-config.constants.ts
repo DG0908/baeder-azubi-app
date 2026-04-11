@@ -11,6 +11,7 @@ export const APP_CONFIG_MENU_IDS = [
   'forum',
   'materials',
   'interactive-learning',
+  'notfall-trainer',
   'resources',
   'news',
   'exams',
