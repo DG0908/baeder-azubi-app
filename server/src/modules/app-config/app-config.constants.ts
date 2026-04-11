@@ -50,3 +50,14 @@ export const APP_CONFIG_DEFAULT_THEME_COLORS = {
   danger: '#ef4444',
   warning: '#eab308'
 } as const;
+
+/** Known feature-flag keys. Unknown keys are stripped on write. */
+export const APP_CONFIG_FEATURE_FLAG_KEYS = [
+  'quizMaintenance'
+] as const;
+
+export type AppFeatureFlagKey = (typeof APP_CONFIG_FEATURE_FLAG_KEYS)[number];
+
+export const APP_CONFIG_DEFAULT_FEATURE_FLAGS: Record<AppFeatureFlagKey, boolean> = {
+  quizMaintenance: false
+};

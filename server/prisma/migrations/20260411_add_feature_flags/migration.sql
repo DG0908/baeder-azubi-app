@@ -1,0 +1,1 @@
+ALTER TABLE "AppConfig" ADD COLUMN "featureFlags" JSONB NOT NULL DEFAULT '{}';

@@ -10,11 +10,14 @@ import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.in
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
+  APP_CONFIG_DEFAULT_FEATURE_FLAGS,
   APP_CONFIG_DEFAULT_THEME_COLORS,
+  APP_CONFIG_FEATURE_FLAG_KEYS,
   APP_CONFIG_GROUP_IDS,
   APP_CONFIG_MENU_IDS,
   APP_CONFIG_PERMISSION_KEYS,
-  APP_CONFIG_THEME_KEYS
+  APP_CONFIG_THEME_KEYS,
+  AppFeatureFlagKey
 } from './app-config.constants';
 import { UpdateAppConfigDto } from './dto/update-app-config.dto';
 
@@ -23,6 +26,7 @@ type AppConfigRecord = {
   organizationId: string;
   menuItems: Prisma.JsonValue;
   themeColors: Prisma.JsonValue;
+  featureFlags: Prisma.JsonValue;
   updatedById: string | null;
   updatedAt: Date;
 };
@@ -58,6 +62,7 @@ export class AppConfigService {
         organizationId: true,
         menuItems: true,
         themeColors: true,
+        featureFlags: true,
         updatedById: true,
         updatedAt: true
       }
@@ -79,6 +84,7 @@ export class AppConfigService {
 
     const menuItems = this.normalizeMenuItems(dto.menuItems);
     const themeColors = this.normalizeThemeColors(dto.themeColors);
+    const featureFlags = this.normalizeFeatureFlags(dto.featureFlags ?? {});
 
     const updated = await this.prisma.appConfig.upsert({
       where: {
@@ -88,11 +94,13 @@ export class AppConfigService {
         organizationId: actor.organizationId,
         menuItems,
         themeColors,
+        featureFlags,
         updatedById: actor.id
       },
       update: {
         menuItems,
         themeColors,
+        featureFlags,
         updatedById: actor.id
       },
       select: {
@@ -100,6 +108,7 @@ export class AppConfigService {
         organizationId: true,
         menuItems: true,
         themeColors: true,
+        featureFlags: true,
         updatedById: true,
         updatedAt: true
       }
@@ -126,6 +135,7 @@ export class AppConfigService {
       organizationId,
       menuItems: [],
       themeColors: { ...APP_CONFIG_DEFAULT_THEME_COLORS },
+      featureFlags: { ...APP_CONFIG_DEFAULT_FEATURE_FLAGS },
       updatedById: null,
       updatedAt: null
     };
@@ -136,6 +146,7 @@ export class AppConfigService {
       organizationId: config.organizationId,
       menuItems: this.normalizeMenuItemsFromStorage(config.menuItems),
       themeColors: this.normalizeThemeColorsFromStorage(config.themeColors),
+      featureFlags: this.normalizeFeatureFlagsFromStorage(config.featureFlags),
       updatedById: config.updatedById,
       updatedAt: config.updatedAt.toISOString()
     };
@@ -289,6 +300,23 @@ export class AppConfigService {
     }
 
     return sanitized;
+  }
+
+  private normalizeFeatureFlags(value: Record<string, unknown>): Record<AppFeatureFlagKey, boolean> {
+    const result = { ...APP_CONFIG_DEFAULT_FEATURE_FLAGS };
+    for (const key of APP_CONFIG_FEATURE_FLAG_KEYS) {
+      if (key in value) {
+        result[key] = Boolean(value[key]);
+      }
+    }
+    return result;
+  }
+
+  private normalizeFeatureFlagsFromStorage(value: Prisma.JsonValue): Record<AppFeatureFlagKey, boolean> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return { ...APP_CONFIG_DEFAULT_FEATURE_FLAGS };
+    }
+    return this.normalizeFeatureFlags(value as Record<string, unknown>);
   }
 
   private assertAdmin(actor: AuthenticatedUser) {
