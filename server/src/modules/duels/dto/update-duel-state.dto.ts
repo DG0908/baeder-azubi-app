@@ -11,7 +11,6 @@ import {
 import { Type } from 'class-transformer';
 
 const ALLOWED_DIFFICULTIES = ['anfaenger', 'profi', 'experte', 'extra', 'normal'] as const;
-const ALLOWED_STATUSES = ['active', 'pending', 'completed', 'expired', 'waiting', 'my_turn', 'opponent_turn'] as const;
 
 export class GameStateDto {
   /** Display name of the player whose turn it is. */
@@ -26,10 +25,13 @@ export class GameStateDto {
   @Max(10)
   categoryRound?: number;
 
-  /** Client-side status label (informational, server is authoritative). */
+  /**
+   * Client-side status label — informational only, server is authoritative.
+   * Not restricted to an enum because the frontend derives this from multiple
+   * sources (mapDuelStatus returns 'finished', 'waiting', 'active', 'unknown', …).
+   */
   @IsOptional()
   @IsString()
-  @IsIn(ALLOWED_STATUSES)
   status?: string;
 
   /** Difficulty chosen for this duel. */
