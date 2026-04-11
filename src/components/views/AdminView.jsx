@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound, Building2, Ticket, Copy, Plus, RefreshCw } from 'lucide-react';
+import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound, Building2, Ticket, Copy, Plus, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -14,6 +14,51 @@ import {
   assignUserOrganization as dsAssignUserOrganization,
   deleteUser as dsDeleteUser
 } from '../../lib/dataService';
+
+const adminListCollator = new Intl.Collator('de', {
+  sensitivity: 'base',
+  numeric: true
+});
+
+const getUserGroupLabel = (account) => {
+  const organizationName = String(account?.organizationName || account?.organization_name || '').trim();
+  const companyName = String(account?.company || '').trim();
+
+  if (organizationName) return organizationName;
+  if (companyName) return companyName;
+  return 'Ohne Betrieb';
+};
+
+const groupUsersByOrganization = (users = []) => {
+  const groups = [];
+
+  [...users]
+    .sort((left, right) => {
+      const groupCompare = adminListCollator.compare(getUserGroupLabel(left), getUserGroupLabel(right));
+      if (groupCompare !== 0) return groupCompare;
+      return adminListCollator.compare(
+        String(left?.name || left?.email || ''),
+        String(right?.name || right?.email || '')
+      );
+    })
+    .forEach((account) => {
+      const label = getUserGroupLabel(account);
+      const previousGroup = groups[groups.length - 1];
+
+      if (!previousGroup || previousGroup.label !== label) {
+        groups.push({ label, users: [account] });
+        return;
+      }
+
+      previousGroup.users.push(account);
+    });
+
+  return groups;
+};
+
+const sortQuestionReportsNewestFirst = (reports = []) => (
+  [...reports].sort((left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0))
+);
 
 // ─── Betriebe & Einladungscodes Verwaltung (nur Owner) ───
 const OrganizationManager = () => {
@@ -450,6 +495,14 @@ const AdminView = ({
   const [sendingTestPush, setSendingTestPush] = React.useState(false);
   const [lastTestPushResult, setLastTestPushResult] = React.useState(null);
   const [testPushTargetScope, setTestPushTargetScope] = React.useState('self');
+  const [showQuestionReports, setShowQuestionReports] = React.useState(false);
+  const [showResolvedQuestionReports, setShowResolvedQuestionReports] = React.useState(false);
+  const [showActiveUsers, setShowActiveUsers] = React.useState(false);
+
+  const sortedQuestionReports = sortQuestionReportsNewestFirst(questionReports || []);
+  const openQuestionReports = sortedQuestionReports.filter((entry) => entry.status !== 'resolved');
+  const resolvedQuestionReports = sortedQuestionReports.filter((entry) => entry.status === 'resolved');
+  const groupedUsers = groupUsersByOrganization(allUsers || []);
 
   const handleRepairQuizStats = async () => {
     if (typeof repairQuizStats !== 'function' || repairingQuizStats) return;
@@ -494,6 +547,179 @@ const AdminView = ({
     } finally {
       setSendingTestPush(false);
     }
+  };
+
+  const renderQuestionReport = (report) => {
+    const category = CATEGORIES.find((entry) => entry.id === report.category);
+    const isResolved = report.status === 'resolved';
+
+    return (
+      <div key={report.id} className={`border rounded-lg p-4 ${isResolved ? 'bg-gray-50 border-gray-200' : 'bg-amber-50 border-amber-200'}`}>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isResolved ? 'bg-green-100 text-green-700' : 'bg-amber-200 text-amber-800'}`}>
+              {isResolved ? 'Erledigt' : 'Offen'}
+            </span>
+            <span className="text-xs text-gray-600">
+              {category ? `${category.icon} ${category.name}` : report.category}
+            </span>
+          </div>
+          <span className="text-xs text-gray-500">
+            {new Date(report.createdAt).toLocaleString('de-DE')}
+          </span>
+        </div>
+        <p className="font-semibold text-gray-800 mb-1">{report.questionText}</p>
+        <p className="text-sm text-gray-600 mb-2">
+          Quelle: {report.source} · Von: {report.reportedBy || 'Unbekannt'}
+        </p>
+        {report.note && (
+          <p className="text-sm text-gray-700 bg-white border border-gray-200 rounded-md p-2 mb-2">
+            Hinweis: {report.note}
+          </p>
+        )}
+        <button
+          onClick={() => {
+            void toggleQuestionReportStatus(report.id);
+          }}
+          className={`px-3 py-2 rounded-lg text-sm font-bold ${
+            isResolved
+              ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+              : 'bg-green-500 hover:bg-green-600 text-white'
+          }`}
+        >
+          {isResolved ? 'Wieder oeffnen' : 'Als erledigt markieren'}
+        </button>
+      </div>
+    );
+  };
+
+  const renderUserCard = (acc) => {
+    const daysLeft = getDaysUntilDeletion(acc);
+    const isOwnAccount =
+      String(acc?.email || '').trim().toLowerCase() === String(currentUserEmail || '').trim().toLowerCase();
+    const roleSelectDisabled = isOwnAccount || !canManageRoles;
+
+    return (
+      <div key={acc.email} className="border rounded-lg p-4 bg-white">
+        <div className="flex items-start gap-2 mb-1 flex-wrap">
+          <p className="font-bold">{acc.name}</p>
+          <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
+            acc.role === 'admin' ? 'bg-purple-500' :
+            acc.role === 'trainer' ? 'bg-blue-500' : 'bg-green-500'
+          }`}>
+            {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}
+          </span>
+          {acc.is_owner && (
+            <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-white">
+              Hauptadmin
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-gray-600 mb-1">{acc.email}</p>
+        {acc.trainingEnd && (
+          <p className="text-xs text-gray-500">
+            Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}
+          </p>
+        )}
+        {acc.lastLogin && (
+          <p className="text-xs text-gray-500">
+            Letzter Login: {new Date(acc.lastLogin).toLocaleDateString()}
+          </p>
+        )}
+        {daysLeft !== null && (
+          <div className={`mt-1 flex items-center text-xs ${
+            daysLeft < 30 ? 'text-red-600' : daysLeft < 90 ? 'text-yellow-600' : 'text-gray-600'
+          }`}>
+            <AlertTriangle size={14} className="mr-1" />
+            {daysLeft > 0
+              ? `Automatische Loeschung in ${daysLeft} Tagen`
+              : 'Loeschung steht bevor'}
+          </div>
+        )}
+        <div className="flex gap-2 mt-3 flex-wrap items-center">
+          <select
+            value={acc.role}
+            onChange={(e) => changeUserRole(acc.email, e.target.value)}
+            className="px-3 py-1.5 border rounded text-sm"
+            disabled={roleSelectDisabled}
+            title={
+              isOwnAccount
+                ? 'Dein eigener Account kann hier nicht umgestellt werden.'
+                : !canManageRoles
+                  ? 'Nur der Hauptadmin darf Rollen aendern.'
+                  : undefined
+            }
+          >
+            <option value="azubi">Azubi</option>
+            <option value="trainer">Ausbilder</option>
+            <option value="admin">Admin</option>
+          </select>
+          {user?.role === 'admin' && (
+            <UserOrgAssign userId={acc.id} currentOrgId={acc.organization_id} onChanged={loadData} />
+          )}
+          <button
+            onClick={() => exportUserData(acc)}
+            className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg"
+            title="Daten exportieren"
+          >
+            <Download size={18} />
+          </button>
+          <AdminPasswordReset userId={acc.id} userEmail={acc.email} userName={acc.name} />
+          {acc.role !== 'admin' && (
+            <button
+              onClick={() => deleteUser(acc.email)}
+              className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg"
+              title="Nutzer loeschen"
+            >
+              <Trash2 size={18} />
+            </button>
+          )}
+          {acc.role === 'trainer' && (
+            <>
+              <button
+                onClick={() => toggleSchoolCardPermission(acc.id, acc.can_view_school_cards)}
+                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                  acc.can_view_school_cards
+                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+                title={acc.can_view_school_cards ? 'Kontrollkarten-Zugriff entziehen' : 'Kontrollkarten-Zugriff erteilen'}
+              >
+                Kontrollkarten {acc.can_view_school_cards ? '✓' : '○'}
+              </button>
+              <button
+                onClick={() => toggleSignReportsPermission(acc.id, acc.can_sign_reports)}
+                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                  acc.can_sign_reports
+                    ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+                title={acc.can_sign_reports ? 'Berichtsheft-Unterschrift entziehen' : 'Berichtsheft-Unterschrift erteilen'}
+              >
+                Berichte {acc.can_sign_reports ? '✓' : '○'}
+              </button>
+              <button
+                onClick={() => toggleExamGradesPermission(acc.id, acc.can_view_exam_grades)}
+                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                  acc.can_view_exam_grades
+                    ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+                title={acc.can_view_exam_grades ? 'Klasuren-Zugriff entziehen' : 'Klasuren-Zugriff erteilen'}
+              >
+                Klasuren {acc.can_view_exam_grades ? '✓' : '○'}
+              </button>
+            </>
+          )}
+          {acc.role === 'admin' && (
+            <div className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg text-xs font-bold flex items-center">
+              <Shield size={14} className="mr-1" />
+              Geschuetzt
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -690,64 +916,68 @@ const AdminView = ({
 
       <div className="bg-white rounded-xl p-6 shadow-lg">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <h3 className="text-xl font-bold flex items-center">
-            <AlertTriangle className="mr-2 text-amber-500" />
-            Fragen-Feedback
-          </h3>
-          <div className="text-sm text-gray-600">
-            {questionReports.filter((entry) => entry.status !== 'resolved').length} offen · {questionReports.length} gesamt
+          <div>
+            <h3 className="text-xl font-bold flex items-center">
+              <AlertTriangle className="mr-2 text-amber-500" />
+              Fragen-Feedback
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              {openQuestionReports.length} offen · {resolvedQuestionReports.length} erledigt · {sortedQuestionReports.length} gesamt
+            </p>
           </div>
+          {sortedQuestionReports.length > 0 && (
+            <button
+              onClick={() => setShowQuestionReports((current) => !current)}
+              className="inline-flex items-center gap-2 rounded-lg bg-amber-100 px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-200"
+            >
+              {showQuestionReports ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              {showQuestionReports ? 'Feedback ausblenden' : 'Feedback anzeigen'}
+            </button>
+          )}
         </div>
 
-        {questionReports.length === 0 ? (
-          <p className="text-gray-500 text-sm">Noch keine Rückmeldungen zu Fragen vorhanden.</p>
+        {sortedQuestionReports.length === 0 ? (
+          <p className="text-gray-500 text-sm">Noch keine Rueckmeldungen zu Fragen vorhanden.</p>
+        ) : !showQuestionReports ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Die Rueckmeldungen sind eingeklappt. Bei Bedarf kannst du die komplette Liste ueber den Button einblenden.
+          </div>
         ) : (
-          <div className="space-y-3 max-h-[420px] overflow-y-auto">
-            {questionReports
-              .slice()
-              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-              .map((report) => {
-                const category = CATEGORIES.find((entry) => entry.id === report.category);
-                const isResolved = report.status === 'resolved';
-                return (
-                  <div key={report.id} className={`border rounded-lg p-4 ${isResolved ? 'bg-gray-50 border-gray-200' : 'bg-amber-50 border-amber-200'}`}>
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isResolved ? 'bg-green-100 text-green-700' : 'bg-amber-200 text-amber-800'}`}>
-                          {isResolved ? 'Erledigt' : 'Offen'}
-                        </span>
-                        <span className="text-xs text-gray-600">
-                          {category ? `${category.icon} ${category.name}` : report.category}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {new Date(report.createdAt).toLocaleString('de-DE')}
-                      </span>
-                    </div>
-                    <p className="font-semibold text-gray-800 mb-1">{report.questionText}</p>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Quelle: {report.source} · Von: {report.reportedBy || 'Unbekannt'}
-                    </p>
-                    {report.note && (
-                      <p className="text-sm text-gray-700 bg-white border border-gray-200 rounded-md p-2 mb-2">
-                        Hinweis: {report.note}
-                      </p>
-                    )}
-                    <button
-                      onClick={() => {
-                        void toggleQuestionReportStatus(report.id);
-                      }}
-                      className={`px-3 py-2 rounded-lg text-sm font-bold ${
-                        isResolved
-                          ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                          : 'bg-green-500 hover:bg-green-600 text-white'
-                      }`}
-                    >
-                      {isResolved ? 'Wieder oeffnen' : 'Als erledigt markieren'}
-                    </button>
+          <div className="space-y-4">
+            <div>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h4 className="text-sm font-bold uppercase tracking-wide text-amber-700">
+                  Offene Rueckmeldungen ({openQuestionReports.length})
+                </h4>
+              </div>
+              {openQuestionReports.length === 0 ? (
+                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                  Keine offenen Rueckmeldungen.
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                  {openQuestionReports.map(renderQuestionReport)}
+                </div>
+              )}
+            </div>
+
+            {resolvedQuestionReports.length > 0 && (
+              <div className="border-t border-gray-200 pt-4">
+                <button
+                  onClick={() => setShowResolvedQuestionReports((current) => !current)}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200"
+                >
+                  {showResolvedQuestionReports ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  Erledigte Meldungen ({resolvedQuestionReports.length})
+                </button>
+
+                {showResolvedQuestionReports && (
+                  <div className="mt-3 space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                    {resolvedQuestionReports.map(renderQuestionReport)}
                   </div>
-                );
-              })}
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -806,139 +1036,67 @@ const AdminView = ({
       )}
 
       <div className="bg-white rounded-xl p-6 shadow-lg">
-        <h3 className="text-xl font-bold mb-4 flex items-center">
-          <Users className="mr-2 text-blue-500" />
-          Aktive Nutzer ({allUsers.length})
-        </h3>
-        <div className="space-y-3">
-          {allUsers.map(acc => {
-            const daysLeft = getDaysUntilDeletion(acc);
-            const isOwnAccount =
-              String(acc?.email || '').trim().toLowerCase() === String(currentUserEmail || '').trim().toLowerCase();
-            const roleSelectDisabled = isOwnAccount || !canManageRoles;
-            return (
-              <div key={acc.email} className="border rounded-lg p-4">
-                <div className="flex items-start gap-2 mb-1 flex-wrap">
-                  <p className="font-bold">{acc.name}</p>
-                  <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
-                    acc.role === 'admin' ? 'bg-purple-500' :
-                    acc.role === 'trainer' ? 'bg-blue-500' : 'bg-green-500'
-                  }`}>
-                    {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}
-                  </span>
-                  {acc.is_owner && (
-                    <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-white">
-                      Hauptadmin
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600 mb-1">{acc.email}</p>
-                {acc.trainingEnd && (
-                  <p className="text-xs text-gray-500">
-                    Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}
-                  </p>
-                )}
-                {acc.lastLogin && (
-                  <p className="text-xs text-gray-500">
-                    Letzter Login: {new Date(acc.lastLogin).toLocaleDateString()}
-                  </p>
-                )}
-                {daysLeft !== null && (
-                  <div className={`mt-1 flex items-center text-xs ${
-                    daysLeft < 30 ? 'text-red-600' : daysLeft < 90 ? 'text-yellow-600' : 'text-gray-600'
-                  }`}>
-                    <AlertTriangle size={14} className="mr-1" />
-                    {daysLeft > 0
-                      ? `Automatische Löschung in ${daysLeft} Tagen`
-                      : 'Löschung steht bevor'}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-bold flex items-center">
+              <Users className="mr-2 text-blue-500" />
+              Aktive Nutzer ({allUsers.length})
+            </h3>
+            <p className="mt-1 text-sm text-gray-600">
+              {groupedUsers.length} Gruppen, nach Betrieb sortiert.
+            </p>
+          </div>
+          {allUsers.length > 0 && (
+            <button
+              onClick={() => setShowActiveUsers((current) => !current)}
+              className="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200"
+            >
+              {showActiveUsers ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              {showActiveUsers ? 'Nutzer ausblenden' : 'Nutzer anzeigen'}
+            </button>
+          )}
+        </div>
+
+        {allUsers.length === 0 ? (
+          <p className="text-sm text-gray-500">Keine aktiven Nutzer vorhanden.</p>
+        ) : !showActiveUsers ? (
+          <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm text-slate-700">
+              Die Nutzerliste ist eingeklappt. Oeffne sie bei Bedarf ueber den Button.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {groupedUsers.slice(0, 6).map((group) => (
+                <span key={group.label} className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm">
+                  {group.label} ({group.users.length})
+                </span>
+              ))}
+              {groupedUsers.length > 6 && (
+                <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-medium text-slate-700">
+                  +{groupedUsers.length - 6} weitere Gruppen
+                </span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4 max-h-[760px] overflow-y-auto pr-1">
+            {groupedUsers.map((group) => (
+              <div key={group.label} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-100 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Building2 size={16} className="text-indigo-500" />
+                    <span className="font-bold text-slate-800">{group.label}</span>
                   </div>
-                )}
-                <div className="flex gap-2 mt-3 flex-wrap items-center">
-                  <select
-                    value={acc.role}
-                    onChange={(e) => changeUserRole(acc.email, e.target.value)}
-                    className="px-3 py-1.5 border rounded text-sm"
-                    disabled={roleSelectDisabled}
-                    title={
-                      isOwnAccount
-                        ? 'Dein eigener Account kann hier nicht umgestellt werden.'
-                        : !canManageRoles
-                          ? 'Nur der Hauptadmin darf Rollen ändern.'
-                          : undefined
-                    }
-                  >
-                    <option value="azubi">Azubi</option>
-                    <option value="trainer">Ausbilder</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                  {user?.role === 'admin' && (
-                    <UserOrgAssign userId={acc.id} currentOrgId={acc.organization_id} onChanged={loadData} />
-                  )}
-                  <button
-                    onClick={() => exportUserData(acc)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg"
-                    title="Daten exportieren"
-                  >
-                    <Download size={18} />
-                  </button>
-                  <AdminPasswordReset userId={acc.id} userEmail={acc.email} userName={acc.name} />
-                  {acc.role !== 'admin' && (
-                    <button
-                      onClick={() => deleteUser(acc.email)}
-                      className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg"
-                      title="Nutzer löschen"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
-                  {acc.role === 'trainer' && (
-                    <>
-                      <button
-                        onClick={() => toggleSchoolCardPermission(acc.id, acc.can_view_school_cards)}
-                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                          acc.can_view_school_cards
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                        title={acc.can_view_school_cards ? 'Kontrollkarten-Zugriff entziehen' : 'Kontrollkarten-Zugriff erteilen'}
-                      >
-                        Kontrollkarten {acc.can_view_school_cards ? '✓' : '○'}
-                      </button>
-                      <button
-                        onClick={() => toggleSignReportsPermission(acc.id, acc.can_sign_reports)}
-                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                          acc.can_sign_reports
-                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                        title={acc.can_sign_reports ? 'Berichtsheft-Unterschrift entziehen' : 'Berichtsheft-Unterschrift erteilen'}
-                      >
-                        Berichte {acc.can_sign_reports ? '✓' : '○'}
-                      </button>
-                      <button
-                        onClick={() => toggleExamGradesPermission(acc.id, acc.can_view_exam_grades)}
-                        className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                          acc.can_view_exam_grades
-                            ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                        title={acc.can_view_exam_grades ? 'Klasuren-Zugriff entziehen' : 'Klasuren-Zugriff erteilen'}
-                      >
-                        Klasuren {acc.can_view_exam_grades ? '✓' : '○'}
-                      </button>
-                    </>
-                  )}
-                  {acc.role === 'admin' && (
-                    <div className="px-3 py-2 bg-purple-100 text-purple-800 rounded-lg text-xs font-bold flex items-center">
-                      <Shield size={14} className="mr-1" />
-                      Geschützt
-                    </div>
-                  )}
+                  <span className="text-xs font-medium text-slate-600">
+                    {group.users.length} Nutzer
+                  </span>
+                </div>
+                <div className="space-y-3 p-4">
+                  {group.users.map(renderUserCard)}
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* UI Editor Section */}
