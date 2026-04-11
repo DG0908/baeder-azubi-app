@@ -1,6 +1,7 @@
-import { Controller, ForbiddenException, Get, HttpCode, HttpStatus, Patch, Post, Req, Res, Body } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res, Body } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
+import { Allow } from '../../common/decorators/allow.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
@@ -47,11 +48,6 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response
   ) {
-    // CSRF protection: browsers cannot set X-Requested-With in cross-origin requests
-    // without a CORS preflight, which our strict CORS policy blocks.
-    if (!request.headers['x-requested-with']) {
-      throw new ForbiddenException('Missing required request header.');
-    }
     // Refresh token is read exclusively from the HttpOnly cookie
     const refreshToken = request.cookies?.refresh_token;
     return this.authService.refreshSession(refreshToken, response);
@@ -77,6 +73,8 @@ export class AuthController {
     return this.authService.confirmPasswordReset(dto, response, request);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 10 } })
   @HttpCode(HttpStatus.OK)
   @Post('logout')
   logout(
@@ -86,11 +84,14 @@ export class AuthController {
     return this.authService.logout(user, response);
   }
 
+  @Allow()
   @Get('me')
   me(@CurrentUser() user: AuthenticatedUser) {
     return this.authService.me(user);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 5 } })
   @Patch('password')
   changePassword(
     @CurrentUser() user: AuthenticatedUser,
@@ -103,16 +104,21 @@ export class AuthController {
 
   // ─── 2FA endpoints ─────────────────────────────────────────────────
 
+  @Allow()
   @Get('2fa/status')
   getTotpStatus(@CurrentUser() actor: AuthenticatedUser) {
     return this.authService.getTotpStatus(actor);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 5 } })
   @Post('2fa/setup')
   generateTotpSetup(@CurrentUser() actor: AuthenticatedUser, @Req() request: Request) {
     return this.authService.generateTotpSetup(actor, request);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 5 } })
   @Post('2fa/enable')
   enableTotp(
     @CurrentUser() actor: AuthenticatedUser,
@@ -122,6 +128,8 @@ export class AuthController {
     return this.authService.enableTotp(actor, dto.setupToken, dto.code, request);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 3 } })
   @Post('2fa/disable')
   disableTotp(
     @CurrentUser() actor: AuthenticatedUser,
@@ -131,6 +139,8 @@ export class AuthController {
     return this.authService.disableTotp(actor, dto.password, request);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 3 } })
   @Post('2fa/recovery-codes/regenerate')
   regenerateRecoveryCodes(
     @CurrentUser() actor: AuthenticatedUser,

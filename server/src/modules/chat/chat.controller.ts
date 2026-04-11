@@ -1,5 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
+import { Allow } from '../../common/decorators/allow.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { ChatService } from './chat.service';
@@ -10,6 +12,7 @@ import { ListChatMessagesQueryDto } from './dto/list-chat-messages-query.dto';
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  @Allow()
   @Get('messages')
   listMessages(
     @CurrentUser() actor: AuthenticatedUser,
@@ -18,11 +21,15 @@ export class ChatController {
     return this.chatService.listMessages(actor, query);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 20 } })
   @Post('messages')
   createMessage(@CurrentUser() actor: AuthenticatedUser, @Body() dto: CreateChatMessageDto) {
     return this.chatService.createMessage(actor, dto);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 10 } })
   @Delete('messages/:id')
   deleteMessage(
     @CurrentUser() actor: AuthenticatedUser,

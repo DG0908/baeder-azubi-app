@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
+import { Allow } from '../../common/decorators/allow.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
@@ -14,11 +15,13 @@ import { ForumService } from './forum.service';
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
 
+  @Allow()
   @Get('categories')
   listCategoryCounts(@CurrentUser() actor: AuthenticatedUser) {
     return this.forumService.listCategoryCounts(actor);
   }
 
+  @Allow()
   @Get('posts')
   listPosts(
     @CurrentUser() actor: AuthenticatedUser,
@@ -27,6 +30,7 @@ export class ForumController {
     return this.forumService.listPosts(actor, query);
   }
 
+  @Allow()
   @Get('posts/:id/replies')
   getThread(@CurrentUser() actor: AuthenticatedUser, @Param('id') postId: string) {
     return this.forumService.getThread(actor, postId);
@@ -34,6 +38,7 @@ export class ForumController {
 
   // 5 posts per 10 minutes per user
   @Throttle({ default: { ttl: 600000, limit: 5 } })
+  @Allow()
   @Post('posts')
   createPost(
     @CurrentUser() actor: AuthenticatedUser,
@@ -45,6 +50,7 @@ export class ForumController {
 
   // 15 replies per 10 minutes per user
   @Throttle({ default: { ttl: 600000, limit: 15 } })
+  @Allow()
   @Post('posts/:id/replies')
   createReply(
     @CurrentUser() actor: AuthenticatedUser,
@@ -55,6 +61,7 @@ export class ForumController {
     return this.forumService.createReply(actor, postId, dto, request);
   }
 
+  @Allow()
   @Delete('posts/:id')
   deletePost(
     @CurrentUser() actor: AuthenticatedUser,
@@ -64,6 +71,7 @@ export class ForumController {
     return this.forumService.deletePost(actor, postId, request);
   }
 
+  @Allow()
   @Delete('replies/:id')
   deleteReply(
     @CurrentUser() actor: AuthenticatedUser,

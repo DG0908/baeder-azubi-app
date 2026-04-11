@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Put, Req } from '@nestjs/common';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
+import { Allow } from '../../common/decorators/allow.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
@@ -11,6 +12,7 @@ import { UpdateAppConfigDto } from './dto/update-app-config.dto';
 export class AppConfigController {
   constructor(private readonly appConfigService: AppConfigService) {}
 
+  @Allow()
   @Get()
   getConfig(@CurrentUser() actor: AuthenticatedUser) {
     return this.appConfigService.getConfig(actor);

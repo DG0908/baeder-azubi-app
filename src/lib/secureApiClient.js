@@ -58,10 +58,7 @@ export const refreshApiSession = async () => {
       const response = await fetch(buildUrl('/auth/refresh'), {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
       const body = await parseResponseBody(response);
 
@@ -101,6 +98,12 @@ export const apiRequest = async (path, options = {}, retry = true) => {
 
   if (!headers.has('Content-Type') && options.body !== undefined) {
     headers.set('Content-Type', 'application/json');
+  }
+
+  // CSRF protection: browsers cannot set X-Requested-With in cross-origin
+  // requests without a CORS preflight, which our strict CORS policy blocks.
+  if (!headers.has('X-Requested-With')) {
+    headers.set('X-Requested-With', 'XMLHttpRequest');
   }
 
   if (accessToken && !headers.has('Authorization')) {

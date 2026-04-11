@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
+import { Allow } from '../../common/decorators/allow.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
@@ -16,11 +18,14 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Allow()
   @Get('me')
   me(@CurrentUser() user: AuthenticatedUser) {
     return this.usersService.getCurrentUser(user);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 30 } })
   @Patch('me')
   updateMe(
     @CurrentUser() user: AuthenticatedUser,
@@ -30,11 +35,13 @@ export class UsersController {
     return this.usersService.updateCurrentUser(user, dto, request);
   }
 
+  @Allow()
   @Get('contacts')
   contacts(@CurrentUser() user: AuthenticatedUser) {
     return this.usersService.listOrganizationContacts(user);
   }
 
+  @Allow()
   @Get('me/export')
   exportMe(
     @CurrentUser() user: AuthenticatedUser,
@@ -120,6 +127,8 @@ export class UsersController {
     return this.usersService.exportUserData(actor, userId, request);
   }
 
+  @Allow()
+  @Throttle({ default: { ttl: 600000, limit: 3 } })
   @Delete('me')
   deleteSelf(
     @CurrentUser() user: AuthenticatedUser,
