@@ -8356,9 +8356,7 @@ export default function BaederApp() {
       await dsSaveAppConfig({
         menuItems: editingMenuItems,
         themeColors: editingThemeColors,
-        featureFlags: appConfig.featureFlags,
-        companies: appConfig.companies,
-        announcement: appConfig.announcement
+        featureFlags: appConfig.featureFlags
       });
 
       setAppConfig({
@@ -8383,9 +8381,7 @@ export default function BaederApp() {
       await dsSaveAppConfig({
         menuItems: appConfig.menuItems,
         themeColors: appConfig.themeColors,
-        featureFlags: appConfig.featureFlags,
-        companies: appConfig.companies,
-        announcement
+        featureFlags: appConfig.featureFlags
       });
       setAppConfig(updated);
       showToast(announcement.enabled ? 'Ankündigung aktiviert.' : 'Ankündigung deaktiviert.', 'success');
@@ -8402,9 +8398,7 @@ export default function BaederApp() {
       await dsSaveAppConfig({
         menuItems: appConfig.menuItems,
         themeColors: appConfig.themeColors,
-        featureFlags: nextFlags,
-        companies: appConfig.companies,
-        announcement: appConfig.announcement
+        featureFlags: nextFlags
       });
       setAppConfig(updated);
       showToast(value ? 'Wartungsmodus aktiviert.' : 'Wartungsmodus deaktiviert.', 'success');
@@ -8420,7 +8414,7 @@ export default function BaederApp() {
       await dsSaveAppConfig({
         menuItems: appConfig.menuItems,
         themeColors: appConfig.themeColors,
-        companies: newCompanies
+        featureFlags: appConfig.featureFlags
       });
       setAppConfig(updated);
       showToast('Betriebe gespeichert.', 'success');
