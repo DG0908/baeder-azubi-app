@@ -143,7 +143,12 @@ export class ForumService {
         category
       },
       select: forumPostSelect,
-      take: 250
+      take: query.limit ?? 50,
+      skip: query.offset ?? 0,
+      orderBy: [
+        { pinned: 'desc' },
+        { lastReplyAt: 'desc' }
+      ]
     });
 
     return posts

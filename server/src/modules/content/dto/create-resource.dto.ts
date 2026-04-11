@@ -1,4 +1,5 @@
 import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsNoInternalIp } from '../../../common/validators/no-internal-ip.validator';
 
 export class CreateResourceDto {
   @IsString()
@@ -10,6 +11,7 @@ export class CreateResourceDto {
   @MaxLength(4000)
   description!: string;
 
+  @IsNoInternalIp()
   @IsString()
   @MaxLength(2048)
   url!: string;

@@ -1,4 +1,5 @@
 import { IsString, Length, Matches } from 'class-validator';
+import { IsPasswordComplex } from '../../../common/validators/password-complexity.validator';
 
 export class ConfirmPasswordResetDto {
   @IsString()
@@ -6,7 +7,6 @@ export class ConfirmPasswordResetDto {
   @Matches(/^[A-Za-z0-9_-]+$/)
   token!: string;
 
-  @IsString()
-  @Length(12, 128)
+  @IsPasswordComplex()
   newPassword!: string;
 }

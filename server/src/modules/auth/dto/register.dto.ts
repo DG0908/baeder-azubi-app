@@ -1,4 +1,5 @@
 import { IsDateString, IsEmail, IsOptional, IsString, Length, Matches } from 'class-validator';
+import { IsPasswordComplex } from '../../../common/validators/password-complexity.validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -8,8 +9,7 @@ export class RegisterDto {
   @Length(2, 100)
   displayName!: string;
 
-  @IsString()
-  @Length(12, 128)
+  @IsPasswordComplex()
   password!: string;
 
   @IsString()

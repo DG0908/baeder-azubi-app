@@ -1,4 +1,5 @@
 import { IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import { IsNoInternalIp } from '../../../common/validators/no-internal-ip.validator';
 
 export class CreateLearningMaterialDto {
   @IsString()
@@ -20,6 +21,7 @@ export class CreateLearningMaterialDto {
   type?: string;
 
   @IsOptional()
+  @IsNoInternalIp()
   @IsUrl({
     require_tld: true,
     require_protocol: true
