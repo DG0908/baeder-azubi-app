@@ -964,7 +964,7 @@ export class AuthService {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      path: '/api/auth',
+      path: '/api',
       domain: cookieDomain || undefined,
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
@@ -1037,7 +1037,7 @@ export class AuthService {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      path: '/api/auth',
+      path: '/api',
       domain: cookieDomain || undefined,
       maxAge: this.ttlToMilliseconds(this.configService.get<string>('JWT_REFRESH_TTL', '7d'))
     });
@@ -1049,7 +1049,7 @@ export class AuthService {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      path: '/api/auth',
+      path: '/api',
       domain: cookieDomain || undefined
     });
   }
