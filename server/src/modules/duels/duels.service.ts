@@ -416,7 +416,7 @@ export class DuelsService {
 
     const newRoundIndex = nextRounds.length - 1;
     const newRound = this.asRecord(nextRounds[newRoundIndex]);
-    const categoryId = this.readString(newRound.categoryId) ?? '';
+    const categoryId = this.readRoundCategoryId(newRound) ?? '';
     if (!categoryId) {
       return nextGameState;
     }
@@ -1464,7 +1464,7 @@ export class DuelsService {
 
     for (let index = 0; index < nextRounds.length; index += 1) {
       const nextRound = this.asRecord(nextRounds[index]);
-      const categoryId = this.readString(nextRound.categoryId);
+      const categoryId = this.readRoundCategoryId(nextRound);
       if (categoryId) {
         if (seenCategories.has(categoryId)) {
           throw new BadRequestException('Each duel category may only be used once.');
@@ -1504,14 +1504,19 @@ export class DuelsService {
         throw new BadRequestException('Only the expected chooser may start the next duel round.');
       }
 
-      if ((this.readString(nextRound.categoryId) ?? '').length === 0) {
-        this.logger.warn(
-          `[updateGameState] categoryId missing on new round — duelId: ${duel.id}, actor: ${actor.id}, ` +
-          `prevRounds: ${previousRounds.length}, nextRounds: ${nextRounds.length}, ` +
-          `round[${index}]: ${JSON.stringify(nextRound)}`
-        );
-        throw new BadRequestException('New duel rounds require a category.');
+      // A new round may not have a categoryId yet if the player hasn't chosen a category.
+      // The server generates questions authoritatively once categoryId is provided,
+      // so we allow the round to exist temporarily without one.
+      const nextCategoryId = this.readRoundCategoryId(nextRound);
+      if (nextCategoryId && nextCategoryId.length > 0) {
+        // Category is set — validate it's not a duplicate
+        if (seenCategories.has(nextCategoryId)) {
+          throw new BadRequestException('Each duel category may only be used once.');
+        }
+        seenCategories.add(nextCategoryId);
       }
+      // If categoryId is empty, that's OK — the player hasn't chosen yet.
+      // The server will generate questions authoritatively once categoryId arrives.
 
       const opponentAnswers = Array.isArray(nextRound[opponentAnswerKey]) ? nextRound[opponentAnswerKey] : [];
       if (opponentAnswers.length > 0) {
@@ -1559,7 +1564,7 @@ export class DuelsService {
     const round = this.asRecord(input);
     const questions = this.normalizeQuestionArray(round.questions);
     return {
-      categoryId: this.readString(round.categoryId) ?? '',
+      categoryId: this.readRoundCategoryId(round) ?? '',
       categoryName: this.sanitizeText(round.categoryName, 120),
       chooser: this.sanitizeText(round.chooser, 120),
       questions,
@@ -1983,7 +1988,13 @@ export class DuelsService {
   }
 
   private assertRoundMetadataUnchanged(previousRound: Record<string, unknown>, nextRound: Record<string, unknown>) {
-    const metadataKeys = ['categoryId', 'categoryName', 'chooser'];
+    const previousCategoryId = this.readRoundCategoryId(previousRound) ?? '';
+    const nextCategoryId = this.readRoundCategoryId(nextRound) ?? '';
+    if (previousCategoryId !== nextCategoryId) {
+      throw new BadRequestException('Stored duel round categoryId cannot be changed.');
+    }
+
+    const metadataKeys = ['categoryName', 'chooser'];
     for (const key of metadataKeys) {
       const previousValue = this.readString(previousRound[key]) ?? '';
       const nextValue = this.readString(nextRound[key]) ?? '';
@@ -1991,6 +2002,10 @@ export class DuelsService {
         throw new BadRequestException(`Stored duel round ${key} cannot be changed.`);
       }
     }
+  }
+
+  private readRoundCategoryId(round: Record<string, unknown>) {
+    return this.readString(round.categoryId) ?? this.readString(round.category);
   }
 
   private assertQuestionsUnchanged(previousRound: Record<string, unknown>, nextRound: Record<string, unknown>) {
