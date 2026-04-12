@@ -1504,19 +1504,8 @@ export class DuelsService {
         throw new BadRequestException('Only the expected chooser may start the next duel round.');
       }
 
-      // A new round may not have a categoryId yet if the player hasn't chosen a category.
-      // The server generates questions authoritatively once categoryId is provided,
-      // so we allow the round to exist temporarily without one.
-      const nextCategoryId = this.readRoundCategoryId(nextRound);
-      if (nextCategoryId && nextCategoryId.length > 0) {
-        // Category is set — validate it's not a duplicate
-        if (seenCategories.has(nextCategoryId)) {
-          throw new BadRequestException('Each duel category may only be used once.');
-        }
-        seenCategories.add(nextCategoryId);
-      }
-      // If categoryId is empty, that's OK — the player hasn't chosen yet.
-      // The server will generate questions authoritatively once categoryId arrives.
+      // categoryId uniqueness is already enforced by the seenCategories check at the
+      // top of the loop, which covers both existing and new rounds.
 
       const opponentAnswers = Array.isArray(nextRound[opponentAnswerKey]) ? nextRound[opponentAnswerKey] : [];
       if (opponentAnswers.length > 0) {
