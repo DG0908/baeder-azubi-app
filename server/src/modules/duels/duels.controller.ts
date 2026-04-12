@@ -54,7 +54,7 @@ export class DuelsController {
   }
 
   @Allow()
-  @Throttle({ default: { ttl: 600000, limit: 15 } })
+  @Throttle({ default: { ttl: 600000, limit: 60 } })
   @Patch(':id/state')
   updateGameState(
     @CurrentUser() actor: AuthenticatedUser,
