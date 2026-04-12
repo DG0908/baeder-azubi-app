@@ -4826,7 +4826,7 @@ export default function BaederApp() {
       resetQuizKeywordState();
       setTimerActive(false);
 
-      syncLocalDuelGame(currentGame);
+      await saveGameToSupabase(currentGame);
 
       if (nextChooser !== user.name) {
         setWaitingForOpponent(true);
