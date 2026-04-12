@@ -9,7 +9,7 @@ import {
   Min,
   ValidateNested
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 const ALLOWED_DIFFICULTIES = ['anfaenger', 'profi', 'experte', 'extra', 'normal'] as const;
 
@@ -47,6 +47,7 @@ export class GameStateDto {
    */
   @IsOptional()
   @IsArray()
+  @Transform(({ value }) => value)
   categoryRounds?: Record<string, unknown>[];
 
   /** Challenge response timeout in minutes. */

@@ -1401,19 +1401,7 @@ export const saveDuelState = async (game) => {
     challengeTimeoutMinutes: game.challengeTimeoutMinutes
   };
   const droppedRoundCount = Math.max(0, (game.categoryRounds || []).length - sanitizedRounds.length);
-  if (true) {
-    console.warn('[Duel PATCH]', JSON.stringify({
-      id: game.id,
-      droppedRoundCount,
-      rounds: gameState.categoryRounds?.map(r => ({ categoryId: r?.categoryId, chooser: r?.chooser, q: r?.questions?.length })),
-      firstRoundKeys: gameState.categoryRounds?.[0] ? Object.keys(gameState.categoryRounds[0]) : []
-    }));
-  }
-  const patchResult = await secureDuelsApi.updateGameState(game.id, gameState);
-  console.warn('[Duel PATCH response]', JSON.stringify({
-    id: game.id,
-    responseRounds: patchResult?.gameState?.categoryRounds?.map(r => ({ categoryId: r?.categoryId, q: r?.questions?.length }))
-  }));
+  await secureDuelsApi.updateGameState(game.id, gameState);
   return;
 };
 
