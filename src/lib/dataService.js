@@ -1344,15 +1344,17 @@ const CLIENT_ONLY_QUESTION_FIELDS = ['correct', 'myAnswerCorrect', 'duelQuestion
 const sanitizeRoundForPatch = (round) => {
   if (!round || typeof round !== 'object') return null;
 
-  const categoryId = String(round.categoryId || '').trim();
+  const categoryId = String(round.categoryId || round.category || '').trim();
   if (!categoryId) {
     return null;
   }
 
-  return {
+  const sanitized = {
     ...round,
     categoryId
   };
+  delete sanitized.category;
+  return sanitized;
 };
 
 const stripClientOnlyQuestionFields = (categoryRounds) => {

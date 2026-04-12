@@ -4350,8 +4350,9 @@ export default function BaederApp() {
       workingGame.categoryRounds = [];
     }
 
+    const localRequestedRoundIndex = Math.max(0, Number(currentGame?.categoryRound || 0));
     const roundIndex = Math.max(0, Math.min(
-      Number(workingGame.categoryRound || 0),
+      localRequestedRoundIndex,
       workingGame.categoryRounds.length
     ));
     const existingRound = workingGame.categoryRounds[roundIndex];
@@ -4801,6 +4802,8 @@ export default function BaederApp() {
     const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
 
     if (currentGame.categoryRound < 3) {
+      // Round-Index erhöhen – der neue categoryRounds-Eintrag wird erst erstellt
+      // wenn der Spieler die Kategorie wählt (startCategoryAsSecondPlayer oder QuizView)
       currentGame.categoryRound++;
 
       const nextChooser = currentCategoryRound.chooser === currentGame.player1
@@ -4823,15 +4826,18 @@ export default function BaederApp() {
       resetQuizKeywordState();
       setTimerActive(false);
 
-      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(currentGame));
+      syncLocalDuelGame(currentGame);
 
       if (nextChooser !== user.name) {
+        setWaitingForOpponent(true);
         await sendNotification(
           nextChooser,
           '🎯 Wähle eine Kategorie!',
           `Runde ${currentGame.categoryRound + 1}/4 - Du darfst die nächste Kategorie wählen!`,
           'info'
         );
+      } else {
+        setWaitingForOpponent(false);
       }
     } else {
       await finishGame();
