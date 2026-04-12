@@ -504,13 +504,27 @@ export const registerAuthAccount = async (payload = {}) => {
   const trainingEnd = payload?.trainingEnd || null;
   const password = payload?.password || '';
 
-  await secureAuthApi.register({
-    email: trimmedEmail,
-    displayName: trimmedName,
-    password,
-    invitationCode: trimmedCode,
-    ...(trainingEnd ? { trainingEnd } : {})
-  });
+  try {
+    await secureAuthApi.register({
+      email: trimmedEmail,
+      displayName: trimmedName,
+      password,
+      invitationCode: trimmedCode,
+      ...(trainingEnd ? { trainingEnd } : {})
+    });
+  } catch (error) {
+    const message = String(error?.message || '').toLowerCase();
+    if (error?.status === 409 || message.includes('already registered')) {
+      throw createAuthFlowError('already_registered', 'Diese E-Mail ist bereits registriert.');
+    }
+    if (
+      error?.status === 400
+      && (message.includes('invitation') || message.includes('einladung') || message.includes('exhausted'))
+    ) {
+      throw createAuthFlowError('invalid_invitation', 'Ungueltiger oder abgelaufener Einladungscode.');
+    }
+    throw error;
+  }
 
   return {
     email: trimmedEmail,
