@@ -4352,15 +4352,22 @@ export default function BaederApp() {
 
     setTimerActive(false);
 
-    const persistedGame = await saveGameToSupabase(currentGame);
+    const persistedGame = syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(currentGame));
     const persistedRound = persistedGame?.categoryRounds?.[roundIndex];
-    const liveQuestions = Array.isArray(persistedRound?.questions) && persistedRound.questions.length > 0
-      ? persistedRound.questions
-      : preparedQuestions;
+    const liveQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : [];
+
+    if (!persistedRound?.categoryId || !liveQuestions.length) {
+      setQuizCategory(null);
+      setCurrentCategoryQuestions([]);
+      setCurrentQuestion(null);
+      setTimerActive(false);
+      showToast('Die Kategorie konnte nicht gespeichert werden. Bitte waehle sie erneut.', 'error', 2500);
+      return;
+    }
 
     setCurrentCategoryQuestions(liveQuestions);
+    setCurrentQuestion(liveQuestions[0] || null);
     if (liveQuestions[0]) {
-      setCurrentQuestion(liveQuestions[0]);
       const timeLimit = getQuizTimeLimit(liveQuestions[0], persistedGame?.difficulty || currentGame.difficulty);
       setTimeLeft(timeLimit);
       setTimerActive(true);
@@ -4501,14 +4508,32 @@ export default function BaederApp() {
 
   // Speichert die Antwort des aktuellen Spielers
   const savePlayerAnswer = async (isCorrect, isTimeout, answerMeta = {}) => {
-    const isPlayer1 = user.name === currentGame.player1;
-    const currentRoundIndex = currentGame.categoryRound;
+    let gameSnapshot = currentGame;
+    let currentRoundIndex = gameSnapshot?.categoryRound || 0;
     const currentQuestionIndex = questionInCategory;
-    const currentCategoryRound = currentGame.categoryRounds?.[currentGame.categoryRound];
+    let currentCategoryRound = gameSnapshot?.categoryRounds?.[currentRoundIndex];
+
     if (!currentCategoryRound) {
-      console.error('[savePlayerAnswer] currentCategoryRound is undefined — round index:', currentGame.categoryRound, 'rounds:', currentGame.categoryRounds?.length);
+      try {
+        const refreshedGame = await dsGetDuelWithQuestions(gameSnapshot?.id, user?.id);
+        const syncedGame = refreshedGame?.id ? syncQuizRuntimeFromPersistedGame(refreshedGame) : null;
+        if (syncedGame?.id) {
+          gameSnapshot = syncedGame;
+          currentRoundIndex = gameSnapshot.categoryRound || 0;
+          currentCategoryRound = gameSnapshot.categoryRounds?.[currentRoundIndex];
+        }
+      } catch (error) {
+        console.warn('Duel-Stand vor Antwort konnte nicht nachgeladen werden:', error);
+      }
+    }
+
+    if (!currentCategoryRound) {
+      console.error('[savePlayerAnswer] currentCategoryRound is undefined — round index:', currentRoundIndex, 'rounds:', gameSnapshot?.categoryRounds?.length);
+      showToast('Quizduell-Stand ist inkonsistent. Bitte oeffne die Runde erneut.', 'error', 2500);
       return;
     }
+
+    const isPlayer1 = user.name === gameSnapshot.player1;
     const answerType = String(answerMeta?.answerType || '');
     const correctnessKnown = answerType === 'keyword'
       || answerType === 'whoami'
@@ -4536,9 +4561,9 @@ export default function BaederApp() {
 
     if (answerPoints > 0) {
       if (isPlayer1) {
-        currentGame.player1Score += answerPoints;
+        gameSnapshot.player1Score += answerPoints;
       } else {
-        currentGame.player2Score += answerPoints;
+        gameSnapshot.player2Score += answerPoints;
       }
     }
 
@@ -4579,14 +4604,14 @@ export default function BaederApp() {
     // Duel: Antwort an Backend übermitteln (enthüllt correctOptionIndex für nächsten API-Aufruf)
     const shouldUseAuthoritativeDuelAnswer =
       currentQuestion?.duelQuestionId
-      && currentGame?.id
+      && gameSnapshot?.id
       && !isTimeout
       && answerMeta?.answerType === 'single'
       && Number.isInteger(answerMeta?.selectedAnswer);
 
     if (shouldUseAuthoritativeDuelAnswer) {
       try {
-        await dsSubmitDuelAnswer(currentGame.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
+        await dsSubmitDuelAnswer(gameSnapshot.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
       } catch (error) {
         if (error?.status === 409) {
           // Duplicate — already recorded, ignore
@@ -4595,7 +4620,7 @@ export default function BaederApp() {
           // Retry once after a short delay (covers transient 401 refresh + network blips)
           await new Promise((resolve) => setTimeout(resolve, 1500));
           try {
-            await dsSubmitDuelAnswer(currentGame.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
+            await dsSubmitDuelAnswer(gameSnapshot.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
           } catch (retryError) {
             if (retryError?.status !== 409) {
               console.warn('submitDuelAnswer retry fehlgeschlagen:', retryError);
@@ -4605,7 +4630,7 @@ export default function BaederApp() {
       }
 
       try {
-        const refreshedGame = await dsGetDuelWithQuestions(currentGame.id, user?.id);
+        const refreshedGame = await dsGetDuelWithQuestions(gameSnapshot.id, user?.id);
         const authoritativeGame = refreshedGame?.id ? syncLocalDuelGame(refreshedGame) : null;
         const authoritativeRound = authoritativeGame?.categoryRounds?.[currentRoundIndex];
         const authoritativeQuestions = Array.isArray(authoritativeRound?.questions)
@@ -4625,7 +4650,7 @@ export default function BaederApp() {
       }
     }
 
-    const persistedGame = await saveGameToSupabase(currentGame);
+    const persistedGame = await saveGameToSupabase(gameSnapshot);
     const persistedRound = persistedGame?.categoryRounds?.[currentRoundIndex];
     const persistedQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : null;
     if (persistedQuestions?.length) {
