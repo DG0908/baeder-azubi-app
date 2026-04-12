@@ -1341,32 +1341,57 @@ export const forfeitDuel = async (duelId) => {
 // Fields merged client-side from getDuelWithQuestions that must NOT be sent back to the server
 const CLIENT_ONLY_QUESTION_FIELDS = ['correct', 'myAnswerCorrect', 'duelQuestionId'];
 
+const sanitizeRoundForPatch = (round) => {
+  if (!round || typeof round !== 'object') return null;
+
+  const categoryId = String(round.categoryId || '').trim();
+  if (!categoryId) {
+    return null;
+  }
+
+  return {
+    ...round,
+    categoryId
+  };
+};
+
 const stripClientOnlyQuestionFields = (categoryRounds) => {
   if (!Array.isArray(categoryRounds)) return categoryRounds;
-  return categoryRounds.map(round => ({
-    ...round,
-    questions: Array.isArray(round.questions)
-      ? round.questions.map(q => {
-          const cleaned = { ...q };
-          for (const field of CLIENT_ONLY_QUESTION_FIELDS) delete cleaned[field];
-          return cleaned;
-        })
-      : round.questions
-  }));
+  return categoryRounds
+    .map((round) => sanitizeRoundForPatch(round))
+    .filter(Boolean)
+    .map(round => ({
+      ...round,
+      questions: Array.isArray(round.questions)
+        ? round.questions.map(q => {
+            const cleaned = { ...q };
+            for (const field of CLIENT_ONLY_QUESTION_FIELDS) delete cleaned[field];
+            return cleaned;
+          })
+        : round.questions
+    }));
 };
 
 export const saveDuelState = async (game) => {
   // Persist only the client state the backend still needs for continuity.
   // Strip client-side-only question fields so the backend assertQuestionsUnchanged check passes.
+  const sanitizedRounds = stripClientOnlyQuestionFields(game.categoryRounds || []);
   const gameState = {
     currentTurn: game.currentTurn,
     categoryRound: game.categoryRound || 0,
     status: game.status,
     difficulty: game.difficulty,
-    categoryRounds: stripClientOnlyQuestionFields(game.categoryRounds || []),
+    categoryRounds: sanitizedRounds,
     challengeTimeoutMinutes: game.challengeTimeoutMinutes
   };
-  console.warn('[Duel PATCH]', JSON.stringify({ id: game.id, rounds: gameState.categoryRounds?.map(r => ({ categoryId: r?.categoryId, chooser: r?.chooser, q: r?.questions?.length })) }));
+  const droppedRoundCount = Math.max(0, (game.categoryRounds || []).length - sanitizedRounds.length);
+  if (import.meta.env.DEV) {
+    console.warn('[Duel PATCH]', JSON.stringify({
+      id: game.id,
+      droppedRoundCount,
+      rounds: gameState.categoryRounds?.map(r => ({ categoryId: r?.categoryId, chooser: r?.chooser, q: r?.questions?.length }))
+    }));
+  }
   await secureDuelsApi.updateGameState(game.id, gameState);
   return;
 };
