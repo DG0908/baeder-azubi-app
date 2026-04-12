@@ -3937,6 +3937,39 @@ export default function BaederApp() {
     }
   };
 
+  const syncQuizRuntimeFromPersistedGame = (gameInput) => {
+    const syncedGame = syncLocalDuelGame(gameInput);
+    if (!syncedGame?.id || !user?.name) {
+      return syncedGame;
+    }
+
+    const roundIndex = Math.max(0, Number(syncedGame.categoryRound || 0));
+    const round = syncedGame.categoryRounds?.[roundIndex] || null;
+    const isPlayer1 = syncedGame.player1 === user.name;
+    const myAnswers = round
+      ? ((isPlayer1 ? round.player1Answers : round.player2Answers) || [])
+      : [];
+    const opponentAnswers = round
+      ? ((isPlayer1 ? round.player2Answers : round.player1Answers) || [])
+      : [];
+    const questionCount = Array.isArray(round?.questions) ? round.questions.length : 0;
+    const myRoundCompleted = questionCount > 0 && myAnswers.length >= questionCount;
+    const opponentRoundCompleted = questionCount > 0 && opponentAnswers.length >= questionCount;
+
+    setCategoryRound(roundIndex);
+    setPlayerTurn(syncedGame.currentTurn || '');
+    setWaitingForOpponent(
+      Boolean(
+        syncedGame.currentTurn !== user.name
+        && questionCount > 0
+        && myRoundCompleted
+        && !opponentRoundCompleted
+      )
+    );
+
+    return syncedGame;
+  };
+
   const resolveUserStatsIdentity = async (userInput) => {
     if (userInput && typeof userInput === 'object') {
       const userId = String(userInput.id || '').trim();
@@ -4638,10 +4671,9 @@ export default function BaederApp() {
       setWaitingForOpponent(true);
       setQuizCategory(null);
       setCurrentQuestion(null);
-      setPlayerTurn(currentGame.player2);
       resetQuizKeywordState();
 
-      await saveGameToSupabase(currentGame);
+      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(currentGame));
 
       // Benachrichtigung an Spieler 2
       await sendNotification(
@@ -4659,10 +4691,9 @@ export default function BaederApp() {
       setWaitingForOpponent(true);
       setQuizCategory(null);
       setCurrentQuestion(null);
-      setPlayerTurn(currentGame.player1);
       resetQuizKeywordState();
 
-      await saveGameToSupabase(currentGame);
+      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(currentGame));
 
       await sendNotification(
         currentGame.player1,
@@ -4734,7 +4765,7 @@ export default function BaederApp() {
       resetQuizKeywordState();
       setTimerActive(false);
 
-      await saveGameToSupabase(currentGame);
+      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(currentGame));
 
       if (nextChooser !== user.name) {
         await sendNotification(
