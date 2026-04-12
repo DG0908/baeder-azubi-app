@@ -1484,7 +1484,12 @@ export class DuelsService {
         throw new BadRequestException('A new duel round can only start after the current round is complete.');
       }
 
-      if ((this.readString(nextRound.chooser) ?? '') !== expectedNextChooser) {
+      // Validate using the authenticated actor's identity (not the client-sent chooser field,
+      // which the server overwrites anyway in injectAuthoritativeRoundData).
+      const actorDisplayName = actorIsChallenger
+        ? duel.challenger.displayName
+        : duel.opponent.displayName;
+      if (actorDisplayName !== expectedNextChooser) {
         throw new BadRequestException('Only the expected chooser may start the next duel round.');
       }
 
