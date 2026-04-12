@@ -4330,10 +4330,43 @@ export default function BaederApp() {
       return { ...shuffleAnswers(question), category: catId };
     });
 
-    // Speichere die Fragen im Game für beide Spieler
-    if (!currentGame.categoryRounds) currentGame.categoryRounds = [];
-    const roundIndex = currentGame.categoryRound;
-    currentGame.categoryRounds.push({
+    let baseGame = cloneDuelGameSnapshot(currentGame);
+    try {
+      const latestGame = await dsGetDuelWithQuestions(currentGame.id, user?.id);
+      if (latestGame?.id === currentGame.id) {
+        baseGame = latestGame;
+      }
+    } catch (error) {
+      console.warn('Aktuellen Duel-Stand vor Kategorienwahl konnte nicht nachgeladen werden:', error);
+    }
+
+    const workingGame = syncLocalDuelGame(baseGame);
+    if (!workingGame?.id) {
+      showToast('Quizduell konnte nicht geladen werden. Bitte erneut versuchen.', 'error', 2500);
+      return;
+    }
+
+    if (!Array.isArray(workingGame.categoryRounds)) {
+      workingGame.categoryRounds = [];
+    }
+
+    const roundIndex = Math.max(0, Math.min(
+      Number(workingGame.categoryRound || 0),
+      workingGame.categoryRounds.length
+    ));
+    const existingRound = workingGame.categoryRounds[roundIndex];
+    if (existingRound?.categoryId) {
+      setQuizCategory(existingRound.categoryId);
+      setCurrentCategoryQuestions(Array.isArray(existingRound.questions) ? existingRound.questions : []);
+      setCurrentQuestion(Array.isArray(existingRound.questions) ? (existingRound.questions[0] || null) : null);
+      showToast('Diese Runde ist bereits gestartet und wird fortgesetzt.', 'info', 2200);
+      return;
+    }
+
+    workingGame.categoryRound = roundIndex;
+    workingGame.currentTurn = user.name;
+    workingGame.categoryRounds = workingGame.categoryRounds.slice(0, roundIndex);
+    workingGame.categoryRounds.push({
       categoryId: catId,
       categoryName: CATEGORIES.find(c => c.id === catId)?.name || catId,
       questions: preparedQuestions,
@@ -4352,7 +4385,7 @@ export default function BaederApp() {
 
     setTimerActive(false);
 
-    const persistedGame = syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(currentGame));
+    const persistedGame = syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(workingGame));
     const persistedRound = persistedGame?.categoryRounds?.[roundIndex];
     const liveQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : [];
 
