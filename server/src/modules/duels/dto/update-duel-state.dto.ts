@@ -1,8 +1,8 @@
 import {
   IsArray,
   IsDefined,
-  IsIn,
   IsInt,
+  IsIn,
   IsOptional,
   IsString,
   Max,
@@ -12,6 +12,34 @@ import {
 import { Transform, Type } from 'class-transformer';
 
 const ALLOWED_DIFFICULTIES = ['anfaenger', 'profi', 'experte', 'extra', 'normal'] as const;
+
+/**
+ * Represents a single category round as sent by the client.
+ * All fields are optional and loosely typed — deep validation is done
+ * by the service layer. We declare every expected field here so that
+ * NestJS's whitelist does not strip them.
+ */
+export class CategoryRoundDto {
+  @IsOptional() @IsString()  categoryId?: string;
+  @IsOptional() @IsString()  category?: string;
+  @IsOptional() @IsString()  categoryName?: string;
+  @IsOptional() @IsString()  chooser?: string;
+
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) => value)
+  questions?: unknown[];
+
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) => value)
+  player1Answers?: unknown[];
+
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) => value)
+  player2Answers?: unknown[];
+}
 
 export class GameStateDto {
   /** Display name of the player whose turn it is. */
@@ -28,8 +56,6 @@ export class GameStateDto {
 
   /**
    * Client-side status label — informational only, server is authoritative.
-   * Not restricted to an enum because the frontend derives this from multiple
-   * sources (mapDuelStatus returns 'finished', 'waiting', 'active', 'unknown', …).
    */
   @IsOptional()
   @IsString()
@@ -42,13 +68,14 @@ export class GameStateDto {
   difficulty?: string;
 
   /**
-   * Array of category rounds, each containing questions and answers.
-   * Deep structural validation is performed by the service layer.
+   * Array of category rounds. Deep structural validation is performed
+   * by the service layer; here we only preserve the shape through NestJS.
    */
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) => value)
-  categoryRounds?: Record<string, unknown>[];
+  @ValidateNested({ each: true })
+  @Type(() => CategoryRoundDto)
+  categoryRounds?: CategoryRoundDto[];
 
   /** Challenge response timeout in minutes. */
   @IsOptional()
