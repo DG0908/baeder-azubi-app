@@ -4471,7 +4471,11 @@ export default function BaederApp() {
     const isPlayer1 = user.name === currentGame.player1;
     const currentRoundIndex = currentGame.categoryRound;
     const currentQuestionIndex = questionInCategory;
-    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
+    const currentCategoryRound = currentGame.categoryRounds?.[currentGame.categoryRound];
+    if (!currentCategoryRound) {
+      console.error('[savePlayerAnswer] currentCategoryRound is undefined — round index:', currentGame.categoryRound, 'rounds:', currentGame.categoryRounds?.length);
+      return;
+    }
     const answerType = String(answerMeta?.answerType || '');
     const correctnessKnown = answerType === 'keyword'
       || answerType === 'whoami'
