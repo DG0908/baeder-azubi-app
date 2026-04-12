@@ -3928,6 +3928,11 @@ export default function BaederApp() {
       return persistedGame?.id ? syncLocalDuelGame(persistedGame) : syncedGame;
     } catch (error) {
       console.error('Save game error:', error);
+      // Re-sync with server on error to discard invalid local state
+      try {
+        const freshGame = await dsGetDuelWithQuestions(syncedGame.id, user?.id);
+        if (freshGame?.id) return syncLocalDuelGame(freshGame);
+      } catch {}
       return syncedGame;
     }
   };
