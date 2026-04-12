@@ -20,7 +20,10 @@ COPY --from=build --chown=node:node /app/node_modules/.prisma ./node_modules/.pr
 COPY --from=build --chown=node:node /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build --chown=node:node /app/prisma ./prisma
 COPY --from=build --chown=node:node /app/dist ./dist
+COPY --chown=node:node docker-entrypoint.sh ./docker-entrypoint.sh
+
+RUN chmod 755 ./docker-entrypoint.sh
 
 EXPOSE 3000
 USER node
-CMD ["node", "dist/main.js"]
+CMD ["./docker-entrypoint.sh"]

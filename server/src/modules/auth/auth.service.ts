@@ -197,56 +197,69 @@ export class AuthService {
     const email = this.normalizeEmail(dto.email);
     const invitationHash = this.hashInvitationCode(dto.invitationCode);
     const passwordHash = await argon2.hash(dto.password);
+    let user;
+    try {
+      user = await this.prisma.$transaction(async (tx) => {
+        const existingUser = await tx.user.findUnique({
+          where: { email }
+        });
 
-    const user = await this.prisma.$transaction(async (tx) => {
-      const existingUser = await tx.user.findUnique({
-        where: { email }
+        if (existingUser) {
+          throw new ConflictException('Email is already registered.');
+        }
+
+        const invitation = await tx.invitationCode.findUnique({
+          where: { codeHash: invitationHash }
+        });
+
+        if (!invitation || invitation.revokedAt) {
+          throw new BadRequestException('Invitation code is invalid.');
+        }
+
+        if (invitation.expiresAt && invitation.expiresAt < new Date()) {
+          throw new BadRequestException('Invitation code has expired.');
+        }
+
+        if (invitation.maxUses > 0 && invitation.usedCount >= invitation.maxUses) {
+          throw new BadRequestException('Invitation code has been exhausted.');
+        }
+
+        const createdUser = await tx.user.create({
+          data: {
+            email,
+            displayName: dto.displayName.trim(),
+            passwordHash,
+            role: invitation.role,
+            status: AccountStatus.PENDING,
+            organizationId: invitation.organizationId,
+            trainingEnd: dto.trainingEnd ? new Date(dto.trainingEnd) : null
+          },
+          select: authUserSelect
+        });
+
+        await tx.invitationCode.update({
+          where: { id: invitation.id },
+          data: {
+            usedCount: {
+              increment: 1
+            }
+          }
+        });
+
+        return createdUser;
       });
-
-      if (existingUser && !existingUser.isDeleted) {
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError
+        && error.code === 'P2002'
+        && Array.isArray(error.meta?.target)
+        && error.meta.target.includes('email')
+      ) {
         throw new ConflictException('Email is already registered.');
       }
 
-      const invitation = await tx.invitationCode.findUnique({
-        where: { codeHash: invitationHash }
-      });
-
-      if (!invitation || invitation.revokedAt) {
-        throw new BadRequestException('Invitation code is invalid.');
-      }
-
-      if (invitation.expiresAt && invitation.expiresAt < new Date()) {
-        throw new BadRequestException('Invitation code has expired.');
-      }
-
-      if (invitation.maxUses > 0 && invitation.usedCount >= invitation.maxUses) {
-        throw new BadRequestException('Invitation code has been exhausted.');
-      }
-
-      const createdUser = await tx.user.create({
-        data: {
-          email,
-          displayName: dto.displayName.trim(),
-          passwordHash,
-          role: invitation.role,
-          status: AccountStatus.PENDING,
-          organizationId: invitation.organizationId,
-          trainingEnd: dto.trainingEnd ? new Date(dto.trainingEnd) : null
-        },
-        select: authUserSelect
-      });
-
-      await tx.invitationCode.update({
-        where: { id: invitation.id },
-        data: {
-          usedCount: {
-            increment: 1
-          }
-        }
-      });
-
-      return createdUser;
-    });
+      throw error;
+    }
 
     await this.auditLogService.write({
       action: 'auth.register',
