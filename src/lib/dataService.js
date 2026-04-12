@@ -1366,7 +1366,7 @@ export const saveDuelState = async (game) => {
     categoryRounds: stripClientOnlyQuestionFields(game.categoryRounds || []),
     challengeTimeoutMinutes: game.challengeTimeoutMinutes
   };
-  console.log('[Duel PATCH]', JSON.stringify({ id: game.id, rounds: gameState.categoryRounds?.map(r => ({ categoryId: r?.categoryId, chooser: r?.chooser, q: r?.questions?.length })) }));
+  console.warn('[Duel PATCH]', JSON.stringify({ id: game.id, rounds: gameState.categoryRounds?.map(r => ({ categoryId: r?.categoryId, chooser: r?.chooser, q: r?.questions?.length })) }));
   await secureDuelsApi.updateGameState(game.id, gameState);
   return;
 };

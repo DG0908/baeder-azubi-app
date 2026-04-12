@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -85,6 +86,8 @@ type DuelWithRelations = Prisma.DuelGetPayload<{ include: typeof duelInclude }>;
 
 @Injectable()
 export class DuelsService {
+  private readonly logger = new Logger(DuelsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
@@ -301,6 +304,14 @@ export class DuelsService {
     }
 
     this.assertGameStatePayloadSize(gameState);
+    const rawRounds = Array.isArray(gameState.categoryRounds) ? gameState.categoryRounds : [];
+    if (rawRounds.length > 0) {
+      const lastRaw = rawRounds[rawRounds.length - 1] as Record<string, unknown>;
+      this.logger.log(
+        `[updateGameState] duelId=${duelId} actor=${actor.id} ` +
+        `rawRounds=${rawRounds.length} lastCategoryId=${JSON.stringify(lastRaw?.categoryId)}`
+      );
+    }
     const previousGameState = this.normalizeGameState(duel, duel.gameState);
     // Use the authoritative merged state (incorporates DuelAnswer records) as the
     // baseline for transition validation. This ensures isRoundComplete works correctly
@@ -1494,6 +1505,11 @@ export class DuelsService {
       }
 
       if ((this.readString(nextRound.categoryId) ?? '').length === 0) {
+        this.logger.warn(
+          `[updateGameState] categoryId missing on new round — duelId: ${duel.id}, actor: ${actor.id}, ` +
+          `prevRounds: ${previousRounds.length}, nextRounds: ${nextRounds.length}, ` +
+          `round[${index}]: ${JSON.stringify(nextRound)}`
+        );
         throw new BadRequestException('New duel rounds require a category.');
       }
 
