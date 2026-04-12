@@ -4390,15 +4390,6 @@ export default function BaederApp() {
     const persistedRound = persistedGame?.categoryRounds?.[roundIndex];
     const liveQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : [];
 
-    console.error('[selectCategory debug]', {
-      roundIndex,
-      persistedRoundCategoryId: persistedRound?.categoryId,
-      liveQuestionsLength: liveQuestions.length,
-      persistedGameRoundsLength: persistedGame?.categoryRounds?.length,
-      workingGameRoundsLength: workingGame?.categoryRounds?.length,
-      sentCategoryId: catId,
-    });
-
     if (!persistedRound?.categoryId || !liveQuestions.length) {
       setQuizCategory(null);
       setCurrentCategoryQuestions([]);
