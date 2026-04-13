@@ -2307,9 +2307,10 @@ export default function BaederApp() {
     }
   }, [timeLeft, timerActive, answered]);
 
-  // Check data retention only once on login (not on every view change)
+  // Check data retention only once on login, only for admins (endpoint requires admin role)
   useEffect(() => {
     if (!authReady || !user) return;
+    if (user.role !== 'admin') return;
     checkDataRetention();
   }, [authReady, user]);
 
