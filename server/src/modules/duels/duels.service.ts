@@ -2066,6 +2066,12 @@ export class DuelsService {
       const prevSelected = this.readInteger(prev.selectedAnswer);
       const nextSelected = this.readInteger(next.selectedAnswer);
       if (prevSelected !== null && nextSelected !== null && prevSelected !== nextSelected) {
+        this.logger.warn(
+          `[assertAnswersAppendOnly] ${answerKey} mismatch at position ${i}: ` +
+          `prevSelected=${prevSelected} nextSelected=${nextSelected} ` +
+          `prevQIdx=${this.readInteger(prev.questionIndex)} nextQIdx=${this.readInteger(next.questionIndex)} ` +
+          `prevLen=${previousAnswers.length} nextLen=${nextAnswers.length}`
+        );
         throw new BadRequestException('Stored duel answers cannot be changed retroactively.');
       }
     }

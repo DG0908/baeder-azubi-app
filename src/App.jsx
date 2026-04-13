@@ -336,6 +336,7 @@ export default function BaederApp() {
   const [timerActive, setTimerActive] = useState(false);
   const quizActiveRef = useRef(false);
   const answerSubmissionLockRef = useRef(false);
+  const answerSavePromiseRef = useRef(null); // tracks in-flight savePlayerAnswer promise
   const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
   const [duelResult, setDuelResult] = useState(null); // Ergebnis-Screen nach Spielende
   const [categoryRoundResult, setCategoryRoundResult] = useState(null); // Kategorie-Vergleich zwischen Runden
@@ -4436,7 +4437,7 @@ export default function BaederApp() {
     // Speichere falsche Antwort (Timeout)
     // Note: For server duels, timeouts are NOT submitted to the API.
     // The question remains unanswered and can be retried.
-    await savePlayerAnswer(false, true, {
+    const p = savePlayerAnswer(false, true, {
       answerType: isWhoAmIQuestion(currentQuestion)
         ? 'whoami'
         : (isKeywordQuestion(currentQuestion) ? 'keyword' : 'choice'),
@@ -4444,6 +4445,9 @@ export default function BaederApp() {
         ? keywordAnswerText.trim()
         : null
     });
+    answerSavePromiseRef.current = p;
+    await p;
+    answerSavePromiseRef.current = null;
   };
 
   // Toggle Antwort für Multi-Select Fragen
@@ -4475,10 +4479,13 @@ export default function BaederApp() {
          selectedAnswers.every(idx => correctAnswers.includes(idx)))
       : false;
 
-    await savePlayerAnswer(isCorrect, false, {
+    const p = savePlayerAnswer(isCorrect, false, {
       answerType: 'multi',
       selectedAnswers: [...selectedAnswers]
     });
+    answerSavePromiseRef.current = p;
+    await p;
+    answerSavePromiseRef.current = null;
   };
 
   const answerQuestion = async (answerIndex) => {
@@ -4502,10 +4509,13 @@ export default function BaederApp() {
     const isCorrect = currentQuestion.correct !== undefined
       ? answerIndex === currentQuestion.correct
       : false;
-    await savePlayerAnswer(isCorrect, false, {
+    const p = savePlayerAnswer(isCorrect, false, {
       answerType: 'single',
       selectedAnswer: answerIndex
     });
+    answerSavePromiseRef.current = p;
+    await p;
+    answerSavePromiseRef.current = null;
   };
 
   const submitKeywordAnswer = async () => {
@@ -4534,7 +4544,7 @@ export default function BaederApp() {
     const answerType = isWhoAmIQuestion(currentQuestion)
       ? 'whoami'
       : 'keyword';
-    await savePlayerAnswer(evaluation.isCorrect, false, {
+    const p = savePlayerAnswer(evaluation.isCorrect, false, {
       answerType,
       keywordText: trimmedAnswer,
       keywordEvaluation: {
@@ -4548,6 +4558,9 @@ export default function BaederApp() {
         awardedPoints: evaluation.awardedPoints
       }
     });
+    answerSavePromiseRef.current = p;
+    await p;
+    answerSavePromiseRef.current = null;
   };
 
   // Speichert die Antwort des aktuellen Spielers
@@ -4742,13 +4755,27 @@ export default function BaederApp() {
 
     if (isPlayer1 && !player2Done) {
       // Spieler 1 fertig, Spieler 2 muss noch die gleichen Fragen beantworten
-      currentGame.currentTurn = currentGame.player2;
       setWaitingForOpponent(true);
       setQuizCategory(null);
       setCurrentQuestion(null);
       resetQuizKeywordState();
 
-      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(currentGame));
+      // Warte auf laufende Antwort-Speicherung, damit DuelAnswer-Eintrag vor dem PATCH existiert
+      if (answerSavePromiseRef.current) {
+        await answerSavePromiseRef.current.catch(() => {});
+      }
+      // Hole frischen Server-Stand — stellt sicher, dass player1Answers mit DuelAnswer-Einträgen
+      // übereinstimmt und assertAnswersAppendOnly nicht wirft
+      let gameForPatch = cloneDuelGameSnapshot(currentGame);
+      try {
+        const fresh = await dsGetDuelWithQuestions(currentGame.id, user?.id);
+        if (fresh?.id) gameForPatch = cloneDuelGameSnapshot(fresh);
+      } catch (e) {
+        console.warn('proceedToNextRound: GET vor PATCH fehlgeschlagen, nutze currentGame', e);
+      }
+      gameForPatch.currentTurn = currentGame.player2;
+
+      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(gameForPatch));
 
       // Benachrichtigung an Spieler 2
       await sendNotification(
@@ -4762,13 +4789,27 @@ export default function BaederApp() {
 
     if (!isPlayer1 && !player1Done) {
       // Spieler 2 fertig (hat Kategorie gewählt), Spieler 1 muss noch
-      currentGame.currentTurn = currentGame.player1;
       setWaitingForOpponent(true);
       setQuizCategory(null);
       setCurrentQuestion(null);
       resetQuizKeywordState();
 
-      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(currentGame));
+      // Warte auf laufende Antwort-Speicherung, damit DuelAnswer-Eintrag vor dem PATCH existiert
+      if (answerSavePromiseRef.current) {
+        await answerSavePromiseRef.current.catch(() => {});
+      }
+      // Hole frischen Server-Stand — stellt sicher, dass player2Answers mit DuelAnswer-Einträgen
+      // übereinstimmt und assertAnswersAppendOnly nicht wirft
+      let gameForPatch = cloneDuelGameSnapshot(currentGame);
+      try {
+        const fresh = await dsGetDuelWithQuestions(currentGame.id, user?.id);
+        if (fresh?.id) gameForPatch = cloneDuelGameSnapshot(fresh);
+      } catch (e) {
+        console.warn('proceedToNextRound: GET vor PATCH fehlgeschlagen, nutze currentGame', e);
+      }
+      gameForPatch.currentTurn = currentGame.player1;
+
+      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(gameForPatch));
 
       await sendNotification(
         currentGame.player1,
