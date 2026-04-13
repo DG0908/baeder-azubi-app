@@ -842,6 +842,24 @@ export default function BaederApp() {
     return null;
   };
 
+  const hasRecordedRoundAnswers = (roundInput, answerKey) => {
+    const round = (roundInput && typeof roundInput === 'object') ? roundInput : {};
+    return Array.isArray(round[answerKey]) && round[answerKey].length > 0;
+  };
+
+  const isCountableFinishedQuizGame = (gameInput) => {
+    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
+    if (!isFinishedGameStatus(game.status)) return false;
+
+    const rounds = Array.isArray(game.categoryRounds) ? game.categoryRounds : [];
+    if (rounds.length === 0) return false;
+
+    return rounds.every((round) => (
+      hasRecordedRoundAnswers(round, 'player1Answers')
+      && hasRecordedRoundAnswers(round, 'player2Answers')
+    ));
+  };
+
   const buildQuizTotalsFromFinishedGames = (gamesInput, currentUserName, existingStats = null) => {
     const baseStats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
     const finishedGames = Array.isArray(gamesInput) ? gamesInput : [];
@@ -852,7 +870,7 @@ export default function BaederApp() {
     const opponents = {};
 
     finishedGames.forEach((game) => {
-      if (!isFinishedGameStatus(game?.status)) return;
+      if (!isCountableFinishedQuizGame(game)) return;
 
       const player1 = normalizePlayerName(game.player1);
       const player2 = normalizePlayerName(game.player2);
@@ -900,7 +918,7 @@ export default function BaederApp() {
     let draws = 0;
 
     finishedGames.forEach((game) => {
-      if (!isFinishedGameStatus(game?.status)) return;
+      if (!isCountableFinishedQuizGame(game)) return;
 
       const player1 = normalizePlayerName(game.player1);
       const player2 = normalizePlayerName(game.player2);
@@ -3387,7 +3405,7 @@ export default function BaederApp() {
           let shouldPersistStats = doesUserStatsRowNeedRepair(statsData, stats);
           const currentUserName = normalizePlayerName(user.name);
           const finishedGames = (gamesData || []).filter(g => {
-            if (!isFinishedGameStatus(g.status)) return false;
+            if (!isCountableFinishedQuizGame(g)) return false;
             const p1 = normalizePlayerName(g.player1);
             const p2 = normalizePlayerName(g.player2);
             return p1 === currentUserName || p2 === currentUserName;
@@ -3478,15 +3496,7 @@ export default function BaederApp() {
     const stats = {};
 
     // Nur vollständig gespielte Spiele zählen
-    games.filter(g => {
-      if (g.status !== 'finished') return false;
-      const rounds = g.categoryRounds || [];
-      if (rounds.length === 0) return false;
-      return rounds.every(r =>
-        r.player1Answers && r.player1Answers.length > 0 &&
-        r.player2Answers && r.player2Answers.length > 0
-      );
-    }).forEach(game => {
+    games.filter(isCountableFinishedQuizGame).forEach(game => {
       [game.player1, game.player2].forEach(player => {
         if (!stats[player]) {
           stats[player] = { name: player, wins: 0, losses: 0, draws: 0, points: 0 };
@@ -4673,8 +4683,14 @@ export default function BaederApp() {
 
         if (authoritativeQuestions?.length) {
           setCurrentCategoryQuestions(authoritativeQuestions);
-          if (authoritativeQuestions[currentQuestionIndex]) {
-            setCurrentQuestion(authoritativeQuestions[currentQuestionIndex]);
+          // Guard: only update currentQuestion if the player hasn't moved on to a different
+          // question while the API was in-flight. Comparing by duelQuestionId prevents
+          // the authoritative refresh from overriding the newly displayed next question.
+          const targetQ = authoritativeQuestions[currentQuestionIndex];
+          if (targetQ?.duelQuestionId) {
+            setCurrentQuestion(prev =>
+              prev?.duelQuestionId === targetQ.duelQuestionId ? targetQ : prev
+            );
           }
         }
 
