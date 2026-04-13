@@ -4361,7 +4361,13 @@ export default function BaederApp() {
       workingGame.categoryRounds = [];
     }
 
-    const localRequestedRoundIndex = Math.max(0, Number(currentGame?.categoryRound || 0));
+    // Nutze den höchsten bekannten Rundenindex: lokaler State (nach proceedAfterCategoryResult-Mutation)
+    // vs. server-seitiger Stand (workingGame, frisch geladen). Verhindert, dass ein fehlgeschlagener
+    // PATCH den lokalen Fortschritt zurücksetzt und alte Fragen gezeigt werden.
+    const localRequestedRoundIndex = Math.max(
+      Number(workingGame?.categoryRound || 0),
+      Number(currentGame?.categoryRound || 0)
+    );
     const roundIndex = Math.max(0, Math.min(
       localRequestedRoundIndex,
       workingGame.categoryRounds.length
@@ -4883,7 +4889,10 @@ export default function BaederApp() {
       resetQuizKeywordState();
       setTimerActive(false);
 
-      await saveGameToSupabase(currentGame);
+      const savedAfterRound = await saveGameToSupabase(currentGame);
+      // Synce React-State mit Server-Antwort, damit categoryRound korrekt gesetzt ist
+      // und die nachfolgende Kategorie-Auswahl den richtigen Rundenindex liest.
+      if (savedAfterRound?.id) syncQuizRuntimeFromPersistedGame(savedAfterRound);
 
       if (nextChooser !== user.name) {
         setWaitingForOpponent(true);
