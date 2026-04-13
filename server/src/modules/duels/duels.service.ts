@@ -2089,6 +2089,11 @@ export class DuelsService {
    * Client answers at positions BEYOND the authoritative length are appended unchanged — they
    * represent genuinely new answers not yet committed as DuelAnswer records (e.g. timeouts,
    * multi-select, keyword answers that go through saveGameToSupabase instead of submitAnswer).
+   *
+   * Additionally, rounds that exist on the server but were NOT included in the client's PATCH
+   * (e.g. Player 2 sends a 2-round PATCH after Player 1 already created round 3) are preserved
+   * from mergedPreviousGameState. This prevents the "Duel rounds cannot be removed" 400 error
+   * that occurs when a player's stale client state lags behind the server round count.
    */
   private mergeAuthoritativeAnswers(
     mergedPreviousGameState: Prisma.InputJsonObject,
@@ -2101,7 +2106,7 @@ export class DuelsService {
       ? canonicalGameState.categoryRounds
       : [];
 
-    const categoryRounds = nextRounds.map((round, index) => {
+    const categoryRounds: Prisma.InputJsonObject[] = nextRounds.map((round, index) => {
       const nextRound = this.asRecord(round);
       if (index >= prevRounds.length) {
         return nextRound as Prisma.InputJsonObject;
@@ -2117,6 +2122,13 @@ export class DuelsService {
         player2Answers: this.appendNewClientAnswers(authoritativeP2, clientP2),
       } as Prisma.InputJsonObject;
     });
+
+    // Preserve rounds that exist on the server but were omitted from the client PATCH.
+    // This happens when one player's client state lags behind the other player who already
+    // advanced to the next round (e.g. Player 2 sends 2 rounds, server already has 3).
+    for (let i = nextRounds.length; i < prevRounds.length; i++) {
+      categoryRounds.push(this.asRecord(prevRounds[i]) as Prisma.InputJsonObject);
+    }
 
     return { ...canonicalGameState, categoryRounds } as Prisma.InputJsonObject;
   }
