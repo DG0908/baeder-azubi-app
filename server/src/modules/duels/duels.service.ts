@@ -324,16 +324,22 @@ export class DuelsService {
       normalizedGameState
     );
     const canonicalGameState = this.reuseStoredRoundDefinitions(previousGameState, authoritativeGameState);
-    this.assertValidGameStateTransition(duel, mergedPreviousGameState, canonicalGameState, actor);
-    const shouldComplete = duel.status === DuelStatus.ACTIVE && canonicalGameState.status === 'finished';
+    // Replace client-supplied player*Answers with the authoritative DuelAnswer-based answers.
+    // This eliminates the race-condition 400 "Stored duel answers cannot be changed retroactively"
+    // that occurs when the client sends a stale PATCH before the previous saveGameToSupabase PATCH
+    // has been applied on the server. Positions beyond the authoritative count are kept from the
+    // client payload (new answers not yet committed to DuelAnswer, e.g. timeouts).
+    const canonicalWithAuthoritativeAnswers = this.mergeAuthoritativeAnswers(mergedPreviousGameState, canonicalGameState);
+    this.assertValidGameStateTransition(duel, mergedPreviousGameState, canonicalWithAuthoritativeAnswers, actor);
+    const shouldComplete = duel.status === DuelStatus.ACTIVE && canonicalWithAuthoritativeAnswers.status === 'finished';
     const winnerUserId = shouldComplete
-      ? this.resolveWinnerUserId(duel, this.readString(canonicalGameState.winner))
+      ? this.resolveWinnerUserId(duel, this.readString(canonicalWithAuthoritativeAnswers.winner))
       : undefined;
 
     const updated = await this.prisma.duel.update({
       where: { id: duelId },
       data: {
-        gameState: canonicalGameState,
+        gameState: canonicalWithAuthoritativeAnswers,
         status: shouldComplete ? DuelStatus.COMPLETED : undefined,
         winnerUserId,
         completedAt: shouldComplete ? new Date() : undefined,
@@ -2075,6 +2081,56 @@ export class DuelsService {
         throw new BadRequestException('Stored duel answers cannot be changed retroactively.');
       }
     }
+  }
+
+  /**
+   * For each category round, replaces the client-supplied player*Answers with the authoritative
+   * answers from mergedPreviousGameState (built from DuelAnswer records + stored gameState).
+   * Client answers at positions BEYOND the authoritative length are appended unchanged — they
+   * represent genuinely new answers not yet committed as DuelAnswer records (e.g. timeouts,
+   * multi-select, keyword answers that go through saveGameToSupabase instead of submitAnswer).
+   */
+  private mergeAuthoritativeAnswers(
+    mergedPreviousGameState: Prisma.InputJsonObject,
+    canonicalGameState: Prisma.InputJsonObject
+  ): Prisma.InputJsonObject {
+    const prevRounds = Array.isArray(mergedPreviousGameState.categoryRounds)
+      ? mergedPreviousGameState.categoryRounds
+      : [];
+    const nextRounds = Array.isArray(canonicalGameState.categoryRounds)
+      ? canonicalGameState.categoryRounds
+      : [];
+
+    const categoryRounds = nextRounds.map((round, index) => {
+      const nextRound = this.asRecord(round);
+      if (index >= prevRounds.length) {
+        return nextRound as Prisma.InputJsonObject;
+      }
+      const prevRound = this.asRecord(prevRounds[index]);
+      const authoritativeP1 = Array.isArray(prevRound.player1Answers) ? prevRound.player1Answers as unknown[] : [];
+      const authoritativeP2 = Array.isArray(prevRound.player2Answers) ? prevRound.player2Answers as unknown[] : [];
+      const clientP1 = Array.isArray(nextRound.player1Answers) ? nextRound.player1Answers as unknown[] : [];
+      const clientP2 = Array.isArray(nextRound.player2Answers) ? nextRound.player2Answers as unknown[] : [];
+      return {
+        ...nextRound,
+        player1Answers: this.appendNewClientAnswers(authoritativeP1, clientP1),
+        player2Answers: this.appendNewClientAnswers(authoritativeP2, clientP2),
+      } as Prisma.InputJsonObject;
+    });
+
+    return { ...canonicalGameState, categoryRounds } as Prisma.InputJsonObject;
+  }
+
+  /**
+   * Returns authoritative answers, with any extra client answers beyond the authoritative
+   * length appended (new answers not yet reflected in DuelAnswer records).
+   */
+  private appendNewClientAnswers(authoritative: unknown[], clientAnswers: unknown[]): Prisma.InputJsonArray {
+    const result: unknown[] = [...authoritative];
+    for (let i = authoritative.length; i < clientAnswers.length; i++) {
+      result.push(clientAnswers[i]);
+    }
+    return result as Prisma.InputJsonArray;
   }
 
   private isJsonPrefix(previousValues: unknown[], nextValues: unknown[]) {
