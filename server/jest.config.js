@@ -5,8 +5,12 @@ module.exports = {
   roots: ['<rootDir>/src'],
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.ts$': 'ts-jest'
+    '^.+\\.(ts|js)$': 'ts-jest'
   },
+  // Allow ts-jest to transform ESM-only packages used by auth (otplib, @scure, @noble)
+  transformIgnorePatterns: [
+    'node_modules/(?!(@scure|@noble|otplib|@otplib)/)'
+  ],
   moduleFileExtensions: ['ts', 'js', 'json'],
   testTimeout: 30000,
   verbose: true,
