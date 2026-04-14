@@ -5182,6 +5182,9 @@ export default function BaederApp() {
       if (!isFinishedGameStatus(savedGame?.status)) {
         console.warn('[finishGame] Server hat Spielabschluss abgelehnt (Status:', savedGame?.status, '— Runden:', savedGame?.categoryRounds?.length, '). Abbruch.');
         if (savedGame?.id) syncQuizRuntimeFromPersistedGame(savedGame);
+        // Spieler hat alle Runden beantwortet → weiter auf Gegner warten.
+        // Polling erkennt das Spielende sobald der Gegner fertig ist.
+        setWaitingForOpponent(true);
         return;
       }
       const opponentName = user.name === currentGame.player1 ? currentGame.player2 : currentGame.player1;
