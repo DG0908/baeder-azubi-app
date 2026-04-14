@@ -26,7 +26,7 @@ export const envValidationSchema = Joi.object({
   WEB_PUSH_PUBLIC_KEY: Joi.string().allow('').default(''),
   WEB_PUSH_PRIVATE_KEY: Joi.string().allow('').default(''),
   WEB_PUSH_SUBJECT: Joi.string().allow('').default('mailto:admin@example.com'),
-  DUEL_DEFAULT_QUESTION_COUNT: Joi.number().integer().min(3).max(20).default(10),
+  DUEL_DEFAULT_QUESTION_COUNT: Joi.number().integer().min(3).max(20).default(20),
   DUEL_REQUEST_TTL_MINUTES: Joi.number().integer().min(15).max(10080).default(2880),
   DUEL_TURN_TTL_MINUTES: Joi.number().integer().min(15).max(10080).default(2880),
   LOG_LEVEL: Joi.string().allow('').default('log,warn,error'),
