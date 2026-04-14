@@ -3947,13 +3947,14 @@ export default function BaederApp() {
           && nextQuestionIndex < currentCatRound.questions.length;
 
         if (hasPendingQuestions) {
+          const restoredQuestions = restoreCorrectForQuestions(currentCatRound.questions, currentCatRound.categoryId);
           setQuizCategory(currentCatRound.categoryId);
-          setCurrentCategoryQuestions(currentCatRound.questions);
+          setCurrentCategoryQuestions(restoredQuestions);
 
           if (nextQuestionIndex > 0) {
             setQuestionInCategory(nextQuestionIndex);
-            setCurrentQuestion(currentCatRound.questions[nextQuestionIndex]);
-            const timeLimit = getQuizTimeLimit(currentCatRound.questions[nextQuestionIndex], gameToContinue.difficulty);
+            setCurrentQuestion(restoredQuestions[nextQuestionIndex]);
+            const timeLimit = getQuizTimeLimit(restoredQuestions[nextQuestionIndex], gameToContinue.difficulty);
             setTimeLeft(timeLimit);
             setTimerActive(true);
           }
@@ -4796,11 +4797,13 @@ export default function BaederApp() {
           : null;
 
         if (authoritativeQuestions?.length) {
-          setCurrentCategoryQuestions(authoritativeQuestions);
+          // Re-apply correct for questions the server still redacts (future unanswered questions)
+          const restoredAuthQuestions = restoreCorrectForQuestions(authoritativeQuestions, quizCategory);
+          setCurrentCategoryQuestions(restoredAuthQuestions);
           // Guard: only update currentQuestion if the player hasn't moved on to a different
           // question while the API was in-flight. Comparing by duelQuestionId prevents
           // the authoritative refresh from overriding the newly displayed next question.
-          const targetQ = authoritativeQuestions[currentQuestionIndex];
+          const targetQ = restoredAuthQuestions[currentQuestionIndex];
           if (targetQ?.duelQuestionId) {
             setCurrentQuestion(prev =>
               prev?.duelQuestionId === targetQ.duelQuestionId ? targetQ : prev
@@ -4824,9 +4827,11 @@ export default function BaederApp() {
     const persistedRound = persistedGame?.categoryRounds?.[currentRoundIndex];
     const persistedQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : null;
     if (persistedQuestions?.length) {
-      setCurrentCategoryQuestions(persistedQuestions);
-      if (persistedQuestions[currentQuestionIndex]) {
-        setCurrentQuestion(persistedQuestions[currentQuestionIndex]);
+      // Re-apply correct for all questions (server redacts correct for unanswered/multi-select)
+      const restoredPersisted = restoreCorrectForQuestions(persistedQuestions, quizCategory);
+      setCurrentCategoryQuestions(restoredPersisted);
+      if (restoredPersisted[currentQuestionIndex]) {
+        setCurrentQuestion(restoredPersisted[currentQuestionIndex]);
       }
     }
   };
