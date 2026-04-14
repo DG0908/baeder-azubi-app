@@ -2227,7 +2227,40 @@ export default function BaederApp() {
 
     if (isFinishedGameStatus(updatedGame.status)) {
       if (duelResult?.gameId !== updatedGame.id) {
-        showDuelResultForGame(updatedGame, allGames);
+        // Spiel wurde vom Server beendet (z.B. durch Gegner). Stats für diesen Spieler
+        // aktualisieren (h2h), dann Ergebnis anzeigen.
+        const opponentNameForStats = namesMatch(updatedGame.player1, user.name)
+          ? updatedGame.player2
+          : updatedGame.player1;
+        const winnerForStats = resolveFinishedGameWinner(updatedGame);
+        getUserStatsFromSupabase(user).then(existingStats => {
+          const stats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
+          if (!stats.opponents[opponentNameForStats]) {
+            stats.opponents[opponentNameForStats] = { wins: 0, losses: 0, draws: 0 };
+          }
+          if (winnerForStats === user.name) {
+            stats.wins++;
+            stats.opponents[opponentNameForStats].wins++;
+            stats.winStreak = (stats.winStreak || 0) + 1;
+            if (stats.winStreak > (stats.bestWinStreak || 0)) stats.bestWinStreak = stats.winStreak;
+          } else if (winnerForStats === null) {
+            stats.draws++;
+            stats.opponents[opponentNameForStats].draws++;
+          } else {
+            stats.losses++;
+            stats.opponents[opponentNameForStats].losses++;
+            stats.winStreak = 0;
+          }
+          saveUserStatsToSupabase(user, stats).catch(() => {});
+          setUserStats(stats);
+          showDuelResultForGame(
+            updatedGame,
+            allGames,
+            stats.opponents[opponentNameForStats]
+          );
+        }).catch(() => {
+          showDuelResultForGame(updatedGame, allGames);
+        });
       }
       return;
     }
@@ -4176,6 +4209,51 @@ export default function BaederApp() {
     return shuffleArray(selected);
   };
 
+  /**
+   * Stellt das `correct`-Feld für Duell-Fragen wieder her, wenn der Server es redaktiert hat.
+   * Für Spieler 1 (Wähler): direkt aus preparedQuestions per Index.
+   * Für Spieler 2: Textabgleich gegen SAMPLE_QUESTIONS + Rückabbildung der gemischten Optionen.
+   */
+  const restoreCorrectForQuestions = (questions, categoryId, preparedQuestions = null) => {
+    if (!Array.isArray(questions)) return questions;
+    return questions.map((q, idx) => {
+      if (!q || q.correct !== undefined) return q;
+      if (isKeywordQuestion(q) || isWhoAmIQuestion(q)) return q;
+
+      // Spieler 1: direkt aus vorbereiteten Fragen (selbe Reihenfolge, selbe Mischung)
+      if (preparedQuestions && preparedQuestions[idx]?.correct !== undefined) {
+        const local = preparedQuestions[idx];
+        return { ...q, correct: local.correct, ...(local.multi !== undefined && { multi: local.multi }) };
+      }
+
+      // Spieler 2: Textabgleich in SAMPLE_QUESTIONS
+      const catId = String(categoryId || q.category || '').trim();
+      if (!catId) return q;
+      const localPool = SAMPLE_QUESTIONS[catId] || [];
+      const qText = String(q.q || '').trim().toLowerCase();
+      const localQ = localPool.find(lq => String(lq.q || '').trim().toLowerCase() === qText);
+      if (!localQ || localQ.correct === undefined) return q;
+
+      const shuffled = Array.isArray(q.a) ? q.a : [];
+      const original = Array.isArray(localQ.a) ? localQ.a : [];
+      const shuffledToOrig = shuffled.map(t =>
+        original.findIndex(o => String(o || '').trim().toLowerCase() === String(t || '').trim().toLowerCase())
+      );
+
+      if (localQ.multi && Array.isArray(localQ.correct)) {
+        const correctSet = new Set(localQ.correct.filter(Number.isInteger));
+        const newCorrect = shuffled
+          .map((_, si) => (correctSet.has(shuffledToOrig[si]) ? si : -1))
+          .filter(i => i >= 0);
+        if (newCorrect.length > 0) return { ...q, correct: newCorrect, multi: true };
+      } else if (Number.isInteger(localQ.correct)) {
+        const newIdx = shuffledToOrig.indexOf(localQ.correct);
+        if (newIdx >= 0) return { ...q, correct: newIdx };
+      }
+      return q;
+    });
+  };
+
   const trackQuestionPerformance = (question, categoryHint, isCorrect) => {
     if (!question) return;
     const key = getQuestionPerformanceKey(question, categoryHint);
@@ -4422,10 +4500,13 @@ export default function BaederApp() {
       return;
     }
 
-    setCurrentCategoryQuestions(liveQuestions);
-    setCurrentQuestion(liveQuestions[0] || null);
-    if (liveQuestions[0]) {
-      const timeLimit = getQuizTimeLimit(liveQuestions[0], persistedGame?.difficulty || currentGame.difficulty);
+    // `correct` vom Server ist redaktiert (Sicherheit). Für den Wähler wissen wir die
+    // richtigen Antworten aus den lokalen preparedQuestions → per Index wiederherstellen.
+    const questionsToShow = restoreCorrectForQuestions(liveQuestions, catId, preparedQuestions);
+    setCurrentCategoryQuestions(questionsToShow);
+    setCurrentQuestion(questionsToShow[0] || null);
+    if (questionsToShow[0]) {
+      const timeLimit = getQuizTimeLimit(questionsToShow[0], persistedGame?.difficulty || currentGame.difficulty);
       setTimeLeft(timeLimit);
       setTimerActive(true);
     }
@@ -4937,10 +5018,16 @@ export default function BaederApp() {
     const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
     if (!currentCategoryRound) return;
 
+    // `correct` für unbeantwortete Fragen aus lokalen Daten wiederherstellen
+    const restoredQuestions = restoreCorrectForQuestions(
+      currentCategoryRound.questions,
+      currentCategoryRound.categoryId
+    );
+
     setQuizCategory(currentCategoryRound.categoryId);
-    setCurrentCategoryQuestions(currentCategoryRound.questions);
+    setCurrentCategoryQuestions(restoredQuestions);
     setQuestionInCategory(0);
-    setCurrentQuestion(currentCategoryRound.questions[0]);
+    setCurrentQuestion(restoredQuestions[0]);
     resetAnswerSubmissionLock();
     setAnswered(false);
     setSelectedAnswers([]); // Reset für Multi-Select
@@ -4948,7 +5035,7 @@ export default function BaederApp() {
     setWaitingForOpponent(false);
     resetQuizKeywordState();
 
-    const timeLimit = getQuizTimeLimit(currentCategoryRound.questions[0], currentGame.difficulty);
+    const timeLimit = getQuizTimeLimit(restoredQuestions[0], currentGame.difficulty);
     setTimeLeft(timeLimit);
     setTimerActive(true);
   };
@@ -4964,10 +5051,16 @@ export default function BaederApp() {
     const nextQuestionIndex = Math.max(0, myAnswers.length || 0);
     if (nextQuestionIndex >= currentCategoryRound.questions.length) return;
 
+    // `correct` für unbeantwortete Fragen aus lokalen Daten wiederherstellen
+    const restoredQuestions = restoreCorrectForQuestions(
+      currentCategoryRound.questions,
+      currentCategoryRound.categoryId
+    );
+
     setQuizCategory(currentCategoryRound.categoryId);
-    setCurrentCategoryQuestions(currentCategoryRound.questions);
+    setCurrentCategoryQuestions(restoredQuestions);
     setQuestionInCategory(nextQuestionIndex);
-    setCurrentQuestion(currentCategoryRound.questions[nextQuestionIndex]);
+    setCurrentQuestion(restoredQuestions[nextQuestionIndex]);
     resetAnswerSubmissionLock();
     setAnswered(false);
     setSelectedAnswers([]);
@@ -4975,7 +5068,7 @@ export default function BaederApp() {
     setWaitingForOpponent(false);
     resetQuizKeywordState();
 
-    const timeLimit = getQuizTimeLimit(currentCategoryRound.questions[nextQuestionIndex], currentGame.difficulty);
+    const timeLimit = getQuizTimeLimit(restoredQuestions[nextQuestionIndex], currentGame.difficulty);
     setTimeLeft(timeLimit);
     setTimerActive(true);
   };
