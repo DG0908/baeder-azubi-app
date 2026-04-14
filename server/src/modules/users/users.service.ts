@@ -425,12 +425,26 @@ export class UsersService {
 
     const passwordHash = await argon2.hash(newPassword);
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        passwordHash,
-        refreshTokenHash: null
-      }
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          passwordHash,
+          refreshTokenHash: null
+        }
+      });
+
+      await tx.loginAttempt.deleteMany({
+        where: { email: user.email }
+      });
+
+      await tx.passwordResetToken.deleteMany({
+        where: { userId }
+      });
+
+      await tx.trustedDevice.deleteMany({
+        where: { userId }
+      });
     });
 
     await this.auditLogService.writeForUser(
@@ -445,7 +459,10 @@ export class UsersService {
       request
     );
 
-    return { reset: true };
+    return {
+      reset: true,
+      requiresTotp: Boolean(user.totpEnabled)
+    };
   }
 
   async exportUserData(actor: AuthenticatedUser, targetUserId: string, request: Request) {
