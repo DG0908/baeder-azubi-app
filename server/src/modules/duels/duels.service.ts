@@ -960,6 +960,23 @@ export class DuelsService {
         .map((answer) => [answer.duelQuestionId, answer])
     );
 
+    // For multi-select, keyword, and whoami answers that go through saveGameToSupabase
+    // instead of submitDuelAnswer, there are no DuelAnswer records. We must also check
+    // whether the actor has answered this question in the gameState player answers array.
+    const actorIsChallenger = actorId === duel.challengerId;
+    const hasGameStateAnswerForQuestion = (orderIndex: number): boolean => {
+      const roundIndex = Math.floor(orderIndex / MAX_DUEL_QUESTIONS_PER_ROUND);
+      const questionIndex = orderIndex % MAX_DUEL_QUESTIONS_PER_ROUND;
+      const rounds = Array.isArray(authoritativeGameState.categoryRounds)
+        ? authoritativeGameState.categoryRounds
+        : [];
+      const round = this.asRecord(rounds[roundIndex]);
+      const answers = Array.isArray(actorIsChallenger ? round.player1Answers : round.player2Answers)
+        ? (actorIsChallenger ? round.player1Answers : round.player2Answers) as unknown[]
+        : [];
+      return answers.length > questionIndex && answers[questionIndex] != null;
+    };
+
     return {
       ...this.toDuelSummary(duel, actorId),
       questions: duel.duelQuestions.map((assignment) => ({
@@ -968,7 +985,9 @@ export class DuelsService {
         question: this.buildPayloadQuestionForAssignment(
           assignment,
           authoritativeGameState,
-          duel.status === DuelStatus.COMPLETED || answersByQuestion.has(assignment.id)
+          duel.status === DuelStatus.COMPLETED
+            || answersByQuestion.has(assignment.id)
+            || hasGameStateAnswerForQuestion(assignment.orderIndex)
         ),
         myAnswer: answersByQuestion.get(assignment.id) ?? null
       })),
@@ -1181,8 +1200,12 @@ export class DuelsService {
     const authoritativeOptions = authoritativeQuestion
       ? this.normalizeStringArray(authoritativeQuestion.a, MAX_DUEL_OPTIONS_PER_QUESTION, 240)
       : this.extractOptions(assignment.question.options);
+    // For multi-select questions, correct is an array of indices — preserve it as-is.
+    // For single-choice, it's a single integer read via readInteger.
     const authoritativeCorrectIndex = authoritativeQuestion
-      ? this.readInteger(authoritativeQuestion.correct)
+      ? (Array.isArray(authoritativeQuestion.correct)
+          ? authoritativeQuestion.correct
+          : this.readInteger(authoritativeQuestion.correct))
       : assignment.question.correctOptionIndex;
     const authoritativePrompt = authoritativeQuestion
       ? (this.readString(authoritativeQuestion.prompt) ?? this.readString(authoritativeQuestion.q) ?? assignment.question.prompt)
