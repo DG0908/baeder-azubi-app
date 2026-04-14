@@ -4679,19 +4679,27 @@ export default function BaederApp() {
       && Number.isInteger(answerMeta?.selectedAnswer);
 
     if (shouldUseAuthoritativeDuelAnswer) {
+      // Track whether the answer was persisted server-side (submitDuelAnswer succeeded or 409 duplicate)
+      let answerPersistedOnServer = false;
+
       try {
         await dsSubmitDuelAnswer(gameSnapshot.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
+        answerPersistedOnServer = true;
       } catch (error) {
         if (error?.status === 409) {
-          // Duplicate — already recorded, ignore
+          // Duplicate — already recorded, counts as persisted
+          answerPersistedOnServer = true;
         } else {
           console.warn('submitDuelAnswer fehlgeschlagen, retry in 1.5s:', error);
           // Retry once after a short delay (covers transient 401 refresh + network blips)
           await new Promise((resolve) => setTimeout(resolve, 1500));
           try {
             await dsSubmitDuelAnswer(gameSnapshot.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
+            answerPersistedOnServer = true;
           } catch (retryError) {
-            if (retryError?.status !== 409) {
+            if (retryError?.status === 409) {
+              answerPersistedOnServer = true;
+            } else {
               console.warn('submitDuelAnswer retry fehlgeschlagen:', retryError);
             }
           }
@@ -4719,7 +4727,13 @@ export default function BaederApp() {
           }
         }
 
-        return;
+        // Only return early if the answer was actually persisted server-side.
+        // If submitDuelAnswer failed (both attempts), the server won't reveal correctOptionIndex
+        // and the question will stay blue. In that case, fall through to saveGameToSupabase
+        // so the answer is at least saved in the gameState JSON.
+        if (answerPersistedOnServer) {
+          return;
+        }
       } catch (error) {
         console.warn('Duel-Refresh nach Antwort fehlgeschlagen:', error);
       }
