@@ -424,7 +424,7 @@ export class DuelsService {
     const newRound = this.asRecord(nextRounds[newRoundIndex]);
     const categoryId = this.readRoundCategoryId(newRound) ?? '';
     if (!categoryId) {
-      return nextGameState;
+      throw new BadRequestException('Eine neue Runde muss eine gültige Kategorie-ID enthalten.');
     }
 
     const generatedQuestions = await this.generateAuthoritativeRoundQuestions(
@@ -432,7 +432,12 @@ export class DuelsService {
       this.normalizeDifficulty(nextGameState.difficulty)
     );
     if (!generatedQuestions) {
-      return nextGameState;
+      this.logger.error(
+        `[applyAuthoritativeRoundGeneration] No authoritative questions available for category="${categoryId}" difficulty="${this.normalizeDifficulty(nextGameState.difficulty)}". Rejecting client-supplied round.`
+      );
+      throw new BadRequestException(
+        'Für diese Kategorie sind aktuell keine Fragen verfügbar. Bitte wähle eine andere Kategorie.'
+      );
     }
 
     const chooser = this.getExpectedNextChooserName(duel, previousRounds);
