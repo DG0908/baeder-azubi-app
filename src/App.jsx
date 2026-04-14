@@ -5082,7 +5082,15 @@ export default function BaederApp() {
     currentGame.winner = winner;
 
     try {
-      await saveGameToSupabase(currentGame);
+      const savedGame = await saveGameToSupabase(currentGame);
+      // Server validates isCategoryRoundSetComplete — if it rejects the finish (e.g. only 2/4 rounds
+      // complete), saveGameToSupabase swallows the error and returns the still-active game.
+      // Abort here so we don't show a false winner screen or fire push notifications.
+      if (!isFinishedGameStatus(savedGame?.status)) {
+        console.warn('[finishGame] Server hat Spielabschluss abgelehnt (Status:', savedGame?.status, '— Runden:', savedGame?.categoryRounds?.length, '). Abbruch.');
+        if (savedGame?.id) syncQuizRuntimeFromPersistedGame(savedGame);
+        return;
+      }
       const opponentName = user.name === currentGame.player1 ? currentGame.player2 : currentGame.player1;
       if (opponentName) {
         let opponentTitle = '🏁 Quizduell beendet';
