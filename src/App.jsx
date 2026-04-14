@@ -3932,7 +3932,7 @@ export default function BaederApp() {
   };
 
   // Helper function to save game state
-  const saveGameToSupabase = async (game) => {
+  const saveGameToSupabase = async (game, { onSaveError } = {}) => {
     const syncedGame = syncLocalDuelGame(game);
     try {
       await dsSaveDuelState(syncedGame);
@@ -3940,6 +3940,7 @@ export default function BaederApp() {
       return persistedGame?.id ? syncLocalDuelGame(persistedGame) : syncedGame;
     } catch (error) {
       console.error('Save game error:', error);
+      onSaveError?.(error);
       // Re-sync with server on error to discard invalid local state
       try {
         const freshGame = await dsGetDuelWithQuestions(syncedGame.id, user?.id);
@@ -4404,7 +4405,10 @@ export default function BaederApp() {
 
     setTimerActive(false);
 
-    const persistedGame = syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(workingGame));
+    let saveError = null;
+    const persistedGame = syncQuizRuntimeFromPersistedGame(
+      await saveGameToSupabase(workingGame, { onSaveError: (err) => { saveError = err; } })
+    );
     const persistedRound = persistedGame?.categoryRounds?.[roundIndex];
     const liveQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : [];
 
@@ -4413,7 +4417,8 @@ export default function BaederApp() {
       setCurrentCategoryQuestions([]);
       setCurrentQuestion(null);
       setTimerActive(false);
-      showToast('Die Kategorie konnte nicht gespeichert werden. Bitte waehle sie erneut.', 'error', 2500);
+      const errorMessage = saveError?.message || 'Die Kategorie konnte nicht gespeichert werden. Bitte waehle sie erneut.';
+      showToast(errorMessage, 'error', 3500);
       return;
     }
 
