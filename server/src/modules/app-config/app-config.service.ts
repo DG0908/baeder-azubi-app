@@ -394,7 +394,7 @@ export class AppConfigService {
       // No menuItems in the request (e.g. feature-flag-only update).
       // Re-use stored data as-is — it is already persisted, re-validating
       // it would break updates when old group values are stored in the DB.
-      return this.normalizeMenuItemsFromStorage(Array.isArray(fallback) ? fallback : []);
+      return this.normalizeMenuItemsFromStorage((Array.isArray(fallback) ? fallback : []) as Prisma.JsonValue[]);
     }
 
     try {
@@ -404,7 +404,7 @@ export class AppConfigService {
         throw error;
       }
       // Fallback: stored data may have old/unknown group values — accept as-is.
-      return this.normalizeMenuItemsFromStorage(Array.isArray(fallback) ? fallback : []);
+      return this.normalizeMenuItemsFromStorage((Array.isArray(fallback) ? fallback : []) as Prisma.JsonValue[]);
     }
   }
 
