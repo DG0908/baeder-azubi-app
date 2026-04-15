@@ -411,6 +411,7 @@ const STICKER_AVATARS = AVATARS.filter(a => isStickerAvatar(a));
 
 const StickerAvatarGrant = ({ userId, userName, currentUnlockedIds = [], onUpdated }) => {
   const { showToast } = useApp();
+  const { user, setUser } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState(null);
   const [saving, setSaving] = React.useState(false);
@@ -430,10 +431,15 @@ const StickerAvatarGrant = ({ userId, userName, currentUnlockedIds = [], onUpdat
   const save = async () => {
     setSaving(true);
     try {
-      await dsAdminUpdateAvatarUnlocks(userId, [...selected]);
+      const newIds = [...selected];
+      await dsAdminUpdateAvatarUnlocks(userId, newIds);
       showToast(`Sticker-Avatare für ${userName} gespeichert!`, 'success');
       setOpen(false);
-      if (onUpdated) onUpdated([...selected]);
+      if (onUpdated) onUpdated(newIds);
+      // Eigenen Auth-State aktualisieren, damit Profil sofort die neuen Sticker zeigt
+      if (user?.id === userId) {
+        setUser(prev => prev ? { ...prev, unlockedAvatarIds: newIds } : prev);
+      }
     } catch (err) {
       showToast('Fehler: ' + err.message, 'error');
     } finally {

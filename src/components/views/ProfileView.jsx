@@ -6,9 +6,10 @@ import {
   updateMyProfile as dsUpdateMyProfile,
   changeMyPassword as dsChangeMyPassword,
   deleteMyAccount as dsDeleteMyAccount,
-  getTotpStatus as dsGetTotpStatus
+  getTotpStatus as dsGetTotpStatus,
+  adminUpdateAvatarUnlocks as dsAdminUpdateAvatarUnlocks
 } from '../../lib/dataService';
-import { AVATARS, PERMISSIONS, getAvatarById, getLevel } from '../../data/constants';
+import { AVATARS, PERMISSIONS, getAvatarById, getLevel, getStickerSpriteStyle, isStickerAvatar } from '../../data/constants';
 import AvatarBadge from '../ui/AvatarBadge';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
@@ -43,6 +44,7 @@ const ProfileView = ({
   const [pushActionLoading, setPushActionLoading] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [avatarFilter, setAvatarFilter] = useState('all');
+  const [adminStickerSaving, setAdminStickerSaving] = useState(false);
   const [totpEnabled, setTotpEnabled] = useState(false);
 
   const isAdmin = user?.role === 'admin';
@@ -314,6 +316,26 @@ const ProfileView = ({
     }
   };
 
+  // Admin: einzelnen Sticker für sich selbst ein-/ausschalten
+  const adminToggleStickerForSelf = async (avatarId) => {
+    if (!isAdmin || adminStickerSaving) return;
+    const current = Array.isArray(user?.unlockedAvatarIds) ? user.unlockedAvatarIds : [];
+    const next = current.includes(avatarId)
+      ? current.filter(id => id !== avatarId)
+      : [...current, avatarId];
+    setAdminStickerSaving(true);
+    try {
+      await dsAdminUpdateAvatarUnlocks(user.id, next);
+      const updatedUser = { ...user, unlockedAvatarIds: next };
+      setUser(updatedUser);
+      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
+    } catch (error) {
+      showToast('Fehler beim Freischalten', 'error');
+    } finally {
+      setAdminStickerSaving(false);
+    }
+  };
+
   const updateProfileCompany = async () => {
     setProfileSaving(true);
     try {
@@ -566,6 +588,20 @@ const ProfileView = ({
                     <div className={`mt-2 text-xs ${unlocked ? (darkMode ? 'text-emerald-300' : 'text-emerald-700') : (darkMode ? 'text-amber-300' : 'text-amber-700')}`}>
                       {hasUnlockRules ? (unlocked ? 'Freigeschaltet' : nextRequirementText) : 'Standard-Avatar'}
                     </div>
+                    {/* Admin-Schnell-Toggle für eigene Sticker */}
+                    {isAdmin && isAdminOnly && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); adminToggleStickerForSelf(avatar.id); }}
+                        disabled={adminStickerSaving}
+                        className={`mt-1 w-full text-[10px] font-bold py-0.5 rounded transition-colors ${
+                          unlocked
+                            ? 'bg-pink-100 text-pink-700 hover:bg-pink-200'
+                            : 'bg-gray-100 text-gray-500 hover:bg-pink-50 hover:text-pink-600'
+                        }`}
+                      >
+                        {unlocked ? '✓ Freigeschalten' : '+ Freischalten'}
+                      </button>
+                    )}
                   </button>
                 );
               })}
