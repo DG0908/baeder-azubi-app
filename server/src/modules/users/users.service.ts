@@ -12,6 +12,7 @@ import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.in
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ApproveUserDto } from './dto/approve-user.dto';
+import { UpdateAvatarUnlocksDto } from './dto/update-avatar-unlocks.dto';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 import { UpdateUserPermissionsDto } from './dto/update-user-permissions.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
@@ -41,7 +42,8 @@ const currentUserSelect = {
   createdAt: true,
   updatedAt: true,
   lastLoginAt: true,
-  reportBookProfile: true
+  reportBookProfile: true,
+  unlockedAvatarIds: true
 } satisfies Prisma.UserSelect;
 
 const adminUserSelect = {
@@ -68,7 +70,8 @@ const adminUserSelect = {
   createdAt: true,
   updatedAt: true,
   lastLoginAt: true,
-  approvedAt: true
+  approvedAt: true,
+  unlockedAvatarIds: true
 } satisfies Prisma.UserSelect;
 
 const exportRelatedUserSelect = {
@@ -927,6 +930,36 @@ export class UsersService {
     );
 
     return { deleted: true };
+  }
+
+  async updateAvatarUnlocks(
+    actor: AuthenticatedUser,
+    userId: string,
+    dto: UpdateAvatarUnlocksDto,
+    request: Request
+  ) {
+    const target = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!target || target.isDeleted) {
+      throw new NotFoundException('User not found.');
+    }
+
+    const avatarIds = dto.avatarIds.map((id) => String(id).trim().slice(0, 120));
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { unlockedAvatarIds: avatarIds }
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'user.avatar_unlocks_updated',
+      'user',
+      userId,
+      { avatarIds } as Prisma.InputJsonValue,
+      request
+    );
+
+    return { success: true, unlockedAvatarIds: avatarIds };
   }
 
   private sanitizeText(value: string, maxLength: number): string {

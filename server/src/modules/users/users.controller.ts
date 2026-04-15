@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
@@ -8,6 +8,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { AdminResetPasswordDto } from './dto/admin-reset-password.dto';
 import { ApproveUserDto } from './dto/approve-user.dto';
+import { UpdateAvatarUnlocksDto } from './dto/update-avatar-unlocks.dto';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 import { UpdateUserOrganizationDto } from './dto/update-user-organization.dto';
 import { UpdateUserPermissionsDto } from './dto/update-user-permissions.dto';
@@ -135,6 +136,17 @@ export class UsersController {
     @Req() request: Request
   ) {
     return this.usersService.deleteSelf(user, request);
+  }
+
+  @Roles(AppRole.ADMIN)
+  @Post(':id/avatar-unlocks')
+  avatarUnlocks(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') userId: string,
+    @Body() dto: UpdateAvatarUnlocksDto,
+    @Req() request: Request
+  ) {
+    return this.usersService.updateAvatarUnlocks(actor, userId, dto, request);
   }
 
   @Roles(AppRole.ADMIN)

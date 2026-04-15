@@ -1,5 +1,5 @@
 import React from 'react';
-import { avatarHasSunglasses, getAvatarShortCode } from '../../data/constants';
+import { avatarHasSunglasses, getAvatarShortCode, getStickerSpriteStyle, isStickerAvatar } from '../../data/constants';
 
 const SIZE_STYLES = {
   sm: {
@@ -36,6 +36,19 @@ const AvatarBadge = ({
   className = ''
 }) => {
   const sizeStyle = SIZE_STYLES[size] || SIZE_STYLES.md;
+
+  // Sticker sprite rendering
+  if (isStickerAvatar(avatar)) {
+    const spriteStyle = getStickerSpriteStyle(avatar);
+    return (
+      <div
+        className={`relative rounded-full overflow-hidden ${sizeStyle.box} ${className} shadow-md ring-2 ring-white/30`}
+        style={spriteStyle}
+        title={avatar?.label || 'Sticker Avatar'}
+      />
+    );
+  }
+
   const theme = String(avatar?.theme || 'ocean').toLowerCase();
   const gradientClass = THEME_STYLES[theme] || THEME_STYLES.ocean;
   const icon = avatar ? getAvatarShortCode(avatar) : fallback;

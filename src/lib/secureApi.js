@@ -58,7 +58,8 @@ export const mapBackendUserToFrontendUser = (user) => {
     can_view_exam_grades: false,
     canSignReports: Boolean(user.canSignReports ?? user.can_sign_reports),
     can_sign_reports: Boolean(user.canSignReports ?? user.can_sign_reports),
-    berichtsheft_profile: user.reportBookProfile ?? user.report_book_profile ?? null
+    berichtsheft_profile: user.reportBookProfile ?? user.report_book_profile ?? null,
+    unlockedAvatarIds: Array.isArray(user.unlockedAvatarIds) ? user.unlockedAvatarIds : []
   };
 };
 
@@ -219,6 +220,10 @@ export const secureUsersApi = {
   adminResetPassword: (userId, newPassword) => apiRequest(`/users/${userId}/password`, {
     method: 'PATCH',
     body: JSON.stringify({ newPassword })
+  }),
+  updateAvatarUnlocks: (userId, avatarIds) => apiRequest(`/users/${userId}/avatar-unlocks`, {
+    method: 'POST',
+    body: JSON.stringify({ avatarIds })
   })
 };
 

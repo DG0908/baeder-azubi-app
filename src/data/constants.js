@@ -463,7 +463,48 @@ export const AVATARS = [
         { metric: 'swimCorrect', target: 80 }
       ]
     }
-  }
+  },
+  // ── Sticker Collection: Meereswesen (Admin-freischaltbar) ──
+  // Sheet 1: Sonnenbrillen-Thema (3×3 Raster)
+  { id: 'sticker_cool_oktopus',       label: 'Coole Krake',          sheet: 1, row: 0, col: 0, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_cool_delfin',        label: 'Cooler Delfin',        sheet: 1, row: 0, col: 1, rarity: 'sticker', theme: 'rescue',  discipline: 'Schwimmen & Rettung',   unlock: { adminOnly: true } },
+  { id: 'sticker_cool_fisch',         label: 'Cooler Fisch',         sheet: 1, row: 0, col: 2, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_cool_krabbe',        label: 'Coole Krabbe',         sheet: 1, row: 1, col: 0, rarity: 'sticker', theme: 'elite',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_cool_schildkroete',  label: 'Coole Schildkröte',   sheet: 1, row: 1, col: 1, rarity: 'sticker', theme: 'hygiene', discipline: 'Hygiene',               unlock: { adminOnly: true } },
+  { id: 'sticker_cool_delfin2',       label: 'Delfin mit Brille',    sheet: 1, row: 1, col: 2, rarity: 'sticker', theme: 'rescue',  discipline: 'Schwimmen & Rettung',   unlock: { adminOnly: true } },
+  { id: 'sticker_cool_clownfisch',    label: 'Clownfisch',           sheet: 1, row: 2, col: 0, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_cool_schildkroete2', label: 'Sonnige Schildkröte', sheet: 1, row: 2, col: 1, rarity: 'sticker', theme: 'hygiene', discipline: 'Hygiene',               unlock: { adminOnly: true } },
+  { id: 'sticker_cool_rettungshai',   label: 'Rettungs-Hai',        sheet: 1, row: 2, col: 2, rarity: 'sticker', theme: 'rescue',  discipline: 'Schwimmen & Rettung',   unlock: { adminOnly: true } },
+  // Sheet 2: Strand-Thema (3×3 Raster)
+  { id: 'sticker_strand_oktopus',     label: 'Strand-Krake',         sheet: 2, row: 0, col: 0, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_strand_delfin',      label: 'Strand-Delfin',        sheet: 2, row: 0, col: 1, rarity: 'sticker', theme: 'rescue',  discipline: 'Schwimmen & Rettung',   unlock: { adminOnly: true } },
+  { id: 'sticker_strand_fisch',       label: 'Strand-Fisch',         sheet: 2, row: 0, col: 2, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_strand_robbe',       label: 'Strand-Robbe',         sheet: 2, row: 1, col: 0, rarity: 'sticker', theme: 'rescue',  discipline: 'Schwimmen & Rettung',   unlock: { adminOnly: true } },
+  { id: 'sticker_strand_schildkroete',label: 'Strand-Schildkröte',  sheet: 2, row: 1, col: 1, rarity: 'sticker', theme: 'hygiene', discipline: 'Hygiene',               unlock: { adminOnly: true } },
+  { id: 'sticker_strand_seestern',    label: 'Seestern',             sheet: 2, row: 1, col: 2, rarity: 'sticker', theme: 'elite',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_strand_kugelfisch',  label: 'Kugelfisch',           sheet: 2, row: 2, col: 0, rarity: 'sticker', theme: 'tech',    discipline: 'Bädertechnik',         unlock: { adminOnly: true } },
+  { id: 'sticker_strand_fisch2',      label: 'Blauer Meeresfisch',   sheet: 2, row: 2, col: 1, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_strand_hai',         label: 'Strand-Hai',           sheet: 2, row: 2, col: 2, rarity: 'sticker', theme: 'rescue',  discipline: 'Schwimmen & Rettung',   unlock: { adminOnly: true } },
+  // Sheet 3: Mix-Thema (3×3 Raster)
+  { id: 'sticker_mix_schildkroete',   label: 'Grüne Schildkröte',   sheet: 3, row: 0, col: 0, rarity: 'sticker', theme: 'hygiene', discipline: 'Hygiene',               unlock: { adminOnly: true } },
+  { id: 'sticker_mix_hummer',         label: 'Roter Hummer',         sheet: 3, row: 0, col: 1, rarity: 'sticker', theme: 'elite',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_mix_robbe',          label: 'Robbe',                sheet: 3, row: 0, col: 2, rarity: 'sticker', theme: 'rescue',  discipline: 'Schwimmen & Rettung',   unlock: { adminOnly: true } },
+  { id: 'sticker_mix_monsterfisch',   label: 'Monster-Fisch',        sheet: 3, row: 1, col: 0, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_mix_goldfisch',      label: 'Goldfisch',            sheet: 3, row: 1, col: 1, rarity: 'sticker', theme: 'elite',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_mix_oktopus',        label: 'Pinke Krake',          sheet: 3, row: 1, col: 2, rarity: 'sticker', theme: 'firstaid',discipline: 'Erste Hilfe',           unlock: { adminOnly: true } },
+  { id: 'sticker_mix_wurm',           label: 'Meereswurm',           sheet: 3, row: 2, col: 0, rarity: 'sticker', theme: 'tech',    discipline: 'Bädertechnik',         unlock: { adminOnly: true } },
+  { id: 'sticker_mix_creature',       label: 'Blaues Meerestier',    sheet: 3, row: 2, col: 1, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_mix_krabbe',         label: 'Orange Krabbe',        sheet: 3, row: 2, col: 2, rarity: 'sticker', theme: 'elite',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  // Sheet 4: Schnorchel-Thema (3×3 Raster)
+  { id: 'sticker_tauch_oktopus',      label: 'Tauch-Krake',          sheet: 4, row: 0, col: 0, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_tauch_delfin',       label: 'Tauch-Delfin',         sheet: 4, row: 0, col: 1, rarity: 'sticker', theme: 'rescue',  discipline: 'Schwimmen & Rettung',   unlock: { adminOnly: true } },
+  { id: 'sticker_tauch_hai',          label: 'Pinker Hai',           sheet: 4, row: 0, col: 2, rarity: 'sticker', theme: 'firstaid',discipline: 'Erste Hilfe',           unlock: { adminOnly: true } },
+  { id: 'sticker_tauch_krabbe',       label: 'Tauch-Krabbe',         sheet: 4, row: 1, col: 0, rarity: 'sticker', theme: 'elite',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_tauch_schildkroete', label: 'Tauch-Schildkröte',   sheet: 4, row: 1, col: 1, rarity: 'sticker', theme: 'hygiene', discipline: 'Hygiene',               unlock: { adminOnly: true } },
+  { id: 'sticker_tauch_hai2',         label: 'Blauer Hai',           sheet: 4, row: 1, col: 2, rarity: 'sticker', theme: 'rescue',  discipline: 'Schwimmen & Rettung',   unlock: { adminOnly: true } },
+  { id: 'sticker_tauch_clownfisch',   label: 'Tauch-Clownfisch',     sheet: 4, row: 2, col: 0, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } },
+  { id: 'sticker_tauch_schildkroete2',label: 'Meeresschildkröte',   sheet: 4, row: 2, col: 1, rarity: 'sticker', theme: 'hygiene', discipline: 'Hygiene',               unlock: { adminOnly: true } },
+  { id: 'sticker_tauch_fisch',        label: 'Tauch-Fisch',          sheet: 4, row: 2, col: 2, rarity: 'sticker', theme: 'ocean',   discipline: 'Allround',              unlock: { adminOnly: true } }
 ];
 
 export const getAvatarById = (avatarId) => AVATARS.find((avatar) => avatar.id === avatarId) || null;
@@ -486,4 +527,24 @@ export const avatarHasSunglasses = (avatarInput) => {
   if (avatarInput.sunglasses) return true;
   const rarity = String(avatarInput.rarity || '').toLowerCase();
   return rarity === 'gold' || rarity === 'legendary';
+};
+
+/** Returns true if this avatar uses a sticker sheet sprite image */
+export const isStickerAvatar = (avatarInput) =>
+  Boolean(avatarInput?.sheet && avatarInput?.rarity === 'sticker');
+
+/** Returns the CSS background properties for a sticker sprite (3×3 grid per sheet) */
+export const getStickerSpriteStyle = (avatarInput) => {
+  if (!isStickerAvatar(avatarInput)) return null;
+  const col = Number(avatarInput.col ?? 0);
+  const row = Number(avatarInput.row ?? 0);
+  // 3-column grid: positions 0→0%, 1→50%, 2→100%
+  const xPct = col * 50;
+  const yPct = row * 50;
+  return {
+    backgroundImage: `url('/avatars/sticker_sheet_${avatarInput.sheet}.png')`,
+    backgroundSize: '300% 300%',
+    backgroundPosition: `${xPct}% ${yPct}%`,
+    backgroundRepeat: 'no-repeat'
+  };
 };
