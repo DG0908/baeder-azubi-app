@@ -76,7 +76,7 @@ export class DuelsController {
   }
 
   @Allow()
-  @Throttle({ default: { ttl: 600000, limit: 20 } })
+  @Throttle({ default: { ttl: 60000, limit: 30 } })
   @Post(':id/answers')
   submitAnswer(
     @CurrentUser() actor: AuthenticatedUser,
