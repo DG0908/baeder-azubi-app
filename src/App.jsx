@@ -6971,13 +6971,39 @@ export default function BaederApp() {
       return { success: false, error: 'Bitte melde dich erneut an.' };
     }
 
+    // Bulk: Plan an alle übergebenen Azubis vergeben
+    if (Array.isArray(planInput.assignToAllCandidates) && planInput.assignToAllCandidates.length > 0) {
+      const candidates = planInput.assignToAllCandidates;
+      let successCount = 0;
+      for (const azubi of candidates) {
+        const singleResult = await createCustomSwimTrainingPlan({
+          ...planInput,
+          assignedUserId: azubi.id,
+          assignToAllCandidates: null
+        });
+        if (singleResult?.success) successCount++;
+      }
+      if (successCount === 0) return { success: false, error: 'Kein Plan konnte gespeichert werden.' };
+      showToast(`Trainingsplan an ${successCount} Azubi${successCount !== 1 ? 's' : ''} zugewiesen.`, 'success');
+      return { success: true };
+    }
+
     const isTrainerLike = Boolean(
       user?.permissions?.canViewAllStats
       || user?.role === 'admin'
       || user?.role === 'trainer'
       || user?.role === 'ausbilder'
     );
-    const availableAzubis = allUsers.filter((account) => account?.id && String(account.role || '').toLowerCase() === 'azubi');
+    // Ausbilder sehen nur Azubis ihrer eigenen Organisation
+    const canSeeAll = user?.permissions?.canManageUsers || user?.role === 'admin';
+    const availableAzubis = allUsers.filter((account) => {
+      if (!account?.id || String(account.role || '').toLowerCase() !== 'azubi') return false;
+      if (!canSeeAll && user?.organizationId) {
+        const accountOrgId = account?.organizationId || account?.organization_id || null;
+        return accountOrgId === user.organizationId;
+      }
+      return true;
+    });
     const requestedAssignedUserId = String(planInput.assignedUserId || '').trim();
     const fallbackAssignedUserId = isTrainerLike
       ? (availableAzubis[0]?.id || user.id)

@@ -175,7 +175,16 @@ const {
     || user?.role === 'trainer'
     || user?.role === 'ausbilder'
   );
-  const azubiCandidates = allUsers.filter((account) => String(account?.role || '').toLowerCase() === 'azubi' && account?.id);
+  const azubiCandidates = allUsers.filter((account) => {
+    if (String(account?.role || '').toLowerCase() !== 'azubi' || !account?.id) return false;
+    // Ausbilder sehen nur Azubis ihrer eigenen Organisation
+    const canSeeAll = user?.permissions?.canManageUsers || user?.role === 'admin';
+    if (!canSeeAll && user?.organizationId) {
+      const accountOrgId = account?.organizationId || account?.organization_id || null;
+      return accountOrgId === user.organizationId;
+    }
+    return true;
+  });
   const [customPlanForm, setCustomPlanForm] = React.useState({
     name: '',
     category: 'ausdauer',
@@ -257,7 +266,8 @@ const {
       })),
       xpReward: customPlanForm.xpReward,
       description: customPlanForm.description,
-      assignedUserId: isTrainerLike ? customPlanForm.assignedUserId : user?.id
+      assignedUserId: isTrainerLike ? customPlanForm.assignedUserId : user?.id,
+      assignToAllCandidates: isTrainerLike && customPlanForm.assignedUserId === '__all__' ? azubiCandidates : null
     };
 
     const result = await createCustomSwimTrainingPlan(payload);
@@ -629,7 +639,7 @@ const {
 
                     {isTrainerLike && (
                       <div className="md:col-span-2">
-                        <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Zuweisen an Azubi</label>
+                        <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Zuweisen an</label>
                         <select
                           value={customPlanForm.assignedUserId}
                           onChange={(event) => setCustomPlanForm((prev) => ({ ...prev, assignedUserId: event.target.value }))}
@@ -637,6 +647,9 @@ const {
                           className={`w-full px-3 py-2 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
                         >
                           {azubiCandidates.length === 0 && <option value="">Keine Azubis verfügbar</option>}
+                          {azubiCandidates.length > 1 && (
+                            <option value="__all__">👥 Alle Azubis ({azubiCandidates.length})</option>
+                          )}
                           {azubiCandidates.map((azubi) => (
                             <option key={azubi.id} value={azubi.id}>{azubi.name}</option>
                           ))}
