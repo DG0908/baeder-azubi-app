@@ -391,7 +391,10 @@ export class AppConfigService {
     allowFallbackOnError: boolean
   ) {
     if (value === undefined) {
-      return this.normalizeMenuItems(Array.isArray(fallback) ? fallback : []);
+      // No menuItems in the request (e.g. feature-flag-only update).
+      // Re-use stored data as-is — it is already persisted, re-validating
+      // it would break updates when old group values are stored in the DB.
+      return this.normalizeMenuItemsFromStorage(Array.isArray(fallback) ? fallback : []);
     }
 
     try {
@@ -400,7 +403,8 @@ export class AppConfigService {
       if (!allowFallbackOnError) {
         throw error;
       }
-      return this.normalizeMenuItems(Array.isArray(fallback) ? fallback : []);
+      // Fallback: stored data may have old/unknown group values — accept as-is.
+      return this.normalizeMenuItemsFromStorage(Array.isArray(fallback) ? fallback : []);
     }
   }
 
