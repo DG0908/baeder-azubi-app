@@ -1,5 +1,5 @@
 import React from 'react';
-import { getAvatarShortCode, avatarHasSunglasses } from '../../data/constants';
+import { getAvatarShortCode, avatarHasSunglasses, getStickerSpriteStyle, isStickerAvatar } from '../../data/constants';
 
 /* ── size presets ────────────────────────────────────────── */
 const SIZES = {
@@ -137,6 +137,28 @@ const PremiumAvatarBadge = ({
   injectStyles();
 
   const s = SIZES[size] || SIZES.md;
+
+  // Sticker sprite: render as simple circular image, no ring/particles
+  if (isStickerAvatar(avatar) && !locked) {
+    const spriteStyle = getStickerSpriteStyle(avatar);
+    return (
+      <div style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: onClick ? 'pointer' : 'default' }} className={className} onClick={onClick} title={avatar?.label || 'Sticker Avatar'}>
+        <div style={{ position: 'relative', width: s.box, height: s.box }}>
+          <div style={{ width: s.box, height: s.box, borderRadius: '50%', overflow: 'hidden', boxShadow: '0 0 18px rgba(236,72,153,0.35)', ...spriteStyle }} />
+          <div style={{ position: 'absolute', top: -3, left: -3, width: s.box + 6, height: s.box + 6, borderRadius: '50%', border: '2px solid rgba(236,72,153,0.6)', pointerEvents: 'none' }} />
+        </div>
+        {showLabel && (
+          <div style={{ textAlign: 'center', maxWidth: s.box + 20 }}>
+            <div style={{ fontSize: size === 'sm' ? 10 : 12, fontWeight: 600, color: '#e2e8f0', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {avatar?.label || '???'}
+            </div>
+            <div style={{ fontSize: size === 'sm' ? 8 : 10, color: '#f472b6', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>Sticker</div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const rarity = RARITY[avatar?.rarity] || RARITY.common;
   const theme = THEME_ACCENTS[avatar?.theme] || THEME_ACCENTS.ocean;
   const icon = avatar ? getAvatarShortCode(avatar) : '◈';

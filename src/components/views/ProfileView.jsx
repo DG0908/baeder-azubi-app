@@ -141,6 +141,10 @@ const ProfileView = ({
     legendary: {
       label: 'Legendär',
       chipClass: darkMode ? 'bg-violet-900/60 text-violet-200' : 'bg-violet-100 text-violet-700'
+    },
+    sticker: {
+      label: 'Sticker',
+      chipClass: darkMode ? 'bg-pink-900/60 text-pink-200' : 'bg-pink-100 text-pink-700'
     }
   };
   const formatUnlockValue = (metric, value) => {
@@ -170,6 +174,18 @@ const ProfileView = ({
     return `${label}: ${formatUnlockValue(requirementInput.metric, requirementInput.target)}`;
   };
   const getAvatarUnlockState = (avatarInput) => {
+    // Admin-only sticker avatars: unlocked only if admin explicitly granted it
+    if (avatarInput?.unlock?.adminOnly) {
+      const grantedIds = Array.isArray(user?.unlockedAvatarIds) ? user.unlockedAvatarIds : [];
+      const unlocked = grantedIds.includes(avatarInput.id);
+      return {
+        unlocked,
+        progress: unlocked ? 1 : 0,
+        requirements: [],
+        nextRequirementText: unlocked ? 'Freigeschaltet' : 'Von Admin freischaltbar'
+      };
+    }
+
     const requirements = getAvatarRequirements(avatarInput);
     if (requirements.length === 0) {
       return {
@@ -491,7 +507,8 @@ const ProfileView = ({
                 { key: 'bronze', label: 'Bronze' },
                 { key: 'silver', label: 'Silber' },
                 { key: 'gold', label: 'Gold' },
-                { key: 'legendary', label: 'Legendär' }
+                { key: 'legendary', label: 'Legendär' },
+                { key: 'sticker', label: '🐠 Sticker' }
               ].map(tab => (
                 <button
                   key={tab.key}
@@ -511,12 +528,13 @@ const ProfileView = ({
                 const { avatar, unlocked, nextRequirementText, requirements } = entry;
                 const isSelected = user.avatar === avatar.id;
                 const rarityMeta = AVATAR_RARITY_META[avatar.rarity] || AVATAR_RARITY_META.common;
-                const hasUnlockRules = requirements.length > 0;
+                const isAdminOnly = avatar?.unlock?.adminOnly;
+                const hasUnlockRules = requirements.length > 0 || isAdminOnly;
                 return (
                   <button
                     key={avatar.id}
-                    onClick={() => { updateProfileAvatar(avatar.id); setShowAvatarPicker(false); }}
-                    disabled={profileSaving}
+                    onClick={() => { if (!isAdminOnly || unlocked) { updateProfileAvatar(avatar.id); setShowAvatarPicker(false); } }}
+                    disabled={profileSaving || (isAdminOnly && !unlocked)}
                     title={avatar.label}
                     className={`relative p-3 rounded-xl border text-left transition-all ${
                       isSelected

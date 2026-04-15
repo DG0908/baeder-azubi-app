@@ -10,6 +10,7 @@ import {
   toggleInvitationEntryActive as dsToggleInvitationEntryActive,
   deleteInvitationEntry as dsDeleteInvitationEntry,
   adminResetUserPassword as dsAdminResetUserPassword,
+  adminUpdateAvatarUnlocks as dsAdminUpdateAvatarUnlocks,
   loadActiveOrganizations as dsLoadActiveOrganizations,
   assignUserOrganization as dsAssignUserOrganization,
   deleteUser as dsDeleteUser
@@ -404,7 +405,111 @@ const AdminPasswordReset = ({ userId, userEmail, userName }) => {
     </button>
   );
 };
-import { CATEGORIES, PERMISSIONS, MENU_GROUP_LABELS } from '../../data/constants';
+import { AVATARS, CATEGORIES, PERMISSIONS, MENU_GROUP_LABELS, getStickerSpriteStyle, isStickerAvatar } from '../../data/constants';
+
+const STICKER_AVATARS = AVATARS.filter(a => isStickerAvatar(a));
+
+const StickerAvatarGrant = ({ userId, userName, currentUnlockedIds = [], onUpdated }) => {
+  const { showToast } = useApp();
+  const [open, setOpen] = React.useState(false);
+  const [selected, setSelected] = React.useState(null);
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    if (open) setSelected(new Set(Array.isArray(currentUnlockedIds) ? currentUnlockedIds : []));
+  }, [open, currentUnlockedIds]);
+
+  const toggle = (avatarId) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(avatarId)) next.delete(avatarId); else next.add(avatarId);
+      return next;
+    });
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await dsAdminUpdateAvatarUnlocks(userId, [...selected]);
+      showToast(`Sticker-Avatare für ${userName} gespeichert!`, 'success');
+      setOpen(false);
+      if (onUpdated) onUpdated([...selected]);
+    } catch (err) {
+      showToast('Fehler: ' + err.message, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const sheets = [1, 2, 3, 4];
+  const sheetLabels = { 1: 'Sonnenbrille', 2: 'Strand', 3: 'Mix', 4: 'Schnorchel' };
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="bg-pink-500 hover:bg-pink-600 text-white p-2 rounded-lg"
+        title="Sticker-Avatare freischalten"
+      >
+        🐠
+      </button>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-4 border-b">
+          <h3 className="font-bold text-lg">🐠 Sticker-Avatare — {userName}</h3>
+          <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+        </div>
+        <div className="overflow-y-auto flex-1 p-4 space-y-4">
+          {selected && sheets.map(sheet => (
+            <div key={sheet}>
+              <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Sheet {sheet} — {sheetLabels[sheet]}</p>
+              <div className="grid grid-cols-3 gap-2">
+                {STICKER_AVATARS.filter(a => a.sheet === sheet).map(avatar => {
+                  const spriteStyle = getStickerSpriteStyle(avatar);
+                  const isOn = selected.has(avatar.id);
+                  return (
+                    <button
+                      key={avatar.id}
+                      onClick={() => toggle(avatar.id)}
+                      className={`relative rounded-xl border-2 p-2 flex flex-col items-center gap-1 transition-all ${isOn ? 'border-pink-400 bg-pink-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300'}`}
+                    >
+                      <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white shadow" style={spriteStyle} />
+                      <span className="text-[10px] text-center leading-tight text-gray-600">{avatar.label}</span>
+                      {isOn && <span className="absolute top-1 right-1 text-xs bg-pink-500 text-white rounded-full w-4 h-4 flex items-center justify-center">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2 p-4 border-t">
+          <button
+            onClick={() => setSelected(new Set(STICKER_AVATARS.map(a => a.id)))}
+            className="text-xs text-pink-600 hover:underline"
+          >
+            Alle auswählen
+          </button>
+          <button
+            onClick={() => setSelected(new Set())}
+            className="text-xs text-gray-400 hover:underline"
+          >
+            Alle abwählen
+          </button>
+          <div className="flex-1" />
+          <button onClick={() => setOpen(false)} className="px-4 py-2 rounded-lg border text-sm">Abbrechen</button>
+          <button onClick={save} disabled={saving} className="px-4 py-2 rounded-lg bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold disabled:opacity-60">
+            {saving ? 'Speichern...' : 'Speichern'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ─── Org-Zuordnung Dropdown für einzelne User ───
 const UserOrgAssign = ({ userId, currentOrgId, onChanged }) => {
@@ -665,6 +770,12 @@ const AdminView = ({
             <Download size={18} />
           </button>
           <AdminPasswordReset userId={acc.id} userEmail={acc.email} userName={acc.name} />
+          <StickerAvatarGrant
+            userId={acc.id}
+            userName={acc.name || acc.email}
+            currentUnlockedIds={acc.unlockedAvatarIds || acc.unlocked_avatar_ids || []}
+            onUpdated={loadData}
+          />
           {acc.role !== 'admin' && (
             <button
               onClick={() => deleteUser(acc.email)}

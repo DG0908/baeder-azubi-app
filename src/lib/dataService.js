@@ -691,6 +691,10 @@ export const adminResetUserPassword = async (userId, userEmail, newPassword) => 
   return secureUsersApi.adminResetPassword(userId, newPassword);
 };
 
+export const adminUpdateAvatarUnlocks = async (userId, avatarIds) => {
+  return secureUsersApi.updateAvatarUnlocks(userId, Array.isArray(avatarIds) ? avatarIds : []);
+};
+
 export const loadRetentionCandidates = async () => {
   return secureUsersApi.list().then(users =>
     (users || []).filter(u => u.role === 'RETTUNGSSCHWIMMER_AZUBI' || u.role === 'AUSBILDER')

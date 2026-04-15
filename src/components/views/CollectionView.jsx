@@ -6,13 +6,14 @@ import { updateMyAvatar as dsUpdateMyAvatar } from '../../lib/dataService';
 import { AVATARS, getLevel } from '../../data/constants';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 
-const RARITY_ORDER = ['common', 'bronze', 'silver', 'gold', 'legendary'];
+const RARITY_ORDER = ['common', 'bronze', 'silver', 'gold', 'legendary', 'sticker'];
 const RARITY_META = {
   common:    { label: 'Standard',  color: '#64748b', bg: 'rgba(100,116,139,0.15)' },
   bronze:    { label: 'Bronze',    color: '#d97706', bg: 'rgba(217,119,6,0.15)' },
   silver:    { label: 'Silber',    color: '#94a3b8', bg: 'rgba(148,163,184,0.15)' },
   gold:      { label: 'Gold',      color: '#facc15', bg: 'rgba(250,204,21,0.15)' },
   legendary: { label: 'Legendär',  color: '#a78bfa', bg: 'rgba(167,139,250,0.15)' },
+  sticker:   { label: 'Sticker',   color: '#f472b6', bg: 'rgba(244,114,182,0.15)' },
 };
 
 const FILTER_OPTIONS = [
@@ -21,6 +22,7 @@ const FILTER_OPTIONS = [
   { id: 'locked', label: 'Gesperrt' },
   { id: 'legendary', label: 'Legendär' },
   { id: 'gold', label: 'Gold' },
+  { id: 'sticker', label: '🐠 Sticker' },
 ];
 
 const UNLOCK_METRIC_LABELS = {
@@ -74,6 +76,13 @@ const CollectionView = ({ userStats, swimSessions, userBadges, setCurrentView })
   };
 
   const getUnlockState = (av) => {
+    // Admin-only sticker avatars
+    if (av?.unlock?.adminOnly) {
+      const grantedIds = Array.isArray(user?.unlockedAvatarIds) ? user.unlockedAvatarIds : [];
+      const unlocked = grantedIds.includes(av.id);
+      return { unlocked, progress: unlocked ? 1 : 0, reqs: [], states: [], adminOnly: true };
+    }
+
     let reqs = [];
     if (Array.isArray(av?.unlock?.requirements) && av.unlock.requirements.length > 0) {
       reqs = av.unlock.requirements.map(r => ({ metric: String(r?.metric || ''), target: Math.max(1, toSafeInt(r?.target)) })).filter(r => r.metric);
@@ -101,6 +110,7 @@ const CollectionView = ({ userStats, swimSessions, userBadges, setCurrentView })
     if (filter === 'locked') return !e.unlocked;
     if (filter === 'legendary') return e.avatar.rarity === 'legendary';
     if (filter === 'gold') return e.avatar.rarity === 'gold';
+    if (filter === 'sticker') return e.avatar.rarity === 'sticker';
     return true;
   });
 
@@ -317,7 +327,9 @@ const CollectionView = ({ userStats, swimSessions, userBadges, setCurrentView })
                 </button>
               ) : (
                 <div className={`flex-1 py-3 rounded-xl text-center font-bold text-sm ${darkMode ? 'bg-slate-700 text-gray-400' : 'bg-gray-100 text-gray-400'}`}>
-                  🔒 Noch {Math.round((1 - selectedAvatar.progress) * 100)}% fehlen
+                  {selectedAvatar.adminOnly
+                    ? '🔒 Von Admin freischaltbar'
+                    : `🔒 Noch ${Math.round((1 - selectedAvatar.progress) * 100)}% fehlen`}
                 </div>
               )}
             </div>
