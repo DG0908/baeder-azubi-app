@@ -2227,40 +2227,13 @@ export default function BaederApp() {
 
     if (isFinishedGameStatus(updatedGame.status)) {
       if (duelResult?.gameId !== updatedGame.id) {
-        // Spiel wurde vom Server beendet (z.B. durch Gegner). Stats für diesen Spieler
-        // aktualisieren (h2h), dann Ergebnis anzeigen.
+        // Spiel vom Server als beendet erkannt. H2H aus Spieldaten berechnen (zuverlässig)
+        // und Ergebnis-Screen anzeigen.
         const opponentNameForStats = namesMatch(updatedGame.player1, user.name)
           ? updatedGame.player2
           : updatedGame.player1;
-        const winnerForStats = resolveFinishedGameWinner(updatedGame);
-        getUserStatsFromSupabase(user).then(existingStats => {
-          const stats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
-          if (!stats.opponents[opponentNameForStats]) {
-            stats.opponents[opponentNameForStats] = { wins: 0, losses: 0, draws: 0 };
-          }
-          if (winnerForStats === user.name) {
-            stats.wins++;
-            stats.opponents[opponentNameForStats].wins++;
-            stats.winStreak = (stats.winStreak || 0) + 1;
-            if (stats.winStreak > (stats.bestWinStreak || 0)) stats.bestWinStreak = stats.winStreak;
-          } else if (winnerForStats === null) {
-            stats.draws++;
-            stats.opponents[opponentNameForStats].draws++;
-          } else {
-            stats.losses++;
-            stats.opponents[opponentNameForStats].losses++;
-            stats.winStreak = 0;
-          }
-          saveUserStatsToSupabase(user, stats).catch(() => {});
-          setUserStats(stats);
-          showDuelResultForGame(
-            updatedGame,
-            allGames,
-            stats.opponents[opponentNameForStats]
-          );
-        }).catch(() => {
-          showDuelResultForGame(updatedGame, allGames);
-        });
+        const h2hFromGames = buildHeadToHeadFromFinishedGames(allGames, user.name, opponentNameForStats);
+        showDuelResultForGame(updatedGame, allGames, h2hFromGames);
       }
       return;
     }
@@ -4005,12 +3978,26 @@ export default function BaederApp() {
 
     setCategoryRound(roundIndex);
     setPlayerTurn(syncedGame.currentTurn || '');
+
+    // Extreme race condition: opponent called finishGame before we fetched → show result immediately
+    if (isFinishedGameStatus(syncedGame.status) && myRoundCompleted) {
+      const gamesForH2h = allGames.some(g => g.id === syncedGame.id)
+        ? allGames
+        : [...allGames, syncedGame];
+      showDuelResultForGame(syncedGame, gamesForH2h);
+      return syncedGame;
+    }
+
+    // Normal waiting: I finished my round but opponent hasn't yet.
+    // Race condition: both finished the round but game not finalized (opponent's currentTurn) → keep waiting.
     setWaitingForOpponent(
       Boolean(
-        syncedGame.currentTurn !== user.name
-        && questionCount > 0
+        questionCount > 0
         && myRoundCompleted
-        && !opponentRoundCompleted
+        && (
+          !opponentRoundCompleted                   // Opponent hasn't answered yet
+          || syncedGame.currentTurn !== user.name   // Both answered but not my turn to finalize/choose
+        )
       )
     );
 
@@ -5266,8 +5253,11 @@ export default function BaederApp() {
           };
         });
 
-        // H2H aus den aktualisierten Stats lesen (inkl. aktuelles Spiel)
-        updatedH2h = stats.opponents[opponent] || { wins: 0, losses: 0, draws: 0 };
+        // H2H aus Spieldaten berechnen (zuverlässiger als Server-Stats die ggf. schon inkl. dieses Spiels)
+        const allGamesWithSaved = allGames.some(g => g.id === savedGame.id)
+          ? allGames.map(g => g.id === savedGame.id ? savedGame : g)
+          : [...allGames, savedGame];
+        updatedH2h = buildHeadToHeadFromFinishedGames(allGamesWithSaved, user.name, opponent);
       } catch (error) {
         console.error('Stats update error:', error);
       }
