@@ -552,22 +552,34 @@ const ProfileView = ({
                 const rarityMeta = AVATAR_RARITY_META[avatar.rarity] || AVATAR_RARITY_META.common;
                 const isAdminOnly = avatar?.unlock?.adminOnly;
                 const hasUnlockRules = requirements.length > 0 || isAdminOnly;
+                // Admin + adminOnly: Karte toggled Freischaltung; wenn bereits freigeschaltet → Avatar auswählen
+                const handleCardClick = () => {
+                  if (profileSaving || adminStickerSaving) return;
+                  if (isAdmin && isAdminOnly) {
+                    if (unlocked) { updateProfileAvatar(avatar.id); setShowAvatarPicker(false); }
+                    else { adminToggleStickerForSelf(avatar.id); }
+                    return;
+                  }
+                  if (!isAdminOnly || unlocked) { updateProfileAvatar(avatar.id); setShowAvatarPicker(false); }
+                };
                 return (
-                  <button
+                  <div
                     key={avatar.id}
-                    onClick={() => { if (!isAdminOnly || unlocked) { updateProfileAvatar(avatar.id); setShowAvatarPicker(false); } }}
-                    disabled={profileSaving || (isAdminOnly && !unlocked)}
+                    onClick={handleCardClick}
                     title={avatar.label}
-                    className={`relative p-3 rounded-xl border text-left transition-all ${
+                    role="button"
+                    className={`relative p-3 rounded-xl border text-left transition-all cursor-pointer ${
                       isSelected
                         ? `ring-2 ring-cyan-400 ${darkMode ? 'bg-cyan-900/30 border-cyan-500' : 'bg-cyan-50 border-cyan-300'}`
                         : darkMode
                           ? 'bg-slate-700 border-slate-600 hover:bg-slate-600'
                           : 'bg-gray-50 border-gray-200 hover:bg-white'
-                    } ${unlocked ? 'hover:-translate-y-0.5' : 'opacity-75'}`}
+                    } ${(unlocked || (isAdmin && isAdminOnly)) ? 'hover:-translate-y-0.5' : 'opacity-75'}`}
                   >
                     {!unlocked && (
-                      <span className="absolute top-2 right-2 text-[10px] bg-black/70 text-white rounded-full px-1">🔒</span>
+                      <span className="absolute top-2 right-2 text-[10px] bg-black/70 text-white rounded-full px-1">
+                        {isAdmin && isAdminOnly ? '➕' : '🔒'}
+                      </span>
                     )}
                     <div className={`mb-2 rounded-lg border px-3 py-2 flex items-center justify-center ${darkMode ? 'bg-slate-800 border-slate-500' : 'bg-white border-gray-200'}`}>
                       <AvatarBadge avatar={avatar} size="md" className="border border-white/40" />
@@ -585,24 +597,16 @@ const ProfileView = ({
                         </span>
                       )}
                     </div>
-                    <div className={`mt-2 text-xs ${unlocked ? (darkMode ? 'text-emerald-300' : 'text-emerald-700') : (darkMode ? 'text-amber-300' : 'text-amber-700')}`}>
-                      {hasUnlockRules ? (unlocked ? 'Freigeschaltet' : nextRequirementText) : 'Standard-Avatar'}
+                    <div className={`mt-2 text-xs ${
+                      unlocked ? (darkMode ? 'text-emerald-300' : 'text-emerald-700')
+                      : isAdmin && isAdminOnly ? (darkMode ? 'text-pink-300' : 'text-pink-600')
+                      : (darkMode ? 'text-amber-300' : 'text-amber-700')
+                    }`}>
+                      {isAdmin && isAdminOnly && !unlocked
+                        ? '➕ Anklicken zum Freischalten'
+                        : hasUnlockRules ? (unlocked ? 'Freigeschaltet' : nextRequirementText) : 'Standard-Avatar'}
                     </div>
-                    {/* Admin-Schnell-Toggle für eigene Sticker */}
-                    {isAdmin && isAdminOnly && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); adminToggleStickerForSelf(avatar.id); }}
-                        disabled={adminStickerSaving}
-                        className={`mt-1 w-full text-[10px] font-bold py-0.5 rounded transition-colors ${
-                          unlocked
-                            ? 'bg-pink-100 text-pink-700 hover:bg-pink-200'
-                            : 'bg-gray-100 text-gray-500 hover:bg-pink-50 hover:text-pink-600'
-                        }`}
-                      >
-                        {unlocked ? '✓ Freigeschalten' : '+ Freischalten'}
-                      </button>
-                    )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
