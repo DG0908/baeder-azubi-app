@@ -4760,6 +4760,10 @@ export default function BaederApp() {
       && answerMeta?.answerType === 'single'
       && Number.isInteger(answerMeta?.selectedAnswer);
 
+    // Flag hoisted: set true when path 1 (submitDuelAnswer) already updated currentCategoryQuestions,
+    // so path 2 (saveGameToSupabase) does not overwrite with potentially wrong round data.
+    let authoritativeQuestionsSet = false;
+
     if (shouldUseAuthoritativeDuelAnswer) {
       // Track whether the answer was persisted server-side (submitDuelAnswer succeeded or 409 duplicate)
       let answerPersistedOnServer = false;
@@ -4772,19 +4776,8 @@ export default function BaederApp() {
           // Duplicate — already recorded, counts as persisted
           answerPersistedOnServer = true;
         } else {
-          console.warn('submitDuelAnswer fehlgeschlagen, retry in 1.5s:', error);
-          // Retry once after a short delay (covers transient 401 refresh + network blips)
-          await new Promise((resolve) => setTimeout(resolve, 1500));
-          try {
-            await dsSubmitDuelAnswer(gameSnapshot.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
-            answerPersistedOnServer = true;
-          } catch (retryError) {
-            if (retryError?.status === 409) {
-              answerPersistedOnServer = true;
-            } else {
-              console.warn('submitDuelAnswer retry fehlgeschlagen:', retryError);
-            }
-          }
+          // Log and fall through — no retry to avoid worsening 429 rate-limit pressure
+          console.warn('submitDuelAnswer fehlgeschlagen (kein Retry):', error?.status, error?.message);
         }
       }
 
@@ -4800,6 +4793,7 @@ export default function BaederApp() {
           // Re-apply correct for questions the server still redacts (future unanswered questions)
           const restoredAuthQuestions = restoreCorrectForQuestions(authoritativeQuestions, quizCategory);
           setCurrentCategoryQuestions(restoredAuthQuestions);
+          authoritativeQuestionsSet = true;
           // Guard: only update currentQuestion if the player hasn't moved on to a different
           // question while the API was in-flight. Comparing by duelQuestionId prevents
           // the authoritative refresh from overriding the newly displayed next question.
@@ -4811,10 +4805,7 @@ export default function BaederApp() {
           }
         }
 
-        // Only return early if the answer was actually persisted server-side.
-        // If submitDuelAnswer failed (both attempts), the server won't reveal correctOptionIndex
-        // and the question will stay blue. In that case, fall through to saveGameToSupabase
-        // so the answer is at least saved in the gameState JSON.
+        // Return early if answer was persisted — no need to also call saveGameToSupabase.
         if (answerPersistedOnServer) {
           return;
         }
@@ -4827,11 +4818,15 @@ export default function BaederApp() {
     const persistedRound = persistedGame?.categoryRounds?.[currentRoundIndex];
     const persistedQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : null;
     if (persistedQuestions?.length) {
-      // Re-apply correct for all questions (server redacts correct for unanswered/multi-select)
-      const restoredPersisted = restoreCorrectForQuestions(persistedQuestions, quizCategory);
-      setCurrentCategoryQuestions(restoredPersisted);
-      if (restoredPersisted[currentQuestionIndex]) {
-        setCurrentQuestion(restoredPersisted[currentQuestionIndex]);
+      // Re-apply correct for all questions (server redacts correct for unanswered/multi-select).
+      // Skip if path 1 already set questions from dsGetDuelWithQuestions — avoids overwriting
+      // with potentially stale data from saveGameToSupabase when both paths run (e.g. after 429).
+      if (!authoritativeQuestionsSet) {
+        const restoredPersisted = restoreCorrectForQuestions(persistedQuestions, quizCategory);
+        setCurrentCategoryQuestions(restoredPersisted);
+        if (restoredPersisted[currentQuestionIndex]) {
+          setCurrentQuestion(restoredPersisted[currentQuestionIndex]);
+        }
       }
     }
   };
