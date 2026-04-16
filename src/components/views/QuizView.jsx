@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Trophy } from 'lucide-react';
+import { Target, Trophy, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES, PERMISSIONS, getAvatarById } from '../../data/constants';
@@ -76,6 +76,7 @@ const QuizView = ({
   const [challengeTimeoutMinutes, setChallengeTimeoutMinutes] = React.useState(1440);
   const [countdownNow, setCountdownNow] = React.useState(() => Date.now());
   const [showForfeitConfirm, setShowForfeitConfirm] = React.useState(false);
+  const [showRecentGames, setShowRecentGames] = React.useState(false);
   const currentDifficulty = getDifficulty(currentGame?.difficulty);
   const questionIsKeyword = Boolean(currentQuestion && isKeywordQuestion?.(currentQuestion));
   const questionIsWhoAmI = Boolean(currentQuestion && isWhoAmIQuestion?.(currentQuestion));
@@ -198,22 +199,15 @@ const QuizView = ({
     }
   }, [duelResult?.gameId]);
 
-  const unseenFinishedGames = React.useMemo(() => {
+  const recentFinishedGames = React.useMemo(() => {
     if (!user?.name || !allGames?.length) return [];
-    const seenIds = getSeenResultIds();
     return allGames
       .filter(g => {
         if (g.status !== 'finished') return false;
-        if (seenIds.includes(g.id)) return false;
-        // Nur Spiele in denen ich mitgespielt habe
-        const isMyGame = g.player1 === user.name || g.player2 === user.name;
-        if (!isMyGame) return false;
-        // Nur kürzlich beendete (letzte 7 Tage)
-        const finishedAt = new Date(g.updatedAt || g.createdAt || 0).getTime();
-        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        return finishedAt > sevenDaysAgo;
+        return g.player1 === user.name || g.player2 === user.name;
       })
-      .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+      .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0))
+      .slice(0, 10);
   }, [allGames, user?.name]);
 
   const handleViewUnseenResult = (game) => {
@@ -445,53 +439,6 @@ const QuizView = ({
         <>
           <h2 className="text-3xl font-bold mb-6">Quizduell</h2>
 
-          {/* Ungesehene Ergebnisse */}
-          {unseenFinishedGames.length > 0 && (
-            <div className="space-y-3 mb-6">
-              {unseenFinishedGames.map(game => {
-                const isP1 = game.player1 === user?.name;
-                const myScore = isP1 ? game.player1Score : game.player2Score;
-                const oppScore = isP1 ? game.player2Score : game.player1Score;
-                const opponentName = isP1 ? game.player2 : game.player1;
-                const iWon = (game.winner === user?.name)
-                  || (isP1 && game.player1Score > game.player2Score)
-                  || (!isP1 && game.player2Score > game.player1Score);
-                const isDraw = game.player1Score === game.player2Score;
-                return (
-                  <div
-                    key={game.id}
-                    className={`rounded-xl p-4 shadow-lg border-2 cursor-pointer transition-all hover:scale-[1.01] ${
-                      iWon
-                        ? darkMode ? 'bg-emerald-900/40 border-emerald-600' : 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300'
-                        : isDraw
-                          ? darkMode ? 'bg-slate-700 border-slate-500' : 'bg-gray-50 border-gray-300'
-                          : darkMode ? 'bg-red-900/40 border-red-700' : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-300'
-                    }`}
-                    onClick={() => handleViewUnseenResult(game)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{iWon ? '🏆' : isDraw ? '🤝' : '😤'}</span>
-                        <div>
-                          <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                            {iWon ? 'Gewonnen' : isDraw ? 'Unentschieden' : 'Verloren'} gegen {getFirstName(opponentName)}
-                          </p>
-                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {myScore} : {oppScore}
-                          </p>
-                        </div>
-                      </div>
-                      <button className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-lg text-sm transition-all flex items-center gap-1.5">
-                        <Trophy size={16} />
-                        Ergebnis
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
           <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
             <p className="font-bold text-amber-800 mb-2">Spielregeln - Zeitlimit & Strafen</p>
             <ul className="space-y-1 text-amber-700">
@@ -680,6 +627,64 @@ const QuizView = ({
               )}
             </div>
           </div>
+
+          {/* Letzte Spiele — ausklappbar */}
+          {recentFinishedGames.length > 0 && (
+            <div className="mt-6">
+              <button
+                onClick={() => setShowRecentGames((prev) => !prev)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm transition-all ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+              >
+                <span className="flex items-center gap-2">
+                  <Trophy size={16} />
+                  Letzte Spiele ({recentFinishedGames.length})
+                </span>
+                <ChevronDown size={18} className={`transition-transform ${showRecentGames ? 'rotate-180' : ''}`} />
+              </button>
+              {showRecentGames && (
+                <div className="space-y-2 mt-3">
+                  {recentFinishedGames.map(game => {
+                    const isP1 = game.player1 === user?.name;
+                    const myScore = isP1 ? game.player1Score : game.player2Score;
+                    const oppScore = isP1 ? game.player2Score : game.player1Score;
+                    const opponentName = isP1 ? game.player2 : game.player1;
+                    const iWon = (game.winner === user?.name)
+                      || (isP1 && game.player1Score > game.player2Score)
+                      || (!isP1 && game.player2Score > game.player1Score);
+                    const isDraw = game.player1Score === game.player2Score;
+                    return (
+                      <div
+                        key={game.id}
+                        className={`rounded-xl p-3 border cursor-pointer transition-all hover:scale-[1.01] ${
+                          iWon
+                            ? darkMode ? 'bg-emerald-900/30 border-emerald-700' : 'bg-emerald-50 border-emerald-200'
+                            : isDraw
+                              ? darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'
+                              : darkMode ? 'bg-red-900/30 border-red-800' : 'bg-red-50 border-red-200'
+                        }`}
+                        onClick={() => handleViewUnseenResult(game)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{iWon ? '🏆' : isDraw ? '🤝' : '😤'}</span>
+                            <div>
+                              <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                {iWon ? 'Gewonnen' : isDraw ? 'Unentschieden' : 'Verloren'} gegen {getFirstName(opponentName)}
+                              </p>
+                              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {myScore} : {oppScore}
+                              </p>
+                            </div>
+                          </div>
+                          <Trophy size={14} className={darkMode ? 'text-gray-500' : 'text-gray-400'} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 
