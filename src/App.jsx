@@ -8970,6 +8970,10 @@ export default function BaederApp() {
     || String(a.swimmer_name || '').localeCompare(String(b.swimmer_name || ''), 'de-DE')
   );
 
+  // Auth-Guards: Early Return verhindert dass Hooks unten auf null-User zugreifen
+  if (!authReady) return <AuthGuard />;
+  if (!user) return <AuthGuard />;
+
   return (
   <AuthGuard>
     <div className={`min-h-screen relative overflow-hidden ${darkMode ? 'dark-mode' : ''}`} style={{
