@@ -1,0 +1,169 @@
+# Marktreife-Roadmap — Bäder-Azubi-App
+
+> **Zweck:** Täglich abarbeitbarer Plan, um die App von „funktioniert intern für 12 User" auf „produktionsreif für alle FaBB-Azubis in Deutschland" zu heben.
+>
+> **Basis:** Audit-Report vom 15.04.2026 (Opus 4.6, 13 Kategorien).
+>
+> **Tracking-Konvention:**
+> - `[ ]` offen · `[x] <Modell> · <Datum>` erledigt
+> - Jede Aufgabe hat: **Modell-Empfehlung**, **Branch-Strategie**, **Zeit-Schätzung**, **Akzeptanz-Kriterium**
+>
+> **Begleitdokument:** [IMPROVEMENTS.md](../IMPROVEMENTS.md) bleibt der gemeinsame Kurztracker. Dieses Dokument ist der Detailplan.
+
+---
+
+## Modell-Zuordnung (Daumenregeln)
+
+| Modell | Stärken | Wofür einsetzen | Wann NICHT |
+|---|---|---|---|
+| **Opus 4.6** | Tiefste Reasoning-Qualität, Architektur-Urteil, sicherheitskritische Reviews | P0-Security-Fixes, Architektur-Entscheidungen (App.jsx-Split-Planung, CSP-Feintuning, DSGVO-Flows), Code-Review von heiklem Code | Mechanische Masse-Arbeit, einfache Tests, Boilerplate — verschwendet Tokens/Zeit |
+| **Sonnet 4.6** | Workhorse — beste Kosten/Qualität-Ratio, solide Implementierung mit klarem Scope | Feature-Implementierung mit definierter Spec, Tests schreiben, TypeScript-Migration einzelner Module, Refactorings mit klaren Grenzen | Wenn das Problem diffus ist oder architektonische Weichenstellung verlangt → Opus |
+| **Codex 5.4 (GPT-5.4)** | Zweite Meinung, alternative Diagnose, Review-Pass | Nach Opus-Implementierung einer heiklen Änderung: Review-Pass für blinde Flecken. Eigenständige, gut abgegrenzte Coding-Tasks, wenn Claude stuck ist. | Als Haupt-Implementierer für langlaufende Arbeiten — er sieht keinen Konversationskontext |
+| **Qwen** | Günstig, gut für mechanische Masse | Lint-Autofixes batch-weise, Boilerplate-Tests aus Templates, Rename-/Import-Sortier-Läufe, einfache Doku-Übersetzung | Sicherheitskritisches, Architektur, komplexe Geschäftslogik |
+
+**Faustregel:** Opus plant und reviewt, Sonnet implementiert, Codex gibt zweite Meinung, Qwen macht die Drecksarbeit in Masse.
+
+---
+
+## Branch-Strategie
+
+**Niemals direkt auf `main` committen außer für Quick Wins (einzelne Zeile, CI fängt Regression).**
+
+| Aufgabentyp | Strategie |
+|---|---|
+| Quick Wins (< 30 Min, 1 Datei, reversibel) | Direkt auf `main`, einzelner Commit, push sofort — CI ist das Netz |
+| Phase-1-Tasks (P0-Security, Toast, ESLint) | Ein Branch pro Task: `fix/csp-nginx-strict`, `fix/sentry-pii-masking`, `chore/eslint-init`. PR, Review durch Codex, Merge |
+| Phase-2-Tasks (Refactor, TS-Migration) | Langlaufender Feature-Branch, inkrementelle PRs: `refactor/app-jsx-split` als Dach, davon abzweigend `refactor/extract-auth-feature`, `refactor/extract-duel-feature`, … |
+| App.jsx-Split (hohes Regressions-Risiko) | **Eigener Worktree** oder zumindest dedizierter Branch. Nach jedem extrahierten Feature: Smoke-Test gegen Staging, dann merge. Nie alle Features auf einmal |
+| DSGVO/Security-Infrastruktur (U18, Retention) | Feature-Branch + Doku-Update + manueller Test durch Mensch vor Merge |
+
+**Kein Clone des ganzen Repos.** Git-Branches reichen. Für isolierte Experimente: `git worktree add ../azubi-experiment <branch>` — so hast du parallel zwei Checkouts derselben Repo, ohne Commits zu vermischen.
+
+**Zwingend vor App.jsx-Split:** Staging-Env stehen haben (Task 14), sonst testet ihr im Blindflug gegen Prod.
+
+---
+
+## Phase 1 — Showstopper (P0) · Diese Woche
+
+**Ziel:** Akute Sicherheits- und Qualitäts-Leaks schließen. Jede einzelne Aufgabe ist <1 Tag.
+
+| # | Aufgabe | Modell | Branch | Zeit | Status |
+|---|---|---|---|---|---|
+| P1.1 | **CSP in [nginx.conf](../nginx.conf) strikt** — `unsafe-inline/eval` raus, Supabase-Hosts raus, Header im Nginx setzen, `<meta>` aus [index.html](../index.html) entfernen. Frontend gegen gehärtete CSP testen. | **Opus** (security-kritisch, Vite-Inline-Handling prüfen) | `fix/csp-nginx-strict` | 0.5 d | [ ] |
+| P1.2 | **Sentry-PII-Masking** — `maskAllText: true, blockAllMedia: true` in [main.jsx:16](../src/main.jsx#L16). Datenschutzerklärung checken, ob Sentry korrekt erwähnt. | Sonnet | direkt auf main | 10 min | [ ] |
+| P1.3 | **`console.log` aus Prod-Bundle strippen** — in [vite.config.js](../vite.config.js) `esbuild: { drop: ['console', 'debugger'] }` ergänzen (nur für build, nicht dev). | Sonnet | direkt auf main | 15 min | [ ] |
+| P1.4 | **TOTP-Encryption-Key in Prod required** — [env.validation.ts](../server/src/common/config/env.validation.ts) auf `Joi.when('NODE_ENV', ...)` umstellen. `.env.example` dokumentieren. | Sonnet | `fix/totp-key-required-prod` | 30 min | [ ] |
+| P1.5 | **ESLint + Prettier Setup** — Konfig für JSX, `npm run lint` Script, CI-Gate in [ci.yml](../.github/workflows/ci.yml) ergänzen. Erstlauf mit `--fix`, offene Warnungen in Issue festhalten (nicht alles auf einmal fixen). | **Qwen** (mechanisch) + **Opus** Review der Config | `chore/eslint-prettier-init` | 1 d | [ ] |
+| P1.6 | **`alert()` → Toast-System** — `sonner` oder `react-hot-toast` einbauen. Erst in [AuthContext.jsx](../src/context/AuthContext.jsx) ersetzen (8 Stellen), dann gemeinsamer Helper für Views. | Sonnet | `refactor/alert-to-toast-auth` | 0.5 d | [ ] |
+| P1.7 | **Sentry-DSGVO-Ergänzung** — Datenschutzerklärung: Sentry als Auftragsverarbeiter eintragen, AVV mit Sentry prüfen (oder self-hosten). | **Opus** (rechtliche Einschätzung) | `docs/sentry-avv` | 0.5 d | [ ] |
+
+**Abschluss-Kriterium Phase 1:** 
+- CSP-Header in Browser-DevTools strikt · `npm run lint` grün in CI · Keine `alert()` im Auth-Flow mehr · Sentry maskiert nachweislich
+
+---
+
+## Phase 2 — Release-Blocker (P1) · 2–3 Sprints
+
+| # | Aufgabe | Modell | Branch | Zeit | Status |
+|---|---|---|---|---|---|
+| P2.1 | **TanStack Query einführen** — `@tanstack/react-query` installieren, Provider in [main.jsx](../src/main.jsx), erste Migration: User-Liste in AdminView. | Sonnet (Opus für Cache-Key-Strategie konsultieren) | `feat/tanstack-query-setup` | 1 d | [ ] |
+| P2.2 | **React Router einführen** — `react-router-dom`, Route-Definitionen ersetzen die `activeView`-State-Machine in App.jsx. Navigation, Back-Button, Deep-Links. | **Opus** (Routing ist die Naht beim App.jsx-Split — Fehler hier multiplizieren sich) | `feat/react-router` | 2 d | [ ] |
+| P2.3 | **App.jsx-Split: Auth-Feature raus** — `src/features/auth/`, LoginScreen + AuthContext + authApi. App.jsx verliert ca. 500 Zeilen. | Sonnet | `refactor/extract-auth` | 1 d | [ ] |
+| P2.4 | **App.jsx-Split: Duel-Feature raus** — QuizView, Duel-State, duelApi, Hooks. Ca. 2500 Zeilen aus App.jsx. | Sonnet (Opus für State-Schnittstelle) | `refactor/extract-duel` | 2–3 d | [ ] |
+| P2.5 | **App.jsx-Split: Chat-Feature raus** | Sonnet | `refactor/extract-chat` | 1 d | [ ] |
+| P2.6 | **App.jsx-Split: Admin-Feature raus** (inkl. School-Attendance, ExamGrades) | Sonnet | `refactor/extract-admin` | 2 d | [ ] |
+| P2.7 | **App.jsx-Split: Berichtsheft raus** | Sonnet | `refactor/extract-berichtsheft` | 1 d | [ ] |
+| P2.8 | **App.jsx-Split: Notifications + Push raus** | Sonnet | `refactor/extract-notifications` | 1 d | [ ] |
+| P2.9 | **TypeScript-Migration: `src/lib/`** — `dataService.js` → `dataService.ts` zuletzt (wegen Größe), erst `utils`, `friendlyError`, `secureApi*`, `pushNotifications`. | **Qwen** (Masse) + **Opus** Review der Typen an API-Grenzen | `feat/ts-migration-lib` | 2 d | [ ] |
+| P2.10 | **TypeScript-Migration: Context + Hooks** | Sonnet | `feat/ts-migration-context` | 1 d | [ ] |
+| P2.11 | **TypeScript-Migration: extrahierte Features** (nach P2.3–P2.8) | Sonnet | je Feature-Branch | 3 d gesamt | [ ] |
+| P2.12 | **Backend-Tests: `duels.service.ts`** — Scoring-Edge-Cases, Cheat-Schutz, State-Transitions. Ziel: 70 % Coverage. | **Opus** (Scoring-Korrektheit = sicherheitsnah) | `test/duels-service-spec` | 1 d | [ ] |
+| P2.13 | **Backend-Tests: `users.service.ts`, `forum.service.ts`, `chat.service.ts`** | Sonnet | `test/core-services-spec` | 2 d | [ ] |
+| P2.14 | **Frontend-Tests: Vitest-Setup + LoginScreen + QuizView** | Sonnet | `test/vitest-setup` | 1 d | [ ] |
+| P2.15 | **Playwright-E2E: 5 kritische Flows** — Register, Login-TOTP, Duel, Admin-Approval, Berichtsheft-Submit. Gegen Staging. | **Opus** (Flow-Design) + Sonnet (Implementierung) | `test/playwright-e2e` | 2 d | [ ] |
+| P2.16 | **U18-Einwilligungsflow** — Birthday-Check, Upload-Slot für Elterneinwilligung, Admin-Verifikation bleibt `PENDING` bis OK. DSGVO Art. 8. | **Opus** (DSGVO-korrekte Umsetzung) | `feat/u18-consent` | 2 d | [ ] |
+| P2.17 | **DSGVO-Retention-Scheduler** — `@nestjs/schedule` Job: Inaktive User 24 Monate → Warn-Mail → Löschung. Chat-Retention prüfen. | Sonnet | `feat/retention-scheduler` | 1 d | [ ] |
+| P2.18 | **Staging-Environment aufsetzen** — `staging.api.smartbaden.de` + `staging.azubi.smartbaden.de`. Separates Compose-File, separate DB. | Sonnet (Mensch macht DNS + Coolify-Setup) | `ops/staging-env` | 1–2 d | [ ] |
+| P2.19 | **Deploy-Workflow mit Git-SHA-Tagging + Post-Deploy-Smoke** — Images mit SHA taggen, `run-smoke-checks.mjs` nach Deploy ausführen, bei Fehler Rollback-Hint. | Sonnet | `ops/deploy-hardening` | 1 d | [ ] |
+| P2.20 | **Code-Splitting + Bundle-Analyse** — `manualChunks` in [vite.config.js](../vite.config.js) für three/react/icons. `rollup-plugin-visualizer` als CI-Artifact. Lazy-Loading aller Deep-Dive-Views. | Sonnet | `perf/code-splitting` | 1 d | [ ] |
+
+**Abschluss-Kriterium Phase 2:**
+- App.jsx < 500 Zeilen (reiner Orchestrator) · Tests-Coverage Backend-Business-Logik ≥ 60 % · 5 E2E-Flows grün in CI · Staging live · U18-Flow im Datenschutz-Portal dokumentiert
+
+---
+
+## Phase 3 — Qualität (P2) · Nächster Quartalsblock
+
+| # | Aufgabe | Modell | Zeit | Status |
+|---|---|---|---|---|
+| P3.1 | Design-Tokens in [tailwind.config.js](../tailwind.config.js) — `theme.extend.colors.brand`, `fontFamily`, `spacing`, `borderRadius`. | **Qwen** + Designer-Mensch für Farbwahl | 0.5 d | [ ] |
+| P3.2 | Shared-UI-Komponenten — `<Button>`, `<Card>`, `<Skeleton>`, `<Dialog>` basierend auf `radix-ui`. | Sonnet | 2 d | [ ] |
+| P3.3 | Swagger/OpenAPI aus NestJS — `@nestjs/swagger` einbauen, UI unter `/api/docs` (dev-only). | Sonnet | 0.5 d | [ ] |
+| P3.4 | Pagination cursor-basiert — Chat-Messages, Forum-Posts, AuditLog. | Sonnet | 1 d | [ ] |
+| P3.5 | Passwort-Komplexität + Pwned-Check — `zxcvbn` + HaveIBeenPwned-API mit k-anonymity. | Sonnet | 0.5 d | [ ] |
+| P3.6 | a11y-Audit mit `axe-core` in Vitest + Playwright. | Codex (zweite Perspektive hilfreich) | 1 d | [ ] |
+| P3.7 | `@nestjs/throttler-storage-redis` — wenn Multi-Replika-Deploy geplant. | Sonnet | 0.5 d | [ ] |
+| P3.8 | SMTP-Provider produktiv (Brevo/Mailgun), Domain-SPF/DKIM, Bounce-Handling. | Mensch (DNS-Setup) + Sonnet (Nodemailer-Config) | 0.5 d | [ ] |
+
+---
+
+## Phase 4 — Polish (P3) · Backlog
+
+| # | Aufgabe | Modell | Zeit |
+|---|---|---|---|
+| P4.1 | Storybook für Shared-UI | **Qwen** (mechanische Story-Generierung) | 1 d |
+| P4.2 | CONTRIBUTING.md, CHANGELOG.md | Sonnet | 0.5 d |
+| P4.3 | OpenGraph-/Twitter-Card-Meta in [index.html](../index.html) | Qwen | 15 min |
+| P4.4 | Alt-Text-Audit aller `<img>` | Qwen | 0.5 d |
+| P4.5 | Duel-Rundenerzeugung vollständig server-autoritativ | **Opus** (Kern der Fairness) | 3 d |
+| P4.6 | SSRF-Validierung Content-URLs (Internal-IP-Blockliste) | Opus | 0.5 d |
+| P4.7 | Fachliche Gegenlese Fragenkatalog | **Mensch** (Meister Bäderbetriebe) | extern |
+| P4.8 | Badge-Historie-Migration Supabase → NestJS | Sonnet | 1 d |
+| P4.9 | Restore-Drill praktisch durchführen | Mensch | 0.5 d |
+
+---
+
+## Quick Wins — sofort umsetzbar (< 30 Min jeweils)
+
+Diese Liste kannst du „zwischendurch" abarbeiten, keine Prio-Reihenfolge nötig.
+
+- [ ] **QW.1** · Qwen · `esbuild.drop` in [vite.config.js](../vite.config.js)
+- [ ] **QW.2** · Sonnet · Sentry-Masking ([main.jsx:16](../src/main.jsx#L16))
+- [ ] **QW.3** · Qwen · `npm run lint`/`typecheck`-Scripts in [package.json](../package.json) (auch wenn Config noch fehlt — Lücke sichtbar machen)
+- [ ] **QW.4** · Qwen · Meta-Description + OG-Tags in [index.html](../index.html)
+- [ ] **QW.5** · Sonnet · Supabase-Build-Args aus [docker-compose.yml:100-101](../docker-compose.yml#L100-L101) löschen (toter Ballast)
+- [ ] **QW.6** · Qwen · `.env.local` Beispielkommentar, welche lokalen Overrides relevant sind
+- [ ] **QW.7** · Qwen · `localStorage.removeItem` in [AuthContext.jsx:33-37](../src/context/AuthContext.jsx#L33-L37) in useEffect verschieben
+- [ ] **QW.8** · Sonnet · `npm audit` lokal laufen, offene CVEs in Issue dokumentieren
+- [ ] **QW.9** · Qwen · `.vercel/`, `.qwen/` aus Repo-Root entfernen (in .gitignore sind sie schon)
+- [ ] **QW.10** · Qwen · `quizQuestionsExpansion.js` — Import-Graph prüfen: toter Code?
+
+---
+
+## Tagesrhythmus-Vorschlag
+
+**Morgens (1h, Kopf frisch):** 1 P0- oder P1-Task mit Opus/Sonnet starten.  
+**Mittags (30 min):** 2–3 Quick Wins mit Qwen abhaken.  
+**Nachmittags:** Entweder P0/P1-Task abschließen oder Code-Review eines erledigten Tasks durch Codex laufen lassen.  
+**Freitag:** Woche reviewen, diese Datei + [IMPROVEMENTS.md](../IMPROVEMENTS.md) aktualisieren, Changelog-Eintrag schreiben.
+
+**Disziplin:**
+- Keine neue Phase anfangen, bevor Abschluss-Kriterium der vorherigen erfüllt ist.
+- Jeder Merge auf `main` nach Phase 1 → Smoke-Check gegen Staging, danach gegen Prod.
+- Bei App.jsx-Split: nach jedem extrahierten Feature **live auf Staging testen, bevor nächster Split startet**. Niemals zwei Splits parallel mergen.
+
+---
+
+## Offene Strategie-Entscheidungen (Mensch-Entscheid)
+
+Diese Fragen sollte der Mensch (Dennie) beantworten, bevor Modelle loslegen:
+
+1. **Staging-Hosting:** Coolify kann zweite Env, VPS reicht Speicher? Oder günstiger Zweit-VPS?
+2. **Sentry self-hosten oder Cloud behalten?** (Self-host = kein AVV nötig, aber Wartungslast.)
+3. **Marktstart-Ziel:** Welches Quartal konkret? Davon hängt ab, ob Phase 3 vor Launch oder danach.
+4. **Fachliche Gegenlese:** Gibt es einen Meister/Ausbilder, der das Kompendium signiert? (P4.7)
+5. **U18-Einwilligung:** Scan-Upload + manuelle Admin-Prüfung OK, oder Integration mit bundid/eID?
+
+---
+
+*Stand: 2026-04-15 · Nächstes Review: nach Abschluss Phase 1*

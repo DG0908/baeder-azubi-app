@@ -97,13 +97,7 @@ services:
       dockerfile: Dockerfile.web
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
-        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
-        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
-        VITE_ENABLE_UNSAFE_LEGACY_DB_WRITES: ${VITE_ENABLE_UNSAFE_LEGACY_DB_WRITES:-false}
-        VITE_ENABLE_SECURE_BACKEND_API: ${VITE_ENABLE_SECURE_BACKEND_API:-true}
         VITE_WEB_PUSH_PUBLIC_KEY: ${VITE_WEB_PUSH_PUBLIC_KEY:-}
-        VITE_PUSH_FUNCTION_NAME: ${VITE_PUSH_FUNCTION_NAME:-send-web-push}
-        VITE_PUSH_BACKEND_URL: ${VITE_PUSH_BACKEND_URL:-}
     init: true
     restart: unless-stopped
     depends_on:
