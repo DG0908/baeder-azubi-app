@@ -73,7 +73,7 @@
 | P2.5 | **App.jsx-Split: Chat-Feature raus** — `useChatState` Hook extrahiert: State, Effects, Actions (~120 Zeilen). | Sonnet | `refactor/extract-chat` | 1 d | [x] Opus 16.04.2026 |
 | P2.6 | **App.jsx-Split: Admin-Feature raus** — `useAdminActions` Hook: User-Management, App-Config, Menu-Editing, Permission-Toggles (~250 Zeilen). | Sonnet | `refactor/extract-admin` | 2 d | [x] Opus 16.04.2026 |
 | P2.7 | **App.jsx-Split: Berichtsheft raus** | Sonnet | `refactor/extract-berichtsheft` | 1 d | [ ] |
-| P2.8 | **App.jsx-Split: Notifications + Push raus** | Sonnet | `refactor/extract-notifications` | 1 d | [ ] |
+| P2.8 | **App.jsx-Split: Notifications + Push raus** — `useNotifications` Hook: State, Push-Management, PWA-Update, Local-Announce (~200 Zeilen). | Sonnet | `refactor/extract-notifications` | 1 d | [x] Opus 16.04.2026 |
 | P2.9 | **TypeScript-Migration: `src/lib/`** — `dataService.js` → `dataService.ts` zuletzt (wegen Größe), erst `utils`, `friendlyError`, `secureApi*`, `pushNotifications`. | **Qwen** (Masse) + **Opus** Review der Typen an API-Grenzen | `feat/ts-migration-lib` | 2 d | [ ] |
 | P2.10 | **TypeScript-Migration: Context + Hooks** | Sonnet | `feat/ts-migration-context` | 1 d | [ ] |
 | P2.11 | **TypeScript-Migration: extrahierte Features** (nach P2.3–P2.8) | Sonnet | je Feature-Branch | 3 d gesamt | [ ] |
