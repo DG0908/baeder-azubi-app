@@ -49,10 +49,10 @@
 
 | # | Aufgabe | Modell | Branch | Zeit | Status |
 |---|---|---|---|---|---|
-| P1.1 | **CSP in [nginx.conf](../nginx.conf) strikt** — `unsafe-inline/eval` raus, Supabase-Hosts raus, Header im Nginx setzen, `<meta>` aus [index.html](../index.html) entfernen. Frontend gegen gehärtete CSP testen. | **Opus** (security-kritisch, Vite-Inline-Handling prüfen) | `fix/csp-nginx-strict` | 0.5 d | [ ] |
-| P1.2 | **Sentry-PII-Masking** — `maskAllText: true, blockAllMedia: true` in [main.jsx:16](../src/main.jsx#L16). Datenschutzerklärung checken, ob Sentry korrekt erwähnt. | Sonnet | direkt auf main | 10 min | [ ] |
-| P1.3 | **`console.log` aus Prod-Bundle strippen** — in [vite.config.js](../vite.config.js) `esbuild: { drop: ['console', 'debugger'] }` ergänzen (nur für build, nicht dev). | Sonnet | direkt auf main | 15 min | [ ] |
-| P1.4 | **TOTP-Encryption-Key in Prod required** — [env.validation.ts](../server/src/common/config/env.validation.ts) auf `Joi.when('NODE_ENV', ...)` umstellen. `.env.example` dokumentieren. | Sonnet | `fix/totp-key-required-prod` | 30 min | [ ] |
+| P1.1 | **CSP in [nginx.conf](../nginx.conf) strikt** — `unsafe-inline/eval` raus, Supabase-Hosts raus, Header im Nginx setzen, `<meta>` aus [index.html](../index.html) entfernen. Frontend gegen gehärtete CSP testen. | **Opus** | direkt auf main | 0.5 d | [x] Opus 16.04.2026 |
+| P1.2 | **Sentry-PII-Masking** — `maskAllText: true, blockAllMedia: true` in [main.jsx:16](../src/main.jsx#L16). Datenschutzerklärung checken, ob Sentry korrekt erwähnt. | Sonnet | direkt auf main | 10 min | [x] Opus 16.04.2026 |
+| P1.3 | **`console.log` aus Prod-Bundle strippen** — in [vite.config.js](../vite.config.js) `esbuild: { drop: ['console', 'debugger'] }` ergänzen (nur für build, nicht dev). | Sonnet | direkt auf main | 15 min | [x] Opus 16.04.2026 |
+| P1.4 | **TOTP-Encryption-Key in Prod required** — [env.validation.ts](../server/src/common/config/env.validation.ts) auf `Joi.when('NODE_ENV', ...)` umstellen. `.env.example` dokumentieren. | Sonnet | direkt auf main | 30 min | [x] Opus 16.04.2026 |
 | P1.5 | **ESLint + Prettier Setup** — Konfig für JSX, `npm run lint` Script, CI-Gate in [ci.yml](../.github/workflows/ci.yml) ergänzen. Erstlauf mit `--fix`, offene Warnungen in Issue festhalten (nicht alles auf einmal fixen). | **Qwen** (mechanisch) + **Opus** Review der Config | `chore/eslint-prettier-init` | 1 d | [ ] |
 | P1.6 | **`alert()` → Toast-System** — `sonner` oder `react-hot-toast` einbauen. Erst in [AuthContext.jsx](../src/context/AuthContext.jsx) ersetzen (8 Stellen), dann gemeinsamer Helper für Views. | Sonnet | `refactor/alert-to-toast-auth` | 0.5 d | [ ] |
 | P1.7 | **Sentry-DSGVO-Ergänzung** — Datenschutzerklärung: Sentry als Auftragsverarbeiter eintragen, AVV mit Sentry prüfen (oder self-hosten). | **Opus** (rechtliche Einschätzung) | `docs/sentry-avv` | 0.5 d | [ ] |
@@ -127,13 +127,13 @@
 
 Diese Liste kannst du „zwischendurch" abarbeiten, keine Prio-Reihenfolge nötig.
 
-- [ ] **QW.1** · Qwen · `esbuild.drop` in [vite.config.js](../vite.config.js)
-- [ ] **QW.2** · Sonnet · Sentry-Masking ([main.jsx:16](../src/main.jsx#L16))
-- [ ] **QW.3** · Qwen · `npm run lint`/`typecheck`-Scripts in [package.json](../package.json) (auch wenn Config noch fehlt — Lücke sichtbar machen)
-- [ ] **QW.4** · Qwen · Meta-Description + OG-Tags in [index.html](../index.html)
-- [ ] **QW.5** · Sonnet · Supabase-Build-Args aus [docker-compose.yml:100-101](../docker-compose.yml#L100-L101) löschen (toter Ballast)
+- [x] **QW.1** · Opus 16.04.2026 · `esbuild.drop` in [vite.config.js](../vite.config.js)
+- [x] **QW.2** · Opus 16.04.2026 · Sentry-Masking ([main.jsx:16](../src/main.jsx#L16))
+- [x] **QW.3** · Opus 16.04.2026 · `npm run lint`/`typecheck`-Scripts in [package.json](../package.json)
+- [x] **QW.4** · Opus 16.04.2026 · Meta-Description + OG-Tags in [index.html](../index.html)
+- [x] **QW.5** · Opus 16.04.2026 · Supabase-Build-Args aus docker-compose.yml + Dockerfile.web entfernt
 - [ ] **QW.6** · Qwen · `.env.local` Beispielkommentar, welche lokalen Overrides relevant sind
-- [ ] **QW.7** · Qwen · `localStorage.removeItem` in [AuthContext.jsx:33-37](../src/context/AuthContext.jsx#L33-L37) in useEffect verschieben
+- [x] **QW.7** · Opus 16.04.2026 · `localStorage.removeItem` in AuthContext.jsx in useEffect verschoben
 - [ ] **QW.8** · Sonnet · `npm audit` lokal laufen, offene CVEs in Issue dokumentieren
 - [ ] **QW.9** · Qwen · `.vercel/`, `.qwen/` aus Repo-Root entfernen (in .gitignore sind sie schon)
 - [ ] **QW.10** · Qwen · `quizQuestionsExpansion.js` — Import-Graph prüfen: toter Code?
