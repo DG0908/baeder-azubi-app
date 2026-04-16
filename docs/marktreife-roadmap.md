@@ -70,8 +70,8 @@
 | P2.2 | **React Router einführen** — `react-router-dom` v7 installiert, BrowserRouter in main.jsx, Bridge-Hook `useViewRouter` ersetzt useState('home') in App.jsx. 27 Views gemappt, Back-Button + Deep-Links funktionieren, unbekannte Pfade → Home-Redirect. | **Opus** | `feat/react-router` | 2 d | [x] Haiku 16.04.2026 |
 | P2.3 | **App.jsx-Split: Auth-Feature raus** — AuthGuard-Komponente extrahiert (Splash, Login-Guard, Inactivity-Warning). App.jsx ~40 Zeilen leichter. | Sonnet | `refactor/extract-auth` | 1 d | [x] Haiku 16.04.2026 |
 | P2.4 | **App.jsx-Split: Duel-Feature raus** — QuizView, Duel-State, duelApi, Hooks. Ca. 2500 Zeilen aus App.jsx. | Sonnet (Opus für State-Schnittstelle) | `refactor/extract-duel` | 2–3 d | [ ] |
-| P2.5 | **App.jsx-Split: Chat-Feature raus** | Sonnet | `refactor/extract-chat` | 1 d | [ ] |
-| P2.6 | **App.jsx-Split: Admin-Feature raus** (inkl. School-Attendance, ExamGrades) | Sonnet | `refactor/extract-admin` | 2 d | [ ] |
+| P2.5 | **App.jsx-Split: Chat-Feature raus** — `useChatState` Hook extrahiert: State, Effects, Actions (~120 Zeilen). | Sonnet | `refactor/extract-chat` | 1 d | [x] Opus 16.04.2026 |
+| P2.6 | **App.jsx-Split: Admin-Feature raus** — `useAdminActions` Hook: User-Management, App-Config, Menu-Editing, Permission-Toggles (~250 Zeilen). | Sonnet | `refactor/extract-admin` | 2 d | [x] Opus 16.04.2026 |
 | P2.7 | **App.jsx-Split: Berichtsheft raus** | Sonnet | `refactor/extract-berichtsheft` | 1 d | [ ] |
 | P2.8 | **App.jsx-Split: Notifications + Push raus** | Sonnet | `refactor/extract-notifications` | 1 d | [ ] |
 | P2.9 | **TypeScript-Migration: `src/lib/`** — `dataService.js` → `dataService.ts` zuletzt (wegen Größe), erst `utils`, `friendlyError`, `secureApi*`, `pushNotifications`. | **Qwen** (Masse) + **Opus** Review der Typen an API-Grenzen | `feat/ts-migration-lib` | 2 d | [ ] |
