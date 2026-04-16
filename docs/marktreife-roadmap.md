@@ -134,7 +134,27 @@ Diese Liste kannst du „zwischendurch" abarbeiten, keine Prio-Reihenfolge nöti
 - [x] **QW.5** · Opus 16.04.2026 · Supabase-Build-Args aus docker-compose.yml + Dockerfile.web entfernt
 - [x] **QW.6** · Haiku 16.04.2026 · `.env.example` bereinigt: Legacy-Variablen entfernt, Abschnitte mit Kommentaren, Sentry-DSN optional
 - [x] **QW.7** · Opus 16.04.2026 · `localStorage.removeItem` in AuthContext.jsx in useEffect verschoben
-- [ ] **QW.8** · Sonnet · `npm audit` lokal laufen, offene CVEs in Issue dokumentieren
+- [x] **QW.8** · Haiku 16.04.2026 · `npm audit` durchgeführt — siehe unten
+
+### npm audit Ergebnisse (16.04.2026)
+
+**Frontend (3 moderate):**
+| Paket | Severity | Problem | Fix |
+|---|---|---|---|
+| esbuild ≤0.24.2 | moderate | Dev-Server liest beliebige Requests | Vite 7+ upgraden (Breaking Change) |
+| vite ≤6.4.1 | moderate | Abhängig von esbuild | Vite 7+ upgraden |
+| vite-plugin-pwa | moderate | Abhängig von vite | Folgt mit Vite-Upgrade |
+
+→ **Kein Prod-Risiko** — esbuild/vite laufen nur lokal im Dev-Modus, nicht im Prod-Bundle.
+
+**Backend (5 moderate, 3 high):**
+| Paket | Severity | Problem | Fix |
+|---|---|---|---|
+| lodash ≤4.17.23 | **high** | Prototype Pollution + Code Injection | `npm audit fix` (via @nestjs/config) |
+| picomatch 4.0.0–4.0.3 | **high** | ReDoS + Method Injection | `npm audit fix` (via @nestjs/cli) |
+| nodemailer ≤8.0.4 | moderate | SMTP Command Injection via CRLF | `npm audit fix` |
+
+→ **lodash + picomatch sollten zeitnah gefixt werden** (Backend-Deploy nötig)
 - [x] **QW.9** · Haiku 16.04.2026 · `.qwen/`, `.claude/`, `github-recovery-codes.txt` in .gitignore aufgenommen
 - [x] **QW.10** · Haiku 16.04.2026 · `quizQuestionsExpansion.js` geprüft — wird in quizQuestions.js importiert, kein toter Code
 
