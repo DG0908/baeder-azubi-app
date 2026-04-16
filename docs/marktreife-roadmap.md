@@ -186,4 +186,4 @@ Diese Fragen sollte der Mensch (Dennie) beantworten, bevor Modelle loslegen:
 
 ---
 
-*Stand: 2026-04-16 · **Phase 1 vollständig abgeschlossen.** Nächstes Review: vor Start Phase 2*
+*Stand: 2026-04-16 · Phase 1 komplett, Phase 2 gestartet (5/20). Nächstes: P2.5–P2.8 App.jsx-Split (braucht eigene Contexts pro Feature)*
