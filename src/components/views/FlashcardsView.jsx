@@ -1,4 +1,5 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { Plus, Check, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
@@ -155,7 +156,7 @@ const FlashcardsView = ({
         <button
           onClick={async () => {
             if (!newFlashcardFront.trim() || !newFlashcardBack.trim()) {
-              alert('Bitte Vorder- und Rueckseite ausfuellen!');
+              toast.error('Bitte Vorder- und Rueckseite ausfuellen!');
               return;
             }
 
@@ -179,10 +180,10 @@ const FlashcardsView = ({
 
               if (flashcard.approved) {
                 setUserFlashcards((current) => [...current, flashcard]);
-                alert('Karteikarte hinzugefuegt!');
+                toast.success('Karteikarte hinzugefuegt!');
               } else {
                 setPendingFlashcards((current) => [...current, flashcard]);
-                alert('Karteikarte eingereicht! Sie wird nach Pruefung freigeschaltet.');
+                toast.success('Karteikarte eingereicht! Wird nach Pruefung freigeschaltet.');
               }
 
               void queueXpAward('flashcardCreation', XP_REWARDS.FLASHCARD_CREATE, {
@@ -196,7 +197,7 @@ const FlashcardsView = ({
               playSound('splash');
             } catch (error) {
               console.error('Flashcard error:', error);
-              alert('Fehler beim Erstellen der Karteikarte');
+              toast.error('Fehler beim Erstellen der Karteikarte');
             }
           }}
           className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg font-bold shadow-lg"

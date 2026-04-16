@@ -1,4 +1,5 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 
@@ -247,7 +248,7 @@ const {
     const units = (Array.isArray(customPlanForm.units) ? customPlanForm.units : [])
       .map((unit, index) => normalizePlanUnitForView(unit, index));
     if (units.length === 0) {
-      alert('Bitte mindestens eine Einheit für den Trainingsplan hinterlegen.');
+      toast.error('Bitte mindestens eine Einheit fuer den Trainingsplan hinterlegen.');
       return;
     }
 
@@ -272,7 +273,7 @@ const {
 
     const result = await createCustomSwimTrainingPlan(payload);
     if (!result?.success) {
-      alert(`Fehler beim Speichern des Plans: ${result?.error || 'Unbekannter Fehler'}`);
+      toast.error(`Fehler beim Speichern des Plans: ${result?.error || 'Unbekannter Fehler'}`);
       return;
     }
 
@@ -291,7 +292,7 @@ const {
       description: '',
       assignedUserId: defaultAssignedUserId
     });
-    alert('Trainingsplan gespeichert.');
+    toast.success('Trainingsplan gespeichert.');
   };
 
   return (
@@ -1106,9 +1107,9 @@ const {
                           trainingPlanId: '',
                           trainingPlanUnitId: ''
                         });
-                        alert('Trainingseinheit eingereicht! Warte auf Bestätigung durch einen Trainer.');
+                        toast.success('Trainingseinheit eingereicht! Warte auf Bestaetigung durch einen Trainer.');
                       } else {
-                        alert('Fehler beim Speichern: ' + result.error);
+                        toast.error('Fehler beim Speichern: ' + result.error);
                       }
                     }
                   }}

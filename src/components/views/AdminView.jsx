@@ -1,4 +1,5 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound, Building2, Ticket, Copy, Plus, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
@@ -385,8 +386,7 @@ const AdminPasswordReset = ({ userId, userEmail, userName }) => {
     setLoading(true);
     try {
       await dsAdminResetUserPassword(userId, userEmail, tempPassword);
-      alert(`Neues Passwort für ${userName || userEmail}:\n\n${tempPassword}\n\nBitte dem User mitteilen!`);
-      showToast(`Passwort für ${userName || userEmail} zurückgesetzt!`, 'success');
+      toast.success(`Neues Passwort fuer ${userName || userEmail}: ${tempPassword}`, { duration: 10000 });
     } catch (err) {
       showToast('Fehler: ' + err.message, 'error');
     } finally {
@@ -1129,9 +1129,9 @@ const AdminView = ({
                           try {
                             await dsDeleteUser(acc.email, [...(allUsers || []), ...(pendingUsers || [])]);
                             loadData();
-                            alert('Account abgelehnt und gelöscht.');
+                            toast.success('Account abgelehnt und geloescht.');
                           } catch (error) {
-                            alert('Fehler: ' + error.message);
+                            toast.error('Fehler: ' + error.message);
                           }
                         }
                       }}

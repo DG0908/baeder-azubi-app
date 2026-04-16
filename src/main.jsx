@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import * as Sentry from '@sentry/react'
+import { Toaster } from 'react-hot-toast'
 import BaederApp from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { AppProvider } from './context/AppContext.jsx'
@@ -161,6 +162,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <AuthProvider>
       <AppProvider>
         <BaederApp />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            style: { fontSize: '14px', maxWidth: '90vw' },
+            success: { duration: 3000 },
+            error: { duration: 5000 },
+          }}
+        />
       </AppProvider>
     </AuthProvider>
   </React.StrictMode>,
