@@ -1,36 +1,38 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import toast from 'react-hot-toast';
 import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { useApp } from './context/AppContext';
 import LoginScreen from './components/auth/LoginScreen';
-import ChatView from './components/views/ChatView';
-import ForumView from './components/views/ForumView';
-import NewsView from './components/views/NewsView';
-import ExamsView from './components/views/ExamsView';
-import MaterialsView from './components/views/MaterialsView';
-import ResourcesView from './components/views/ResourcesView';
-import TrainerDashboardView from './components/views/TrainerDashboardView';
-import QuestionsView from './components/views/QuestionsView';
-import StatsView from './components/views/StatsView';
-import SchoolCardView from './components/views/SchoolCardView';
-import ProfileView from './components/views/ProfileView';
-import QuizView from './components/views/QuizView';
 import HomeView from './components/views/HomeView';
-import AdminView from './components/views/AdminView';
-import ExamSimulatorView from './components/views/ExamSimulatorView';
+import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
-import FlashcardsView from './components/views/FlashcardsView';
-import CalculatorView from './components/views/CalculatorView';
-import SwimChallengeView from './components/views/SwimChallengeView';
-import BerichtsheftView from './components/views/BerichtsheftView';
-import CollectionView from './components/views/CollectionView';
-import ImpressumView from './components/views/ImpressumView';
-import DatenschutzView from './components/views/DatenschutzView';
-import AGBView from './components/views/AGBView';
-import InteractiveLearningView from './components/views/InteractiveLearningView';
-import NotfallTrainerView from './components/views/NotfallTrainerView';
 import AvatarBadge from './components/ui/AvatarBadge';
+
+// Lazy-loaded Views — werden erst geladen wenn sie gebraucht werden
+const ChatView = lazy(() => import('./components/views/ChatView'));
+const ForumView = lazy(() => import('./components/views/ForumView'));
+const NewsView = lazy(() => import('./components/views/NewsView'));
+const ExamsView = lazy(() => import('./components/views/ExamsView'));
+const MaterialsView = lazy(() => import('./components/views/MaterialsView'));
+const ResourcesView = lazy(() => import('./components/views/ResourcesView'));
+const TrainerDashboardView = lazy(() => import('./components/views/TrainerDashboardView'));
+const QuestionsView = lazy(() => import('./components/views/QuestionsView'));
+const StatsView = lazy(() => import('./components/views/StatsView'));
+const SchoolCardView = lazy(() => import('./components/views/SchoolCardView'));
+const ProfileView = lazy(() => import('./components/views/ProfileView'));
+const AdminView = lazy(() => import('./components/views/AdminView'));
+const ExamSimulatorView = lazy(() => import('./components/views/ExamSimulatorView'));
+const FlashcardsView = lazy(() => import('./components/views/FlashcardsView'));
+const CalculatorView = lazy(() => import('./components/views/CalculatorView'));
+const SwimChallengeView = lazy(() => import('./components/views/SwimChallengeView'));
+const BerichtsheftView = lazy(() => import('./components/views/BerichtsheftView'));
+const CollectionView = lazy(() => import('./components/views/CollectionView'));
+const ImpressumView = lazy(() => import('./components/views/ImpressumView'));
+const DatenschutzView = lazy(() => import('./components/views/DatenschutzView'));
+const AGBView = lazy(() => import('./components/views/AGBView'));
+const InteractiveLearningView = lazy(() => import('./components/views/InteractiveLearningView'));
+const NotfallTrainerView = lazy(() => import('./components/views/NotfallTrainerView'));
 import { useInactivityTimeout } from './hooks/useInactivityTimeout';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
@@ -9421,6 +9423,7 @@ export default function BaederApp() {
       </aside>
 
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-60'} p-4 relative z-10 pb-20 md:pb-4 ${(appConfig.featureFlags?.quizMaintenance || (appConfig.announcement?.enabled && appConfig.announcement?.message)) ? 'pt-12' : ''}`}>
+       <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="text-4xl animate-bounce">🏊‍♂️</div></div>}>
         {/* Admin Panel */}
         {currentView === 'admin' && user.permissions.canManageUsers && (
           <AdminView
@@ -10015,6 +10018,7 @@ export default function BaederApp() {
           />
         )}
 
+       </Suspense>
       </div>
 
       {/* Bottom Navigation Bar — mobile only */}

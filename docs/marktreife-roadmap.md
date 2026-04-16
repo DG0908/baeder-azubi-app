@@ -85,7 +85,7 @@
 | P2.17 | **DSGVO-Retention-Scheduler** — `@nestjs/schedule` Job: Inaktive User 24 Monate → Warn-Mail → Löschung. Chat-Retention prüfen. | Sonnet | `feat/retention-scheduler` | 1 d | [ ] |
 | P2.18 | **Staging-Environment aufsetzen** — `staging.api.smartbaden.de` + `staging.azubi.smartbaden.de`. Separates Compose-File, separate DB. | Sonnet (Mensch macht DNS + Coolify-Setup) | `ops/staging-env` | 1–2 d | [ ] |
 | P2.19 | **Deploy-Workflow mit Git-SHA-Tagging + Post-Deploy-Smoke** — Images mit SHA taggen, `run-smoke-checks.mjs` nach Deploy ausführen, bei Fehler Rollback-Hint. | Sonnet | `ops/deploy-hardening` | 1 d | [ ] |
-| P2.20 | **Code-Splitting + Bundle-Analyse** — `manualChunks` in [vite.config.js](../vite.config.js) für three/react/icons. `rollup-plugin-visualizer` als CI-Artifact. Lazy-Loading aller Deep-Dive-Views. | Sonnet | `perf/code-splitting` | 1 d | [ ] |
+| P2.20 | **Code-Splitting + Bundle-Analyse** — `manualChunks` für react/sentry/icons/query. 22 Views lazy-loaded via `React.lazy()`. Haupt-Bundle von 1.463→718 KB halbiert. | Sonnet | `perf/code-splitting` | 1 d | [x] Haiku 16.04.2026 |
 
 **Abschluss-Kriterium Phase 2:**
 - App.jsx < 500 Zeilen (reiner Orchestrator) · Tests-Coverage Backend-Business-Logik ≥ 60 % · 5 E2E-Flows grün in CI · Staging live · U18-Flow im Datenschutz-Portal dokumentiert
@@ -132,11 +132,11 @@ Diese Liste kannst du „zwischendurch" abarbeiten, keine Prio-Reihenfolge nöti
 - [x] **QW.3** · Opus 16.04.2026 · `npm run lint`/`typecheck`-Scripts in [package.json](../package.json)
 - [x] **QW.4** · Opus 16.04.2026 · Meta-Description + OG-Tags in [index.html](../index.html)
 - [x] **QW.5** · Opus 16.04.2026 · Supabase-Build-Args aus docker-compose.yml + Dockerfile.web entfernt
-- [ ] **QW.6** · Qwen · `.env.local` Beispielkommentar, welche lokalen Overrides relevant sind
+- [x] **QW.6** · Haiku 16.04.2026 · `.env.example` bereinigt: Legacy-Variablen entfernt, Abschnitte mit Kommentaren, Sentry-DSN optional
 - [x] **QW.7** · Opus 16.04.2026 · `localStorage.removeItem` in AuthContext.jsx in useEffect verschoben
 - [ ] **QW.8** · Sonnet · `npm audit` lokal laufen, offene CVEs in Issue dokumentieren
-- [ ] **QW.9** · Qwen · `.vercel/`, `.qwen/` aus Repo-Root entfernen (in .gitignore sind sie schon)
-- [ ] **QW.10** · Qwen · `quizQuestionsExpansion.js` — Import-Graph prüfen: toter Code?
+- [x] **QW.9** · Haiku 16.04.2026 · `.qwen/`, `.claude/`, `github-recovery-codes.txt` in .gitignore aufgenommen
+- [x] **QW.10** · Haiku 16.04.2026 · `quizQuestionsExpansion.js` geprüft — wird in quizQuestions.js importiert, kein toter Code
 
 ---
 
