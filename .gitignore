@@ -48,3 +48,10 @@ mobile-watercycle-test.png
 backups/
 ops/backups/
 supabase/.temp/
+
+# AI tool configs
+.qwen/
+.claude/
+
+# Sensitive files
+github-recovery-codes.txt
