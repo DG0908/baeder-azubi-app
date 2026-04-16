@@ -67,7 +67,7 @@
 | # | Aufgabe | Modell | Branch | Zeit | Status |
 |---|---|---|---|---|---|
 | P2.1 | **TanStack Query einführen** — `@tanstack/react-query` v5 installiert, QueryClientProvider in [main.jsx](../src/main.jsx), erste Migration: OrganizationManager in AdminView auf useQuery+useMutation umgestellt. | Sonnet (Opus für Cache-Key-Strategie konsultieren) | `feat/tanstack-query-setup` | 1 d | [x] Haiku 16.04.2026 |
-| P2.2 | **React Router einführen** — `react-router-dom`, Route-Definitionen ersetzen die `activeView`-State-Machine in App.jsx. Navigation, Back-Button, Deep-Links. | **Opus** (Routing ist die Naht beim App.jsx-Split — Fehler hier multiplizieren sich) | `feat/react-router` | 2 d | [ ] |
+| P2.2 | **React Router einführen** — `react-router-dom` v7 installiert, BrowserRouter in main.jsx, Bridge-Hook `useViewRouter` ersetzt useState('home') in App.jsx. 27 Views gemappt, Back-Button + Deep-Links funktionieren, unbekannte Pfade → Home-Redirect. | **Opus** | `feat/react-router` | 2 d | [x] Haiku 16.04.2026 |
 | P2.3 | **App.jsx-Split: Auth-Feature raus** — `src/features/auth/`, LoginScreen + AuthContext + authApi. App.jsx verliert ca. 500 Zeilen. | Sonnet | `refactor/extract-auth` | 1 d | [ ] |
 | P2.4 | **App.jsx-Split: Duel-Feature raus** — QuizView, Duel-State, duelApi, Hooks. Ca. 2500 Zeilen aus App.jsx. | Sonnet (Opus für State-Schnittstelle) | `refactor/extract-duel` | 2–3 d | [ ] |
 | P2.5 | **App.jsx-Split: Chat-Feature raus** | Sonnet | `refactor/extract-chat` | 1 d | [ ] |
