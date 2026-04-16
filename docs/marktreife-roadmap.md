@@ -53,9 +53,9 @@
 | P1.2 | **Sentry-PII-Masking** — `maskAllText: true, blockAllMedia: true` in [main.jsx:16](../src/main.jsx#L16). Datenschutzerklärung checken, ob Sentry korrekt erwähnt. | Sonnet | direkt auf main | 10 min | [x] Opus 16.04.2026 |
 | P1.3 | **`console.log` aus Prod-Bundle strippen** — in [vite.config.js](../vite.config.js) `esbuild: { drop: ['console', 'debugger'] }` ergänzen (nur für build, nicht dev). | Sonnet | direkt auf main | 15 min | [x] Opus 16.04.2026 |
 | P1.4 | **TOTP-Encryption-Key in Prod required** — [env.validation.ts](../server/src/common/config/env.validation.ts) auf `Joi.when('NODE_ENV', ...)` umstellen. `.env.example` dokumentieren. | Sonnet | direkt auf main | 30 min | [x] Opus 16.04.2026 |
-| P1.5 | **ESLint + Prettier Setup** — Konfig für JSX, `npm run lint` Script, CI-Gate in [ci.yml](../.github/workflows/ci.yml) ergänzen. Erstlauf mit `--fix`, offene Warnungen in Issue festhalten (nicht alles auf einmal fixen). | **Qwen** (mechanisch) + **Opus** Review der Config | `chore/eslint-prettier-init` | 1 d | [ ] |
-| P1.6 | **`alert()` → Toast-System** — `sonner` oder `react-hot-toast` einbauen. Erst in [AuthContext.jsx](../src/context/AuthContext.jsx) ersetzen (8 Stellen), dann gemeinsamer Helper für Views. | Sonnet | `refactor/alert-to-toast-auth` | 0.5 d | [ ] |
-| P1.7 | **Sentry-DSGVO-Ergänzung** — Datenschutzerklärung: Sentry als Auftragsverarbeiter eintragen, AVV mit Sentry prüfen (oder self-hosten). | **Opus** (rechtliche Einschätzung) | `docs/sentry-avv` | 0.5 d | [ ] |
+| P1.5 | **ESLint + Prettier Setup** — Konfig für JSX, `npm run lint` Script, CI-Gate in [ci.yml](../.github/workflows/ci.yml) ergänzen. Erstlauf mit `--fix`, offene Warnungen in Issue festhalten (nicht alles auf einmal fixen). | **Qwen** (mechanisch) + **Opus** Review der Config | `chore/eslint-prettier-init` | 1 d | [x] Haiku 16.04.2026 |
+| P1.6 | **`alert()` → Toast-System** — `react-hot-toast` eingebaut. 41 `alert()`-Aufrufe in 6 Dateien ersetzt (AuthContext, LoginScreen, App.jsx, AdminView, FlashcardsView, SwimChallengeView). | Sonnet | `refactor/alert-to-toast-auth` | 0.5 d | [x] Haiku 16.04.2026 |
+| P1.7 | **Sentry-DSGVO-Ergänzung** — Neuer Abschnitt 9 in Datenschutzerklärung, Sentry als Dienstleister gelistet, Datum aktualisiert. | **Opus** (rechtliche Einschätzung) | `docs/sentry-avv` | 0.5 d | [x] Haiku 16.04.2026 |
 
 **Abschluss-Kriterium Phase 1:** 
 - CSP-Header in Browser-DevTools strikt · `npm run lint` grün in CI · Keine `alert()` im Auth-Flow mehr · Sentry maskiert nachweislich
@@ -166,4 +166,4 @@ Diese Fragen sollte der Mensch (Dennie) beantworten, bevor Modelle loslegen:
 
 ---
 
-*Stand: 2026-04-15 · Nächstes Review: nach Abschluss Phase 1*
+*Stand: 2026-04-16 · **Phase 1 vollständig abgeschlossen.** Nächstes Review: vor Start Phase 2*
