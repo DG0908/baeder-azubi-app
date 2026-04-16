@@ -8,7 +8,9 @@
     "check:questions": "node scripts/validate-questions.mjs",
     "smoke:api": "node scripts/run-smoke-checks.mjs",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "echo 'TODO: ESLint nicht konfiguriert — siehe docs/marktreife-roadmap.md P1.5' && exit 1",
+    "typecheck": "echo 'TODO: TypeScript-Migration ausstehend — siehe docs/marktreife-roadmap.md P2.9' && exit 1"
   },
   "dependencies": {
     "@react-three/drei": "^9.121.4",

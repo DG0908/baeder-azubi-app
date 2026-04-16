@@ -31,10 +31,12 @@ export function AuthProvider({ children }) {
   const [totpCode, setTotpCode] = useState('');
 
   // Clean up legacy PII from localStorage (older app versions stored user profile there)
-  try {
-    localStorage.removeItem('baeder_user');
-    localStorage.removeItem('azubi_profile');
-  } catch { /* ignore */ }
+  useEffect(() => {
+    try {
+      localStorage.removeItem('baeder_user');
+      localStorage.removeItem('azubi_profile');
+    } catch { /* ignore */ }
+  }, []);
 
   const resetStoredSession = () => {
     setUser(null);
