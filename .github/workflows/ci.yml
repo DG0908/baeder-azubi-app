@@ -113,7 +113,7 @@ jobs:
       - run: npm ci
 
       - name: ESLint
-        run: npx eslint src/ --max-warnings 900
+        run: npx eslint src/ --max-warnings 850
         # 13 pre-existing errors (conditional hooks in deep-dive views) are known.
         # New errors will still fail the build. Threshold will be lowered as we fix issues.
 
