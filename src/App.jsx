@@ -4,6 +4,7 @@ import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send
 import { useAuth } from './context/AuthContext';
 import { useApp } from './context/AppContext';
 import AuthGuard from './components/auth/AuthGuard';
+import { useChatState, getRoleKey, isStaffRole, getAccountOrganizationId, getChatScopeKey } from './hooks/useChatState';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -56,10 +57,6 @@ import {
   loadUsers as dsLoadUsers,
   loadAppConfig as dsLoadAppConfig,
   loadGames as dsLoadGames,
-  loadMessages as dsLoadMessages,
-  loadDirectMessages as dsLoadDirectMessages,
-  createChatMessage as dsCreateChatMessage,
-  deleteChatMessage as dsDeleteChatMessage,
   loadNotifications as dsLoadNotifications,
   sendNotification as dsSendNotification,
   markNotificationRead as dsMarkNotificationRead,
@@ -366,28 +363,6 @@ export default function BaederApp() {
     const nb = normalizePlayerName(b);
     if (!na || !nb) return false;
     return na === nb || na.includes(nb) || nb.includes(na);
-  };
-  const STAFF_CHAT_ROLES = new Set(['trainer', 'ausbilder', 'admin']);
-  const CHAT_SCOPE_META = {
-    azubi_room: {
-      label: 'Azubi-Chat',
-      description: 'Nur Azubis aus deinem Betrieb'
-    },
-    staff_room: {
-      label: 'Azubi & Ausbilder',
-      description: 'Gemeinsamer Betriebschat'
-    },
-    direct_staff: {
-      label: 'Direktchat',
-      description: '1:1 zwischen Azubi und Ausbilder'
-    }
-  };
-  const getRoleKey = (value) => String(value || '').trim().toLowerCase();
-  const isStaffRole = (value) => STAFF_CHAT_ROLES.has(getRoleKey(value));
-  const getAccountOrganizationId = (account) => account?.organizationId || account?.organization_id || null;
-  const getChatScopeKey = (value, fallback = 'staff_room') => {
-    const normalized = String(value || '').trim().toLowerCase();
-    return CHAT_SCOPE_META[normalized] ? normalized : fallback;
   };
   const isFinishedGameStatus = (status) => {
     const normalized = String(status || '').trim().toLowerCase();
@@ -1201,10 +1176,6 @@ export default function BaederApp() {
   // Other State
   const [userStats, setUserStats] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [chatScope, setChatScope] = useState('staff_room');
-  const [selectedChatRecipientId, setSelectedChatRecipientId] = useState('');
   const [submittedQuestions, setSubmittedQuestions] = useState([]);
   const [newQuestionText, setNewQuestionText] = useState('');
   const [newQuestionCategory, setNewQuestionCategory] = useState('org');
@@ -1255,6 +1226,7 @@ export default function BaederApp() {
   
   // UI State – darkMode, soundEnabled, toasts, showToast, playSound vom AppContext
   const { darkMode, setDarkMode, soundEnabled, setSoundEnabled, toasts, setToasts, showToast, playSound } = useApp();
+
   const [devMode, setDevMode] = useState(false);
 
   // App Config State (Admin UI Editor)
@@ -1752,6 +1724,23 @@ export default function BaederApp() {
     return true;
   };
 
+  // Chat-State (extrahiert in eigenen Hook)
+  const {
+    messages, newMessage, setNewMessage,
+    chatScope, setChatScope,
+    selectedChatRecipientId, setSelectedChatRecipientId,
+    hasChatOrganization, directChatCandidates,
+    messageCount: chatMessageCount,
+    sendMessage, deleteChatMessage: deleteChatMsg,
+    loadChatMessages, normalizeChatMessageRow,
+  } = useChatState({
+    user,
+    allUsers,
+    showToast,
+    moderateContent,
+    sendNotification: async () => null,
+  });
+
   const normalizeKeywordText = (value) => String(value || '')
     .toLowerCase()
     .replace(/ß/g, 'ss')
@@ -2128,18 +2117,6 @@ export default function BaederApp() {
       return () => clearInterval(interval);
     }
   }, [authReady, user]);
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const allowedScopes = getRoleKey(user.role) === 'azubi'
-      ? ['azubi_room', 'staff_room', 'direct_staff']
-      : ['staff_room', 'direct_staff'];
-
-    if (!allowedScopes.includes(chatScope)) {
-      setChatScope(allowedScopes[0]);
-    }
-  }, [user?.id, user?.role, chatScope]);
 
   useEffect(() => {
     if (!authReady) return;
@@ -3132,7 +3109,7 @@ export default function BaederApp() {
       approvedQuestions: submittedQuestions.filter(q => q.approved).length,
       pendingQuestions: submittedQuestions.filter(q => !q.approved).length,
       activeGamesCount: activeGames.length,
-      totalMessages: messages.length
+      totalMessages: chatMessageCount
     };
 
     // Count total games from storage
@@ -3140,70 +3117,6 @@ export default function BaederApp() {
 
     return stats;
   };
-
-  const hasChatOrganization = Boolean(user?.organizationId);
-  const chatUsersInOrganization = hasChatOrganization
-    ? allUsers.filter((account) => (
-      account?.id
-      && account.approved !== false
-      && getAccountOrganizationId(account) === user.organizationId
-    ))
-    : [];
-  const directChatCandidates = chatUsersInOrganization.filter((account) => {
-    if (!user?.id || account.id === user.id) return false;
-    const accountRole = getRoleKey(account.role);
-    if (!accountRole) return false;
-
-    if (getRoleKey(user?.role) === 'azubi') {
-      return isStaffRole(accountRole);
-    }
-
-    if (isStaffRole(user?.role)) {
-      return accountRole === 'azubi';
-    }
-
-    return false;
-  });
-
-  useEffect(() => {
-    if (chatScope !== 'direct_staff') {
-      if (selectedChatRecipientId) {
-        setSelectedChatRecipientId('');
-      }
-      return;
-    }
-
-    if (!directChatCandidates.some((account) => account.id === selectedChatRecipientId)) {
-      setSelectedChatRecipientId(directChatCandidates[0]?.id || '');
-    }
-  }, [chatScope, selectedChatRecipientId, directChatCandidates]);
-
-  // Load direct messages on-demand when switching to direct_staff scope
-  useEffect(() => {
-    if (chatScope !== 'direct_staff' || !selectedChatRecipientId) return;
-    const loadDirectMessages = async () => {
-      try {
-        const mapped = await dsLoadDirectMessages({
-          recipientId: selectedChatRecipientId,
-          currentUserId: user?.id
-        });
-        setMessages(prev => {
-          // Remove old direct_staff messages for this recipient, add new ones
-          const withoutOldDirect = prev.filter(msg =>
-            msg.scope !== 'direct_staff' ||
-            !(
-              (msg.senderId === user?.id && msg.recipientId === selectedChatRecipientId) ||
-              (msg.senderId === selectedChatRecipientId && msg.recipientId === user?.id)
-            )
-          );
-          return [...withoutOldDirect, ...mapped];
-        });
-      } catch (error) {
-        console.warn('Direct messages load error:', error.message);
-      }
-    };
-    loadDirectMessages();
-  }, [chatScope, selectedChatRecipientId]);
 
   const getTodayStamp = (input = Date.now()) => {
     const date = new Date(input);
@@ -3274,25 +3187,6 @@ export default function BaederApp() {
     }
   };
 
-  const normalizeChatMessageRow = (row, userDirectory = {}) => {
-    const senderProfile = row?.sender_id ? userDirectory[row.sender_id] : null;
-    const senderRole = getRoleKey(row?.user_role || senderProfile?.role || 'azubi') || 'azubi';
-    const fallbackScope = senderRole === 'azubi' ? 'azubi_room' : 'staff_room';
-
-    return {
-      id: row?.id || `${row?.created_at || Date.now()}-${row?.user_name || 'chat'}`,
-      user: String(row?.user_name || senderProfile?.name || 'Unbekannt'),
-      text: String(row?.content || ''),
-      time: new Date(row?.created_at || Date.now()).getTime(),
-      avatar: row?.user_avatar || senderProfile?.avatar || null,
-      senderId: row?.sender_id || senderProfile?.id || null,
-      senderRole,
-      scope: getChatScopeKey(row?.chat_scope, fallbackScope),
-      organizationId: row?.organization_id || getAccountOrganizationId(senderProfile) || null,
-      recipientId: row?.recipient_id || null
-    };
-  };
-
   // handleLogin, handleRegister, handleLogout werden vom AuthContext bereitgestellt
 
   // Leichte Daten für Polling (alle 30s) — nur schnell ändernde Tabellen
@@ -3317,8 +3211,7 @@ export default function BaederApp() {
       const userDirectory = Object.fromEntries(
         (allUsers || []).filter(a => a?.id).map(a => [a.id, a])
       );
-      const msgs = await dsLoadMessages(normalizeChatMessageRow, userDirectory, user?.role);
-      setMessages(msgs);
+      await loadChatMessages(userDirectory, user?.role);
     } catch (error) {
       console.log('Light data refresh error:', error.message);
     }
@@ -3439,8 +3332,7 @@ export default function BaederApp() {
       const userDirectory = Object.fromEntries(
         (visibleUsers || []).filter(a => a?.id).map(a => [a.id, a])
       );
-      const msgs = await dsLoadMessages(normalizeChatMessageRow, userDirectory, user?.role);
-      setMessages(msgs);
+      await loadChatMessages(userDirectory, user?.role);
 
       // Load custom questions
       const customQuestions = await dsLoadCustomQuestions();
@@ -5290,92 +5182,6 @@ export default function BaederApp() {
       checkBadges();
     } catch (error) {
       console.error('Finish error:', error);
-    }
-  };
-
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !user) return;
-
-    if (!hasChatOrganization) {
-      showToast('Chat ist erst verfuegbar, wenn dein Betrieb zugewiesen ist.', 'warning');
-      return;
-    }
-
-    // Content moderation
-    if (!moderateContent(newMessage, 'Nachricht')) {
-      setNewMessage('');
-      return;
-    }
-
-    const activeScope = getChatScopeKey(
-      chatScope,
-      getRoleKey(user.role) === 'azubi' ? 'azubi_room' : 'staff_room'
-    );
-
-    if (activeScope === 'azubi_room' && getRoleKey(user.role) !== 'azubi') {
-      showToast('Der Azubi-Chat ist nur fuer Azubis gedacht.', 'warning');
-      return;
-    }
-
-    let recipient = null;
-    if (activeScope === 'direct_staff') {
-      recipient = directChatCandidates.find((account) => account.id === selectedChatRecipientId) || null;
-      if (!recipient) {
-        showToast('Bitte zuerst einen passenden Chatpartner auswaehlen.', 'warning');
-        return;
-      }
-    }
-
-    try {
-      const msg = await dsCreateChatMessage({
-        content: newMessage.trim(),
-        scope: activeScope,
-        userName: user.name,
-        avatar: user.avatar || null,
-        senderRole: user.role,
-        senderId: user.id,
-        organizationId: user.organizationId,
-        recipientId: recipient?.id || null
-      });
-
-      setMessages((prev) => [...prev, msg]);
-      setNewMessage('');
-
-      if (recipient?.name) {
-        const preview = newMessage.trim().slice(0, 80);
-        await sendNotification(
-          recipient.name,
-          'Neue Chatnachricht',
-          `${user.name}: ${preview}${newMessage.trim().length > 80 ? '...' : ''}`,
-          'info'
-        );
-      }
-    } catch (error) {
-      console.error('Message error:', error);
-      showToast('Nachricht konnte nicht gesendet werden. Bitte erneut versuchen.', 'error');
-    }
-  };
-
-  const deleteChatMessage = async (message) => {
-    if (!message?.id || message?.isDeleted) return;
-
-    const isMine = message.senderId === user?.id;
-    const isAdminModeration = user?.role === 'admin' && !isMine;
-    const confirmText = isAdminModeration
-      ? 'Nachricht für alle Chatteilnehmer als entfernt markieren?'
-      : 'Eigene Nachricht wirklich löschen?';
-
-    if (!confirm(confirmText)) {
-      return;
-    }
-
-    try {
-      const deletedMessage = await dsDeleteChatMessage(message.id);
-      setMessages((prev) => prev.filter((entry) => entry.id !== deletedMessage.id));
-      showToast(isAdminModeration ? 'Nachricht wurde moderiert.' : 'Nachricht wurde gelöscht.', 'success');
-    } catch (error) {
-      console.error('Chat moderation error:', error);
-      showToast(friendlyError(error), 'error');
     }
   };
 
@@ -9537,7 +9343,7 @@ export default function BaederApp() {
             newMessage={newMessage}
             setNewMessage={setNewMessage}
             sendMessage={sendMessage}
-            deleteMessage={deleteChatMessage}
+            deleteMessage={deleteChatMsg}
             chatScope={chatScope}
             setChatScope={setChatScope}
             selectedChatRecipientId={selectedChatRecipientId}
