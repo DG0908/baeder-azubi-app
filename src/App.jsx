@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext';
 import { useApp } from './context/AppContext';
 import AuthGuard from './components/auth/AuthGuard';
 import { useChatState, getRoleKey, isStaffRole, getAccountOrganizationId, getChatScopeKey } from './hooks/useChatState';
+import { useAdminActions } from './hooks/useAdminActions';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -52,7 +53,7 @@ import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
 import { shuffleAnswers } from './lib/utils';
 import { friendlyError } from './lib/friendlyError';
 import SignatureCanvas from './components/ui/SignatureCanvas';
-import { clearUserPushSubscription, ensureUserPushSubscription, fetchPushBackendWithAuth, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
+import { clearUserPushSubscription, ensureUserPushSubscription, getCurrentPushDeviceState, isWebPushConfigured, triggerWebPushNotification } from './lib/pushNotifications';
 import {
   loadUsers as dsLoadUsers,
   loadAppConfig as dsLoadAppConfig,
@@ -73,17 +74,12 @@ import {
   createQuestionSubmission as dsCreateQuestionSubmission,
   approveQuestionSubmission as dsApproveQuestionSubmission,
   loadQuestionReports as dsLoadQuestionReports,
-  approveUser as dsApproveUser,
-  deleteUser as dsDeleteUser,
   purgeUserData as dsPurgeUserData,
-  changeUserRole as dsChangeUserRole,
-  updateUserPermission as dsUpdateUserPermission,
   loadSwimTrainingPlans as dsLoadSwimTrainingPlans,
   startTheoryExamSession as dsStartTheoryExamSession,
   saveTheoryExamAttempt as dsSaveTheoryExamAttempt,
   loadTheoryExamHistory as dsLoadTheoryExamHistory,
   deletePracticalExamAttempt as dsDsPracticalExamAttempt,
-  saveAppConfig as dsSaveAppConfig,
   loadSchoolAttendanceAzubis as dsLoadSchoolAttendanceAzubis,
   loadSchoolAttendance as dsLoadSchoolAttendance,
   addSchoolAttendanceEntry as dsAddSchoolAttendance,
@@ -127,8 +123,6 @@ import {
   savePracticalExamAttemptEntry as dsSavePracticalExamAttempt,
   reportQuestion as dsReportQuestion,
   updateQuestionReportStatus as dsUpdateQuestionReportStatus,
-  repairQuizStatsRemote as dsRepairQuizStats,
-  sendTestPushRemote as dsSendTestPush,
   getAuthorizedReviewers as dsGetAuthorizedReviewers,
   saveBadges as dsSaveBadges,
   loadUserBadges as dsLoadUserBadges,
@@ -137,7 +131,6 @@ import {
   loadBerichtsheftProfile as dsLoadBerichtsheftProfile,
   resolveUserIdentity as dsResolveUserIdentity,
   loadRetentionCandidates as dsLoadRetentionCandidates,
-  exportUserDataBundle as dsExportUserDataBundle
 } from './lib/dataService';
 
 export default function BaederApp() {
@@ -1237,8 +1230,6 @@ export default function BaederApp() {
     companies: ['Freizeitbad Oktopus'],
     announcement: { enabled: false, message: '' }
   });
-  const [editingMenuItems, setEditingMenuItems] = useState([]);
-  const [editingThemeColors, setEditingThemeColors] = useState({});
   const [configLoaded, setConfigLoaded] = useState(false);
   const [showMehrDrawer, setShowMehrDrawer] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -1739,6 +1730,19 @@ export default function BaederApp() {
     showToast,
     moderateContent,
     sendNotification: async () => null,
+  });
+
+  // Admin-Aktionen (extrahiert in eigenen Hook)
+  const adminActions = useAdminActions({
+    user,
+    allUsers,
+    pendingUsers,
+    showToast,
+    playSound,
+    loadData: () => loadData(),
+    appConfig,
+    setAppConfig,
+    statsSources: { materials, submittedQuestions, activeGames, chatMessageCount },
   });
 
   const normalizeKeywordText = (value) => String(value || '')
@@ -2973,34 +2977,6 @@ export default function BaederApp() {
     }
   };
 
-  const exportUserData = async (targetInput, fallbackName = '') => {
-    const targetUser = targetInput && typeof targetInput === 'object'
-      ? targetInput
-      : { email: targetInput, name: fallbackName };
-    const targetLabel = String(targetUser?.name || targetUser?.displayName || targetUser?.email || 'nutzer').trim();
-    const userName = targetLabel;
-    try {
-      const exportData = await dsExportUserDataBundle(targetUser);
-
-      // Create download
-      const dataStr = JSON.stringify(exportData, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${targetLabel}_daten_export_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast.success(`Datenexport fuer ${userName} erfolgreich heruntergeladen!`);
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Fehler beim Datenexport!');
-    }
-  };
-
   const loadNotifications = async () => {
     if (!user) return;
 
@@ -3090,32 +3066,6 @@ export default function BaederApp() {
     } catch (error) {
       console.error('Clear notifications error:', error);
     }
-  };
-
-  const getAdminStats = () => {
-    const stats = {
-      totalUsers: allUsers.length,
-      pendingApprovals: pendingUsers.length,
-      azubis: allUsers.filter(u => u.role === 'azubi').length,
-      trainers: allUsers.filter(u => u.role === 'trainer').length,
-      admins: allUsers.filter(u => u.role === 'admin').length,
-      usersToDeleteSoon: allUsers.filter(u => {
-        const days = getDaysUntilDeletion(u);
-        return days !== null && days < 30 && days >= 0;
-      }).length,
-      totalGames: 0,
-      totalMaterials: materials.length,
-      totalQuestions: submittedQuestions.length,
-      approvedQuestions: submittedQuestions.filter(q => q.approved).length,
-      pendingQuestions: submittedQuestions.filter(q => !q.approved).length,
-      activeGamesCount: activeGames.length,
-      totalMessages: chatMessageCount
-    };
-
-    // Count total games from storage
-    activeGames.forEach(() => stats.totalGames++);
-
-    return stats;
   };
 
   const getTodayStamp = (input = Date.now()) => {
@@ -3415,186 +3365,6 @@ export default function BaederApp() {
 
     const ranking = Object.values(stats).sort((a, b) => b.points - a.points);
     setLeaderboard(ranking);
-  };
-
-  const approveUser = async (email) => {
-    try {
-      const result = await dsApproveUser(email, [...(allUsers || []), ...(pendingUsers || [])]);
-      loadData();
-      playSound('whistle');
-      showToast(`${result.account?.name || email} wurde freigeschaltet!`, 'success');
-    } catch (error) {
-      console.error('Error approving user:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const deleteUser = async (email) => {
-    try {
-      const targetUser = allUsers.find(
-        u => String(u.email || '').trim().toLowerCase() === String(email || '').trim().toLowerCase()
-      );
-      if (!targetUser) {
-        showToast('User nicht gefunden', 'error');
-        return;
-      }
-      if (targetUser.role === 'admin') {
-        showToast('Administratoren können nicht gelöscht werden!', 'error');
-        return;
-      }
-      if (!confirm('Möchtest du diesen Nutzer wirklich löschen? Alle Daten werden unwiderruflich gelöscht!')) {
-        return;
-      }
-
-      await dsDeleteUser(email, allUsers);
-      loadData();
-      showToast('Nutzerprofil und Daten wurden gelöscht', 'success');
-    } catch (error) {
-      console.error('Delete user error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const changeUserRole = async (email, newRole) => {
-    try {
-      if (!user?.permissions?.canManageUsers) {
-        showToast('Keine Berechtigung für Rollenänderungen.', 'error');
-        return;
-      }
-      const hasOwnerAccount = allUsers.some((account) => Boolean(account?.is_owner));
-      const canManageSecurity = Boolean(user?.isOwner) || (user?.role === 'admin' && !hasOwnerAccount);
-      if (!canManageSecurity) {
-        showToast('Nur der Hauptadmin darf Rollen ändern.', 'error');
-        return;
-      }
-
-      const targetEmail = String(email || '').trim().toLowerCase();
-      const ownEmail = String(user?.email || '').trim().toLowerCase();
-      const allowedRoles = ['azubi', 'trainer', 'admin'];
-      if (!allowedRoles.includes(newRole)) {
-        showToast('Ungültige Rolle ausgewählt', 'error');
-        return;
-      }
-
-      // Protect against locking yourself out of the admin area.
-      if (targetEmail && targetEmail === ownEmail && newRole !== 'admin') {
-        showToast('Deine eigene Admin-Rolle kann nicht geändert werden.', 'error');
-        return;
-      }
-
-      const targetUser = allUsers.find(
-        (account) => String(account?.email || '').trim().toLowerCase() === targetEmail
-      );
-      if (targetUser?.role === 'admin' && newRole !== 'admin') {
-        const adminCount = allUsers.filter((account) => account.role === 'admin').length;
-        if (adminCount <= 1) {
-          showToast('Mindestens ein Administrator muss erhalten bleiben.', 'error');
-          return;
-        }
-      }
-
-      await dsChangeUserRole(targetEmail, newRole, allUsers);
-
-      loadData();
-      showToast(`Rolle geändert zu: ${PERMISSIONS[newRole].label}`, 'success');
-    } catch (error) {
-      console.error('Error changing role:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const togglePermission = async (userId, field, currentValue, labels) => {
-    try {
-      await dsUpdateUserPermission(userId, field, !currentValue);
-      loadData();
-      showToast(!currentValue ? labels.granted : labels.revoked, 'success');
-    } catch (error) {
-      console.error(`Error toggling ${field}:`, error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const toggleSchoolCardPermission = (userId, currentValue) =>
-    togglePermission(userId, 'canViewSchoolCards', currentValue, {
-      granted: 'Kontrollkarten-Berechtigung erteilt',
-      revoked: 'Kontrollkarten-Berechtigung entzogen'
-    });
-
-  const toggleSignReportsPermission = (userId, currentValue) =>
-    togglePermission(userId, 'canSignReports', currentValue, {
-      granted: 'Berichtsheft-Unterschrift-Berechtigung erteilt',
-      revoked: 'Berichtsheft-Unterschrift-Berechtigung entzogen'
-    });
-
-  const toggleExamGradesPermission = (userId, currentValue) =>
-    togglePermission(userId, 'canViewExamGrades', currentValue, {
-      granted: 'Klasuren-Berechtigung erteilt',
-      revoked: 'Klasuren-Berechtigung entzogen'
-    });
-
-  const repairQuizStats = async () => {
-    if (!user?.permissions?.canManageUsers) {
-      throw new Error('Keine Berechtigung für den Statistik-Repair.');
-    }
-
-    const responseData = await dsRepairQuizStats(fetchPushBackendWithAuth);
-    await loadData();
-    return responseData;
-  };
-
-  const sendTestPush = async (targetScope = 'self') => {
-    if (!user?.id) {
-      throw new Error('Keine aktive Sitzung für den Test-Push gefunden.');
-    }
-
-    const requestedTargetUserNames = targetScope === 'organization'
-      ? [...new Set(
-          (allUsers || [])
-            .filter((account) => account?.approved !== false)
-            .filter((account) => (account?.organization_id || account?.organizationId || null) === (user.organizationId || null))
-            .map((account) => String(account?.name || '').trim())
-            .filter(Boolean)
-        )]
-      : [String(user.name || '').trim()].filter(Boolean);
-
-    const payload = {
-      delaySeconds: 15, targetScope,
-      userName: user.name || '', email: user.email || '',
-      organizationId: user.organizationId || null,
-      targetUserNames: requestedTargetUserNames
-    };
-
-    return dsSendTestPush(fetchPushBackendWithAuth, payload);
-  };
-
-  // Profil-Bearbeitung: Name ändern
-
-  const getDaysUntilDeletion = (account) => {
-    // Admins are NEVER deleted
-    if (account.role === 'admin') {
-      return null;
-    }
-    
-    const now = Date.now();
-    
-    if (account.role === 'azubi' && account.trainingEnd) {
-      const endDate = new Date(account.trainingEnd).getTime();
-      if (isNaN(endDate)) return null;
-      const threeMonthsMs = 3 * 30 * 24 * 60 * 60 * 1000;
-      const daysLeft = Math.ceil((endDate + threeMonthsMs - now) / (1000 * 60 * 60 * 24));
-      return daysLeft;
-    }
-
-    if (account.role === 'trainer' && (account.lastLogin || account.last_login)) {
-      const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
-      const lastLoginTime = new Date(account.lastLogin || account.last_login).getTime();
-      if (isNaN(lastLoginTime)) return null;
-      const deleteDate = lastLoginTime + sixMonthsMs;
-      const daysLeft = Math.ceil((deleteDate - now) / (1000 * 60 * 60 * 24));
-      return daysLeft;
-    }
-    
-    return null;
   };
 
   // Quiz functions with Supabase
@@ -8453,147 +8223,6 @@ export default function BaederApp() {
     }
   };
 
-  // Save App Config (Admin UI Editor)
-  const saveAppConfig = async () => {
-    const hasOwnerAccount = allUsers.some((account) => Boolean(account?.is_owner));
-    const canManageSecurity = Boolean(user?.isOwner) || (user?.role === 'admin' && !hasOwnerAccount);
-    if (!canManageSecurity) {
-      showToast('Nur der Hauptadmin kann die Konfiguration ändern.', 'warning');
-      return;
-    }
-
-    try {
-      await dsSaveAppConfig({
-        menuItems: editingMenuItems,
-        themeColors: editingThemeColors,
-        featureFlags: appConfig.featureFlags
-      });
-
-      setAppConfig({
-        menuItems: editingMenuItems,
-        themeColors: editingThemeColors,
-        featureFlags: appConfig.featureFlags,
-        companies: appConfig.companies,
-        announcement: appConfig.announcement
-      });
-
-      showToast('Konfiguration gespeichert.', 'success');
-      playSound('splash');
-    } catch (error) {
-      console.error('Config save error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const saveAnnouncement = async (announcement) => {
-    const updated = { ...appConfig, announcement };
-    try {
-      await dsSaveAppConfig({
-        menuItems: appConfig.menuItems,
-        themeColors: appConfig.themeColors,
-        featureFlags: appConfig.featureFlags
-      });
-      setAppConfig(updated);
-      showToast(announcement.enabled ? 'Ankündigung aktiviert.' : 'Ankündigung deaktiviert.', 'success');
-    } catch (error) {
-      console.error('Announcement save error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const saveFeatureFlag = async (key, value) => {
-    const nextFlags = { ...appConfig.featureFlags, [key]: value };
-    const updated = { ...appConfig, featureFlags: nextFlags };
-    try {
-      await dsSaveAppConfig({ featureFlags: nextFlags });
-      setAppConfig(updated);
-      showToast(value ? 'Wartungsmodus aktiviert.' : 'Wartungsmodus deaktiviert.', 'success');
-    } catch (error) {
-      console.error('Feature flag save error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const saveCompanies = async (newCompanies) => {
-    const updated = { ...appConfig, companies: newCompanies };
-    try {
-      await dsSaveAppConfig({
-        menuItems: appConfig.menuItems,
-        themeColors: appConfig.themeColors,
-        featureFlags: appConfig.featureFlags
-      });
-      setAppConfig(updated);
-      showToast('Betriebe gespeichert.', 'success');
-    } catch (error) {
-      console.error('Companies save error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  // Reset App Config to defaults
-  const resetAppConfig = () => {
-    setEditingMenuItems([...DEFAULT_MENU_ITEMS]);
-    setEditingThemeColors({...DEFAULT_THEME_COLORS});
-    showToast('Zurückgesetzt auf Standardwerte. Klicke Speichern um zu übernehmen.', 'info');
-  };
-
-  // Move menu item up/down
-  const moveMenuItem = (itemId, direction) => {
-    // Sort items by order first
-    const sortedItems = [...editingMenuItems].sort((a, b) => a.order - b.order);
-    const currentIndex = sortedItems.findIndex(item => item.id === itemId);
-    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-
-    if (newIndex < 0 || newIndex >= sortedItems.length) return;
-
-    // Swap the two items in the sorted array
-    [sortedItems[currentIndex], sortedItems[newIndex]] = [sortedItems[newIndex], sortedItems[currentIndex]];
-
-    // Reassign order values based on new positions
-    const reorderedItems = sortedItems.map((item, idx) => ({
-      ...item,
-      order: idx
-    }));
-
-    setEditingMenuItems(reorderedItems);
-  };
-
-  // Toggle menu item visibility
-  const toggleMenuItemVisibility = (itemId) => {
-    const newItems = editingMenuItems.map(item =>
-      item.id === itemId ? { ...item, visible: !item.visible } : item
-    );
-    setEditingMenuItems(newItems);
-  };
-
-  // Update menu item label
-  const updateMenuItemLabel = (itemId, newLabel) => {
-    const newItems = editingMenuItems.map(item =>
-      item.id === itemId ? { ...item, label: newLabel } : item
-    );
-    setEditingMenuItems(newItems);
-  };
-
-  // Update menu item icon
-  const updateMenuItemIcon = (itemId, newIcon) => {
-    const newItems = editingMenuItems.map(item =>
-      item.id === itemId ? { ...item, icon: newIcon } : item
-    );
-    setEditingMenuItems(newItems);
-  };
-
-  // Update menu item group
-  const updateMenuItemGroup = (itemId, newGroup) => {
-    setEditingMenuItems(prev => prev.map(item =>
-      item.id === itemId ? { ...item, group: newGroup } : item
-    ));
-  };
-
-  // Update theme color
-  const updateThemeColor = (colorKey, newColor) => {
-    setEditingThemeColors(prev => ({ ...prev, [colorKey]: newColor }));
-  };
-
   const addResource = async () => {
     if (!resourceTitle.trim() || !resourceUrl.trim()) return;
 
@@ -9188,41 +8817,41 @@ export default function BaederApp() {
             currentUserEmail={user.email}
             canManageRoles={Boolean(user.isOwner) || (user.role === 'admin' && !allUsers.some((account) => Boolean(account?.is_owner)))}
             canEditAppConfig={Boolean(user.isOwner) || (user.role === 'admin' && !allUsers.some((account) => Boolean(account?.is_owner)))}
-            getAdminStats={getAdminStats}
+            getAdminStats={adminActions.getAdminStats}
             questionReports={questionReports}
             toggleQuestionReportStatus={toggleQuestionReportStatus}
             pendingUsers={pendingUsers}
-            approveUser={approveUser}
+            approveUser={adminActions.approveUser}
             loadData={loadData}
             allUsers={allUsers}
-            getDaysUntilDeletion={getDaysUntilDeletion}
-            changeUserRole={changeUserRole}
-            exportUserData={exportUserData}
-            deleteUser={deleteUser}
-            toggleSchoolCardPermission={toggleSchoolCardPermission}
-            toggleSignReportsPermission={toggleSignReportsPermission}
-            toggleExamGradesPermission={toggleExamGradesPermission}
-            repairQuizStats={repairQuizStats}
-            sendTestPush={sendTestPush}
-            editingMenuItems={editingMenuItems}
-            setEditingMenuItems={setEditingMenuItems}
+            getDaysUntilDeletion={adminActions.getDaysUntilDeletion}
+            changeUserRole={adminActions.changeUserRole}
+            exportUserData={adminActions.exportUserData}
+            deleteUser={adminActions.deleteUser}
+            toggleSchoolCardPermission={adminActions.toggleSchoolCardPermission}
+            toggleSignReportsPermission={adminActions.toggleSignReportsPermission}
+            toggleExamGradesPermission={adminActions.toggleExamGradesPermission}
+            repairQuizStats={adminActions.repairQuizStats}
+            sendTestPush={adminActions.sendTestPush}
+            editingMenuItems={adminActions.editingMenuItems}
+            setEditingMenuItems={adminActions.setEditingMenuItems}
             appConfig={appConfig}
-            editingThemeColors={editingThemeColors}
-            setEditingThemeColors={setEditingThemeColors}
-            moveMenuItem={moveMenuItem}
-            updateMenuItemIcon={updateMenuItemIcon}
-            updateMenuItemLabel={updateMenuItemLabel}
-            updateMenuItemGroup={updateMenuItemGroup}
-            toggleMenuItemVisibility={toggleMenuItemVisibility}
-            updateThemeColor={updateThemeColor}
-            saveAppConfig={saveAppConfig}
-            resetAppConfig={resetAppConfig}
+            editingThemeColors={adminActions.editingThemeColors}
+            setEditingThemeColors={adminActions.setEditingThemeColors}
+            moveMenuItem={adminActions.moveMenuItem}
+            updateMenuItemIcon={adminActions.updateMenuItemIcon}
+            updateMenuItemLabel={adminActions.updateMenuItemLabel}
+            updateMenuItemGroup={adminActions.updateMenuItemGroup}
+            toggleMenuItemVisibility={adminActions.toggleMenuItemVisibility}
+            updateThemeColor={adminActions.updateThemeColor}
+            saveAppConfig={adminActions.saveAppConfig}
+            resetAppConfig={adminActions.resetAppConfig}
             companies={appConfig.companies}
-            saveCompanies={saveCompanies}
+            saveCompanies={adminActions.saveCompanies}
             announcement={appConfig.announcement}
-            saveAnnouncement={saveAnnouncement}
+            saveAnnouncement={adminActions.saveAnnouncement}
             featureFlags={appConfig.featureFlags}
-            saveFeatureFlag={saveFeatureFlag}
+            saveFeatureFlag={adminActions.saveFeatureFlag}
           />
         )}
 
