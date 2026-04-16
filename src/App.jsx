@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { useApp } from './context/AppContext';
@@ -1751,7 +1752,7 @@ export default function BaederApp() {
 
   const moderateContent = (text, context = 'Text') => {
     if (containsBannedContent(text)) {
-      alert(`⚠️ ${context} enthält unangemessene Inhalte und wurde blockiert.\n\nBitte achte auf einen respektvollen Umgang.`);
+      toast.error(`${context} enthaelt unangemessene Inhalte und wurde blockiert. Bitte achte auf einen respektvollen Umgang.`);
       playSound('wrong');
       return false;
     }
@@ -3023,10 +3024,10 @@ export default function BaederApp() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      alert(`Datenexport für ${userName} erfolgreich heruntergeladen!`);
+      toast.success(`Datenexport fuer ${userName} erfolgreich heruntergeladen!`);
     } catch (error) {
       console.error('Export error:', error);
-      alert('Fehler beim Datenexport!');
+      toast.error('Fehler beim Datenexport!');
     }
   };
 
@@ -6181,7 +6182,7 @@ export default function BaederApp() {
 
   const addSchoolAttendance = async () => {
     if (!newAttendanceDate || !newAttendanceStart || !newAttendanceEnd) {
-      alert('Bitte alle Felder ausfüllen');
+      toast.error('Bitte alle Felder ausfuellen');
       return;
     }
 
@@ -6217,7 +6218,7 @@ export default function BaederApp() {
       loadSchoolAttendance();
     } catch (err) {
       console.error('Fehler beim Speichern:', err);
-      alert('Fehler beim Speichern');
+      toast.error('Fehler beim Speichern');
     }
   };
 
@@ -7895,7 +7896,7 @@ export default function BaederApp() {
     );
 
     if (!hasContent) {
-      alert('Bitte mindestens eine Tätigkeit eintragen');
+      toast.error('Bitte mindestens eine Taetigkeit eintragen');
       return;
     }
 
@@ -8895,7 +8896,7 @@ export default function BaederApp() {
       setNews(news.filter(n => n.id !== newsId));
     } catch (error) {
       console.error('Delete news error:', error);
-      alert('Fehler beim Löschen der Ankündigung');
+      toast.error('Fehler beim Loeschen der Ankuendigung');
     }
   };
 

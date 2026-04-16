@@ -112,6 +112,11 @@ jobs:
 
       - run: npm ci
 
+      - name: ESLint
+        run: npx eslint src/ --max-warnings 900
+        # 13 pre-existing errors (conditional hooks in deep-dive views) are known.
+        # New errors will still fail the build. Threshold will be lowered as we fix issues.
+
       - name: Check for hardcoded secrets
         run: |
           # Prüfe auf hardcodede Secrets in .env.example und docker-compose.yml

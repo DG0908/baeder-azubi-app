@@ -9,7 +9,10 @@
     "smoke:api": "node scripts/run-smoke-checks.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "echo 'TODO: ESLint nicht konfiguriert — siehe docs/marktreife-roadmap.md P1.5' && exit 1",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --check \"src/**/*.{js,jsx,json,css}\"",
+    "format:fix": "prettier --write \"src/**/*.{js,jsx,json,css}\"",
     "typecheck": "echo 'TODO: TypeScript-Migration ausstehend — siehe docs/marktreife-roadmap.md P2.9' && exit 1"
   },
   "dependencies": {
@@ -19,14 +22,21 @@
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.6.0",
     "three": "^0.160.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "postcss": "^8.4.32",
+    "prettier": "^3.8.3",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.3.6",
     "vite": "^5.0.8",

@@ -7,7 +7,7 @@ const OPERATOR = {
   email: 'denniegulbinski@gmail.com'
 };
 
-const LAST_UPDATED = '06.04.2026';
+const LAST_UPDATED = '16.04.2026';
 const listClassName = 'list-disc list-inside ml-2 space-y-1';
 
 export function LegalImprintContent({
@@ -127,6 +127,7 @@ export function LegalPrivacyContent({
           </p>
           <ul className={`${listClassName} ${textClassName} mt-2`}>
             <li>Hosting-Infrastruktur: Hostinger International Ltd., Zypern (EU) — Server-Standort Frankfurt, Deutschland</li>
+            <li>Fehlerverfolgung: Functional Software, Inc. (Sentry), USA — EU-US DPF zertifiziert, DPA vorhanden</li>
             <li>E-Mail- und Push-Benachrichtigungsdienste, soweit für den Betrieb erforderlich</li>
             <li>Auftragsverarbeiter werden vertraglich gebunden und nur zweckgebunden eingesetzt</li>
             <li>Es erfolgt keine Weitergabe personenbezogener Daten zu Werbezwecken</li>
@@ -173,7 +174,23 @@ export function LegalPrivacyContent({
         </section>
 
         <section>
-          <h3 className={headingClassName}>9. Sicherheit der Verarbeitung</h3>
+          <h3 className={headingClassName}>9. Fehlerueberwachung (Sentry)</h3>
+          <p className={textClassName}>
+            Zur Erkennung und Behebung technischer Fehler setzt die App den Dienst Sentry
+            (Functional Software, Inc., San Francisco, USA) ein. Rechtsgrundlage: berechtigtes
+            Interesse an der Betriebssicherheit der App (Art. 6 Abs. 1 lit. f DSGVO).
+          </p>
+          <ul className={`${listClassName} ${textClassName} mt-2`}>
+            <li>Bei einem Fehler werden technische Kontextdaten (Browser, Geraetetyp, Fehlerdetails) an Sentry uebermittelt</li>
+            <li>Texteingaben und Medieninhalte werden grundsaetzlich maskiert und nicht uebertragen</li>
+            <li>Sentry ist unter dem EU-US Data Privacy Framework zertifiziert; ein Auftragsverarbeitungsvertrag (DPA) liegt vor</li>
+            <li>Fehlerberichte werden nach 90 Tagen automatisch geloescht</li>
+            <li>Im Entwicklungsmodus werden keine Daten an Sentry gesendet</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 className={headingClassName}>10. Sicherheit der Verarbeitung</h3>
           <ul className={`${listClassName} ${textClassName}`}>
             <li>Verschlüsselte Übertragung (TLS/HTTPS), Rollen- und Berechtigungskonzept, serverseitige Zugriffskontrollen</li>
             <li>Passwörter werden ausschließlich in gehashter Form (Argon2) gespeichert</li>
@@ -187,8 +204,8 @@ export function LegalPrivacyContent({
         <section className={dividerClassName}>
           <p className={noteClassName}>
             Diese Hinweise werden aktualisiert, wenn sich Architektur, Dienstleister oder Datenflüsse
-            wesentlich ändern. Letzte Aktualisierung: {LAST_UPDATED} (Hostinger-Sitz korrigiert auf Zypern,
-            Backup-Aufbewahrung auf 7 Tage aktualisiert, 2FA für Admins ergänzt).
+            wesentlich ändern. Letzte Aktualisierung: {LAST_UPDATED} (Sentry als Dienstleister und
+            Fehlerueberwachung ergaenzt, Abschnittsnummerierung angepasst).
           </p>
         </section>
       </div>

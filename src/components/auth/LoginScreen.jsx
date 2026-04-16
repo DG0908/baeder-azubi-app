@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -84,7 +85,7 @@ const LoginScreen = () => {
 
   const handlePasswordReset = async () => {
     if (!resetEmail.trim()) {
-      alert('Bitte gib deine E-Mail-Adresse ein.');
+      toast.error('Bitte gib deine E-Mail-Adresse ein.');
       return;
     }
     setResetLoading(true);
@@ -92,7 +93,7 @@ const LoginScreen = () => {
       await dsRequestPasswordReset(resetEmail, { redirectTo: window.location.origin });
       setResetSent(true);
     } catch (error) {
-      alert('Fehler: ' + error.message);
+      toast.error('Fehler: ' + error.message);
     } finally {
       setResetLoading(false);
     }
@@ -142,15 +143,15 @@ const LoginScreen = () => {
   if (authView === 'reset-password') {
     const handleSetNewPassword = async () => {
       if (!newPassword || !newPasswordConfirm) {
-        alert('Bitte beide Felder ausfüllen.');
+        toast.error('Bitte beide Felder ausfuellen.');
         return;
       }
       if (newPassword !== newPasswordConfirm) {
-        alert('Die Passwörter stimmen nicht überein!');
+        toast.error('Die Passwoerter stimmen nicht ueberein!');
         return;
       }
       if (newPassword.length < minPasswordLength) {
-        alert(`Das Passwort muss mindestens ${minPasswordLength} Zeichen lang sein.`);
+        toast.error(`Das Passwort muss mindestens ${minPasswordLength} Zeichen lang sein.`);
         return;
       }
       setNewPasswordLoading(true);
@@ -158,12 +159,12 @@ const LoginScreen = () => {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('password_reset_token') || params.get('token') || window.location.hash?.match(/access_token=([^&]+)/)?.[1];
         await dsConfirmPasswordReset({ token, newPassword });
-        alert('Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.');
+        toast.success('Passwort erfolgreich geaendert! Du kannst dich jetzt anmelden.');
         setNewPassword('');
         setNewPasswordConfirm('');
         setAuthView('login');
       } catch (error) {
-        alert('Fehler: ' + error.message);
+        toast.error('Fehler: ' + error.message);
       } finally {
         setNewPasswordLoading(false);
       }

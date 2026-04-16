@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import {
   loadCurrentAuthSession as dsLoadCurrentAuthSession,
   subscribeAuthStateChanges as dsSubscribeAuthStateChanges,
@@ -89,17 +90,17 @@ export function AuthProvider({ children }) {
     const minimumPasswordLength = 12;
 
     if (!registerData.name.trim() || !registerData.email.trim() || !registerData.password) {
-      alert('Bitte alle Felder ausfuellen!');
+      toast.error('Bitte alle Felder ausfuellen!');
       return;
     }
 
     if (!registerData.invitationCode.trim()) {
-      alert('Bitte gib deinen Einladungscode ein!');
+      toast.error('Bitte gib deinen Einladungscode ein!');
       return;
     }
 
     if (registerData.password.length < minimumPasswordLength) {
-      alert(`Das Passwort muss mindestens ${minimumPasswordLength} Zeichen lang sein!`);
+      toast.error(`Das Passwort muss mindestens ${minimumPasswordLength} Zeichen lang sein!`);
       return;
     }
 
@@ -110,7 +111,7 @@ export function AuthProvider({ children }) {
       setAuthView('login');
       setRegisterData(EMPTY_REGISTER_DATA);
 
-      alert('Registrierung erfolgreich!\n\nDein Account wurde angelegt und wartet jetzt auf Freischaltung durch einen Administrator.');
+      toast.success('Registrierung erfolgreich! Dein Account wartet auf Freischaltung durch einen Administrator.', { duration: 6000 });
     } catch (error) {
       let message = error?.message || 'Unbekannter Fehler';
 
@@ -122,14 +123,14 @@ export function AuthProvider({ children }) {
         message = `Das Passwort muss mindestens ${minimumPasswordLength} Zeichen lang sein.`;
       }
 
-      alert(`Fehler bei der Registrierung: ${message}`);
+      toast.error(`Registrierung fehlgeschlagen: ${message}`);
       console.error('Registration error:', error);
     }
   };
 
   const handleLogin = async () => {
     if (!loginEmail || !loginPassword) {
-      alert('Bitte E-Mail und Passwort eingeben!');
+      toast.error('Bitte E-Mail und Passwort eingeben!');
       return;
     }
 
@@ -146,15 +147,15 @@ export function AuthProvider({ children }) {
       if (error?.code === 'totp_required') {
         setTotpPendingToken(error.message); // message holds the totpToken
       } else if (error?.code === 'invalid_login') {
-        alert('E-Mail oder Passwort falsch!');
+        toast.error('E-Mail oder Passwort falsch!');
       } else if (error?.code === 'missing_profile') {
-        alert('Profil nicht gefunden. Bitte kontaktiere den Administrator.');
+        toast.error('Profil nicht gefunden. Bitte kontaktiere den Administrator.');
       } else if (error?.code === 'not_approved') {
-        alert('Dein Account wurde noch nicht freigeschaltet. Bitte warte auf die Freigabe durch einen Administrator.');
+        toast.error('Dein Account wurde noch nicht freigeschaltet. Bitte warte auf die Freigabe.', { duration: 6000 });
       } else if (error?.status === 401) {
-        alert('E-Mail oder Passwort falsch.');
+        toast.error('E-Mail oder Passwort falsch.');
       } else {
-        alert(friendlyError(error));
+        toast.error(friendlyError(error));
       }
 
       if (error?.code !== 'totp_required') {
@@ -168,12 +169,12 @@ export function AuthProvider({ children }) {
     const normalizedRecoveryCode = String(recoveryCode || '').trim().toUpperCase();
 
     if (!trimmedCode && !normalizedRecoveryCode) {
-      alert('Bitte gib einen Authenticator- oder Recovery-Code ein.');
+      toast.error('Bitte gib einen Authenticator- oder Recovery-Code ein.');
       return;
     }
 
     if (trimmedCode && trimmedCode.length !== 6) {
-      alert('Bitte 6-stelligen Code eingeben.');
+      toast.error('Bitte 6-stelligen Code eingeben.');
       return;
     }
 
@@ -189,9 +190,9 @@ export function AuthProvider({ children }) {
       setLoginPassword('');
     } catch (error) {
       if (error?.status === 401) {
-        alert('Falscher oder abgelaufener Authenticator-/Recovery-Code. Bitte erneut versuchen.');
+        toast.error('Falscher oder abgelaufener Code. Bitte erneut versuchen.');
       } else {
-        alert(friendlyError(error));
+        toast.error(friendlyError(error));
       }
     }
   };
