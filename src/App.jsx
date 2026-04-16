@@ -35,6 +35,7 @@ import { useInactivityTimeout } from './hooks/useInactivityTimeout';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { useCookieNotice } from './hooks/useCookieNotice';
+import { useViewRouter } from './hooks/useViewRouter';
 
 import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, MENU_GROUP_LABELS, getAvatarById, getLevel, getLevelProgress } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
@@ -314,7 +315,7 @@ export default function BaederApp() {
     onLogout: handleLogout,
   });
 
-  const [currentView, setCurrentView] = useState('home');
+  const { currentView, setCurrentView } = useViewRouter();
   const [allUsers, setAllUsers] = useState([]);
   const [pendingUsers, setPendingUsers] = useState([]);
   const [pendingFlashcards, setPendingFlashcards] = useState([]);
