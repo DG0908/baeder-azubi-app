@@ -1,11 +1,13 @@
 import React from 'react';
-import { Target } from 'lucide-react';
+import { Target, Trophy } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES, PERMISSIONS, getAvatarById } from '../../data/constants';
 import { getWhoAmIClueCount, getWhoAmIVisibleClues, WHO_AM_I_TIME_LIMIT } from '../../data/whoAmIChallenges';
 import { formatAnswerLabel } from '../../lib/utils';
 import AvatarBadge from '../ui/AvatarBadge';
+
+const SEEN_RESULTS_KEY = 'seen_duel_results_v1';
 
 const DIFFICULTY_SETTINGS = {
   anfaenger: { time: 45, label: 'Anfaenger', icon: 'A', color: 'bg-green-500' },
@@ -30,6 +32,7 @@ const QuizView = ({
   selectedDifficulty,
   setSelectedDifficulty,
   allUsers,
+  allGames = [],
   activeGames,
   challengePlayer,
   acceptChallenge,
@@ -63,6 +66,7 @@ const QuizView = ({
   userStats,
   duelResult,
   setDuelResult,
+  showDuelResultForGame,
   categoryRoundResult,
   proceedAfterCategoryResult,
   onForfeit,
@@ -172,6 +176,60 @@ const QuizView = ({
 
   const getFirstName = (name) => String(name || '').trim().split(/\s+/)[0] || '?';
 
+  // Ungesehene beendete Duelle erkennen
+  const getSeenResultIds = () => {
+    try {
+      return JSON.parse(localStorage.getItem(SEEN_RESULTS_KEY) || '[]');
+    } catch { return []; }
+  };
+
+  const markResultSeen = (gameId) => {
+    const seen = getSeenResultIds();
+    if (!seen.includes(gameId)) {
+      const updated = [...seen, gameId].slice(-50); // max 50 merken
+      localStorage.setItem(SEEN_RESULTS_KEY, JSON.stringify(updated));
+    }
+  };
+
+  // Wenn duelResult angezeigt wird, als gesehen markieren
+  React.useEffect(() => {
+    if (duelResult?.gameId) {
+      markResultSeen(duelResult.gameId);
+    }
+  }, [duelResult?.gameId]);
+
+  const unseenFinishedGames = React.useMemo(() => {
+    if (!user?.name || !allGames?.length) return [];
+    const seenIds = getSeenResultIds();
+    return allGames
+      .filter(g => {
+        if (g.status !== 'finished') return false;
+        if (seenIds.includes(g.id)) return false;
+        // Nur Spiele in denen ich mitgespielt habe
+        const isMyGame = g.player1 === user.name || g.player2 === user.name;
+        if (!isMyGame) return false;
+        // Nur kürzlich beendete (letzte 7 Tage)
+        const finishedAt = new Date(g.updatedAt || g.createdAt || 0).getTime();
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        return finishedAt > sevenDaysAgo;
+      })
+      .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+  }, [allGames, user?.name]);
+
+  const handleViewUnseenResult = (game) => {
+    if (showDuelResultForGame) {
+      showDuelResultForGame(game, allGames);
+    }
+  };
+
+  const handleRevanche = () => {
+    if (!duelResult?.opponentName || !challengePlayer) return;
+    const opponent = allUsers.find(u => u.name === duelResult.opponentName);
+    setDuelResult(null);
+    challengePlayer(duelResult.opponentName, challengeTimeoutMinutes, opponent?.id);
+    playSound('whistle');
+  };
+
   // Ergebnis-Screen nach Spielende
   if (duelResult) {
     const iWon = duelResult.winner === duelResult.myName;
@@ -266,8 +324,15 @@ const QuizView = ({
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
+            onClick={handleRevanche}
+            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+          >
+            <Target size={18} />
+            Revanche!
+          </button>
+          <button
             onClick={() => setDuelResult(null)}
-            className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-xl shadow-lg transition-all"
+            className={`px-8 py-3 font-bold rounded-xl shadow-lg transition-all ${darkMode ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
           >
             Zurück zum Quizduell
           </button>
@@ -379,6 +444,53 @@ const QuizView = ({
       {!currentGame && (
         <>
           <h2 className="text-3xl font-bold mb-6">Quizduell</h2>
+
+          {/* Ungesehene Ergebnisse */}
+          {unseenFinishedGames.length > 0 && (
+            <div className="space-y-3 mb-6">
+              {unseenFinishedGames.map(game => {
+                const isP1 = game.player1 === user?.name;
+                const myScore = isP1 ? game.player1Score : game.player2Score;
+                const oppScore = isP1 ? game.player2Score : game.player1Score;
+                const opponentName = isP1 ? game.player2 : game.player1;
+                const iWon = (game.winner === user?.name)
+                  || (isP1 && game.player1Score > game.player2Score)
+                  || (!isP1 && game.player2Score > game.player1Score);
+                const isDraw = game.player1Score === game.player2Score;
+                return (
+                  <div
+                    key={game.id}
+                    className={`rounded-xl p-4 shadow-lg border-2 cursor-pointer transition-all hover:scale-[1.01] ${
+                      iWon
+                        ? darkMode ? 'bg-emerald-900/40 border-emerald-600' : 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300'
+                        : isDraw
+                          ? darkMode ? 'bg-slate-700 border-slate-500' : 'bg-gray-50 border-gray-300'
+                          : darkMode ? 'bg-red-900/40 border-red-700' : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-300'
+                    }`}
+                    onClick={() => handleViewUnseenResult(game)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{iWon ? '🏆' : isDraw ? '🤝' : '😤'}</span>
+                        <div>
+                          <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                            {iWon ? 'Gewonnen' : isDraw ? 'Unentschieden' : 'Verloren'} gegen {getFirstName(opponentName)}
+                          </p>
+                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            {myScore} : {oppScore}
+                          </p>
+                        </div>
+                      </div>
+                      <button className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-lg text-sm transition-all flex items-center gap-1.5">
+                        <Trophy size={16} />
+                        Ergebnis
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
             <p className="font-bold text-amber-800 mb-2">Spielregeln - Zeitlimit & Strafen</p>

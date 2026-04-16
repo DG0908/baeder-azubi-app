@@ -9524,6 +9524,7 @@ export default function BaederApp() {
             selectedDifficulty={selectedDifficulty}
             setSelectedDifficulty={setSelectedDifficulty}
             allUsers={allUsers}
+            allGames={allGames}
             activeGames={activeGames}
             challengePlayer={challengePlayer}
             acceptChallenge={acceptChallenge}
@@ -9557,6 +9558,7 @@ export default function BaederApp() {
             userStats={userStats}
             duelResult={duelResult}
             setDuelResult={setDuelResult}
+            showDuelResultForGame={showDuelResultForGame}
             categoryRoundResult={categoryRoundResult}
             proceedAfterCategoryResult={proceedAfterCategoryResult}
             onForfeit={handleForfeitDuel}
