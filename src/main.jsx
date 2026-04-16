@@ -1,11 +1,23 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import * as Sentry from '@sentry/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import BaederApp from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { AppProvider } from './context/AppContext.jsx'
 import './index.css'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,    // 2 Minuten — Daten gelten als frisch
+      gcTime: 10 * 60 * 1000,      // 10 Minuten im Cache behalten
+      retry: 1,                     // 1 Retry bei Fehler
+      refetchOnWindowFocus: false,  // Kein automatischer Refetch beim Tab-Wechsel
+    },
+  },
+})
 
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
 if (SENTRY_DSN) {
@@ -159,19 +171,21 @@ window.storage = {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider>
-      <AppProvider>
-        <BaederApp />
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            duration: 4000,
-            style: { fontSize: '14px', maxWidth: '90vw' },
-            success: { duration: 3000 },
-            error: { duration: 5000 },
-          }}
-        />
-      </AppProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppProvider>
+          <BaederApp />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 4000,
+              style: { fontSize: '14px', maxWidth: '90vw' },
+              success: { duration: 3000 },
+              error: { duration: 5000 },
+            }}
+          />
+        </AppProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   </React.StrictMode>,
 )

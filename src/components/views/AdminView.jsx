@@ -1,5 +1,6 @@
 import React from 'react';
 import toast from 'react-hot-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound, Building2, Ticket, Copy, Plus, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
@@ -65,48 +66,65 @@ const sortQuestionReportsNewestFirst = (reports = []) => (
 // ─── Betriebe & Einladungscodes Verwaltung (nur Owner) ───
 const OrganizationManager = () => {
   const { showToast } = useApp();
-  const [orgs, setOrgs] = React.useState([]);
-  const [codes, setCodes] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
+  const queryClient = useQueryClient();
   const [showNewOrg, setShowNewOrg] = React.useState(false);
   const [showNewCode, setShowNewCode] = React.useState(false);
   const [newOrg, setNewOrg] = React.useState({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
   const [newCode, setNewCode] = React.useState({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
   const [createdCode, setCreatedCode] = React.useState(null);
 
-  const loadOrgs = async () => {
-    setLoading(true);
-    try {
-      const result = await dsLoadOrganizationsAndInvitations();
-      setOrgs(result.organizations || []);
-      setCodes(result.invitations || []);
-    } catch (error) {
-      showToast('Fehler beim Laden: ' + error.message, 'error');
-    }
-    setLoading(false);
-  };
+  const { data, isLoading: loading, refetch: loadOrgs } = useQuery({
+    queryKey: ['organizations-and-invitations'],
+    queryFn: dsLoadOrganizationsAndInvitations,
+  });
 
-  React.useEffect(() => { loadOrgs(); }, []);
+  const orgs = data?.organizations || [];
+  const codes = data?.invitations || [];
 
-  const createOrg = async () => {
+  const createOrgMutation = useMutation({
+    mutationFn: (payload) => dsCreateOrganizationEntry(payload),
+    onSuccess: () => {
+      showToast(`Betrieb "${newOrg.name}" angelegt!`, 'success');
+      setNewOrg({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
+      setShowNewOrg(false);
+      queryClient.invalidateQueries({ queryKey: ['organizations-and-invitations'] });
+    },
+    onError: (error) => showToast('Fehler: ' + error.message, 'error'),
+  });
+
+  const createCodeMutation = useMutation({
+    mutationFn: (payload) => dsCreateInvitationEntry(payload),
+    onSuccess: (result) => {
+      setCreatedCode(result?.code || null);
+      setNewCode({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
+      setShowNewCode(false);
+      queryClient.invalidateQueries({ queryKey: ['organizations-and-invitations'] });
+    },
+    onError: (error) => showToast('Fehler: ' + error.message, 'error'),
+  });
+
+  const toggleCodeMutation = useMutation({
+    mutationFn: ({ codeId, currentActive }) => dsToggleInvitationEntryActive(codeId, currentActive),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['organizations-and-invitations'] }),
+    onError: (error) => showToast('Fehler: ' + error.message, 'error'),
+  });
+
+  const deleteCodeMutation = useMutation({
+    mutationFn: (codeId) => dsDeleteInvitationEntry(codeId),
+    onSuccess: () => {
+      showToast('Code gelöscht', 'success');
+      queryClient.invalidateQueries({ queryKey: ['organizations-and-invitations'] });
+    },
+    onError: (error) => showToast('Fehler: ' + error.message, 'error'),
+  });
+
+  const createOrg = () => {
     if (!newOrg.name.trim() || !newOrg.slug.trim()) {
       showToast('Name und Kürzel sind Pflichtfelder!', 'error');
       return;
     }
     const slug = newOrg.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
-    try {
-      await dsCreateOrganizationEntry({
-        ...newOrg,
-        slug,
-        name: newOrg.name.trim()
-      });
-      showToast(`Betrieb "${newOrg.name}" angelegt!`, 'success');
-      setNewOrg({ name: '', slug: '', contact_name: '', contact_email: '', max_azubis: 50 });
-      setShowNewOrg(false);
-      loadOrgs();
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
-    }
+    createOrgMutation.mutate({ ...newOrg, slug, name: newOrg.name.trim() });
   };
 
   const generateCode = () => {
@@ -116,41 +134,21 @@ const OrganizationManager = () => {
     return code;
   };
 
-  const createCode = async () => {
+  const createCode = () => {
     if (!newCode.organization_id) {
       showToast('Bitte einen Betrieb auswählen!', 'error');
       return;
     }
-    try {
-      const result = await dsCreateInvitationEntry(newCode);
-      const plainCode = result?.code;
-      setCreatedCode(plainCode || null);
-      setNewCode({ organization_id: '', code: '', role: 'azubi', max_uses: 30 });
-      setShowNewCode(false);
-      loadOrgs();
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
-    }
+    createCodeMutation.mutate(newCode);
   };
 
-  const toggleCodeActive = async (codeId, currentActive) => {
-    try {
-      await dsToggleInvitationEntryActive(codeId, currentActive);
-      loadOrgs();
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
-    }
+  const toggleCodeActive = (codeId, currentActive) => {
+    toggleCodeMutation.mutate({ codeId, currentActive });
   };
 
-  const deleteCode = async (codeId, codeText) => {
+  const deleteCode = (codeId, codeText) => {
     if (!confirm(`Code "${codeText}" wirklich löschen?`)) return;
-    try {
-      await dsDeleteInvitationEntry(codeId);
-      showToast('Code gelöscht', 'success');
-      loadOrgs();
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
-    }
+    deleteCodeMutation.mutate(codeId);
   };
 
   const copyCode = (code) => {
