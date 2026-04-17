@@ -594,6 +594,7 @@ const AdminView = ({
   saveAnnouncement,
   featureFlags = {},
   saveFeatureFlag,
+  verifyParentalConsent,
 }) => {
   const { darkMode, showToast } = useApp();
   const { user } = useAuth();
@@ -721,6 +722,16 @@ const AdminView = ({
           {acc.is_owner && (
             <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500 text-white">
               Hauptadmin
+            </span>
+          )}
+          {acc.parentalConsentStatus === 'VERIFIED' && (
+            <span className="px-2 py-0.5 rounded text-xs font-bold bg-orange-500 text-white">
+              U16-Einwilligung
+            </span>
+          )}
+          {acc.parentalConsentStatus === 'REJECTED' && (
+            <span className="px-2 py-0.5 rounded text-xs font-bold bg-red-500 text-white">
+              U16-Einwilligung abgelehnt
             </span>
           )}
         </div>
@@ -1139,6 +1150,33 @@ const AdminView = ({
                     </button>
                   </div>
                 </div>
+                {acc.parentalConsentStatus === 'PENDING' && (
+                  <div className="mt-2 bg-orange-50 border border-orange-300 rounded-lg p-3">
+                    <p className="text-sm font-semibold text-orange-800">
+                      U16 — Eltern-Einwilligung erforderlich (DSGVO Art. 8)
+                    </p>
+                    <p className="text-xs text-orange-600 mt-1">
+                      Freischaltung erst nach Bestätigung der Einwilligung möglich.
+                    </p>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => verifyParentalConsent(acc.id, 'VERIFIED')}
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-bold"
+                      >
+                        Einwilligung bestätigt
+                      </button>
+                      <button
+                        onClick={() => {
+                          const note = prompt('Grund für Ablehnung (optional):');
+                          verifyParentalConsent(acc.id, 'REJECTED', note || undefined);
+                        }}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-bold"
+                      >
+                        Ablehnen
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="mt-2 flex items-center gap-2">
                   <Building2 size={14} className="text-indigo-500" />
                   <span className="text-xs text-gray-500">Betrieb:</span>

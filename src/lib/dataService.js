@@ -1125,6 +1125,11 @@ export const updateUserPermission = async (userId, field, enabled) => {
   return secureUsersApi.updatePermissions(userId, { [field]: enabled });
 };
 
+export const verifyParentalConsent = async (userId, status, note) => {
+  const result = await secureUsersApi.verifyParentalConsent(userId, { status, note });
+  return mapBackendUserToFrontendUser(result);
+};
+
 // ─── Swim Training Plans ─────────────────────────────────────────────
 
 export const loadSwimTrainingPlans = async () => {
