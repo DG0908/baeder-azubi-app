@@ -78,7 +78,7 @@
 | P2.10 | **TypeScript-Migration: Context + Hooks** | Sonnet | `feat/ts-migration-context` | 1 d | [ ] |
 | P2.11 | **TypeScript-Migration: extrahierte Features** (nach P2.3–P2.8) | Sonnet | je Feature-Branch | 3 d gesamt | [ ] |
 | P2.12 | **Backend-Tests: `duels.service.ts`** — 212 Tests, 72 % Stmts / 77 % Funcs. Scoring, Keyword-Eval, Anti-Cheat, Transitions, Normalisierung, Public API. | **Opus** (Scoring-Korrektheit = sicherheitsnah) | `test/duels-service-spec` | 1 d | [x] Opus · 2026-04-17 |
-| P2.13 | **Backend-Tests: `users.service.ts`, `forum.service.ts`, `chat.service.ts`** | Sonnet | `test/core-services-spec` | 2 d | [ ] |
+| P2.13 | **Backend-Tests: `users.service.ts`, `forum.service.ts`, `chat.service.ts`** — 144 Tests, 98 % Stmts / 100 % Funcs. | Opus | `test/core-services-spec` | 2 d | [x] Opus · 2026-04-17 |
 | P2.14 | **Frontend-Tests: Vitest-Setup + LoginScreen + QuizView** | Sonnet | `test/vitest-setup` | 1 d | [ ] |
 | P2.15 | **Playwright-E2E: 5 kritische Flows** — Register, Login-TOTP, Duel, Admin-Approval, Berichtsheft-Submit. Gegen Staging. | **Opus** (Flow-Design) + Sonnet (Implementierung) | `test/playwright-e2e` | 2 d | [ ] |
 | P2.16 | **U18-Einwilligungsflow** — Birthday-Check, Upload-Slot für Elterneinwilligung, Admin-Verifikation bleibt `PENDING` bis OK. DSGVO Art. 8. | **Opus** (DSGVO-korrekte Umsetzung) | `feat/u18-consent` | 2 d | [ ] |
