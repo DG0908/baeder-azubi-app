@@ -54,5 +54,10 @@ supabase/.temp/
 .qwen/
 .claude/
 
+# Playwright
+playwright-report/
+test-results/
+.env.e2e
+
 # Sensitive files
 github-recovery-codes.txt

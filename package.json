@@ -15,7 +15,9 @@
     "format:fix": "prettier --write \"src/**/*.{js,jsx,json,css}\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "echo 'TODO: TypeScript-Migration ausstehend — siehe docs/marktreife-roadmap.md P2.9' && exit 1"
+    "typecheck": "echo 'TODO: TypeScript-Migration ausstehend — siehe docs/marktreife-roadmap.md P2.9' && exit 1",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui"
   },
   "dependencies": {
     "@react-three/drei": "^9.121.4",
@@ -31,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.59.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
