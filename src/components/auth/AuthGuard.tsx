@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useInactivityTimeout } from '../../hooks/useInactivityTimeout';
 import LoginScreen from './LoginScreen';
 
-const SplashScreen = () => (
+const SplashScreen: React.FC = () => (
   <div className="min-h-screen flex flex-col items-center justify-center" style={{
     background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
   }}>
@@ -22,7 +22,7 @@ const SplashScreen = () => (
   </div>
 );
 
-const InactivityWarning = () => (
+const InactivityWarning: React.FC = () => (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
     <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 text-center">
       <div className="text-5xl mb-3">⏱️</div>
@@ -40,8 +40,13 @@ const InactivityWarning = () => (
   </div>
 );
 
-const AuthGuard = ({ children }) => {
-  const { authReady, user, handleLogout } = useAuth();
+interface AuthGuardProps {
+  children: ReactNode;
+}
+
+const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
+  const auth = useAuth();
+  const { authReady, user, handleLogout } = auth!;
   const [showInactivityWarning, setShowInactivityWarning] = React.useState(false);
 
   useInactivityTimeout({

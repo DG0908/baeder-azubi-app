@@ -1,7 +1,22 @@
 import React from 'react';
 import { avatarHasSunglasses, getAvatarShortCode, getStickerSpriteStyle, isStickerAvatar } from '../../data/constants';
 
-const SIZE_STYLES = {
+type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
+
+interface AvatarData {
+  theme?: string;
+  label?: string;
+  [key: string]: unknown;
+}
+
+interface AvatarBadgeProps {
+  avatar?: AvatarData | null;
+  size?: AvatarSize;
+  fallback?: string;
+  className?: string;
+}
+
+const SIZE_STYLES: Record<AvatarSize, { box: string; glasses: string }> = {
   sm: {
     box: 'w-8 h-8 text-lg',
     glasses: 'text-[10px] -top-1 -right-1'
@@ -20,7 +35,7 @@ const SIZE_STYLES = {
   }
 };
 
-const THEME_STYLES = {
+const THEME_STYLES: Record<string, string> = {
   ocean: 'from-cyan-500 to-blue-600',
   rescue: 'from-sky-500 to-indigo-600',
   tech: 'from-indigo-500 to-violet-600',
@@ -29,7 +44,7 @@ const THEME_STYLES = {
   elite: 'from-amber-500 to-orange-600'
 };
 
-const AvatarBadge = ({
+const AvatarBadge: React.FC<AvatarBadgeProps> = ({
   avatar,
   size = 'md',
   fallback = '◈',
@@ -43,13 +58,13 @@ const AvatarBadge = ({
     return (
       <div
         className={`relative rounded-full overflow-hidden ${sizeStyle.box} ${className} shadow-md ring-2 ring-white/30`}
-        style={spriteStyle}
-        title={avatar?.label || 'Sticker Avatar'}
+        style={spriteStyle || undefined}
+        title={(avatar as AvatarData)?.label || 'Sticker Avatar'}
       />
     );
   }
 
-  const theme = String(avatar?.theme || 'ocean').toLowerCase();
+  const theme = String((avatar as AvatarData)?.theme || 'ocean').toLowerCase();
   const gradientClass = THEME_STYLES[theme] || THEME_STYLES.ocean;
   const icon = avatar ? getAvatarShortCode(avatar) : fallback;
   const showGlasses = avatarHasSunglasses(avatar);
@@ -57,7 +72,7 @@ const AvatarBadge = ({
   return (
     <div
       className={`relative rounded-full bg-gradient-to-br ${gradientClass} ${sizeStyle.box} ${className} flex items-center justify-center shadow-md`}
-      title={avatar?.label || 'Avatar'}
+      title={(avatar as AvatarData)?.label || 'Avatar'}
     >
       <span className="leading-none drop-shadow">{icon}</span>
       {showGlasses && (
