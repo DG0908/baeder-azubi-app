@@ -13,6 +13,13 @@ type PasswordResetMailInput = {
   expiresInMinutes: number;
 };
 
+type RetentionWarningMailInput = {
+  email: string;
+  displayName: string;
+  daysUntilDeletion: number;
+  loginUrl: string;
+};
+
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
@@ -56,6 +63,47 @@ export class MailerService {
         `Password reset mail could not be sent: ${error instanceof Error ? error.message : 'unknown error'}`
       );
       throw new ServiceUnavailableException('Password reset mail could not be sent.');
+    }
+  }
+
+  async sendRetentionWarningEmail(input: RetentionWarningMailInput): Promise<void> {
+    if (!this.isSmtpConfigured()) {
+      this.logger.warn(
+        `SMTP not configured. Retention warning for ${input.email} could not be sent.`
+      );
+      return;
+    }
+
+    try {
+      const transporter = this.getTransporter();
+      await transporter.sendMail({
+        from: this.configService.get<string>('SMTP_FROM'),
+        to: input.email,
+        subject: 'Azubi-App: Dein Account wird bald geloescht',
+        text: [
+          `Hallo ${input.displayName},`,
+          '',
+          'dein Account in der Azubi-App wurde seit ueber 22 Monaten nicht mehr genutzt.',
+          `Ohne erneuten Login wird dein Account in ${input.daysUntilDeletion} Tagen automatisch geloescht (DSGVO-Aufbewahrungsfrist).`,
+          '',
+          `Logge dich jetzt ein, um deinen Account zu behalten: ${input.loginUrl}`,
+          '',
+          'Wenn du die App nicht mehr nutzen moechtest, brauchst du nichts zu tun.'
+        ].join('\n'),
+        html: [
+          `<p>Hallo ${this.escapeHtml(input.displayName)},</p>`,
+          '<p>dein Account in der Azubi-App wurde seit ueber 22 Monaten nicht mehr genutzt.</p>',
+          `<p>Ohne erneuten Login wird dein Account in <strong>${input.daysUntilDeletion} Tagen</strong> automatisch geloescht (DSGVO-Aufbewahrungsfrist).</p>`,
+          `<p><a href="${this.escapeHtml(input.loginUrl)}">Jetzt einloggen und Account behalten</a></p>`,
+          '<p>Wenn du die App nicht mehr nutzen moechtest, brauchst du nichts zu tun.</p>'
+        ].join('')
+      });
+
+      this.logger.log(`Retention warning email sent to ${input.email}`);
+    } catch (error) {
+      this.logger.error(
+        `Retention warning mail for ${input.email} failed: ${error instanceof Error ? error.message : 'unknown error'}`
+      );
     }
   }
 

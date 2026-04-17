@@ -130,6 +130,7 @@ model User {
   parentalConsentVerifiedAt DateTime?
   parentalConsentVerifiedById String?
   lastLoginAt          DateTime?
+  retentionWarnedAt    DateTime?
   isDeleted            Boolean          @default(false)
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
