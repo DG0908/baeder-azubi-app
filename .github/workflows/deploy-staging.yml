@@ -20,7 +20,7 @@ jobs:
       url: https://staging.azubi.smartbaden.de
 
     steps:
-      - name: Deploy via SSH
+      - name: Deploy via SSH (SHA-tagged build)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -30,8 +30,18 @@ jobs:
             set -e
             cd /opt/azubi-app
             git pull origin main
-            docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --build
-            echo "Staging deploy finished: $(date)"
+
+            GIT_SHA=$(git rev-parse --short HEAD)
+            echo "Staging build with SHA tag: $GIT_SHA"
+
+            # Build and tag images with git SHA
+            docker compose -f docker-compose.staging.yml --env-file .env.staging build
+            docker tag azubi-app-server-staging:latest azubi-app-server-staging:$GIT_SHA 2>/dev/null || true
+            docker tag azubi-app-web-staging:latest azubi-app-web-staging:$GIT_SHA 2>/dev/null || true
+
+            # Deploy
+            docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
+            echo "Staging deploy finished: $(date) (SHA: $GIT_SHA)"
 
       - name: Smoke check
         uses: appleboy/ssh-action@v1.0.3
@@ -48,5 +58,12 @@ jobs:
               echo "Staging health check passed (HTTP $HTTP_STATUS)"
             else
               echo "WARNING: Staging health check returned HTTP $HTTP_STATUS"
+              echo ""
+              echo "=== ROLLBACK HINT ==="
+              echo "  cd /opt/azubi-app"
+              echo "  git log --oneline -5"
+              echo "  git checkout <previous-sha>"
+              echo "  docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --build"
+              echo "====================="
               exit 1
             fi

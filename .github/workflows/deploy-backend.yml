@@ -18,7 +18,7 @@ jobs:
       url: https://api.smartbaden.de
 
     steps:
-      - name: Deploy via SSH
+      - name: Deploy via SSH (SHA-tagged build)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -28,5 +28,64 @@ jobs:
             set -e
             cd /opt/azubi-app
             git pull origin main
-            docker compose up -d --build server
-            echo "Deploy finished: $(date)"
+
+            GIT_SHA=$(git rev-parse --short HEAD)
+            echo "Building with SHA tag: $GIT_SHA"
+
+            # Build and tag images with git SHA
+            docker compose build server web
+            docker tag azubi-app-server:latest azubi-app-server:$GIT_SHA 2>/dev/null || true
+            docker tag azubi-app-web:latest azubi-app-web:$GIT_SHA 2>/dev/null || true
+
+            # Deploy
+            docker compose up -d server web
+            echo "Deploy finished: $(date) (SHA: $GIT_SHA)"
+
+      - name: Wait for health
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            echo "Waiting for services to become healthy..."
+            sleep 15
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.smartbaden.de/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Health check passed (HTTP $HTTP_STATUS)"
+            else
+              echo "ERROR: Health check failed (HTTP $HTTP_STATUS)"
+              echo ""
+              echo "=== ROLLBACK HINT ==="
+              echo "To rollback, SSH into the server and run:"
+              echo "  cd /opt/azubi-app"
+              echo "  git log --oneline -5"
+              echo "  git checkout <previous-sha>"
+              echo "  docker compose up -d --build server web"
+              echo "====================="
+              exit 1
+            fi
+
+      - name: Post-deploy smoke checks
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/azubi-app
+            echo "Running post-deploy smoke checks..."
+            node scripts/run-smoke-checks.mjs || {
+              echo ""
+              echo "=== SMOKE CHECK FAILED ==="
+              echo "Some checks did not pass after deployment."
+              echo "Review the output above. If critical, rollback:"
+              echo "  cd /opt/azubi-app && git log --oneline -5"
+              echo "  git checkout <previous-sha>"
+              echo "  docker compose up -d --build server web"
+              echo "==========================="
+              exit 1
+            }
+            echo "Smoke checks passed."
