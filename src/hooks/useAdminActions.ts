@@ -16,21 +16,72 @@ import { friendlyError } from '../lib/friendlyError';
 import { PERMISSIONS, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS } from '../data/constants';
 import { fetchPushBackendWithAuth } from '../lib/pushNotifications';
 
-/**
- * Extracts all admin-related actions from App.jsx:
- * user management, app config, menu editing, permission toggles.
- *
- * @param {object}   deps
- * @param {object}   deps.user         – current user
- * @param {Array}    deps.allUsers     – all users
- * @param {Array}    deps.pendingUsers – pending approval
- * @param {Function} deps.showToast
- * @param {Function} deps.playSound
- * @param {Function} deps.loadData     – reload all data
- * @param {object}   deps.appConfig
- * @param {Function} deps.setAppConfig
- * @param {object}   deps.statsSources – { materials, submittedQuestions, activeGames, chatMessageCount }
- */
+// ── Types ───────────────────────────────────────────────────
+interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isOwner?: boolean;
+  is_owner?: boolean;
+  organizationId?: string | null;
+  permissions?: { canManageUsers?: boolean };
+  [key: string]: unknown;
+}
+
+interface AdminAccount {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  approved?: boolean;
+  is_owner?: boolean;
+  isOwner?: boolean;
+  trainingEnd?: string | null;
+  lastLogin?: string | null;
+  last_login?: string | null;
+  organization_id?: string | null;
+  organizationId?: string | null;
+  [key: string]: unknown;
+}
+
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: string;
+  group: string;
+  order: number;
+  visible: boolean;
+}
+
+interface AppConfig {
+  menuItems: MenuItem[];
+  themeColors: Record<string, string>;
+  featureFlags: Record<string, boolean>;
+  companies: unknown[];
+  announcement: { enabled: boolean; [key: string]: unknown };
+}
+
+interface StatsSources {
+  materials: unknown[];
+  submittedQuestions: Array<{ approved?: boolean }>;
+  activeGames: unknown[];
+  chatMessageCount: number;
+}
+
+interface UseAdminActionsDeps {
+  user: AdminUser | null;
+  allUsers: AdminAccount[];
+  pendingUsers: AdminAccount[];
+  showToast: (message: string, type?: string) => void;
+  playSound: (type: string) => void;
+  loadData: () => void;
+  appConfig: AppConfig;
+  setAppConfig: (config: AppConfig) => void;
+  statsSources: StatsSources;
+}
+
+// ── Hook ─────────────────────────────────────────────────────
 export function useAdminActions({
   user,
   allUsers,
@@ -41,13 +92,13 @@ export function useAdminActions({
   appConfig,
   setAppConfig,
   statsSources,
-}) {
+}: UseAdminActionsDeps) {
   // ── Editing state (only used in admin config UI) ─────────
-  const [editingMenuItems, setEditingMenuItems] = useState([]);
-  const [editingThemeColors, setEditingThemeColors] = useState({});
+  const [editingMenuItems, setEditingMenuItems] = useState<MenuItem[]>([]);
+  const [editingThemeColors, setEditingThemeColors] = useState<Record<string, string>>({});
 
   // ── Data retention helper ────────────────────────────────
-  const getDaysUntilDeletion = useCallback((account) => {
+  const getDaysUntilDeletion = useCallback((account: AdminAccount): number | null => {
     if (account.role === 'admin') return null;
     const now = Date.now();
 
@@ -60,7 +111,7 @@ export function useAdminActions({
 
     if (account.role === 'trainer' && (account.lastLogin || account.last_login)) {
       const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
-      const lastLoginTime = new Date(account.lastLogin || account.last_login).getTime();
+      const lastLoginTime = new Date((account.lastLogin || account.last_login)!).getTime();
       if (isNaN(lastLoginTime)) return null;
       return Math.ceil((lastLoginTime + sixMonthsMs - now) / (1000 * 60 * 60 * 24));
     }
@@ -94,25 +145,25 @@ export function useAdminActions({
   }, [allUsers, pendingUsers, statsSources, getDaysUntilDeletion]);
 
   // ── User data helpers ────────────────────────────────────
-  const deleteUserData = useCallback(async (userId, email, userName) => {
+  const deleteUserData = useCallback(async (userId: string, email: string, userName: string) => {
     try {
-      await dsPurgeUserData(userId, userName);
+      await (dsPurgeUserData as (id: string, name: string) => Promise<void>)(userId, userName);
       console.log(`Alle Daten für ${email} gelöscht`);
     } catch (error) {
       console.error('Error deleting user data:', error);
     }
   }, []);
 
-  const exportUserData = useCallback(async (targetInput, fallbackName = '') => {
+  const exportUserData = useCallback(async (targetInput: AdminAccount | string, fallbackName = '') => {
     const targetUser =
       targetInput && typeof targetInput === 'object'
         ? targetInput
-        : { email: targetInput, name: fallbackName };
+        : { email: targetInput, name: fallbackName } as AdminAccount;
     const targetLabel = String(
-      targetUser?.name || targetUser?.displayName || targetUser?.email || 'nutzer'
+      targetUser?.name || (targetUser as Record<string, unknown>)?.displayName || targetUser?.email || 'nutzer'
     ).trim();
     try {
-      const exportData = await dsExportUserDataBundle(targetUser);
+      const exportData = await (dsExportUserDataBundle as (user: AdminAccount) => Promise<unknown>)(targetUser);
       const dataStr = JSON.stringify(exportData, null, 2);
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(dataBlob);
@@ -132,9 +183,9 @@ export function useAdminActions({
 
   // ── User management ──────────────────────────────────────
   const approveUser = useCallback(
-    async (email) => {
+    async (email: string) => {
       try {
-        const result = await dsApproveUser(email, [
+        const result = await (dsApproveUser as (email: string, users: AdminAccount[]) => Promise<{ account?: { name?: string } }>)(email, [
           ...(allUsers || []),
           ...(pendingUsers || []),
         ]);
@@ -150,7 +201,7 @@ export function useAdminActions({
   );
 
   const deleteUser = useCallback(
-    async (email) => {
+    async (email: string) => {
       try {
         const targetUser = allUsers.find(
           (u) =>
@@ -172,7 +223,7 @@ export function useAdminActions({
         )
           return;
 
-        await dsDeleteUser(email, allUsers);
+        await (dsDeleteUser as (email: string, users: AdminAccount[]) => Promise<void>)(email, allUsers);
         loadData();
         showToast('Nutzerprofil und Daten wurden gelöscht', 'success');
       } catch (error) {
@@ -184,7 +235,7 @@ export function useAdminActions({
   );
 
   const changeUserRole = useCallback(
-    async (email, newRole) => {
+    async (email: string, newRole: string) => {
       try {
         if (!user?.permissions?.canManageUsers) {
           showToast('Keine Berechtigung für Rollenänderungen.', 'error');
@@ -225,9 +276,9 @@ export function useAdminActions({
           }
         }
 
-        await dsChangeUserRole(targetEmail, newRole, allUsers);
+        await (dsChangeUserRole as (email: string, role: string, users: AdminAccount[]) => Promise<void>)(targetEmail, newRole, allUsers);
         loadData();
-        showToast(`Rolle geändert zu: ${PERMISSIONS[newRole].label}`, 'success');
+        showToast(`Rolle geändert zu: ${(PERMISSIONS as Record<string, { label: string }>)[newRole].label}`, 'success');
       } catch (error) {
         console.error('Error changing role:', error);
         showToast(friendlyError(error), 'error');
@@ -238,9 +289,9 @@ export function useAdminActions({
 
   // ── Permission toggles ──────────────────────────────────
   const togglePermission = useCallback(
-    async (userId, field, currentValue, labels) => {
+    async (userId: string, field: string, currentValue: boolean, labels: { granted: string; revoked: string }) => {
       try {
-        await dsUpdateUserPermission(userId, field, !currentValue);
+        await (dsUpdateUserPermission as (id: string, field: string, value: boolean) => Promise<void>)(userId, field, !currentValue);
         loadData();
         showToast(!currentValue ? labels.granted : labels.revoked, 'success');
       } catch (error) {
@@ -252,7 +303,7 @@ export function useAdminActions({
   );
 
   const toggleSchoolCardPermission = useCallback(
-    (userId, currentValue) =>
+    (userId: string, currentValue: boolean) =>
       togglePermission(userId, 'canViewSchoolCards', currentValue, {
         granted: 'Kontrollkarten-Berechtigung erteilt',
         revoked: 'Kontrollkarten-Berechtigung entzogen',
@@ -261,7 +312,7 @@ export function useAdminActions({
   );
 
   const toggleSignReportsPermission = useCallback(
-    (userId, currentValue) =>
+    (userId: string, currentValue: boolean) =>
       togglePermission(userId, 'canSignReports', currentValue, {
         granted: 'Berichtsheft-Unterschrift-Berechtigung erteilt',
         revoked: 'Berichtsheft-Unterschrift-Berechtigung entzogen',
@@ -270,7 +321,7 @@ export function useAdminActions({
   );
 
   const toggleExamGradesPermission = useCallback(
-    (userId, currentValue) =>
+    (userId: string, currentValue: boolean) =>
       togglePermission(userId, 'canViewExamGrades', currentValue, {
         granted: 'Klasuren-Berechtigung erteilt',
         revoked: 'Klasuren-Berechtigung entzogen',
@@ -283,7 +334,7 @@ export function useAdminActions({
     if (!user?.permissions?.canManageUsers) {
       throw new Error('Keine Berechtigung für den Statistik-Repair.');
     }
-    const responseData = await dsRepairQuizStats(fetchPushBackendWithAuth);
+    const responseData = await (dsRepairQuizStats as (fetcher: typeof fetchPushBackendWithAuth) => Promise<unknown>)(fetchPushBackendWithAuth);
     await loadData();
     return responseData;
   }, [user?.permissions?.canManageUsers, loadData]);
@@ -321,7 +372,7 @@ export function useAdminActions({
         targetUserNames: requestedTargetUserNames,
       };
 
-      return dsSendTestPush(fetchPushBackendWithAuth, payload);
+      return (dsSendTestPush as (fetcher: typeof fetchPushBackendWithAuth, payload: Record<string, unknown>) => Promise<unknown>)(fetchPushBackendWithAuth, payload);
     },
     [user, allUsers]
   );
@@ -337,7 +388,7 @@ export function useAdminActions({
     }
 
     try {
-      await dsSaveAppConfig({
+      await (dsSaveAppConfig as (config: Record<string, unknown>) => Promise<void>)({
         menuItems: editingMenuItems,
         themeColors: editingThemeColors,
         featureFlags: appConfig.featureFlags,
@@ -358,10 +409,10 @@ export function useAdminActions({
   }, [user, allUsers, editingMenuItems, editingThemeColors, appConfig, setAppConfig, showToast, playSound]);
 
   const saveAnnouncement = useCallback(
-    async (announcement) => {
+    async (announcement: { enabled: boolean; [key: string]: unknown }) => {
       const updated = { ...appConfig, announcement };
       try {
-        await dsSaveAppConfig({
+        await (dsSaveAppConfig as (config: Record<string, unknown>) => Promise<void>)({
           menuItems: appConfig.menuItems,
           themeColors: appConfig.themeColors,
           featureFlags: appConfig.featureFlags,
@@ -382,11 +433,11 @@ export function useAdminActions({
   );
 
   const saveFeatureFlag = useCallback(
-    async (key, value) => {
+    async (key: string, value: boolean) => {
       const nextFlags = { ...appConfig.featureFlags, [key]: value };
       const updated = { ...appConfig, featureFlags: nextFlags };
       try {
-        await dsSaveAppConfig({ featureFlags: nextFlags });
+        await (dsSaveAppConfig as (config: Record<string, unknown>) => Promise<void>)({ featureFlags: nextFlags });
         setAppConfig(updated);
         showToast(
           value ? 'Wartungsmodus aktiviert.' : 'Wartungsmodus deaktiviert.',
@@ -401,10 +452,10 @@ export function useAdminActions({
   );
 
   const saveCompanies = useCallback(
-    async (newCompanies) => {
+    async (newCompanies: unknown[]) => {
       const updated = { ...appConfig, companies: newCompanies };
       try {
-        await dsSaveAppConfig({
+        await (dsSaveAppConfig as (config: Record<string, unknown>) => Promise<void>)({
           menuItems: appConfig.menuItems,
           themeColors: appConfig.themeColors,
           featureFlags: appConfig.featureFlags,
@@ -420,8 +471,8 @@ export function useAdminActions({
   );
 
   const resetAppConfig = useCallback(() => {
-    setEditingMenuItems([...DEFAULT_MENU_ITEMS]);
-    setEditingThemeColors({ ...DEFAULT_THEME_COLORS });
+    setEditingMenuItems([...(DEFAULT_MENU_ITEMS as MenuItem[])]);
+    setEditingThemeColors({ ...(DEFAULT_THEME_COLORS as Record<string, string>) });
     showToast(
       'Zurückgesetzt auf Standardwerte. Klicke Speichern um zu übernehmen.',
       'info'
@@ -430,7 +481,7 @@ export function useAdminActions({
 
   // ── Menu editing helpers ─────────────────────────────────
   const moveMenuItem = useCallback(
-    (itemId, direction) => {
+    (itemId: string, direction: 'up' | 'down') => {
       const sortedItems = [...editingMenuItems].sort((a, b) => a.order - b.order);
       const currentIndex = sortedItems.findIndex((item) => item.id === itemId);
       const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
@@ -449,7 +500,7 @@ export function useAdminActions({
   );
 
   const toggleMenuItemVisibility = useCallback(
-    (itemId) => {
+    (itemId: string) => {
       setEditingMenuItems((prev) =>
         prev.map((item) =>
           item.id === itemId ? { ...item, visible: !item.visible } : item
@@ -459,7 +510,7 @@ export function useAdminActions({
     []
   );
 
-  const updateMenuItemLabel = useCallback((itemId, newLabel) => {
+  const updateMenuItemLabel = useCallback((itemId: string, newLabel: string) => {
     setEditingMenuItems((prev) =>
       prev.map((item) =>
         item.id === itemId ? { ...item, label: newLabel } : item
@@ -467,7 +518,7 @@ export function useAdminActions({
     );
   }, []);
 
-  const updateMenuItemIcon = useCallback((itemId, newIcon) => {
+  const updateMenuItemIcon = useCallback((itemId: string, newIcon: string) => {
     setEditingMenuItems((prev) =>
       prev.map((item) =>
         item.id === itemId ? { ...item, icon: newIcon } : item
@@ -475,7 +526,7 @@ export function useAdminActions({
     );
   }, []);
 
-  const updateMenuItemGroup = useCallback((itemId, newGroup) => {
+  const updateMenuItemGroup = useCallback((itemId: string, newGroup: string) => {
     setEditingMenuItems((prev) =>
       prev.map((item) =>
         item.id === itemId ? { ...item, group: newGroup } : item
@@ -483,14 +534,14 @@ export function useAdminActions({
     );
   }, []);
 
-  const updateThemeColor = useCallback((colorKey, newColor) => {
+  const updateThemeColor = useCallback((colorKey: string, newColor: string) => {
     setEditingThemeColors((prev) => ({ ...prev, [colorKey]: newColor }));
   }, []);
 
   const verifyParentalConsent = useCallback(
-    async (userId, status, note) => {
+    async (userId: string, status: string, note?: string) => {
       try {
-        await dsVerifyParentalConsent(userId, status, note);
+        await (dsVerifyParentalConsent as unknown as (id: string, status: string, note?: string) => Promise<void>)(userId, status, note);
         loadData();
         const label = status === 'VERIFIED' ? 'bestätigt' : 'abgelehnt';
         showToast(`Eltern-Einwilligung wurde ${label}.`, 'success');

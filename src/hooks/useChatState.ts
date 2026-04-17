@@ -7,10 +7,58 @@ import {
 } from '../lib/dataService';
 import { friendlyError } from '../lib/friendlyError';
 
+// ── Types ───────────────────────────────────────────────────
+interface ChatUser {
+  id: string;
+  name: string;
+  role: string;
+  email?: string;
+  avatar?: string | null;
+  approved?: boolean;
+  organizationId?: string | null;
+  organization_id?: string | null;
+  [key: string]: unknown;
+}
+
+interface ChatMessage {
+  id: string;
+  user: string;
+  text: string;
+  time: number;
+  avatar: string | null;
+  senderId: string | null;
+  senderRole: string;
+  scope: string;
+  organizationId: string | null;
+  recipientId: string | null;
+  isDeleted?: boolean;
+}
+
+interface RawChatRow {
+  id?: string;
+  created_at?: string;
+  user_name?: string;
+  content?: string;
+  user_avatar?: string | null;
+  sender_id?: string | null;
+  user_role?: string;
+  chat_scope?: string;
+  organization_id?: string | null;
+  recipient_id?: string | null;
+}
+
+interface UseChatStateDeps {
+  user: ChatUser | null;
+  allUsers: ChatUser[];
+  showToast: (message: string, type?: string) => void;
+  moderateContent: (content: string, label: string) => boolean;
+  sendNotification: (userName: string, title: string, message: string, type: string) => Promise<unknown>;
+}
+
 // ── Constants ────────────────────────────────────────────────
 const STAFF_CHAT_ROLES = new Set(['trainer', 'ausbilder', 'admin']);
 
-const CHAT_SCOPE_META = {
+const CHAT_SCOPE_META: Record<string, { label: string; description: string }> = {
   azubi_room: {
     label: 'Azubi-Chat',
     description: 'Nur Azubis aus deinem Betrieb',
@@ -25,29 +73,19 @@ const CHAT_SCOPE_META = {
   },
 };
 
-const getRoleKey = (value) => String(value || '').trim().toLowerCase();
-const isStaffRole = (value) => STAFF_CHAT_ROLES.has(getRoleKey(value));
-const getAccountOrganizationId = (account) =>
+const getRoleKey = (value: unknown): string => String(value || '').trim().toLowerCase();
+const isStaffRole = (value: unknown): boolean => STAFF_CHAT_ROLES.has(getRoleKey(value));
+const getAccountOrganizationId = (account: ChatUser | null | undefined): string | null =>
   account?.organizationId || account?.organization_id || null;
-const getChatScopeKey = (value, fallback = 'staff_room') => {
+const getChatScopeKey = (value: unknown, fallback = 'staff_room'): string => {
   const normalized = String(value || '').trim().toLowerCase();
   return CHAT_SCOPE_META[normalized] ? normalized : fallback;
 };
 
 // ── Hook ─────────────────────────────────────────────────────
-/**
- * Extracts all chat-related state & logic from App.jsx.
- *
- * @param {object}   deps
- * @param {object}   deps.user            – current user from AuthContext
- * @param {Array}    deps.allUsers        – full user list from App state
- * @param {Function} deps.showToast       – toast helper
- * @param {Function} deps.moderateContent – content filter (returns false if blocked)
- * @param {Function} deps.sendNotification – push notification helper (currently no-op)
- */
-export function useChatState({ user, allUsers, showToast, moderateContent, sendNotification }) {
+export function useChatState({ user, allUsers, showToast, moderateContent, sendNotification }: UseChatStateDeps) {
   // ── State ────────────────────────────────────────────────
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [chatScope, setChatScope] = useState('staff_room');
   const [selectedChatRecipientId, setSelectedChatRecipientId] = useState('');
@@ -62,7 +100,7 @@ export function useChatState({ user, allUsers, showToast, moderateContent, sendN
             (account) =>
               account?.id &&
               account.approved !== false &&
-              getAccountOrganizationId(account) === user.organizationId
+              getAccountOrganizationId(account) === user!.organizationId
           )
         : [],
     [hasChatOrganization, allUsers, user?.organizationId]
@@ -111,7 +149,7 @@ export function useChatState({ user, allUsers, showToast, moderateContent, sendN
     if (chatScope !== 'direct_staff' || !selectedChatRecipientId) return;
     const load = async () => {
       try {
-        const mapped = await dsLoadDirectMessages({
+        const mapped = await (dsLoadDirectMessages as (opts: { recipientId: string; currentUserId: string | undefined }) => Promise<ChatMessage[]>)({
           recipientId: selectedChatRecipientId,
           currentUserId: user?.id,
         });
@@ -126,8 +164,8 @@ export function useChatState({ user, allUsers, showToast, moderateContent, sendN
           );
           return [...withoutOldDirect, ...mapped];
         });
-      } catch (error) {
-        console.warn('Direct messages load error:', error.message);
+      } catch (error: unknown) {
+        console.warn('Direct messages load error:', (error as Error).message);
       }
     };
     load();
@@ -135,7 +173,7 @@ export function useChatState({ user, allUsers, showToast, moderateContent, sendN
 
   // ── Normalizer (used by loadData / loadLightData) ────────
   const normalizeChatMessageRow = useCallback(
-    (row, userDirectory = {}) => {
+    (row: RawChatRow, userDirectory: Record<string, ChatUser> = {}): ChatMessage => {
       const senderProfile = row?.sender_id ? userDirectory[row.sender_id] : null;
       const senderRole =
         getRoleKey(row?.user_role || senderProfile?.role || 'azubi') || 'azubi';
@@ -159,8 +197,8 @@ export function useChatState({ user, allUsers, showToast, moderateContent, sendN
 
   // ── Public helpers for App.jsx loadData / loadLightData ──
   const loadChatMessages = useCallback(
-    async (userDirectory, role) => {
-      const msgs = await dsLoadMessages(normalizeChatMessageRow, userDirectory, role);
+    async (userDirectory: Record<string, ChatUser>, role: string) => {
+      const msgs = await (dsLoadMessages as (normalizer: typeof normalizeChatMessageRow, dir: Record<string, ChatUser>, role: string) => Promise<ChatMessage[]>)(normalizeChatMessageRow, userDirectory, role);
       setMessages(msgs);
     },
     [normalizeChatMessageRow]
@@ -190,7 +228,7 @@ export function useChatState({ user, allUsers, showToast, moderateContent, sendN
       return;
     }
 
-    let recipient = null;
+    let recipient: ChatUser | null = null;
     if (activeScope === 'direct_staff') {
       recipient =
         directChatCandidates.find(
@@ -203,7 +241,7 @@ export function useChatState({ user, allUsers, showToast, moderateContent, sendN
     }
 
     try {
-      const msg = await dsCreateChatMessage({
+      const msg = await (dsCreateChatMessage as (data: Record<string, unknown>) => Promise<ChatMessage>)({
         content: newMessage.trim(),
         scope: activeScope,
         userName: user.name,
@@ -246,7 +284,7 @@ export function useChatState({ user, allUsers, showToast, moderateContent, sendN
   ]);
 
   const deleteChatMessage = useCallback(
-    async (message) => {
+    async (message: ChatMessage) => {
       if (!message?.id || message?.isDeleted) return;
 
       const isMine = message.senderId === user?.id;
@@ -258,7 +296,7 @@ export function useChatState({ user, allUsers, showToast, moderateContent, sendN
       if (!confirm(confirmText)) return;
 
       try {
-        const deletedMessage = await dsDeleteChatMessage(message.id);
+        const deletedMessage = await (dsDeleteChatMessage as (id: string) => Promise<ChatMessage>)(message.id);
         setMessages((prev) => prev.filter((entry) => entry.id !== deletedMessage.id));
         showToast(
           isAdminModeration ? 'Nachricht wurde moderiert.' : 'Nachricht wurde gelöscht.',

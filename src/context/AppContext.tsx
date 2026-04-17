@@ -1,8 +1,29 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-const AppContext = createContext(null);
+type SoundType = 'splash' | 'whistle' | 'correct' | 'wrong' | 'bubble';
+type ToastType = 'success' | 'error' | 'warning' | 'info';
 
-export function AppProvider({ children }) {
+interface Toast {
+  id: number;
+  message: string;
+  type: ToastType;
+  icon: string;
+}
+
+interface AppContextValue {
+  darkMode: boolean;
+  setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
+  soundEnabled: boolean;
+  setSoundEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  toasts: Toast[];
+  setToasts: React.Dispatch<React.SetStateAction<Toast[]>>;
+  showToast: (message: string, type?: ToastType, duration?: number) => void;
+  playSound: (type: SoundType) => void;
+}
+
+const AppContext = createContext<AppContextValue | null>(null);
+
+export function AppProvider({ children }: { children: ReactNode }) {
   const DARK_MODE_STORAGE_KEY = 'baeder_dark_mode';
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === 'undefined') return true;
@@ -12,16 +33,16 @@ export function AppProvider({ children }) {
     return true; // Standard: Dark Mode
   });
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [toasts, setToasts] = useState([]);
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(DARK_MODE_STORAGE_KEY, darkMode ? 'true' : 'false');
   }, [darkMode]);
 
-  const showToast = (message, type = 'success', duration = 3000) => {
+  const showToast = (message: string, type: ToastType = 'success', duration = 3000) => {
     const id = Date.now();
-    const icons = {
+    const icons: Record<ToastType, string> = {
       success: '✅',
       error: '❌',
       warning: '⚠️',
@@ -33,10 +54,10 @@ export function AppProvider({ children }) {
     }, duration);
   };
 
-  const playSound = (type) => {
+  const playSound = (type: SoundType) => {
     if (!soundEnabled) return;
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
