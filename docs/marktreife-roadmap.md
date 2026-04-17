@@ -84,7 +84,7 @@
 | P2.16 | **U18-Einwilligungsflow** — Birthday-Check (U16 → PENDING), Admin-Verifikation mit Approval-Gate, DSGVO Art. 8. Prisma-Schema, Backend (isUnderAge, verifyParentalConsent, Approval-Block), Controller-Endpoint, Frontend (Consent-Badge + Verify/Reject-Buttons im Admin-Panel). | **Opus** (DSGVO-korrekte Umsetzung) | `main` | 2 d | [x] Opus · 2026-04-17 |
 | P2.17 | **DSGVO-Retention-Scheduler** — Täglicher Cron (03:00 UTC): 22 Monate inaktiv → Warn-Mail, 24 Monate → Soft-Delete. `retentionWarnedAt`-Feld, Audit-Log, 15 Tests. Chat-Retention geprüft (OK via User-Soft-Delete). | Opus | `main` | 1 d | [x] Opus · 2026-04-17 |
 | P2.18 | **Staging-Environment aufsetzen** — `docker-compose.staging.yml` mit separater DB + Traefik-Routing für `staging.api/azubi.smartbaden.de`. `.env.staging.example`, Deploy-Workflow mit Smoke-Check. DNS + Coolify-Setup manuell nötig. | Opus | `main` | 1–2 d | [x] Opus · 2026-04-17 |
-| P2.19 | **Deploy-Workflow mit Git-SHA-Tagging + Post-Deploy-Smoke** — Images mit SHA taggen, `run-smoke-checks.mjs` nach Deploy ausführen, bei Fehler Rollback-Hint. | Sonnet | `ops/deploy-hardening` | 1 d | [ ] |
+| P2.19 | **Deploy-Workflow mit Git-SHA-Tagging + Post-Deploy-Smoke** — Production + Staging Workflows: Docker-Images mit Git-SHA getaggt, Health-Check nach Deploy, `run-smoke-checks.mjs` als Post-Deploy-Gate, Rollback-Hint bei Fehler. | Opus | `main` | 1 d | [x] Opus · 2026-04-17 |
 | P2.20 | **Code-Splitting + Bundle-Analyse** — `manualChunks` für react/sentry/icons/query. 22 Views lazy-loaded via `React.lazy()`. Haupt-Bundle von 1.463→718 KB halbiert. | Sonnet | `perf/code-splitting` | 1 d | [x] Haiku 16.04.2026 |
 
 **Abschluss-Kriterium Phase 2:**
