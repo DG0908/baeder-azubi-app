@@ -1,16 +1,27 @@
-const normalizeSpace = (value) => String(value ?? '')
+interface Question {
+  a?: string[];
+  correct?: number | number[];
+  multi?: boolean;
+  [key: string]: unknown;
+}
+
+interface ShuffledQuestion extends Question {
+  displayAnswers: string[];
+}
+
+const normalizeSpace = (value: unknown): string => String(value ?? '')
   .replace(/\s+/g, ' ')
   .trim();
 
-const normalizeKey = (value) => normalizeSpace(value).toLowerCase();
+const normalizeKey = (value: unknown): string => normalizeSpace(value).toLowerCase();
 
-const countWords = (value) => {
+const countWords = (value: unknown): number => {
   const normalized = normalizeSpace(value);
   if (!normalized) return 0;
   return normalized.split(' ').filter(Boolean).length;
 };
 
-const stripNoiseTokens = (value) => normalizeSpace(value)
+const stripNoiseTokens = (value: unknown): string => normalizeSpace(value)
   // Remove old/generated wrappers and markers.
   .replace(/^option\s*:\s*/i, '')
   .replace(/^antwort\s*:\s*/i, '')
@@ -49,12 +60,12 @@ const TRAILING_STOP_WORDS = new Set([
   'einen'
 ]);
 
-const normalizeToken = (value) => normalizeKey(value)
+const normalizeToken = (value: unknown): string => normalizeKey(value)
   .normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '')
   .replace(/[^a-z0-9]/g, '');
 
-const trimTrailingStopWords = (value, minWords = 2) => {
+const trimTrailingStopWords = (value: string, minWords = 2): string => {
   let words = normalizeSpace(value).split(' ').filter(Boolean);
   while (words.length > minWords) {
     const tailToken = normalizeToken(words[words.length - 1]);
@@ -64,7 +75,7 @@ const trimTrailingStopWords = (value, minWords = 2) => {
   return words.join(' ');
 };
 
-const truncateWords = (value, maxWords) => {
+const truncateWords = (value: string, maxWords: number): string => {
   const words = normalizeSpace(value).split(' ').filter(Boolean);
   if (words.length <= maxWords) return normalizeSpace(value);
   let shortened = words.slice(0, maxWords).join(' ');
@@ -72,7 +83,7 @@ const truncateWords = (value, maxWords) => {
   return `${shortened}...`;
 };
 
-const buildDisplayAnswers = (question, answers) => {
+const buildDisplayAnswers = (question: Question | null | undefined, answers: string[]): string[] => {
   if (!Array.isArray(answers) || answers.length === 0) return [];
 
   const displayAnswers = answers.map((value) => {
@@ -84,7 +95,7 @@ const buildDisplayAnswers = (question, answers) => {
     return displayAnswers;
   }
 
-  const correctIndex = question.correct;
+  const correctIndex = question!.correct as number;
   if (correctIndex < 0 || correctIndex >= displayAnswers.length) {
     return displayAnswers;
   }
@@ -114,9 +125,9 @@ const buildDisplayAnswers = (question, answers) => {
   return displayAnswers;
 };
 
-const sanitizeQuestionAnswers = (question) => {
+const sanitizeQuestionAnswers = (question: Question | null | undefined): Question & { displayAnswers: string[] } => {
   const originalAnswers = Array.isArray(question?.a)
-    ? question.a.map((value) => normalizeSpace(value))
+    ? question!.a.map((value) => normalizeSpace(value))
     : [];
   if (originalAnswers.length === 0) return { ...(question || {}), a: [], displayAnswers: [] };
 
@@ -125,8 +136,8 @@ const sanitizeQuestionAnswers = (question) => {
     return stripped || value;
   });
 
-  const dedupedAnswers = [];
-  const seen = new Set();
+  const dedupedAnswers: string[] = [];
+  const seen = new Set<string>();
   for (let i = 0; i < cleanedAnswers.length; i += 1) {
     const preferred = normalizeSpace(cleanedAnswers[i]);
     const preferredKey = normalizeKey(preferred);
@@ -154,13 +165,13 @@ const sanitizeQuestionAnswers = (question) => {
   };
 };
 
-export const shuffleAnswers = (question) => {
+export const shuffleAnswers = (question: Question | null | undefined): ShuffledQuestion => {
   if (!question || !Array.isArray(question.a) || question.a.length === 0) {
-    return { ...(question || {}) };
+    return { ...(question || {}), displayAnswers: [] };
   }
 
   const preparedQuestion = sanitizeQuestionAnswers(question);
-  const indexedAnswers = preparedQuestion.a.map((text, originalIndex) => ({
+  const indexedAnswers = preparedQuestion.a!.map((text, originalIndex) => ({
     text,
     displayText: preparedQuestion.displayAnswers?.[originalIndex] ?? text,
     originalIndex
@@ -174,7 +185,7 @@ export const shuffleAnswers = (question) => {
 
   if (preparedQuestion.multi && Array.isArray(preparedQuestion.correct)) {
     const correctSet = new Set(
-      preparedQuestion.correct.filter((value) => Number.isInteger(value))
+      (preparedQuestion.correct as number[]).filter((value) => Number.isInteger(value))
     );
     const newCorrectIndices = indexedAnswers
       .map((entry, newIndex) => (correctSet.has(entry.originalIndex) ? newIndex : -1))
@@ -190,7 +201,7 @@ export const shuffleAnswers = (question) => {
   }
 
   const originalCorrect = Number.isInteger(preparedQuestion.correct)
-    ? preparedQuestion.correct
+    ? (preparedQuestion.correct as number)
     : 0;
   const newCorrectIndex = Math.max(
     0,
@@ -205,4 +216,4 @@ export const shuffleAnswers = (question) => {
   };
 };
 
-export const formatAnswerLabel = (value) => stripNoiseTokens(value);
+export const formatAnswerLabel = (value: unknown): string => stripNoiseTokens(value);
