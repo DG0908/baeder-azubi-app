@@ -1,0 +1,52 @@
+name: Deploy Staging
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    branches: [main]
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    environment:
+      name: staging
+      url: https://staging.azubi.smartbaden.de
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/azubi-app
+            git pull origin main
+            docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --build
+            echo "Staging deploy finished: $(date)"
+
+      - name: Smoke check
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            echo "Waiting for staging to become healthy..."
+            sleep 15
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://staging.api.smartbaden.de/api/health || echo "000")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "Staging health check passed (HTTP $HTTP_STATUS)"
+            else
+              echo "WARNING: Staging health check returned HTTP $HTTP_STATUS"
+              exit 1
+            fi
