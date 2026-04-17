@@ -8,6 +8,7 @@ import { useChatState, getRoleKey, isStaffRole, getAccountOrganizationId, getCha
 import { useAdminActions } from './hooks/useAdminActions';
 import { useNotifications } from './hooks/useNotifications';
 import { useBerichtsheft } from './hooks/useBerichtsheft';
+import { useDuelGame } from './hooks/useDuelGame';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -51,7 +52,6 @@ import { WHO_AM_I_CATEGORY, WHO_AM_I_CHALLENGES, buildWhoAmIFlashcards, buildWho
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, SWIM_BADGES, SWIM_TRAINING_PLANS, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
 import { PRACTICAL_EXAM_TYPES, PRACTICAL_SWIM_EXAMS, resolvePracticalDisciplineResult, toNumericGrade, formatGradeLabel, parseExamTimeToSeconds, formatSecondsAsTime } from './data/practicalExam';
 import { PRACTICAL_CHECKLISTS } from './data/practicalChecklists';
-import { shuffleAnswers } from './lib/utils';
 import { friendlyError } from './lib/friendlyError';
 import {
   loadUsers as dsLoadUsers,
@@ -59,7 +59,6 @@ import {
   loadGames as dsLoadGames,
   getUserStats as dsGetUserStats,
   getAllUserStats as dsGetAllUserStats,
-  saveUserStats as dsSaveUserStats,
   loadMaterials as dsLoadMaterials,
   loadResources as dsLoadResources,
   loadNews as dsLoadNews,
@@ -93,12 +92,6 @@ import {
   deleteExamEntry as dsDeleteExam,
   approveFlashcardEntry as dsApproveFlashcard,
   deleteFlashcardEntry as dsDeleteFlashcard,
-  createDuel as dsCreateDuel,
-  acceptDuel as dsAcceptDuel,
-  getDuelWithQuestions as dsGetDuelWithQuestions,
-  submitDuelAnswer as dsSubmitDuelAnswer,
-  forfeitDuel as dsForfeitDuel,
-  saveDuelState as dsSaveDuelState,
   loadSwimSessionEntries as dsLoadSwimSessions,
   saveSwimSessionEntry as dsSaveSwimSession,
   confirmSwimSessionEntry as dsConfirmSwimSession,
@@ -108,16 +101,39 @@ import {
   createCustomSwimTrainingPlanEntry as dsCreateCustomSwimPlan,
   loadPracticalExamAttempts as dsLoadPracticalExamAttempts,
   savePracticalExamAttemptEntry as dsSavePracticalExamAttempt,
-  reportQuestion as dsReportQuestion,
-  updateQuestionReportStatus as dsUpdateQuestionReportStatus,
   getAuthorizedReviewers as dsGetAuthorizedReviewers,
   saveBadges as dsSaveBadges,
   loadUserBadges as dsLoadUserBadges,
   loadSwimMonthlyResultEntries as dsLoadSwimMonthlyResults,
   upsertSwimMonthlyResultEntry as dsUpsertSwimMonthlyResult,
-  resolveUserIdentity as dsResolveUserIdentity,
   loadRetentionCandidates as dsLoadRetentionCandidates,
 } from './lib/dataService';
+import {
+  toSafeInt, getFirstSafeInt,
+  normalizePlayerName, namesMatch, isFinishedGameStatus,
+  shuffleArray,
+  DIFFICULTY_SETTINGS, DEFAULT_CHALLENGE_TIMEOUT_MINUTES,
+  normalizeChallengeTimeoutMinutes,
+  parseTimestampSafe, getChallengeTimeoutMs,
+  getWaitingChallengeRemainingMs, isWaitingChallengeExpired,
+  formatDurationMinutesCompact,
+  parseDateSafe, getSwimMonthKey, isDateInSwimMonth,
+  XP_META_KEY, XP_BREAKDOWN_DEFAULT, XP_REWARDS,
+  getXpMetaFromCategoryStats,
+  createEmptyUserStats, ensureUserStatsStructure, buildUserStatsFromRow,
+  getResolvedGameScores, resolveFinishedGameWinner,
+  hasRecordedRoundAnswers, isCountableFinishedQuizGame,
+  buildQuizTotalsFromFinishedGames, buildHeadToHeadFromFinishedGames,
+  haveQuizTotalsChanged,
+  syncQuizTotalsIntoStats, mergeOpponentStatsByMax,
+  doesUserStatsRowNeedRepair,
+  getTotalXpFromStats, getXpBreakdownFromStats,
+  addXpToStats, deductXpFromStats,
+  normalizeKeywordText, getWordVariants,
+  isKeywordQuestion, isWhoAmIQuestion,
+  evaluateKeywordAnswer, autoExtractKeywordGroups,
+  getQuizTimeLimit, cloneDuelGameSnapshot,
+} from './lib/quizHelpers';
 
 export default function BaederApp() {
   const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
@@ -257,74 +273,10 @@ export default function BaederApp() {
   const [pendingUsers, setPendingUsers] = useState([]);
   const [pendingFlashcards, setPendingFlashcards] = useState([]);
 
-  // Quiz State
-  const [activeGames, setActiveGames] = useState([]);
-  const [allGames, setAllGames] = useState([]);
+  // Quiz State (shared)
   const [statsByUserId, setStatsByUserId] = useState({});
-  const [selectedOpponent, setSelectedOpponent] = useState(null);
-  const [selectedDifficulty, setSelectedDifficulty] = useState('profi');
-  const [currentGame, setCurrentGame] = useState(null);
-  const [categoryRound, setCategoryRound] = useState(0); // 0-3 (4 Kategorien)
-  const [questionInCategory, setQuestionInCategory] = useState(0); // 0-4 (5 Fragen pro Kategorie)
-  const [quizCategory, setQuizCategory] = useState(null);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [currentCategoryQuestions, setCurrentCategoryQuestions] = useState([]); // 5 Fragen für aktuelle Kategorie
-  const [answered, setAnswered] = useState(false);
-  const [playerTurn, setPlayerTurn] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [timerActive, setTimerActive] = useState(false);
-  const quizActiveRef = useRef(false);
-  const answerSubmissionLockRef = useRef(false);
-  const answerSavePromiseRef = useRef(null); // tracks in-flight savePlayerAnswer promise
-  const [waitingForOpponent, setWaitingForOpponent] = useState(false); // Warte auf anderen Spieler
-  const [duelResult, setDuelResult] = useState(null); // Ergebnis-Screen nach Spielende
-  const [categoryRoundResult, setCategoryRoundResult] = useState(null); // Kategorie-Vergleich zwischen Runden
-  const [selectedAnswers, setSelectedAnswers] = useState([]); // Für Multi-Select Fragen
-  const [lastSelectedAnswer, setLastSelectedAnswer] = useState(null); // Für Single-Choice Feedback
-  const [keywordAnswerText, setKeywordAnswerText] = useState('');
-  const [keywordAnswerEvaluation, setKeywordAnswerEvaluation] = useState(null);
-  const [quizMCKeywordMode, setQuizMCKeywordMode] = useState(false);
+  const duelLateDepsRef = useRef({});
   
-  const DIFFICULTY_SETTINGS = {
-    anfaenger: { time: 45, label: 'Anfänger', icon: '🟢', color: 'bg-green-500' },
-    profi: { time: 30, label: 'Profi', icon: '🟡', color: 'bg-yellow-500' },
-    experte: { time: 15, label: 'Experte', icon: '🔴', color: 'bg-red-500' },
-    extra: { time: 75, label: 'Extra schwer', icon: '🧠', color: 'bg-indigo-700' }
-  };
-  const DEFAULT_CHALLENGE_TIMEOUT_MINUTES = 48 * 60;
-  const CHALLENGE_TIMEOUT_BOUNDS = { min: 15, max: 7 * 24 * 60 };
-
-  const normalizePlayerName = (name) => {
-    const base = String(name || '')
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    return base;
-  };
-
-  const namesMatch = (a, b) => {
-    const na = normalizePlayerName(a);
-    const nb = normalizePlayerName(b);
-    if (!na || !nb) return false;
-    return na === nb || na.includes(nb) || nb.includes(na);
-  };
-  const isFinishedGameStatus = (status) => {
-    const normalized = String(status || '').trim().toLowerCase();
-    return normalized === 'finished' || normalized === 'completed' || normalized === 'done';
-  };
-
-  const XP_REWARDS = {
-    QUIZ_WIN: 40,
-    EXAM_COMPLETION: 20,
-    EXAM_PASS_BONUS: 15,
-    EXAM_CORRECT_ANSWER: 1,
-    FLASHCARD_REVIEW: 1,
-    FLASHCARD_CREATE: 15
-  };
   const GENERAL_KNOWLEDGE_STORAGE_KEY = 'general_knowledge_rotation_v1';
   const PRACTICAL_PASS_XP_BY_GRADE = {
     1: 40,
@@ -543,583 +495,6 @@ export default function BaederApp() {
   ];
   const ARENA_LOSER_CREATURE = { emoji: '🪼', name: 'Langsame Qualle' };
 
-  const XP_META_KEY = '__meta';
-  const XP_BREAKDOWN_DEFAULT = {
-    examSimulator: 0,
-    practicalExam: 0,
-    flashcardLearning: 0,
-    flashcardCreation: 0,
-    quizWins: 0,
-    swimTrainingPlans: 0
-  };
-
-  const createEmptyUserStats = () => ({
-    wins: 0,
-    losses: 0,
-    draws: 0,
-    categoryStats: {},
-    opponents: {},
-    winStreak: 0,
-    bestWinStreak: 0
-  });
-
-  const toSafeInt = (value) => {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? Math.max(0, Math.round(parsed)) : 0;
-  };
-
-  const getFirstSafeInt = (...values) => {
-    for (const value of values) {
-      const parsed = Number(value);
-      if (Number.isFinite(parsed)) {
-        return Math.max(0, Math.round(parsed));
-      }
-    }
-    return null;
-  };
-
-  const normalizeChallengeTimeoutMinutes = (value) => {
-    const parsed = toSafeInt(value);
-    if (!parsed) return DEFAULT_CHALLENGE_TIMEOUT_MINUTES;
-    return Math.min(
-      CHALLENGE_TIMEOUT_BOUNDS.max,
-      Math.max(CHALLENGE_TIMEOUT_BOUNDS.min, parsed)
-    );
-  };
-
-  const parseTimestampSafe = (value) => {
-    if (!value) return null;
-    const date = new Date(value);
-    const timestamp = date.getTime();
-    return Number.isFinite(timestamp) ? timestamp : null;
-  };
-
-  const getChallengeTimeoutMs = (gameInput) => {
-    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
-    const timeoutMinutes = normalizeChallengeTimeoutMinutes(game.challengeTimeoutMinutes);
-    return timeoutMinutes * 60 * 1000;
-  };
-
-  const getChallengeExpiryTimestamp = (gameInput) => {
-    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
-    const explicitExpiry = parseTimestampSafe(game.challengeExpiresAt);
-    if (explicitExpiry !== null) return explicitExpiry;
-
-    const createdAt = parseTimestampSafe(game.createdAt);
-    if (createdAt !== null) return createdAt + getChallengeTimeoutMs(game);
-
-    const updatedAt = parseTimestampSafe(game.updatedAt);
-    if (updatedAt !== null) return updatedAt + getChallengeTimeoutMs(game);
-
-    return null;
-  };
-
-  const getWaitingChallengeRemainingMs = (gameInput, nowInput = Date.now()) => {
-    const expiryTs = getChallengeExpiryTimestamp(gameInput);
-    if (expiryTs === null) return Number.POSITIVE_INFINITY;
-    return expiryTs - nowInput;
-  };
-
-  const isWaitingChallengeExpired = (gameInput, nowInput = Date.now()) => {
-    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
-    if (String(game.status || '').toLowerCase() !== 'waiting') return false;
-    return getWaitingChallengeRemainingMs(game, nowInput) <= 0;
-  };
-
-  const formatDurationMinutesCompact = (minutesInput) => {
-    const minutes = Math.max(1, toSafeInt(minutesInput));
-    const days = Math.floor(minutes / 1440);
-    const hours = Math.floor((minutes % 1440) / 60);
-    const mins = minutes % 60;
-
-    if (days > 0) {
-      if (hours > 0) return `${days}d ${hours}h`;
-      return `${days}d`;
-    }
-    if (hours > 0) {
-      if (mins > 0) return `${hours}h ${mins}m`;
-      return `${hours}h`;
-    }
-    return `${mins}m`;
-  };
-
-  const parseDateSafe = (value) => {
-    const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
-    return Number.isNaN(date.getTime()) ? null : date;
-  };
-
-  const getSwimMonthKey = (dateInput = new Date()) => {
-    const date = parseDateSafe(dateInput);
-    if (!date) return '';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-  };
-
-  const isDateInSwimMonth = (dateInput, monthKey) => {
-    const date = parseDateSafe(dateInput);
-    if (!date) return false;
-    return getSwimMonthKey(date) === String(monthKey || '');
-  };
-
-  const getXpMetaFromCategoryStats = (categoryStats) => {
-    const safeCategoryStats = (categoryStats && typeof categoryStats === 'object') ? categoryStats : {};
-    const rawMeta = (safeCategoryStats[XP_META_KEY] && typeof safeCategoryStats[XP_META_KEY] === 'object')
-      ? safeCategoryStats[XP_META_KEY]
-      : {};
-    const rawBreakdown = (rawMeta.breakdown && typeof rawMeta.breakdown === 'object')
-      ? rawMeta.breakdown
-      : {};
-    const rawAwardedEvents = (rawMeta.awardedEvents && typeof rawMeta.awardedEvents === 'object')
-      ? rawMeta.awardedEvents
-      : {};
-    const normalizedBreakdown = {
-      ...XP_BREAKDOWN_DEFAULT,
-      examSimulator: getFirstSafeInt(rawBreakdown.examSimulator, rawMeta.examSimulator) ?? 0,
-      practicalExam: getFirstSafeInt(rawBreakdown.practicalExam, rawMeta.practicalExam) ?? 0,
-      flashcardLearning: getFirstSafeInt(rawBreakdown.flashcardLearning, rawMeta.flashcardLearning) ?? 0,
-      flashcardCreation: getFirstSafeInt(rawBreakdown.flashcardCreation, rawMeta.flashcardCreation) ?? 0,
-      quizWins: getFirstSafeInt(rawBreakdown.quizWins, rawMeta.quizWins) ?? 0,
-      swimTrainingPlans: getFirstSafeInt(rawBreakdown.swimTrainingPlans, rawMeta.swimTrainingPlans) ?? 0
-    };
-    const breakdownTotal = Object.values(normalizedBreakdown).reduce((sum, value) => sum + toSafeInt(value), 0);
-    const explicitTotalXp = getFirstSafeInt(
-      rawMeta.totalXp,
-      rawMeta.total_xp,
-      rawMeta.xp,
-      rawMeta.total,
-      safeCategoryStats.totalXp,
-      safeCategoryStats.total_xp,
-      safeCategoryStats.xp
-    );
-
-    return {
-      totalXp: explicitTotalXp === null
-        ? breakdownTotal
-        : (explicitTotalXp === 0 && breakdownTotal > 0 ? breakdownTotal : explicitTotalXp),
-      breakdown: normalizedBreakdown,
-      awardedEvents: rawAwardedEvents
-    };
-  };
-
-  const ensureUserStatsStructure = (statsInput) => {
-    const base = {
-      ...createEmptyUserStats(),
-      ...(statsInput || {})
-    };
-
-    const safeCategoryStats = (base.categoryStats && typeof base.categoryStats === 'object')
-      ? { ...base.categoryStats }
-      : {};
-    const safeOpponents = (base.opponents && typeof base.opponents === 'object')
-      ? { ...base.opponents }
-      : {};
-
-    const xpMeta = getXpMetaFromCategoryStats(safeCategoryStats);
-    safeCategoryStats[XP_META_KEY] = xpMeta;
-
-    return {
-      ...base,
-      wins: toSafeInt(base.wins),
-      losses: toSafeInt(base.losses),
-      draws: toSafeInt(base.draws),
-      categoryStats: safeCategoryStats,
-      opponents: safeOpponents,
-      winStreak: toSafeInt(base.winStreak),
-      bestWinStreak: toSafeInt(base.bestWinStreak)
-    };
-  };
-
-  const buildUserStatsFromRow = (row) => ensureUserStatsStructure(row ? {
-    wins: row.wins || 0,
-    losses: row.losses || 0,
-    draws: row.draws || 0,
-    categoryStats: row.categoryStats || row.category_stats || {},
-    opponents: row.opponents || {},
-    winStreak: row.winStreak ?? row.win_streak ?? 0,
-    bestWinStreak: row.bestWinStreak ?? row.best_win_streak ?? 0
-  } : createEmptyUserStats());
-
-  const getResolvedGameScores = (gameInput) => {
-    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
-    return {
-      player1Score: getFirstSafeInt(game.player1Score, game.player1_score, game.challengerScore) ?? 0,
-      player2Score: getFirstSafeInt(game.player2Score, game.player2_score, game.duelOpponentScore) ?? 0
-    };
-  };
-
-  const resolveFinishedGameWinner = (gameInput) => {
-    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
-    if (game.winner) {
-      return game.winner;
-    }
-
-    const { player1Score, player2Score } = getResolvedGameScores(game);
-    if (player1Score > player2Score) return game.player1 || null;
-    if (player2Score > player1Score) return game.player2 || null;
-    return null;
-  };
-
-  const hasRecordedRoundAnswers = (roundInput, answerKey) => {
-    const round = (roundInput && typeof roundInput === 'object') ? roundInput : {};
-    return Array.isArray(round[answerKey]) && round[answerKey].length > 0;
-  };
-
-  const isCountableFinishedQuizGame = (gameInput) => {
-    const game = (gameInput && typeof gameInput === 'object') ? gameInput : {};
-    if (!isFinishedGameStatus(game.status)) return false;
-
-    const rounds = Array.isArray(game.categoryRounds) ? game.categoryRounds : [];
-    if (rounds.length === 0) return false;
-
-    return rounds.every((round) => (
-      hasRecordedRoundAnswers(round, 'player1Answers')
-      && hasRecordedRoundAnswers(round, 'player2Answers')
-    ));
-  };
-
-  const buildQuizTotalsFromFinishedGames = (gamesInput, currentUserName, existingStats = null) => {
-    const baseStats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
-    const finishedGames = Array.isArray(gamesInput) ? gamesInput : [];
-    const normalizedUserName = normalizePlayerName(currentUserName);
-    let wins = 0;
-    let losses = 0;
-    let draws = 0;
-    const opponents = {};
-
-    finishedGames.forEach((game) => {
-      if (!isCountableFinishedQuizGame(game)) return;
-
-      const player1 = normalizePlayerName(game.player1);
-      const player2 = normalizePlayerName(game.player2);
-      if (player1 !== normalizedUserName && player2 !== normalizedUserName) return;
-
-      const winner = resolveFinishedGameWinner(game);
-
-      const opponent = player1 === normalizedUserName ? game.player2 : game.player1;
-      if (!opponents[opponent]) {
-        opponents[opponent] = { wins: 0, losses: 0, draws: 0 };
-      }
-
-      if (normalizePlayerName(winner) === normalizedUserName) {
-        wins += 1;
-        opponents[opponent].wins += 1;
-      } else if (winner === null) {
-        draws += 1;
-        opponents[opponent].draws += 1;
-      } else {
-        losses += 1;
-        opponents[opponent].losses += 1;
-      }
-    });
-
-    return {
-      ...baseStats,
-      wins,
-      losses,
-      draws,
-      opponents
-    };
-  };
-
-  const buildHeadToHeadFromFinishedGames = (gamesInput, currentUserName, opponentName) => {
-    const safeOpponentName = String(opponentName || '').trim();
-    if (!currentUserName || !safeOpponentName) {
-      return { wins: 0, losses: 0, draws: 0 };
-    }
-
-    const finishedGames = Array.isArray(gamesInput) ? gamesInput : [];
-    const normalizedUserName = normalizePlayerName(currentUserName);
-    const normalizedOpponentName = normalizePlayerName(safeOpponentName);
-    let wins = 0;
-    let losses = 0;
-    let draws = 0;
-
-    finishedGames.forEach((game) => {
-      if (!isCountableFinishedQuizGame(game)) return;
-
-      const player1 = normalizePlayerName(game.player1);
-      const player2 = normalizePlayerName(game.player2);
-      const hasCurrentUser = player1 === normalizedUserName || player2 === normalizedUserName;
-      const hasOpponent = player1 === normalizedOpponentName || player2 === normalizedOpponentName;
-      if (!hasCurrentUser || !hasOpponent) return;
-
-      const winner = resolveFinishedGameWinner(game);
-      const normalizedWinner = normalizePlayerName(winner);
-      if (!normalizedWinner) {
-        draws += 1;
-      } else if (normalizedWinner === normalizedUserName) {
-        wins += 1;
-      } else {
-        losses += 1;
-      }
-    });
-
-    return { wins, losses, draws };
-  };
-
-  const haveQuizTotalsChanged = (currentStatsInput, syncedStatsInput) => {
-    const currentStats = ensureUserStatsStructure(currentStatsInput || createEmptyUserStats());
-    const syncedStats = ensureUserStatsStructure(syncedStatsInput || createEmptyUserStats());
-    if (
-      currentStats.wins !== syncedStats.wins
-      || currentStats.losses !== syncedStats.losses
-      || currentStats.draws !== syncedStats.draws
-    ) {
-      return true;
-    }
-
-    const currentOpponents = currentStats.opponents || {};
-    const syncedOpponents = syncedStats.opponents || {};
-    const opponentNames = new Set([
-      ...Object.keys(currentOpponents),
-      ...Object.keys(syncedOpponents)
-    ]);
-
-    for (const opponentName of opponentNames) {
-      const currentOpponent = currentOpponents[opponentName] || {};
-      const syncedOpponent = syncedOpponents[opponentName] || {};
-      if (
-        toSafeInt(currentOpponent.wins) !== toSafeInt(syncedOpponent.wins)
-        || toSafeInt(currentOpponent.losses) !== toSafeInt(syncedOpponent.losses)
-        || toSafeInt(currentOpponent.draws) !== toSafeInt(syncedOpponent.draws)
-      ) {
-        return true;
-      }
-    }
-
-    return false;
-  };
-
-  const syncQuizTotalsIntoStats = (statsInput, gamesInput, currentUserName) => {
-    const stats = ensureUserStatsStructure(statsInput || createEmptyUserStats());
-    const syncedQuizStats = buildQuizTotalsFromFinishedGames(gamesInput, currentUserName, stats);
-    if (!haveQuizTotalsChanged(stats, syncedQuizStats)) {
-      return stats;
-    }
-
-    return ensureUserStatsStructure({
-      ...stats,
-      wins: syncedQuizStats.wins,
-      losses: syncedQuizStats.losses,
-      draws: syncedQuizStats.draws,
-      opponents: syncedQuizStats.opponents
-    });
-  };
-
-  const resetAnswerSubmissionLock = () => {
-    answerSubmissionLockRef.current = false;
-  };
-
-  const resetQuizDuelRuntimeState = () => {
-    resetAnswerSubmissionLock();
-    setCurrentGame(null);
-    setQuizCategory(null);
-    setCurrentQuestion(null);
-    setCurrentCategoryQuestions([]);
-    setCategoryRound(0);
-    setQuestionInCategory(0);
-    setPlayerTurn(null);
-    setWaitingForOpponent(false);
-    setAnswered(false);
-    setSelectedAnswers([]);
-    setLastSelectedAnswer(null);
-    setTimerActive(false);
-    resetQuizKeywordState();
-  };
-
-  const handleForfeitDuel = async () => {
-    if (!currentGame?.id) return;
-    try {
-      await dsForfeitDuel(currentGame.id);
-    } catch (e) {
-      console.warn('Aufgeben fehlgeschlagen:', e);
-    }
-    resetQuizDuelRuntimeState();
-    setActiveGames(prev => prev.filter(g => g.id !== currentGame?.id));
-  };
-
-  const cloneDuelGameSnapshot = (gameInput) => {
-    if (!gameInput || typeof gameInput !== 'object') {
-      return gameInput;
-    }
-    if (typeof structuredClone === 'function') {
-      return structuredClone(gameInput);
-    }
-    return JSON.parse(JSON.stringify(gameInput));
-  };
-
-  const syncLocalDuelGame = (gameInput) => {
-    const nextGame = cloneDuelGameSnapshot(gameInput);
-    if (!nextGame?.id) {
-      return nextGame;
-    }
-
-    setCurrentGame((prev) => (prev?.id === nextGame.id ? nextGame : prev));
-    setActiveGames((prev) => {
-      const existingIndex = prev.findIndex((entry) => entry.id === nextGame.id);
-      if (isFinishedGameStatus(nextGame.status)) {
-        return existingIndex === -1
-          ? prev
-          : prev.filter((entry) => entry.id !== nextGame.id);
-      }
-      if (existingIndex === -1) {
-        return [nextGame, ...prev];
-      }
-      return prev.map((entry) => (entry.id === nextGame.id ? nextGame : entry));
-    });
-    setAllGames((prev) => {
-      const existingIndex = prev.findIndex((entry) => entry.id === nextGame.id);
-      if (existingIndex === -1) {
-        return [nextGame, ...prev];
-      }
-      return prev.map((entry) => (entry.id === nextGame.id ? nextGame : entry));
-    });
-
-    return nextGame;
-  };
-
-  const showDuelResultForGame = (gameInput, gamesSource = null, h2hOverride = null) => {
-    const game = (gameInput && typeof gameInput === 'object') ? gameInput : null;
-    if (!game || !user?.name) return;
-
-    const opponentName = namesMatch(game.player1, user.name) ? game.player2 : game.player1;
-    const { player1Score, player2Score } = getResolvedGameScores(game);
-    const winner = resolveFinishedGameWinner(game);
-    const h2h = h2hOverride || buildHeadToHeadFromFinishedGames(gamesSource || allGames, user.name, opponentName);
-
-    setDuelResult({
-      gameId: game.id,
-      player1: game.player1,
-      player2: game.player2,
-      player1Score,
-      player2Score,
-      winner,
-      myName: user.name,
-      opponentName,
-      h2h: {
-        wins: h2h.wins || 0,
-        losses: h2h.losses || 0,
-        draws: h2h.draws || 0
-      }
-    });
-
-    resetQuizDuelRuntimeState();
-    setCategoryRoundResult(null);
-    setCurrentView('quiz');
-  };
-
-  const mergeOpponentStatsByMax = (storedOpponentsInput, syncedOpponentsInput) => {
-    const storedOpponents = (storedOpponentsInput && typeof storedOpponentsInput === 'object')
-      ? storedOpponentsInput
-      : {};
-    const syncedOpponents = (syncedOpponentsInput && typeof syncedOpponentsInput === 'object')
-      ? syncedOpponentsInput
-      : {};
-    const merged = { ...storedOpponents };
-
-    Object.entries(syncedOpponents).forEach(([opponentName, syncedValues]) => {
-      const storedValues = merged[opponentName] || {};
-      merged[opponentName] = {
-        wins: Math.max(toSafeInt(storedValues.wins), toSafeInt(syncedValues?.wins)),
-        losses: Math.max(toSafeInt(storedValues.losses), toSafeInt(syncedValues?.losses)),
-        draws: Math.max(toSafeInt(storedValues.draws), toSafeInt(syncedValues?.draws))
-      };
-    });
-
-    return merged;
-  };
-
-  const doesUserStatsRowNeedRepair = (row, normalizedStats) => {
-    if (!row) return false;
-    const rawCategoryStats = (row.category_stats && typeof row.category_stats === 'object')
-      ? row.category_stats
-      : {};
-    const rawMeta = (rawCategoryStats[XP_META_KEY] && typeof rawCategoryStats[XP_META_KEY] === 'object')
-      ? rawCategoryStats[XP_META_KEY]
-      : null;
-    const rawBreakdown = (rawMeta?.breakdown && typeof rawMeta.breakdown === 'object')
-      ? rawMeta.breakdown
-      : null;
-    const normalizedMeta = getXpMetaFromCategoryStats(normalizedStats?.categoryStats || {});
-    const rawTotalXp = getFirstSafeInt(
-      rawMeta?.totalXp,
-      rawMeta?.total_xp,
-      rawMeta?.xp,
-      rawMeta?.total,
-      rawCategoryStats.totalXp,
-      rawCategoryStats.total_xp,
-      rawCategoryStats.xp
-    );
-
-    if (!rawMeta || !rawBreakdown) return true;
-    if (rawMeta.awardedEvents !== undefined && (rawMeta.awardedEvents === null || typeof rawMeta.awardedEvents !== 'object')) {
-      return true;
-    }
-    if (rawTotalXp === null && normalizedMeta.totalXp > 0) {
-      return true;
-    }
-
-    return Object.keys(XP_BREAKDOWN_DEFAULT).some((key) => (
-      rawBreakdown[key] === undefined
-      && rawMeta[key] === undefined
-      && normalizedMeta.breakdown[key] > 0
-    ));
-  };
-
-  const getTotalXpFromStats = (statsInput) => {
-    const safeStats = ensureUserStatsStructure(statsInput);
-    return getXpMetaFromCategoryStats(safeStats.categoryStats).totalXp;
-  };
-
-  const getXpBreakdownFromStats = (statsInput) => {
-    const safeStats = ensureUserStatsStructure(statsInput);
-    return getXpMetaFromCategoryStats(safeStats.categoryStats).breakdown;
-  };
-
-  const addXpToStats = (statsInput, sourceKey, amount, eventKey = null) => {
-    const xpToAdd = toSafeInt(amount);
-    const safeStats = ensureUserStatsStructure(statsInput);
-    if (xpToAdd <= 0) {
-      return { stats: safeStats, addedXp: 0 };
-    }
-
-    const safeCategoryStats = { ...(safeStats.categoryStats || {}) };
-    const xpMeta = getXpMetaFromCategoryStats(safeCategoryStats);
-
-    if (eventKey && xpMeta.awardedEvents[eventKey]) {
-      return { stats: safeStats, addedXp: 0 };
-    }
-
-    xpMeta.totalXp += xpToAdd;
-    xpMeta.breakdown[sourceKey] = toSafeInt(xpMeta.breakdown[sourceKey]) + xpToAdd;
-    if (eventKey) {
-      xpMeta.awardedEvents[eventKey] = Date.now();
-    }
-
-    safeCategoryStats[XP_META_KEY] = xpMeta;
-
-    return {
-      stats: {
-        ...safeStats,
-        categoryStats: safeCategoryStats
-      },
-      addedXp: xpToAdd
-    };
-  };
-
-  const deductXpFromStats = (statsInput, amount) => {
-    const xpToDeduct = Math.max(0, Math.round(amount));
-    const safeStats = ensureUserStatsStructure(statsInput);
-    if (xpToDeduct === 0) return { stats: safeStats, deductedXp: 0 };
-    const safeCategoryStats = { ...(safeStats.categoryStats || {}) };
-    const xpMeta = getXpMetaFromCategoryStats(safeCategoryStats);
-    const actualDeduction = Math.min(xpToDeduct, xpMeta.totalXp); // nie unter 0
-    if (actualDeduction === 0) return { stats: safeStats, deductedXp: 0 };
-    xpMeta.totalXp -= actualDeduction;
-    safeCategoryStats[XP_META_KEY] = xpMeta;
-    return { stats: { ...safeStats, categoryStats: safeCategoryStats }, deductedXp: actualDeduction };
-  };
 
   // Other State
   const [userStats, setUserStats] = useState(null);
@@ -1412,7 +787,7 @@ export default function BaederApp() {
     loadData: () => loadData(),
     appConfig,
     setAppConfig,
-    statsSources: { materials, submittedQuestions, activeGames, chatMessageCount },
+    statsSources: { materials, submittedQuestions, activeGames: duel.activeGames, chatMessageCount },
   });
 
   // Notifications + Push + PWA (extrahiert in eigenen Hook)
@@ -1438,295 +813,27 @@ export default function BaederApp() {
     sendNotification,
   });
 
-  const normalizeKeywordText = (value) => String(value || '')
-    .toLowerCase()
-    .replace(/ß/g, 'ss')
-    .replace(/ä/g, 'ae')
-    .replace(/ö/g, 'oe')
-    .replace(/ü/g, 'ue')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  // Returns the word plus singular/plural variants so matching works both ways.
-  // German plurals are mostly formed with -en, -e, -s; we strip these to get the stem.
-  // The stem is added alongside the original so `includes(term)` matches either form.
-  const getWordVariants = (normalizedWord) => {
-    const variants = [normalizedWord];
-    const addVariant = (candidate) => {
-      if (candidate && !variants.includes(candidate)) {
-        variants.push(candidate);
-      }
-    };
-
-    addVariant(
-      normalizedWord
-        .replace(/ae/g, 'a')
-        .replace(/oe/g, 'o')
-        .replace(/ue/g, 'u')
-    );
-
-    if (normalizedWord.endsWith('en') && normalizedWord.length - 2 >= 4) {
-      const stem = normalizedWord.slice(0, -2);
-      addVariant(stem);
-      // Two-level strip: Chloriden → Chloride → Chlorid
-      if (stem.endsWith('e') && stem.length - 1 >= 4) {
-        addVariant(stem.slice(0, -1));
-      }
-    } else if (normalizedWord.endsWith('e') && normalizedWord.length - 1 >= 4) {
-      addVariant(normalizedWord.slice(0, -1));
-    } else if (normalizedWord.endsWith('s') && normalizedWord.length - 1 >= 4) {
-      addVariant(normalizedWord.slice(0, -1));
-    }
-    return variants;
-  };
-
-  const tokenizeKeywordText = (value) => normalizeKeywordText(value)
-    .split(' ')
-    .map((token) => token.trim())
-    .filter(Boolean);
-
-  const buildKeywordTokenVariants = (value) => {
-    const variants = new Set();
-    tokenizeKeywordText(value).forEach((token) => {
-      getWordVariants(token).forEach((variant) => {
-        if (variant) variants.add(variant);
-      });
-    });
-    return variants;
-  };
-
-  const matchesKeywordTerm = (normalizedAnswer, answerVariantTokens, term) => {
-    const normalizedTerm = normalizeKeywordText(term);
-    if (!normalizedTerm) return false;
-    if (normalizedAnswer.includes(normalizedTerm)) return true;
-
-    const termTokens = tokenizeKeywordText(normalizedTerm);
-    if (termTokens.length === 0) return false;
-
-    return termTokens.every((token) => {
-      const tokenVariants = getWordVariants(token);
-      return tokenVariants.some((variant) => {
-        if (!variant) return false;
-        if (answerVariantTokens.has(variant)) return true;
-        return Array.from(answerVariantTokens).some((answerToken) =>
-          answerToken.startsWith(variant) || variant.startsWith(answerToken)
-        );
-      });
-    });
-  };
-
-  const normalizeKeywordGroup = (groupInput) => {
-    if (typeof groupInput === 'string') {
-      return {
-        label: groupInput,
-        terms: [groupInput]
-      };
-    }
-
-    if (Array.isArray(groupInput)) {
-      const terms = groupInput
-        .map((term) => String(term || '').trim())
-        .filter(Boolean);
-      return {
-        label: terms[0] || 'Schlagwort',
-        terms
-      };
-    }
-
-    if (groupInput && typeof groupInput === 'object') {
-      const label = String(groupInput.label || groupInput.name || '').trim();
-      const terms = Array.isArray(groupInput.terms)
-        ? groupInput.terms.map((term) => String(term || '').trim()).filter(Boolean)
-        : [];
-      return {
-        label: label || terms[0] || 'Schlagwort',
-        terms
-      };
-    }
-
-    return { label: 'Schlagwort', terms: [] };
-  };
-
-  const getKeywordGroupsFromQuestion = (question) => {
-    if (!question || !Array.isArray(question.keywordGroups)) return [];
-    return question.keywordGroups
-      .map(normalizeKeywordGroup)
-      .filter((group) => group.terms.length > 0)
-      .map((group) => ({
-        ...group,
-        normalizedTerms: [...new Set(group.terms.map((term) => normalizeKeywordText(term)).filter(Boolean))]
-      }))
-      .filter((group) => group.normalizedTerms.length > 0);
-  };
-
-  const isKeywordQuestion = (question) => {
-    return Boolean(question?.type === 'keyword' && getKeywordGroupsFromQuestion(question).length > 0);
-  };
-
-  const isWhoAmIQuestion = (question) => {
-    return Boolean(question?.type === 'whoami' && Array.isArray(question?.clues) && getKeywordGroupsFromQuestion(question).length > 0);
-  };
-
-  const evaluateKeywordAnswer = (question, answerInput) => {
-    const groups = getKeywordGroupsFromQuestion(question);
-    const normalizedAnswer = normalizeKeywordText(answerInput);
-    const answerVariantTokens = buildKeywordTokenVariants(answerInput);
-    const wordCount = normalizedAnswer ? normalizedAnswer.split(' ').filter(Boolean).length : 0;
-    const requiredWordCount = Math.max(0, Number(question?.minWords) || 0);
-    const requiredGroups = Math.max(
-      1,
-      Math.min(groups.length, Number(question?.minKeywordGroups) || groups.length || 1)
-    );
-
-    if (!normalizedAnswer) {
-      return {
-        isCorrect: false,
-        hasContent: false,
-        requiredGroups,
-        matchedCount: 0,
-        scorePercent: 0,
-        basePoints: 0,
-        bonusPoints: 0,
-        awardedPoints: 0,
-        matchedLabels: [],
-        missingLabels: groups.map((group) => group.label),
-        wordCount,
-        requiredWordCount
-      };
-    }
-
-    const matchedLabels = [];
-    const missingLabels = [];
-    groups.forEach((group) => {
-      const matched = group.normalizedTerms.some((term) => matchesKeywordTerm(normalizedAnswer, answerVariantTokens, term));
-      if (matched) {
-        matchedLabels.push(group.label);
-      } else {
-        missingLabels.push(group.label);
-      }
-    });
-
-    const matchedCount = matchedLabels.length;
-    const hasEnoughWords = wordCount >= requiredWordCount;
-    const isCorrect = matchedCount >= requiredGroups && hasEnoughWords;
-    const scorePercent = Math.max(0, Math.min(100, Math.round((matchedCount / requiredGroups) * 100)));
-    const basePoints = matchedCount;
-    const bonusPoints = isCorrect ? 2 : 0;
-    const awardedPoints = basePoints + bonusPoints;
-
-    return {
-      isCorrect,
-      hasContent: true,
-      requiredGroups,
-      matchedCount,
-      scorePercent,
-      basePoints,
-      bonusPoints,
-      awardedPoints,
-      matchedLabels,
-      missingLabels,
-      wordCount,
-      requiredWordCount
-    };
-  };
-
-  const getUsedQuestionTextsForGame = (game, categoryId) => {
-    if (!game || !Array.isArray(game.categoryRounds)) return new Set();
-    return new Set(
-      game.categoryRounds
-        .filter((round) => String(round?.categoryId || '') === String(categoryId || ''))
-        .flatMap((round) => Array.isArray(round?.questions) ? round.questions : [])
-        .map((question) => normalizeQuestionText(question?.q || ''))
-        .filter(Boolean)
-    );
-  };
-
-  const pickBattleQuestions = (questions, count, categoryId, game) => {
-    const source = Array.isArray(questions) ? questions.filter(Boolean) : [];
-    const limit = Math.min(Math.max(0, Number(count) || 0), source.length);
-    if (limit <= 0) return [];
-
-    const usedQuestionTexts = getUsedQuestionTextsForGame(game, categoryId);
-    const freshPool = source.filter((question) => !usedQuestionTexts.has(normalizeQuestionText(question?.q || '')));
-    const freshSelected = pickLearningQuestions(
-      freshPool,
-      Math.min(limit, freshPool.length),
-      () => categoryId
-    );
-
-    const remaining = limit - freshSelected.length;
-    if (remaining <= 0) {
-      return shuffleArray(freshSelected);
-    }
-
-    const selectedTextSet = new Set(freshSelected.map((question) => normalizeQuestionText(question?.q || '')));
-    const fallbackPool = source.filter((question) => !selectedTextSet.has(normalizeQuestionText(question?.q || '')));
-    const fallbackSelected = pickLearningQuestions(
-      fallbackPool,
-      Math.min(remaining, fallbackPool.length),
-      () => categoryId
-    );
-
-    return shuffleArray([...freshSelected, ...fallbackSelected]);
-  };
-
-  const resetQuizKeywordState = () => {
-    setKeywordAnswerText('');
-    setKeywordAnswerEvaluation(null);
-  };
-
   const resetFlashcardKeywordState = () => {
     setFlashcardKeywordInput('');
     setFlashcardKeywordEvaluation(null);
   };
 
-  const isKeywordFlashcard = (card) => isKeywordQuestion(card);
-
-  const getQuizTimeLimit = (question, difficultyKey) => {
-    if (isWhoAmIQuestion(question)) {
-      const configuredLimit = Number(question?.timeLimit);
-      return Number.isFinite(configuredLimit) && configuredLimit > 0 ? configuredLimit : 60;
-    }
-    return DIFFICULTY_SETTINGS[difficultyKey]?.time || 30;
-  };
-
-  const autoExtractKeywordGroups = (answerText) => {
-    const GERMAN_STOPWORDS = new Set([
-      'aber', 'alle', 'allem', 'allen', 'aller', 'alles', 'also', 'auch', 'auf', 'auss',
-      'aus', 'ausserdem', 'bei', 'beim', 'bereits', 'dann', 'dabei', 'dadurch', 'damit',
-      'darf', 'dass', 'dem', 'den', 'denen', 'denn', 'der', 'des', 'deshalb', 'dessen',
-      'dies', 'diese', 'diesem', 'diesen', 'dieser', 'dieses', 'doch', 'dort', 'durch',
-      'eine', 'einem', 'einen', 'einer', 'eines', 'erst', 'etwas', 'falls', 'für',
-      'gegen', 'gibt', 'haben', 'hatte', 'hatten', 'hier', 'ihnen', 'ihre', 'ihrem',
-      'ihren', 'ihrer', 'ihres', 'immer', 'innen', 'jede', 'jedem', 'jeden', 'jeder',
-      'jedes', 'jetzt', 'jedoch', 'kann', 'kein', 'keine', 'keinem', 'keinen', 'keiner',
-      'keines', 'muss', 'mussen', 'nach', 'nicht', 'noch', 'obwohl', 'ohne', 'oder',
-      'oben', 'sein', 'seine', 'seinem', 'seinen', 'seiner', 'seines', 'sehr', 'sich',
-      'sind', 'sodass', 'soll', 'sollen', 'sollte', 'sowie', 'sonst', 'uber', 'mehr',
-      'viel', 'viele', 'vielen', 'von', 'vor', 'war', 'waren', 'weil', 'wenn', 'werden',
-      'wird', 'wobei', 'wodurch', 'wurde', 'wurden', 'wieder', 'zwischen', 'zwar',
-      'euro', 'unten', 'aussen', 'schon'
-    ]);
-    const normalized = normalizeKeywordText(answerText);
-    const words = normalized.split(/\s+/).filter(Boolean);
-    const seen = new Set();
-    const groups = [];
-    for (const word of words) {
-      if (word.length < 4) continue;
-      if (GERMAN_STOPWORDS.has(word)) continue;
-      if (seen.has(word)) continue;
-      seen.add(word);
-      const variants = getWordVariants(word);
-      // Use the shortest variant (stem) as the label so users see the singular form
-      const stem = variants[variants.length - 1];
-      const label = stem.charAt(0).toUpperCase() + stem.slice(1);
-      groups.push({ label, terms: variants });
-    }
-    return groups;
-  };
+  const duel = useDuelGame({
+    user,
+    showToast,
+    playSound,
+    sendNotification,
+    allUsers,
+    setCurrentView,
+    userStats, setUserStats,
+    statsByUserId, setStatsByUserId,
+    lateDepsRef: duelLateDepsRef,
+    trackQuestionPerformance,
+    questionPerformance,
+    adaptiveLearningEnabled, setAdaptiveLearningEnabled,
+    questionReports, setQuestionReports,
+    sanitizeGoalValue,
+  });
 
   const WHO_AM_I_STUDY_FLASHCARDS = buildWhoAmIStudyFlashcards(WHO_AM_I_CHALLENGES);
 
@@ -1807,7 +914,7 @@ export default function BaederApp() {
       // Polling: nur leichte Daten (Notifications, Games, Messages) alle 30s
       // Pausiert wenn Quiz aktiv, um Re-Renders und Flicker zu vermeiden
       const interval = setInterval(() => {
-        if (quizActiveRef.current) return;
+        if (duel.quizActiveRef.current) return;
         loadLightData();
         loadNotifications();
       }, 30000);
@@ -1856,103 +963,46 @@ export default function BaederApp() {
 
   // Sync quiz active ref for polling guard
   useEffect(() => {
-    quizActiveRef.current = timerActive && currentView === 'quiz';
-  }, [timerActive, currentView]);
+    duel.quizActiveRef.current = duel.timerActive && currentView === 'quiz';
+  }, [duel.timerActive, currentView]);
 
   // Automatisch reagieren wenn Gegner fertig gespielt hat (waitingForOpponent)
   useEffect(() => {
-    if (!currentGame?.id || !user?.name || !waitingForOpponent) return;
+    if (!duel.currentGame?.id || !user?.name || !duel.waitingForOpponent) return;
 
-    const updatedGame = allGames.find(g => g.id === currentGame.id) || activeGames.find(g => g.id === currentGame.id);
+    const updatedGame = duel.allGames.find(g => g.id === duel.currentGame.id) || duel.activeGames.find(g => g.id === duel.currentGame.id);
     if (!updatedGame) return;
 
     if (isFinishedGameStatus(updatedGame.status)) {
-      if (duelResult?.gameId !== updatedGame.id) {
-        // Spiel vom Server als beendet erkannt. H2H aus Spieldaten berechnen (zuverlässig)
-        // und Ergebnis-Screen anzeigen.
+      if (duel.duelResult?.gameId !== updatedGame.id) {
         const opponentNameForStats = namesMatch(updatedGame.player1, user.name)
           ? updatedGame.player2
           : updatedGame.player1;
-        const h2hFromGames = buildHeadToHeadFromFinishedGames(allGames, user.name, opponentNameForStats);
-        showDuelResultForGame(updatedGame, allGames, h2hFromGames);
+        const h2hFromGames = duel.buildHeadToHeadFromFinishedGames(duel.allGames, user.name, opponentNameForStats);
+        duel.showDuelResultForGame(updatedGame, duel.allGames, h2hFromGames);
       }
       return;
     }
 
     const serverRound = updatedGame.categoryRound || 0;
-    const localRound = currentGame.categoryRound || 0;
+    const localRound = duel.currentGame.categoryRound || 0;
     const myTurnNow = updatedGame.currentTurn === user.name;
 
-    // Nur reagieren wenn sich der Serverstand tatsächlich geändert hat
     if (!myTurnNow && serverRound <= localRound) return;
 
-    // Spiel-State mit aktuellen Server-Daten synchronisieren
-    setCurrentGame(updatedGame);
-    setCategoryRound(serverRound);
-    setPlayerTurn(updatedGame.currentTurn);
-    setWaitingForOpponent(false);
-    setAnswered(false);
-    setSelectedAnswers([]);
-    setLastSelectedAnswer(null);
-    setCurrentQuestion(null);
-    setQuizCategory(null);
-    setCurrentCategoryQuestions([]);
-    setTimerActive(false);
-    resetQuizKeywordState();
-
-    // Prüfen ob die gerade abgeschlossene Runde (localRound) für uns darstellbar ist:
-    // Beide Antwort-Sets vorhanden → Runden-Ergebnis-Screen nachträglich zeigen
-    const finishedCatRound = updatedGame.categoryRounds?.[localRound];
-    if (finishedCatRound && serverRound > localRound) {
-      const isP1 = user.name === updatedGame.player1;
-      const myAnswers = isP1 ? finishedCatRound.player1Answers : finishedCatRound.player2Answers;
-      const oppAnswers = isP1 ? finishedCatRound.player2Answers : finishedCatRound.player1Answers;
-      if (myAnswers.length > 0 && oppAnswers.length > 0) {
-        setCategoryRoundResult({
-          round: localRound,
-          categoryId: finishedCatRound.categoryId,
-          categoryName: finishedCatRound.categoryName,
-          questions: finishedCatRound.questions,
-          myAnswers,
-          opponentAnswers: oppAnswers,
-          myName: user.name,
-          opponentName: isP1 ? updatedGame.player2 : updatedGame.player1,
-          player1Score: updatedGame.player1Score,
-          player2Score: updatedGame.player2Score,
-          player1Name: updatedGame.player1,
-          player2Name: updatedGame.player2,
-          isLastRound: localRound >= 3,
-        });
-        return; // proceedAfterCategoryResult übernimmt die restliche State-Transition
-      }
-    }
-
-    // Prüfen ob ich noch in der aktuellen Runde spielen muss
-    // (Gegner hat Kategorie gewählt und gespielt → gleiche Fragen für mich)
-    if (myTurnNow && serverRound === localRound) {
-      const currentCatRound = updatedGame.categoryRounds?.[serverRound];
-      if (currentCatRound) {
-        const isP1 = user.name === updatedGame.player1;
-        const myAnswers = isP1 ? currentCatRound.player1Answers : currentCatRound.player2Answers;
-        const oppAnswers = isP1 ? currentCatRound.player2Answers : currentCatRound.player1Answers;
-        if (myAnswers.length === 0 && oppAnswers.length > 0 && currentCatRound.questions.length > 0) {
-          setQuizCategory(currentCatRound.categoryId);
-          setCurrentCategoryQuestions(currentCatRound.questions);
-        }
-      }
-    }
-  }, [activeGames, allGames, duelResult]); // eslint-disable-line react-hooks/exhaustive-deps
+    duel.syncQuizRuntimeFromPersistedGame(updatedGame);
+  }, [duel.activeGames, duel.allGames, duel.duelResult]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (timerActive && timeLeft > 0 && !answered) {
+    if (duel.timerActive && duel.timeLeft > 0 && !duel.answered) {
       const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
+        duel.setTimeLeft(duel.timeLeft - 1);
       }, 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && !answered) {
-      handleTimeUp();
+    } else if (duel.timeLeft === 0 && !duel.answered) {
+      duel.handleTimeUp();
     }
-  }, [timeLeft, timerActive, answered]);
+  }, [duel.timeLeft, duel.timerActive, duel.answered]);
 
   // Check data retention only once on login, only for admins (endpoint requires admin role)
   useEffect(() => {
@@ -2639,8 +1689,8 @@ export default function BaederApp() {
           ...g,
           challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challengeTimeoutMinutes)
         }));
-        setAllGames(normalized);
-        setActiveGames(normalized.filter(g => g.status !== 'finished'));
+        duel.setAllGames(normalized);
+        duel.setActiveGames(normalized.filter(g => g.status !== 'finished'));
         updateLeaderboard(normalized, allUsers);
         if (user?.name) {
           setUserStats(prevStats => syncQuizTotalsIntoStats(prevStats, normalized, user.name));
@@ -2704,10 +1754,10 @@ export default function BaederApp() {
           ...g,
           challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challengeTimeoutMinutes)
         }));
-        setAllGames(games);
-        setActiveGames(games.filter(g => g.status !== 'finished'));
+        duel.setAllGames(games);
+        duel.setActiveGames(games.filter(g => g.status !== 'finished'));
         updateLeaderboard(games, allUsers);
-        await checkExpiredAndRemindGames(games);
+        await duel.checkExpiredAndRemindGames(games);
       }
 
       // Load all user stats for trainer dashboard cards
@@ -2758,7 +1808,7 @@ export default function BaederApp() {
           }
 
           if (shouldPersistStats) {
-            await saveUserStatsToSupabase(user, stats);
+            await duel.saveUserStatsToSupabase(user, stats);
           }
 
           setUserStats(stats);
@@ -2785,7 +1835,7 @@ export default function BaederApp() {
           // Enrich with questionKey if missing
           const enriched = remoteReports.map(r => ({
             ...r,
-            questionKey: r.questionKey || getQuestionPerformanceKey({ q: r.questionText, category: r.category }, r.category)
+            questionKey: r.questionKey || duel.getQuestionPerformanceKey({ q: r.questionText, category: r.category }, r.category)
           }));
           const localReports = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
           const safeLocalReports = Array.isArray(localReports) ? localReports : [];
@@ -2857,347 +1907,6 @@ export default function BaederApp() {
     setLeaderboard(ranking);
   };
 
-  // Quiz functions with Supabase
-  const challengePlayer = async (opponent, timeoutMinutesInput = DEFAULT_CHALLENGE_TIMEOUT_MINUTES, opponentId = null) => {
-    const now = Date.now();
-    const timeoutMinutes = normalizeChallengeTimeoutMinutes(timeoutMinutesInput);
-    const challengeExpiresAt = new Date(now + timeoutMinutes * 60 * 1000).toISOString();
-
-    // Prüfe ob bereits ein laufendes Spiel gegen diesen Gegner existiert
-    const existingGame = activeGames.find(g =>
-      g.status !== 'finished' &&
-      !isWaitingChallengeExpired(g, now) &&
-      ((g.player1 === user.name && g.player2 === opponent) ||
-       (g.player1 === opponent && g.player2 === user.name))
-    );
-
-    if (existingGame) {
-      showToast(`Du hast bereits ein laufendes Spiel gegen ${opponent}!`, 'error');
-      return;
-    }
-
-    try {
-      const game = await dsCreateDuel({
-        player1: user.name,
-        player2: opponent,
-        difficulty: selectedDifficulty,
-        challengeTimeoutMinutes: timeoutMinutes,
-        challengeExpiresAt,
-        opponentId
-      }, user?.id);
-
-      if (game?.timerColumnsUnavailable) {
-        showToast('Herausforderung gesendet. Zeitlimit: 48 Stunden.', 'info');
-      }
-
-      setActiveGames([...activeGames, game]);
-      setSelectedOpponent(null);
-
-      await sendNotification(
-        opponent,
-        '🎮 Neue Quizduell-Herausforderung',
-        `${user.name} hat dich herausgefordert. Annahmefrist: ${formatDurationMinutesCompact(game.challengeTimeoutMinutes || timeoutMinutes)}.`,
-        'info'
-      );
-
-      showToast(`Herausforderung an ${opponent} gesendet! Frist: ${formatDurationMinutesCompact(game.challengeTimeoutMinutes || timeoutMinutes)}.`, 'success');
-    } catch (error) {
-      console.error('Challenge error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const acceptChallenge = async (gameId) => {
-    const game = activeGames.find(g => g.id === gameId);
-    if (!game) return;
-
-    if (isWaitingChallengeExpired(game)) {
-      const loser = game.player2;
-      const winner = game.player1;
-      await autoForfeitGame(game, loser, winner, 'challenge_expired');
-      showToast('Diese Herausforderung ist bereits abgelaufen.', 'warning');
-      return;
-    }
-
-    try {
-      const acceptedAt = new Date().toISOString();
-      await dsAcceptDuel(gameId, user?.id);
-
-      game.status = 'active';
-      game.categoryRound = 0;
-      game.categoryRounds = [];
-      game.updatedAt = acceptedAt;
-      // Challenger (player1) picks first category
-      game.currentTurn = game.player1;
-      setActiveGames(prev => prev.map((entry) => (
-        entry.id === gameId
-          ? {
-              ...entry,
-              status: 'active',
-              categoryRound: 0,
-              categoryRounds: [],
-              currentTurn: game.player1,
-              updatedAt: acceptedAt
-            }
-          : entry
-      )));
-      setAllGames(prev => prev.map((entry) => (
-        entry.id === gameId
-          ? {
-              ...entry,
-              status: 'active',
-              categoryRound: 0,
-              categoryRounds: [],
-              currentTurn: game.player1,
-              updatedAt: acceptedAt
-            }
-          : entry
-      )));
-
-      if (game.player1 && game.player1 !== user.name) {
-        await sendNotification(
-          game.player1,
-          '⚡ Herausforderung angenommen - du bist dran!',
-          `${user.name} hat deine Quizduell-Herausforderung angenommen. Du darfst die erste Kategorie wählen.`,
-          'info'
-        );
-      }
-
-      setDuelResult(null);
-      setCurrentGame(game);
-      setCategoryRound(0);
-      setQuestionInCategory(0);
-      setPlayerTurn(game.currentTurn);
-      setQuizCategory(null);
-      setCurrentQuestion(null);
-      setCurrentCategoryQuestions([]);
-      resetAnswerSubmissionLock();
-      setAnswered(false);
-      setSelectedAnswers([]);
-      setLastSelectedAnswer(null);
-      setTimerActive(false);
-      localStorage.removeItem(`quiz_waiting_reminder_${game.id}_${game.player2}`);
-      resetQuizKeywordState();
-
-      // Save initial game state to backend so the other player can see it
-      await saveGameToSupabase(game);
-
-      setCurrentView('quiz');
-    } catch (error) {
-      console.error('Accept error:', error);
-    }
-  };
-
-  const continueGame = async (gameId) => {
-    const game = activeGames.find(g => g.id === gameId);
-    if (!game) return;
-
-    setDuelResult(null);
-    setCurrentGame(game);
-    setCategoryRound(game.categoryRound || 0);
-    setQuestionInCategory(0);
-    setPlayerTurn(game.currentTurn);
-    setCurrentQuestion(null);
-    resetAnswerSubmissionLock();
-    setAnswered(false);
-    setSelectedAnswers([]);
-    setLastSelectedAnswer(null);
-    setTimerActive(false);
-    resetQuizKeywordState();
-
-    // Prüfe ob der Spieler die gespeicherten Fragen spielen muss
-    if (game.categoryRounds && game.categoryRounds.length > 0) {
-      const currentCatRound = game.categoryRounds[game.categoryRound || 0];
-      if (currentCatRound) {
-        const isPlayer1 = user.name === game.player1;
-        const myAnswers = isPlayer1 ? currentCatRound.player1Answers : currentCatRound.player2Answers;
-
-        // Wenn ich noch keine Antworten habe aber Fragen existieren, muss ich die gleichen Fragen spielen
-        if (myAnswers.length === 0 && currentCatRound.questions.length > 0) {
-          setQuizCategory(currentCatRound.categoryId);
-          setCurrentCategoryQuestions(currentCatRound.questions);
-        }
-      }
-    }
-
-    setCurrentView('quiz');
-  };
-
-  const continueGameSafe = async (gameId) => {
-    const activeGame = activeGames.find(g => g.id === gameId);
-    if (!activeGame) return;
-
-    let game = cloneDuelGameSnapshot(activeGame);
-    try {
-      const latestGame = await dsGetDuelWithQuestions(gameId, user?.id);
-      if (latestGame?.id === gameId) {
-        game = latestGame;
-      }
-    } catch (error) {
-      console.warn('Aktuellen Duel-Stand konnte nicht nachgeladen werden:', error);
-    }
-
-    const syncedGame = syncLocalDuelGame(game);
-    const gameToContinue = syncedGame?.id ? syncedGame : game;
-
-    setDuelResult(null);
-    setCurrentGame(gameToContinue);
-    setCategoryRound(gameToContinue.categoryRound || 0);
-    setQuestionInCategory(0);
-    setPlayerTurn(gameToContinue.currentTurn);
-    setQuizCategory(null);
-    setCurrentQuestion(null);
-    setCurrentCategoryQuestions([]);
-    resetAnswerSubmissionLock();
-    setAnswered(false);
-    setSelectedAnswers([]);
-    setLastSelectedAnswer(null);
-    setTimerActive(false);
-    setWaitingForOpponent(false);
-    resetQuizKeywordState();
-
-    if (gameToContinue.categoryRounds && gameToContinue.categoryRounds.length > 0) {
-      const currentCatRound = gameToContinue.categoryRounds[gameToContinue.categoryRound || 0];
-      if (currentCatRound) {
-        const isPlayer1 = user.name === gameToContinue.player1;
-        const myAnswers = isPlayer1 ? currentCatRound.player1Answers : currentCatRound.player2Answers;
-        const nextQuestionIndex = Math.max(0, myAnswers.length || 0);
-        const hasPendingQuestions = currentCatRound.questions.length > 0
-          && nextQuestionIndex < currentCatRound.questions.length;
-
-        if (hasPendingQuestions) {
-          const restoredQuestions = restoreCorrectForQuestions(currentCatRound.questions, currentCatRound.categoryId);
-          setQuizCategory(currentCatRound.categoryId);
-          setCurrentCategoryQuestions(restoredQuestions);
-
-          if (nextQuestionIndex > 0) {
-            setQuestionInCategory(nextQuestionIndex);
-            setCurrentQuestion(restoredQuestions[nextQuestionIndex]);
-            const timeLimit = getQuizTimeLimit(restoredQuestions[nextQuestionIndex], gameToContinue.difficulty);
-            setTimeLeft(timeLimit);
-            setTimerActive(true);
-          }
-        }
-      }
-    }
-
-    setCurrentView('quiz');
-  };
-
-  // Helper function to save game state
-  const saveGameToSupabase = async (game, { onSaveError } = {}) => {
-    const syncedGame = syncLocalDuelGame(game);
-    try {
-      await dsSaveDuelState(syncedGame);
-      const persistedGame = await dsGetDuelWithQuestions(syncedGame.id, user?.id);
-      return persistedGame?.id ? syncLocalDuelGame(persistedGame) : syncedGame;
-    } catch (error) {
-      console.error('Save game error:', error);
-      onSaveError?.(error);
-      // Re-sync with server on error to discard invalid local state
-      try {
-        const freshGame = await dsGetDuelWithQuestions(syncedGame.id, user?.id);
-        if (freshGame?.id) return syncLocalDuelGame(freshGame);
-      } catch {}
-      return syncedGame;
-    }
-  };
-
-  const syncQuizRuntimeFromPersistedGame = (gameInput) => {
-    const syncedGame = syncLocalDuelGame(gameInput);
-    if (!syncedGame?.id || !user?.name) {
-      return syncedGame;
-    }
-
-    const roundIndex = Math.max(0, Number(syncedGame.categoryRound || 0));
-    const round = syncedGame.categoryRounds?.[roundIndex] || null;
-    const isPlayer1 = syncedGame.player1 === user.name;
-    const myAnswers = round
-      ? ((isPlayer1 ? round.player1Answers : round.player2Answers) || [])
-      : [];
-    const opponentAnswers = round
-      ? ((isPlayer1 ? round.player2Answers : round.player1Answers) || [])
-      : [];
-    const questionCount = Array.isArray(round?.questions) ? round.questions.length : 0;
-    const myRoundCompleted = questionCount > 0 && myAnswers.length >= questionCount;
-    const opponentRoundCompleted = questionCount > 0 && opponentAnswers.length >= questionCount;
-
-    setCategoryRound(roundIndex);
-    setPlayerTurn(syncedGame.currentTurn || '');
-
-    // Extreme race condition: opponent called finishGame before we fetched → show result immediately
-    if (isFinishedGameStatus(syncedGame.status) && myRoundCompleted) {
-      const gamesForH2h = allGames.some(g => g.id === syncedGame.id)
-        ? allGames
-        : [...allGames, syncedGame];
-      showDuelResultForGame(syncedGame, gamesForH2h);
-      return syncedGame;
-    }
-
-    // Normal waiting: I finished my round but opponent hasn't yet.
-    // Race condition: both finished the round but game not finalized (opponent's currentTurn) → keep waiting.
-    setWaitingForOpponent(
-      Boolean(
-        questionCount > 0
-        && myRoundCompleted
-        && (
-          !opponentRoundCompleted                   // Opponent hasn't answered yet
-          || syncedGame.currentTurn !== user.name   // Both answered but not my turn to finalize/choose
-        )
-      )
-    );
-
-    return syncedGame;
-  };
-
-  const resolveUserStatsIdentity = async (userInput) => {
-    if (userInput && typeof userInput === 'object') {
-      const userId = String(userInput.id || '').trim();
-      const userName = String(userInput.name || '').trim();
-      if (userId) {
-        return { userId, userName };
-      }
-      if (userName) {
-        return resolveUserStatsIdentity(userName);
-      }
-      return null;
-    }
-
-    const userName = String(userInput || '').trim();
-    if (!userName) return null;
-
-    const identity = await dsResolveUserIdentity(userName);
-    if (identity) {
-      return identity;
-    }
-
-    const match = allUsers.find(u => String(u.name || '').toLowerCase() === userName.toLowerCase());
-    return match ? { userId: match.id, userName: match.name } : null;
-  };
-
-  // Helper function to save user stats
-  const saveUserStatsToSupabase = async () => {
-    // NestJS backend manages stats server-side
-    return true;
-  };
-
-  // Helper function to get user stats
-  const getUserStatsFromSupabase = async (userInput) => {
-    try {
-      const identity = await resolveUserStatsIdentity(userInput);
-      if (!identity?.userId) return null;
-      const data = await dsGetUserStats({
-        id: identity.userId,
-        name: identity.userName
-      });
-      if (!data) return null;
-      return buildUserStatsFromRow(data);
-    } catch (error) {
-      console.error('Get stats error:', error);
-      return null;
-    }
-  };
-
   const queueXpAwardForUser = (targetUserInput, sourceKey, amount, options = {}) => {
     const xpAmount = toSafeInt(amount);
     const targetUserId = targetUserInput?.id || null;
@@ -3211,14 +1920,14 @@ export default function BaederApp() {
 
     xpAwardQueueRef.current = xpAwardQueueRef.current
       .then(async () => {
-        const currentStats = await getUserStatsFromSupabase({ id: targetUserId, name: targetUserName });
+        const currentStats = await duel.getUserStatsFromSupabase({ id: targetUserId, name: targetUserName });
         const baseStats = ensureUserStatsStructure(currentStats || createEmptyUserStats());
         const { stats: xpUpdatedStats, addedXp } = addXpToStats(baseStats, sourceKey, xpAmount, eventKey);
         if (addedXp <= 0) {
           return 0;
         }
 
-        await saveUserStatsToSupabase({ id: targetUserId, name: targetUserName }, xpUpdatedStats);
+        await duel.saveUserStatsToSupabase({ id: targetUserId, name: targetUserName }, xpUpdatedStats);
         if (targetUserId === user?.id) {
           setUserStats(xpUpdatedStats);
         }
@@ -3262,135 +1971,9 @@ export default function BaederApp() {
     return queueXpAwardForUser({ id: user.id, name: user.name }, sourceKey, amount, options);
   };
 
-  // Fisher-Yates Shuffle für zufällige Fragenreihenfolge
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
-  const getQuestionPerformanceKey = (question, categoryHint = null) => {
-    const categoryId = String(categoryHint || question?.category || 'unknown').trim() || 'unknown';
-    const normalizedText = normalizeQuestionText(question?.q || '');
-    return `${categoryId}::${normalizedText}`;
-  };
-
-  const getQuestionPerformanceEntry = (question, categoryHint = null) => {
-    const key = getQuestionPerformanceKey(question, categoryHint);
-    const raw = (questionPerformance && typeof questionPerformance === 'object') ? questionPerformance[key] : null;
-    return {
-      key,
-      stats: {
-        attempts: sanitizeGoalValue(raw?.attempts, 0),
-        correct: sanitizeGoalValue(raw?.correct, 0),
-        wrong: sanitizeGoalValue(raw?.wrong, 0),
-        wrongStreak: sanitizeGoalValue(raw?.wrongStreak, 0),
-        lastSeen: Number(raw?.lastSeen) || 0
-      }
-    };
-  };
-
-  const getAdaptiveQuestionWeight = (question, categoryHint = null) => {
-    const { stats } = getQuestionPerformanceEntry(question, categoryHint);
-    const attempts = stats.attempts;
-    const wrongRate = attempts > 0 ? stats.wrong / attempts : 0.45;
-    const unseenBonus = attempts === 0 ? 1.5 : 0;
-    const staleDays = stats.lastSeen > 0
-      ? Math.max(0, (Date.now() - stats.lastSeen) / (1000 * 60 * 60 * 24))
-      : 7;
-    const staleBonus = Math.min(1.5, staleDays / 10);
-    const weight = 1 + (wrongRate * 3) + (stats.wrongStreak * 1.2) + unseenBonus + staleBonus;
-    return Math.max(0.2, weight);
-  };
-
-  const pickLearningQuestions = (questions, count, resolveCategoryId = () => null) => {
-    const source = Array.isArray(questions) ? questions.filter(Boolean) : [];
-    const limit = Math.min(Math.max(0, Number(count) || 0), source.length);
-    if (limit <= 0) return [];
-
-    if (!adaptiveLearningEnabled) {
-      return shuffleArray(source).slice(0, limit);
-    }
-
-    const pool = [...source];
-    const selected = [];
-
-    while (selected.length < limit && pool.length > 0) {
-      const weights = pool.map((question) => getAdaptiveQuestionWeight(question, resolveCategoryId(question)));
-      const totalWeight = weights.reduce((sum, value) => sum + value, 0);
-
-      let pickedIndex = 0;
-      if (totalWeight > 0) {
-        let random = Math.random() * totalWeight;
-        for (let idx = 0; idx < weights.length; idx++) {
-          random -= weights[idx];
-          if (random <= 0) {
-            pickedIndex = idx;
-            break;
-          }
-        }
-      } else {
-        pickedIndex = Math.floor(Math.random() * pool.length);
-      }
-
-      selected.push(pool[pickedIndex]);
-      pool.splice(pickedIndex, 1);
-    }
-
-    return shuffleArray(selected);
-  };
-
-  /**
-   * Stellt das `correct`-Feld für Duell-Fragen wieder her, wenn der Server es redaktiert hat.
-   * Für Spieler 1 (Wähler): direkt aus preparedQuestions per Index.
-   * Für Spieler 2: Textabgleich gegen SAMPLE_QUESTIONS + Rückabbildung der gemischten Optionen.
-   */
-  const restoreCorrectForQuestions = (questions, categoryId, preparedQuestions = null) => {
-    if (!Array.isArray(questions)) return questions;
-    return questions.map((q, idx) => {
-      if (!q || q.correct !== undefined) return q;
-      if (isKeywordQuestion(q) || isWhoAmIQuestion(q)) return q;
-
-      // Spieler 1: direkt aus vorbereiteten Fragen (selbe Reihenfolge, selbe Mischung)
-      if (preparedQuestions && preparedQuestions[idx]?.correct !== undefined) {
-        const local = preparedQuestions[idx];
-        return { ...q, correct: local.correct, ...(local.multi !== undefined && { multi: local.multi }) };
-      }
-
-      // Spieler 2: Textabgleich in SAMPLE_QUESTIONS
-      const catId = String(categoryId || q.category || '').trim();
-      if (!catId) return q;
-      const localPool = SAMPLE_QUESTIONS[catId] || [];
-      const qText = String(q.q || '').trim().toLowerCase();
-      const localQ = localPool.find(lq => String(lq.q || '').trim().toLowerCase() === qText);
-      if (!localQ || localQ.correct === undefined) return q;
-
-      const shuffled = Array.isArray(q.a) ? q.a : [];
-      const original = Array.isArray(localQ.a) ? localQ.a : [];
-      const shuffledToOrig = shuffled.map(t =>
-        original.findIndex(o => String(o || '').trim().toLowerCase() === String(t || '').trim().toLowerCase())
-      );
-
-      if (localQ.multi && Array.isArray(localQ.correct)) {
-        const correctSet = new Set(localQ.correct.filter(Number.isInteger));
-        const newCorrect = shuffled
-          .map((_, si) => (correctSet.has(shuffledToOrig[si]) ? si : -1))
-          .filter(i => i >= 0);
-        if (newCorrect.length > 0) return { ...q, correct: newCorrect, multi: true };
-      } else if (Number.isInteger(localQ.correct)) {
-        const newIdx = shuffledToOrig.indexOf(localQ.correct);
-        if (newIdx >= 0) return { ...q, correct: newIdx };
-      }
-      return q;
-    });
-  };
-
   const trackQuestionPerformance = (question, categoryHint, isCorrect) => {
     if (!question) return;
-    const key = getQuestionPerformanceKey(question, categoryHint);
+    const key = duel.getQuestionPerformanceKey(question, categoryHint);
     setQuestionPerformance((prev) => {
       const current = (prev && typeof prev[key] === 'object') ? prev[key] : {};
       const attempts = sanitizeGoalValue(current.attempts, 0) + 1;
@@ -3459,990 +2042,6 @@ export default function BaederApp() {
       ? checklist.items.filter((_, idx) => isChecklistItemCompleted(checklist.id, idx)).length
       : 0;
     return { total, done };
-  };
-
-  const reportQuestionIssue = async ({ question, categoryId, source }) => {
-    if (!question || !user?.name) return;
-    const noteInput = window.prompt('Was ist unklar oder fehlerhaft? (optional)', '');
-    if (noteInput === null) return;
-
-    const note = String(noteInput || '').trim();
-    const key = getQuestionPerformanceKey(question, categoryId);
-    const category = String(categoryId || question?.category || 'unknown');
-    const payload = {
-      id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      questionKey: key,
-      questionText: String(question.q || ''),
-      category,
-      source: String(source || 'unknown'),
-      note,
-      answers: Array.isArray(question.a) ? [...question.a] : [],
-      reportedBy: user.name,
-      reportedById: user.id || null,
-      status: 'open',
-      createdAt: new Date().toISOString()
-    };
-
-    let savedRemotely = false;
-    try {
-      await dsReportQuestion({
-        questionKey: payload.questionKey, questionText: payload.questionText,
-        category: payload.category, source: payload.source,
-        note: payload.note || null, answers: payload.answers,
-        reportedBy: payload.reportedBy, reportedById: payload.reportedById,
-        status: payload.status,
-        // Supabase-format fields for fallback
-        question_key: payload.questionKey, question_text: payload.questionText,
-        reported_by: payload.reportedBy, reported_by_id: payload.reportedById
-      });
-      savedRemotely = true;
-    } catch (error) {
-      console.log('question_reports table unavailable, fallback local only');
-    }
-
-    setQuestionReports((prev) => [payload, ...prev].slice(0, 500));
-    showToast(
-      savedRemotely
-        ? 'Frage gemeldet. Danke für dein Feedback!'
-        : 'Frage lokal gemeldet. Danke für dein Feedback!',
-      'success'
-    );
-  };
-
-  const toggleQuestionReportStatus = async (reportId) => {
-    const existing = questionReports.find((entry) => entry.id === reportId);
-    if (!existing) return;
-    const nextStatus = existing.status === 'resolved' ? 'open' : 'resolved';
-
-    setQuestionReports((prev) => prev.map((entry) => (
-      entry.id === reportId
-        ? { ...entry, status: nextStatus, resolvedAt: nextStatus === 'resolved' ? new Date().toISOString() : null }
-        : entry
-    )));
-    if (!String(reportId).startsWith('local-')) {
-      try {
-        await dsUpdateQuestionReportStatus(reportId, nextStatus);
-      } catch {
-        // local state remains source of truth when remote update fails
-      }
-    }
-    showToast(nextStatus === 'resolved' ? 'Meldung als erledigt markiert.' : 'Meldung wieder geoeffnet.', 'info', 1800);
-  };
-
-  // Spieler wählt Kategorie → 5 zufällige Fragen werden für BEIDE Spieler gespeichert
-  const selectCategory = async (catId) => {
-    if (!currentGame || currentGame.currentTurn !== user.name) return;
-
-    setQuizCategory(catId);
-    resetQuizKeywordState();
-
-    const useKeywordQuestions = selectedDifficulty === 'extra' || currentGame.difficulty === 'extra';
-    const categoryKeywordQuestions = KEYWORD_CHALLENGES[catId] || [];
-    const categoryStandardQuestions = SAMPLE_QUESTIONS[catId] || [];
-    const allQuestions = useKeywordQuestions && categoryKeywordQuestions.length > 0
-      ? categoryKeywordQuestions
-      : categoryStandardQuestions;
-    if (useKeywordQuestions && categoryKeywordQuestions.length === 0 && catId !== WHO_AM_I_CATEGORY.id) {
-      showToast('Für diese Kategorie sind noch keine Extra-schwer-Fragen hinterlegt. Standardfragen werden genutzt.', 'info');
-    }
-    const selectedQuestions = pickBattleQuestions(allQuestions, Math.min(5, allQuestions.length), catId, currentGame);
-
-    // Mische Antworten nur bei Auswahlfragen
-    const preparedQuestions = selectedQuestions.map((question) => {
-      if (isKeywordQuestion(question) || isWhoAmIQuestion(question)) {
-        return { ...question, category: catId };
-      }
-      return { ...shuffleAnswers(question), category: catId };
-    });
-
-    let baseGame = cloneDuelGameSnapshot(currentGame);
-    try {
-      const latestGame = await dsGetDuelWithQuestions(currentGame.id, user?.id);
-      if (latestGame?.id === currentGame.id) {
-        baseGame = latestGame;
-      }
-    } catch (error) {
-      console.warn('Aktuellen Duel-Stand vor Kategorienwahl konnte nicht nachgeladen werden:', error);
-    }
-
-    const workingGame = syncLocalDuelGame(baseGame);
-    if (!workingGame?.id) {
-      showToast('Quizduell konnte nicht geladen werden. Bitte erneut versuchen.', 'error', 2500);
-      return;
-    }
-
-    if (!Array.isArray(workingGame.categoryRounds)) {
-      workingGame.categoryRounds = [];
-    }
-
-    // Nutze den höchsten bekannten Rundenindex: lokaler State (nach proceedAfterCategoryResult-Mutation)
-    // vs. server-seitiger Stand (workingGame, frisch geladen). Verhindert, dass ein fehlgeschlagener
-    // PATCH den lokalen Fortschritt zurücksetzt und alte Fragen gezeigt werden.
-    const localRequestedRoundIndex = Math.max(
-      Number(workingGame?.categoryRound || 0),
-      Number(currentGame?.categoryRound || 0)
-    );
-    const roundIndex = Math.max(0, Math.min(
-      localRequestedRoundIndex,
-      workingGame.categoryRounds.length
-    ));
-    const existingRound = workingGame.categoryRounds[roundIndex];
-    if (existingRound?.categoryId) {
-      setQuizCategory(existingRound.categoryId);
-      setCurrentCategoryQuestions(Array.isArray(existingRound.questions) ? existingRound.questions : []);
-      setCurrentQuestion(Array.isArray(existingRound.questions) ? (existingRound.questions[0] || null) : null);
-      showToast('Diese Runde ist bereits gestartet und wird fortgesetzt.', 'info', 2200);
-      return;
-    }
-
-    workingGame.categoryRound = roundIndex;
-    workingGame.currentTurn = user.name;
-    workingGame.categoryRounds = workingGame.categoryRounds.slice(0, roundIndex);
-    workingGame.categoryRounds.push({
-      categoryId: catId,
-      categoryName: CATEGORIES.find(c => c.id === catId)?.name || catId,
-      questions: preparedQuestions,
-      player1Answers: [], // Antworten von Spieler 1
-      player2Answers: [], // Antworten von Spieler 2
-      chooser: user.name  // Wer hat die Kategorie gewählt
-    });
-
-    setCurrentCategoryQuestions([]);
-    setQuestionInCategory(0);
-    setCurrentQuestion(null);
-    resetAnswerSubmissionLock();
-    setAnswered(false);
-    setSelectedAnswers([]); // Reset für Multi-Select
-    setLastSelectedAnswer(null); // Reset für Single-Choice
-
-    setTimerActive(false);
-
-    let saveError = null;
-    const persistedGame = syncQuizRuntimeFromPersistedGame(
-      await saveGameToSupabase(workingGame, { onSaveError: (err) => { saveError = err; } })
-    );
-    const persistedRound = persistedGame?.categoryRounds?.[roundIndex];
-    const liveQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : [];
-
-    if (!persistedRound?.categoryId || !liveQuestions.length) {
-      setQuizCategory(null);
-      setCurrentCategoryQuestions([]);
-      setCurrentQuestion(null);
-      setTimerActive(false);
-      const errorMessage = saveError?.message || 'Die Kategorie konnte nicht gespeichert werden. Bitte waehle sie erneut.';
-      showToast(errorMessage, 'error', 3500);
-      return;
-    }
-
-    // `correct` vom Server ist redaktiert (Sicherheit). Für den Wähler wissen wir die
-    // richtigen Antworten aus den lokalen preparedQuestions → per Index wiederherstellen.
-    const questionsToShow = restoreCorrectForQuestions(liveQuestions, catId, preparedQuestions);
-    setCurrentCategoryQuestions(questionsToShow);
-    setCurrentQuestion(questionsToShow[0] || null);
-    if (questionsToShow[0]) {
-      const timeLimit = getQuizTimeLimit(questionsToShow[0], persistedGame?.difficulty || currentGame.difficulty);
-      setTimeLeft(timeLimit);
-      setTimerActive(true);
-    }
-  };
-
-  const handleTimeUp = async () => {
-    if (answered || answerSubmissionLockRef.current || !currentGame) return;
-    answerSubmissionLockRef.current = true;
-    setAnswered(true);
-    setTimerActive(false);
-
-    if ((isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion)) && keywordAnswerText.trim()) {
-      const timedOutEvaluation = evaluateKeywordAnswer(currentQuestion, keywordAnswerText);
-      setKeywordAnswerEvaluation({
-        ...timedOutEvaluation,
-        isCorrect: false,
-        timedOut: true
-      });
-    }
-
-    // Speichere falsche Antwort (Timeout)
-    // Note: For server duels, timeouts are NOT submitted to the API.
-    // The question remains unanswered and can be retried.
-    const p = savePlayerAnswer(false, true, {
-      answerType: isWhoAmIQuestion(currentQuestion)
-        ? 'whoami'
-        : (isKeywordQuestion(currentQuestion) ? 'keyword' : 'choice'),
-      keywordText: (isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion))
-        ? keywordAnswerText.trim()
-        : null
-    });
-    answerSavePromiseRef.current = p;
-    await p;
-    answerSavePromiseRef.current = null;
-  };
-
-  // Toggle Antwort für Multi-Select Fragen
-  const toggleAnswer = (answerIndex) => {
-    if (answered || !currentGame) return;
-
-    setSelectedAnswers(prev => {
-      if (prev.includes(answerIndex)) {
-        return prev.filter(i => i !== answerIndex);
-      } else {
-        return [...prev, answerIndex];
-      }
-    });
-  };
-
-  // Bestätigen der Multi-Select Antwort
-  const confirmMultiSelectAnswer = async () => {
-    if (answered || answerSubmissionLockRef.current || !currentGame || !currentQuestion.multi) return;
-    answerSubmissionLockRef.current = true;
-    setAnswered(true);
-    setTimerActive(false);
-
-    // Prüfe ob alle richtigen Antworten ausgewählt wurden (und keine falschen).
-    // Wenn correct serverseitig redaktiert wurde (undefined), senden wir false —
-    // der Server berechnet das korrekte Ergebnis selbst.
-    const correctAnswers = currentQuestion.correct;
-    const isCorrect = correctAnswers !== undefined
-      ? (selectedAnswers.length === correctAnswers.length &&
-         selectedAnswers.every(idx => correctAnswers.includes(idx)))
-      : false;
-
-    const p = savePlayerAnswer(isCorrect, false, {
-      answerType: 'multi',
-      selectedAnswers: [...selectedAnswers]
-    });
-    answerSavePromiseRef.current = p;
-    await p;
-    answerSavePromiseRef.current = null;
-  };
-
-  const answerQuestion = async (answerIndex) => {
-    if (answered || answerSubmissionLockRef.current || !currentGame) return;
-    if (isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion)) return;
-
-    // Multi-Select: Nur togglen, nicht direkt antworten
-    if (currentQuestion.multi) {
-      toggleAnswer(answerIndex);
-      return;
-    }
-
-    // Single-Choice: Direkt antworten
-    answerSubmissionLockRef.current = true;
-    setAnswered(true);
-    setTimerActive(false);
-    setLastSelectedAnswer(answerIndex); // Speichere gewählte Antwort für Feedback
-
-    // Wenn correct serverseitig redaktiert wurde (undefined), senden wir false —
-    // der Server berechnet das korrekte Ergebnis selbst.
-    const isCorrect = currentQuestion.correct !== undefined
-      ? answerIndex === currentQuestion.correct
-      : false;
-    const p = savePlayerAnswer(isCorrect, false, {
-      answerType: 'single',
-      selectedAnswer: answerIndex
-    });
-    answerSavePromiseRef.current = p;
-    await p;
-    answerSavePromiseRef.current = null;
-  };
-
-  const submitKeywordAnswer = async () => {
-    if (answered || answerSubmissionLockRef.current || !currentGame || !currentQuestion) return;
-    if (!isKeywordQuestion(currentQuestion) && !isWhoAmIQuestion(currentQuestion) && !quizMCKeywordMode) return;
-    const trimmedAnswer = keywordAnswerText.trim();
-    if (!trimmedAnswer) {
-      showToast('Bitte gib zuerst eine Freitext-Antwort ein.', 'error', 1800);
-      return;
-    }
-    let evaluation;
-    if (isKeywordQuestion(currentQuestion) || isWhoAmIQuestion(currentQuestion)) {
-      evaluation = evaluateKeywordAnswer(currentQuestion, keywordAnswerText);
-    } else {
-      const correctText = currentQuestion.multi && Array.isArray(currentQuestion.correct)
-        ? currentQuestion.correct.map(idx => String(currentQuestion.a?.[idx] || '')).join('. ')
-        : String(currentQuestion.a?.[currentQuestion.correct] || '');
-      const groups = autoExtractKeywordGroups(correctText);
-      const fakeQ = { keywordGroups: groups, minKeywordGroups: Math.max(1, Math.ceil(groups.length * 0.5)) };
-      evaluation = evaluateKeywordAnswer(fakeQ, keywordAnswerText);
-    }
-    setKeywordAnswerEvaluation(evaluation);
-    answerSubmissionLockRef.current = true;
-    setAnswered(true);
-    setTimerActive(false);
-    const answerType = isWhoAmIQuestion(currentQuestion)
-      ? 'whoami'
-      : 'keyword';
-    const p = savePlayerAnswer(evaluation.isCorrect, false, {
-      answerType,
-      keywordText: trimmedAnswer,
-      keywordEvaluation: {
-        requiredGroups: evaluation.requiredGroups,
-        matchedCount: evaluation.matchedCount,
-        matchedLabels: evaluation.matchedLabels,
-        missingLabels: evaluation.missingLabels,
-        scorePercent: evaluation.scorePercent,
-        basePoints: evaluation.basePoints,
-        bonusPoints: evaluation.bonusPoints,
-        awardedPoints: evaluation.awardedPoints
-      }
-    });
-    answerSavePromiseRef.current = p;
-    await p;
-    answerSavePromiseRef.current = null;
-  };
-
-  // Speichert die Antwort des aktuellen Spielers
-  const savePlayerAnswer = async (isCorrect, isTimeout, answerMeta = {}) => {
-    let gameSnapshot = currentGame;
-    let currentRoundIndex = gameSnapshot?.categoryRound || 0;
-    const currentQuestionIndex = questionInCategory;
-    let currentCategoryRound = gameSnapshot?.categoryRounds?.[currentRoundIndex];
-
-    if (!currentCategoryRound) {
-      try {
-        const refreshedGame = await dsGetDuelWithQuestions(gameSnapshot?.id, user?.id);
-        const syncedGame = refreshedGame?.id ? syncQuizRuntimeFromPersistedGame(refreshedGame) : null;
-        if (syncedGame?.id) {
-          gameSnapshot = syncedGame;
-          currentRoundIndex = gameSnapshot.categoryRound || 0;
-          currentCategoryRound = gameSnapshot.categoryRounds?.[currentRoundIndex];
-        }
-      } catch (error) {
-        console.warn('Duel-Stand vor Antwort konnte nicht nachgeladen werden:', error);
-      }
-    }
-
-    if (!currentCategoryRound) {
-      console.error('[savePlayerAnswer] currentCategoryRound is undefined — round index:', currentRoundIndex, 'rounds:', gameSnapshot?.categoryRounds?.length);
-      showToast('Quizduell-Stand ist inkonsistent. Bitte oeffne die Runde erneut.', 'error', 2500);
-      return;
-    }
-
-    const isPlayer1 = user.name === gameSnapshot.player1;
-    const answerType = String(answerMeta?.answerType || '');
-    const correctnessKnown = answerType === 'keyword'
-      || answerType === 'whoami'
-      || currentQuestion?.correct !== undefined;
-
-    // Daily Challenge Progress
-    updateChallengeProgress('answer_questions', 1);
-    if (correctnessKnown && isCorrect) {
-      updateChallengeProgress('correct_answers', 1);
-    }
-    if (quizCategory) {
-      updateChallengeProgress('category_master', 1, quizCategory);
-    }
-    updateChallengeProgress('quiz_play', 1);
-    updateWeeklyProgress('quizAnswers', 1);
-    if (correctnessKnown) {
-      trackQuestionPerformance(currentQuestion, quizCategory, isCorrect);
-    }
-
-    const answerPoints = answerType === 'keyword'
-      ? Math.max(0, Number(answerMeta?.keywordEvaluation?.awardedPoints) || 0)
-      : answerType === 'whoami'
-        ? (isCorrect ? 1 : 0)
-      : (isCorrect ? 1 : 0);
-
-    if (answerPoints > 0) {
-      if (isPlayer1) {
-        gameSnapshot.player1Score += answerPoints;
-      } else {
-        gameSnapshot.player2Score += answerPoints;
-      }
-    }
-
-    // Antwort speichern
-    const answer = {
-      questionIndex: questionInCategory,
-      correct: correctnessKnown ? isCorrect : null,
-      timeout: isTimeout,
-      points: correctnessKnown ? answerPoints : 0,
-      ...answerMeta
-    };
-
-    if (isPlayer1) {
-      currentCategoryRound.player1Answers.push(answer);
-    } else {
-      currentCategoryRound.player2Answers.push(answer);
-    }
-
-    // Stats aktualisieren
-    const stats = ensureUserStatsStructure(userStats || createEmptyUserStats());
-
-    if (!stats.categoryStats[quizCategory]) {
-      stats.categoryStats[quizCategory] = { correct: 0, incorrect: 0, total: 0 };
-    }
-
-    if (correctnessKnown) {
-      if (isCorrect) {
-        stats.categoryStats[quizCategory].correct++;
-      } else {
-        stats.categoryStats[quizCategory].incorrect++;
-      }
-    }
-    stats.categoryStats[quizCategory].total++;
-
-    await saveUserStatsToSupabase(user, stats);
-    setUserStats(stats);
-
-    // Duel: Antwort an Backend übermitteln (enthüllt correctOptionIndex für nächsten API-Aufruf)
-    const shouldUseAuthoritativeDuelAnswer =
-      currentQuestion?.duelQuestionId
-      && gameSnapshot?.id
-      && !isTimeout
-      && answerMeta?.answerType === 'single'
-      && Number.isInteger(answerMeta?.selectedAnswer);
-
-    // Flag hoisted: set true when path 1 (submitDuelAnswer) already updated currentCategoryQuestions,
-    // so path 2 (saveGameToSupabase) does not overwrite with potentially wrong round data.
-    let authoritativeQuestionsSet = false;
-
-    if (shouldUseAuthoritativeDuelAnswer) {
-      // Track whether the answer was persisted server-side (submitDuelAnswer succeeded or 409 duplicate)
-      let answerPersistedOnServer = false;
-
-      try {
-        await dsSubmitDuelAnswer(gameSnapshot.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
-        answerPersistedOnServer = true;
-      } catch (error) {
-        if (error?.status === 409) {
-          // Duplicate — already recorded, counts as persisted
-          answerPersistedOnServer = true;
-        } else {
-          // Log and fall through — no retry to avoid worsening 429 rate-limit pressure
-          console.warn('submitDuelAnswer fehlgeschlagen (kein Retry):', error?.status, error?.message);
-        }
-      }
-
-      try {
-        const refreshedGame = await dsGetDuelWithQuestions(gameSnapshot.id, user?.id);
-        const authoritativeGame = refreshedGame?.id ? syncLocalDuelGame(refreshedGame) : null;
-        const authoritativeRound = authoritativeGame?.categoryRounds?.[currentRoundIndex];
-        const authoritativeQuestions = Array.isArray(authoritativeRound?.questions)
-          ? authoritativeRound.questions
-          : null;
-
-        if (authoritativeQuestions?.length) {
-          // Re-apply correct for questions the server still redacts (future unanswered questions)
-          const restoredAuthQuestions = restoreCorrectForQuestions(authoritativeQuestions, quizCategory);
-          setCurrentCategoryQuestions(restoredAuthQuestions);
-          authoritativeQuestionsSet = true;
-          // Guard: only update currentQuestion if the player hasn't moved on to a different
-          // question while the API was in-flight. Comparing by duelQuestionId prevents
-          // the authoritative refresh from overriding the newly displayed next question.
-          const targetQ = restoredAuthQuestions[currentQuestionIndex];
-          if (targetQ?.duelQuestionId) {
-            setCurrentQuestion(prev =>
-              prev?.duelQuestionId === targetQ.duelQuestionId ? targetQ : prev
-            );
-          }
-        }
-
-        // Return early if answer was persisted — no need to also call saveGameToSupabase.
-        if (answerPersistedOnServer) {
-          return;
-        }
-      } catch (error) {
-        console.warn('Duel-Refresh nach Antwort fehlgeschlagen:', error);
-      }
-    }
-
-    const persistedGame = await saveGameToSupabase(gameSnapshot);
-    const persistedRound = persistedGame?.categoryRounds?.[currentRoundIndex];
-    const persistedQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : null;
-    if (persistedQuestions?.length) {
-      // Re-apply correct for all questions (server redacts correct for unanswered/multi-select).
-      // Skip if path 1 already set questions from dsGetDuelWithQuestions — avoids overwriting
-      // with potentially stale data from saveGameToSupabase when both paths run (e.g. after 429).
-      if (!authoritativeQuestionsSet) {
-        const restoredPersisted = restoreCorrectForQuestions(persistedQuestions, quizCategory);
-        setCurrentCategoryQuestions(restoredPersisted);
-        if (restoredPersisted[currentQuestionIndex]) {
-          setCurrentQuestion(restoredPersisted[currentQuestionIndex]);
-        }
-      }
-    }
-  };
-
-  // Funktion zum Weitergehen zur nächsten Frage/Runde
-  const proceedToNextRound = async () => {
-    const isPlayer1 = user.name === currentGame.player1;
-    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
-    const questionsInCurrentCategory = currentCategoryRound.questions.length;
-
-    // Nächste Frage in der aktuellen Kategorie?
-    if (questionInCategory < questionsInCurrentCategory - 1) {
-      // Noch mehr Fragen in dieser Kategorie
-      const nextQuestionIndex = questionInCategory + 1;
-      setQuestionInCategory(nextQuestionIndex);
-      setCurrentQuestion(currentCategoryQuestions[nextQuestionIndex]);
-      resetAnswerSubmissionLock();
-      setAnswered(false);
-      setSelectedAnswers([]); // Reset für Multi-Select
-      setLastSelectedAnswer(null); // Reset für Single-Choice
-      resetQuizKeywordState();
-
-      const timeLimit = getQuizTimeLimit(currentCategoryQuestions[nextQuestionIndex], currentGame.difficulty);
-      setTimeLeft(timeLimit);
-      setTimerActive(true);
-      return;
-    }
-
-    // Alle 5 Fragen dieser Kategorie beantwortet
-    // Prüfe ob der andere Spieler auch schon dran war
-    const player1Done = currentCategoryRound.player1Answers.length >= questionsInCurrentCategory;
-    const player2Done = currentCategoryRound.player2Answers.length >= questionsInCurrentCategory;
-
-    if (isPlayer1 && !player2Done) {
-      // Spieler 1 fertig, Spieler 2 muss noch die gleichen Fragen beantworten
-      setWaitingForOpponent(true);
-      setQuizCategory(null);
-      setCurrentQuestion(null);
-      resetQuizKeywordState();
-
-      // Warte auf laufende Antwort-Speicherung, damit DuelAnswer-Eintrag vor dem PATCH existiert
-      if (answerSavePromiseRef.current) {
-        await answerSavePromiseRef.current.catch(() => {});
-      }
-      // Hole frischen Server-Stand — stellt sicher, dass player1Answers mit DuelAnswer-Einträgen
-      // übereinstimmt und assertAnswersAppendOnly nicht wirft
-      let gameForPatch = cloneDuelGameSnapshot(currentGame);
-      try {
-        const fresh = await dsGetDuelWithQuestions(currentGame.id, user?.id);
-        if (fresh?.id) gameForPatch = cloneDuelGameSnapshot(fresh);
-      } catch (e) {
-        console.warn('proceedToNextRound: GET vor PATCH fehlgeschlagen, nutze currentGame', e);
-      }
-      gameForPatch.currentTurn = currentGame.player2;
-
-      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(gameForPatch));
-
-      // Benachrichtigung an Spieler 2
-      await sendNotification(
-        currentGame.player2,
-        '⚡ Du bist dran!',
-        `${user.name} hat die Kategorie "${currentCategoryRound.categoryName}" gespielt. Jetzt bist du dran mit den gleichen Fragen!`,
-        'info'
-      );
-      return;
-    }
-
-    if (!isPlayer1 && !player1Done) {
-      // Spieler 2 fertig (hat Kategorie gewählt), Spieler 1 muss noch
-      setWaitingForOpponent(true);
-      setQuizCategory(null);
-      setCurrentQuestion(null);
-      resetQuizKeywordState();
-
-      // Warte auf laufende Antwort-Speicherung, damit DuelAnswer-Eintrag vor dem PATCH existiert
-      if (answerSavePromiseRef.current) {
-        await answerSavePromiseRef.current.catch(() => {});
-      }
-      // Hole frischen Server-Stand — stellt sicher, dass player2Answers mit DuelAnswer-Einträgen
-      // übereinstimmt und assertAnswersAppendOnly nicht wirft
-      let gameForPatch = cloneDuelGameSnapshot(currentGame);
-      try {
-        const fresh = await dsGetDuelWithQuestions(currentGame.id, user?.id);
-        if (fresh?.id) gameForPatch = cloneDuelGameSnapshot(fresh);
-      } catch (e) {
-        console.warn('proceedToNextRound: GET vor PATCH fehlgeschlagen, nutze currentGame', e);
-      }
-      gameForPatch.currentTurn = currentGame.player1;
-
-      syncQuizRuntimeFromPersistedGame(await saveGameToSupabase(gameForPatch));
-
-      await sendNotification(
-        currentGame.player1,
-        '⚡ Du bist dran!',
-        `${user.name} hat die Kategorie "${currentCategoryRound.categoryName}" gespielt. Jetzt bist du dran mit den gleichen Fragen!`,
-        'info'
-      );
-      return;
-    }
-
-    // Beide Spieler haben diese Kategorie abgeschlossen
-    // Runden-Ergebnis anzeigen bevor weitergemacht wird
-    setCategoryRoundResult({
-      round: currentGame.categoryRound,
-      categoryId: currentCategoryRound.categoryId,
-      categoryName: currentCategoryRound.categoryName,
-      questions: currentCategoryRound.questions,
-      myAnswers: isPlayer1 ? currentCategoryRound.player1Answers : currentCategoryRound.player2Answers,
-      opponentAnswers: isPlayer1 ? currentCategoryRound.player2Answers : currentCategoryRound.player1Answers,
-      myName: user.name,
-      opponentName: isPlayer1 ? currentGame.player2 : currentGame.player1,
-      player1Score: currentGame.player1Score,
-      player2Score: currentGame.player2Score,
-      player1Name: currentGame.player1,
-      player2Name: currentGame.player2,
-      isLastRound: currentGame.categoryRound >= 3,
-    });
-    setQuizCategory(null);
-    setCurrentQuestion(null);
-    setTimerActive(false);
-  };
-
-  // Weiter nach dem Runden-Ergebnis-Screen
-  const proceedAfterCategoryResult = async () => {
-    // Wenn der Result-Screen nachträglich per Polling angezeigt wurde (Spieler hat zuerst gespielt
-    // und gewartet), ist die Runde auf dem Server bereits verarbeitet. Nur State clearen.
-    const alreadyProcessed = categoryRoundResult &&
-      (currentGame.categoryRound || 0) > (categoryRoundResult.round || 0);
-
-    setCategoryRoundResult(null);
-
-    if (alreadyProcessed) {
-      // Game-State ist bereits korrekt aus dem Polling-Sync gesetzt
-      return;
-    }
-
-    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
-
-    if (currentGame.categoryRound < 3) {
-      // Round-Index erhöhen – der neue categoryRounds-Eintrag wird erst erstellt
-      // wenn der Spieler die Kategorie wählt (startCategoryAsSecondPlayer oder QuizView)
-      currentGame.categoryRound++;
-
-      const nextChooser = currentCategoryRound.chooser === currentGame.player1
-        ? currentGame.player2
-        : currentGame.player1;
-
-      currentGame.currentTurn = nextChooser;
-
-      setCategoryRound(currentGame.categoryRound);
-      setQuestionInCategory(0);
-      setQuizCategory(null);
-      setCurrentQuestion(null);
-      setCurrentCategoryQuestions([]);
-      setPlayerTurn(nextChooser);
-      setWaitingForOpponent(false);
-      resetAnswerSubmissionLock();
-      setAnswered(false);
-      setSelectedAnswers([]);
-      setLastSelectedAnswer(null);
-      resetQuizKeywordState();
-      setTimerActive(false);
-
-      const savedAfterRound = await saveGameToSupabase(currentGame);
-      // Synce React-State mit Server-Antwort, damit categoryRound korrekt gesetzt ist
-      // und die nachfolgende Kategorie-Auswahl den richtigen Rundenindex liest.
-      if (savedAfterRound?.id) syncQuizRuntimeFromPersistedGame(savedAfterRound);
-
-      if (nextChooser !== user.name) {
-        setWaitingForOpponent(true);
-        await sendNotification(
-          nextChooser,
-          '🎯 Wähle eine Kategorie!',
-          `Runde ${currentGame.categoryRound + 1}/4 - Du darfst die nächste Kategorie wählen!`,
-          'info'
-        );
-      } else {
-        setWaitingForOpponent(false);
-      }
-    } else {
-      await finishGame();
-    }
-  };
-
-  // Wenn Spieler 2 die gespeicherten Fragen spielen muss
-  const startCategoryAsSecondPlayer = () => {
-    if (!currentGame || !currentGame.categoryRounds) return;
-
-    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
-    if (!currentCategoryRound) return;
-
-    // `correct` für unbeantwortete Fragen aus lokalen Daten wiederherstellen
-    const restoredQuestions = restoreCorrectForQuestions(
-      currentCategoryRound.questions,
-      currentCategoryRound.categoryId
-    );
-
-    setQuizCategory(currentCategoryRound.categoryId);
-    setCurrentCategoryQuestions(restoredQuestions);
-    setQuestionInCategory(0);
-    setCurrentQuestion(restoredQuestions[0]);
-    resetAnswerSubmissionLock();
-    setAnswered(false);
-    setSelectedAnswers([]); // Reset für Multi-Select
-    setLastSelectedAnswer(null); // Reset für Single-Choice
-    setWaitingForOpponent(false);
-    resetQuizKeywordState();
-
-    const timeLimit = getQuizTimeLimit(restoredQuestions[0], currentGame.difficulty);
-    setTimeLeft(timeLimit);
-    setTimerActive(true);
-  };
-
-  const resumeCategoryRound = () => {
-    if (!currentGame || !currentGame.categoryRounds) return;
-
-    const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
-    if (!currentCategoryRound) return;
-
-    const isPlayer1 = user.name === currentGame.player1;
-    const myAnswers = isPlayer1 ? currentCategoryRound.player1Answers : currentCategoryRound.player2Answers;
-    const nextQuestionIndex = Math.max(0, myAnswers.length || 0);
-    if (nextQuestionIndex >= currentCategoryRound.questions.length) return;
-
-    // `correct` für unbeantwortete Fragen aus lokalen Daten wiederherstellen
-    const restoredQuestions = restoreCorrectForQuestions(
-      currentCategoryRound.questions,
-      currentCategoryRound.categoryId
-    );
-
-    setQuizCategory(currentCategoryRound.categoryId);
-    setCurrentCategoryQuestions(restoredQuestions);
-    setQuestionInCategory(nextQuestionIndex);
-    setCurrentQuestion(restoredQuestions[nextQuestionIndex]);
-    resetAnswerSubmissionLock();
-    setAnswered(false);
-    setSelectedAnswers([]);
-    setLastSelectedAnswer(null);
-    setWaitingForOpponent(false);
-    resetQuizKeywordState();
-
-    const timeLimit = getQuizTimeLimit(restoredQuestions[nextQuestionIndex], currentGame.difficulty);
-    setTimeLeft(timeLimit);
-    setTimerActive(true);
-  };
-
-  const autoForfeitGame = async (game, loser, winner) => {
-    try {
-      // NestJS backend handles duel expiry via its lifecycle cron.
-      // Just update local UI state — the backend already marked it expired.
-      setAllGames(prev => prev.map(g => g.id === game.id ? { ...g, status: 'finished', winner } : g));
-      setActiveGames(prev => prev.filter(g => g.id !== game.id));
-      localStorage.removeItem(`quiz_reminder_${game.id}_${game.currentTurn}`);
-      localStorage.removeItem(`quiz_waiting_reminder_${game.id}_${game.player2}`);
-    } catch (e) {
-      console.warn('autoForfeitGame Fehler:', e);
-    }
-  };
-
-  const checkExpiredAndRemindGames = async (games) => {
-    if (!user?.name) return;
-    const now = Date.now();
-    const H24 = 24 * 60 * 60 * 1000;
-    const H48 = 48 * 60 * 60 * 1000;
-    const H1 = 60 * 60 * 1000;
-
-    for (const game of games) {
-      if (game.status === 'finished') continue;
-      const isMine = game.player1 === user.name || game.player2 === user.name;
-      if (!isMine) continue;
-
-      if (game.status === 'waiting') {
-        const remainingMs = getWaitingChallengeRemainingMs(game, now);
-        if (!Number.isFinite(remainingMs)) continue;
-
-        if (remainingMs <= 0) {
-          const loser = game.player2;
-          const winner = game.player1;
-          await autoForfeitGame(game, loser, winner, 'challenge_expired');
-          continue;
-        }
-
-        const reminderTarget = game.player2;
-        if (reminderTarget !== user.name) continue;
-
-        const timeoutMs = getChallengeTimeoutMs(game);
-        const createdTs = parseTimestampSafe(game.createdAt || game.updatedAt);
-        if (createdTs === null) continue;
-
-        const elapsedMs = now - createdTs;
-        const reminderThresholdMs = Math.min(H24, Math.max(H1, Math.floor(timeoutMs / 2)));
-        if (elapsedMs < reminderThresholdMs) continue;
-
-        const reminderKey = `quiz_waiting_reminder_${game.id}_${reminderTarget}`;
-        if (localStorage.getItem(reminderKey)) continue;
-
-        const opponent = game.player1;
-        const minutesLeft = Math.max(1, Math.ceil(remainingMs / 60000));
-        await sendNotification(
-          reminderTarget,
-          '⏰ Herausforderung läuft bald ab',
-          `Du hast noch ca. ${formatDurationMinutesCompact(minutesLeft)} um die Herausforderung von ${opponent} anzunehmen.`,
-          'warning'
-        );
-        localStorage.setItem(reminderKey, now.toString());
-        continue;
-      }
-
-      const updatedAtTs = parseTimestampSafe(game.updatedAt);
-      if (updatedAtTs === null) continue;
-      const elapsed = now - updatedAtTs;
-
-      if (elapsed >= H48) {
-        const loser = game.currentTurn;
-        const winner = game.player1 === loser ? game.player2 : game.player1;
-        await autoForfeitGame(game, loser, winner, 'turn_timeout');
-      } else if (elapsed >= H24) {
-        const reminderTarget = game.currentTurn;
-        if (reminderTarget !== user.name) continue;
-        const reminderKey = `quiz_reminder_${game.id}_${reminderTarget}`;
-        const lastSent = localStorage.getItem(reminderKey);
-        if (lastSent && now - parseInt(lastSent) < H24) continue;
-
-        const opponent = game.player1 === reminderTarget ? game.player2 : game.player1;
-        const hoursLeft = Math.round((H48 - elapsed) / 3600000);
-        await sendNotification(
-          reminderTarget,
-          '⏰ Quizduell-Erinnerung',
-          `Du hast noch ca. ${hoursLeft}h für deinen Zug gegen ${opponent} – danach zählt es als Niederlage!`,
-          'warning'
-        );
-        localStorage.setItem(reminderKey, now.toString());
-      }
-    }
-  };
-
-  const finishGame = async () => {
-    currentGame.status = 'finished';
-
-    let winner = null;
-    if (currentGame.player1Score > currentGame.player2Score) {
-      winner = currentGame.player1;
-    } else if (currentGame.player2Score > currentGame.player1Score) {
-      winner = currentGame.player2;
-    }
-    currentGame.winner = winner;
-
-    try {
-      const savedGame = await saveGameToSupabase(currentGame);
-      // Server validates isCategoryRoundSetComplete — if it rejects the finish (e.g. only 2/4 rounds
-      // complete), saveGameToSupabase swallows the error and returns the still-active game.
-      // Abort here so we don't show a false winner screen or fire push notifications.
-      if (!isFinishedGameStatus(savedGame?.status)) {
-        console.warn('[finishGame] Server hat Spielabschluss abgelehnt (Status:', savedGame?.status, '— Runden:', savedGame?.categoryRounds?.length, '). Abbruch.');
-        if (savedGame?.id) syncQuizRuntimeFromPersistedGame(savedGame);
-        // Spieler hat alle Runden beantwortet → weiter auf Gegner warten.
-        // Polling erkennt das Spielende sobald der Gegner fertig ist.
-        setWaitingForOpponent(true);
-        return;
-      }
-      const opponentName = user.name === currentGame.player1 ? currentGame.player2 : currentGame.player1;
-      if (opponentName) {
-        let opponentTitle = '🏁 Quizduell beendet';
-        let opponentMessage = `Quizduell gegen ${user.name} ist beendet.`;
-
-        if (winner === null) {
-          opponentTitle = '🤝 Quizduell unentschieden';
-          opponentMessage = `Dein Quizduell gegen ${user.name} endete unentschieden.`;
-        } else if (winner === opponentName) {
-          opponentTitle = '🏆 Quizduell gewonnen';
-          opponentMessage = `Du hast das Quizduell gegen ${user.name} gewonnen!`;
-        } else {
-          opponentTitle = '😔 Quizduell verloren';
-          opponentMessage = `Du hast das Quizduell gegen ${user.name} verloren.`;
-        }
-
-        await sendNotification(opponentName, opponentTitle, opponentMessage, 'info');
-      }
-
-      // Nur eigene Stats aktualisieren (RLS erlaubt nur eigene Stats)
-      let updatedH2h = { wins: 0, losses: 0, draws: 0 };
-      try {
-        const existingStats = await getUserStatsFromSupabase(user);
-        let stats = ensureUserStatsStructure(existingStats || createEmptyUserStats());
-
-        const opponent = user.name === currentGame.player1 ? currentGame.player2 : currentGame.player1;
-
-        if (!stats.opponents[opponent]) {
-          stats.opponents[opponent] = { wins: 0, losses: 0, draws: 0 };
-        }
-
-        if (winner === user.name) {
-          stats.wins++;
-          stats.opponents[opponent].wins++;
-          stats.winStreak++;
-          if (stats.winStreak > stats.bestWinStreak) {
-            stats.bestWinStreak = stats.winStreak;
-          }
-
-          const xpResult = addXpToStats(
-            stats,
-            'quizWins',
-            XP_REWARDS.QUIZ_WIN,
-            `quiz_win_${currentGame.id}_${user.id}`
-          );
-          stats = xpResult.stats;
-
-          if (xpResult.addedXp > 0) {
-            showToast(`+${xpResult.addedXp} XP • Quizduell-Sieg`, 'success', 2500);
-          }
-        } else if (winner === null) {
-          stats.draws++;
-          stats.opponents[opponent].draws++;
-        } else {
-          stats.losses++;
-          stats.opponents[opponent].losses++;
-          stats.winStreak = 0;
-        }
-
-        await saveUserStatsToSupabase(user, stats);
-        setUserStats(stats);
-        setStatsByUserId(prev => {
-          const wins = stats.wins || 0;
-          const losses = stats.losses || 0;
-          const draws = stats.draws || 0;
-          return {
-            ...prev,
-            [user.id]: {
-              ...(prev[user.id] || {}),
-              wins,
-              losses,
-              draws,
-              total: wins + losses + draws,
-              totalXp: getTotalXpFromStats(stats),
-              xpBreakdown: getXpBreakdownFromStats(stats)
-            }
-          };
-        });
-
-        // H2H aus Spieldaten berechnen (zuverlässiger als Server-Stats die ggf. schon inkl. dieses Spiels)
-        const allGamesWithSaved = allGames.some(g => g.id === savedGame.id)
-          ? allGames.map(g => g.id === savedGame.id ? savedGame : g)
-          : [...allGames, savedGame];
-        updatedH2h = buildHeadToHeadFromFinishedGames(allGamesWithSaved, user.name, opponent);
-      } catch (error) {
-        console.error('Stats update error:', error);
-      }
-
-      // Ergebnis-Screen anzeigen statt sofort zurückzusetzen
-      const h2h = updatedH2h;
-
-      setDuelResult({
-        player1: currentGame.player1,
-        player2: currentGame.player2,
-        player1Score: currentGame.player1Score,
-        player2Score: currentGame.player2Score,
-        winner,
-        myName: user.name,
-        opponentName,
-        h2h: { wins: h2h.wins || 0, losses: h2h.losses || 0, draws: h2h.draws || 0 }
-      });
-
-      // Spiel-State zurücksetzen (aber duelResult bleibt)
-      setCurrentGame(null);
-      setQuizCategory(null);
-      setCurrentQuestion(null);
-      setCurrentCategoryQuestions([]);
-      setCategoryRound(0);
-      setQuestionInCategory(0);
-      setPlayerTurn(null);
-      setWaitingForOpponent(false);
-      setAnswered(false);
-      setSelectedAnswers([]);
-      setLastSelectedAnswer(null);
-      setTimerActive(false);
-      resetQuizKeywordState();
-
-      loadData();
-      setCurrentView('quiz');
-      checkBadges();
-    } catch (error) {
-      console.error('Finish error:', error);
-    }
   };
 
   const submitQuestion = async () => {
@@ -5167,7 +2766,7 @@ export default function BaederApp() {
       };
       setTheoryExamHistory(prev => [savedAttempt, ...prev.filter(entry => entry.id !== savedAttempt.id)]);
 
-      const refreshedStats = await getUserStatsFromSupabase(user);
+      const refreshedStats = await duel.getUserStatsFromSupabase(user);
       if (refreshedStats) {
         const stats = ensureUserStatsStructure(refreshedStats);
         setUserStats(stats);
@@ -6349,7 +3948,7 @@ export default function BaederApp() {
       return null;
     }
     let evaluation;
-    if (isKeywordFlashcard(currentFlashcard) || currentFlashcard?.type === 'whoami') {
+    if (isKeywordQuestion(currentFlashcard) || currentFlashcard?.type === 'whoami') {
       evaluation = evaluateKeywordAnswer(currentFlashcard, trimmedInput);
     } else {
       const backText = String(currentFlashcard.back || '');
@@ -6741,6 +4340,7 @@ export default function BaederApp() {
     }
   };
 
+  duelLateDepsRef.current = { loadData, checkBadges, updateChallengeProgress, updateWeeklyProgress };
 
   const addMaterial = async () => {
     if (!materialTitle.trim() || !user?.permissions.canUploadMaterials) return;
@@ -7354,7 +4954,7 @@ export default function BaederApp() {
             canEditAppConfig={Boolean(user.isOwner) || (user.role === 'admin' && !allUsers.some((account) => Boolean(account?.is_owner)))}
             getAdminStats={adminActions.getAdminStats}
             questionReports={questionReports}
-            toggleQuestionReportStatus={toggleQuestionReportStatus}
+            toggleQuestionReportStatus={duel.toggleQuestionReportStatus}
             pendingUsers={pendingUsers}
             approveUser={adminActions.approveUser}
             loadData={loadData}
@@ -7412,9 +5012,9 @@ export default function BaederApp() {
             setWeeklyGoals={setWeeklyGoals}
             getTotalDueCards={getTotalDueCards}
             setSpacedRepetitionMode={setSpacedRepetitionMode}
-            activeGames={activeGames}
-            acceptChallenge={acceptChallenge}
-            continueGame={continueGameSafe}
+            activeGames={duel.activeGames}
+            acceptChallenge={duel.acceptChallenge}
+            continueGame={duel.continueGameSafe}
             news={news}
             exams={exams}
             setExamSimulatorMode={setExamSimulatorMode}
@@ -7447,47 +5047,47 @@ export default function BaederApp() {
         )}
         {currentView === 'quiz' && !appConfig.featureFlags?.quizMaintenance && (
           <QuizView
-            selectedDifficulty={selectedDifficulty}
-            setSelectedDifficulty={setSelectedDifficulty}
+            selectedDifficulty={duel.selectedDifficulty}
+            setSelectedDifficulty={duel.setSelectedDifficulty}
             allUsers={allUsers}
-            allGames={allGames}
-            activeGames={activeGames}
-            challengePlayer={challengePlayer}
-            acceptChallenge={acceptChallenge}
-            continueGame={continueGameSafe}
-            currentGame={currentGame}
-            quizCategory={quizCategory}
-            questionInCategory={questionInCategory}
-            playerTurn={playerTurn}
+            allGames={duel.allGames}
+            activeGames={duel.activeGames}
+            challengePlayer={duel.challengePlayer}
+            acceptChallenge={duel.acceptChallenge}
+            continueGame={duel.continueGameSafe}
+            currentGame={duel.currentGame}
+            quizCategory={duel.quizCategory}
+            questionInCategory={duel.questionInCategory}
+            playerTurn={duel.playerTurn}
             adaptiveLearningEnabled={adaptiveLearningEnabled}
             setAdaptiveLearningEnabled={setAdaptiveLearningEnabled}
-            selectCategory={selectCategory}
-            waitingForOpponent={waitingForOpponent}
-            startCategoryAsSecondPlayer={resumeCategoryRound}
-            currentQuestion={currentQuestion}
-            timeLeft={timeLeft}
-            answered={answered}
-            selectedAnswers={selectedAnswers}
-            lastSelectedAnswer={lastSelectedAnswer}
+            selectCategory={duel.selectCategory}
+            waitingForOpponent={duel.waitingForOpponent}
+            startCategoryAsSecondPlayer={duel.startCategoryAsSecondPlayer}
+            currentQuestion={duel.currentQuestion}
+            timeLeft={duel.timeLeft}
+            answered={duel.answered}
+            selectedAnswers={duel.selectedAnswers}
+            lastSelectedAnswer={duel.lastSelectedAnswer}
             isKeywordQuestion={isKeywordQuestion}
             isWhoAmIQuestion={isWhoAmIQuestion}
-            keywordAnswerText={keywordAnswerText}
-            setKeywordAnswerText={setKeywordAnswerText}
-            keywordAnswerEvaluation={keywordAnswerEvaluation}
-            submitKeywordAnswer={submitKeywordAnswer}
-            quizMCKeywordMode={quizMCKeywordMode}
-            setQuizMCKeywordMode={setQuizMCKeywordMode}
-            answerQuestion={answerQuestion}
-            reportQuestionIssue={reportQuestionIssue}
-            confirmMultiSelectAnswer={confirmMultiSelectAnswer}
-            proceedToNextRound={proceedToNextRound}
+            keywordAnswerText={duel.keywordAnswerText}
+            setKeywordAnswerText={duel.setKeywordAnswerText}
+            keywordAnswerEvaluation={duel.keywordAnswerEvaluation}
+            submitKeywordAnswer={duel.submitKeywordAnswer}
+            quizMCKeywordMode={duel.quizMCKeywordMode}
+            setQuizMCKeywordMode={duel.setQuizMCKeywordMode}
+            answerQuestion={duel.answerQuestion}
+            reportQuestionIssue={duel.reportQuestionIssue}
+            confirmMultiSelectAnswer={duel.confirmMultiSelectAnswer}
+            proceedToNextRound={duel.proceedToNextRound}
             userStats={userStats}
-            duelResult={duelResult}
-            setDuelResult={setDuelResult}
-            showDuelResultForGame={showDuelResultForGame}
-            categoryRoundResult={categoryRoundResult}
-            proceedAfterCategoryResult={proceedAfterCategoryResult}
-            onForfeit={handleForfeitDuel}
+            duelResult={duel.duelResult}
+            setDuelResult={duel.setDuelResult}
+            showDuelResultForGame={duel.showDuelResultForGame}
+            categoryRoundResult={duel.categoryRoundResult}
+            proceedAfterCategoryResult={duel.proceedAfterCategoryResult}
+            onForfeit={duel.onForfeit}
           />
         )}
 
@@ -7616,7 +5216,7 @@ export default function BaederApp() {
             examSelectedAnswer={examSelectedAnswer}
             loadExamProgress={loadExamProgress}
             answerExamQuestion={answerExamQuestion}
-            reportQuestionIssue={reportQuestionIssue}
+            reportQuestionIssue={duel.reportQuestionIssue}
             confirmExamMultiSelectAnswer={confirmExamMultiSelectAnswer}
             resetExam={resetExam}
             practicalExamType={practicalExamType}
@@ -7739,7 +5339,7 @@ export default function BaederApp() {
             allUsers={allUsers}
             statsByUserId={statsByUserId}
             leaderboard={leaderboard}
-            allGames={allGames}
+            allGames={duel.allGames}
             namesMatch={namesMatch}
             isFinishedGameStatus={isFinishedGameStatus}
             theoryExamHistory={theoryExamHistory}
