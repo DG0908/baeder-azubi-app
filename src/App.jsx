@@ -828,7 +828,6 @@ export default function BaederApp() {
     userStats, setUserStats,
     statsByUserId, setStatsByUserId,
     lateDepsRef: duelLateDepsRef,
-    trackQuestionPerformance,
     questionPerformance,
     adaptiveLearningEnabled, setAdaptiveLearningEnabled,
     questionReports, setQuestionReports,
@@ -4340,7 +4339,7 @@ export default function BaederApp() {
     }
   };
 
-  duelLateDepsRef.current = { loadData, checkBadges, updateChallengeProgress, updateWeeklyProgress };
+  duelLateDepsRef.current = { loadData, checkBadges, updateChallengeProgress, updateWeeklyProgress, trackQuestionPerformance };
 
   const addMaterial = async () => {
     if (!materialTitle.trim() || !user?.permissions.canUploadMaterials) return;

@@ -59,7 +59,7 @@ export function useDuelGame(deps) {
     setStatsByUserId,
     // Late-bound via refs (defined after hook call in App.jsx)
     lateDepsRef,
-    trackQuestionPerformance, questionPerformance,
+    questionPerformance,
     adaptiveLearningEnabled,
     questionReports, setQuestionReports,
     sanitizeGoalValue,
@@ -1032,7 +1032,7 @@ export function useDuelGame(deps) {
     getLateDeps().updateChallengeProgress?.('quiz_play', 1);
     getLateDeps().updateWeeklyProgress?.('quizAnswers', 1);
     if (correctnessKnown) {
-      trackQuestionPerformance(currentQuestion, quizCategory, isCorrect);
+      getLateDeps().trackQuestionPerformance?.(currentQuestion, quizCategory, isCorrect);
     }
 
     const answerPoints = answerType === 'keyword'
