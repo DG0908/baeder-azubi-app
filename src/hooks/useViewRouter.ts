@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-/**
- * Maps view IDs (used throughout the app) to URL paths.
- * This is the single source of truth for the view↔URL mapping.
- */
-const VIEW_TO_PATH = {
+const VIEW_TO_PATH: Record<string, string> = {
   home: '/',
   quiz: '/quiz',
   stats: '/statistiken',
@@ -34,17 +30,10 @@ const VIEW_TO_PATH = {
   'exam-grades': '/noten',
 };
 
-const PATH_TO_VIEW = Object.fromEntries(
+const PATH_TO_VIEW: Record<string, string> = Object.fromEntries(
   Object.entries(VIEW_TO_PATH).map(([view, path]) => [path, view])
 );
 
-/**
- * Bridge hook: provides currentView / setCurrentView backed by React Router.
- *
- * Drop-in replacement — all existing code that reads `currentView` or
- * calls `setCurrentView('quiz')` keeps working unchanged, but now the
- * browser URL updates, back-button works, and deep-links are possible.
- */
 export const useViewRouter = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,7 +51,7 @@ export const useViewRouter = () => {
     }
   }, [knownPath, location.pathname, navigate]);
 
-  const setCurrentView = useCallback((viewId) => {
+  const setCurrentView = useCallback((viewId: string) => {
     const path = VIEW_TO_PATH[viewId] || '/';
     navigate(path);
   }, [navigate]);

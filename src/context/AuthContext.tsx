@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import toast from 'react-hot-toast';
 import {
   loadCurrentAuthSession as dsLoadCurrentAuthSession,
@@ -10,9 +10,50 @@ import {
 } from '../lib/dataService';
 import { friendlyError } from '../lib/friendlyError';
 
-const AuthContext = createContext(null);
+interface RegisterData {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+  trainingEnd: string;
+  invitationCode: string;
+}
 
-const EMPTY_REGISTER_DATA = {
+interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  approved: boolean;
+  status: string;
+  [key: string]: unknown;
+}
+
+interface AuthContextValue {
+  authReady: boolean;
+  user: AuthUser | null;
+  setUser: React.Dispatch<React.SetStateAction<AuthUser | null>>;
+  authView: string;
+  setAuthView: React.Dispatch<React.SetStateAction<string>>;
+  loginEmail: string;
+  setLoginEmail: React.Dispatch<React.SetStateAction<string>>;
+  loginPassword: string;
+  setLoginPassword: React.Dispatch<React.SetStateAction<string>>;
+  registerData: RegisterData;
+  setRegisterData: React.Dispatch<React.SetStateAction<RegisterData>>;
+  handleLogin: () => Promise<void>;
+  handleRegister: () => Promise<void>;
+  handleLogout: () => Promise<void>;
+  totpPendingToken: string | null;
+  totpCode: string;
+  setTotpCode: React.Dispatch<React.SetStateAction<string>>;
+  handleTotpAuthenticate: (opts?: { code?: string; recoveryCode?: string }) => Promise<void>;
+  handleTotpCancel: () => void;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+const EMPTY_REGISTER_DATA: RegisterData = {
   name: '',
   email: '',
   password: '',
@@ -21,14 +62,14 @@ const EMPTY_REGISTER_DATA = {
   invitationCode: ''
 };
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [authView, setAuthView] = useState('login');
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [registerData, setRegisterData] = useState(EMPTY_REGISTER_DATA);
-  const [totpPendingToken, setTotpPendingToken] = useState(null);
+  const [registerData, setRegisterData] = useState<RegisterData>(EMPTY_REGISTER_DATA);
+  const [totpPendingToken, setTotpPendingToken] = useState<string | null>(null);
   const [totpCode, setTotpCode] = useState('');
 
   // Clean up legacy PII from localStorage (older app versions stored user profile there)
@@ -43,7 +84,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const persistStoredSession = (nextUser) => {
+  const persistStoredSession = (nextUser: AuthUser) => {
     setUser(nextUser);
   };
 
@@ -63,7 +104,7 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        const { user: sessionUser, azubiProfile } = await dsLoadCurrentAuthSession();
+        const { user: sessionUser } = await (dsLoadCurrentAuthSession as () => Promise<{ user: AuthUser | null; azubiProfile: unknown }>)();
         if (!active) return;
 
         if (sessionUser) {
@@ -78,7 +119,7 @@ export function AuthProvider({ children }) {
 
     checkSession();
 
-    const unsubscribe = dsSubscribeAuthStateChanges();
+    const unsubscribe = (dsSubscribeAuthStateChanges as () => () => void)();
 
     return () => {
       active = false;
@@ -105,19 +146,20 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const result = await dsRegisterAuthAccount(registerData);
+      const result = await (dsRegisterAuthAccount as (data: RegisterData) => Promise<Record<string, unknown>>)(registerData);
 
-      setLoginEmail(result?.email || registerData.email.trim().toLowerCase());
+      setLoginEmail((result?.email as string) || registerData.email.trim().toLowerCase());
       setAuthView('login');
       setRegisterData(EMPTY_REGISTER_DATA);
 
       toast.success('Registrierung erfolgreich! Dein Account wartet auf Freischaltung durch einen Administrator.', { duration: 6000 });
-    } catch (error) {
-      let message = error?.message || 'Unbekannter Fehler';
+    } catch (error: unknown) {
+      const err = error as { message?: string; code?: string };
+      let message = err?.message || 'Unbekannter Fehler';
 
-      if (error?.code === 'already_registered') {
+      if (err?.code === 'already_registered') {
         message = 'Diese E-Mail ist bereits registriert!';
-      } else if (error?.code === 'invalid_invitation') {
+      } else if (err?.code === 'invalid_invitation') {
         message = 'Ungueltiger oder abgelaufener Einladungscode!';
       } else if (/password/i.test(message)) {
         message = `Das Passwort muss mindestens ${minimumPasswordLength} Zeichen lang sein.`;
@@ -135,7 +177,7 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const { user: nextUser } = await dsLoginAuthAccount({
+      const { user: nextUser } = await (dsLoginAuthAccount as (data: { email: string; password: string }) => Promise<{ user: AuthUser }>)({
         email: loginEmail,
         password: loginPassword
       });
@@ -143,22 +185,23 @@ export function AuthProvider({ children }) {
       persistStoredSession(nextUser);
       setLoginEmail('');
       setLoginPassword('');
-    } catch (error) {
-      if (error?.code === 'totp_required') {
-        setTotpPendingToken(error.message); // message holds the totpToken
-      } else if (error?.code === 'invalid_login') {
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string; status?: number };
+      if (err?.code === 'totp_required') {
+        setTotpPendingToken(err.message || null);
+      } else if (err?.code === 'invalid_login') {
         toast.error('E-Mail oder Passwort falsch!');
-      } else if (error?.code === 'missing_profile') {
+      } else if (err?.code === 'missing_profile') {
         toast.error('Profil nicht gefunden. Bitte kontaktiere den Administrator.');
-      } else if (error?.code === 'not_approved') {
+      } else if (err?.code === 'not_approved') {
         toast.error('Dein Account wurde noch nicht freigeschaltet. Bitte warte auf die Freigabe.', { duration: 6000 });
-      } else if (error?.status === 401) {
+      } else if (err?.status === 401) {
         toast.error('E-Mail oder Passwort falsch.');
       } else {
         toast.error(friendlyError(error));
       }
 
-      if (error?.code !== 'totp_required') {
+      if (err?.code !== 'totp_required') {
         console.error('Login error:', error);
       }
     }
@@ -179,7 +222,7 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const { user: nextUser } = await dsAuthenticateWithTotp(totpPendingToken, {
+      const { user: nextUser } = await (dsAuthenticateWithTotp as (token: string | null, payload: { code?: string; recoveryCode?: string }) => Promise<{ user: AuthUser }>)(totpPendingToken, {
         code: trimmedCode || undefined,
         recoveryCode: normalizedRecoveryCode || undefined
       });
@@ -188,8 +231,9 @@ export function AuthProvider({ children }) {
       setTotpCode('');
       setLoginEmail('');
       setLoginPassword('');
-    } catch (error) {
-      if (error?.status === 401) {
+    } catch (error: unknown) {
+      const err = error as { status?: number };
+      if (err?.status === 401) {
         toast.error('Falscher oder abgelaufener Code. Bitte erneut versuchen.');
       } else {
         toast.error(friendlyError(error));
@@ -203,7 +247,7 @@ export function AuthProvider({ children }) {
   };
 
   const handleLogout = async () => {
-    await dsLogoutAuthSession();
+    await (dsLogoutAuthSession as () => Promise<void>)();
     resetStoredSession();
   };
 

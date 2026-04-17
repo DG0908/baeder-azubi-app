@@ -11,22 +11,54 @@ import {
   isWebPushConfigured,
 } from '../lib/pushNotifications';
 
-/**
- * Extracts notification + push + PWA-update state from App.jsx.
- *
- * @param {object}   deps
- * @param {object}   deps.user      – current user from AuthContext
- * @param {boolean}  deps.authReady – auth initialization complete
- * @param {Array}    deps.allUsers  – all users (for broadcast)
- * @param {Function} deps.showToast
- * @param {Function} deps.playSound
- */
-export function useNotifications({ user, authReady, allUsers, showToast, playSound }) {
+// ── Types ───────────────────────────────────────────────────
+interface NotificationUser {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  userName: string;
+  time: number;
+  read: boolean;
+}
+
+interface PushDeviceStateExtended {
+  supported: boolean;
+  configured: boolean;
+  permission: NotificationPermission | 'unsupported' | 'default';
+  hasSubscription: boolean;
+  endpoint: string;
+  checking: boolean;
+}
+
+interface NotificationTracker {
+  userId: string | null;
+  initialized: boolean;
+  knownIds: Set<string>;
+  announcedIds: Set<string>;
+}
+
+interface UseNotificationsDeps {
+  user: NotificationUser | null;
+  authReady: boolean;
+  allUsers: Array<{ name?: string; approved?: boolean; organization_id?: string; organizationId?: string }>;
+  showToast: (message: string, type?: string, duration?: number) => void;
+  playSound: (type: string) => void;
+}
+
+// ── Hook ─────────────────────────────────────────────────────
+export function useNotifications({ user, authReady, allUsers, showToast, playSound }: UseNotificationsDeps) {
   // ── Notification state ───────────────────────────────────
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [showNotificationsPanel, setShowNotificationsPanel] = useState(false);
 
-  const notificationTrackerRef = useRef({
+  const notificationTrackerRef = useRef<NotificationTracker>({
     userId: null,
     initialized: false,
     knownIds: new Set(),
@@ -44,7 +76,7 @@ export function useNotifications({ user, authReady, allUsers, showToast, playSou
   }, [user?.id]);
 
   // ── Push device state ────────────────────────────────────
-  const [pushDeviceState, setPushDeviceState] = useState({
+  const [pushDeviceState, setPushDeviceState] = useState<PushDeviceStateExtended>({
     supported: false,
     configured: false,
     permission: 'default',
@@ -61,11 +93,11 @@ export function useNotifications({ user, authReady, allUsers, showToast, playSou
       return nextState;
     } catch (error) {
       console.warn('Push device state check failed:', error);
-      const permission =
+      const permission: NotificationPermission | 'unsupported' =
         typeof window !== 'undefined' && 'Notification' in window
           ? Notification.permission
           : 'unsupported';
-      const fallbackState = {
+      const fallbackState: PushDeviceStateExtended = {
         supported: false,
         configured: isWebPushConfigured(),
         permission,
@@ -244,7 +276,7 @@ export function useNotifications({ user, authReady, allUsers, showToast, playSou
 
   // ── Announce helper ──────────────────────────────────────
   const announceNotificationLocally = useCallback(
-    async (notification) => {
+    async (notification: AppNotification) => {
       const notificationId = String(notification?.id || '').trim();
       if (!notificationId) return;
 
@@ -267,7 +299,7 @@ export function useNotifications({ user, authReady, allUsers, showToast, playSou
           'Notification' in window &&
           Notification.permission === 'granted'
         ) {
-          const opts = {
+          const opts: NotificationOptions = {
             body: notification.message,
             icon: '/icons/icon-192x192.png',
             badge: '/icons/icon-192x192.png',
@@ -299,8 +331,8 @@ export function useNotifications({ user, authReady, allUsers, showToast, playSou
   const loadNotifications = useCallback(async () => {
     if (!user) return;
     try {
-      const rawNotifs = await dsLoadNotifications(user.name);
-      const notifs = rawNotifs.map((n) => ({
+      const rawNotifs = await (dsLoadNotifications as (name: string) => Promise<Array<{ id: string; title: string; message: string; type: string; createdAt?: string; read: boolean }>>)(user.name);
+      const notifs: AppNotification[] = rawNotifs.map((n) => ({
         id: n.id,
         title: n.title,
         message: n.message,
@@ -327,16 +359,17 @@ export function useNotifications({ user, authReady, allUsers, showToast, playSou
           void announceNotificationLocally(notif);
         }
       }
-    } catch (error) {
+    } catch {
       console.log('Loading notifications...');
     }
   }, [user, announceNotificationLocally]);
 
   // No-op — NestJS backend handles notifications server-side
-  const sendNotification = useCallback(async () => null, []);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const sendNotification = useCallback(async (_userName?: string, _title?: string, _message?: string, _type?: string) => null, []);
 
   const sendNotificationToApprovedUsers = useCallback(
-    async ({ title, message, type = 'info', excludeUserNames = [] }) => {
+    async ({ title, message, type = 'info', excludeUserNames = [] }: { title: string; message: string; type?: string; excludeUserNames?: string[] }) => {
       try {
         const excluded = new Set(
           (excludeUserNames || [])
@@ -364,9 +397,9 @@ export function useNotifications({ user, authReady, allUsers, showToast, playSou
   );
 
   const markNotificationAsRead = useCallback(
-    async (notifId) => {
+    async (notifId: string) => {
       try {
-        await dsMarkNotificationRead(notifId);
+        await (dsMarkNotificationRead as (id: string) => Promise<void>)(notifId);
         setNotifications((prev) =>
           prev.map((n) => (n.id === notifId ? { ...n, read: true } : n))
         );
@@ -379,7 +412,7 @@ export function useNotifications({ user, authReady, allUsers, showToast, playSou
 
   const clearAllNotificationsAction = useCallback(async () => {
     try {
-      await dsClearAllNotifications(user.name);
+      await (dsClearAllNotifications as (name: string) => Promise<void>)(user!.name);
       setNotifications([]);
     } catch (error) {
       console.error('Clear notifications error:', error);

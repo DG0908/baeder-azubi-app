@@ -15,26 +15,111 @@ import {
 import { friendlyError } from '../lib/friendlyError';
 import { AUSBILDUNGSRAHMENPLAN } from '../data/ausbildungsrahmenplan';
 
+// ── Types ───────────────────────────────────────────────────
+interface DayEntry {
+  taetigkeit: string;
+  stunden: string;
+  bereich: string;
+}
+
+type WeekEntries = Record<string, DayEntry[]>;
+
+interface BerichtsheftEntry {
+  id: string;
+  user_name: string;
+  week_start: string;
+  week_end: string;
+  ausbildungsjahr: number;
+  nachweis_nr: number;
+  entries: WeekEntries;
+  bemerkung_azubi: string;
+  bemerkung_ausbilder: string;
+  signatur_azubi: string;
+  signatur_ausbilder: string;
+  datum_azubi: string;
+  datum_ausbilder: string;
+  total_hours: number;
+  status?: string;
+  assigned_trainer_id?: string | null;
+  assigned_trainer_name?: string | null;
+  assigned_by_id?: string | null;
+  assigned_at?: string | null;
+  updated_at?: string;
+  [key: string]: unknown;
+}
+
+interface DraftSnapshot {
+  week_start: string;
+  ausbildungsjahr: number;
+  nachweis_nr: number;
+  entries: WeekEntries;
+  bemerkung_azubi: string;
+  bemerkung_ausbilder: string;
+  signatur_azubi: string;
+  signatur_ausbilder: string;
+  datum_azubi: string;
+  datum_ausbilder: string;
+  updated_at: string;
+}
+
+interface AzubiProfile {
+  vorname: string;
+  nachname: string;
+  ausbildungsbetrieb: string;
+  ausbildungsberuf: string;
+  ausbilder: string;
+  ausbildungsbeginn: string;
+  ausbildungsende: string;
+}
+
+interface AusbildungsBereich {
+  nr: number;
+  bereich: string;
+  icon: string;
+  color: string;
+  gesamtWochen: number;
+  inhalte?: string[];
+  wochen?: Record<string, number>;
+}
+
+interface BerichtsheftUser {
+  id: string;
+  name: string;
+  role: string;
+  canSignReports?: boolean;
+  avatar?: string | null;
+  organizationId?: string | null;
+  [key: string]: unknown;
+}
+
+interface UseBerichtsheftDeps {
+  user: BerichtsheftUser | null;
+  currentView: string;
+  allUsers: Array<{ id: string; name: string; [key: string]: unknown }>;
+  showToast: (message: string, type?: string) => void;
+  sendNotification: (userName: string, title: string, message: string, type: string) => Promise<unknown>;
+}
+
 // ── Constants ────────────────────────────────────────────────
 const BERICHTSHEFT_DRAFT_STORAGE_KEY = 'berichtsheft_drafts_v1';
 const BERICHTSHEFT_DAY_KEYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
 // ── Pure helpers ─────────────────────────────────────────────
-const parseJsonSafe = (value, fallback) => {
+const parseJsonSafe = <T>(value: string | null, fallback: T): T => {
   try {
-    const parsed = JSON.parse(value);
+    const parsed = JSON.parse(value!);
     return parsed ?? fallback;
   } catch {
     return fallback;
   }
 };
 
-const toTimestampMs = (value) => {
+const toTimestampMs = (value: unknown): number => {
   const timestamp = Date.parse(String(value || ''));
   return Number.isFinite(timestamp) ? timestamp : 0;
 };
 
-const getWeekStartStamp = (input = Date.now()) => {
+const getWeekStartStamp = (input: number | string | Date = Date.now()): string => {
   const base = new Date(input);
   if (Number.isNaN(base.getTime())) return '';
   const date = new Date(base);
@@ -45,24 +130,24 @@ const getWeekStartStamp = (input = Date.now()) => {
   return date.toISOString().slice(0, 10);
 };
 
-const getWeekEndDate = (startDate) => {
+const getWeekEndDate = (startDate: string): string => {
   const start = new Date(startDate);
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   return end.toISOString().split('T')[0];
 };
 
-const createEmptyBerichtsheftEntries = () =>
-  BERICHTSHEFT_DAY_KEYS.reduce((acc, day) => {
+const createEmptyBerichtsheftEntries = (): WeekEntries =>
+  BERICHTSHEFT_DAY_KEYS.reduce<WeekEntries>((acc, day) => {
     acc[day] = [{ taetigkeit: '', stunden: '', bereich: '' }];
     return acc;
   }, {});
 
-const normalizeBerichtsheftEntries = (value) => {
-  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  const normalized = {};
+const normalizeBerichtsheftEntries = (value: unknown): WeekEntries => {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  const normalized: WeekEntries = {};
   BERICHTSHEFT_DAY_KEYS.forEach((day) => {
-    const rows = Array.isArray(source[day]) ? source[day] : [];
+    const rows = Array.isArray(source[day]) ? source[day] as Array<Record<string, unknown>> : [];
     const mapped = rows
       .filter((row) => row && typeof row === 'object')
       .map((row) => ({
@@ -75,34 +160,35 @@ const normalizeBerichtsheftEntries = (value) => {
   return normalized;
 };
 
-const getBerichtsheftStatus = (entry) =>
+const getBerichtsheftStatus = (entry: BerichtsheftEntry | null): string =>
   String(entry?.status || 'submitted').trim().toLowerCase();
 
-const isBerichtsheftDraft = (entry) => getBerichtsheftStatus(entry) === 'draft';
+const isBerichtsheftDraft = (entry: BerichtsheftEntry): boolean => getBerichtsheftStatus(entry) === 'draft';
 
-const isSignedByAzubi = (entry) => Boolean(String(entry?.signatur_azubi || '').trim());
-const isSignedByAusbilder = (entry) => Boolean(String(entry?.signatur_ausbilder || '').trim());
+const isSignedByAzubi = (entry: BerichtsheftEntry | Record<string, unknown>): boolean => Boolean(String((entry as Record<string, unknown>)?.signatur_azubi || '').trim());
+const isSignedByAusbilder = (entry: BerichtsheftEntry | Record<string, unknown>): boolean => Boolean(String((entry as Record<string, unknown>)?.signatur_ausbilder || '').trim());
 
-const hasEntryContent = (entry) => {
-  if (!entry || !entry.entries || typeof entry.entries !== 'object') return false;
-  return Object.values(entry.entries).some(
+const hasEntryContent = (entry: BerichtsheftEntry | Record<string, unknown>): boolean => {
+  const entries = (entry as Record<string, unknown>)?.entries;
+  if (!entry || !entries || typeof entries !== 'object') return false;
+  return Object.values(entries as WeekEntries).some(
     (dayRows) =>
       Array.isArray(dayRows) &&
       dayRows.some((row) => String(row?.taetigkeit || '').trim() !== '')
   );
 };
 
-const isBerichtsheftReadyForReview = (entry) =>
+const isBerichtsheftReadyForReview = (entry: BerichtsheftEntry | Record<string, unknown>): boolean =>
   hasEntryContent(entry) && isSignedByAzubi(entry) && !isSignedByAusbilder(entry);
 
-const calculateTotalHoursFromEntries = (entries) =>
+const calculateTotalHoursFromEntries = (entries: WeekEntries): number =>
   BERICHTSHEFT_DAY_KEYS.reduce((sum, day) => {
     const rows = Array.isArray(entries?.[day]) ? entries[day] : [];
     const daySum = rows.reduce((innerSum, row) => innerSum + (parseFloat(row?.stunden) || 0), 0);
     return sum + daySum;
   }, 0);
 
-const normalizeBerichtsheftText = (value) =>
+const normalizeBerichtsheftText = (value: string): string =>
   String(value || '')
     .toLowerCase()
     .normalize('NFD')
@@ -111,29 +197,19 @@ const normalizeBerichtsheftText = (value) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-const toBerichtsheftTokens = (value) =>
+const toBerichtsheftTokens = (value: string): string[] =>
   normalizeBerichtsheftText(value)
     .split(' ')
     .filter((token) => token.length >= 3);
 
 // ── Hook ─────────────────────────────────────────────────────
-/**
- * Extracts all Berichtsheft (Ausbildungsnachweis) logic from App.jsx.
- *
- * @param {object}   deps
- * @param {object}   deps.user            – current user from AuthContext
- * @param {string}   deps.currentView     – active view id
- * @param {Array}    deps.allUsers        – full user list
- * @param {Function} deps.showToast       – toast helper
- * @param {Function} deps.sendNotification – push notification helper
- */
-export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNotification }) {
+export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNotification }: UseBerichtsheftDeps) {
   // ── State ────────────────────────────────────────────────
-  const [berichtsheftEntries, setBerichtsheftEntries] = useState([]);
+  const [berichtsheftEntries, setBerichtsheftEntries] = useState<BerichtsheftEntry[]>([]);
   const [berichtsheftWeek, setBerichtsheftWeek] = useState(() => getWeekStartStamp());
   const [berichtsheftYear, setBerichtsheftYear] = useState(1);
   const [berichtsheftNr, setBerichtsheftNr] = useState(1);
-  const [currentWeekEntries, setCurrentWeekEntries] = useState(() =>
+  const [currentWeekEntries, setCurrentWeekEntries] = useState<WeekEntries>(() =>
     createEmptyBerichtsheftEntries()
   );
   const [berichtsheftBemerkungAzubi, setBerichtsheftBemerkungAzubi] = useState('');
@@ -142,15 +218,15 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   const [berichtsheftSignaturAusbilder, setBerichtsheftSignaturAusbilder] = useState('');
   const [berichtsheftDatumAzubi, setBerichtsheftDatumAzubi] = useState('');
   const [berichtsheftDatumAusbilder, setBerichtsheftDatumAusbilder] = useState('');
-  const [selectedBerichtsheft, setSelectedBerichtsheft] = useState(null);
+  const [selectedBerichtsheft, setSelectedBerichtsheft] = useState<BerichtsheftEntry | null>(null);
   const [berichtsheftViewMode, setBerichtsheftViewMode] = useState('edit');
-  const [berichtsheftPendingSignatures, setBerichtsheftPendingSignatures] = useState([]);
+  const [berichtsheftPendingSignatures, setBerichtsheftPendingSignatures] = useState<BerichtsheftEntry[]>([]);
   const [berichtsheftPendingLoading, setBerichtsheftPendingLoading] = useState(false);
-  const [berichtsheftServerDraftsByWeek, setBerichtsheftServerDraftsByWeek] = useState({});
+  const [berichtsheftServerDraftsByWeek, setBerichtsheftServerDraftsByWeek] = useState<Record<string, BerichtsheftEntry>>({});
   const [berichtsheftRemoteDraftsEnabled, setBerichtsheftRemoteDraftsEnabled] = useState(true);
 
   // Azubi-Profildaten für Berichtsheft
-  const [azubiProfile, setAzubiProfile] = useState(() => {
+  const [azubiProfile, setAzubiProfile] = useState<AzubiProfile>(() => {
     const saved = localStorage.getItem('azubi_profile');
     return saved
       ? JSON.parse(saved)
@@ -166,9 +242,9 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   });
 
   // ── Refs ─────────────────────────────────────────────────
-  const azubiProfileSaveTimerRef = useRef(null);
-  const berichtsheftDraftSaveTimerRef = useRef(null);
-  const berichtsheftRemoteDraftSaveTimerRef = useRef(null);
+  const azubiProfileSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const berichtsheftDraftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const berichtsheftRemoteDraftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const berichtsheftRemoteDraftWarningShownRef = useRef(false);
 
   // ── Derived ──────────────────────────────────────────────
@@ -178,7 +254,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
 
   // ── Internal helpers ─────────────────────────────────────
 
-  const getBerichtsheftDraftOwnerKey = useCallback(() => {
+  const getBerichtsheftDraftOwnerKey = useCallback((): string => {
     if (!user) return '';
     if (user.id) return `id:${user.id}`;
     const normalizedName = String(user.name || '').trim().toLowerCase();
@@ -186,7 +262,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   }, [user]);
 
   const buildBerichtsheftDraftKey = useCallback(
-    (weekStart) => {
+    (weekStart: string): string => {
       const owner = getBerichtsheftDraftOwnerKey();
       const week = String(weekStart || '').trim();
       if (!owner || !week) return '';
@@ -195,18 +271,18 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     [getBerichtsheftDraftOwnerKey]
   );
 
-  const readBerichtsheftDraftStore = () => {
-    const parsed = parseJsonSafe(localStorage.getItem(BERICHTSHEFT_DRAFT_STORAGE_KEY), {});
+  const readBerichtsheftDraftStore = (): Record<string, DraftSnapshot> => {
+    const parsed = parseJsonSafe<Record<string, DraftSnapshot>>(localStorage.getItem(BERICHTSHEFT_DRAFT_STORAGE_KEY), {});
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
     return parsed;
   };
 
-  const writeBerichtsheftDraftStore = (store) => {
+  const writeBerichtsheftDraftStore = (store: Record<string, DraftSnapshot>) => {
     localStorage.setItem(BERICHTSHEFT_DRAFT_STORAGE_KEY, JSON.stringify(store));
   };
 
   const getBerichtsheftServerDraft = useCallback(
-    (weekStart) => {
+    (weekStart: string): BerichtsheftEntry | null => {
       const week = String(weekStart || '').trim();
       if (!week) return null;
       return berichtsheftServerDraftsByWeek[week] || null;
@@ -214,7 +290,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     [berichtsheftServerDraftsByWeek]
   );
 
-  const upsertBerichtsheftServerDraft = useCallback((draftRow) => {
+  const upsertBerichtsheftServerDraft = useCallback((draftRow: BerichtsheftEntry) => {
     const week = String(draftRow?.week_start || '').trim();
     if (!week) return;
     setBerichtsheftServerDraftsByWeek((prev) => {
@@ -226,7 +302,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     });
   }, []);
 
-  const removeBerichtsheftServerDraft = useCallback((weekStart) => {
+  const removeBerichtsheftServerDraft = useCallback((weekStart: string) => {
     const week = String(weekStart || '').trim();
     if (!week) return;
     setBerichtsheftServerDraftsByWeek((prev) => {
@@ -237,19 +313,20 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     });
   }, []);
 
-  const isBerichtsheftStatusColumnMissingError = (error) => {
+  const isBerichtsheftStatusColumnMissingError = (error: unknown): boolean => {
     if (!error) return false;
-    const code = String(error.code || '').trim();
+    const err = error as { code?: string; message?: string; details?: string };
+    const code = String(err.code || '').trim();
     if (code === '42703') return true;
-    const message = String(error.message || '').toLowerCase();
-    const details = String(error.details || '').toLowerCase();
+    const message = String(err.message || '').toLowerCase();
+    const details = String(err.details || '').toLowerCase();
     return (
       (message.includes('status') && message.includes('column')) || details.includes('status')
     );
   };
 
   const disableBerichtsheftRemoteDrafts = useCallback(
-    (error) => {
+    (error: unknown) => {
       if (!isBerichtsheftStatusColumnMissingError(error)) return;
       setBerichtsheftRemoteDraftsEnabled(false);
       setBerichtsheftServerDraftsByWeek({});
@@ -267,7 +344,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   const loadBerichtsheftEntries = useCallback(async () => {
     if (!user) return;
     try {
-      const data = await dsLoadBerichtsheftEntries(user.name);
+      const data = await (dsLoadBerichtsheftEntries as (name: string) => Promise<BerichtsheftEntry[]>)(user.name);
       const allEntries = Array.isArray(data) ? data : [];
       const submittedEntries = allEntries.filter((entry) => !isBerichtsheftDraft(entry));
       setBerichtsheftEntries(submittedEntries);
@@ -291,7 +368,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
 
     setBerichtsheftPendingLoading(true);
     try {
-      const data = await dsLoadBerichtsheftPending();
+      const data = await (dsLoadBerichtsheftPending as () => Promise<BerichtsheftEntry[]>)();
       const allEntries = Array.isArray(data) ? data : [];
       let pending = allEntries.filter(
         (entry) =>
@@ -322,12 +399,12 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   }, [user, canManageBerichtsheftSignatures]);
 
   const notifyBerichtsheftReadyForReview = useCallback(
-    async ({ azubiName, weekStart }) => {
+    async ({ azubiName, weekStart }: { azubiName: string; weekStart: string }) => {
       const normalizedAzubiName = String(azubiName || '').trim();
       if (!normalizedAzubiName) return;
 
       try {
-        const reviewers = await dsGetAuthorizedReviewers('can_sign_reports');
+        const reviewers = await (dsGetAuthorizedReviewers as unknown as (perm: string) => Promise<Array<{ name?: string }>>)('can_sign_reports');
         const reviewerNames = [
           ...new Set(reviewers.map((r) => String(r?.name || '').trim()).filter(Boolean)),
         ].filter((name) => name !== normalizedAzubiName);
@@ -360,7 +437,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   );
 
   const assignBerichtsheftTrainer = useCallback(
-    async (entryId, trainerId) => {
+    async (entryId: string, trainerId: string) => {
       if (!entryId || !trainerId) return;
 
       const trainer = allUsers.find((account) => account.id === trainerId);
@@ -379,7 +456,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
           trainerName: trainer.name || null,
         };
 
-        await dsAssignBerichtsheftTrainer(entryId, payload);
+        await (dsAssignBerichtsheftTrainer as (id: string, payload: Record<string, unknown>) => Promise<void>)(entryId, payload);
 
         setBerichtsheftPendingSignatures((prev) =>
           prev.map((entry) => (entry.id === entryId ? { ...entry, ...payload } : entry))
@@ -396,7 +473,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   // ── Draft helpers ────────────────────────────────────────
 
   const buildBerichtsheftDraftSnapshot = useCallback(
-    (weekStart = berichtsheftWeek) => ({
+    (weekStart = berichtsheftWeek): DraftSnapshot => ({
       week_start: String(weekStart || '').trim(),
       ausbildungsjahr: berichtsheftYear,
       nachweis_nr: berichtsheftNr,
@@ -423,7 +500,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     ]
   );
 
-  const hasBerichtsheftDraftContent = (snapshot) => {
+  const hasBerichtsheftDraftContent = (snapshot: DraftSnapshot | null): boolean => {
     if (!snapshot) return false;
     const hasDayContent = Object.values(snapshot.entries || {}).some(
       (rows) =>
@@ -449,7 +526,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   // ── Server-draft operations ──────────────────────────────
 
   const findBerichtsheftServerDraftByWeek = useCallback(
-    async (weekStart) => {
+    async (weekStart: string): Promise<BerichtsheftEntry | null> => {
       const week = String(weekStart || '').trim();
       if (!week || !user || !berichtsheftRemoteDraftsEnabled) return null;
 
@@ -457,13 +534,13 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
       if (cached?.id) return cached;
 
       try {
-        const entries = await dsLoadBerichtsheftEntries(user.name);
+        const entries = await (dsLoadBerichtsheftEntries as (name: string) => Promise<BerichtsheftEntry[]>)(user.name);
         const row = entries
           .filter(
             (entry) =>
               entry.status === 'draft' && String(entry.week_start || '').trim() === week
           )
-          .reduce((latest, entry) => {
+          .reduce<BerichtsheftEntry | null>((latest, entry) => {
             if (!latest) return entry;
             return toTimestampMs(entry.updated_at) >= toTimestampMs(latest.updated_at)
               ? entry
@@ -488,17 +565,17 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     ]
   );
 
-  const loadBerichtsheftServerDrafts = useCallback(async () => {
+  const loadBerichtsheftServerDrafts = useCallback(async (): Promise<Record<string, BerichtsheftEntry> | null> => {
     if (!user || !berichtsheftRemoteDraftsEnabled) {
       setBerichtsheftServerDraftsByWeek({});
-      return;
+      return null;
     }
 
     try {
-      const entries = await dsLoadBerichtsheftEntries(user.name);
+      const entries = await (dsLoadBerichtsheftEntries as (name: string) => Promise<BerichtsheftEntry[]>)(user.name);
       const data = entries.filter((entry) => entry.status === 'draft');
 
-      const map = {};
+      const map: Record<string, BerichtsheftEntry> = {};
       (Array.isArray(data) ? data : []).forEach((row) => {
         const week = String(row?.week_start || '').trim();
         if (!week) return;
@@ -557,7 +634,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
       if (!hasContent) {
         if (existingDraft?.id) {
           try {
-            await dsDeleteBerichtsheftDraft(targetWeek, { draftId: existingDraft.id });
+            await (dsDeleteBerichtsheftDraft as (week: string, opts: { draftId: string }) => Promise<void>)(targetWeek, { draftId: existingDraft.id });
             removeBerichtsheftServerDraft(targetWeek);
           } catch (error) {
             disableBerichtsheftRemoteDrafts(error);
@@ -599,13 +676,11 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
         total_hours: calculateTotalHoursFromEntries(snapshot.entries),
         totalHours: calculateTotalHoursFromEntries(snapshot.entries),
         status: 'draft',
+        existingDraftId: existingDraft?.id || undefined,
       };
 
       try {
-        const savedRow = await dsUpsertBerichtsheftDraft({
-          ...payload,
-          existingDraftId: existingDraft?.id || undefined,
-        });
+        const savedRow = await (dsUpsertBerichtsheftDraft as (p: Record<string, unknown>) => Promise<BerichtsheftEntry | null>)(payload);
         if (savedRow) upsertBerichtsheftServerDraft(savedRow);
       } catch (error) {
         disableBerichtsheftRemoteDrafts(error);
@@ -652,7 +727,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
       }
 
       try {
-        await dsDeleteBerichtsheftDraft(week, { draftId: existingDraft.id });
+        await (dsDeleteBerichtsheftDraft as (week: string, opts: { draftId: string }) => Promise<void>)(week, { draftId: existingDraft.id });
         removeBerichtsheftServerDraft(week);
       } catch (error) {
         disableBerichtsheftRemoteDrafts(error);
@@ -674,7 +749,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   // ── Load draft for a given week ──────────────────────────
 
   const loadBerichtsheftDraftForWeek = useCallback(
-    (weekStart, options = {}) => {
+    (weekStart: string, options: { resetIfMissing?: boolean; serverDraftMap?: Record<string, BerichtsheftEntry> | null } = {}): boolean => {
       if (!user) return false;
       const targetWeek = String(weekStart || '').trim();
       if (!targetWeek) return false;
@@ -689,7 +764,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
           : berichtsheftServerDraftsByWeek;
       const remoteDraft = remoteMap[targetWeek] || null;
 
-      let draft = null;
+      let draft: DraftSnapshot | BerichtsheftEntry | null = null;
       if (localDraft && remoteDraft) {
         draft =
           toTimestampMs(localDraft.updated_at) >= toTimestampMs(remoteDraft.updated_at)
@@ -735,7 +810,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   // ── Week change handler ──────────────────────────────────
 
   const handleBerichtsheftWeekChange = useCallback(
-    (nextWeek) => {
+    (nextWeek: string) => {
       const targetWeek = String(nextWeek || '').trim();
       if (!targetWeek) return;
 
@@ -792,14 +867,14 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     setBerichtsheftViewMode('edit');
   }, [loadBerichtsheftDraftForWeek]);
 
-  const addWeekEntry = useCallback((day) => {
+  const addWeekEntry = useCallback((day: string) => {
     setCurrentWeekEntries((prev) => ({
       ...prev,
       [day]: [...prev[day], { taetigkeit: '', stunden: '', bereich: '' }],
     }));
   }, []);
 
-  const updateWeekEntry = useCallback((day, index, field, value) => {
+  const updateWeekEntry = useCallback((day: string, index: number, field: keyof DayEntry, value: string) => {
     setCurrentWeekEntries((prev) => ({
       ...prev,
       [day]: prev[day].map((entry, i) => (i === index ? { ...entry, [field]: value } : entry)),
@@ -807,7 +882,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   }, []);
 
   const removeWeekEntry = useCallback(
-    (day, index) => {
+    (day: string, index: number) => {
       if (currentWeekEntries[day].length <= 1) return;
       setCurrentWeekEntries((prev) => ({
         ...prev,
@@ -818,7 +893,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   );
 
   const calculateDayHours = useCallback(
-    (day) =>
+    (day: string): number =>
       currentWeekEntries[day].reduce((sum, entry) => {
         const hours = parseFloat(entry.stunden) || 0;
         return sum + hours;
@@ -827,7 +902,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   );
 
   const calculateTotalHours = useCallback(
-    () =>
+    (): number =>
       Object.keys(currentWeekEntries).reduce(
         (sum, day) => sum + calculateDayHours(day),
         0
@@ -837,19 +912,19 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
 
   // ── Bereich suggestions ──────────────────────────────────
 
-  const getBerichtsheftYearWeeks = useCallback((bereich, year) => {
+  const getBerichtsheftYearWeeks = useCallback((bereich: AusbildungsBereich, year: number): number => {
     const key = `jahr${year}`;
     const value = Number(bereich?.wochen?.[key]);
     return Number.isFinite(value) ? value : 0;
   }, []);
 
   const getBerichtsheftBereichSuggestions = useCallback(
-    (taetigkeit, year) => {
+    (taetigkeit: string, year: number) => {
       const taetigkeitTokens = toBerichtsheftTokens(taetigkeit);
       if (taetigkeitTokens.length === 0) return [];
 
-      const scored = AUSBILDUNGSRAHMENPLAN.map((bereich) => {
-        const keywordSet = new Set();
+      const scored = (AUSBILDUNGSRAHMENPLAN as AusbildungsBereich[]).map((bereich) => {
+        const keywordSet = new Set<string>();
         [bereich.bereich, ...(bereich.inhalte || [])].forEach((text) => {
           toBerichtsheftTokens(text).forEach((token) => keywordSet.add(token));
         });
@@ -902,11 +977,11 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
           ? await findBerichtsheftServerDraftByWeek(berichtsheftWeek)
           : null;
       const persistedEntry = selectedBerichtsheft || existingServerDraft;
-      const targetUserName = persistedEntry?.user_name || user.name;
+      const targetUserName = persistedEntry?.user_name || user!.name;
       const wasReadyForReview = Boolean(
         persistedEntry && isBerichtsheftReadyForReview(persistedEntry)
       );
-      const berichtsheftData = {
+      const berichtsheftData: Record<string, unknown> = {
         user_name: targetUserName,
         week_start: berichtsheftWeek,
         week_end: getWeekEndDate(berichtsheftWeek),
@@ -932,14 +1007,14 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
         berichtsheftData.assigned_by_id = persistedEntry.assigned_by_id || null;
         berichtsheftData.assigned_at = persistedEntry.assigned_at || null;
 
-        await dsSaveBerichtsheft(berichtsheftData, persistedEntry.id);
+        await (dsSaveBerichtsheft as unknown as (data: Record<string, unknown>, id: string) => Promise<void>)(berichtsheftData, persistedEntry.id);
         removeBerichtsheftServerDraft(berichtsheftWeek);
         showToast(
           selectedBerichtsheft ? 'Berichtsheft aktualisiert!' : 'Berichtsheft gespeichert!',
           'success'
         );
       } else {
-        await dsSaveBerichtsheft(berichtsheftData);
+        await (dsSaveBerichtsheft as (data: Record<string, unknown>) => Promise<void>)(berichtsheftData);
         showToast('Berichtsheft gespeichert!', 'success');
         setBerichtsheftNr((prev) => prev + 1);
       }
@@ -987,7 +1062,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     loadBerichtsheftPendingSignatures,
   ]);
 
-  const loadBerichtsheftForEdit = useCallback((entry) => {
+  const loadBerichtsheftForEdit = useCallback((entry: BerichtsheftEntry) => {
     setSelectedBerichtsheft(entry);
     setBerichtsheftWeek(entry.week_start);
     setBerichtsheftYear(entry.ausbildungsjahr);
@@ -1003,10 +1078,10 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   }, []);
 
   const deleteBerichtsheft = useCallback(
-    async (id) => {
+    async (id: string) => {
       if (!confirm('Berichtsheft wirklich löschen?')) return;
       try {
-        await dsDeleteBerichtsheft(id);
+        await (dsDeleteBerichtsheft as (id: string) => Promise<void>)(id);
         loadBerichtsheftEntries();
         loadBerichtsheftPendingSignatures();
       } catch (err) {
@@ -1019,8 +1094,8 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   // ── Progress / PDF ───────────────────────────────────────
 
   const calculateBereichProgress = useCallback(() => {
-    const progress = {};
-    AUSBILDUNGSRAHMENPLAN.forEach((bereich) => {
+    const progress: Record<number, { name: string; icon: string; color: string; sollWochen: number; istStunden: number }> = {};
+    (AUSBILDUNGSRAHMENPLAN as AusbildungsBereich[]).forEach((bereich) => {
       progress[bereich.nr] = {
         name: bereich.bereich,
         icon: bereich.icon,
@@ -1049,11 +1124,11 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   }, [berichtsheftEntries]);
 
   const generateBerichtsheftPDF = useCallback(
-    (entry) => {
+    (entry: BerichtsheftEntry) => {
       const weekStart = new Date(entry.week_start);
       const weekEnd = new Date(entry.week_end);
 
-      const formatDate = (date) =>
+      const formatDate = (date: string | Date) =>
         new Date(date).toLocaleDateString('de-DE', { day: '2-digit', month: 'long' });
 
       const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
@@ -1071,7 +1146,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
 
         dayEntries.forEach((e) => {
           if (e.taetigkeit) {
-            const bereich = AUSBILDUNGSRAHMENPLAN.find((b) => b.nr === parseInt(e.bereich));
+            const bereich = (AUSBILDUNGSRAHMENPLAN as AusbildungsBereich[]).find((b) => b.nr === parseInt(e.bereich));
             dayContent += `<div style="margin-bottom: 3px;">${e.taetigkeit}${bereich ? ` <small style="color: #555;">(${bereich.bereich})</small>` : ''}</div>`;
             dayHours += parseFloat(e.stunden) || 0;
           }
@@ -1239,8 +1314,8 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     `;
 
       const printWindow = window.open('', '_blank');
-      printWindow.document.write(printContent);
-      printWindow.document.close();
+      printWindow!.document.write(printContent);
+      printWindow!.document.close();
     },
     [azubiProfile, user?.name]
   );
@@ -1248,7 +1323,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   // ── Azubi profile ────────────────────────────────────────
 
   const saveAzubiProfile = useCallback(
-    (newProfile) => {
+    (newProfile: AzubiProfile) => {
       setAzubiProfile(newProfile);
       localStorage.setItem('azubi_profile', JSON.stringify(newProfile));
 
@@ -1258,7 +1333,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
       azubiProfileSaveTimerRef.current = setTimeout(async () => {
         if (user?.id) {
           try {
-            await dsUpdateBerichtsheftProfile(user.id, newProfile);
+            await (dsUpdateBerichtsheftProfile as (id: string, profile: AzubiProfile) => Promise<void>)(user.id, newProfile);
           } catch (err) {
             console.warn('Berichtsheft-Profil Sync fehlgeschlagen:', err);
           }
@@ -1291,7 +1366,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     if (user.id && (!azubiProfile.vorname || !azubiProfile.nachname)) {
       (async () => {
         try {
-          const profile = await dsLoadBerichtsheftProfile(user.id);
+          const profile = await (dsLoadBerichtsheftProfile as unknown as (id: string) => Promise<AzubiProfile | null>)(user.id);
           if (profile) {
             setAzubiProfile(profile);
             localStorage.setItem('azubi_profile', JSON.stringify(profile));
