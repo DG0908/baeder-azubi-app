@@ -1,0 +1,142 @@
+services:
+  postgres-staging:
+    image: postgres:16-alpine
+    init: true
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-azubi_staging}
+      POSTGRES_USER: ${POSTGRES_USER:-azubi_staging}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-azubi_staging} -d ${POSTGRES_DB:-azubi_staging}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-staging-data:/var/lib/postgresql/data
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - azubi-staging-net
+
+  server-staging:
+    build:
+      context: ./server
+    init: true
+    restart: unless-stopped
+    env_file:
+      - .env.staging
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      APP_PORT: ${APP_PORT:-3000}
+      APP_CORS_ORIGINS: ${APP_CORS_ORIGINS}
+      APP_COOKIE_DOMAIN: ${APP_COOKIE_DOMAIN}
+      APP_COOKIE_SECURE: ${APP_COOKIE_SECURE}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
+      INVITATION_CODE_PEPPER: ${INVITATION_CODE_PEPPER}
+      PASSWORD_RESET_TOKEN_PEPPER: ${PASSWORD_RESET_TOKEN_PEPPER}
+      PASSWORD_RESET_TTL: ${PASSWORD_RESET_TTL}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURE: ${SMTP_SECURE}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+      DUEL_DEFAULT_QUESTION_COUNT: ${DUEL_DEFAULT_QUESTION_COUNT}
+      DUEL_REQUEST_TTL_MINUTES: ${DUEL_REQUEST_TTL_MINUTES}
+      DUEL_TURN_TTL_MINUTES: ${DUEL_TURN_TTL_MINUTES}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      WEB_PUSH_PUBLIC_KEY: ${WEB_PUSH_PUBLIC_KEY}
+      WEB_PUSH_PRIVATE_KEY: ${WEB_PUSH_PRIVATE_KEY}
+      WEB_PUSH_SUBJECT: ${WEB_PUSH_SUBJECT}
+      NODE_ENV: production
+    depends_on:
+      postgres-staging:
+        condition: service_healthy
+    expose:
+      - "3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.azubi-api-staging.rule=Host(`staging.api.smartbaden.de`)"
+      - "traefik.http.routers.azubi-api-staging.entrypoints=https"
+      - "traefik.http.routers.azubi-api-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.azubi-api-staging.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - azubi-staging-net
+      - coolify
+
+  web-staging:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
+        VITE_WEB_PUSH_PUBLIC_KEY: ${VITE_WEB_PUSH_PUBLIC_KEY:-}
+    init: true
+    restart: unless-stopped
+    depends_on:
+      server-staging:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.azubi-web-staging.rule=Host(`staging.azubi.smartbaden.de`)"
+      - "traefik.http.routers.azubi-web-staging.entrypoints=https"
+      - "traefik.http.routers.azubi-web-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.azubi-web-staging.loadbalancer.server.port=80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - azubi-staging-net
+      - coolify
+
+volumes:
+  postgres-staging-data:
+
+networks:
+  azubi-staging-net:
+    driver: bridge
+  coolify:
+    external: true
