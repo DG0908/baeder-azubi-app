@@ -1,17 +1,26 @@
-import { Component } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import * as Sentry from '@sentry/react';
 
-export class ErrorBoundary extends Component {
-  constructor(props) {
+interface ErrorBoundaryProps {
+  darkMode?: boolean;
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  error: Error | null;
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { error: null };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { error };
   }
 
-  componentDidCatch(error, info) {
+  componentDidCatch(error: Error, info: ErrorInfo) {
     Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
   }
 

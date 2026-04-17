@@ -4,9 +4,53 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES } from '../../data/constants';
 
-const StatsView = ({ userStats, BADGES, userBadges, leaderboard }) => {
-  const { user } = useAuth();
-  const { darkMode } = useApp();
+interface CategoryStats {
+  correct: number;
+  total: number;
+}
+
+interface UserStats {
+  wins: number;
+  losses: number;
+  draws: number;
+  winStreak: number;
+  bestWinStreak: number;
+  categoryStats?: Record<string, CategoryStats>;
+}
+
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+}
+
+interface UserBadge {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface LeaderboardEntry {
+  name: string;
+  wins: number;
+  losses: number;
+  draws: number;
+  points: number;
+}
+
+interface StatsViewProps {
+  userStats: UserStats | null;
+  BADGES: Badge[];
+  userBadges: UserBadge[];
+  leaderboard: LeaderboardEntry[];
+}
+
+const StatsView: React.FC<StatsViewProps> = ({ userStats, BADGES, userBadges, leaderboard }) => {
+  const auth = useAuth();
+  const app = useApp();
+  const user = auth?.user;
+  const darkMode = app?.darkMode;
 
   return (
     <div className="space-y-6">
@@ -192,7 +236,7 @@ const StatsView = ({ userStats, BADGES, userBadges, leaderboard }) => {
         <div className="space-y-2">
           {leaderboard.map((player, idx) => (
             <div key={player.name} className={`flex items-center justify-between p-4 rounded-lg ${
-              player.name === user.name ? darkMode ? 'bg-blue-900/50 border-2 border-blue-500' : 'bg-blue-50 border-2 border-blue-500' : darkMode ? 'bg-slate-700' : 'bg-gray-50'
+              player.name === user?.name ? darkMode ? 'bg-blue-900/50 border-2 border-blue-500' : 'bg-blue-50 border-2 border-blue-500' : darkMode ? 'bg-slate-700' : 'bg-gray-50'
             }`}>
               <div className="flex items-center space-x-4">
                 <div className={`text-2xl font-bold ${
@@ -217,14 +261,14 @@ const StatsView = ({ userStats, BADGES, userBadges, leaderboard }) => {
       </div>
 
       {userStats && userStats.categoryStats && Object.entries(userStats.categoryStats).some(([catId, stat]) => {
-        const hasCategory = CATEGORIES.some(c => c.id === catId);
+        const hasCategory = (CATEGORIES as Array<{ id: string }>).some(c => c.id === catId);
         return hasCategory && stat && typeof stat === 'object' && typeof stat.total === 'number';
       }) && (
         <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
           <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>📈 Performance nach Kategorie</h3>
           <div className="space-y-3">
             {Object.entries(userStats.categoryStats).map(([catId, stats]) => {
-              const cat = CATEGORIES.find(c => c.id === catId);
+              const cat = (CATEGORIES as Array<{ id: string; name: string; icon: string; color: string }>).find(c => c.id === catId);
               if (!cat || !stats || typeof stats !== 'object' || typeof stats.total !== 'number') {
                 return null;
               }

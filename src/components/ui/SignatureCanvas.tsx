@@ -1,19 +1,25 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-// Digitale Unterschrift Canvas Komponente
-const SignatureCanvas = ({ value, onChange, darkMode, label }) => {
-  const canvasRef = useRef(null);
+interface SignatureCanvasProps {
+  value: string;
+  onChange: (dataUrl: string) => void;
+  darkMode?: boolean;
+  label: string;
+}
+
+const SignatureCanvas: React.FC<SignatureCanvasProps> = ({ value, onChange, darkMode, label }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    // Canvas leeren und Hintergrund setzen
     ctx.fillStyle = darkMode ? '#1e293b' : '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Wenn ein Wert vorhanden ist, lade das Bild
     if (value) {
       const img = new Image();
       img.onload = () => {
@@ -25,28 +31,32 @@ const SignatureCanvas = ({ value, onChange, darkMode, label }) => {
     }
   }, [value, darkMode]);
 
-  const getCoordinates = useCallback((e) => {
+  const getCoordinates = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
-    if (e.touches) {
+    if ('touches' in e && e.touches.length > 0) {
       return {
         x: (e.touches[0].clientX - rect.left) * scaleX,
         y: (e.touches[0].clientY - rect.top) * scaleY
       };
     }
+    const mouseEvent = e as React.MouseEvent;
     return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY
+      x: (mouseEvent.clientX - rect.left) * scaleX,
+      y: (mouseEvent.clientY - rect.top) * scaleY
     };
   }, []);
 
-  const startDrawing = useCallback((e) => {
+  const startDrawing = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     const { x, y } = getCoordinates(e);
 
     ctx.beginPath();
@@ -54,12 +64,14 @@ const SignatureCanvas = ({ value, onChange, darkMode, label }) => {
     setIsDrawing(true);
   }, [getCoordinates]);
 
-  const draw = useCallback((e) => {
+  const draw = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     if (!isDrawing) return;
     e.preventDefault();
 
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     const { x, y } = getCoordinates(e);
 
     ctx.lineWidth = 2;
@@ -73,13 +85,15 @@ const SignatureCanvas = ({ value, onChange, darkMode, label }) => {
     if (isDrawing) {
       setIsDrawing(false);
       const canvas = canvasRef.current;
-      onChange(canvas.toDataURL());
+      if (canvas) onChange(canvas.toDataURL());
     }
   }, [isDrawing, onChange]);
 
   const clearSignature = () => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     ctx.fillStyle = darkMode ? '#1e293b' : '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     onChange('');

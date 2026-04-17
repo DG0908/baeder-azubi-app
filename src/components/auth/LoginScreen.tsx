@@ -1,16 +1,54 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
-  previewInvitationCodeStatus as dsPreviewInvitationCodeStatus,
   requestPasswordReset as dsRequestPasswordReset,
   confirmPasswordReset as dsConfirmPasswordReset
 } from '../../lib/dataService';
 import { LegalImprintContent, LegalPrivacyContent } from '../legal/LegalContent';
 import TotpInputView from '../views/TotpInputView';
 
-const LoginScreen = () => {
+interface PasswordStrength {
+  score: number;
+  label: string;
+  color: string;
+}
+
+interface CodeStatusValid {
+  valid: true;
+  orgName: string;
+  role: string;
+}
+
+interface CodeStatusInvalid {
+  valid: false;
+  reason?: string;
+}
+
+interface CodeStatusSecure {
+  secureValidation: true;
+}
+
+type CodeStatus = 'checking' | CodeStatusValid | CodeStatusInvalid | CodeStatusSecure | null;
+
+const getPasswordStrength = (pw: string): PasswordStrength => {
+  if (!pw) return { score: 0, label: '', color: '' };
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (score <= 1) return { score, label: 'Sehr schwach', color: 'bg-red-500' };
+  if (score === 2) return { score, label: 'Schwach', color: 'bg-orange-400' };
+  if (score === 3) return { score, label: 'Mittel', color: 'bg-yellow-400' };
+  if (score === 4) return { score, label: 'Stark', color: 'bg-lime-500' };
+  return { score, label: 'Sehr stark', color: 'bg-green-500' };
+};
+
+const LoginScreen: React.FC = () => {
+  const auth = useAuth();
   const {
     authView,
     setAuthView,
@@ -23,12 +61,7 @@ const LoginScreen = () => {
     handleLogin,
     handleRegister,
     totpPendingToken
-  } = useAuth();
-
-  // If a TOTP challenge is pending, show the TOTP input screen
-  if (totpPendingToken) {
-    return <TotpInputView />;
-  }
+  } = auth!;
 
   const [resetEmail, setResetEmail] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
@@ -38,39 +71,8 @@ const LoginScreen = () => {
   const [newPasswordLoading, setNewPasswordLoading] = useState(false);
   const minPasswordLength = 12;
 
-  const getPasswordStrength = (pw) => {
-    if (!pw) return { score: 0, label: '', color: '' };
-    let score = 0;
-    if (pw.length >= 8) score++;
-    if (pw.length >= 12) score++;
-    if (/[A-Z]/.test(pw)) score++;
-    if (/[0-9]/.test(pw)) score++;
-    if (/[^A-Za-z0-9]/.test(pw)) score++;
-    if (score <= 1) return { score, label: 'Sehr schwach', color: 'bg-red-500' };
-    if (score === 2) return { score, label: 'Schwach', color: 'bg-orange-400' };
-    if (score === 3) return { score, label: 'Mittel', color: 'bg-yellow-400' };
-    if (score === 4) return { score, label: 'Stark', color: 'bg-lime-500' };
-    return { score, label: 'Sehr stark', color: 'bg-green-500' };
-  };
-
-  const handleLoginSubmit = (event) => {
-    event.preventDefault();
-    handleLogin();
-  };
-
-  const handleRegisterSubmit = (event) => {
-    event.preventDefault();
-    handleRegister();
-  };
-
-  const handlePasswordResetSubmit = (event) => {
-    event.preventDefault();
-    handlePasswordReset();
-  };
-
-  // Live-Validierung des Einladungscodes
-  const [codeStatus, setCodeStatus] = useState(null); // null | 'checking' | { valid: true, orgName, role } | { valid: false } | { secureValidation: true }
-  const codeTimerRef = useRef(null);
+  const [codeStatus, setCodeStatus] = useState<CodeStatus>(null);
+  const codeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const code = registerData.invitationCode?.trim();
@@ -83,6 +85,26 @@ const LoginScreen = () => {
     return () => {};
   }, [registerData.invitationCode]);
 
+  // If a TOTP challenge is pending, show the TOTP input screen
+  if (totpPendingToken) {
+    return <TotpInputView />;
+  }
+
+  const handleLoginSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    handleLogin();
+  };
+
+  const handleRegisterSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    handleRegister();
+  };
+
+  const handlePasswordResetSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    handlePasswordReset();
+  };
+
   const handlePasswordReset = async () => {
     if (!resetEmail.trim()) {
       toast.error('Bitte gib deine E-Mail-Adresse ein.');
@@ -90,10 +112,10 @@ const LoginScreen = () => {
     }
     setResetLoading(true);
     try {
-      await dsRequestPasswordReset(resetEmail, { redirectTo: window.location.origin });
+      await (dsRequestPasswordReset as (email: string, opts: { redirectTo: string }) => Promise<void>)(resetEmail, { redirectTo: window.location.origin });
       setResetSent(true);
-    } catch (error) {
-      toast.error('Fehler: ' + error.message);
+    } catch (error: unknown) {
+      toast.error('Fehler: ' + (error as Error).message);
     } finally {
       setResetLoading(false);
     }
@@ -158,19 +180,19 @@ const LoginScreen = () => {
       try {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('password_reset_token') || params.get('token') || window.location.hash?.match(/access_token=([^&]+)/)?.[1];
-        await dsConfirmPasswordReset({ token, newPassword });
+        await (dsConfirmPasswordReset as (data: { token: string | null | undefined; newPassword: string }) => Promise<void>)({ token, newPassword });
         toast.success('Passwort erfolgreich geaendert! Du kannst dich jetzt anmelden.');
         setNewPassword('');
         setNewPasswordConfirm('');
         setAuthView('login');
-      } catch (error) {
-        toast.error('Fehler: ' + error.message);
+      } catch (error: unknown) {
+        toast.error('Fehler: ' + (error as Error).message);
       } finally {
         setNewPasswordLoading(false);
       }
     };
 
-    const handleSetNewPasswordSubmit = (event) => {
+    const handleSetNewPasswordSubmit = (event: React.FormEvent) => {
       event.preventDefault();
       handleSetNewPassword();
     };
@@ -425,8 +447,8 @@ const LoginScreen = () => {
               value={registerData.invitationCode}
               onChange={(e) => setRegisterData({...registerData, invitationCode: e.target.value.toUpperCase()})}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono tracking-wider text-center text-lg ${
-                codeStatus?.valid === true ? 'border-green-400 bg-green-50' :
-                codeStatus?.valid === false ? 'border-red-400 bg-red-50' :
+                codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === true ? 'border-green-400 bg-green-50' :
+                codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === false ? 'border-red-400 bg-red-50' :
                 'border-cyan-300'
               }`}
               style={{ letterSpacing: '0.15em' }}
@@ -434,23 +456,23 @@ const LoginScreen = () => {
             {codeStatus === 'checking' && (
               <div className="text-sm text-gray-500 text-center animate-pulse">Code wird geprüft...</div>
             )}
-            {codeStatus?.valid === true && (
+            {codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === true && (
               <div className="bg-green-50 border border-green-300 rounded-lg p-3 text-sm text-green-800 flex items-center gap-2">
                 <CheckCircle size={18} className="text-green-600 flex-shrink-0" />
                 <div>
                   <div className="font-bold flex items-center gap-1">
-                    <Building2 size={14} /> {codeStatus.orgName}
+                    <Building2 size={14} /> {(codeStatus as CodeStatusValid).orgName}
                   </div>
-                  <div>Registrierung als: {codeStatus.role === 'azubi' ? 'Azubi' : 'Ausbilder'}</div>
+                  <div>Registrierung als: {(codeStatus as CodeStatusValid).role === 'azubi' ? 'Azubi' : 'Ausbilder'}</div>
                 </div>
               </div>
             )}
-            {codeStatus?.valid === false && (
+            {codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === false && (
               <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm text-red-800">
-                {codeStatus.reason || 'Ungültiger Einladungscode'}
+                {(codeStatus as CodeStatusInvalid).reason || 'Ungültiger Einladungscode'}
               </div>
             )}
-            {codeStatus?.secureValidation && (
+            {codeStatus && typeof codeStatus === 'object' && 'secureValidation' in codeStatus && (
               <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
                 <Shield className="inline mr-2" size={16} />
                 Der Einladungscode wird beim Absenden serverseitig geprüft.

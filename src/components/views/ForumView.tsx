@@ -15,7 +15,41 @@ import {
   toggleForumPostLock as dsToggleForumPostLock
 } from '../../lib/dataService';
 
-const FORUM_CATEGORIES = [
+interface ForumCategory {
+  id: string;
+  label: string;
+  icon: string;
+  color: string;
+  description: string;
+  canPost: string[];
+  canRead: string[];
+}
+
+interface ForumPost {
+  id: string;
+  title: string;
+  content: string;
+  user_id: string;
+  user_name: string;
+  user_role: string;
+  user_avatar?: string | null;
+  category: string;
+  pinned?: boolean;
+  locked?: boolean;
+  reply_count?: number;
+  created_at: string;
+}
+
+interface ForumReply {
+  id: string;
+  content: string;
+  user_id: string;
+  user_name: string;
+  user_role: string;
+  created_at: string;
+}
+
+const FORUM_CATEGORIES: ForumCategory[] = [
   { id: 'updates', label: 'Aktualisierungen', icon: '📢', color: 'bg-blue-500', description: 'Neuigkeiten zur App', canPost: ['admin'], canRead: ['all'] },
   { id: 'wuensche', label: 'Wünsche & Anregungen', icon: '💡', color: 'bg-amber-500', description: 'Feedback und Ideen', canPost: ['all'], canRead: ['all'] },
   { id: 'fragen', label: 'Fragen', icon: '❓', color: 'bg-orange-500', description: 'Fragen stellen und beantworten', canPost: ['all'], canRead: ['all'] },
@@ -24,38 +58,36 @@ const FORUM_CATEGORIES = [
   { id: 'nuetzliches', label: 'Interessantes & Nützliches', icon: '⭐', color: 'bg-emerald-500', description: 'Tipps, Links, Wissenswertes', canPost: ['all'], canRead: ['all'] },
 ];
 
-const ForumView = () => {
-  const { user } = useAuth();
-  const { darkMode, showToast } = useApp();
+const ForumView: React.FC = () => {
+  const auth = useAuth();
+  const app = useApp();
+  const user = auth?.user;
+  const darkMode = app?.darkMode;
+  const showToast = app?.showToast;
 
-  const [view, setView] = useState('categories'); // 'categories' | 'list' | 'thread' | 'new'
-  const [activeCategory, setActiveCategory] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [activePost, setActivePost] = useState(null);
-  const [replies, setReplies] = useState([]);
+  const [view, setView] = useState<'categories' | 'list' | 'thread' | 'new'>('categories');
+  const [activeCategory, setActiveCategory] = useState<ForumCategory | null>(null);
+  const [posts, setPosts] = useState<ForumPost[]>([]);
+  const [activePost, setActivePost] = useState<ForumPost | null>(null);
+  const [replies, setReplies] = useState<ForumReply[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // New post form
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-
-  // Reply
   const [replyContent, setReplyContent] = useState('');
-
-  // Category counts
-  const [categoryCounts, setCategoryCounts] = useState({});
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
   const userRole = user?.role || 'azubi';
-  const isAdmin = userRole === 'admin' || user?.isOwner;
+  const isAdmin = userRole === 'admin' || !!(user as Record<string, unknown>)?.isOwner;
 
-  const canReadCategory = (cat) => {
-    if (isAdmin || user?.isOwner) return true;
+  const canReadCategory = (cat: ForumCategory): boolean => {
+    if (isAdmin) return true;
     if (cat.canRead.includes('all')) return true;
     return cat.canRead.includes(userRole);
   };
 
-  const canPostInCategory = (cat) => {
-    if (isAdmin || user?.isOwner) return true;
+  const canPostInCategory = (cat: ForumCategory): boolean => {
+    if (isAdmin) return true;
     if (cat.canPost.includes('all')) return true;
     return cat.canPost.includes(userRole);
   };
@@ -64,33 +96,30 @@ const ForumView = () => {
 
   const loadCounts = async () => {
     try {
-      setCategoryCounts(await dsLoadForumCategoryCounts());
+      setCategoryCounts(await (dsLoadForumCategoryCounts as () => Promise<Record<string, number>>)());
     } catch (error) {
       console.error('Forum counts error:', error);
     }
   };
 
-  // Load category counts
   useEffect(() => {
     loadCounts();
   }, [view]);
 
-  // Load posts for category
-  const loadPosts = async (categoryId) => {
+  const loadPosts = async (categoryId: string) => {
     setLoading(true);
     try {
-      setPosts(await dsLoadForumPosts(categoryId));
-    } catch (error) {
-      showToast('Fehler beim Laden: ' + error.message, 'error');
+      setPosts(await (dsLoadForumPosts as (id: string) => Promise<ForumPost[]>)(categoryId));
+    } catch (error: unknown) {
+      showToast?.('Fehler beim Laden: ' + (error as Error).message, 'error');
     }
     setLoading(false);
   };
 
-  // Load replies for post
-  const loadReplies = async (postId) => {
+  const loadReplies = async (postId: string) => {
     setLoading(true);
     try {
-      const thread = await dsLoadForumThread(postId);
+      const thread = await (dsLoadForumThread as (id: string) => Promise<{ post?: ForumPost; replies?: ForumReply[] }>)(postId);
       setReplies(thread?.replies || []);
       if (thread?.post) {
         setActivePost(thread.post);
@@ -101,13 +130,13 @@ const ForumView = () => {
     setLoading(false);
   };
 
-  const openCategory = (cat) => {
+  const openCategory = (cat: ForumCategory) => {
     setActiveCategory(cat);
     loadPosts(cat.id);
     setView('list');
   };
 
-  const openThread = (post) => {
+  const openThread = (post: ForumPost) => {
     setActivePost(post);
     loadReplies(post.id);
     setView('thread');
@@ -115,106 +144,106 @@ const ForumView = () => {
 
   const createPost = async () => {
     if (!newTitle.trim() || !newContent.trim()) {
-      showToast('Titel und Inhalt sind Pflichtfelder!', 'error');
+      showToast?.('Titel und Inhalt sind Pflichtfelder!', 'error');
       return;
     }
     try {
-      await dsCreateForumPost({
-        userId: user.id,
-        userName: user.name,
-        userRole: user.role,
-        userAvatar: user.avatar,
-        category: activeCategory.id,
+      await (dsCreateForumPost as (data: Record<string, unknown>) => Promise<unknown>)({
+        userId: user!.id,
+        userName: user!.name,
+        userRole: user!.role,
+        userAvatar: (user as Record<string, unknown>)?.avatar,
+        category: activeCategory!.id,
         title: newTitle.trim(),
         content: newContent.trim()
       });
-      showToast('Beitrag erstellt!', 'success');
+      showToast?.('Beitrag erstellt!', 'success');
       setNewTitle('');
       setNewContent('');
       setView('list');
       loadCounts();
-      loadPosts(activeCategory.id);
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
+      loadPosts(activeCategory!.id);
+    } catch (error: unknown) {
+      showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
   };
 
   const sendReply = async () => {
     if (!replyContent.trim()) return;
-    if (activePost.locked) {
-      showToast('Dieses Thema ist geschlossen.', 'error');
+    if (activePost?.locked) {
+      showToast?.('Dieses Thema ist geschlossen.', 'error');
       return;
     }
     try {
-      await dsCreateForumReply(activePost.id, {
-        userId: user.id,
-        userName: user.name,
-        userRole: user.role,
-        userAvatar: user.avatar,
+      await (dsCreateForumReply as (postId: string, data: Record<string, unknown>) => Promise<unknown>)(activePost!.id, {
+        userId: user!.id,
+        userName: user!.name,
+        userRole: user!.role,
+        userAvatar: (user as Record<string, unknown>)?.avatar,
         content: replyContent.trim()
       });
       setReplyContent('');
-      loadReplies(activePost.id);
-      setActivePost(prev => ({ ...prev, reply_count: (prev.reply_count || 0) + 1 }));
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
+      loadReplies(activePost!.id);
+      setActivePost(prev => prev ? { ...prev, reply_count: (prev.reply_count || 0) + 1 } : prev);
+    } catch (error: unknown) {
+      showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
   };
 
-  const deletePost = async (postId) => {
+  const deletePost = async (postId: string) => {
     if (!confirm('Beitrag wirklich löschen? Alle Antworten werden ebenfalls gelöscht.')) return;
     try {
-      await dsDeleteForumPost(postId);
-      showToast('Beitrag gelöscht', 'success');
+      await (dsDeleteForumPost as (id: string) => Promise<unknown>)(postId);
+      showToast?.('Beitrag gelöscht', 'success');
       loadCounts();
       if (view === 'thread') {
         setView('list');
-        loadPosts(activeCategory.id);
+        loadPosts(activeCategory!.id);
       } else {
-        loadPosts(activeCategory.id);
+        loadPosts(activeCategory!.id);
       }
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
+    } catch (error: unknown) {
+      showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
   };
 
-  const deleteReply = async (replyId) => {
+  const deleteReply = async (replyId: string) => {
     if (!confirm('Antwort löschen?')) return;
     try {
-      await dsDeleteForumReply(replyId);
-      showToast('Antwort gelöscht', 'success');
-      loadReplies(activePost.id);
-      setActivePost(prev => ({ ...prev, reply_count: Math.max((prev.reply_count || 1) - 1, 0) }));
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
+      await (dsDeleteForumReply as (id: string) => Promise<unknown>)(replyId);
+      showToast?.('Antwort gelöscht', 'success');
+      loadReplies(activePost!.id);
+      setActivePost(prev => prev ? { ...prev, reply_count: Math.max((prev.reply_count || 1) - 1, 0) } : prev);
+    } catch (error: unknown) {
+      showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
   };
 
-  const togglePin = async (postId, currentPinned) => {
+  const togglePin = async (postId: string, currentPinned?: boolean) => {
     try {
-      await dsToggleForumPostPin(postId, currentPinned);
-      loadPosts(activeCategory.id);
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
+      await (dsToggleForumPostPin as (id: string, pinned: boolean | undefined) => Promise<unknown>)(postId, currentPinned);
+      loadPosts(activeCategory!.id);
+    } catch (error: unknown) {
+      showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
   };
 
-  const toggleLock = async (postId, currentLocked) => {
+  const toggleLock = async (postId: string, currentLocked?: boolean) => {
     try {
-      await dsToggleForumPostLock(postId, currentLocked);
+      await (dsToggleForumPostLock as (id: string, locked: boolean | undefined) => Promise<unknown>)(postId, currentLocked);
       if (view === 'thread') {
-        setActivePost(prev => ({ ...prev, locked: !currentLocked }));
+        setActivePost(prev => prev ? { ...prev, locked: !currentLocked } : prev);
       }
-      loadPosts(activeCategory.id);
-    } catch (error) {
-      showToast('Fehler: ' + error.message, 'error');
+      loadPosts(activeCategory!.id);
+    } catch (error: unknown) {
+      showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
   };
 
-  const formatDate = (dateStr) => {
+  const formatDate = (dateStr: string): string => {
     const d = new Date(dateStr);
     const now = new Date();
-    const diffMs = now - d;
+    const diffMs = now.getTime() - d.getTime();
     const diffMin = Math.floor(diffMs / 60000);
     const diffH = Math.floor(diffMs / 3600000);
     const diffD = Math.floor(diffMs / 86400000);
@@ -226,7 +255,7 @@ const ForumView = () => {
     return d.toLocaleDateString('de-DE');
   };
 
-  const getRoleBadge = (role) => {
+  const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin': return <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-purple-200 text-purple-800">Admin</span>;
       case 'trainer': return <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-blue-200 text-blue-800">Ausbilder</span>;
@@ -234,8 +263,8 @@ const ForumView = () => {
     }
   };
 
-  const canDelete = (itemUserId) => {
-    return user.id === itemUserId || isAdmin;
+  const canDelete = (itemUserId: string): boolean => {
+    return user!.id === itemUserId || !!isAdmin;
   };
 
   // ─── CATEGORIES VIEW ───
@@ -292,10 +321,10 @@ const ForumView = () => {
               Zurück
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-2xl">{activeCategory.icon}</span>
-              <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>{activeCategory.label}</h3>
+              <span className="text-2xl">{activeCategory?.icon}</span>
+              <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>{activeCategory?.label}</h3>
             </div>
-            {canPostInCategory(activeCategory) && (
+            {activeCategory && canPostInCategory(activeCategory) && (
               <button
                 onClick={() => setView('new')}
                 className="flex items-center gap-1 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium"
@@ -312,7 +341,7 @@ const ForumView = () => {
           <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             <MessageSquare size={48} className="mx-auto mb-3 opacity-30" />
             <p>Noch keine Beiträge in dieser Kategorie.</p>
-            {canPostInCategory(activeCategory) && (
+            {activeCategory && canPostInCategory(activeCategory) && (
               <button
                 onClick={() => setView('new')}
                 className="mt-3 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-medium"
@@ -376,13 +405,13 @@ const ForumView = () => {
             className={`flex items-center gap-2 ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
           >
             <ArrowLeft size={20} />
-            Zurück zu {activeCategory.label}
+            Zurück zu {activeCategory?.label}
           </button>
         </div>
 
         <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-md space-y-4`}>
           <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Neues Thema in „{activeCategory.label}"
+            Neues Thema in „{activeCategory?.label}"
           </h3>
 
           <input
@@ -427,11 +456,11 @@ const ForumView = () => {
       <div className="space-y-4">
         <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-md`}>
           <button
-            onClick={() => { setView('list'); loadPosts(activeCategory.id); }}
+            onClick={() => { setView('list'); loadPosts(activeCategory!.id); }}
             className={`flex items-center gap-2 ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
           >
             <ArrowLeft size={20} />
-            Zurück zu {activeCategory.label}
+            Zurück zu {activeCategory?.label}
           </button>
         </div>
 
@@ -450,7 +479,6 @@ const ForumView = () => {
                 <span>{formatDate(activePost.created_at)}</span>
               </div>
             </div>
-            {/* Admin actions */}
             {isAdmin && (
               <div className="flex gap-1">
                 <button

@@ -1,11 +1,49 @@
 import React from 'react';
-import { Building2, Lock, MessageCircle, Send, Shield, Trash2, Users } from 'lucide-react';
+import { Building2, Lock, MessageCircle, Send, Shield, Trash2, Users, type LucideIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { getAvatarById, PERMISSIONS } from '../../data/constants';
 import AvatarBadge from '../ui/AvatarBadge';
 
-const CHAT_SCOPE_META = {
+interface ChatMessage {
+  id: string;
+  user: string;
+  text: string;
+  time: number;
+  avatar?: string | null;
+  senderId: string | null;
+  senderRole: string;
+  scope: string;
+  organizationId: string | null;
+  recipientId: string | null;
+  isDeleted?: boolean;
+}
+
+interface ChatCandidate {
+  id: string;
+  name: string;
+  role: string;
+  avatar?: string | null;
+  company?: string;
+  [key: string]: unknown;
+}
+
+interface ChatViewProps {
+  messages: ChatMessage[];
+  newMessage: string;
+  setNewMessage: (value: string) => void;
+  sendMessage: () => void;
+  deleteMessage?: (message: ChatMessage) => void;
+  chatScope: string;
+  setChatScope: (scope: string) => void;
+  selectedChatRecipientId: string;
+  setSelectedChatRecipientId: (id: string) => void;
+  directChatCandidates: ChatCandidate[];
+  hasChatOrganization: boolean;
+  canModerateChat: boolean;
+}
+
+const CHAT_SCOPE_META: Record<string, { label: string; description: string; icon: LucideIcon }> = {
   azubi_room: {
     label: 'Azubi-Chat',
     description: 'Nur Azubis aus deinem Betrieb',
@@ -25,11 +63,11 @@ const CHAT_SCOPE_META = {
 
 const STAFF_ROLES = new Set(['trainer', 'ausbilder', 'admin']);
 
-const getRoleKey = (value) => String(value || '').trim().toLowerCase();
+const getRoleKey = (value: unknown): string => String(value || '').trim().toLowerCase();
 
-const getFirstName = (fullName) => String(fullName || '').trim().split(/\s+/)[0] || '?';
+const getFirstName = (fullName: unknown): string => String(fullName || '').trim().split(/\s+/)[0] || '?';
 
-const formatChatTime = (timeInput) => {
+const formatChatTime = (timeInput: number): string => {
   const date = new Date(timeInput);
   if (Number.isNaN(date.getTime())) return '';
   return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
@@ -37,7 +75,7 @@ const formatChatTime = (timeInput) => {
 
 const SELF_DELETE_WINDOW_MS = 10 * 60 * 1000;
 
-const ChatView = ({
+const ChatView: React.FC<ChatViewProps> = ({
   messages,
   newMessage,
   setNewMessage,
@@ -51,9 +89,11 @@ const ChatView = ({
   hasChatOrganization,
   canModerateChat
 }) => {
-  const { user } = useAuth();
-  const { darkMode } = useApp();
-  const messagesEndRef = React.useRef(null);
+  const auth = useAuth();
+  const app = useApp();
+  const user = auth?.user;
+  const darkMode = app?.darkMode;
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   const allowedScopes = getRoleKey(user?.role) === 'azubi'
     ? ['azubi_room', 'staff_room', 'direct_staff']
@@ -121,8 +161,8 @@ const ChatView = ({
             <div className={`flex items-center gap-2 rounded-xl px-3 py-2 ${darkMode ? 'bg-white/10 border-white/15' : 'bg-white/20 border-white/25'} border`}>
               <Building2 size={18} />
               <div className="text-sm">
-                <div className="font-semibold">{user?.organizationName || 'Kein Betrieb zugewiesen'}</div>
-                <div className="text-white/80">{(PERMISSIONS[user?.role] || PERMISSIONS.azubi).label}</div>
+                <div className="font-semibold">{(user as Record<string, unknown>)?.organizationName as string || 'Kein Betrieb zugewiesen'}</div>
+                <div className="text-white/80">{((PERMISSIONS as Record<string, { label: string }>)[user?.role || ''] || (PERMISSIONS as Record<string, { label: string }>).azubi).label}</div>
               </div>
             </div>
           </div>
@@ -185,7 +225,7 @@ const ChatView = ({
                 {directChatCandidates.length > 0 ? (
                   directChatCandidates.map((account) => {
                     const isActive = account.id === selectedChatRecipientId;
-                    const roleLabel = (PERMISSIONS[account.role] || PERMISSIONS.azubi).label;
+                    const roleLabel = ((PERMISSIONS as Record<string, { label: string }>)[account.role] || (PERMISSIONS as Record<string, { label: string }>).azubi).label;
 
                     return (
                       <button
@@ -264,7 +304,7 @@ const ChatView = ({
                 filteredMessages.map((message) => {
                   const isMine = message.senderId === user?.id || message.user === user?.name;
                   const senderIsStaff = STAFF_ROLES.has(getRoleKey(message.senderRole));
-                  const senderLabel = (PERMISSIONS[message.senderRole] || PERMISSIONS.azubi).label;
+                  const senderLabel = ((PERMISSIONS as Record<string, { label: string }>)[message.senderRole] || (PERMISSIONS as Record<string, { label: string }>).azubi).label;
                   const isDeleted = Boolean(message.isDeleted);
                   const isWithinOwnDeleteWindow = isMine && (Date.now() - Number(message.time || 0)) <= SELF_DELETE_WINDOW_MS;
                   const canDeleteMessage = !isDeleted && (canModerateChat || isWithinOwnDeleteWindow);
@@ -335,7 +375,7 @@ const ChatView = ({
 
                       {isMine && (
                         <AvatarBadge
-                          avatar={user?.avatar ? getAvatarById(user.avatar) : null}
+                          avatar={user?.avatar ? getAvatarById(user.avatar as string) : null}
                           fallback={String(user?.name || '?').charAt(0).toUpperCase()}
                           size="sm"
                           className="border border-white/40 flex-shrink-0 mt-1"
