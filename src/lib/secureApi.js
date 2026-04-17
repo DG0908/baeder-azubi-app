@@ -59,7 +59,10 @@ export const mapBackendUserToFrontendUser = (user) => {
     canSignReports: Boolean(user.canSignReports ?? user.can_sign_reports),
     can_sign_reports: Boolean(user.canSignReports ?? user.can_sign_reports),
     berichtsheft_profile: user.reportBookProfile ?? user.report_book_profile ?? null,
-    unlockedAvatarIds: Array.isArray(user.unlockedAvatarIds) ? user.unlockedAvatarIds : []
+    unlockedAvatarIds: Array.isArray(user.unlockedAvatarIds) ? user.unlockedAvatarIds : [],
+    parentalConsentStatus: user.parentalConsentStatus || 'NOT_REQUIRED',
+    parentalConsentNote: user.parentalConsentNote || null,
+    parentalConsentVerifiedAt: user.parentalConsentVerifiedAt || null
   };
 };
 
@@ -224,6 +227,10 @@ export const secureUsersApi = {
   updateAvatarUnlocks: (userId, avatarIds) => apiRequest(`/users/${userId}/avatar-unlocks`, {
     method: 'POST',
     body: JSON.stringify({ avatarIds })
+  }),
+  verifyParentalConsent: (userId, payload) => apiRequest(`/users/${userId}/parental-consent`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
   })
 };
 

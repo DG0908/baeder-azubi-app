@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException
 } from '@nestjs/common';
-import { AccountStatus, AppRole, Prisma } from '@prisma/client';
+import { AccountStatus, AppRole, ParentalConsentStatus, Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { Request } from 'express';
 import sanitizeHtml from 'sanitize-html';
@@ -16,6 +16,9 @@ import { UpdateAvatarUnlocksDto } from './dto/update-avatar-unlocks.dto';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 import { UpdateUserPermissionsDto } from './dto/update-user-permissions.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { VerifyParentalConsentDto } from './dto/verify-parental-consent.dto';
+
+const DSGVO_MINIMUM_AGE = 16;
 
 const currentUserSelect = {
   id: true,
@@ -43,7 +46,8 @@ const currentUserSelect = {
   updatedAt: true,
   lastLoginAt: true,
   reportBookProfile: true,
-  unlockedAvatarIds: true
+  unlockedAvatarIds: true,
+  parentalConsentStatus: true
 } satisfies Prisma.UserSelect;
 
 const adminUserSelect = {
@@ -71,7 +75,10 @@ const adminUserSelect = {
   updatedAt: true,
   lastLoginAt: true,
   approvedAt: true,
-  unlockedAvatarIds: true
+  unlockedAvatarIds: true,
+  parentalConsentStatus: true,
+  parentalConsentNote: true,
+  parentalConsentVerifiedAt: true
 } satisfies Prisma.UserSelect;
 
 const exportRelatedUserSelect = {
@@ -141,6 +148,16 @@ export class UsersService {
       data.birthDate = birthDate;
       metadata.previousBirthDate = existingUser.birthDate?.toISOString() ?? null;
       metadata.nextBirthDate = birthDate?.toISOString() ?? null;
+
+      if (birthDate && this.isUnderAge(birthDate)) {
+        if (existingUser.parentalConsentStatus === ParentalConsentStatus.NOT_REQUIRED) {
+          data.parentalConsentStatus = ParentalConsentStatus.PENDING;
+          metadata.parentalConsentStatusChanged = 'NOT_REQUIRED → PENDING (under 16)';
+        }
+      } else if (existingUser.parentalConsentStatus === ParentalConsentStatus.PENDING) {
+        data.parentalConsentStatus = ParentalConsentStatus.NOT_REQUIRED;
+        metadata.parentalConsentStatusChanged = 'PENDING → NOT_REQUIRED (age corrected)';
+      }
     }
 
     if (Object.keys(data).length === 0) {
@@ -238,6 +255,15 @@ export class UsersService {
     if (user.role === AppRole.ADMIN && dto.status !== AccountStatus.APPROVED) {
       throw new ForbiddenException(
         'Disabling or rejecting administrator accounts requires a dedicated break-glass workflow.'
+      );
+    }
+
+    if (
+      dto.status === AccountStatus.APPROVED &&
+      user.parentalConsentStatus === ParentalConsentStatus.PENDING
+    ) {
+      throw new BadRequestException(
+        'Cannot approve: parental consent is still pending (DSGVO Art. 8). Verify consent first.'
       );
     }
 
@@ -987,6 +1013,72 @@ export class UsersService {
     }
 
     return trimmed.slice(0, 120);
+  }
+
+  async verifyParentalConsent(
+    actor: AuthenticatedUser,
+    userId: string,
+    dto: VerifyParentalConsentDto,
+    request: Request
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || user.isDeleted) {
+      throw new NotFoundException('User not found.');
+    }
+
+    if (user.parentalConsentStatus !== ParentalConsentStatus.PENDING) {
+      throw new BadRequestException(
+        `Cannot verify consent: current status is ${user.parentalConsentStatus}, expected PENDING.`
+      );
+    }
+
+    if (
+      dto.status !== ParentalConsentStatus.VERIFIED &&
+      dto.status !== ParentalConsentStatus.REJECTED
+    ) {
+      throw new BadRequestException('Status must be VERIFIED or REJECTED.');
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        parentalConsentStatus: dto.status,
+        parentalConsentNote: dto.note ?? null,
+        parentalConsentVerifiedAt: new Date(),
+        parentalConsentVerifiedById: actor.id
+      },
+      select: adminUserSelect
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'user.parental_consent_verified',
+      'user',
+      userId,
+      {
+        previousStatus: ParentalConsentStatus.PENDING,
+        nextStatus: dto.status,
+        note: dto.note ?? null
+      },
+      request
+    );
+
+    return updated;
+  }
+
+  private isUnderAge(birthDate: Date): boolean {
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      return age - 1 < DSGVO_MINIMUM_AGE;
+    }
+    return age < DSGVO_MINIMUM_AGE;
   }
 
   private normalizeBirthDate(value: string): Date {

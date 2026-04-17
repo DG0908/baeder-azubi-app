@@ -10,6 +10,7 @@ import {
   repairQuizStatsRemote as dsRepairQuizStats,
   sendTestPushRemote as dsSendTestPush,
   exportUserDataBundle as dsExportUserDataBundle,
+  verifyParentalConsent as dsVerifyParentalConsent,
 } from '../lib/dataService';
 import { friendlyError } from '../lib/friendlyError';
 import { PERMISSIONS, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS } from '../data/constants';
@@ -486,6 +487,21 @@ export function useAdminActions({
     setEditingThemeColors((prev) => ({ ...prev, [colorKey]: newColor }));
   }, []);
 
+  const verifyParentalConsent = useCallback(
+    async (userId, status, note) => {
+      try {
+        await dsVerifyParentalConsent(userId, status, note);
+        loadData();
+        const label = status === 'VERIFIED' ? 'bestätigt' : 'abgelehnt';
+        showToast(`Eltern-Einwilligung wurde ${label}.`, 'success');
+      } catch (error) {
+        console.error('Parental consent error:', error);
+        showToast(friendlyError(error), 'error');
+      }
+    },
+    [loadData, showToast]
+  );
+
   // ── Return ───────────────────────────────────────────────
   return {
     // Stats & data retention
@@ -498,6 +514,7 @@ export function useAdminActions({
     approveUser,
     deleteUser,
     changeUserRole,
+    verifyParentalConsent,
 
     // Permission toggles
     toggleSchoolCardPermission,

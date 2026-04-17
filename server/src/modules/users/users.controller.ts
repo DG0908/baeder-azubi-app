@@ -8,6 +8,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { AdminResetPasswordDto } from './dto/admin-reset-password.dto';
 import { ApproveUserDto } from './dto/approve-user.dto';
+import { VerifyParentalConsentDto } from './dto/verify-parental-consent.dto';
 import { UpdateAvatarUnlocksDto } from './dto/update-avatar-unlocks.dto';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 import { UpdateUserOrganizationDto } from './dto/update-user-organization.dto';
@@ -136,6 +137,17 @@ export class UsersController {
     @Req() request: Request
   ) {
     return this.usersService.deleteSelf(user, request);
+  }
+
+  @Roles(AppRole.ADMIN)
+  @Patch(':id/parental-consent')
+  parentalConsent(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') userId: string,
+    @Body() dto: VerifyParentalConsentDto,
+    @Req() request: Request
+  ) {
+    return this.usersService.verifyParentalConsent(actor, userId, dto, request);
   }
 
   @Roles(AppRole.ADMIN)

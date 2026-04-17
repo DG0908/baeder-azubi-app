@@ -7387,6 +7387,7 @@ export default function BaederApp() {
             saveAnnouncement={adminActions.saveAnnouncement}
             featureFlags={appConfig.featureFlags}
             saveFeatureFlag={adminActions.saveFeatureFlag}
+            verifyParentalConsent={adminActions.verifyParentalConsent}
           />
         )}
 

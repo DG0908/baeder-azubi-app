@@ -53,6 +53,13 @@ enum ReportBookStatus {
   SUBMITTED
 }
 
+enum ParentalConsentStatus {
+  NOT_REQUIRED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 enum QuestionReportStatus {
   OPEN
   RESOLVED
@@ -118,6 +125,10 @@ model User {
   totpSecret           String?
   totpEnabled          Boolean @default(false)
   totpRecoveryCodes    Json?
+  parentalConsentStatus ParentalConsentStatus @default(NOT_REQUIRED)
+  parentalConsentNote  String?
+  parentalConsentVerifiedAt DateTime?
+  parentalConsentVerifiedById String?
   lastLoginAt          DateTime?
   isDeleted            Boolean          @default(false)
   createdAt            DateTime         @default(now())
