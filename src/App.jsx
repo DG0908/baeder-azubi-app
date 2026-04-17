@@ -777,19 +777,6 @@ export default function BaederApp() {
     sendNotification: async () => null,
   });
 
-  // Admin-Aktionen (extrahiert in eigenen Hook)
-  const adminActions = useAdminActions({
-    user,
-    allUsers,
-    pendingUsers,
-    showToast,
-    playSound,
-    loadData: () => loadData(),
-    appConfig,
-    setAppConfig,
-    statsSources: { materials, submittedQuestions, activeGames: duel.activeGames, chatMessageCount },
-  });
-
   // Notifications + Push + PWA (extrahiert in eigenen Hook)
   const {
     notifications, showNotificationsPanel, setShowNotificationsPanel,
@@ -832,6 +819,19 @@ export default function BaederApp() {
     adaptiveLearningEnabled, setAdaptiveLearningEnabled,
     questionReports, setQuestionReports,
     sanitizeGoalValue,
+  });
+
+  // Admin-Aktionen (nach useDuelGame, da duel.activeGames benötigt wird)
+  const adminActions = useAdminActions({
+    user,
+    allUsers,
+    pendingUsers,
+    showToast,
+    playSound,
+    loadData: () => loadData(),
+    appConfig,
+    setAppConfig,
+    statsSources: { materials, submittedQuestions, activeGames: duel.activeGames, chatMessageCount },
   });
 
   const WHO_AM_I_STUDY_FLASHCARDS = buildWhoAmIStudyFlashcards(WHO_AM_I_CHALLENGES);
