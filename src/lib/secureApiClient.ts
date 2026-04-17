@@ -4,13 +4,16 @@ const ENABLE_SECURE_BACKEND_API = String(import.meta.env.VITE_ENABLE_SECURE_BACK
   .toLowerCase() === 'true';
 
 let inMemoryAccessToken = '';
-let refreshPromise = null;
+let refreshPromise: Promise<unknown> | null = null;
 
 // Clean up legacy localStorage refresh token if present from older app versions
 try { localStorage.removeItem('baeder_rt'); } catch { /* ignore */ }
 
 export class ApiRequestError extends Error {
-  constructor(message, status = 500, details = null) {
+  status: number;
+  details: unknown;
+
+  constructor(message: string, status = 500, details: unknown = null) {
     super(message);
     this.name = 'ApiRequestError';
     this.status = status;
@@ -18,13 +21,17 @@ export class ApiRequestError extends Error {
   }
 }
 
-const buildUrl = (path) => {
+interface ApiRequestOptions extends RequestInit {
+  headers?: HeadersInit;
+}
+
+const buildUrl = (path: string): string => {
   const normalizedPath = String(path || '').startsWith('/') ? path : `/${path || ''}`;
   const fallbackOrigin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
   return new URL(`${DEFAULT_API_BASE_URL}${normalizedPath}`, fallbackOrigin).toString();
 };
 
-const parseResponseBody = async (response) => {
+const parseResponseBody = async (response: Response): Promise<Record<string, unknown> | null> => {
   const contentType = String(response.headers.get('content-type') || '').toLowerCase();
   if (contentType.includes('application/json')) {
     return response.json();
@@ -34,21 +41,21 @@ const parseResponseBody = async (response) => {
   return text ? { message: text } : null;
 };
 
-export const getApiAccessToken = () => {
+export const getApiAccessToken = (): string => {
   return inMemoryAccessToken;
 };
 
-export const setApiAccessToken = (token) => {
+export const setApiAccessToken = (token: string): void => {
   inMemoryAccessToken = String(token || '').trim();
 };
 
-export const clearApiAccessToken = () => {
+export const clearApiAccessToken = (): void => {
   setApiAccessToken('');
 };
 
-export const isSecureBackendApiEnabled = () => ENABLE_SECURE_BACKEND_API;
+export const isSecureBackendApiEnabled = (): boolean => ENABLE_SECURE_BACKEND_API;
 
-export const refreshApiSession = async () => {
+export const refreshApiSession = async (): Promise<unknown> => {
   if (refreshPromise) {
     return refreshPromise;
   }
@@ -68,14 +75,14 @@ export const refreshApiSession = async () => {
       if (!response.ok) {
         clearApiAccessToken();
         throw new ApiRequestError(
-          body?.message || body?.error || 'API session refresh failed.',
+          (body?.message as string) || (body?.error as string) || 'API session refresh failed.',
           response.status,
           body
         );
       }
 
       if (body?.accessToken) {
-        setApiAccessToken(body.accessToken);
+        setApiAccessToken(body.accessToken as string);
       }
 
       return body;
@@ -87,7 +94,7 @@ export const refreshApiSession = async () => {
   return refreshPromise;
 };
 
-export const apiRequest = async (path, options = {}, retry = true) => {
+export const apiRequest = async (path: string, options: ApiRequestOptions = {}, retry = true): Promise<unknown> => {
   const skipRefreshPaths = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/password-reset', '/auth/2fa/authenticate'];
   const shouldSkipRefresh = skipRefreshPaths.some(p => String(path).startsWith(p));
   const accessToken = getApiAccessToken();
@@ -97,7 +104,7 @@ export const apiRequest = async (path, options = {}, retry = true) => {
     return apiRequest(path, options, false);
   }
 
-  const headers = new Headers(options.headers || {});
+  const headers = new Headers(options.headers as HeadersInit | undefined);
 
   if (!headers.has('Content-Type') && options.body !== undefined) {
     headers.set('Content-Type', 'application/json');
@@ -132,7 +139,7 @@ export const apiRequest = async (path, options = {}, retry = true) => {
 
   if (!response.ok) {
     throw new ApiRequestError(
-      body?.message || body?.error || `API request failed (${response.status}).`,
+      (body?.message as string) || (body?.error as string) || `API request failed (${response.status}).`,
       response.status,
       body
     );
