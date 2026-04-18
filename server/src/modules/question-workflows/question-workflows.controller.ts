@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
@@ -11,6 +12,7 @@ import { CreateSubmittedQuestionDto } from './dto/create-submitted-question.dto'
 import { UpdateQuestionReportStatusDto } from './dto/update-question-report-status.dto';
 import { QuestionWorkflowsService } from './question-workflows.service';
 
+@ApiTags('question-workflows')
 @Controller('question-workflows')
 export class QuestionWorkflowsController {
   constructor(private readonly questionWorkflowsService: QuestionWorkflowsService) {}

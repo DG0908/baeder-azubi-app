@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Patch, Post, Body, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
@@ -9,6 +10,7 @@ import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.in
 import { CreateSwimSessionDto } from './dto/create-swim-session.dto';
 import { SwimSessionsService } from './swim-sessions.service';
 
+@ApiTags('swim-sessions')
 @Controller('swim-sessions')
 export class SwimSessionsController {
   constructor(private readonly swimSessionsService: SwimSessionsService) {}

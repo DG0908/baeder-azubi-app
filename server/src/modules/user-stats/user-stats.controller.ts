@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
 import { Allow } from '../../common/decorators/allow.decorator';
@@ -7,6 +8,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { UserStatsService } from './user-stats.service';
 
+@ApiTags('user-stats')
 @Controller('user-stats')
 export class UserStatsController {
   constructor(private readonly userStatsService: UserStatsService) {}

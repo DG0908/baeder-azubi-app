@@ -1,4 +1,5 @@
 import { Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res, Body } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { Allow } from '../../common/decorators/allow.decorator';
@@ -17,6 +18,7 @@ import { TotpDisableDto } from './dto/totp-disable.dto';
 import { TotpEnableDto } from './dto/totp-enable.dto';
 import { TotpRegenerateRecoveryCodesDto } from './dto/totp-regenerate-recovery-codes.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

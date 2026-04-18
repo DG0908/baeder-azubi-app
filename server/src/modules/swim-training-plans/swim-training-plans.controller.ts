@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { Allow } from '../../common/decorators/allow.decorator';
@@ -7,6 +8,7 @@ import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.in
 import { CreateSwimTrainingPlanDto } from './dto/create-swim-training-plan.dto';
 import { SwimTrainingPlansService } from './swim-training-plans.service';
 
+@ApiTags('swim-training-plans')
 @Controller('swim-training-plans')
 export class SwimTrainingPlansController {
   constructor(private readonly swimTrainingPlansService: SwimTrainingPlansService) {}

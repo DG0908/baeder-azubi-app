@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { Allow } from '../../common/decorators/allow.decorator';
@@ -9,6 +10,7 @@ import { ListSchoolAttendanceQueryDto } from './dto/list-school-attendance-query
 import { UpdateSchoolAttendanceSignatureDto } from './dto/update-school-attendance-signature.dto';
 import { SchoolAttendanceService } from './school-attendance.service';
 
+@ApiTags('school-attendance')
 @Controller('school-attendance')
 export class SchoolAttendanceController {
   constructor(private readonly schoolAttendanceService: SchoolAttendanceService) {}
