@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { Allow } from '../../common/decorators/allow.decorator';
@@ -9,6 +10,7 @@ import { SubmitAnswerDto } from './dto/submit-answer.dto';
 import { UpdateDuelStateDto } from './dto/update-duel-state.dto';
 import { DuelsService } from './duels.service';
 
+@ApiTags('duels')
 @Controller('duels')
 export class DuelsController {
   constructor(private readonly duelsService: DuelsService) {}

@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { Allow } from '../../common/decorators/allow.decorator';
@@ -8,6 +9,7 @@ import { ChatService } from './chat.service';
 import { CreateChatMessageDto } from './dto/create-chat-message.dto';
 import { ListChatMessagesQueryDto } from './dto/list-chat-messages-query.dto';
 
+@ApiTags('chat')
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}

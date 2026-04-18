@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
@@ -9,6 +10,7 @@ import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.in
 import { CreateFlashcardDto } from './dto/create-flashcard.dto';
 import { FlashcardsService } from './flashcards.service';
 
+@ApiTags('flashcards')
 @Controller('flashcards')
 export class FlashcardsController {
   constructor(private readonly flashcardsService: FlashcardsService) {}

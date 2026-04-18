@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
@@ -11,6 +12,7 @@ import { CreateForumReplyDto } from './dto/create-forum-reply.dto';
 import { ListForumPostsQueryDto } from './dto/list-forum-posts-query.dto';
 import { ForumService } from './forum.service';
 
+@ApiTags('forum')
 @Controller('forum')
 export class ForumController {
   constructor(private readonly forumService: ForumService) {}
