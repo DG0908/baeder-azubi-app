@@ -33,6 +33,7 @@ import { useXpQueue } from './hooks/useXpQueue';
 import { useContentAdmin } from './hooks/useContentAdmin';
 import { useCalculator } from './hooks/useCalculator';
 import { useDailyWisdom } from './hooks/useDailyWisdom';
+import { useQuestionSubmission } from './hooks/useQuestionSubmission';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -73,11 +74,8 @@ import { SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
 import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 // Flashcard-Builder + KEYWORD_CHALLENGES / WHO_AM_I_* werden jetzt im useFlashcards Hook genutzt
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
-import { friendlyError } from './lib/friendlyError';
 import {
   loadGames as dsLoadGames,
-  createQuestionSubmission as dsCreateQuestionSubmission,
-  approveQuestionSubmission as dsApproveQuestionSubmission,
   purgeUserData as dsPurgeUserData,
   startTheoryExamSession as dsStartTheoryExamSession,
   getAuthorizedReviewers as dsGetAuthorizedReviewers,
@@ -155,11 +153,6 @@ export default function BaederApp() {
   // Other State
   const [userStats, setUserStats] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
-  const [submittedQuestions, setSubmittedQuestions] = useState([]);
-  const [newQuestionText, setNewQuestionText] = useState('');
-  const [newQuestionCategory, setNewQuestionCategory] = useState('org');
-  const [newQuestionAnswers, setNewQuestionAnswers] = useState(['', '', '', '']);
-  const [newQuestionCorrect, setNewQuestionCorrect] = useState(0);
 
   // Exam Simulator State + Funktionen: useExamSimulator Hook (nach Stats-Setup)
   // Praktische Prüfung: State + Funktionen via usePracticalExam Hook (nach queueXpAwardForUser)
@@ -239,6 +232,15 @@ export default function BaederApp() {
     }
     return true;
   };
+
+  const {
+    submittedQuestions, setSubmittedQuestions,
+    newQuestionText, setNewQuestionText,
+    newQuestionCategory, setNewQuestionCategory,
+    newQuestionAnswers, setNewQuestionAnswers,
+    newQuestionCorrect, setNewQuestionCorrect,
+    submitQuestion, approveQuestion,
+  } = useQuestionSubmission({ user, moderateContent, showToast });
 
   // Chat-State (extrahiert in eigenen Hook)
   const {
@@ -807,49 +809,6 @@ export default function BaederApp() {
     return { total, done };
   };
 
-  const submitQuestion = async () => {
-    if (!newQuestionText.trim() || !user) return;
-
-    // Content moderation
-    if (!moderateContent(newQuestionText, 'Frage')) {
-      return;
-    }
-    
-    for (let i = 0; i < newQuestionAnswers.length; i++) {
-      if (newQuestionAnswers[i] && !moderateContent(newQuestionAnswers[i], `Antwort ${i + 1}`)) {
-        return;
-      }
-    }
-
-    try {
-      const q = await dsCreateQuestionSubmission({
-        category: newQuestionCategory,
-        question: newQuestionText,
-        answers: newQuestionAnswers,
-        correct: newQuestionCorrect,
-        createdBy: user.name
-      });
-
-      setSubmittedQuestions([...submittedQuestions, q]);
-      setNewQuestionText('');
-      setNewQuestionAnswers(['', '', '', '']);
-      showToast('Frage eingereicht!', 'success');
-    } catch (error) {
-      console.error('Question error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const approveQuestion = async (qId) => {
-    try {
-      await dsApproveQuestionSubmission(qId);
-      setSubmittedQuestions(submittedQuestions.map(sq => sq.id === qId ? { ...sq, approved: true } : sq));
-    } catch (error) {
-      console.error('Approve error:', error);
-    }
-  };
-
-  
   // Exam Simulator Functions
   const loadExamProgress = async () => {
     setExamSimulatorMode('theory');
