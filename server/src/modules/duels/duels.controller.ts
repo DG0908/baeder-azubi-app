@@ -6,6 +6,7 @@ import { Allow } from '../../common/decorators/allow.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { CreateDuelDto } from './dto/create-duel.dto';
+import { StartRoundDto } from './dto/start-round.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
 import { UpdateDuelStateDto } from './dto/update-duel-state.dto';
 import { DuelsService } from './duels.service';
@@ -64,6 +65,17 @@ export class DuelsController {
     @Body() body: UpdateDuelStateDto
   ) {
     return this.duelsService.updateGameState(actor, duelId, body.gameState);
+  }
+
+  @Allow()
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
+  @Post(':id/rounds')
+  startRound(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') duelId: string,
+    @Body() dto: StartRoundDto
+  ) {
+    return this.duelsService.startRound(actor, duelId, dto);
   }
 
   @Allow()
