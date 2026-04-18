@@ -18,6 +18,8 @@ import { useExamSimulator } from './hooks/useExamSimulator';
 import { usePracticalExam, canUseRowForSpeedRanking, getPracticalRowSeconds } from './hooks/usePracticalExam';
 import { useBadges } from './hooks/useBadges';
 import { useWeeklyGoals, sanitizeGoalValue, getWeekStartStamp, buildEmptyWeeklyProgress } from './hooks/useWeeklyGoals';
+import { useQuestionPerformance } from './hooks/useQuestionPerformance';
+import { getQuestionPerformanceKey } from './lib/questionKey';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -111,8 +113,6 @@ import {
 } from './lib/quizHelpers';
 
 export default function BaederApp() {
-  const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
-  const ADAPTIVE_LEARNING_STORAGE_KEY = 'adaptive_learning_mode_v1';
   const QUESTION_REPORTS_STORAGE_KEY = 'question_reports_v1';
   const CHECKLIST_PROGRESS_STORAGE_KEY = 'practical_checklist_progress_v1';
 
@@ -176,13 +176,6 @@ export default function BaederApp() {
     const timestamp = Date.parse(String(value || ''));
     return Number.isFinite(timestamp) ? timestamp : 0;
   };
-
-  const normalizeQuestionText = (value) => String(value ?? '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ');
 
   const {
     authReady,
@@ -457,16 +450,13 @@ export default function BaederApp() {
   const [showMehrDrawer, setShowMehrDrawer] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Daily Challenges: useDailyChallenges Hook
-  const [questionPerformance, setQuestionPerformance] = useState(() => {
-    const parsed = parseJsonSafe(localStorage.getItem(QUESTION_PERFORMANCE_STORAGE_KEY), {});
-    return (parsed && typeof parsed === 'object') ? parsed : {};
-  });
-  const [adaptiveLearningEnabled, setAdaptiveLearningEnabled] = useState(() => {
-    const saved = localStorage.getItem(ADAPTIVE_LEARNING_STORAGE_KEY);
-    if (saved === null) return true;
-    return saved === 'true';
-  });
+  // Question Performance + Adaptive Learning: useQuestionPerformance Hook
+  const {
+    questionPerformance,
+    adaptiveLearningEnabled, setAdaptiveLearningEnabled,
+    trackQuestionPerformance,
+  } = useQuestionPerformance();
+
   const [practicalChecklistProgress, setPracticalChecklistProgress] = useState(() => {
     const parsed = parseJsonSafe(localStorage.getItem(CHECKLIST_PROGRESS_STORAGE_KEY), {});
     return (parsed && typeof parsed === 'object') ? parsed : {};
@@ -855,14 +845,6 @@ export default function BaederApp() {
     }
 
   }, [currentView, user]);
-
-  useEffect(() => {
-    localStorage.setItem(QUESTION_PERFORMANCE_STORAGE_KEY, JSON.stringify(questionPerformance));
-  }, [questionPerformance]);
-
-  useEffect(() => {
-    localStorage.setItem(ADAPTIVE_LEARNING_STORAGE_KEY, adaptiveLearningEnabled ? 'true' : 'false');
-  }, [adaptiveLearningEnabled]);
 
   useEffect(() => {
     localStorage.setItem(CHECKLIST_PROGRESS_STORAGE_KEY, JSON.stringify(practicalChecklistProgress));
@@ -1616,7 +1598,7 @@ export default function BaederApp() {
           // Enrich with questionKey if missing
           const enriched = remoteReports.map(r => ({
             ...r,
-            questionKey: r.questionKey || duel.getQuestionPerformanceKey({ q: r.questionText, category: r.category }, r.category)
+            questionKey: r.questionKey || getQuestionPerformanceKey({ q: r.questionText, category: r.category }, r.category)
           }));
           const localReports = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
           const safeLocalReports = Array.isArray(localReports) ? localReports : [];
@@ -1746,29 +1728,6 @@ export default function BaederApp() {
       return Promise.resolve(0);
     }
     return queueXpAwardForUser({ id: user.id, name: user.name }, sourceKey, amount, options);
-  };
-
-  const trackQuestionPerformance = (question, categoryHint, isCorrect) => {
-    if (!question) return;
-    const key = duel.getQuestionPerformanceKey(question, categoryHint);
-    setQuestionPerformance((prev) => {
-      const current = (prev && typeof prev[key] === 'object') ? prev[key] : {};
-      const attempts = sanitizeGoalValue(current.attempts, 0) + 1;
-      const correct = sanitizeGoalValue(current.correct, 0) + (isCorrect ? 1 : 0);
-      const wrong = sanitizeGoalValue(current.wrong, 0) + (isCorrect ? 0 : 1);
-      const wrongStreak = isCorrect ? 0 : sanitizeGoalValue(current.wrongStreak, 0) + 1;
-      return {
-        ...prev,
-        [key]: {
-          attempts,
-          correct,
-          wrong,
-          wrongStreak,
-          lastSeen: Date.now(),
-          lastResult: isCorrect ? 'correct' : 'wrong'
-        }
-      };
-    });
   };
 
   // Prüfungssimulator: useExamSimulator Hook (nach trackQuestionPerformance + updateWeeklyProgress)
