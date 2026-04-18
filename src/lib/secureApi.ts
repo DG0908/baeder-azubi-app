@@ -573,6 +573,16 @@ export const secureUserStatsApi = {
   })
 };
 
+// ─── Badges API ──────────────────────────────────────────
+
+export const secureBadgesApi = {
+  me: () => apiRequest('/badges/me', { method: 'GET' }),
+  grant: (badgeIds: string[]) => apiRequest('/badges/grant', {
+    method: 'POST',
+    body: JSON.stringify({ badgeIds })
+  })
+};
+
 // ─── Exam Simulator API ──────────────────────────────────
 
 export const secureExamSimulatorApi = {

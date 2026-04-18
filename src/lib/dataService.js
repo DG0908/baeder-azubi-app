@@ -24,6 +24,7 @@ import {
   secureReportBooksApi,
   secureSwimSessionsApi,
   secureSwimTrainingPlansApi,
+  secureBadgesApi,
   mapBackendUserToFrontendUser,
   mapBackendRoleToFrontendRole,
   mapFrontendRoleToBackendRole
@@ -949,8 +950,18 @@ export const getAllUserStats = async () => {
   return safe(() => secureUserStatsApi.summary(), []);
 };
 
+// Backend liefert { id (row-cuid), badgeId, earnedAt (ISO) }.
+// useBadges.js erwartet { id (badge-token), earnedAt (epoch ms) }.
+const mapBackendBadge = (row) => ({
+  id: row.badgeId,
+  earnedAt: row.earnedAt ? new Date(row.earnedAt).getTime() : Date.now()
+});
+
 export const loadUserBadges = async () => {
-  return [];
+  return safe(async () => {
+    const rows = await secureBadgesApi.me();
+    return Array.isArray(rows) ? rows.map(mapBackendBadge) : [];
+  }, []);
 };
 
 export const saveUserStats = async (userInput, stats) => {
@@ -1558,9 +1569,13 @@ export const getAuthorizedReviewers = async (filterField = null) => {
     .map(u => ({ id: u.id, name: u.displayName }));
 };
 
-export const saveBadges = async (badges, userId, userName) => {
-  // NestJS backend manages badges server-side
-  return;
+export const saveBadges = async (badges) => {
+  if (!Array.isArray(badges) || badges.length === 0) return;
+  const badgeIds = badges
+    .map((b) => (typeof b === 'string' ? b : b?.id))
+    .filter((id) => typeof id === 'string' && id.length > 0);
+  if (badgeIds.length === 0) return;
+  return safe(() => secureBadgesApi.grant(badgeIds), undefined);
 };
 
 export const resolveUserIdentity = async (userInput) => {
