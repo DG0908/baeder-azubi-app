@@ -13,6 +13,7 @@ import { useFlashcards } from './hooks/useFlashcards';
 import { useSwimChallenge, SWIM_BATTLE_WIN_POINTS, SWIM_ARENA_DISCIPLINES } from './hooks/useSwimChallenge';
 import { useSchoolAttendance } from './hooks/useSchoolAttendance';
 import { useExamGrades } from './hooks/useExamGrades';
+import { useDailyChallenges } from './hooks/useDailyChallenges';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -525,20 +526,7 @@ export default function BaederApp() {
   // Badges State
   const [userBadges, setUserBadges] = useState([]);
 
-  // Daily Challenges State
-  const [dailyChallenges, setDailyChallenges] = useState([]);
-  const [dailyChallengeProgress, setDailyChallengeProgress] = useState(() => {
-    const saved = localStorage.getItem('daily_challenge_progress');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Check if it's from today
-      const today = new Date().toDateString();
-      if (parsed.date === today) {
-        return parsed;
-      }
-    }
-    return { date: new Date().toDateString(), completed: [], stats: {} };
-  });
+  // Daily Challenges: useDailyChallenges Hook
   const [questionPerformance, setQuestionPerformance] = useState(() => {
     const parsed = parseJsonSafe(localStorage.getItem(QUESTION_PERFORMANCE_STORAGE_KEY), {});
     return (parsed && typeof parsed === 'object') ? parsed : {};
@@ -801,6 +789,16 @@ export default function BaederApp() {
     addExamGrade,
     deleteExamGrade,
   } = useExamGrades({ user, showToast, sendNotification });
+
+  // Daily Challenges: useDailyChallenges Hook
+  const {
+    dailyChallenges,
+    updateChallengeProgress,
+    getChallengeProgress,
+    isChallengeCompleted,
+    getCompletedChallengesCount,
+    getTotalXPEarned,
+  } = useDailyChallenges();
 
   // Schwimm-Badges prüfen wenn sich Sessions ändern
   useEffect(() => {
@@ -2751,110 +2749,6 @@ export default function BaederApp() {
     }
   };
 
-
-  // ==================== DAILY CHALLENGES SYSTEM ====================
-
-  const CHALLENGE_TYPES = [
-    { id: 'answer_questions', name: 'Fragen beantworten', icon: '❓', unit: 'Fragen', baseTarget: 10 },
-    { id: 'correct_answers', name: 'Richtige Antworten', icon: '✅', unit: 'richtige', baseTarget: 7 },
-    { id: 'flashcards_reviewed', name: 'Lernkarten wiederholen', icon: '🎴', unit: 'Karten', baseTarget: 15 },
-    { id: 'category_master', name: 'Kategorie üben', icon: '📚', unit: 'Fragen aus', baseTarget: 5, hasCategory: true },
-    { id: 'quiz_play', name: 'Quiz spielen', icon: '🎮', unit: 'Runde', baseTarget: 1 },
-    { id: 'streak_keep', name: 'Lernstreak halten', icon: '🔥', unit: 'Tag', baseTarget: 1 }
-  ];
-
-  const generateDailyChallenges = () => {
-    const today = new Date();
-    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-
-    // Pseudo-random basierend auf Datum (gleiche Challenges für alle Nutzer am selben Tag)
-    const seededRandom = (index) => {
-      const x = Math.sin(seed + index) * 10000;
-      return x - Math.floor(x);
-    };
-
-    // Wähle 3 Challenges für heute
-    const shuffled = [...CHALLENGE_TYPES].sort((a, b) => seededRandom(CHALLENGE_TYPES.indexOf(a)) - seededRandom(CHALLENGE_TYPES.indexOf(b)));
-    const selectedChallenges = shuffled.slice(0, 3);
-
-    return selectedChallenges.map((challenge, idx) => {
-      const difficulty = 1 + seededRandom(idx + 100) * 0.5; // 1.0 - 1.5x
-      const target = Math.round(challenge.baseTarget * difficulty);
-
-      let category = null;
-      if (challenge.hasCategory) {
-        const catIndex = Math.floor(seededRandom(idx + 200) * CATEGORIES.length);
-        category = CATEGORIES[catIndex];
-      }
-
-      return {
-        ...challenge,
-        target,
-        category,
-        xpReward: target * 10
-      };
-    });
-  };
-
-  const updateChallengeProgress = (challengeType, amount = 1, categoryId = null) => {
-    setDailyChallengeProgress(prev => {
-      const today = new Date().toDateString();
-
-      // Reset if it's a new day
-      if (prev.date !== today) {
-        const newProgress = {
-          date: today,
-          completed: [],
-          stats: { [challengeType]: amount }
-        };
-        if (categoryId) {
-          newProgress.stats[`category_${categoryId}`] = amount;
-        }
-        localStorage.setItem('daily_challenge_progress', JSON.stringify(newProgress));
-        return newProgress;
-      }
-
-      const newStats = { ...prev.stats };
-      newStats[challengeType] = (newStats[challengeType] || 0) + amount;
-      if (categoryId) {
-        newStats[`category_${categoryId}`] = (newStats[`category_${categoryId}`] || 0) + amount;
-      }
-
-      const newProgress = { ...prev, stats: newStats };
-      localStorage.setItem('daily_challenge_progress', JSON.stringify(newProgress));
-      return newProgress;
-    });
-  };
-
-  const getChallengeProgress = (challenge) => {
-    const stats = dailyChallengeProgress.stats || {};
-
-    if (challenge.hasCategory && challenge.category) {
-      return stats[`category_${challenge.category.id}`] || 0;
-    }
-
-    return stats[challenge.id] || 0;
-  };
-
-  const isChallengeCompleted = (challenge) => {
-    return getChallengeProgress(challenge) >= challenge.target;
-  };
-
-  const getCompletedChallengesCount = () => {
-    return dailyChallenges.filter(c => isChallengeCompleted(c)).length;
-  };
-
-  const getTotalXPEarned = () => {
-    return dailyChallenges
-      .filter(c => isChallengeCompleted(c))
-      .reduce((sum, c) => sum + c.xpReward, 0);
-  };
-
-  // Initialize daily challenges
-  useEffect(() => {
-    const challenges = generateDailyChallenges();
-    setDailyChallenges(challenges);
-  }, []);
 
   const checkBadges = async () => {
     if (!user || !userStats) return;
