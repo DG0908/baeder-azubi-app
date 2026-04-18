@@ -534,7 +534,8 @@ export class UsersService {
       auditLogs,
       learningMaterialsCreated,
       resourcesCreated,
-      newsPostsCreated
+      newsPostsCreated,
+      badges
     ] = await Promise.all([
       this.prisma.userStats.findUnique({
         where: { userId: targetUserId }
@@ -815,6 +816,19 @@ export class UsersService {
         orderBy: {
           createdAt: 'desc'
         }
+      }),
+      this.prisma.userBadge.findMany({
+        where: {
+          userId: targetUserId
+        },
+        orderBy: {
+          earnedAt: 'asc'
+        },
+        select: {
+          id: true,
+          badgeId: true,
+          earnedAt: true
+        }
       })
     ]);
 
@@ -838,12 +852,11 @@ export class UsersService {
       user: targetUser.displayName,
       email: targetUser.email,
       meta: {
-        exportVersion: 2,
+        exportVersion: 3,
         exportedVia: 'secure-backend',
         requestedByUserId: actor.id,
         requestedByRole: actor.role,
-        exportScope: actor.id === targetUserId ? 'self' : 'admin',
-        badgeExportStatus: 'not_available_in_current_prisma_model'
+        exportScope: actor.id === targetUserId ? 'self' : 'admin'
       },
       data: {
         account,
@@ -851,7 +864,11 @@ export class UsersService {
         games: duels,
         exams: scheduledExamsCreated,
         questions: submittedQuestions,
-        badges: [],
+        badges: badges.map((b) => ({
+          id: b.id,
+          badgeId: b.badgeId,
+          earnedAt: b.earnedAt.toISOString()
+        })),
         duelAnswers,
         examGrades,
         theoryExamSessions,

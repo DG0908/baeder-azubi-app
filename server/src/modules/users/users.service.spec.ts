@@ -617,7 +617,8 @@ describe('UsersService', () => {
         'submittedQuestion', 'questionReport', 'flashcard', 'reportBookEntry',
         'schoolAttendanceEntry', 'swimSession', 'swimTrainingPlan', 'forumPost',
         'forumReply', 'chatMessage', 'appNotification', 'pushSubscription',
-        'userXpEvent', 'auditLog', 'learningMaterial', 'resource', 'newsPost'
+        'userXpEvent', 'auditLog', 'learningMaterial', 'resource', 'newsPost',
+        'userBadge'
       ];
       for (const model of models) {
         if (!(prisma as any)[model]) {
@@ -640,7 +641,8 @@ describe('UsersService', () => {
         'submittedQuestion', 'questionReport', 'flashcard', 'reportBookEntry',
         'schoolAttendanceEntry', 'swimSession', 'swimTrainingPlan', 'forumPost',
         'forumReply', 'chatMessage', 'appNotification', 'pushSubscription',
-        'userXpEvent', 'auditLog', 'learningMaterial', 'resource', 'newsPost'
+        'userXpEvent', 'auditLog', 'learningMaterial', 'resource', 'newsPost',
+        'userBadge'
       ];
       for (const model of models) {
         if (!(prisma as any)[model]) {
