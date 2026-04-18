@@ -220,6 +220,7 @@ const LoginScreen: React.FC = () => {
               name="new-password"
               autoComplete="new-password"
               placeholder="Neues Passwort"
+              aria-label="Neues Passwort"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -249,6 +250,7 @@ const LoginScreen: React.FC = () => {
               name="confirm-new-password"
               autoComplete="new-password"
               placeholder="Passwort wiederholen"
+              aria-label="Neues Passwort wiederholen"
               value={newPasswordConfirm}
               onChange={(e) => setNewPasswordConfirm(e.target.value)}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -310,6 +312,7 @@ const LoginScreen: React.FC = () => {
                 name="reset-email"
                 autoComplete="email"
                 placeholder="Deine E-Mail-Adresse"
+                aria-label="E-Mail-Adresse für Passwort-Reset"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
                 className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -417,6 +420,7 @@ const LoginScreen: React.FC = () => {
               name="username"
               autoComplete="username"
               placeholder="E-Mail oder Name"
+              aria-label="E-Mail oder Name"
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -426,6 +430,7 @@ const LoginScreen: React.FC = () => {
               name="current-password"
               autoComplete="current-password"
               placeholder="Passwort"
+              aria-label="Passwort"
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -454,6 +459,7 @@ const LoginScreen: React.FC = () => {
               name="invitation-code"
               autoComplete="one-time-code"
               placeholder="Einladungscode"
+              aria-label="Einladungscode"
               value={registerData.invitationCode}
               onChange={(e) => setRegisterData({...registerData, invitationCode: e.target.value.toUpperCase()})}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono tracking-wider text-center text-lg ${
@@ -499,6 +505,7 @@ const LoginScreen: React.FC = () => {
               name="name"
               autoComplete="name"
               placeholder="Vollständiger Name"
+              aria-label="Vollständiger Name"
               value={registerData.name}
               onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -508,6 +515,7 @@ const LoginScreen: React.FC = () => {
               name="email"
               autoComplete="email"
               placeholder="E-Mail"
+              aria-label="E-Mail-Adresse"
               value={registerData.email}
               onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -517,6 +525,7 @@ const LoginScreen: React.FC = () => {
               name="new-password"
               autoComplete="new-password"
               placeholder={`Passwort (mind. ${minPasswordLength} Zeichen)`}
+              aria-label="Neues Passwort"
               value={registerData.password}
               onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
               className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -542,10 +551,11 @@ const LoginScreen: React.FC = () => {
               );
             })()}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="training-end" className="block text-sm font-medium text-gray-700 mb-2">
                 Voraussichtliches Ausbildungsende:
               </label>
               <input
+                id="training-end"
                 type="date"
                 value={registerData.trainingEnd}
                 onChange={(e) => setRegisterData({...registerData, trainingEnd: e.target.value})}
