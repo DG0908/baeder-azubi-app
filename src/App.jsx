@@ -42,6 +42,7 @@ import AvatarBadge from './components/ui/AvatarBadge';
 import { LiveTickerBanner } from './components/ui/LiveTickerBanner';
 import { OfflineBanner, InstallBanner, CookieNotice } from './components/ui/AppBanners';
 import { ToastStack } from './components/ui/ToastStack';
+import { AppBackground } from './components/ui/AppBackground';
 
 // Lazy-loaded Views — werden erst geladen wenn sie gebraucht werden
 const ChatView = lazy(() => import('./components/views/ChatView'));
@@ -696,71 +697,7 @@ export default function BaederApp() {
         ? 'linear-gradient(135deg, #0c4a6e 0%, #075985 25%, #0e7490 50%, #164e63 75%, #0f172a 100%)'
         : 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
     }}>
-      {/* Animated Swimmer */}
-      <div className="absolute top-20 left-0 w-full h-32 overflow-hidden pointer-events-none z-0">
-        <div className="swimmer animate-swim">
-          <span className="text-6xl">🏊‍♂️</span>
-        </div>
-      </div>
-
-      {/* Water Wave Animation Background */}
-      <div className={`absolute inset-0 ${darkMode ? 'opacity-5' : 'opacity-10'}`} style={{
-        backgroundImage: `repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 30px,
-          rgba(255, 255, 255, 0.1) 30px,
-          rgba(255, 255, 255, 0.1) 60px
-        )`,
-        animation: 'waves 12s linear infinite'
-      }}></div>
-
-      {/* Floating Bubbles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(10)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-white cursor-pointer"
-            onClick={() => playSound('bubble')}
-            style={{
-              width: `${Math.random() * 40 + 20}px`,
-              height: `${Math.random() * 40 + 20}px`,
-              left: `${Math.random() * 100}%`,
-              bottom: '-100px',
-              opacity: darkMode ? 0.05 : 0.1,
-              animation: `bubble ${Math.random() * 15 + 10}s linear infinite`,
-              animationDelay: `${Math.random() * 10}s`,
-              pointerEvents: 'auto'
-            }}
-          ></div>
-        ))}
-      </div>
-
-      <style>{`
-        @keyframes waves {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-60px); }
-        }
-        @keyframes bubble {
-          0% { transform: translateY(0) scale(1); opacity: ${darkMode ? 0.05 : 0.1}; }
-          50% { opacity: ${darkMode ? 0.08 : 0.15}; }
-          100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
-        }
-        @keyframes swim {
-          0% { transform: translateX(-100px) translateY(0); }
-          25% { transform: translateX(25vw) translateY(-20px); }
-          50% { transform: translateX(50vw) translateY(0); }
-          75% { transform: translateX(75vw) translateY(20px); }
-          100% { transform: translateX(calc(100vw + 100px)) translateY(0); }
-        }
-        .swimmer {
-          position: absolute;
-          animation: swim 20s linear infinite;
-        }
-        .animate-swim {
-          animation: swim 20s linear infinite;
-        }
-      `}</style>
+      <AppBackground darkMode={darkMode} playSound={playSound} />
 
       <OfflineBanner isOnline={isOnline} />
       <InstallBanner show={showInstallBanner} onInstall={triggerInstall} onDismiss={dismissInstall} />
