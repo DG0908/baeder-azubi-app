@@ -208,31 +208,25 @@ export default function BaederApp() {
 
   const moderateContent = createContentModerator({ toast, playSound });
 
+  const questionsApi = useQuestionSubmission({ user, moderateContent, showToast });
   const {
-    submittedQuestions, setSubmittedQuestions,
-    newQuestionText, setNewQuestionText,
+    setSubmittedQuestions,
     newQuestionCategory, setNewQuestionCategory,
-    newQuestionAnswers, setNewQuestionAnswers,
-    newQuestionCorrect, setNewQuestionCorrect,
-    submitQuestion, approveQuestion,
-  } = useQuestionSubmission({ user, moderateContent, showToast });
+  } = questionsApi;
 
   // Chat-State (extrahiert in eigenen Hook)
-  const {
-    messages, newMessage, setNewMessage,
-    chatScope, setChatScope,
-    selectedChatRecipientId, setSelectedChatRecipientId,
-    hasChatOrganization, directChatCandidates,
-    messageCount: chatMessageCount,
-    sendMessage, deleteChatMessage: deleteChatMsg,
-    loadChatMessages, normalizeChatMessageRow,
-  } = useChatState({
+  const chatApi = useChatState({
     user,
     allUsers,
     showToast,
     moderateContent,
     sendNotification: async () => null,
   });
+  const {
+    messages,
+    messageCount: chatMessageCount,
+    loadChatMessages,
+  } = chatApi;
 
   // Notifications + Push + PWA (extrahiert in eigenen Hook)
   const {
@@ -249,33 +243,19 @@ export default function BaederApp() {
     playSound,
   });
 
-  const {
-    materials, setMaterials,
-    materialTitle, setMaterialTitle,
-    materialCategory, setMaterialCategory,
-    addMaterial,
-    resources, setResources,
-    resourceTitle, setResourceTitle,
-    resourceUrl, setResourceUrl,
-    resourceType, setResourceType,
-    resourceDescription, setResourceDescription,
-    addResource, deleteResource,
-    news, setNews,
-    newsTitle, setNewsTitle,
-    newsContent, setNewsContent,
-    addNews, deleteNews,
-    exams, setExams,
-    examTitle, setExamTitle,
-    examDate, setExamDate,
-    examTopics, setExamTopics,
-    addExam, deleteExam,
-  } = useContentAdmin({
+  const contentApi = useContentAdmin({
     user,
     showToast,
     playSound,
     moderateContent,
     sendNotificationToApprovedUsers,
   });
+  const {
+    materials, setMaterials,
+    resources, setResources,
+    news, setNews,
+    exams, setExams,
+  } = contentApi;
 
   const berichtsheft = useBerichtsheft({
     user,
@@ -314,89 +294,37 @@ export default function BaederApp() {
     getTotalDueCards,
   } = flashcardsApi;
 
-  const {
-    swimChallengeView, setSwimChallengeView,
-    swimSessions, setSwimSessions,
-    swimSessionsLoaded,
-    customSwimTrainingPlans,
-    activeSwimChallenges,
-    swimSessionForm, setSwimSessionForm,
-    pendingSwimConfirmations,
-    swimChallengeFilter, setSwimChallengeFilter,
-    swimArenaMode, setSwimArenaMode,
-    swimBattleHistory,
-    swimBattleWinsByUserId,
-    swimBattleResult,
-    swimMonthlyResults,
-    swimDuelForm, setSwimDuelForm,
-    swimBossForm, setSwimBossForm,
-    saveActiveSwimChallenges,
-    loadCustomSwimTrainingPlans,
-    createCustomSwimTrainingPlan,
-    getSeaCreatureTier,
-    getUserNameById,
-    handleSwimDuelSubmit,
-    handleSwimBossBattleSubmit,
-    saveSwimSession,
-    confirmSwimSession,
-    rejectSwimSession,
-    withdrawSwimSession,
-    swimTrainingPlans,
-    swimCurrentMonthLabel,
-    swimCurrentMonthBattleStats,
-    swimMonthlyDistanceRankingCurrentMonth,
-    swimMonthlySwimmerCurrentMonth,
-    swimYear,
-    swimYearlySwimmerRanking,
-  } = useSwimChallenge({
+  const swimApi = useSwimChallenge({
     user,
     allUsers,
     authReady,
     showToast,
     sendNotification,
   });
+  const {
+    swimSessions,
+    loadCustomSwimTrainingPlans,
+  } = swimApi;
 
   // Kontrollkarte Berufsschule: useSchoolAttendance Hook
+  const schoolApi = useSchoolAttendance({ user, showToast, sendNotification });
   const {
-    schoolAttendance, setSchoolAttendance,
-    newAttendanceDate, setNewAttendanceDate,
-    newAttendanceStart, setNewAttendanceStart,
-    newAttendanceEnd, setNewAttendanceEnd,
-    newAttendanceTeacherSig, setNewAttendanceTeacherSig,
-    newAttendanceTrainerSig, setNewAttendanceTrainerSig,
-    signatureModal, setSignatureModal,
-    tempSignature, setTempSignature,
-    selectedSchoolCardUser, setSelectedSchoolCardUser,
-    allAzubisForSchoolCard,
     canViewAllSchoolCards,
     loadAzubisForSchoolCard,
     loadSchoolAttendance,
-    addSchoolAttendance,
-    updateAttendanceSignature,
-    deleteSchoolAttendance,
-  } = useSchoolAttendance({ user, showToast, sendNotification });
+  } = schoolApi;
 
   // Klasuren: useExamGrades Hook
+  const gradesApi = useExamGrades({ user, showToast, sendNotification });
   const {
-    examGrades, setExamGrades,
-    selectedExamGradesUser, setSelectedExamGradesUser,
-    allAzubisForExamGrades,
     canViewAllExamGrades,
     loadAzubisForExamGrades,
     loadExamGrades,
-    addExamGrade,
-    deleteExamGrade,
-  } = useExamGrades({ user, showToast, sendNotification });
+  } = gradesApi;
 
   // Daily Challenges: useDailyChallenges Hook
-  const {
-    dailyChallenges,
-    updateChallengeProgress,
-    getChallengeProgress,
-    isChallengeCompleted,
-    getCompletedChallengesCount,
-    getTotalXPEarned,
-  } = useDailyChallenges();
+  const challengesApi = useDailyChallenges();
+  const { updateChallengeProgress } = challengesApi;
 
   // Admin-Aktionen (nach useDuelGame, da duel.activeGames benötigt wird)
   const adminActions = useAdminActions({
@@ -408,7 +336,7 @@ export default function BaederApp() {
     loadData: () => loadData(),
     appConfig,
     setAppConfig,
-    statsSources: { materials, submittedQuestions, activeGames: duel.activeGames, chatMessageCount },
+    statsSources: { materials, submittedQuestions: questionsApi.submittedQuestions, activeGames: duel.activeGames, chatMessageCount },
   });
 
   // Badges: useBadges Hook
@@ -701,16 +629,12 @@ export default function BaederApp() {
 
         {currentView === 'home' && (
           <HomeView
+            {...challengesApi}
             rotateGeneralKnowledge={rotateGeneralKnowledge}
             dailyWisdom={dailyWisdom}
             userStats={userStats}
             getTotalXpFromStats={getTotalXpFromStats}
             setCurrentView={setCurrentView}
-            dailyChallenges={dailyChallenges}
-            getChallengeProgress={getChallengeProgress}
-            isChallengeCompleted={isChallengeCompleted}
-            getCompletedChallengesCount={getCompletedChallengesCount}
-            getTotalXPEarned={getTotalXPEarned}
             weeklyProgress={weeklyProgress}
             buildEmptyWeeklyProgress={buildEmptyWeeklyProgress}
             getWeekStartStamp={getWeekStartStamp}
@@ -765,17 +689,8 @@ export default function BaederApp() {
         {/* Chat View */}
         {currentView === 'chat' && (
           <ChatView
-            messages={messages}
-            newMessage={newMessage}
-            setNewMessage={setNewMessage}
-            sendMessage={sendMessage}
-            deleteMessage={deleteChatMsg}
-            chatScope={chatScope}
-            setChatScope={setChatScope}
-            selectedChatRecipientId={selectedChatRecipientId}
-            setSelectedChatRecipientId={setSelectedChatRecipientId}
-            directChatCandidates={directChatCandidates}
-            hasChatOrganization={hasChatOrganization}
+            {...chatApi}
+            deleteMessage={chatApi.deleteChatMessage}
             canModerateChat={user?.role === 'admin'}
           />
         )}
@@ -787,14 +702,7 @@ export default function BaederApp() {
 
         {/* Materials View */}
         {currentView === 'materials' && (
-          <MaterialsView
-            materials={materials}
-            materialTitle={materialTitle}
-            setMaterialTitle={setMaterialTitle}
-            materialCategory={materialCategory}
-            setMaterialCategory={setMaterialCategory}
-            addMaterial={addMaterial}
-          />
+          <MaterialsView {...contentApi} />
         )}
 
         {/* Interactive Learning Hub (includes Water Cycle) */}
@@ -809,55 +717,17 @@ export default function BaederApp() {
 
                 {/* Resources View */}
         {currentView === 'resources' && (
-          <ResourcesView
-            resources={resources}
-            resourceTitle={resourceTitle}
-            setResourceTitle={setResourceTitle}
-            resourceType={resourceType}
-            setResourceType={setResourceType}
-            resourceUrl={resourceUrl}
-            setResourceUrl={setResourceUrl}
-            resourceDescription={resourceDescription}
-            setResourceDescription={setResourceDescription}
-            addResource={addResource}
-            deleteResource={deleteResource}
-          />
+          <ResourcesView {...contentApi} />
         )}
 
                 {/* News View */}
         {currentView === 'news' && (
-          <NewsView
-            news={news}
-            newsTitle={newsTitle}
-            setNewsTitle={setNewsTitle}
-            newsContent={newsContent}
-            setNewsContent={setNewsContent}
-            addNews={addNews}
-            deleteNews={deleteNews}
-          />
+          <NewsView {...contentApi} />
         )}
 
         {/* Exams View */}
         {currentView === 'exams' && (
-          <ExamsView
-            exams={exams}
-            examTitle={examTitle}
-            setExamTitle={setExamTitle}
-            examDate={examDate}
-            setExamDate={setExamDate}
-            examTopics={examTopics}
-            setExamTopics={setExamTopics}
-            addExam={addExam}
-            deleteExam={deleteExam}
-            examGrades={examGrades}
-            allAzubisForExamGrades={allAzubisForExamGrades}
-            selectedExamGradesUser={selectedExamGradesUser}
-            setSelectedExamGradesUser={setSelectedExamGradesUser}
-            addExamGrade={addExamGrade}
-            deleteExamGrade={deleteExamGrade}
-            loadExamGrades={loadExamGrades}
-            canViewAllExamGrades={canViewAllExamGrades}
-          />
+          <ExamsView {...contentApi} {...gradesApi} />
         )}
 
         {/* Exam Simulator View */}
@@ -926,98 +796,32 @@ export default function BaederApp() {
 
         {/* Questions View */}
         {currentView === 'questions' && (
-          <QuestionsView
-            submittedQuestions={submittedQuestions}
-            newQuestionText={newQuestionText}
-            setNewQuestionText={setNewQuestionText}
-            newQuestionCategory={newQuestionCategory}
-            setNewQuestionCategory={setNewQuestionCategory}
-            newQuestionAnswers={newQuestionAnswers}
-            setNewQuestionAnswers={setNewQuestionAnswers}
-            newQuestionCorrect={newQuestionCorrect}
-            setNewQuestionCorrect={setNewQuestionCorrect}
-            submitQuestion={submitQuestion}
-            approveQuestion={approveQuestion}
-          />
+          <QuestionsView {...questionsApi} />
         )}
 
         {/* Kontrollkarte Berufsschule View */}
         {currentView === 'school-card' && (
-          <SchoolCardView
-            schoolAttendance={schoolAttendance}
-            newAttendanceDate={newAttendanceDate}
-            setNewAttendanceDate={setNewAttendanceDate}
-            newAttendanceStart={newAttendanceStart}
-            setNewAttendanceStart={setNewAttendanceStart}
-            newAttendanceEnd={newAttendanceEnd}
-            setNewAttendanceEnd={setNewAttendanceEnd}
-            addSchoolAttendance={addSchoolAttendance}
-            deleteSchoolAttendance={deleteSchoolAttendance}
-            signatureModal={signatureModal}
-            setSignatureModal={setSignatureModal}
-            tempSignature={tempSignature}
-            setTempSignature={setTempSignature}
-            updateAttendanceSignature={updateAttendanceSignature}
-            selectedSchoolCardUser={selectedSchoolCardUser}
-            setSelectedSchoolCardUser={setSelectedSchoolCardUser}
-            allAzubisForSchoolCard={allAzubisForSchoolCard}
-            loadSchoolAttendance={loadSchoolAttendance}
-            canViewAllSchoolCards={canViewAllSchoolCards}
-          />
+          <SchoolCardView {...schoolApi} />
         )}
 
         {/* ==================== SCHWIMMCHALLENGE VIEW ==================== */}
         {currentView === 'swim-challenge' && (
           <SwimChallengeView
+            {...swimApi}
             SWIM_ARENA_DISCIPLINES={SWIM_ARENA_DISCIPLINES}
             SWIM_BATTLE_WIN_POINTS={SWIM_BATTLE_WIN_POINTS}
             SWIM_CHALLENGES={SWIM_CHALLENGES}
-            SWIM_TRAINING_PLANS={swimTrainingPlans}
+            SWIM_TRAINING_PLANS={swimApi.swimTrainingPlans}
             SWIM_STYLES={SWIM_STYLES}
-            activeSwimChallenges={activeSwimChallenges}
             allUsers={allUsers}
             calculateChallengeProgress={calculateChallengeProgress}
             calculateSwimPoints={calculateSwimPoints}
             calculateTeamBattleStats={calculateTeamBattleStats}
-            confirmSwimSession={confirmSwimSession}
-            createCustomSwimTrainingPlan={createCustomSwimTrainingPlan}
             getAgeHandicap={getAgeHandicap}
-            getSeaCreatureTier={getSeaCreatureTier}
             getSwimLevel={getSwimLevel}
-            getUserNameById={getUserNameById}
-            handleSwimBossBattleSubmit={handleSwimBossBattleSubmit}
-            handleSwimDuelSubmit={handleSwimDuelSubmit}
-            pendingSwimConfirmations={pendingSwimConfirmations}
-            rejectSwimSession={rejectSwimSession}
-            saveActiveSwimChallenges={saveActiveSwimChallenges}
-            saveSwimSession={saveSwimSession}
             setCurrentView={setCurrentView}
-            setSwimArenaMode={setSwimArenaMode}
-            setSwimBossForm={setSwimBossForm}
-            setSwimChallengeFilter={setSwimChallengeFilter}
-            setSwimChallengeView={setSwimChallengeView}
-            setSwimDuelForm={setSwimDuelForm}
-            setSwimSessionForm={setSwimSessionForm}
             statsByUserId={statsByUserId}
-            swimArenaMode={swimArenaMode}
-            swimBattleHistory={swimBattleHistory}
-            swimBattleResult={swimBattleResult}
-            swimBattleWinsByUserId={swimBattleWinsByUserId}
-            swimBossForm={swimBossForm}
-            swimChallengeFilter={swimChallengeFilter}
-            swimChallengeView={swimChallengeView}
-            swimCurrentMonthBattleStats={swimCurrentMonthBattleStats}
-            swimCurrentMonthLabel={swimCurrentMonthLabel}
-            swimDuelForm={swimDuelForm}
-            swimMonthlyDistanceRankingCurrentMonth={swimMonthlyDistanceRankingCurrentMonth}
-            swimMonthlyResults={swimMonthlyResults}
-            swimMonthlySwimmerCurrentMonth={swimMonthlySwimmerCurrentMonth}
-            swimSessionForm={swimSessionForm}
-            swimSessions={swimSessions}
-            swimYear={swimYear}
-            swimYearlySwimmerRanking={swimYearlySwimmerRanking}
             toSafeInt={toSafeInt}
-            withdrawSwimSession={withdrawSwimSession}
           />
         )}
 
