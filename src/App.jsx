@@ -16,7 +16,7 @@ import { useDailyChallenges } from './hooks/useDailyChallenges';
 import { useExamSimulator } from './hooks/useExamSimulator';
 import { usePracticalExam } from './hooks/usePracticalExam';
 import { useBadges } from './hooks/useBadges';
-import { useWeeklyGoals } from './hooks/useWeeklyGoals';
+import { useWeeklyGoals, sanitizeGoalValue } from './hooks/useWeeklyGoals';
 import { useQuestionPerformance } from './hooks/useQuestionPerformance';
 import { useQuestionReports } from './hooks/useQuestionReports';
 import { createContentModerator } from './lib/contentModeration';
