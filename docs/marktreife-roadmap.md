@@ -114,8 +114,8 @@
 | # | Aufgabe | Modell | Zeit | Status |
 |---|---|---|---|---|
 | P4.1 | Storybook für Shared-UI | **Qwen** (mechanische Story-Generierung) | 1 d | [ ] |
-| P4.2 | CONTRIBUTING.md, CHANGELOG.md | Sonnet | 0.5 d | [ ] |
-| P4.3 | OpenGraph-/Twitter-Card-Meta in [index.html](../index.html) | Qwen | 15 min | [ ] |
+| P4.2 | CONTRIBUTING.md, CHANGELOG.md | Sonnet | 0.5 d | [x] Opus · 2026-04-18 |
+| P4.3 | OpenGraph-/Twitter-Card-Meta in [index.html](../index.html) | Qwen | 15 min | [x] Opus · 2026-04-18 (OG via QW.4 vorhanden, Twitter-Cards + OG-Bildgröße/Alt ergänzt) |
 | P4.4 | Alt-Text-Audit aller `<img>` | Qwen | 0.5 d | [x] Opus · 2026-04-18 (7 `<img>` auditiert, 5 hatten bereits Alt-Text, 2 Signatur-Bilder im Berichtsheft-PDF-Template ergänzt) |
 | P4.5 | Duel-Rundenerzeugung vollständig server-autoritativ | **Opus** (Kern der Fairness) | 3 d | [ ] |
 | P4.6 | SSRF-Validierung Content-URLs (Internal-IP-Blockliste) | Opus | 0.5 d | [x] Opus · 2026-04-18 (Validator gehärtet: 0.0.0.0, Hex/Oktal/Dezimal-IPs, IPv4-mapped IPv6; Push-Endpoint abgedeckt) |
