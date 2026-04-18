@@ -1283,7 +1283,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
               <div style="margin-bottom: 5px;">Datum: ${entry.datum_azubi ? new Date(entry.datum_azubi).toLocaleDateString('de-DE') : '________________'}</div>
               ${
                 entry.signatur_azubi
-                  ? `<img src="${entry.signatur_azubi}" style="max-height: 70px; max-width: 220px; display: block; margin: 8px 0;" />`
+                  ? `<img src="${entry.signatur_azubi}" alt="Unterschrift Auszubildende/r" style="max-height: 70px; max-width: 220px; display: block; margin: 8px 0;" />`
                   : '<div style="height: 55px;"></div>'
               }
               <div style="border-top: 1px solid #333; padding-top: 4px; font-size: 10px; color: #333;">
@@ -1294,7 +1294,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
               <div style="margin-bottom: 5px;">Datum: ${entry.datum_ausbilder ? new Date(entry.datum_ausbilder).toLocaleDateString('de-DE') : '________________'}</div>
               ${
                 entry.signatur_ausbilder
-                  ? `<img src="${entry.signatur_ausbilder}" style="max-height: 70px; max-width: 220px; display: block; margin: 8px 0;" />`
+                  ? `<img src="${entry.signatur_ausbilder}" alt="Unterschrift Ausbilder/in" style="max-height: 70px; max-width: 220px; display: block; margin: 8px 0;" />`
                   : '<div style="height: 55px;"></div>'
               }
               <div style="border-top: 1px solid #333; padding-top: 4px; font-size: 10px; color: #333;">
