@@ -26,19 +26,12 @@ import {
   CHLORINATION_PRODUCTS,
   ANTICHLOR_PRODUCTS,
 } from './data/poolChemistry';
-import {
-  calculatePH,
-  calculateChlorine,
-  calculateVolume,
-  calculateIndustrialTime,
-  calculateDilution,
-  calculateFlocculation,
-} from './lib/poolCalc';
 import { containsBannedContent } from './lib/contentModeration';
 import { computeLeaderboard } from './lib/leaderboard';
 import { loadAppData } from './lib/loadAppData';
 import { useXpQueue } from './hooks/useXpQueue';
 import { useContentAdmin } from './hooks/useContentAdmin';
+import { useCalculator } from './hooks/useCalculator';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -218,9 +211,12 @@ export default function BaederApp() {
   // Swim state lives in useSwimChallenge hook
 
   // Calculator State
-  const [calculatorType, setCalculatorType] = useState('ph');
-  const [calculatorInputs, setCalculatorInputs] = useState({});
-  const [calculatorResult, setCalculatorResult] = useState(null);
+  const {
+    calculatorType, setCalculatorType,
+    calculatorInputs, setCalculatorInputs,
+    calculatorResult, setCalculatorResult,
+    handleCalculation,
+  } = useCalculator({ playSound });
   const [selectedChemical, setSelectedChemical] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
 
@@ -612,34 +608,6 @@ export default function BaederApp() {
 
   // playSound + showToast + darkMode + soundEnabled kommen vom AppContext (siehe oben)
 
-
-  const handleCalculation = () => {
-    let result = null;
-    
-    switch(calculatorType) {
-      case 'ph':
-        result = calculatePH(calculatorInputs);
-        break;
-      case 'chlorine':
-        result = calculateChlorine(calculatorInputs);
-        break;
-      case 'volume':
-        result = calculateVolume(calculatorInputs);
-        break;
-      case 'industrialTime':
-        result = calculateIndustrialTime(calculatorInputs);
-        break;
-      case 'dilution':
-        result = calculateDilution(calculatorInputs);
-        break;
-      case 'flocculation':
-        result = calculateFlocculation(calculatorInputs);
-        break;
-    }
-    
-    setCalculatorResult(result);
-    if (result) playSound('correct');
-  };
 
   const checkDataRetention = async () => {
     try {
