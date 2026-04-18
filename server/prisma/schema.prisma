@@ -66,125 +66,126 @@ enum QuestionReportStatus {
 }
 
 model Organization {
-  id              String           @id @default(cuid())
-  name            String
-  slug            String           @unique
-  contactName     String?
-  contactEmail    String?
-  isActive        Boolean          @default(true)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  users           User[]
-  invitationCodes InvitationCode[]
-  chatMessages    ChatMessage[]
-  duels           Duel[]
+  id                      String                  @id @default(cuid())
+  name                    String
+  slug                    String                  @unique
+  contactName             String?
+  contactEmail            String?
+  isActive                Boolean                 @default(true)
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  users                   User[]
+  invitationCodes         InvitationCode[]
+  chatMessages            ChatMessage[]
+  duels                   Duel[]
   schoolAttendanceEntries SchoolAttendanceEntry[]
-  examGrades      ExamGrade[]
-  reportBookEntries ReportBookEntry[]
-  swimSessions     SwimSession[]
-  swimTrainingPlans SwimTrainingPlan[]
-  userXpEvents      UserXpEvent[]
-  flashcards        Flashcard[]
-  learningMaterials LearningMaterial[]
-  resources         Resource[]
-  newsPosts         NewsPost[]
-  scheduledExams    ScheduledExam[]
-  forumPosts        ForumPost[]
-  forumReplies      ForumReply[]
-  submittedQuestions SubmittedQuestion[]
-  questionReports    QuestionReport[]
-  theoryExamSessions TheoryExamSession[]
-  theoryExamAttempts TheoryExamAttempt[]
-  practicalExamAttempts PracticalExamAttempt[]
-  appConfig        AppConfig?
+  examGrades              ExamGrade[]
+  reportBookEntries       ReportBookEntry[]
+  swimSessions            SwimSession[]
+  swimTrainingPlans       SwimTrainingPlan[]
+  userXpEvents            UserXpEvent[]
+  flashcards              Flashcard[]
+  learningMaterials       LearningMaterial[]
+  resources               Resource[]
+  newsPosts               NewsPost[]
+  scheduledExams          ScheduledExam[]
+  forumPosts              ForumPost[]
+  forumReplies            ForumReply[]
+  submittedQuestions      SubmittedQuestion[]
+  questionReports         QuestionReport[]
+  theoryExamSessions      TheoryExamSession[]
+  theoryExamAttempts      TheoryExamAttempt[]
+  practicalExamAttempts   PracticalExamAttempt[]
+  appConfig               AppConfig?
 }
 
 model User {
-  id                   String           @id @default(cuid())
-  email                String           @unique
-  displayName          String
-  avatar               String?
-  company              String?
-  birthDate            DateTime?
-  passwordHash         String
-  role                 AppRole          @default(AZUBI)
-  status               AccountStatus    @default(PENDING)
-  canSignReports       Boolean          @default(false)
-  canViewSchoolCards   Boolean          @default(false)
-  canViewExamGrades    Boolean          @default(false)
-  reportBookProfile    Json?
-  unlockedAvatarIds    Json?
-  organizationId       String?
-  organization         Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-  trainingEnd          DateTime?
-  approvedAt           DateTime?
-  approvedById         String?
-  approvedBy           User?            @relation("ApprovalActor", fields: [approvedById], references: [id], onDelete: SetNull)
-  approvedUsers        User[]           @relation("ApprovalActor")
-  refreshTokenHash     String?
-  totpSecret           String?
-  totpEnabled          Boolean @default(false)
-  totpRecoveryCodes    Json?
-  parentalConsentStatus ParentalConsentStatus @default(NOT_REQUIRED)
-  parentalConsentNote  String?
-  parentalConsentVerifiedAt DateTime?
-  parentalConsentVerifiedById String?
-  lastLoginAt          DateTime?
-  retentionWarnedAt    DateTime?
-  isDeleted            Boolean          @default(false)
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
-  sentChatMessages     ChatMessage[]    @relation("SentChatMessages")
-  receivedChatMessages ChatMessage[]    @relation("ReceivedChatMessages")
-  auditLogs            AuditLog[]       @relation("ActorAuditLogs")
-  createdInvitations   InvitationCode[] @relation("CreatedInvitations")
-  challengedDuels      Duel[]           @relation("ChallengerDuels")
-  opponentDuels        Duel[]           @relation("OpponentDuels")
-  wonDuels             Duel[]           @relation("WinnerDuels")
-  duelAnswers          DuelAnswer[]
-  passwordResetTokens  PasswordResetToken[]
-  notifications        AppNotification[]
-  schoolAttendanceEntries SchoolAttendanceEntry[]
-  examGrades          ExamGrade[]
-  ownedReportBookEntries ReportBookEntry[] @relation("OwnedReportBookEntries")
-  assignedReportBookEntries ReportBookEntry[] @relation("AssignedReportBookEntries")
-  reportBookAssignmentsMade ReportBookEntry[] @relation("ReportBookAssignmentsMade")
-  swimSessions        SwimSession[]       @relation("OwnedSwimSessions")
-  reviewedSwimSessions SwimSession[]      @relation("ReviewedSwimSessions")
-  createdSwimTrainingPlans SwimTrainingPlan[] @relation("CreatedSwimTrainingPlans")
-  assignedSwimTrainingPlans SwimTrainingPlan[] @relation("AssignedSwimTrainingPlans")
-  stats                UserStats?
-  xpEvents             UserXpEvent[]
-  flashcardsCreated    Flashcard[]        @relation("CreatedFlashcards")
-  flashcardsApproved   Flashcard[]        @relation("ApprovedFlashcards")
-  learningMaterialsCreated LearningMaterial[] @relation("CreatedLearningMaterials")
-  resourcesCreated     Resource[]         @relation("CreatedResources")
-  newsPostsCreated     NewsPost[]         @relation("CreatedNewsPosts")
-  scheduledExamsCreated ScheduledExam[]   @relation("CreatedScheduledExams")
-  forumPosts          ForumPost[]         @relation("CreatedForumPosts")
-  forumReplies        ForumReply[]        @relation("CreatedForumReplies")
-  submittedQuestions   SubmittedQuestion[] @relation("CreatedSubmittedQuestions")
-  approvedQuestions    SubmittedQuestion[] @relation("ApprovedSubmittedQuestions")
-  questionReports      QuestionReport[]    @relation("CreatedQuestionReports")
-  resolvedQuestionReports QuestionReport[] @relation("ResolvedQuestionReports")
-  theoryExamSessions   TheoryExamSession[] @relation("TheoryExamSessions")
-  theoryExamAttempts   TheoryExamAttempt[] @relation("TheoryExamAttempts")
-  practicalExamAttempts PracticalExamAttempt[] @relation("OwnedPracticalExamAttempts")
-  createdPracticalExamAttempts PracticalExamAttempt[] @relation("CreatedPracticalExamAttempts")
-  pushSubscriptions    PushSubscription[]
-  trustedDevices       TrustedDevice[]
+  id                           String                  @id @default(cuid())
+  email                        String                  @unique
+  displayName                  String
+  avatar                       String?
+  company                      String?
+  birthDate                    DateTime?
+  passwordHash                 String
+  role                         AppRole                 @default(AZUBI)
+  status                       AccountStatus           @default(PENDING)
+  canSignReports               Boolean                 @default(false)
+  canViewSchoolCards           Boolean                 @default(false)
+  canViewExamGrades            Boolean                 @default(false)
+  reportBookProfile            Json?
+  unlockedAvatarIds            Json?
+  organizationId               String?
+  organization                 Organization?           @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  trainingEnd                  DateTime?
+  approvedAt                   DateTime?
+  approvedById                 String?
+  approvedBy                   User?                   @relation("ApprovalActor", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedUsers                User[]                  @relation("ApprovalActor")
+  refreshTokenHash             String?
+  totpSecret                   String?
+  totpEnabled                  Boolean                 @default(false)
+  totpRecoveryCodes            Json?
+  parentalConsentStatus        ParentalConsentStatus   @default(NOT_REQUIRED)
+  parentalConsentNote          String?
+  parentalConsentVerifiedAt    DateTime?
+  parentalConsentVerifiedById  String?
+  lastLoginAt                  DateTime?
+  retentionWarnedAt            DateTime?
+  isDeleted                    Boolean                 @default(false)
+  createdAt                    DateTime                @default(now())
+  updatedAt                    DateTime                @updatedAt
+  sentChatMessages             ChatMessage[]           @relation("SentChatMessages")
+  receivedChatMessages         ChatMessage[]           @relation("ReceivedChatMessages")
+  auditLogs                    AuditLog[]              @relation("ActorAuditLogs")
+  createdInvitations           InvitationCode[]        @relation("CreatedInvitations")
+  challengedDuels              Duel[]                  @relation("ChallengerDuels")
+  opponentDuels                Duel[]                  @relation("OpponentDuels")
+  wonDuels                     Duel[]                  @relation("WinnerDuels")
+  duelAnswers                  DuelAnswer[]
+  passwordResetTokens          PasswordResetToken[]
+  notifications                AppNotification[]
+  schoolAttendanceEntries      SchoolAttendanceEntry[]
+  examGrades                   ExamGrade[]
+  ownedReportBookEntries       ReportBookEntry[]       @relation("OwnedReportBookEntries")
+  assignedReportBookEntries    ReportBookEntry[]       @relation("AssignedReportBookEntries")
+  reportBookAssignmentsMade    ReportBookEntry[]       @relation("ReportBookAssignmentsMade")
+  swimSessions                 SwimSession[]           @relation("OwnedSwimSessions")
+  reviewedSwimSessions         SwimSession[]           @relation("ReviewedSwimSessions")
+  createdSwimTrainingPlans     SwimTrainingPlan[]      @relation("CreatedSwimTrainingPlans")
+  assignedSwimTrainingPlans    SwimTrainingPlan[]      @relation("AssignedSwimTrainingPlans")
+  stats                        UserStats?
+  xpEvents                     UserXpEvent[]
+  flashcardsCreated            Flashcard[]             @relation("CreatedFlashcards")
+  flashcardsApproved           Flashcard[]             @relation("ApprovedFlashcards")
+  learningMaterialsCreated     LearningMaterial[]      @relation("CreatedLearningMaterials")
+  resourcesCreated             Resource[]              @relation("CreatedResources")
+  newsPostsCreated             NewsPost[]              @relation("CreatedNewsPosts")
+  scheduledExamsCreated        ScheduledExam[]         @relation("CreatedScheduledExams")
+  forumPosts                   ForumPost[]             @relation("CreatedForumPosts")
+  forumReplies                 ForumReply[]            @relation("CreatedForumReplies")
+  submittedQuestions           SubmittedQuestion[]     @relation("CreatedSubmittedQuestions")
+  approvedQuestions            SubmittedQuestion[]     @relation("ApprovedSubmittedQuestions")
+  questionReports              QuestionReport[]        @relation("CreatedQuestionReports")
+  resolvedQuestionReports      QuestionReport[]        @relation("ResolvedQuestionReports")
+  theoryExamSessions           TheoryExamSession[]     @relation("TheoryExamSessions")
+  theoryExamAttempts           TheoryExamAttempt[]     @relation("TheoryExamAttempts")
+  practicalExamAttempts        PracticalExamAttempt[]  @relation("OwnedPracticalExamAttempts")
+  createdPracticalExamAttempts PracticalExamAttempt[]  @relation("CreatedPracticalExamAttempts")
+  pushSubscriptions            PushSubscription[]
+  trustedDevices               TrustedDevice[]
+  badges                       UserBadge[]
 
   @@index([organizationId, role, status])
 }
 
 model PasswordResetToken {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash  String   @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
   expiresAt  DateTime
   consumedAt DateTime?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
   @@index([userId, expiresAt])
   @@index([tokenHash, consumedAt])
@@ -236,17 +237,17 @@ model AppConfig {
 }
 
 model ChatMessage {
-  id             String       @id @default(cuid())
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  scope          ChatScope
-  senderId       String
-  sender         User         @relation("SentChatMessages", fields: [senderId], references: [id], onDelete: Restrict)
-  recipientId    String?
-  recipient      User?        @relation("ReceivedChatMessages", fields: [recipientId], references: [id], onDelete: SetNull)
-  content        String
-  createdAt      DateTime     @default(now())
-  deletedAt      DateTime?
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  scope           ChatScope
+  senderId        String
+  sender          User         @relation("SentChatMessages", fields: [senderId], references: [id], onDelete: Restrict)
+  recipientId     String?
+  recipient       User?        @relation("ReceivedChatMessages", fields: [recipientId], references: [id], onDelete: SetNull)
+  content         String
+  createdAt       DateTime     @default(now())
+  deletedAt       DateTime?
   deletedByUserId String?
 
   @@index([organizationId, scope, createdAt])
@@ -269,24 +270,24 @@ model Question {
 }
 
 model Duel {
-  id             String       @id @default(cuid())
+  id             String         @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   challengerId   String
-  challenger     User         @relation("ChallengerDuels", fields: [challengerId], references: [id], onDelete: Restrict)
+  challenger     User           @relation("ChallengerDuels", fields: [challengerId], references: [id], onDelete: Restrict)
   opponentId     String
-  opponent       User         @relation("OpponentDuels", fields: [opponentId], references: [id], onDelete: Restrict)
+  opponent       User           @relation("OpponentDuels", fields: [opponentId], references: [id], onDelete: Restrict)
   winnerUserId   String?
-  winnerUser     User?        @relation("WinnerDuels", fields: [winnerUserId], references: [id], onDelete: SetNull)
-  status         DuelStatus   @default(PENDING)
-  questionCount  Int          @default(10)
+  winnerUser     User?          @relation("WinnerDuels", fields: [winnerUserId], references: [id], onDelete: SetNull)
+  status         DuelStatus     @default(PENDING)
+  questionCount  Int            @default(10)
   gameState      Json?
   expiresAt      DateTime?
   reminderSentAt DateTime?
   startedAt      DateTime?
   completedAt    DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   duelQuestions  DuelQuestion[]
   answers        DuelAnswer[]
 
@@ -313,16 +314,16 @@ model AppNotification {
 
 model PushSubscription {
   id          String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  endpoint     String   @unique
-  p256dh       String
-  auth         String
-  userAgent    String?
-  deviceLabel  String?
-  lastSeenAt   DateTime @default(now())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint    String   @unique
+  p256dh      String
+  auth        String
+  userAgent   String?
+  deviceLabel String?
+  lastSeenAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([userId, updatedAt])
 }
@@ -364,32 +365,32 @@ model ExamGrade {
 }
 
 model ReportBookEntry {
-  id                     String           @id @default(cuid())
-  organizationId         String
-  organization           Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  userId                 String
-  user                   User             @relation("OwnedReportBookEntries", fields: [userId], references: [id], onDelete: Cascade)
-  assignedTrainerId      String?
-  assignedTrainer        User?            @relation("AssignedReportBookEntries", fields: [assignedTrainerId], references: [id], onDelete: SetNull)
-  assignedById           String?
-  assignedBy             User?            @relation("ReportBookAssignmentsMade", fields: [assignedById], references: [id], onDelete: SetNull)
-  weekStart              DateTime
-  weekEnd                DateTime
-  trainingYear           Int
-  evidenceNumber         Int
-  entries                Json
-  apprenticeNote         String?
-  trainerNote            String?
-  apprenticeSignature    String?
-  trainerSignature       String?
-  apprenticeSignedAt     DateTime?
-  trainerSignedAt        DateTime?
-  totalHours             Float            @default(0)
-  status                 ReportBookStatus @default(DRAFT)
-  submittedAt            DateTime?
-  assignedAt             DateTime?
-  createdAt              DateTime         @default(now())
-  updatedAt              DateTime         @updatedAt
+  id                  String           @id @default(cuid())
+  organizationId      String
+  organization        Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  userId              String
+  user                User             @relation("OwnedReportBookEntries", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTrainerId   String?
+  assignedTrainer     User?            @relation("AssignedReportBookEntries", fields: [assignedTrainerId], references: [id], onDelete: SetNull)
+  assignedById        String?
+  assignedBy          User?            @relation("ReportBookAssignmentsMade", fields: [assignedById], references: [id], onDelete: SetNull)
+  weekStart           DateTime
+  weekEnd             DateTime
+  trainingYear        Int
+  evidenceNumber      Int
+  entries             Json
+  apprenticeNote      String?
+  trainerNote         String?
+  apprenticeSignature String?
+  trainerSignature    String?
+  apprenticeSignedAt  DateTime?
+  trainerSignedAt     DateTime?
+  totalHours          Float            @default(0)
+  status              ReportBookStatus @default(DRAFT)
+  submittedAt         DateTime?
+  assignedAt          DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
 
   @@unique([organizationId, userId, weekStart])
   @@index([organizationId, userId, status, weekStart])
@@ -618,19 +619,19 @@ model QuestionReport {
 }
 
 model TheoryExamSession {
-  id             String       @id @default(cuid())
+  id             String             @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   userId         String
-  user           User         @relation("TheoryExamSessions", fields: [userId], references: [id], onDelete: Cascade)
-  keywordMode    Boolean      @default(false)
+  user           User               @relation("TheoryExamSessions", fields: [userId], references: [id], onDelete: Cascade)
+  keywordMode    Boolean            @default(false)
   questions      Json
   totalQuestions Int
-  startedAt      DateTime     @default(now())
+  startedAt      DateTime           @default(now())
   expiresAt      DateTime
   completedAt    DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
   attempt        TheoryExamAttempt?
 
   @@index([organizationId, userId, completedAt])
@@ -638,20 +639,20 @@ model TheoryExamSession {
 }
 
 model TheoryExamAttempt {
-  id             String           @id @default(cuid())
+  id             String            @id @default(cuid())
   organizationId String
-  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   userId         String
-  user           User             @relation("TheoryExamAttempts", fields: [userId], references: [id], onDelete: Cascade)
-  sessionId      String           @unique
+  user           User              @relation("TheoryExamAttempts", fields: [userId], references: [id], onDelete: Cascade)
+  sessionId      String            @unique
   session        TheoryExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   correct        Int
   total          Int
   percentage     Int
   passed         Boolean
   timeMs         Int
-  keywordMode    Boolean          @default(false)
-  createdAt      DateTime         @default(now())
+  keywordMode    Boolean           @default(false)
+  createdAt      DateTime          @default(now())
 
   @@index([organizationId, userId, createdAt])
   @@index([organizationId, createdAt])
@@ -692,6 +693,17 @@ model UserStats {
   updatedAt     DateTime @updatedAt
 }
 
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@index([userId, earnedAt])
+}
+
 model UserXpEvent {
   id             String       @id @default(cuid())
   organizationId String
@@ -723,10 +735,10 @@ model DuelQuestion {
 }
 
 model LoginAttempt {
-  email       String   @id
-  failedCount Int      @default(0)
+  email       String    @id
+  failedCount Int       @default(0)
   lockedUntil DateTime?
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime  @updatedAt
 
   @@index([lockedUntil])
 }
