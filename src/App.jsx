@@ -100,7 +100,6 @@ import {
 
 export default function BaederApp() {
   const QUESTION_REPORTS_STORAGE_KEY = 'question_reports_v1';
-  const CHECKLIST_PROGRESS_STORAGE_KEY = 'practical_checklist_progress_v1';
 
   const parseJsonSafe = (value, fallback) => {
     try {
@@ -188,10 +187,6 @@ export default function BaederApp() {
     trackQuestionPerformance,
   } = useQuestionPerformance();
 
-  const [practicalChecklistProgress, setPracticalChecklistProgress] = useState(() => {
-    const parsed = parseJsonSafe(localStorage.getItem(CHECKLIST_PROGRESS_STORAGE_KEY), {});
-    return (parsed && typeof parsed === 'object') ? parsed : {};
-  });
   const [questionReports, setQuestionReports] = useState(() => {
     const parsed = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
     return Array.isArray(parsed) ? parsed : [];
@@ -593,10 +588,6 @@ export default function BaederApp() {
   }, [currentView, user]);
 
   useEffect(() => {
-    localStorage.setItem(CHECKLIST_PROGRESS_STORAGE_KEY, JSON.stringify(practicalChecklistProgress));
-  }, [practicalChecklistProgress]);
-
-  useEffect(() => {
     localStorage.setItem(QUESTION_REPORTS_STORAGE_KEY, JSON.stringify(questionReports));
   }, [questionReports]);
 
@@ -706,31 +697,6 @@ export default function BaederApp() {
     showToast,
     queueXpAwardForUser,
   });
-
-  const getChecklistItemKey = (checklistId, itemIndex) => `${checklistId}:${itemIndex}`;
-
-  const isChecklistItemCompleted = (checklistId, itemIndex) => {
-    return Boolean(practicalChecklistProgress[getChecklistItemKey(checklistId, itemIndex)]);
-  };
-
-  const toggleChecklistItem = (checklistId, itemIndex) => {
-    const key = getChecklistItemKey(checklistId, itemIndex);
-    const wasChecked = Boolean(practicalChecklistProgress[key]);
-
-    setPracticalChecklistProgress((prev) => ({
-      ...prev,
-      [key]: !wasChecked
-    }));
-    updateWeeklyProgress('checklistItems', wasChecked ? -1 : 1);
-  };
-
-  const getChecklistProgressStats = (checklist) => {
-    const total = Array.isArray(checklist?.items) ? checklist.items.length : 0;
-    const done = Array.isArray(checklist?.items)
-      ? checklist.items.filter((_, idx) => isChecklistItemCompleted(checklist.id, idx)).length
-      : 0;
-    return { total, done };
-  };
 
   duelLateDepsRef.current = { loadData, checkBadges, updateChallengeProgress, updateWeeklyProgress, trackQuestionPerformance };
   flashcardLateDepsRef.current = { updateChallengeProgress, updateWeeklyProgress, queueXpAward };
