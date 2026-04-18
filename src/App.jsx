@@ -620,27 +620,7 @@ export default function BaederApp() {
   });
 
   // Prüfungssimulator: useExamSimulator Hook (nach trackQuestionPerformance + updateWeeklyProgress)
-  const {
-    examSimulator,
-    examCurrentQuestion,
-    examQuestionIndex,
-    examAnswered,
-    userExamProgress,
-    examSelectedAnswers,
-    examSelectedAnswer,
-    examSimulatorMode, setExamSimulatorMode,
-    examKeywordMode, setExamKeywordMode,
-    examKeywordInput, setExamKeywordInput,
-    examKeywordEvaluation,
-    theoryExamHistory,
-    theoryExamHistoryLoading,
-    confirmExamMultiSelectAnswer,
-    submitExamKeywordAnswer,
-    answerExamQuestion,
-    resetExam,
-    loadExamProgress,
-    loadTheoryExamHistory,
-  } = useExamSimulator({
+  const examSimApi = useExamSimulator({
     user,
     duel,
     playSound,
@@ -651,32 +631,22 @@ export default function BaederApp() {
     setUserStats,
     setStatsByUserId,
   });
+  const {
+    examSimulatorMode, setExamSimulatorMode,
+    loadTheoryExamHistory,
+  } = examSimApi;
 
   // Praktische Prüfung: usePracticalExam Hook
-  const {
-    practicalExamType, setPracticalExamType,
-    practicalExamInputs,
-    practicalExamResult,
-    practicalExamTargetUserId, setPracticalExamTargetUserId,
-    practicalExamHistory,
-    practicalExamHistoryLoading,
-    practicalExamHistoryTypeFilter, setPracticalExamHistoryTypeFilter,
-    practicalExamHistoryUserFilter, setPracticalExamHistoryUserFilter,
-    practicalExamComparisonType, setPracticalExamComparisonType,
-    getPracticalParticipantCandidates,
-    loadPracticalExamHistory,
-    savePracticalExamAttempt,
-    deletePracticalExamAttempt,
-    exportPracticalExamToPdf,
-    resetPracticalExam,
-    updatePracticalExamInput,
-    evaluatePracticalExam,
-  } = usePracticalExam({
+  const practicalExamApi = usePracticalExam({
     user,
     allUsers,
     showToast,
     queueXpAwardForUser,
   });
+  const {
+    setPracticalExamTargetUserId,
+    loadPracticalExamHistory,
+  } = practicalExamApi;
 
   duelLateDepsRef.current = { loadData, checkBadges, updateChallengeProgress, updateWeeklyProgress, trackQuestionPerformance };
   flashcardLateDepsRef.current = { updateChallengeProgress, updateWeeklyProgress, queueXpAward };
@@ -740,45 +710,19 @@ export default function BaederApp() {
         {/* Admin Panel */}
         {currentView === 'admin' && user.permissions.canManageUsers && (
           <AdminView
+            {...adminActions}
             currentUserEmail={user.email}
             canManageRoles={Boolean(user.isOwner) || (user.role === 'admin' && !allUsers.some((account) => Boolean(account?.is_owner)))}
             canEditAppConfig={Boolean(user.isOwner) || (user.role === 'admin' && !allUsers.some((account) => Boolean(account?.is_owner)))}
-            getAdminStats={adminActions.getAdminStats}
             questionReports={questionReports}
             toggleQuestionReportStatus={duel.toggleQuestionReportStatus}
             pendingUsers={pendingUsers}
-            approveUser={adminActions.approveUser}
             loadData={loadData}
             allUsers={allUsers}
-            getDaysUntilDeletion={adminActions.getDaysUntilDeletion}
-            changeUserRole={adminActions.changeUserRole}
-            exportUserData={adminActions.exportUserData}
-            deleteUser={adminActions.deleteUser}
-            toggleSchoolCardPermission={adminActions.toggleSchoolCardPermission}
-            toggleSignReportsPermission={adminActions.toggleSignReportsPermission}
-            toggleExamGradesPermission={adminActions.toggleExamGradesPermission}
-            repairQuizStats={adminActions.repairQuizStats}
-            sendTestPush={adminActions.sendTestPush}
-            editingMenuItems={adminActions.editingMenuItems}
-            setEditingMenuItems={adminActions.setEditingMenuItems}
             appConfig={appConfig}
-            editingThemeColors={adminActions.editingThemeColors}
-            setEditingThemeColors={adminActions.setEditingThemeColors}
-            moveMenuItem={adminActions.moveMenuItem}
-            updateMenuItemIcon={adminActions.updateMenuItemIcon}
-            updateMenuItemLabel={adminActions.updateMenuItemLabel}
-            updateMenuItemGroup={adminActions.updateMenuItemGroup}
-            toggleMenuItemVisibility={adminActions.toggleMenuItemVisibility}
-            updateThemeColor={adminActions.updateThemeColor}
-            saveAppConfig={adminActions.saveAppConfig}
-            resetAppConfig={adminActions.resetAppConfig}
             companies={appConfig.companies}
-            saveCompanies={adminActions.saveCompanies}
             announcement={appConfig.announcement}
-            saveAnnouncement={adminActions.saveAnnouncement}
             featureFlags={appConfig.featureFlags}
-            saveFeatureFlag={adminActions.saveFeatureFlag}
-            verifyParentalConsent={adminActions.verifyParentalConsent}
           />
         )}
 
@@ -824,47 +768,14 @@ export default function BaederApp() {
         )}
         {currentView === 'quiz' && !appConfig.featureFlags?.quizMaintenance && (
           <QuizView
-            selectedDifficulty={duel.selectedDifficulty}
-            setSelectedDifficulty={duel.setSelectedDifficulty}
-            allUsers={allUsers}
-            allGames={duel.allGames}
-            activeGames={duel.activeGames}
-            challengePlayer={duel.challengePlayer}
-            acceptChallenge={duel.acceptChallenge}
+            {...duel}
             continueGame={duel.continueGameSafe}
-            currentGame={duel.currentGame}
-            quizCategory={duel.quizCategory}
-            questionInCategory={duel.questionInCategory}
-            playerTurn={duel.playerTurn}
+            allUsers={allUsers}
             adaptiveLearningEnabled={adaptiveLearningEnabled}
             setAdaptiveLearningEnabled={setAdaptiveLearningEnabled}
-            selectCategory={duel.selectCategory}
-            waitingForOpponent={duel.waitingForOpponent}
-            startCategoryAsSecondPlayer={duel.startCategoryAsSecondPlayer}
-            currentQuestion={duel.currentQuestion}
-            timeLeft={duel.timeLeft}
-            answered={duel.answered}
-            selectedAnswers={duel.selectedAnswers}
-            lastSelectedAnswer={duel.lastSelectedAnswer}
             isKeywordQuestion={isKeywordQuestion}
             isWhoAmIQuestion={isWhoAmIQuestion}
-            keywordAnswerText={duel.keywordAnswerText}
-            setKeywordAnswerText={duel.setKeywordAnswerText}
-            keywordAnswerEvaluation={duel.keywordAnswerEvaluation}
-            submitKeywordAnswer={duel.submitKeywordAnswer}
-            quizMCKeywordMode={duel.quizMCKeywordMode}
-            setQuizMCKeywordMode={duel.setQuizMCKeywordMode}
-            answerQuestion={duel.answerQuestion}
-            reportQuestionIssue={duel.reportQuestionIssue}
-            confirmMultiSelectAnswer={duel.confirmMultiSelectAnswer}
-            proceedToNextRound={duel.proceedToNextRound}
             userStats={userStats}
-            duelResult={duel.duelResult}
-            setDuelResult={duel.setDuelResult}
-            showDuelResultForGame={duel.showDuelResultForGame}
-            categoryRoundResult={duel.categoryRoundResult}
-            proceedAfterCategoryResult={duel.proceedAfterCategoryResult}
-            onForfeit={duel.onForfeit}
           />
         )}
 
@@ -980,56 +891,14 @@ export default function BaederApp() {
         {currentView === 'exam-simulator' && (
           <ErrorBoundary darkMode={darkMode}>
           <ExamSimulatorView
-            examSimulatorMode={examSimulatorMode}
-            setExamSimulatorMode={setExamSimulatorMode}
-            userExamProgress={userExamProgress}
-            examSimulator={examSimulator}
+            {...examSimApi}
+            {...practicalExamApi}
             adaptiveLearningEnabled={adaptiveLearningEnabled}
             setAdaptiveLearningEnabled={setAdaptiveLearningEnabled}
-            examQuestionIndex={examQuestionIndex}
-            examCurrentQuestion={examCurrentQuestion}
-            examAnswered={examAnswered}
-            examSelectedAnswers={examSelectedAnswers}
-            examSelectedAnswer={examSelectedAnswer}
-            loadExamProgress={loadExamProgress}
-            answerExamQuestion={answerExamQuestion}
             reportQuestionIssue={duel.reportQuestionIssue}
-            confirmExamMultiSelectAnswer={confirmExamMultiSelectAnswer}
-            resetExam={resetExam}
-            practicalExamType={practicalExamType}
-            setPracticalExamType={setPracticalExamType}
-            practicalExamInputs={practicalExamInputs}
-            practicalExamResult={practicalExamResult}
-            practicalExamTargetUserId={practicalExamTargetUserId}
-            setPracticalExamTargetUserId={setPracticalExamTargetUserId}
-            practicalExamHistory={practicalExamHistory}
-            practicalExamHistoryLoading={practicalExamHistoryLoading}
-            practicalExamHistoryTypeFilter={practicalExamHistoryTypeFilter}
-            setPracticalExamHistoryTypeFilter={setPracticalExamHistoryTypeFilter}
-            practicalExamHistoryUserFilter={practicalExamHistoryUserFilter}
-            setPracticalExamHistoryUserFilter={setPracticalExamHistoryUserFilter}
-            practicalExamComparisonType={practicalExamComparisonType}
-            setPracticalExamComparisonType={setPracticalExamComparisonType}
             allUsers={allUsers}
-            resetPracticalExam={resetPracticalExam}
-            updatePracticalExamInput={updatePracticalExamInput}
-            evaluatePracticalExam={evaluatePracticalExam}
-            exportPracticalExamToPdf={exportPracticalExamToPdf}
-            loadPracticalExamHistory={loadPracticalExamHistory}
             canUseRowForSpeedRanking={canUseRowForSpeedRanking}
             getPracticalRowSeconds={getPracticalRowSeconds}
-            getPracticalParticipantCandidates={getPracticalParticipantCandidates}
-            savePracticalExamAttempt={savePracticalExamAttempt}
-            deletePracticalExamAttempt={deletePracticalExamAttempt}
-            examKeywordMode={examKeywordMode}
-            setExamKeywordMode={setExamKeywordMode}
-            examKeywordInput={examKeywordInput}
-            setExamKeywordInput={setExamKeywordInput}
-            examKeywordEvaluation={examKeywordEvaluation}
-            submitExamKeywordAnswer={submitExamKeywordAnswer}
-            theoryExamHistory={theoryExamHistory}
-            theoryExamHistoryLoading={theoryExamHistoryLoading}
-            loadTheoryExamHistory={loadTheoryExamHistory}
           />
           </ErrorBoundary>
         )}
@@ -1119,8 +988,8 @@ export default function BaederApp() {
             allGames={duel.allGames}
             namesMatch={namesMatch}
             isFinishedGameStatus={isFinishedGameStatus}
-            theoryExamHistory={theoryExamHistory}
-            theoryExamHistoryLoading={theoryExamHistoryLoading}
+            theoryExamHistory={examSimApi.theoryExamHistory}
+            theoryExamHistoryLoading={examSimApi.theoryExamHistoryLoading}
             loadTheoryExamHistory={loadTheoryExamHistory}
           />
         )}
