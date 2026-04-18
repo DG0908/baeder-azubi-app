@@ -350,6 +350,10 @@ export const secureDuelsApi = {
     method: 'PATCH',
     body: JSON.stringify({ gameState })
   }),
+  startRound: (duelId: string, categoryId: string) => apiRequest(`/duels/${duelId}/rounds`, {
+    method: 'POST',
+    body: JSON.stringify({ categoryId })
+  }),
   forfeit: (duelId: string) => apiRequest(`/duels/${duelId}/forfeit`, { method: 'POST' })
 };
 

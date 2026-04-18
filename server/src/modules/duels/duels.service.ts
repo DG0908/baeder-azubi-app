@@ -15,6 +15,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateDuelDto } from './dto/create-duel.dto';
 import { EXTRA_DUEL_QUESTION_BANK, STANDARD_DUEL_QUESTION_BANK } from './duel-question-bank';
+import { StartRoundDto } from './dto/start-round.dto';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
 import { GameStateDto } from './dto/update-duel-state.dto';
 
@@ -42,6 +43,7 @@ const DUEL_CATEGORY_NAMES: Record<string, string> = {
   hygiene: 'Hygiene',
   health: 'Gesundheitslehre'
 };
+const ALLOWED_DUEL_CATEGORY_IDS: ReadonlySet<string> = new Set(Object.keys(DUEL_CATEGORY_NAMES));
 
 const duelParticipantSelect = {
   id: true,
@@ -312,6 +314,14 @@ export class DuelsService {
       );
     }
     const previousGameState = this.normalizeGameState(duel, duel.gameState);
+    const previousRoundCount = Array.isArray(previousGameState.categoryRounds)
+      ? previousGameState.categoryRounds.length
+      : 0;
+    if (rawRounds.length > previousRoundCount) {
+      throw new BadRequestException(
+        'Neue Runden müssen über POST /duels/:id/rounds gestartet werden.'
+      );
+    }
     // Use the authoritative merged state (incorporates DuelAnswer records) as the
     // baseline for transition validation. This ensures isRoundComplete works correctly
     // even if earlier PATCH /state calls failed and the stored gameState is stale.
@@ -345,6 +355,69 @@ export class DuelsService {
         expiresAt: shouldComplete ? null : undefined,
         reminderSentAt: shouldComplete ? null : undefined
       },
+      include: duelInclude
+    });
+
+    return this.toDuelSummary(updated, actor.id);
+  }
+
+  async startRound(actor: AuthenticatedUser, duelId: string, dto: StartRoundDto) {
+    const duel = await this.prisma.duel.findUnique({
+      where: { id: duelId },
+      include: duelInclude
+    });
+
+    if (!duel) {
+      throw new NotFoundException('Duel not found.');
+    }
+
+    if (duel.challengerId !== actor.id && duel.opponentId !== actor.id) {
+      throw new ForbiddenException('You are not a participant in this duel.');
+    }
+
+    if (duel.status !== DuelStatus.ACTIVE) {
+      throw new ConflictException('Nur aktive Duelle können neue Runden starten.');
+    }
+
+    const mergedState = this.mergePersistedAnswersIntoGameState(duel);
+    const previousRounds = Array.isArray(mergedState.categoryRounds)
+      ? (mergedState.categoryRounds as Prisma.InputJsonArray)
+      : [];
+
+    if (previousRounds.length >= MAX_DUEL_CATEGORY_ROUNDS) {
+      throw new BadRequestException('Das Duell hat bereits die maximale Anzahl an Runden.');
+    }
+
+    if (previousRounds.length > 0) {
+      const lastRound = this.asRecord(previousRounds[previousRounds.length - 1]);
+      if (!this.isRoundComplete(lastRound)) {
+        throw new BadRequestException('Eine neue Runde kann erst beginnen, wenn die aktuelle Runde abgeschlossen ist.');
+      }
+    }
+
+    const expectedChooser = this.getExpectedNextChooserName(duel, previousRounds);
+    const actorIsChallenger = duel.challengerId === actor.id;
+    const actorDisplayName = actorIsChallenger ? duel.challenger.displayName : duel.opponent.displayName;
+    if (actorDisplayName !== expectedChooser) {
+      throw new BadRequestException('Nur der erwartete Chooser darf die nächste Runde starten.');
+    }
+
+    const difficulty = this.normalizeDifficulty(mergedState.difficulty);
+    const newRound = await this.buildAuthoritativeRound(duel, previousRounds, dto.categoryId, difficulty);
+    const newRoundIndex = previousRounds.length;
+    const chooser = this.readString(newRound.chooser) ?? duel.challenger.displayName;
+
+    const nextGameState: Prisma.InputJsonObject = {
+      ...mergedState,
+      categoryRound: newRoundIndex,
+      categoryRounds: [...previousRounds, newRound],
+      currentTurn: chooser,
+      status: 'active'
+    };
+
+    const updated = await this.prisma.duel.update({
+      where: { id: duelId },
+      data: { gameState: nextGameState },
       include: duelInclude
     });
 
@@ -422,17 +495,43 @@ export class DuelsService {
     const newRoundIndex = nextRounds.length - 1;
     const newRound = this.asRecord(nextRounds[newRoundIndex]);
     const categoryId = this.readRoundCategoryId(newRound) ?? '';
-    if (!categoryId) {
-      throw new BadRequestException('Eine neue Runde muss eine gültige Kategorie-ID enthalten.');
-    }
-
-    const generatedQuestions = await this.generateAuthoritativeRoundQuestions(
+    const authoritativeRound = await this.buildAuthoritativeRound(
+      duel,
+      previousRounds,
       categoryId,
       this.normalizeDifficulty(nextGameState.difficulty)
     );
+
+    return {
+      ...nextGameState,
+      currentTurn: this.readString(authoritativeRound.chooser) ?? duel.challenger.displayName,
+      categoryRound: newRoundIndex,
+      categoryRounds: [...previousRounds, authoritativeRound]
+    } as Prisma.InputJsonObject;
+  }
+
+  private async buildAuthoritativeRound(
+    duel: DuelWithRelations,
+    previousRounds: Prisma.InputJsonArray,
+    categoryId: string,
+    difficulty: string
+  ): Promise<Prisma.InputJsonObject> {
+    if (!categoryId) {
+      throw new BadRequestException('Eine neue Runde muss eine gültige Kategorie-ID enthalten.');
+    }
+    if (!ALLOWED_DUEL_CATEGORY_IDS.has(categoryId)) {
+      throw new BadRequestException(`Unbekannte Kategorie: ${categoryId}`);
+    }
+    for (const previous of previousRounds) {
+      if (this.readRoundCategoryId(this.asRecord(previous)) === categoryId) {
+        throw new BadRequestException('Diese Kategorie wurde in diesem Duell bereits gespielt.');
+      }
+    }
+
+    const generatedQuestions = await this.generateAuthoritativeRoundQuestions(categoryId, difficulty);
     if (!generatedQuestions) {
       this.logger.error(
-        `[applyAuthoritativeRoundGeneration] No authoritative questions available for category="${categoryId}" difficulty="${this.normalizeDifficulty(nextGameState.difficulty)}". Rejecting client-supplied round.`
+        `[buildAuthoritativeRound] No authoritative questions available for category="${categoryId}" difficulty="${difficulty}".`
       );
       throw new BadRequestException(
         'Für diese Kategorie sind aktuell keine Fragen verfügbar. Bitte wähle eine andere Kategorie.'
@@ -440,21 +539,14 @@ export class DuelsService {
     }
 
     const chooser = this.getExpectedNextChooserName(duel, previousRounds);
-    const authoritativeRound: Prisma.InputJsonObject = {
+    return {
       categoryId,
-      categoryName: DUEL_CATEGORY_NAMES[categoryId] ?? (this.sanitizeText(newRound.categoryName, 120) || categoryId),
+      categoryName: DUEL_CATEGORY_NAMES[categoryId] ?? categoryId,
       chooser,
       questions: generatedQuestions,
       player1Answers: this.normalizeAnswerArray([]),
       player2Answers: this.normalizeAnswerArray([])
     };
-
-    return {
-      ...nextGameState,
-      currentTurn: chooser,
-      categoryRound: newRoundIndex,
-      categoryRounds: [...previousRounds, authoritativeRound]
-    } as Prisma.InputJsonObject;
   }
 
   private resolveWinnerUserId(
