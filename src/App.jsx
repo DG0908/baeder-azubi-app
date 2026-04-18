@@ -19,6 +19,7 @@ import { usePracticalExam, canUseRowForSpeedRanking, getPracticalRowSeconds } fr
 import { useBadges } from './hooks/useBadges';
 import { useWeeklyGoals, sanitizeGoalValue, getWeekStartStamp, buildEmptyWeeklyProgress } from './hooks/useWeeklyGoals';
 import { useQuestionPerformance } from './hooks/useQuestionPerformance';
+import { useQuestionReports } from './hooks/useQuestionReports';
 import {
   FLOCCULANT_PRODUCTS,
   FLOCCULANT_PUMP_TYPES,
@@ -29,7 +30,6 @@ import {
 import { createContentModerator } from './lib/contentModeration';
 import { computeLeaderboard } from './lib/leaderboard';
 import { loadAppData, refreshLightData } from './lib/loadAppData';
-import { parseJsonSafe } from './lib/jsonUtils';
 import { useXpQueue } from './hooks/useXpQueue';
 import { useContentAdmin } from './hooks/useContentAdmin';
 import { useCalculator } from './hooks/useCalculator';
@@ -47,6 +47,7 @@ import { AppHeader } from './components/ui/AppHeader';
 import { NotificationsDropdown } from './components/ui/NotificationsDropdown';
 import { DesktopSidebar } from './components/ui/DesktopSidebar';
 import { MobileNav } from './components/ui/MobileNav';
+import { QuizMaintenanceView } from './components/ui/QuizMaintenanceView';
 
 // Lazy-loaded Views — werden erst geladen wenn sie gebraucht werden
 const ChatView = lazy(() => import('./components/views/ChatView'));
@@ -108,8 +109,6 @@ import {
 } from './lib/quizHelpers';
 
 export default function BaederApp() {
-  const QUESTION_REPORTS_STORAGE_KEY = 'question_reports_v1';
-
   const {
     authReady,
     user,
@@ -182,10 +181,7 @@ export default function BaederApp() {
     trackQuestionPerformance,
   } = useQuestionPerformance();
 
-  const [questionReports, setQuestionReports] = useState(() => {
-    const parsed = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
-    return Array.isArray(parsed) ? parsed : [];
-  });
+  const { questionReports, setQuestionReports } = useQuestionReports();
 
   // Kontrollkarte Berufsschule + Klasuren: useSchoolAttendance + useExamGrades Hooks
   // Swim state lives in useSwimChallenge hook
@@ -575,10 +571,6 @@ export default function BaederApp() {
 
   }, [currentView, user]);
 
-  useEffect(() => {
-    localStorage.setItem(QUESTION_REPORTS_STORAGE_KEY, JSON.stringify(questionReports));
-  }, [questionReports]);
-
   // playSound + showToast + darkMode + soundEnabled kommen vom AppContext (siehe oben)
 
 
@@ -828,21 +820,7 @@ export default function BaederApp() {
 
         {/* Quiz View */}
         {currentView === 'quiz' && appConfig.featureFlags?.quizMaintenance && (
-          <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center"
-               style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
-            <div className="text-7xl mb-6">🚧</div>
-            <h1 className="text-2xl font-bold text-white mb-3">Am Quiz wird gearbeitet</h1>
-            <p className="text-slate-400 max-w-sm mb-2">
-              Wir verbessern das Quizduell gerade für euch.
-            </p>
-            <p className="text-slate-500 text-sm">Bitte bald wieder vorbeischauen!</p>
-            <button
-              onClick={() => setCurrentView('home')}
-              className="mt-8 px-6 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium transition-colors"
-            >
-              Zurück zur Startseite
-            </button>
-          </div>
+          <QuizMaintenanceView setCurrentView={setCurrentView} />
         )}
         {currentView === 'quiz' && !appConfig.featureFlags?.quizMaintenance && (
           <QuizView
