@@ -24,9 +24,6 @@ import {
 } from '../lib/quizHelpers';
 import { CATEGORIES } from '../data/constants';
 import { SAMPLE_QUESTIONS } from '../data/quizQuestions';
-import { KEYWORD_CHALLENGES } from '../data/keywordChallenges';
-import { WHO_AM_I_CATEGORY } from '../data/whoAmIChallenges';
-import { shuffleAnswers } from '../lib/utils';
 import { friendlyError } from '../lib/friendlyError';
 import {
   createDuel as dsCreateDuel,
@@ -35,6 +32,7 @@ import {
   submitDuelAnswer as dsSubmitDuelAnswer,
   forfeitDuel as dsForfeitDuel,
   saveDuelState as dsSaveDuelState,
+  startDuelRound as dsStartDuelRound,
   getUserStats as dsGetUserStats,
   reportQuestion as dsReportQuestion,
   updateQuestionReportStatus as dsUpdateQuestionReportStatus,
@@ -301,46 +299,6 @@ export function useDuelGame(deps) {
     }
 
     return shuffleArray(selected);
-  };
-
-  const getUsedQuestionTextsForGame = (game, categoryId) => {
-    if (!game || !Array.isArray(game.categoryRounds)) return new Set();
-    return new Set(
-      game.categoryRounds
-        .filter((round) => String(round?.categoryId || '') === String(categoryId || ''))
-        .flatMap((round) => Array.isArray(round?.questions) ? round.questions : [])
-        .map((question) => normalizeQuestionText(question?.q || ''))
-        .filter(Boolean)
-    );
-  };
-
-  const pickBattleQuestions = (questions, count, categoryId, game) => {
-    const source = Array.isArray(questions) ? questions.filter(Boolean) : [];
-    const limit = Math.min(Math.max(0, Number(count) || 0), source.length);
-    if (limit <= 0) return [];
-
-    const usedQuestionTexts = getUsedQuestionTextsForGame(game, categoryId);
-    const freshPool = source.filter((question) => !usedQuestionTexts.has(normalizeQuestionText(question?.q || '')));
-    const freshSelected = pickLearningQuestions(
-      freshPool,
-      Math.min(limit, freshPool.length),
-      () => categoryId
-    );
-
-    const remaining = limit - freshSelected.length;
-    if (remaining <= 0) {
-      return shuffleArray(freshSelected);
-    }
-
-    const selectedTextSet = new Set(freshSelected.map((question) => normalizeQuestionText(question?.q || '')));
-    const fallbackPool = source.filter((question) => !selectedTextSet.has(normalizeQuestionText(question?.q || '')));
-    const fallbackSelected = pickLearningQuestions(
-      fallbackPool,
-      Math.min(remaining, fallbackPool.length),
-      () => categoryId
-    );
-
-    return shuffleArray([...freshSelected, ...fallbackSelected]);
   };
 
   /**
@@ -743,72 +701,37 @@ export function useDuelGame(deps) {
     setQuizCategory(catId);
     resetQuizKeywordState();
 
-    const useKeywordQuestions = selectedDifficulty === 'extra' || currentGame.difficulty === 'extra';
-    const categoryKeywordQuestions = KEYWORD_CHALLENGES[catId] || [];
-    const categoryStandardQuestions = SAMPLE_QUESTIONS[catId] || [];
-    const allQuestions = useKeywordQuestions && categoryKeywordQuestions.length > 0
-      ? categoryKeywordQuestions
-      : categoryStandardQuestions;
-    if (useKeywordQuestions && categoryKeywordQuestions.length === 0 && catId !== WHO_AM_I_CATEGORY.id) {
-      showToast('Für diese Kategorie sind noch keine Extra-schwer-Fragen hinterlegt. Standardfragen werden genutzt.', 'info');
-    }
-    const selectedQuestions = pickBattleQuestions(allQuestions, Math.min(5, allQuestions.length), catId, currentGame);
-
-    const preparedQuestions = selectedQuestions.map((question) => {
-      if (isKeywordQuestion(question) || isWhoAmIQuestion(question)) {
-        return { ...question, category: catId };
-      }
-      return { ...shuffleAnswers(question), category: catId };
-    });
-
-    let baseGame = cloneDuelGameSnapshot(currentGame);
+    let latestGame = null;
     try {
-      const latestGame = await dsGetDuelWithQuestions(currentGame.id, user?.id);
-      if (latestGame?.id === currentGame.id) {
-        baseGame = latestGame;
-      }
+      latestGame = await dsGetDuelWithQuestions(currentGame.id, user?.id);
     } catch (error) {
       console.warn('Aktuellen Duel-Stand vor Kategorienwahl konnte nicht nachgeladen werden:', error);
     }
 
-    const workingGame = syncLocalDuelGame(baseGame);
-    if (!workingGame?.id) {
+    const baseGame = latestGame?.id === currentGame.id
+      ? syncLocalDuelGame(latestGame)
+      : syncLocalDuelGame(cloneDuelGameSnapshot(currentGame));
+
+    if (!baseGame?.id) {
       showToast('Quizduell konnte nicht geladen werden. Bitte erneut versuchen.', 'error', 2500);
       return;
     }
 
-    if (!Array.isArray(workingGame.categoryRounds)) {
-      workingGame.categoryRounds = [];
-    }
-
-    const localRequestedRoundIndex = Math.max(
-      Number(workingGame?.categoryRound || 0),
-      Number(currentGame?.categoryRound || 0)
+    const existingRounds = Array.isArray(baseGame.categoryRounds) ? baseGame.categoryRounds : [];
+    const requestedRoundIndex = Math.max(
+      Number(baseGame.categoryRound || 0),
+      Number(currentGame.categoryRound || 0)
     );
-    const roundIndex = Math.max(0, Math.min(
-      localRequestedRoundIndex,
-      workingGame.categoryRounds.length
-    ));
-    const existingRound = workingGame.categoryRounds[roundIndex];
+    const roundIndex = Math.max(0, Math.min(requestedRoundIndex, existingRounds.length));
+    const existingRound = existingRounds[roundIndex];
     if (existingRound?.categoryId) {
+      const resumeQuestions = restoreCorrectForQuestions(existingRound.questions || [], existingRound.categoryId);
       setQuizCategory(existingRound.categoryId);
-      setCurrentCategoryQuestions(Array.isArray(existingRound.questions) ? existingRound.questions : []);
-      setCurrentQuestion(Array.isArray(existingRound.questions) ? (existingRound.questions[0] || null) : null);
+      setCurrentCategoryQuestions(resumeQuestions);
+      setCurrentQuestion(resumeQuestions[0] || null);
       showToast('Diese Runde ist bereits gestartet und wird fortgesetzt.', 'info', 2200);
       return;
     }
-
-    workingGame.categoryRound = roundIndex;
-    workingGame.currentTurn = user.name;
-    workingGame.categoryRounds = workingGame.categoryRounds.slice(0, roundIndex);
-    workingGame.categoryRounds.push({
-      categoryId: catId,
-      categoryName: CATEGORIES.find(c => c.id === catId)?.name || catId,
-      questions: preparedQuestions,
-      player1Answers: [],
-      player2Answers: [],
-      chooser: user.name
-    });
 
     setCurrentCategoryQuestions([]);
     setQuestionInCategory(0);
@@ -819,11 +742,21 @@ export function useDuelGame(deps) {
     setLastSelectedAnswer(null);
     setTimerActive(false);
 
-    let saveError = null;
-    const persistedGame = syncQuizRuntimeFromPersistedGame(
-      await saveGameToSupabase(workingGame, { onSaveError: (err) => { saveError = err; } })
-    );
-    const persistedRound = persistedGame?.categoryRounds?.[roundIndex];
+    let persistedGame;
+    try {
+      persistedGame = await dsStartDuelRound(currentGame.id, catId, user?.id);
+    } catch (error) {
+      console.error('Runde konnte nicht gestartet werden:', error);
+      setQuizCategory(null);
+      setCurrentCategoryQuestions([]);
+      setCurrentQuestion(null);
+      setTimerActive(false);
+      showToast(friendlyError(error) || 'Die Kategorie konnte nicht gespeichert werden. Bitte waehle sie erneut.', 'error', 3500);
+      return;
+    }
+
+    const syncedGame = syncQuizRuntimeFromPersistedGame(persistedGame);
+    const persistedRound = syncedGame?.categoryRounds?.[roundIndex];
     const liveQuestions = Array.isArray(persistedRound?.questions) ? persistedRound.questions : [];
 
     if (!persistedRound?.categoryId || !liveQuestions.length) {
@@ -831,16 +764,15 @@ export function useDuelGame(deps) {
       setCurrentCategoryQuestions([]);
       setCurrentQuestion(null);
       setTimerActive(false);
-      const errorMessage = saveError?.message || 'Die Kategorie konnte nicht gespeichert werden. Bitte waehle sie erneut.';
-      showToast(errorMessage, 'error', 3500);
+      showToast('Die Kategorie konnte nicht gespeichert werden. Bitte waehle sie erneut.', 'error', 3500);
       return;
     }
 
-    const questionsToShow = restoreCorrectForQuestions(liveQuestions, catId, preparedQuestions);
+    const questionsToShow = restoreCorrectForQuestions(liveQuestions, catId);
     setCurrentCategoryQuestions(questionsToShow);
     setCurrentQuestion(questionsToShow[0] || null);
     if (questionsToShow[0]) {
-      const timeLimit = getQuizTimeLimit(questionsToShow[0], persistedGame?.difficulty || currentGame.difficulty);
+      const timeLimit = getQuizTimeLimit(questionsToShow[0], syncedGame?.difficulty || currentGame.difficulty);
       setTimeLeft(timeLimit);
       setTimerActive(true);
     }

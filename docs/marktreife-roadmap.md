@@ -117,7 +117,7 @@
 | P4.2 | CONTRIBUTING.md, CHANGELOG.md | Sonnet | 0.5 d | [x] Opus · 2026-04-18 |
 | P4.3 | OpenGraph-/Twitter-Card-Meta in [index.html](../index.html) | Qwen | 15 min | [x] Opus · 2026-04-18 (OG via QW.4 vorhanden, Twitter-Cards + OG-Bildgröße/Alt ergänzt) |
 | P4.4 | Alt-Text-Audit aller `<img>` | Qwen | 0.5 d | [x] Opus · 2026-04-18 (7 `<img>` auditiert, 5 hatten bereits Alt-Text, 2 Signatur-Bilder im Berichtsheft-PDF-Template ergänzt) |
-| P4.5 | Duel-Rundenerzeugung vollständig server-autoritativ | **Opus** (Kern der Fairness) | 3 d | [ ] |
+| P4.5 | Duel-Rundenerzeugung vollständig server-autoritativ | **Opus** (Kern der Fairness) | 3 d | [x] Opus · 2026-04-18 (neuer Endpoint `POST /duels/:id/rounds`, Kategorie-Whitelist + Chooser-Check + Max-Runden-Guard, `CategoryRoundDto` auf Metadata reduziert, `PATCH /state` weist Rundenzusätze zurück, Frontend `useDuelGame.selectCategory` migriert, 505 Backend-Tests grün) |
 | P4.6 | SSRF-Validierung Content-URLs (Internal-IP-Blockliste) | Opus | 0.5 d | [x] Opus · 2026-04-18 (Validator gehärtet: 0.0.0.0, Hex/Oktal/Dezimal-IPs, IPv4-mapped IPv6; Push-Endpoint abgedeckt) |
 | P4.7 | Fachliche Gegenlese Fragenkatalog | **Mensch** (Meister Bäderbetriebe) | extern | [ ] |
 | P4.8 | Badge-Historie-Migration Supabase → NestJS | Sonnet | 1 d | [x] Opus · 2026-04-18 (UserBadge-Model + Migration, Badges-Modul mit `GET /api/badges/me` + `POST /api/badges/grant`, Frontend-dataService angeschlossen, DSGVO-Export ergänzt) |
