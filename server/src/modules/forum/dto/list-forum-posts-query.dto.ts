@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Length, Matches, Max, Min } from 'class-validator';
 import { FORUM_CATEGORY_IDS } from '../forum-categories';
 
 export class ListForumPostsQueryDto {
@@ -15,4 +15,11 @@ export class ListForumPostsQueryDto {
   @IsInt()
   @Min(0)
   offset?: number;
+
+  /** Cursor ist die ID des zuletzt gelesenen Posts. Wenn gesetzt, wird Cursor-Pagination aktiviert. */
+  @IsOptional()
+  @IsString()
+  @Length(1, 64)
+  @Matches(/^[A-Za-z0-9_-]+$/)
+  cursor?: string;
 }

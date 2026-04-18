@@ -215,9 +215,34 @@ describe('ChatService', () => {
 
     it('returns serialized messages for STAFF_ROOM', async () => {
       prisma.chatMessage.findMany.mockResolvedValue([makeMessage()]);
-      const result = await service.listMessages(mockActor(), { scope: ChatScope.STAFF_ROOM } as any);
+      const result = (await service.listMessages(mockActor(), { scope: ChatScope.STAFF_ROOM } as any)) as any[];
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('msg-1');
+    });
+
+    it('returns wrapped { items, nextCursor } when cursor is provided', async () => {
+      prisma.chatMessage.findMany.mockResolvedValue([makeMessage()]);
+      const result = (await service.listMessages(
+        mockActor(),
+        { scope: ChatScope.STAFF_ROOM, cursor: 'msg-0', limit: 10 } as any
+      )) as { items: any[]; nextCursor: string | null };
+      expect(Array.isArray(result.items)).toBe(true);
+      expect(result.items).toHaveLength(1);
+      expect(result.nextCursor).toBeNull();
+    });
+
+    it('sets nextCursor when more results exist', async () => {
+      prisma.chatMessage.findMany.mockResolvedValue([
+        makeMessage({ id: 'msg-1' }),
+        makeMessage({ id: 'msg-2' }),
+        makeMessage({ id: 'msg-3' })
+      ]);
+      const result = (await service.listMessages(
+        mockActor(),
+        { scope: ChatScope.STAFF_ROOM, cursor: 'msg-0', limit: 2 } as any
+      )) as { items: any[]; nextCursor: string | null };
+      expect(result.items).toHaveLength(2);
+      expect(result.nextCursor).toBe('msg-2');
     });
 
     it('defaults scope to STAFF_ROOM', async () => {
