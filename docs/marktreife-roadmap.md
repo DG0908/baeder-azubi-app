@@ -120,7 +120,7 @@
 | P4.5 | Duel-Rundenerzeugung vollständig server-autoritativ | **Opus** (Kern der Fairness) | 3 d | [ ] |
 | P4.6 | SSRF-Validierung Content-URLs (Internal-IP-Blockliste) | Opus | 0.5 d | [x] Opus · 2026-04-18 (Validator gehärtet: 0.0.0.0, Hex/Oktal/Dezimal-IPs, IPv4-mapped IPv6; Push-Endpoint abgedeckt) |
 | P4.7 | Fachliche Gegenlese Fragenkatalog | **Mensch** (Meister Bäderbetriebe) | extern | [ ] |
-| P4.8 | Badge-Historie-Migration Supabase → NestJS | Sonnet | 1 d | [ ] |
+| P4.8 | Badge-Historie-Migration Supabase → NestJS | Sonnet | 1 d | [x] Opus · 2026-04-18 (UserBadge-Model + Migration, Badges-Modul mit `GET /api/badges/me` + `POST /api/badges/grant`, Frontend-dataService angeschlossen, DSGVO-Export ergänzt) |
 | P4.9 | Restore-Drill praktisch durchführen | Mensch | 0.5 d | [ ] |
 
 ---

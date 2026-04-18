@@ -30,6 +30,12 @@ hält die Backend-Version fest, wenn sie sich geändert hat.
 - **Alt-Text-Audit (P4.4):** Alle `<img>` geprüft, Signatur-Bilder im
   Berichtsheft-PDF-Template ergänzt.
 - **CONTRIBUTING.md + CHANGELOG.md (P4.2):** Setup, Commit-Konvention, Qualitäts-Gates.
+- **Badge-Persistence (P4.8):** Neues `UserBadge`-Prisma-Model, Endpoints
+  `GET /api/badges/me` und `POST /api/badges/grant`, Frontend-dataService an
+  NestJS angeschlossen. Badges bleiben damit auch beim Device- oder Browser-Wechsel
+  erhalten (seit dem 03.04.2026-Rollout gingen sie beim Logout verloren). DSGVO-
+  Export liefert Badges jetzt unter `data.badges` mit echtem `earnedAt`, der
+  `badgeExportStatus`-Workaround ist entfernt; `meta.exportVersion` → `3`.
 
 ### Security
 
@@ -41,7 +47,7 @@ hält die Backend-Version fest, wenn sie sich geändert hat.
 
 ### Changed
 
-- Backend-Test-Suite: 491 Tests, alle grün.
+- Backend-Test-Suite: 496 Tests, alle grün.
 - Frontend-Test-Suite: 71 Vitest-Tests (inkl. 4 a11y + 11 Primitives), alle grün.
 
 ## [1.0.0] — 2026-04-03
