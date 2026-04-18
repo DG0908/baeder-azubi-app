@@ -90,6 +90,8 @@
 **Abschluss-Kriterium Phase 2:**
 - App.jsx < 500 Zeilen (reiner Orchestrator) · Tests-Coverage Backend-Business-Logik ≥ 60 % · 5 E2E-Flows grün in CI · Staging live · U18-Flow im Datenschutz-Portal dokumentiert
 
+**Status 2026-04-18:** App.jsx bei 443 Zeilen — Abschluss-Kriterium erfüllt. Extraktionen: `AppRouter`, `useAppEffects`, `useQuestionReports`, `QuizMaintenanceView`, `MobileNav`, `DesktopSidebar`, `AppHeader`, `NotificationsDropdown`, `AppBackground`, `ToastStack`, `AppBanners`, `LiveTickerBanner`, `useWeeklyGoals`, `useQuestionPerformance`, `useBadges`. Phase 2 **abgeschlossen**.
+
 ---
 
 ## Phase 3 — Qualität (P2) · Nächster Quartalsblock
