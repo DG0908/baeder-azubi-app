@@ -32,6 +32,7 @@ import { loadAppData } from './lib/loadAppData';
 import { useXpQueue } from './hooks/useXpQueue';
 import { useContentAdmin } from './hooks/useContentAdmin';
 import { useCalculator } from './hooks/useCalculator';
+import { useDailyWisdom } from './hooks/useDailyWisdom';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -68,7 +69,7 @@ import { useViewRouter } from './hooks/useViewRouter';
 
 import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, MENU_GROUP_LABELS, getAvatarById, getLevel, getLevelProgress } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
-import { DID_YOU_KNOW_FACTS, DAILY_WISDOM, SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
+import { SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
 import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 // Flashcard-Builder + KEYWORD_CHALLENGES / WHO_AM_I_* werden jetzt im useFlashcards Hook genutzt
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
@@ -150,7 +151,6 @@ export default function BaederApp() {
   const duelLateDepsRef = useRef({});
   const flashcardLateDepsRef = useRef({});
   
-  const GENERAL_KNOWLEDGE_STORAGE_KEY = 'general_knowledge_rotation_v1';
 
   // Other State
   const [userStats, setUserStats] = useState(null);
@@ -160,13 +160,14 @@ export default function BaederApp() {
   const [newQuestionCategory, setNewQuestionCategory] = useState('org');
   const [newQuestionAnswers, setNewQuestionAnswers] = useState(['', '', '', '']);
   const [newQuestionCorrect, setNewQuestionCorrect] = useState(0);
-  const [dailyWisdom, setDailyWisdom] = useState('');
 
   // Exam Simulator State + Funktionen: useExamSimulator Hook (nach Stats-Setup)
   // Praktische Prüfung: State + Funktionen via usePracticalExam Hook (nach queueXpAwardForUser)
-  
+
   // UI State – darkMode, soundEnabled, toasts, showToast, playSound vom AppContext
   const { darkMode, setDarkMode, soundEnabled, setSoundEnabled, toasts, setToasts, showToast, playSound } = useApp();
+
+  const { dailyWisdom, rotateGeneralKnowledge } = useDailyWisdom({ user, showToast });
 
   // Weekly Goals & Progress: useWeeklyGoals Hook
   const {
@@ -489,11 +490,6 @@ export default function BaederApp() {
   }, [authReady, user]);
 
   useEffect(() => {
-    if (!user?.id) return;
-    applyGeneralKnowledge(false);
-  }, [user?.id]);
-
-  useEffect(() => {
     if (!user?.id) {
       setPracticalExamTargetUserId('');
       return;
@@ -661,75 +657,6 @@ export default function BaederApp() {
       console.log(`Alle Daten für ${email} gelöscht`);
     } catch (error) {
       console.error('Error deleting user data:', error);
-    }
-  };
-
-  const getTodayStamp = (input = Date.now()) => {
-    const date = new Date(input);
-    if (Number.isNaN(date.getTime())) return '';
-    return date.toISOString().slice(0, 10);
-  };
-
-  const getGeneralKnowledgePool = () => {
-    const merged = [...DAILY_WISDOM, ...DID_YOU_KNOW_FACTS];
-    const unique = [];
-    const seen = new Set();
-    merged.forEach((entry) => {
-      const text = String(entry || '').trim();
-      if (!text) return;
-      if (seen.has(text)) return;
-      seen.add(text);
-      unique.push(text);
-    });
-    return unique;
-  };
-
-  const pickRandomGeneralKnowledge = (excludeText = '') => {
-    const pool = getGeneralKnowledgePool();
-    if (pool.length === 0) return '';
-    const filtered = excludeText ? pool.filter(text => text !== excludeText) : pool;
-    const source = filtered.length > 0 ? filtered : pool;
-    return source[Math.floor(Math.random() * source.length)];
-  };
-
-  const applyGeneralKnowledge = (forceRotate = false) => {
-    const todayStamp = getTodayStamp();
-    let stored = null;
-
-    try {
-      stored = JSON.parse(localStorage.getItem(GENERAL_KNOWLEDGE_STORAGE_KEY) || 'null');
-    } catch {
-      stored = null;
-    }
-
-    const storedText = typeof stored?.text === 'string' ? stored.text.trim() : '';
-    const storedDay = typeof stored?.day === 'string' ? stored.day : '';
-
-    if (!forceRotate && storedDay === todayStamp && storedText) {
-      setDailyWisdom(storedText);
-      return storedText;
-    }
-
-    const nextText = pickRandomGeneralKnowledge(storedText) || storedText;
-    if (!nextText) return '';
-
-    setDailyWisdom(nextText);
-    try {
-      localStorage.setItem(GENERAL_KNOWLEDGE_STORAGE_KEY, JSON.stringify({
-        day: todayStamp,
-        text: nextText,
-        updatedAt: new Date().toISOString()
-      }));
-    } catch {
-      // localStorage write can fail in private mode; UI fallback still works.
-    }
-    return nextText;
-  };
-
-  const rotateGeneralKnowledge = () => {
-    const nextText = applyGeneralKnowledge(true);
-    if (nextText) {
-      showToast('Neue Allgemeinbildung geladen.', 'info', 1800);
     }
   };
 
