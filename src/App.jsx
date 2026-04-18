@@ -14,6 +14,7 @@ import { useSwimChallenge, SWIM_BATTLE_WIN_POINTS, SWIM_ARENA_DISCIPLINES } from
 import { useSchoolAttendance } from './hooks/useSchoolAttendance';
 import { useExamGrades } from './hooks/useExamGrades';
 import { useDailyChallenges } from './hooks/useDailyChallenges';
+import { useExamSimulator } from './hooks/useExamSimulator';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -73,8 +74,6 @@ import {
   loadQuestionReports as dsLoadQuestionReports,
   purgeUserData as dsPurgeUserData,
   startTheoryExamSession as dsStartTheoryExamSession,
-  saveTheoryExamAttempt as dsSaveTheoryExamAttempt,
-  loadTheoryExamHistory as dsLoadTheoryExamHistory,
   deletePracticalExamAttempt as dsDsPracticalExamAttempt,
   addMaterialEntry as dsAddMaterial,
   addResourceEntry as dsAddResource,
@@ -112,7 +111,6 @@ import {
   addXpToStats, deductXpFromStats,
   normalizeKeywordText, getWordVariants,
   isKeywordQuestion, isWhoAmIQuestion,
-  evaluateKeywordAnswer, autoExtractKeywordGroups,
   getQuizTimeLimit, cloneDuelGameSnapshot,
 } from './lib/quizHelpers';
 
@@ -482,20 +480,7 @@ export default function BaederApp() {
   const [examTopics, setExamTopics] = useState('');
   const [dailyWisdom, setDailyWisdom] = useState('');
 
-  // Exam Simulator State
-  const [examSimulator, setExamSimulator] = useState(null);
-  const [examCurrentQuestion, setExamCurrentQuestion] = useState(null);
-  const [examQuestionIndex, setExamQuestionIndex] = useState(0);
-  const [examAnswered, setExamAnswered] = useState(false);
-  const [userExamProgress, setUserExamProgress] = useState(null);
-  const [examSelectedAnswers, setExamSelectedAnswers] = useState([]); // Für Multi-Select im Prüfungssimulator
-  const [examSelectedAnswer, setExamSelectedAnswer] = useState(null); // Für Single-Choice Feedback
-  const [examSimulatorMode, setExamSimulatorMode] = useState('theory');
-  const [examKeywordMode, setExamKeywordMode] = useState(false);
-  const [examKeywordInput, setExamKeywordInput] = useState('');
-  const [examKeywordEvaluation, setExamKeywordEvaluation] = useState(null);
-  const [theoryExamHistory, setTheoryExamHistory] = useState([]);
-  const [theoryExamHistoryLoading, setTheoryExamHistoryLoading] = useState(false);
+  // Exam Simulator State + Funktionen: useExamSimulator Hook (nach Stats-Setup)
   const [practicalExamType, setPracticalExamType] = useState('zwischen');
   const [practicalExamInputs, setPracticalExamInputs] = useState({});
   const [practicalExamResult, setPracticalExamResult] = useState(null);
@@ -859,6 +844,7 @@ export default function BaederApp() {
       }, 30000);
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authReady, user]);
 
   useEffect(() => {
@@ -1956,6 +1942,38 @@ export default function BaederApp() {
     });
   };
 
+  // Prüfungssimulator: useExamSimulator Hook (nach trackQuestionPerformance + updateWeeklyProgress)
+  const {
+    examSimulator, setExamSimulator,
+    examCurrentQuestion, setExamCurrentQuestion,
+    examQuestionIndex, setExamQuestionIndex,
+    examAnswered, setExamAnswered,
+    userExamProgress, setUserExamProgress,
+    examSelectedAnswers, setExamSelectedAnswers,
+    examSelectedAnswer, setExamSelectedAnswer,
+    examSimulatorMode, setExamSimulatorMode,
+    examKeywordMode, setExamKeywordMode,
+    examKeywordInput, setExamKeywordInput,
+    examKeywordEvaluation, setExamKeywordEvaluation,
+    theoryExamHistory,
+    theoryExamHistoryLoading,
+    confirmExamMultiSelectAnswer,
+    submitExamKeywordAnswer,
+    answerExamQuestion,
+    resetExam,
+    loadTheoryExamHistory,
+  } = useExamSimulator({
+    user,
+    duel,
+    playSound,
+    showToast,
+    updateChallengeProgress,
+    updateWeeklyProgress,
+    trackQuestionPerformance,
+    setUserStats,
+    setStatsByUserId,
+  });
+
   const getChecklistItemKey = (checklistId, itemIndex) => `${checklistId}:${itemIndex}`;
 
   const isChecklistItemCompleted = (checklistId, itemIndex) => {
@@ -2517,235 +2535,6 @@ export default function BaederApp() {
       showToast('Wertungstabellen fehlen noch teilweise. Bitte nachreichen.', 'info');
     } else {
       showToast('Praktische Prüfung ausgewertet.', 'success');
-    }
-  };
-
-  // Toggle für Multi-Select im Prüfungssimulator
-  const toggleExamAnswer = (answerIndex) => {
-    if (examAnswered || !examSimulator) return;
-    setExamSelectedAnswers(prev => {
-      if (prev.includes(answerIndex)) {
-        return prev.filter(i => i !== answerIndex);
-      } else {
-        return [...prev, answerIndex];
-      }
-    });
-  };
-
-  // Bestätigen der Multi-Select Antwort im Prüfungssimulator
-  const confirmExamMultiSelectAnswer = () => {
-    if (examAnswered || !examSimulator || !examCurrentQuestion.multi) return;
-    setExamAnswered(true);
-
-    const correctAnswers = examCurrentQuestion.correct;
-    const isCorrect =
-      examSelectedAnswers.length === correctAnswers.length &&
-      examSelectedAnswers.every(idx => correctAnswers.includes(idx));
-
-    if (isCorrect) { playSound('correct'); } else { playSound('wrong'); }
-
-    // Daily Challenge Progress
-    updateChallengeProgress('answer_questions', 1);
-    if (isCorrect) {
-      updateChallengeProgress('correct_answers', 1);
-    }
-    if (examCurrentQuestion.category) {
-      updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
-    }
-    updateWeeklyProgress('examAnswers', 1);
-    trackQuestionPerformance(examCurrentQuestion, examCurrentQuestion.category, isCorrect);
-
-    const newAnswers = [...examSimulator.answers, {
-      question: examCurrentQuestion,
-      selectedAnswers: examSelectedAnswers,
-      correct: isCorrect
-    }];
-    setExamSimulator({ ...examSimulator, answers: newAnswers });
-
-    setTimeout(() => {
-      proceedToNextExamQuestion(newAnswers);
-    }, 2000);
-  };
-
-  const submitExamKeywordAnswer = () => {
-    if (examAnswered || !examSimulator || !examCurrentQuestion || !examKeywordInput.trim()) return;
-    const correctText = examCurrentQuestion.multi && Array.isArray(examCurrentQuestion.correct)
-      ? examCurrentQuestion.correct.map(idx => String(examCurrentQuestion.a?.[idx] || '')).join('. ')
-      : String(examCurrentQuestion.a?.[examCurrentQuestion.correct] || '');
-    const groups = autoExtractKeywordGroups(correctText);
-    const fakeQ = { keywordGroups: groups, minKeywordGroups: Math.max(1, Math.ceil(groups.length * 0.5)) };
-    const evaluation = evaluateKeywordAnswer(fakeQ, examKeywordInput);
-    setExamKeywordEvaluation(evaluation);
-    const isCorrect = evaluation.isCorrect;
-    if (isCorrect) { playSound('correct'); } else { playSound('wrong'); }
-    setExamAnswered(true);
-    setExamSelectedAnswer(examCurrentQuestion.multi ? null : examCurrentQuestion.correct);
-    updateChallengeProgress('answer_questions', 1);
-    if (isCorrect) updateChallengeProgress('correct_answers', 1);
-    if (examCurrentQuestion.category) updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
-    updateWeeklyProgress('examAnswers', 1);
-    trackQuestionPerformance(examCurrentQuestion, examCurrentQuestion.category, isCorrect);
-    const newAnswers = [...examSimulator.answers, {
-      question: examCurrentQuestion,
-      selectedAnswer: -1,
-      correct: isCorrect,
-      answerType: 'keyword',
-      keywordText: examKeywordInput.trim()
-    }];
-    setExamSimulator({ ...examSimulator, answers: newAnswers });
-    setTimeout(() => {
-      setExamKeywordInput('');
-      setExamKeywordEvaluation(null);
-      proceedToNextExamQuestion(newAnswers);
-    }, 2500);
-  };
-
-  const answerExamQuestion = (answerIndex) => {
-    if (examAnswered || !examSimulator) return;
-
-    // Multi-Select: Nur togglen, nicht direkt antworten
-    if (examCurrentQuestion.multi) {
-      toggleExamAnswer(answerIndex);
-      return;
-    }
-
-    // Single-Choice: Direkt antworten
-    setExamAnswered(true);
-    setExamSelectedAnswer(answerIndex);
-    const isCorrect = answerIndex === examCurrentQuestion.correct;
-    if (isCorrect) { playSound('correct'); } else { playSound('wrong'); }
-
-    // Daily Challenge Progress
-    updateChallengeProgress('answer_questions', 1);
-    if (isCorrect) {
-      updateChallengeProgress('correct_answers', 1);
-    }
-    if (examCurrentQuestion.category) {
-      updateChallengeProgress('category_master', 1, examCurrentQuestion.category);
-    }
-    updateWeeklyProgress('examAnswers', 1);
-    trackQuestionPerformance(examCurrentQuestion, examCurrentQuestion.category, isCorrect);
-    const newAnswers = [...examSimulator.answers, { question: examCurrentQuestion, selectedAnswer: answerIndex, correct: isCorrect }];
-    setExamSimulator({ ...examSimulator, answers: newAnswers });
-    setTimeout(() => {
-      proceedToNextExamQuestion(newAnswers);
-    }, 2000);
-  };
-
-  const proceedToNextExamQuestion = (newAnswers) => {
-    if (examQuestionIndex < examSimulator.questions.length - 1) {
-      const nextIdx = examQuestionIndex + 1;
-      setExamQuestionIndex(nextIdx);
-      setExamCurrentQuestion(examSimulator.questions[nextIdx]);
-      setExamAnswered(false);
-      setExamSelectedAnswers([]);
-      setExamSelectedAnswer(null);
-    } else {
-      const correctAnswers = newAnswers.filter(a => a.correct).length;
-      const percentage = Math.round((correctAnswers / newAnswers.length) * 100);
-      const examProgress = { correct: correctAnswers, total: newAnswers.length, percentage, passed: percentage >= 50, timeMs: Date.now() - examSimulator.startTime };
-      setUserExamProgress(examProgress);
-      void saveTheoryExamAttempt(examProgress, newAnswers, examSimulator?.sessionId);
-      if (percentage >= 50) playSound('whistle');
-
-    }
-  };
-
-  const resetExam = () => {
-    setExamSimulator(null);
-    setExamCurrentQuestion(null);
-    setExamQuestionIndex(0);
-    setExamAnswered(false);
-    setUserExamProgress(null);
-    setExamSelectedAnswers([]);
-    setExamSelectedAnswer(null);
-    setExamKeywordInput('');
-    setExamKeywordEvaluation(null);
-  };
-
-  const saveTheoryExamAttempt = async (progress, answers = [], sessionId = null) => {
-    if (!user?.id) return;
-    try {
-      const result = await dsSaveTheoryExamAttempt(
-        user.id,
-        user.name,
-        progress,
-        examKeywordMode,
-        {
-          sessionId: sessionId || examSimulator?.sessionId || null,
-          answers
-        }
-      );
-      if (!result) {
-        return;
-      }
-
-      const authoritativeProgress = {
-        correct: Number(result.correct || 0),
-        total: Number(result.total || 0),
-        percentage: Number(result.percentage || 0),
-        passed: Boolean(result.passed),
-        timeMs: Number(result.timeMs || progress?.timeMs || 0)
-      };
-      setUserExamProgress(authoritativeProgress);
-
-      const savedAttempt = {
-        id: result.id,
-        user_id: result.userId || user.id,
-        user_name: result.userName || user.name,
-        correct: authoritativeProgress.correct,
-        total: authoritativeProgress.total,
-        percentage: authoritativeProgress.percentage,
-        passed: authoritativeProgress.passed,
-        time_ms: authoritativeProgress.timeMs,
-        keyword_mode: Boolean(result.keywordMode),
-        created_at: result.createdAt || new Date().toISOString()
-      };
-      setTheoryExamHistory(prev => [savedAttempt, ...prev.filter(entry => entry.id !== savedAttempt.id)]);
-
-      const refreshedStats = await duel.getUserStatsFromSupabase(user);
-      if (refreshedStats) {
-        const stats = ensureUserStatsStructure(refreshedStats);
-        setUserStats(stats);
-        setStatsByUserId(prev => {
-          const wins = stats.wins || 0;
-          const losses = stats.losses || 0;
-          const draws = stats.draws || 0;
-          return {
-            ...prev,
-            [user.id]: {
-              ...(prev[user.id] || {}),
-              wins,
-              losses,
-              draws,
-              total: wins + losses + draws,
-              totalXp: getTotalXpFromStats(stats),
-              xpBreakdown: getXpBreakdownFromStats(stats)
-            }
-          };
-        });
-      }
-
-      const addedXp = Number(result?.xpAward?.addedXp || 0);
-      if (addedXp > 0) {
-        showToast(`+${addedXp} XP • Prüfungssimulator`, 'success', 2500);
-      }
-    } catch (e) {
-      console.warn('Fehler beim Speichern des Prüfungsergebnisses:', e);
-      showToast(friendlyError(e), 'error');
-    }
-  };
-
-  const loadTheoryExamHistory = async () => {
-    if (!user?.id) return;
-    setTheoryExamHistoryLoading(true);
-    try {
-      const data = await dsLoadTheoryExamHistory(user.id, user.permissions?.canViewAllStats);
-      setTheoryExamHistory(data);
-    } catch (e) {
-      console.warn('Fehler beim Laden der Prüfungshistorie:', e);
-    } finally {
-      setTheoryExamHistoryLoading(false);
     }
   };
 
