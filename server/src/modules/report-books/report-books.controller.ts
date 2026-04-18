@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
@@ -12,6 +13,7 @@ import { SaveReportBookDto } from './dto/save-report-book.dto';
 import { UpdateReportBookProfileDto } from './dto/update-report-book-profile.dto';
 import { ReportBooksService } from './report-books.service';
 
+@ApiTags('report-books')
 @Controller('report-books')
 export class ReportBooksController {
   constructor(private readonly reportBooksService: ReportBooksService) {}

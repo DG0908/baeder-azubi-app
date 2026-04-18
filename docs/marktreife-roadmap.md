@@ -100,7 +100,7 @@
 |---|---|---|---|---|
 | P3.1 | Design-Tokens in [tailwind.config.js](../tailwind.config.js) — `theme.extend.colors.brand`, `fontFamily`, `spacing`, `borderRadius`. | **Qwen** + Designer-Mensch für Farbwahl | 0.5 d | [ ] |
 | P3.2 | Shared-UI-Komponenten — `<Button>`, `<Card>`, `<Skeleton>`, `<Dialog>` basierend auf `radix-ui`. | Sonnet | 2 d | [ ] |
-| P3.3 | Swagger/OpenAPI aus NestJS — `@nestjs/swagger` einbauen, UI unter `/api/docs` (dev-only). | Sonnet | 0.5 d | [ ] |
+| P3.3 | Swagger/OpenAPI aus NestJS — `@nestjs/swagger` einbauen, UI unter `/api/docs` (dev-only). | Sonnet | 0.5 d | [x] Opus · 2026-04-18 |
 | P3.4 | Pagination cursor-basiert — Chat-Messages, Forum-Posts, AuditLog. | Sonnet | 1 d | [ ] |
 | P3.5 | Passwort-Komplexität + Pwned-Check — `zxcvbn` + HaveIBeenPwned-API mit k-anonymity. | Sonnet | 0.5 d | [x] Opus · 2026-04-18 |
 | P3.6 | a11y-Audit mit `axe-core` in Vitest + Playwright. | Codex (zweite Perspektive hilfreich) | 1 d | [ ] |

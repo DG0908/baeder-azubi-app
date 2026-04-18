@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { Allow } from '../../common/decorators/allow.decorator';
@@ -8,6 +9,7 @@ import { CreateExamGradeDto } from './dto/create-exam-grade.dto';
 import { ListExamGradesQueryDto } from './dto/list-exam-grades-query.dto';
 import { ExamGradesService } from './exam-grades.service';
 
+@ApiTags('exam-grades')
 @Controller('exam-grades')
 export class ExamGradesController {
   constructor(private readonly examGradesService: ExamGradesService) {}
