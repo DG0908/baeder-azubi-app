@@ -19,7 +19,6 @@ import { usePracticalExam, canUseRowForSpeedRanking, getPracticalRowSeconds } fr
 import { useBadges } from './hooks/useBadges';
 import { useWeeklyGoals, sanitizeGoalValue, getWeekStartStamp, buildEmptyWeeklyProgress } from './hooks/useWeeklyGoals';
 import { useQuestionPerformance } from './hooks/useQuestionPerformance';
-import { getQuestionPerformanceKey } from './lib/questionKey';
 import {
   FLOCCULANT_PRODUCTS,
   FLOCCULANT_PUMP_TYPES,
@@ -37,7 +36,7 @@ import {
 } from './lib/poolCalc';
 import { containsBannedContent } from './lib/contentModeration';
 import { computeLeaderboard } from './lib/leaderboard';
-import { mergeMenuItemsWithDefaults } from './lib/menuConfig';
+import { loadAppData } from './lib/loadAppData';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -80,19 +79,9 @@ import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
 import { friendlyError } from './lib/friendlyError';
 import {
-  loadUsers as dsLoadUsers,
-  loadAppConfig as dsLoadAppConfig,
   loadGames as dsLoadGames,
-  getUserStats as dsGetUserStats,
-  getAllUserStats as dsGetAllUserStats,
-  loadMaterials as dsLoadMaterials,
-  loadResources as dsLoadResources,
-  loadNews as dsLoadNews,
-  loadExams as dsLoadExams,
-  loadCustomQuestions as dsLoadCustomQuestions,
   createQuestionSubmission as dsCreateQuestionSubmission,
   approveQuestionSubmission as dsApproveQuestionSubmission,
-  loadQuestionReports as dsLoadQuestionReports,
   purgeUserData as dsPurgeUserData,
   startTheoryExamSession as dsStartTheoryExamSession,
   addMaterialEntry as dsAddMaterial,
@@ -107,7 +96,7 @@ import {
 } from './lib/dataService';
 import {
   toSafeInt, getFirstSafeInt,
-  normalizePlayerName, namesMatch, isFinishedGameStatus,
+  namesMatch, isFinishedGameStatus,
   shuffleArray,
   DIFFICULTY_SETTINGS, DEFAULT_CHALLENGE_TIMEOUT_MINUTES,
   normalizeChallengeTimeoutMinutes,
@@ -115,14 +104,11 @@ import {
   getWaitingChallengeRemainingMs, isWaitingChallengeExpired,
   formatDurationMinutesCompact,
   XP_META_KEY, XP_BREAKDOWN_DEFAULT, XP_REWARDS,
-  getXpMetaFromCategoryStats,
-  createEmptyUserStats, ensureUserStatsStructure, buildUserStatsFromRow,
+  createEmptyUserStats, ensureUserStatsStructure,
   getResolvedGameScores, resolveFinishedGameWinner,
-  hasRecordedRoundAnswers, isCountableFinishedQuizGame,
-  buildQuizTotalsFromFinishedGames, buildHeadToHeadFromFinishedGames,
-  haveQuizTotalsChanged,
+  hasRecordedRoundAnswers,
+  buildHeadToHeadFromFinishedGames,
   syncQuizTotalsIntoStats, mergeOpponentStatsByMax,
-  doesUserStatsRowNeedRepair,
   getTotalXpFromStats, getXpBreakdownFromStats,
   addXpToStats, deductXpFromStats,
   normalizeKeywordText, getWordVariants,
@@ -804,170 +790,27 @@ export default function BaederApp() {
     }
   };
 
-  const loadData = async () => {
-    try {
-      let visibleUsers = [];
-
-      // Load App Config
-      try {
-        const configResult = await dsLoadAppConfig();
-        if (configResult) {
-          const loadedMenuItems = mergeMenuItemsWithDefaults(configResult.menuItems);
-          const loadedThemeColors = configResult.themeColors && Object.keys(configResult.themeColors).length > 0
-            ? configResult.themeColors
-            : DEFAULT_THEME_COLORS;
-          const loadedCompanies = Array.isArray(configResult.companies) && configResult.companies.length > 0
-            ? configResult.companies
-            : ['Freizeitbad Oktopus'];
-          const loadedAnnouncement = configResult.announcement && typeof configResult.announcement === 'object'
-            ? configResult.announcement
-            : { enabled: false, message: '' };
-          const loadedFeatureFlags = configResult.featureFlags && typeof configResult.featureFlags === 'object'
-            ? { quizMaintenance: false, ...configResult.featureFlags }
-            : { quizMaintenance: false };
-          setAppConfig({ menuItems: loadedMenuItems, themeColors: loadedThemeColors, featureFlags: loadedFeatureFlags, companies: loadedCompanies, announcement: loadedAnnouncement });
-        }
-        setConfigLoaded(true);
-      } catch (err) {
-        console.error('Config load error:', err);
-        setConfigLoaded(true);
-      }
-
-      // Load users
-      const usersResult = await dsLoadUsers(user);
-      visibleUsers = usersResult.allUsers;
-      setAllUsers(usersResult.allUsers);
-      if (usersResult.pendingUsers.length > 0) {
-        setPendingUsers(usersResult.pendingUsers);
-      }
-
-      await loadCustomSwimTrainingPlans();
-
-      // Load games
-      const gamesRaw = await dsLoadGames(200, user?.id);
-      const gamesData = gamesRaw; // keep reference for stats sync below
-      if (gamesRaw.length > 0) {
-        const games = gamesRaw.map(g => ({
-          ...g,
-          challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challengeTimeoutMinutes)
-        }));
-        duel.setAllGames(games);
-        duel.setActiveGames(games.filter(g => g.status !== 'finished'));
-        updateLeaderboard(games);
-        await duel.checkExpiredAndRemindGames(games);
-      }
-
-      // Load all user stats for trainer dashboard cards
-      try {
-        const allStatsData = await dsGetAllUserStats();
-        const nextStatsByUserId = {};
-        (allStatsData || []).forEach(row => {
-          const wins = row.wins || 0;
-          const losses = row.losses || 0;
-          const draws = row.draws || 0;
-          const xpMeta = getXpMetaFromCategoryStats(row.category_stats || row.categoryStats || {});
-          nextStatsByUserId[row.user_id || row.userId] = {
-            wins, losses, draws,
-            total: wins + losses + draws,
-            totalXp: xpMeta.totalXp,
-            xpBreakdown: xpMeta.breakdown
-          };
-        });
-        setStatsByUserId(nextStatsByUserId);
-      } catch (e) {
-        console.log('All stats load error:', e.message);
-        setStatsByUserId({});
-      }
-
-      // Load user stats — restore from finished games if needed
-      if (user && user.id && gamesData) {
-        try {
-          const statsData = await dsGetUserStats(user);
-          let stats = buildUserStatsFromRow(statsData);
-          let shouldPersistStats = doesUserStatsRowNeedRepair(statsData, stats);
-          const currentUserName = normalizePlayerName(user.name);
-          const finishedGames = (gamesData || []).filter(g => {
-            if (!isCountableFinishedQuizGame(g)) return false;
-            const p1 = normalizePlayerName(g.player1);
-            const p2 = normalizePlayerName(g.player2);
-            return p1 === currentUserName || p2 === currentUserName;
-          });
-          const syncedStats = buildQuizTotalsFromFinishedGames(finishedGames, currentUserName, stats);
-          const storedTotalGames = stats.wins + stats.losses + stats.draws;
-          const syncedTotalGames = syncedStats.wins + syncedStats.losses + syncedStats.draws;
-          const shouldRestoreQuizTotals =
-            (storedTotalGames === 0 && syncedTotalGames > 0) ||
-            syncedTotalGames > storedTotalGames;
-
-          const syncedTotals = syncQuizTotalsIntoStats(stats, finishedGames, currentUserName);
-          if (haveQuizTotalsChanged(stats, syncedTotals)) {
-            stats = syncedTotals;
-          }
-
-          if (shouldPersistStats) {
-            await duel.saveUserStatsToSupabase(user, stats);
-          }
-
-          setUserStats(stats);
-        } catch (e) {
-          console.log('Stats load:', e);
-          setUserStats(ensureUserStatsStructure(createEmptyUserStats()));
-        }
-      }
-
-      // Load messages
-      const userDirectory = Object.fromEntries(
-        (visibleUsers || []).filter(a => a?.id).map(a => [a.id, a])
-      );
-      await loadChatMessages(userDirectory, user?.role);
-
-      // Load custom questions
-      const customQuestions = await dsLoadCustomQuestions();
-      setSubmittedQuestions(customQuestions);
-
-      // Load reported question feedback
-      if (user?.permissions?.canManageUsers) {
-        try {
-          const remoteReports = await dsLoadQuestionReports();
-          // Enrich with questionKey if missing
-          const enriched = remoteReports.map(r => ({
-            ...r,
-            questionKey: r.questionKey || getQuestionPerformanceKey({ q: r.questionText, category: r.category }, r.category)
-          }));
-          const localReports = parseJsonSafe(localStorage.getItem(QUESTION_REPORTS_STORAGE_KEY), []);
-          const safeLocalReports = Array.isArray(localReports) ? localReports : [];
-          const merged = [...enriched];
-          const seen = new Set(enriched.map(e => `${e.questionKey}|${e.createdAt}|${e.reportedBy}`));
-          safeLocalReports.forEach(entry => {
-            const key = `${entry.questionKey}|${entry.createdAt}|${entry.reportedBy}`;
-            if (!seen.has(key)) { seen.add(key); merged.push(entry); }
-          });
-          setQuestionReports(merged.slice(0, 500));
-        } catch { console.log('question_reports load skipped'); }
-      }
-
-      // Load materials
-      setMaterials(await dsLoadMaterials());
-
-      // Load resources
-      try { setResources(await dsLoadResources()); }
-      catch (err) { console.error('Resources fetch failed:', err); }
-
-      // Load news
-      setNews(await dsLoadNews());
-
-      // Load exams
-      setExams(await dsLoadExams());
-
-      // Load flashcards via hook (sets userFlashcards + pendingFlashcards)
-      await loadFlashcardsFromBackend();
-
-      // Load user badges from Supabase
-      await loadUserBadges();
-    } catch (error) {
-      console.log('Loading data - some features may not work:', error.message);
-    }
-  };
+  const loadData = () => loadAppData({
+    user,
+    duel,
+    setAppConfig,
+    setConfigLoaded,
+    setAllUsers,
+    setPendingUsers,
+    setStatsByUserId,
+    setUserStats,
+    setSubmittedQuestions,
+    setQuestionReports,
+    setMaterials,
+    setResources,
+    setNews,
+    setExams,
+    updateLeaderboard,
+    loadCustomSwimTrainingPlans,
+    loadChatMessages,
+    loadFlashcardsFromBackend,
+    loadUserBadges,
+  });
 
   const updateLeaderboard = (games) => {
     setLeaderboard(computeLeaderboard(games));
