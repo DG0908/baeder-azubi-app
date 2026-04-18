@@ -301,45 +301,18 @@ export default function BaederApp() {
     sanitizeGoalValue,
   });
 
-  const {
-    flashcards, setFlashcards,
-    currentFlashcard, setCurrentFlashcard,
-    flashcardIndex, setFlashcardIndex,
-    showFlashcardAnswer, setShowFlashcardAnswer,
-    userFlashcards, setUserFlashcards,
-    pendingFlashcards, setPendingFlashcards,
-    newFlashcardFront, setNewFlashcardFront,
-    newFlashcardBack, setNewFlashcardBack,
-    newFlashcardCategory, setNewFlashcardCategory,
-    keywordFlashcardMode, setKeywordFlashcardMode,
-    whoAmIFlashcardMode, setWhoAmIFlashcardMode,
-    flashcardKeywordInput, setFlashcardKeywordInput,
-    flashcardKeywordEvaluation,
-    flashcardFreeTextMode, setFlashcardFreeTextMode,
-    spacedRepetitionMode, setSpacedRepetitionMode,
-    dueCards,
-    FLASHCARD_CONTENT,
-    KEYWORD_FLASHCARD_CONTENT,
-    WHO_AM_I_FLASHCARD_CONTENT,
-    loadFlashcards,
-    loadFlashcardsFromBackend,
-    evaluateFlashcardKeywordAnswer,
-    resetFlashcardKeywordState,
-    approveFlashcard,
-    deleteFlashcard,
-    getCardSpacedData,
-    updateCardSpacedData,
-    loadDueCards,
-    getDueCardCount,
-    getTotalDueCards,
-    getLevelColor,
-    getLevelLabel,
-  } = useFlashcards({
+  const flashcardsApi = useFlashcards({
     showToast,
     playSound,
     newQuestionCategory,
     lateDepsRef: flashcardLateDepsRef,
   });
+  const {
+    setSpacedRepetitionMode,
+    loadFlashcards,
+    loadFlashcardsFromBackend,
+    getTotalDueCards,
+  } = flashcardsApi;
 
   const {
     swimChallengeView, setSwimChallengeView,
@@ -905,55 +878,12 @@ export default function BaederApp() {
         {/* Flashcards View */}
         {currentView === 'flashcards' && (
           <FlashcardsView
-            flashcards={flashcards}
-            setFlashcards={setFlashcards}
-            flashcardIndex={flashcardIndex}
-            setFlashcardIndex={setFlashcardIndex}
-            currentFlashcard={currentFlashcard}
-            setCurrentFlashcard={setCurrentFlashcard}
-            showFlashcardAnswer={showFlashcardAnswer}
-            setShowFlashcardAnswer={setShowFlashcardAnswer}
-            spacedRepetitionMode={spacedRepetitionMode}
-            setSpacedRepetitionMode={setSpacedRepetitionMode}
-            dueCards={dueCards}
-            newFlashcardCategory={newFlashcardCategory}
-            setNewFlashcardCategory={setNewFlashcardCategory}
-            newFlashcardFront={newFlashcardFront}
-            setNewFlashcardFront={setNewFlashcardFront}
-            newFlashcardBack={newFlashcardBack}
-            setNewFlashcardBack={setNewFlashcardBack}
-            pendingFlashcards={pendingFlashcards}
-            setPendingFlashcards={setPendingFlashcards}
-            userFlashcards={userFlashcards}
-            setUserFlashcards={setUserFlashcards}
+            {...flashcardsApi}
             newQuestionCategory={newQuestionCategory}
             setNewQuestionCategory={setNewQuestionCategory}
-            deleteFlashcard={deleteFlashcard}
-            approveFlashcard={approveFlashcard}
-            getDueCardCount={getDueCardCount}
-            getLevelColor={getLevelColor}
-            getLevelLabel={getLevelLabel}
-            loadDueCards={loadDueCards}
-            loadFlashcards={loadFlashcards}
             moderateContent={moderateContent}
-            getCardSpacedData={getCardSpacedData}
-            updateCardSpacedData={updateCardSpacedData}
             queueXpAward={queueXpAward}
             XP_REWARDS={XP_REWARDS}
-            FLASHCARD_CONTENT={FLASHCARD_CONTENT}
-            KEYWORD_FLASHCARD_CONTENT={KEYWORD_FLASHCARD_CONTENT}
-            WHO_AM_I_FLASHCARD_CONTENT={WHO_AM_I_FLASHCARD_CONTENT}
-            keywordFlashcardMode={keywordFlashcardMode}
-            setKeywordFlashcardMode={setKeywordFlashcardMode}
-            whoAmIFlashcardMode={whoAmIFlashcardMode}
-            setWhoAmIFlashcardMode={setWhoAmIFlashcardMode}
-            flashcardFreeTextMode={flashcardFreeTextMode}
-            setFlashcardFreeTextMode={setFlashcardFreeTextMode}
-            flashcardKeywordInput={flashcardKeywordInput}
-            setFlashcardKeywordInput={setFlashcardKeywordInput}
-            flashcardKeywordEvaluation={flashcardKeywordEvaluation}
-            evaluateFlashcardKeywordAnswer={evaluateFlashcardKeywordAnswer}
-            resetFlashcardKeywordState={resetFlashcardKeywordState}
           />
         )}
 
@@ -1094,51 +1024,8 @@ export default function BaederApp() {
         {/* ==================== BERICHTSHEFT VIEW ==================== */}
         {currentView === 'berichtsheft' && (
           <BerichtsheftView
-            addWeekEntry={berichtsheft.addWeekEntry}
-            assignBerichtsheftTrainer={berichtsheft.assignBerichtsheftTrainer}
-            azubiProfile={berichtsheft.azubiProfile}
-            berichtsheftBemerkungAusbilder={berichtsheft.berichtsheftBemerkungAusbilder}
-            berichtsheftBemerkungAzubi={berichtsheft.berichtsheftBemerkungAzubi}
-            berichtsheftDatumAusbilder={berichtsheft.berichtsheftDatumAusbilder}
-            berichtsheftDatumAzubi={berichtsheft.berichtsheftDatumAzubi}
-            berichtsheftEntries={berichtsheft.berichtsheftEntries}
-            berichtsheftNr={berichtsheft.berichtsheftNr}
-            berichtsheftPendingLoading={berichtsheft.berichtsheftPendingLoading}
-            berichtsheftPendingSignatures={berichtsheft.berichtsheftPendingSignatures}
-            berichtsheftSignaturAusbilder={berichtsheft.berichtsheftSignaturAusbilder}
-            berichtsheftSignaturAzubi={berichtsheft.berichtsheftSignaturAzubi}
-            berichtsheftViewMode={berichtsheft.berichtsheftViewMode}
-            berichtsheftWeek={berichtsheft.berichtsheftWeek}
-            berichtsheftYear={berichtsheft.berichtsheftYear}
-            canManageBerichtsheftSignatures={berichtsheft.canManageBerichtsheftSignatures}
-            calculateBereichProgress={berichtsheft.calculateBereichProgress}
-            calculateDayHours={berichtsheft.calculateDayHours}
-            calculateTotalHours={berichtsheft.calculateTotalHours}
-            currentWeekEntries={berichtsheft.currentWeekEntries}
-            deleteBerichtsheft={berichtsheft.deleteBerichtsheft}
-            generateBerichtsheftPDF={berichtsheft.generateBerichtsheftPDF}
-            getBerichtsheftBereichSuggestions={berichtsheft.getBerichtsheftBereichSuggestions}
-            getBerichtsheftYearWeeks={berichtsheft.getBerichtsheftYearWeeks}
-            getWeekEndDate={berichtsheft.getWeekEndDate}
-            loadBerichtsheftForEdit={berichtsheft.loadBerichtsheftForEdit}
-            openBerichtsheftDraftForCurrentWeek={berichtsheft.openBerichtsheftDraftForCurrentWeek}
-            removeWeekEntry={berichtsheft.removeWeekEntry}
-            resetBerichtsheftForm={berichtsheft.resetBerichtsheftForm}
-            saveAzubiProfile={berichtsheft.saveAzubiProfile}
-            saveBerichtsheft={berichtsheft.saveBerichtsheft}
-            selectedBerichtsheft={berichtsheft.selectedBerichtsheft}
-            setBerichtsheftBemerkungAusbilder={berichtsheft.setBerichtsheftBemerkungAusbilder}
-            setBerichtsheftBemerkungAzubi={berichtsheft.setBerichtsheftBemerkungAzubi}
-            setBerichtsheftDatumAusbilder={berichtsheft.setBerichtsheftDatumAusbilder}
-            setBerichtsheftDatumAzubi={berichtsheft.setBerichtsheftDatumAzubi}
-            setBerichtsheftNr={berichtsheft.setBerichtsheftNr}
-            setBerichtsheftSignaturAusbilder={berichtsheft.setBerichtsheftSignaturAusbilder}
-            setBerichtsheftSignaturAzubi={berichtsheft.setBerichtsheftSignaturAzubi}
-            setBerichtsheftViewMode={berichtsheft.setBerichtsheftViewMode}
-            setBerichtsheftWeek={berichtsheft.setBerichtsheftWeek}
-            setBerichtsheftYear={berichtsheft.setBerichtsheftYear}
+            {...berichtsheft}
             signAssignableUsers={allUsers.filter((account) => account.role === 'trainer' || account.role === 'admin')}
-            updateWeekEntry={berichtsheft.updateWeekEntry}
           />
         )}
 
