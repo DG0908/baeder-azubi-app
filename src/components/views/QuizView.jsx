@@ -474,10 +474,11 @@ const QuizView = ({
               </div>
             </div>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="challenge-timeout" className="block text-sm font-medium text-gray-700 mb-2">
                 Timer für Herausforderung (Annahmefrist):
               </label>
               <select
+                id="challenge-timeout"
                 value={challengeTimeoutMinutes}
                 onChange={(event) => setChallengeTimeoutMinutes(Number(event.target.value) || 1440)}
                 className="w-full md:w-64 border border-gray-300 rounded-lg px-3 py-2 bg-white"
