@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
@@ -13,6 +14,7 @@ import { UpsertPushSubscriptionDto } from './dto/upsert-push-subscription.dto';
 import { NotificationsService } from './notifications.service';
 import { PushNotificationsService } from './push-notifications.service';
 
+@ApiTags('notifications')
 @Controller('notifications')
 export class NotificationsController {
   constructor(

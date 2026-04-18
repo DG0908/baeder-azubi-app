@@ -1,6 +1,7 @@
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
@@ -105,6 +106,23 @@ async function bootstrap() {
     },
     credentials: true
   });
+
+  const enableSwagger = config.get<string>('ENABLE_SWAGGER', 'false').toLowerCase() === 'true'
+    || config.get<string>('NODE_ENV') !== 'production';
+  if (enableSwagger) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Bäder-Azubi-App API')
+      .setDescription('Interne REST-API für die Azubi-App (Auth, Duels, Users, Berichtshefte, ...)')
+      .setVersion('1.0')
+      .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'JWT')
+      .addCookieAuth('refresh_token')
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: { persistAuthorization: true },
+    });
+    logger.log('Swagger UI available at /api/docs');
+  }
 
   const port = Number(config.get<number>('APP_PORT', 3000));
   await app.listen(port, '0.0.0.0');

@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -8,6 +9,7 @@ import { CreateInvitationDto } from './dto/create-invitation.dto';
 import { InvitationsService } from './invitations.service';
 
 @Roles(AppRole.ADMIN, AppRole.AUSBILDER)
+@ApiTags('invitations')
 @Controller('invitations')
 export class InvitationsController {
   constructor(private readonly invitationsService: InvitationsService) {}

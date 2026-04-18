@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
 import { Request } from 'express';
@@ -12,6 +13,7 @@ import { CreateNewsPostDto } from './dto/create-news-post.dto';
 import { CreateResourceDto } from './dto/create-resource.dto';
 import { CreateScheduledExamDto } from './dto/create-scheduled-exam.dto';
 
+@ApiTags('content')
 @Controller('content')
 export class ContentController {
   constructor(private readonly contentService: ContentService) {}
