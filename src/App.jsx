@@ -38,6 +38,7 @@ import { containsBannedContent } from './lib/contentModeration';
 import { computeLeaderboard } from './lib/leaderboard';
 import { loadAppData } from './lib/loadAppData';
 import { useXpQueue } from './hooks/useXpQueue';
+import { useContentAdmin } from './hooks/useContentAdmin';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -85,13 +86,6 @@ import {
   approveQuestionSubmission as dsApproveQuestionSubmission,
   purgeUserData as dsPurgeUserData,
   startTheoryExamSession as dsStartTheoryExamSession,
-  addMaterialEntry as dsAddMaterial,
-  addResourceEntry as dsAddResource,
-  deleteResourceEntry as dsDeleteResource,
-  addNewsEntry as dsAddNews,
-  deleteNewsEntry as dsDeleteNews,
-  addExamEntry as dsAddExam,
-  deleteExamEntry as dsDeleteExam,
   getAuthorizedReviewers as dsGetAuthorizedReviewers,
   loadRetentionCandidates as dsLoadRetentionCandidates,
 } from './lib/dataService';
@@ -173,21 +167,6 @@ export default function BaederApp() {
   const [newQuestionCategory, setNewQuestionCategory] = useState('org');
   const [newQuestionAnswers, setNewQuestionAnswers] = useState(['', '', '', '']);
   const [newQuestionCorrect, setNewQuestionCorrect] = useState(0);
-  const [materials, setMaterials] = useState([]);
-  const [materialTitle, setMaterialTitle] = useState('');
-  const [materialCategory, setMaterialCategory] = useState('org');
-  const [resources, setResources] = useState([]);
-  const [resourceTitle, setResourceTitle] = useState('');
-  const [resourceUrl, setResourceUrl] = useState('');
-  const [resourceType, setResourceType] = useState('youtube');
-  const [resourceDescription, setResourceDescription] = useState('');
-  const [news, setNews] = useState([]);
-  const [newsTitle, setNewsTitle] = useState('');
-  const [newsContent, setNewsContent] = useState('');
-  const [exams, setExams] = useState([]);
-  const [examTitle, setExamTitle] = useState('');
-  const [examDate, setExamDate] = useState('');
-  const [examTopics, setExamTopics] = useState('');
   const [dailyWisdom, setDailyWisdom] = useState('');
 
   // Exam Simulator State + Funktionen: useExamSimulator Hook (nach Stats-Setup)
@@ -294,6 +273,34 @@ export default function BaederApp() {
     allUsers,
     showToast,
     playSound,
+  });
+
+  const {
+    materials, setMaterials,
+    materialTitle, setMaterialTitle,
+    materialCategory, setMaterialCategory,
+    addMaterial,
+    resources, setResources,
+    resourceTitle, setResourceTitle,
+    resourceUrl, setResourceUrl,
+    resourceType, setResourceType,
+    resourceDescription, setResourceDescription,
+    addResource, deleteResource,
+    news, setNews,
+    newsTitle, setNewsTitle,
+    newsContent, setNewsContent,
+    addNews, deleteNews,
+    exams, setExams,
+    examTitle, setExamTitle,
+    examDate, setExamDate,
+    examTopics, setExamTopics,
+    addExam, deleteExam,
+  } = useContentAdmin({
+    user,
+    showToast,
+    playSound,
+    moderateContent,
+    sendNotificationToApprovedUsers,
   });
 
   const berichtsheft = useBerichtsheft({
@@ -990,168 +997,6 @@ export default function BaederApp() {
   duelLateDepsRef.current = { loadData, checkBadges, updateChallengeProgress, updateWeeklyProgress, trackQuestionPerformance };
   flashcardLateDepsRef.current = { updateChallengeProgress, updateWeeklyProgress, queueXpAward };
 
-  const addMaterial = async () => {
-    if (!materialTitle.trim() || !user?.permissions.canUploadMaterials) return;
-
-    try {
-      const mat = await dsAddMaterial({
-        title: materialTitle, category: materialCategory, createdBy: user.name
-      });
-      setMaterials([...materials, mat]);
-      setMaterialTitle('');
-      showToast('Material hinzugefügt!', 'success');
-    } catch (error) {
-      console.error('Material error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const addResource = async () => {
-    if (!resourceTitle.trim() || !resourceUrl.trim()) return;
-
-    // Only admins can add resources
-    if (user.role !== 'admin') {
-      showToast('Nur Administratoren können Ressourcen hinzufügen', 'warning');
-      return;
-    }
-
-    // Content moderation
-    if (!moderateContent(resourceTitle, 'Titel')) {
-      return;
-    }
-    
-    if (resourceDescription && !moderateContent(resourceDescription, 'Beschreibung')) {
-      return;
-    }
-    
-    if (!moderateContent(resourceUrl, 'URL')) {
-      return;
-    }
-
-    // URL validation
-    try {
-      new URL(resourceUrl);
-    } catch (e) {
-      showToast('Bitte gib eine gültige URL ein (mit https://)', 'warning');
-      return;
-    }
-
-    try {
-      const resource = await dsAddResource({
-        title: resourceTitle, url: resourceUrl, category: resourceType,
-        description: resourceDescription, createdBy: user.name
-      });
-      setResources([resource, ...resources]);
-      setResourceTitle('');
-      setResourceUrl('');
-      setResourceDescription('');
-      playSound('splash');
-      showToast('Ressource hinzugefügt!', 'success');
-    } catch (error) {
-      console.error('Resource error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
-
-  const deleteResource = async (resourceId) => {
-    if (user.role !== 'admin') {
-      showToast('Nur Administratoren können Ressourcen löschen', 'warning');
-      return;
-    }
-    if (!confirm('Ressource wirklich löschen?')) return;
-    try {
-      await dsDeleteResource(resourceId);
-      setResources(resources.filter(r => r.id !== resourceId));
-    } catch (error) {
-      console.error('Delete resource error:', error);
-    }
-  };
-
-  const addNews = async () => {
-    if (!newsTitle.trim() || !user?.permissions.canPostNews) return;
-
-    // Content moderation
-    if (!moderateContent(newsTitle, 'News-Titel')) {
-      return;
-    }
-
-    if (newsContent && !moderateContent(newsContent, 'News-Inhalt')) {
-      return;
-    }
-
-    try {
-      const newsItem = await dsAddNews({
-        title: newsTitle.trim(), content: newsContent.trim(), author: user.name
-      });
-
-      await sendNotificationToApprovedUsers({
-        title: '📰 Neue News',
-        message: `${user.name} hat eine neue News veroeffentlicht: "${newsItem.title}"`,
-        type: 'news',
-        excludeUserNames: [user.name]
-      });
-
-      setNews([newsItem, ...news]);
-      setNewsTitle('');
-      setNewsContent('');
-    } catch (error) {
-      console.error('News error:', error);
-    }
-  };
-
-  const deleteNews = async (newsId) => {
-    if (!user?.permissions.canPostNews) return;
-    if (!confirm('Diese Ankündigung wirklich löschen?')) return;
-    try {
-      await dsDeleteNews(newsId);
-      setNews(news.filter(n => n.id !== newsId));
-    } catch (error) {
-      console.error('Delete news error:', error);
-      toast.error('Fehler beim Loeschen der Ankuendigung');
-    }
-  };
-
-  const addExam = async () => {
-    if (!examTitle.trim() || !user) return;
-
-    try {
-      const exam = await dsAddExam({
-        title: examTitle, description: examTopics,
-        examDate: examDate || null, createdBy: user.name
-      });
-
-      const examDateLabel = exam.date
-        ? new Date(exam.date).toLocaleDateString('de-DE')
-        : 'ohne Termin';
-
-      await sendNotificationToApprovedUsers({
-        title: '📝 Neue Klausur',
-        message: `${user.name} hat eine neue Klausur eingetragen: "${exam.title}" (${examDateLabel}).`,
-        type: 'exam',
-        excludeUserNames: [user.name]
-      });
-
-      setExams([...exams, exam].sort((a, b) => new Date(a.date) - new Date(b.date)));
-      setExamTitle('');
-      setExamDate('');
-      setExamTopics('');
-    } catch (error) {
-      console.error('Exam error:', error);
-    }
-  };
-
-  const deleteExam = async (examId) => {
-    if (!examId) return;
-    if (!confirm('Klausur wirklich löschen?')) return;
-    try {
-      await dsDeleteExam(examId);
-      setExams(prev => prev.filter(exam => exam.id !== examId));
-      showToast('Klausur gelöscht.', 'success');
-    } catch (error) {
-      console.error('Delete exam error:', error);
-      showToast(friendlyError(error), 'error');
-    }
-  };
 
   // Auth-Guards: Early Return verhindert dass Hooks unten auf null-User zugreifen
   if (!authReady) return <AuthGuard />;
