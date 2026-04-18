@@ -95,6 +95,10 @@ const makeMailer = () => ({
   sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
 });
 
+const makePwned = () => ({
+  isPwned: jest.fn().mockResolvedValue({ pwned: false, count: 0, checked: true }),
+});
+
 const makeTotp = () => ({
   isConfigured: jest.fn().mockReturnValue(true),
   generateSecret: jest.fn().mockReturnValue('TOTP_SECRET'),
@@ -114,6 +118,7 @@ const buildService = (prisma: ReturnType<typeof makePrisma>, jwt = makeJwt()) =>
     makeAuditLog() as any,
     makeMailer() as any,
     makeTotp() as any,
+    makePwned() as any,
   );
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
