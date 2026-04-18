@@ -28,7 +28,7 @@ import {
 } from './data/poolChemistry';
 import { containsBannedContent } from './lib/contentModeration';
 import { computeLeaderboard } from './lib/leaderboard';
-import { loadAppData } from './lib/loadAppData';
+import { loadAppData, refreshLightData } from './lib/loadAppData';
 import { useXpQueue } from './hooks/useXpQueue';
 import { useContentAdmin } from './hooks/useContentAdmin';
 import { useCalculator } from './hooks/useCalculator';
@@ -75,7 +75,6 @@ import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 // Flashcard-Builder + KEYWORD_CHALLENGES / WHO_AM_I_* werden jetzt im useFlashcards Hook genutzt
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
 import {
-  loadGames as dsLoadGames,
   getAuthorizedReviewers as dsGetAuthorizedReviewers,
 } from './lib/dataService';
 import { runDataRetentionCheck } from './lib/dataRetention';
@@ -84,7 +83,6 @@ import {
   namesMatch, isFinishedGameStatus,
   shuffleArray,
   DIFFICULTY_SETTINGS, DEFAULT_CHALLENGE_TIMEOUT_MINUTES,
-  normalizeChallengeTimeoutMinutes,
   parseTimestampSafe, getChallengeTimeoutMs,
   getWaitingChallengeRemainingMs, isWaitingChallengeExpired,
   formatDurationMinutesCompact,
@@ -92,7 +90,7 @@ import {
   getResolvedGameScores, resolveFinishedGameWinner,
   hasRecordedRoundAnswers,
   buildHeadToHeadFromFinishedGames,
-  syncQuizTotalsIntoStats, mergeOpponentStatsByMax,
+  mergeOpponentStatsByMax,
   getTotalXpFromStats,
   deductXpFromStats,
   normalizeKeywordText, getWordVariants,
@@ -607,33 +605,14 @@ export default function BaederApp() {
 
   // handleLogin, handleRegister, handleLogout werden vom AuthContext bereitgestellt
 
-  // Leichte Daten für Polling (alle 30s) — nur schnell ändernde Tabellen
-  const loadLightData = async () => {
-    try {
-      // Games aktualisieren
-      const games = await dsLoadGames(100, user?.id);
-      if (games.length > 0) {
-        const normalized = games.map(g => ({
-          ...g,
-          challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challengeTimeoutMinutes)
-        }));
-        duel.setAllGames(normalized);
-        duel.setActiveGames(normalized.filter(g => g.status !== 'finished'));
-        updateLeaderboard(normalized);
-        if (user?.name) {
-          setUserStats(prevStats => syncQuizTotalsIntoStats(prevStats, normalized, user.name));
-        }
-      }
-
-      // Messages aktualisieren
-      const userDirectory = Object.fromEntries(
-        (allUsers || []).filter(a => a?.id).map(a => [a.id, a])
-      );
-      await loadChatMessages(userDirectory, user?.role);
-    } catch (error) {
-      console.log('Light data refresh error:', error.message);
-    }
-  };
+  const loadLightData = () => refreshLightData({
+    user,
+    duel,
+    allUsers,
+    setUserStats,
+    updateLeaderboard,
+    loadChatMessages,
+  });
 
   const loadData = () => loadAppData({
     user,

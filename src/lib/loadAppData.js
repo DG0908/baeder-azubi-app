@@ -218,3 +218,35 @@ export async function loadAppData({
     console.log('Loading data - some features may not work:', error.message);
   }
 }
+
+export async function refreshLightData({
+  user,
+  duel,
+  allUsers,
+  setUserStats,
+  updateLeaderboard,
+  loadChatMessages,
+}) {
+  try {
+    const games = await dsLoadGames(100, user?.id);
+    if (games.length > 0) {
+      const normalized = games.map((g) => ({
+        ...g,
+        challengeTimeoutMinutes: normalizeChallengeTimeoutMinutes(g.challengeTimeoutMinutes),
+      }));
+      duel.setAllGames(normalized);
+      duel.setActiveGames(normalized.filter((g) => g.status !== 'finished'));
+      updateLeaderboard(normalized);
+      if (user?.name) {
+        setUserStats((prevStats) => syncQuizTotalsIntoStats(prevStats, normalized, user.name));
+      }
+    }
+
+    const userDirectory = Object.fromEntries(
+      (allUsers || []).filter((a) => a?.id).map((a) => [a.id, a]),
+    );
+    await loadChatMessages(userDirectory, user?.role);
+  } catch (error) {
+    console.log('Light data refresh error:', error.message);
+  }
+}
