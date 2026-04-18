@@ -26,7 +26,7 @@ import {
   CHLORINATION_PRODUCTS,
   ANTICHLOR_PRODUCTS,
 } from './data/poolChemistry';
-import { containsBannedContent } from './lib/contentModeration';
+import { createContentModerator } from './lib/contentModeration';
 import { computeLeaderboard } from './lib/leaderboard';
 import { loadAppData, refreshLightData } from './lib/loadAppData';
 import { parseJsonSafe } from './lib/jsonUtils';
@@ -202,14 +202,7 @@ export default function BaederApp() {
     }
   }, [currentView]);
 
-  const moderateContent = (text, context = 'Text') => {
-    if (containsBannedContent(text)) {
-      toast.error(`${context} enthaelt unangemessene Inhalte und wurde blockiert. Bitte achte auf einen respektvollen Umgang.`);
-      playSound('wrong');
-      return false;
-    }
-    return true;
-  };
+  const moderateContent = createContentModerator({ toast, playSound });
 
   const {
     submittedQuestions, setSubmittedQuestions,
