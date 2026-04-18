@@ -1392,6 +1392,32 @@ describe('DuelsService', () => {
       await expect(service.updateGameState(mockActor(), 'duel-1', hugeState))
         .rejects.toThrow('Duel game state payload is too large.');
     });
+
+    it('rejects payloads that add new rounds — they must use POST /duels/:id/rounds', async () => {
+      const existing = {
+        categoryRound: 0,
+        currentTurn: 'Alice',
+        status: 'active',
+        difficulty: 'profi',
+        categoryRounds: [
+          { categoryId: 'cat-a', chooser: 'Alice', questions: [], player1Answers: [], player2Answers: [] }
+        ]
+      };
+      prisma.duel.findUnique.mockResolvedValue(makeDuel({ gameState: existing }));
+      const payloadWithNewRound = {
+        categoryRound: 1,
+        currentTurn: 'Bob',
+        status: 'active',
+        difficulty: 'profi',
+        categoryRounds: [
+          { categoryId: 'cat-a', chooser: 'Alice' },
+          { categoryId: 'cat-b', chooser: 'Bob' }
+        ]
+      } as any;
+      await expect(service.updateGameState(mockActor(), 'duel-1', payloadWithNewRound))
+        .rejects.toThrow(BadRequestException);
+      expect(prisma.duel.update).not.toHaveBeenCalled();
+    });
   });
 
   // =========================================================================
@@ -1919,6 +1945,82 @@ describe('DuelsService', () => {
       expect(notifications.createForUser).toHaveBeenCalledWith('user-1', expect.objectContaining({
         title: 'Quizduell angenommen'
       }));
+    });
+  });
+
+  // =========================================================================
+  // Public API: startRound
+  // =========================================================================
+
+  describe('startRound', () => {
+    const completedRound = {
+      categoryId: 'tech',
+      categoryName: 'Bädertechnik',
+      chooser: 'Alice',
+      questions: Array.from({ length: 5 }, (_, i) => ({ id: `q${i}`, q: `Q${i}`, a: ['a', 'b'], correct: 0 })),
+      player1Answers: Array.from({ length: 5 }, (_, i) => ({ questionIndex: i, selected: 0, correct: true, durationMs: 1000 })),
+      player2Answers: Array.from({ length: 5 }, (_, i) => ({ questionIndex: i, selected: 1, correct: false, durationMs: 1200 }))
+    };
+
+    it('wirft NotFoundException für unbekanntes Duell', async () => {
+      prisma.duel.findUnique.mockResolvedValue(null);
+      await expect(service.startRound(mockActor(), 'nope', { categoryId: 'tech' }))
+        .rejects.toThrow(NotFoundException);
+    });
+
+    it('wirft ForbiddenException für Nicht-Teilnehmer', async () => {
+      prisma.duel.findUnique.mockResolvedValue(makeDuel());
+      await expect(service.startRound(mockActor({ id: 'outsider' }), 'duel-1', { categoryId: 'tech' }))
+        .rejects.toThrow(ForbiddenException);
+    });
+
+    it('wirft ConflictException für nicht-aktive Duelle', async () => {
+      prisma.duel.findUnique.mockResolvedValue(makeDuel({ status: DuelStatus.COMPLETED }));
+      await expect(service.startRound(mockActor(), 'duel-1', { categoryId: 'tech' }))
+        .rejects.toThrow(ConflictException);
+    });
+
+    it('wirft BadRequestException bei unbekannter Kategorie', async () => {
+      prisma.duel.findUnique.mockResolvedValue(makeDuel({ gameState: { categoryRounds: [] } }));
+      await expect(service.startRound(mockActor(), 'duel-1', { categoryId: 'hack' }))
+        .rejects.toThrow(/Unbekannte Kategorie/);
+    });
+
+    it('wirft BadRequestException wenn falscher Chooser startet', async () => {
+      const duel = makeDuel({
+        gameState: { categoryRounds: [completedRound] }
+      });
+      prisma.duel.findUnique.mockResolvedValue(duel);
+      await expect(service.startRound(mockActor({ id: 'user-1', displayName: 'Alice' }), 'duel-1', { categoryId: 'swim' }))
+        .rejects.toThrow(/Chooser/);
+    });
+
+    it('wirft BadRequestException wenn letzte Runde nicht abgeschlossen', async () => {
+      const incompleteRound = { ...completedRound, player2Answers: [] };
+      const duel = makeDuel({
+        gameState: { categoryRounds: [incompleteRound] }
+      });
+      prisma.duel.findUnique.mockResolvedValue(duel);
+      await expect(service.startRound(mockActor({ id: 'user-2', displayName: 'Bob' }), 'duel-1', { categoryId: 'swim' }))
+        .rejects.toThrow(/abgeschlossen/);
+    });
+
+    it('wirft BadRequestException bei Maximum erreichten Runden', async () => {
+      const rounds = ['tech', 'swim', 'first', 'hygiene'].map((cat) => ({
+        ...completedRound,
+        categoryId: cat
+      }));
+      const duel = makeDuel({ gameState: { categoryRounds: rounds } });
+      prisma.duel.findUnique.mockResolvedValue(duel);
+      await expect(service.startRound(mockActor({ id: 'user-1', displayName: 'Alice' }), 'duel-1', { categoryId: 'health' }))
+        .rejects.toThrow(/maximale Anzahl/);
+    });
+
+    it('wirft BadRequestException bei bereits gespielter Kategorie', async () => {
+      const duel = makeDuel({ gameState: { categoryRounds: [completedRound] } });
+      prisma.duel.findUnique.mockResolvedValue(duel);
+      await expect(service.startRound(mockActor({ id: 'user-2', displayName: 'Bob' }), 'duel-1', { categoryId: 'tech' }))
+        .rejects.toThrow(/bereits gespielt/);
     });
   });
 

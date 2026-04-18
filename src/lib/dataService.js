@@ -1368,61 +1368,42 @@ export const submitDuelAnswer = async (duelId, duelQuestionId, selectedOptionInd
   return secureDuelsApi.submitAnswer(duelId, { duelQuestionId, selectedOptionIndex });
 };
 
+export const startDuelRound = async (duelId, categoryId, currentUserId = null) => {
+  await secureDuelsApi.startRound(duelId, categoryId);
+  return getDuelWithQuestions(duelId, currentUserId);
+};
+
 export const forfeitDuel = async (duelId) => {
   return secureDuelsApi.forfeit(duelId);
 };
 
-// Fields merged client-side from getDuelWithQuestions that must NOT be sent back to the server
-const CLIENT_ONLY_QUESTION_FIELDS = ['correct', 'myAnswerCorrect', 'duelQuestionId'];
-
-const sanitizeRoundForPatch = (round) => {
+// Questions and answer arrays are server-authoritative and must not be PATCHed via /state.
+// The backend DTO (CategoryRoundDto) only accepts metadata fields — use POST /duels/:id/rounds
+// and POST /duels/:id/answers instead. We still send round metadata so the backend keeps
+// currentTurn/categoryRound in sync.
+const toMetadataRound = (round) => {
   if (!round || typeof round !== 'object') return null;
-
   const categoryId = String(round.categoryId || round.category || '').trim();
-  if (!categoryId) {
-    return null;
-  }
-
-  const sanitized = {
-    ...round,
-    categoryId
-  };
-  delete sanitized.category;
-  return sanitized;
-};
-
-const stripClientOnlyQuestionFields = (categoryRounds) => {
-  if (!Array.isArray(categoryRounds)) return categoryRounds;
-  return categoryRounds
-    .map((round) => sanitizeRoundForPatch(round))
-    .filter(Boolean)
-    .map(round => ({
-      ...round,
-      questions: Array.isArray(round.questions)
-        ? round.questions.map(q => {
-            const cleaned = { ...q };
-            for (const field of CLIENT_ONLY_QUESTION_FIELDS) delete cleaned[field];
-            return cleaned;
-          })
-        : round.questions
-    }));
+  if (!categoryId) return null;
+  const metadata = { categoryId };
+  if (round.categoryName) metadata.categoryName = round.categoryName;
+  if (round.chooser) metadata.chooser = round.chooser;
+  return metadata;
 };
 
 export const saveDuelState = async (game) => {
-  // Persist only the client state the backend still needs for continuity.
-  // Strip client-side-only question fields so the backend assertQuestionsUnchanged check passes.
-  const sanitizedRounds = stripClientOnlyQuestionFields(game.categoryRounds || []);
+  const metadataRounds = Array.isArray(game.categoryRounds)
+    ? game.categoryRounds.map(toMetadataRound).filter(Boolean)
+    : [];
   const gameState = {
     currentTurn: game.currentTurn,
     categoryRound: game.categoryRound || 0,
     status: game.status,
     difficulty: game.difficulty,
-    categoryRounds: sanitizedRounds,
+    categoryRounds: metadataRounds,
     challengeTimeoutMinutes: game.challengeTimeoutMinutes
   };
-  const droppedRoundCount = Math.max(0, (game.categoryRounds || []).length - sanitizedRounds.length);
   await secureDuelsApi.updateGameState(game.id, gameState);
-  return;
 };
 
 

@@ -9,36 +9,21 @@ import {
   Min,
   ValidateNested
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 
 const ALLOWED_DIFFICULTIES = ['anfaenger', 'profi', 'experte', 'extra', 'normal'] as const;
 
 /**
- * Represents a single category round as sent by the client.
- * All fields are optional and loosely typed — deep validation is done
- * by the service layer. We declare every expected field here so that
- * NestJS's whitelist does not strip them.
+ * Metadata-only representation of a category round.
+ * Question-/Answer-Arrays are server-authoritative and must go through
+ * the dedicated endpoints (POST /duels/:id/rounds, POST /duels/:id/answers).
+ * Clients are no longer allowed to send them via PATCH /state.
  */
 export class CategoryRoundDto {
   @IsOptional() @IsString()  categoryId?: string;
   @IsOptional() @IsString()  category?: string;
   @IsOptional() @IsString()  categoryName?: string;
   @IsOptional() @IsString()  chooser?: string;
-
-  @IsOptional()
-  @IsArray()
-  @Transform(({ value }) => value)
-  questions?: unknown[];
-
-  @IsOptional()
-  @IsArray()
-  @Transform(({ value }) => value)
-  player1Answers?: unknown[];
-
-  @IsOptional()
-  @IsArray()
-  @Transform(({ value }) => value)
-  player2Answers?: unknown[];
 }
 
 export class GameStateDto {

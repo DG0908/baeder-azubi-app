@@ -36,6 +36,15 @@ hält die Backend-Version fest, wenn sie sich geändert hat.
   erhalten (seit dem 03.04.2026-Rollout gingen sie beim Logout verloren). DSGVO-
   Export liefert Badges jetzt unter `data.badges` mit echtem `earnedAt`, der
   `badgeExportStatus`-Workaround ist entfernt; `meta.exportVersion` → `3`.
+- **Duel-Rundenerzeugung server-autoritativ (P4.5):** Neuer dedizierter Endpoint
+  `POST /api/duels/:id/rounds` mit `{ categoryId }` generiert Fragen rein serverseitig
+  (Whitelist `ALLOWED_DUEL_CATEGORY_IDS`, Chooser-Prüfung, `MAX_DUEL_CATEGORY_ROUNDS`,
+  kein doppelter Kategorie-Wechsel). DTO-Härtung: `CategoryRoundDto` akzeptiert nur
+  noch Metadata (`categoryId`, `categoryName`, `chooser`); `questions`, `player1Answers`,
+  `player2Answers` sind aus `PATCH /state` entfernt. `PATCH /state` weist neue Runden
+  jetzt hart zurück — Rundenstarts müssen über den neuen Endpoint laufen.
+  Frontend (`useDuelGame.selectCategory`) ruft den neuen Endpoint; lokale
+  `pickBattleQuestions`-Auswahl und `shuffleAnswers` sind im Duell-Pfad entfernt.
 
 ### Security
 
@@ -47,7 +56,7 @@ hält die Backend-Version fest, wenn sie sich geändert hat.
 
 ### Changed
 
-- Backend-Test-Suite: 496 Tests, alle grün.
+- Backend-Test-Suite: 505 Tests, alle grün.
 - Frontend-Test-Suite: 71 Vitest-Tests (inkl. 4 a11y + 11 Primitives), alle grün.
 
 ## [1.0.0] — 2026-04-03
