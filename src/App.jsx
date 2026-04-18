@@ -37,6 +37,7 @@ import {
 import { containsBannedContent } from './lib/contentModeration';
 import { computeLeaderboard } from './lib/leaderboard';
 import { loadAppData } from './lib/loadAppData';
+import { useXpQueue } from './hooks/useXpQueue';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -104,13 +105,12 @@ import {
   getWaitingChallengeRemainingMs, isWaitingChallengeExpired,
   formatDurationMinutesCompact,
   XP_META_KEY, XP_BREAKDOWN_DEFAULT, XP_REWARDS,
-  createEmptyUserStats, ensureUserStatsStructure,
   getResolvedGameScores, resolveFinishedGameWinner,
   hasRecordedRoundAnswers,
   buildHeadToHeadFromFinishedGames,
   syncQuizTotalsIntoStats, mergeOpponentStatsByMax,
-  getTotalXpFromStats, getXpBreakdownFromStats,
-  addXpToStats, deductXpFromStats,
+  getTotalXpFromStats,
+  deductXpFromStats,
   normalizeKeywordText, getWordVariants,
   isKeywordQuestion, isWhoAmIQuestion,
   getQuizTimeLimit, cloneDuelGameSnapshot,
@@ -237,8 +237,6 @@ export default function BaederApp() {
 
   // Kontrollkarte Berufsschule + Klasuren: useSchoolAttendance + useExamGrades Hooks
   // Swim state lives in useSwimChallenge hook
-
-  const xpAwardQueueRef = useRef(Promise.resolve(0));
 
   // Calculator State
   const [calculatorType, setCalculatorType] = useState('ph');
@@ -816,69 +814,13 @@ export default function BaederApp() {
     setLeaderboard(computeLeaderboard(games));
   };
 
-  const queueXpAwardForUser = (targetUserInput, sourceKey, amount, options = {}) => {
-    const xpAmount = toSafeInt(amount);
-    const targetUserId = targetUserInput?.id || null;
-    const targetUserName = targetUserInput?.name || null;
-
-    if (!targetUserId || !targetUserName || xpAmount <= 0) {
-      return Promise.resolve(0);
-    }
-
-    const { eventKey = null, reason = null, showXpToast = false } = options;
-
-    xpAwardQueueRef.current = xpAwardQueueRef.current
-      .then(async () => {
-        const currentStats = await duel.getUserStatsFromSupabase({ id: targetUserId, name: targetUserName });
-        const baseStats = ensureUserStatsStructure(currentStats || createEmptyUserStats());
-        const { stats: xpUpdatedStats, addedXp } = addXpToStats(baseStats, sourceKey, xpAmount, eventKey);
-        if (addedXp <= 0) {
-          return 0;
-        }
-
-        await duel.saveUserStatsToSupabase({ id: targetUserId, name: targetUserName }, xpUpdatedStats);
-        if (targetUserId === user?.id) {
-          setUserStats(xpUpdatedStats);
-        }
-        setStatsByUserId(prev => {
-          const wins = xpUpdatedStats.wins || 0;
-          const losses = xpUpdatedStats.losses || 0;
-          const draws = xpUpdatedStats.draws || 0;
-          return {
-            ...prev,
-            [targetUserId]: {
-              ...(prev[targetUserId] || {}),
-              wins,
-              losses,
-              draws,
-              total: wins + losses + draws,
-              totalXp: getTotalXpFromStats(xpUpdatedStats),
-              xpBreakdown: getXpBreakdownFromStats(xpUpdatedStats)
-            }
-          };
-        });
-
-        if (showXpToast) {
-          const isCurrentUserTarget = targetUserId === user?.id;
-          const toastPrefix = isCurrentUserTarget ? `+${addedXp} XP` : `${targetUserName}: +${addedXp} XP`;
-          showToast(`${toastPrefix}${reason ? ` • ${reason}` : ''}`, 'success', 2500);
-        }
-        return addedXp;
-      })
-      .catch(error => {
-        console.error('XP update error:', error);
-        return 0;
-      });
-
-    return xpAwardQueueRef.current;
-  };
-
-  const queueXpAward = (sourceKey, amount, options = {}) => {
-    if (!user?.id || !user?.name) {
-      return Promise.resolve(0);
-    }
-    return queueXpAwardForUser({ id: user.id, name: user.name }, sourceKey, amount, options);
-  };
+  const { queueXpAwardForUser, queueXpAward } = useXpQueue({
+    user,
+    duel,
+    showToast,
+    setUserStats,
+    setStatsByUserId,
+  });
 
   // Prüfungssimulator: useExamSimulator Hook (nach trackQuestionPerformance + updateWeeklyProgress)
   const {
