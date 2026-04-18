@@ -102,7 +102,7 @@
 | P3.2 | Shared-UI-Komponenten — `<Button>`, `<Card>`, `<Skeleton>`, `<Dialog>` basierend auf `radix-ui`. | Sonnet | 2 d | [ ] |
 | P3.3 | Swagger/OpenAPI aus NestJS — `@nestjs/swagger` einbauen, UI unter `/api/docs` (dev-only). | Sonnet | 0.5 d | [ ] |
 | P3.4 | Pagination cursor-basiert — Chat-Messages, Forum-Posts, AuditLog. | Sonnet | 1 d | [ ] |
-| P3.5 | Passwort-Komplexität + Pwned-Check — `zxcvbn` + HaveIBeenPwned-API mit k-anonymity. | Sonnet | 0.5 d | [ ] |
+| P3.5 | Passwort-Komplexität + Pwned-Check — `zxcvbn` + HaveIBeenPwned-API mit k-anonymity. | Sonnet | 0.5 d | [x] Opus · 2026-04-18 |
 | P3.6 | a11y-Audit mit `axe-core` in Vitest + Playwright. | Codex (zweite Perspektive hilfreich) | 1 d | [ ] |
 | P3.7 | `@nestjs/throttler-storage-redis` — wenn Multi-Replika-Deploy geplant. | Sonnet | 0.5 d | [ ] |
 | P3.8 | SMTP-Provider produktiv (Brevo/Mailgun), Domain-SPF/DKIM, Bounce-Handling. | Mensch (DNS-Setup) + Sonnet (Nodemailer-Config) | 0.5 d | [ ] |

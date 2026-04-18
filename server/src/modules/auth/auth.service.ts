@@ -16,6 +16,7 @@ import { Request, Response } from 'express';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { MailerService } from '../../common/services/mailer.service';
+import { PwnedPasswordService } from '../../common/services/pwned-password.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto';
@@ -85,8 +86,18 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly auditLogService: AuditLogService,
     private readonly mailerService: MailerService,
-    private readonly totpService: TotpService
+    private readonly totpService: TotpService,
+    private readonly pwnedPasswordService: PwnedPasswordService
   ) {}
+
+  private async assertPasswordNotPwned(password: string): Promise<void> {
+    const result = await this.pwnedPasswordService.isPwned(password);
+    if (result.pwned) {
+      throw new BadRequestException(
+        'This password appears in known data breaches. Please choose a different one.'
+      );
+    }
+  }
 
   private async checkLockout(email: string): Promise<void> {
     const record = await this.prisma.loginAttempt.findUnique({ where: { email } });
@@ -196,6 +207,7 @@ export class AuthService {
   async register(dto: RegisterDto, request: Request) {
     const email = this.normalizeEmail(dto.email);
     const invitationHash = this.hashInvitationCode(dto.invitationCode);
+    await this.assertPasswordNotPwned(dto.password);
     const passwordHash = await argon2.hash(dto.password);
     let user;
     try {
@@ -761,6 +773,8 @@ export class AuthService {
       throw new BadRequestException('New password must differ from the current password.');
     }
 
+    await this.assertPasswordNotPwned(dto.newPassword);
+
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
@@ -894,6 +908,8 @@ export class AuthService {
     ) {
       throw new BadRequestException('Password reset token is invalid or expired.');
     }
+
+    await this.assertPasswordNotPwned(dto.newPassword);
 
     await this.prisma.$transaction(async (tx) => {
       await tx.user.update({

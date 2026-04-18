@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import zxcvbn from 'zxcvbn';
 import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -13,6 +14,8 @@ interface PasswordStrength {
   score: number;
   label: string;
   color: string;
+  warning?: string;
+  suggestion?: string;
 }
 
 interface CodeStatusValid {
@@ -32,19 +35,21 @@ interface CodeStatusSecure {
 
 type CodeStatus = 'checking' | CodeStatusValid | CodeStatusInvalid | CodeStatusSecure | null;
 
+const STRENGTH_LABELS = ['Sehr schwach', 'Schwach', 'Mittel', 'Stark', 'Sehr stark'] as const;
+const STRENGTH_COLORS = ['bg-red-500', 'bg-orange-400', 'bg-yellow-400', 'bg-lime-500', 'bg-green-500'] as const;
+
 const getPasswordStrength = (pw: string): PasswordStrength => {
   if (!pw) return { score: 0, label: '', color: '' };
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (pw.length >= 12) score++;
-  if (/[A-Z]/.test(pw)) score++;
-  if (/[0-9]/.test(pw)) score++;
-  if (/[^A-Za-z0-9]/.test(pw)) score++;
-  if (score <= 1) return { score, label: 'Sehr schwach', color: 'bg-red-500' };
-  if (score === 2) return { score, label: 'Schwach', color: 'bg-orange-400' };
-  if (score === 3) return { score, label: 'Mittel', color: 'bg-yellow-400' };
-  if (score === 4) return { score, label: 'Stark', color: 'bg-lime-500' };
-  return { score, label: 'Sehr stark', color: 'bg-green-500' };
+  const result = zxcvbn(pw);
+  const score = result.score;
+  const displayScore = pw.length < 12 ? Math.min(score, 1) : score;
+  return {
+    score: displayScore + 1,
+    label: STRENGTH_LABELS[displayScore],
+    color: STRENGTH_COLORS[displayScore],
+    warning: result.feedback.warning || undefined,
+    suggestion: result.feedback.suggestions[0] || undefined,
+  };
 };
 
 const LoginScreen: React.FC = () => {
@@ -231,6 +236,11 @@ const LoginScreen: React.FC = () => {
                   <p className={`text-xs ${strength.score <= 2 ? 'text-red-500' : strength.score === 3 ? 'text-yellow-600' : 'text-green-600'}`}>
                     {strength.label}
                   </p>
+                  {(strength.warning || strength.suggestion) && strength.score <= 3 && (
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      {strength.warning || strength.suggestion}
+                    </p>
+                  )}
                 </div>
               );
             })()}
@@ -523,6 +533,11 @@ const LoginScreen: React.FC = () => {
                   <p className={`text-xs ${strength.score <= 2 ? 'text-red-500' : strength.score === 3 ? 'text-yellow-600' : 'text-green-600'}`}>
                     {strength.label}
                   </p>
+                  {(strength.warning || strength.suggestion) && strength.score <= 3 && (
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      {strength.warning || strength.suggestion}
+                    </p>
+                  )}
                 </div>
               );
             })()}
