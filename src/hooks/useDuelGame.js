@@ -40,13 +40,7 @@ import {
   updateQuestionReportStatus as dsUpdateQuestionReportStatus,
   resolveUserIdentity as dsResolveUserIdentity,
 } from '../lib/dataService';
-
-const normalizeQuestionText = (value) => String(value ?? '')
-  .trim()
-  .toLowerCase()
-  .normalize('NFD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .replace(/\s+/g, ' ');
+import { normalizeQuestionText, getQuestionPerformanceKey } from '../lib/questionKey';
 
 export function useDuelGame(deps) {
   const {
@@ -243,12 +237,6 @@ export function useDuelGame(deps) {
   };
 
   // ===================== Question picking =====================
-
-  const getQuestionPerformanceKey = (question, categoryHint = null) => {
-    const categoryId = String(categoryHint || question?.category || 'unknown').trim() || 'unknown';
-    const normalizedText = normalizeQuestionText(question?.q || '');
-    return `${categoryId}::${normalizedText}`;
-  };
 
   const getQuestionPerformanceEntry = (question, categoryHint = null) => {
     const key = getQuestionPerformanceKey(question, categoryHint);
