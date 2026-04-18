@@ -1,18 +1,10 @@
 import { useState, useEffect } from 'react';
 import { sanitizeGoalValue } from './useWeeklyGoals';
 import { getQuestionPerformanceKey } from '../lib/questionKey';
+import { parseJsonSafe } from '../lib/jsonUtils';
 
 const QUESTION_PERFORMANCE_STORAGE_KEY = 'question_performance_v1';
 const ADAPTIVE_LEARNING_STORAGE_KEY = 'adaptive_learning_mode_v1';
-
-const parseJsonSafe = (value, fallback) => {
-  try {
-    const parsed = JSON.parse(value);
-    return parsed ?? fallback;
-  } catch {
-    return fallback;
-  }
-};
 
 export function useQuestionPerformance() {
   const [questionPerformance, setQuestionPerformance] = useState(() => {

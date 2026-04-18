@@ -27,17 +27,9 @@ import {
 import { mergeMenuItemsWithDefaults } from './menuConfig';
 import { getQuestionPerformanceKey } from './questionKey';
 import { DEFAULT_THEME_COLORS } from '../data/constants';
+import { parseJsonSafe } from './jsonUtils';
 
 const QUESTION_REPORTS_STORAGE_KEY = 'question_reports_v1';
-
-const parseJsonSafe = (value, fallback) => {
-  try {
-    const parsed = JSON.parse(value);
-    return parsed ?? fallback;
-  } catch {
-    return fallback;
-  }
-};
 
 export async function loadAppData({
   user,

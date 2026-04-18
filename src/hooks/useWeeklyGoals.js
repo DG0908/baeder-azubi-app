@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { parseJsonSafe } from '../lib/jsonUtils';
 
 const WEEKLY_GOALS_STORAGE_KEY = 'weekly_goals_v1';
 const WEEKLY_PROGRESS_STORAGE_KEY = 'weekly_progress_v1';
@@ -40,15 +41,6 @@ export const buildEmptyWeeklyProgress = (weekStart = getWeekStartStamp()) => ({
   stats: { ...WEEKLY_PROGRESS_TEMPLATE },
   updatedAt: Date.now(),
 });
-
-const parseJsonSafe = (value, fallback) => {
-  try {
-    const parsed = JSON.parse(value);
-    return parsed ?? fallback;
-  } catch {
-    return fallback;
-  }
-};
 
 export function useWeeklyGoals({ user, currentView, showToast }) {
   const [weeklyGoals, setWeeklyGoals] = useState(() => {
