@@ -1392,6 +1392,32 @@ describe('DuelsService', () => {
       await expect(service.updateGameState(mockActor(), 'duel-1', hugeState))
         .rejects.toThrow('Duel game state payload is too large.');
     });
+
+    it('rejects payloads that add new rounds — they must use POST /duels/:id/rounds', async () => {
+      const existing = {
+        categoryRound: 0,
+        currentTurn: 'Alice',
+        status: 'active',
+        difficulty: 'profi',
+        categoryRounds: [
+          { categoryId: 'cat-a', chooser: 'Alice', questions: [], player1Answers: [], player2Answers: [] }
+        ]
+      };
+      prisma.duel.findUnique.mockResolvedValue(makeDuel({ gameState: existing }));
+      const payloadWithNewRound = {
+        categoryRound: 1,
+        currentTurn: 'Bob',
+        status: 'active',
+        difficulty: 'profi',
+        categoryRounds: [
+          { categoryId: 'cat-a', chooser: 'Alice' },
+          { categoryId: 'cat-b', chooser: 'Bob' }
+        ]
+      } as any;
+      await expect(service.updateGameState(mockActor(), 'duel-1', payloadWithNewRound))
+        .rejects.toThrow(BadRequestException);
+      expect(prisma.duel.update).not.toHaveBeenCalled();
+    });
   });
 
   // =========================================================================

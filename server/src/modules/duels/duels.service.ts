@@ -314,6 +314,14 @@ export class DuelsService {
       );
     }
     const previousGameState = this.normalizeGameState(duel, duel.gameState);
+    const previousRoundCount = Array.isArray(previousGameState.categoryRounds)
+      ? previousGameState.categoryRounds.length
+      : 0;
+    if (rawRounds.length > previousRoundCount) {
+      throw new BadRequestException(
+        'Neue Runden müssen über POST /duels/:id/rounds gestartet werden.'
+      );
+    }
     // Use the authoritative merged state (incorporates DuelAnswer records) as the
     // baseline for transition validation. This ensures isRoundComplete works correctly
     // even if earlier PATCH /state calls failed and the stored gameState is stale.
