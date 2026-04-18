@@ -76,11 +76,9 @@ import { SAMPLE_QUESTIONS } from './data/quizQuestions';
 import { SWIM_STYLES, SWIM_CHALLENGES, SWIM_LEVELS, getAgeHandicap, calculateHandicappedTime, calculateSwimPoints, calculateChallengeProgress, getSwimLevel, calculateTeamBattleStats } from './data/swimming';
 import {
   loadGames as dsLoadGames,
-  purgeUserData as dsPurgeUserData,
-  startTheoryExamSession as dsStartTheoryExamSession,
   getAuthorizedReviewers as dsGetAuthorizedReviewers,
-  loadRetentionCandidates as dsLoadRetentionCandidates,
 } from './lib/dataService';
+import { runDataRetentionCheck } from './lib/dataRetention';
 import {
   toSafeInt, getFirstSafeInt,
   namesMatch, isFinishedGameStatus,
@@ -574,7 +572,7 @@ export default function BaederApp() {
   useEffect(() => {
     if (!authReady || !user) return;
     if (user.role !== 'admin') return;
-    checkDataRetention();
+    runDataRetentionCheck();
   }, [authReady, user]);
 
   useEffect(() => {
@@ -606,61 +604,6 @@ export default function BaederApp() {
 
   // playSound + showToast + darkMode + soundEnabled kommen vom AppContext (siehe oben)
 
-
-  const checkDataRetention = async () => {
-    try {
-      const users = await dsLoadRetentionCandidates();
-
-      if (!users || users.length === 0) {
-        if (import.meta.env.DEV) console.log('No users found or Supabase error');
-        return;
-      }
-
-      const now = Date.now();
-      const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
-
-      for (const account of users) {
-        try {
-          // NEVER delete admins - they are permanent
-          if (account.role === 'admin') {
-            continue;
-          }
-
-          // Check Azubi training end
-          if (account.role === 'azubi' && account.training_end) {
-            const endDate = new Date(account.training_end).getTime();
-            if (now > endDate) {
-              console.log(`Azubi ${account.name} Ausbildung beendet - Daten werden gelöscht`);
-              await deleteUserData(account.id, account.email, account.name);
-            }
-          }
-
-          // Check Trainer inactivity
-          if (account.role === 'trainer' && account.last_login) {
-            const lastLoginDate = new Date(account.last_login).getTime();
-            if (now - lastLoginDate > sixMonthsMs) {
-              console.log(`Ausbilder ${account.name} 6 Monate inaktiv - Daten werden gelöscht`);
-              await deleteUserData(account.id, account.email, account.name);
-            }
-          }
-        } catch (e) {
-          console.error('Error checking user:', e);
-        }
-      }
-    } catch (error) {
-      console.log('Data retention check skipped:', error.message);
-    }
-  };
-
-  const deleteUserData = async (userId, email, userName) => {
-    try {
-      await dsPurgeUserData(userId, userName);
-
-      console.log(`Alle Daten für ${email} gelöscht`);
-    } catch (error) {
-      console.error('Error deleting user data:', error);
-    }
-  };
 
   // handleLogin, handleRegister, handleLogout werden vom AuthContext bereitgestellt
 
@@ -728,23 +671,24 @@ export default function BaederApp() {
 
   // Prüfungssimulator: useExamSimulator Hook (nach trackQuestionPerformance + updateWeeklyProgress)
   const {
-    examSimulator, setExamSimulator,
-    examCurrentQuestion, setExamCurrentQuestion,
-    examQuestionIndex, setExamQuestionIndex,
-    examAnswered, setExamAnswered,
-    userExamProgress, setUserExamProgress,
-    examSelectedAnswers, setExamSelectedAnswers,
-    examSelectedAnswer, setExamSelectedAnswer,
+    examSimulator,
+    examCurrentQuestion,
+    examQuestionIndex,
+    examAnswered,
+    userExamProgress,
+    examSelectedAnswers,
+    examSelectedAnswer,
     examSimulatorMode, setExamSimulatorMode,
     examKeywordMode, setExamKeywordMode,
     examKeywordInput, setExamKeywordInput,
-    examKeywordEvaluation, setExamKeywordEvaluation,
+    examKeywordEvaluation,
     theoryExamHistory,
     theoryExamHistoryLoading,
     confirmExamMultiSelectAnswer,
     submitExamKeywordAnswer,
     answerExamQuestion,
     resetExam,
+    loadExamProgress,
     loadTheoryExamHistory,
   } = useExamSimulator({
     user,
@@ -808,45 +752,6 @@ export default function BaederApp() {
       : 0;
     return { total, done };
   };
-
-  // Exam Simulator Functions
-  const loadExamProgress = async () => {
-    setExamSimulatorMode('theory');
-    setUserExamProgress(null);
-    setExamAnswered(false);
-    setExamSelectedAnswers([]);
-    setExamSelectedAnswer(null);
-    setExamKeywordInput('');
-    setExamKeywordEvaluation(null);
-
-    try {
-      const result = await dsStartTheoryExamSession(examKeywordMode);
-      const examQuestions = Array.isArray(result?.questions) ? result.questions : [];
-      if (examQuestions.length === 0) {
-        throw new Error('Keine Theoriefragen vom Backend erhalten.');
-      }
-
-      setExamSimulator({
-        sessionId: result.sessionId,
-        questions: examQuestions,
-        answers: [],
-        startTime: Date.now(),
-        keywordMode: Boolean(result.keywordMode),
-        expiresAt: result.expiresAt || null
-      });
-      setExamQuestionIndex(0);
-      setExamCurrentQuestion(examQuestions[0]);
-      return;
-    } catch (error) {
-      console.error('Fehler beim Starten der Theorieprüfung:', error);
-      setExamSimulator(null);
-      setExamCurrentQuestion(null);
-      showToast('Theorieprüfung konnte nicht gestartet werden.', 'error');
-      return;
-    }
-  };
-
-
 
   duelLateDepsRef.current = { loadData, checkBadges, updateChallengeProgress, updateWeeklyProgress, trackQuestionPerformance };
   flashcardLateDepsRef.current = { updateChallengeProgress, updateWeeklyProgress, queueXpAward };

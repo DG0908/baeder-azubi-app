@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   saveTheoryExamAttempt as dsSaveTheoryExamAttempt,
   loadTheoryExamHistory as dsLoadTheoryExamHistory,
+  startTheoryExamSession as dsStartTheoryExamSession,
 } from '../lib/dataService';
 import {
   ensureUserStatsStructure,
@@ -179,6 +180,40 @@ export function useExamSimulator({
     setExamKeywordEvaluation(null);
   };
 
+  const loadExamProgress = async () => {
+    setExamSimulatorMode('theory');
+    setUserExamProgress(null);
+    setExamAnswered(false);
+    setExamSelectedAnswers([]);
+    setExamSelectedAnswer(null);
+    setExamKeywordInput('');
+    setExamKeywordEvaluation(null);
+
+    try {
+      const result = await dsStartTheoryExamSession(examKeywordMode);
+      const examQuestions = Array.isArray(result?.questions) ? result.questions : [];
+      if (examQuestions.length === 0) {
+        throw new Error('Keine Theoriefragen vom Backend erhalten.');
+      }
+
+      setExamSimulator({
+        sessionId: result.sessionId,
+        questions: examQuestions,
+        answers: [],
+        startTime: Date.now(),
+        keywordMode: Boolean(result.keywordMode),
+        expiresAt: result.expiresAt || null,
+      });
+      setExamQuestionIndex(0);
+      setExamCurrentQuestion(examQuestions[0]);
+    } catch (error) {
+      console.error('Fehler beim Starten der Theorieprüfung:', error);
+      setExamSimulator(null);
+      setExamCurrentQuestion(null);
+      showToast('Theorieprüfung konnte nicht gestartet werden.', 'error');
+    }
+  };
+
   const saveTheoryExamAttempt = async (progress, answers = [], sessionId = null) => {
     if (!user?.id) return;
     try {
@@ -285,6 +320,7 @@ export function useExamSimulator({
     answerExamQuestion,
     proceedToNextExamQuestion,
     resetExam,
+    loadExamProgress,
     saveTheoryExamAttempt,
     loadTheoryExamHistory,
   };
