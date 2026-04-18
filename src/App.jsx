@@ -45,6 +45,7 @@ import { ToastStack } from './components/ui/ToastStack';
 import { AppBackground } from './components/ui/AppBackground';
 import { AppHeader } from './components/ui/AppHeader';
 import { NotificationsDropdown } from './components/ui/NotificationsDropdown';
+import { DesktopSidebar } from './components/ui/DesktopSidebar';
 
 // Lazy-loaded Views — werden erst geladen wenn sie gebraucht werden
 const ChatView = lazy(() => import('./components/views/ChatView'));
@@ -734,66 +735,12 @@ export default function BaederApp() {
         onMarkRead={markNotificationAsRead}
       />
 
-      {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex flex-col fixed top-0 left-0 h-full z-30 transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-60'} ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'} border-r shadow-lg`}>
-        {/* Sidebar header */}
-        <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'px-4'} h-11 shrink-0 ${darkMode ? 'border-slate-700' : 'border-gray-200'} border-b`}>
-          {!sidebarCollapsed && <span className={`font-bold text-sm ${darkMode ? 'text-cyan-400' : 'text-cyan-600'}`}>Navigation</span>}
-          {sidebarCollapsed && <span className="text-lg">🏊</span>}
-        </div>
-        {/* Menu items grouped */}
-        <nav className="flex-1 overflow-y-auto py-2 scrollbar-thin">
-          {Object.entries(MENU_GROUP_LABELS).map(([groupId, groupLabel]) => {
-            const groupItems = [...appConfig.menuItems]
-              .filter(item => {
-                if (!item.visible) return false;
-                if ((item.group || 'lernen') !== groupId) return false;
-                if (item.requiresPermission) return user.permissions[item.requiresPermission];
-                return true;
-              })
-              .sort((a, b) => a.order - b.order);
-            if (groupItems.length === 0) return null;
-            return (
-              <div key={groupId} className={sidebarCollapsed ? 'mb-1' : 'mb-2'}>
-                {!sidebarCollapsed && groupId !== 'home' && (
-                  <p className={`text-[10px] font-bold uppercase tracking-wider px-4 pt-3 pb-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                    {groupLabel}
-                  </p>
-                )}
-                {sidebarCollapsed && groupId !== 'home' && (
-                  <div className={`mx-3 my-1 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'}`} />
-                )}
-                {groupItems.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => { setCurrentView(item.id); playSound('splash'); if (item.id === 'flashcards') loadFlashcards(); }}
-                    title={sidebarCollapsed ? item.label : undefined}
-                    className={`w-full flex items-center gap-3 transition-all ${sidebarCollapsed ? 'justify-center px-0 py-2.5' : 'px-4 py-2'} ${
-                      currentView === item.id
-                        ? darkMode ? 'text-cyan-400 bg-cyan-400/10 border-r-3 border-cyan-400' : 'text-cyan-600 bg-cyan-50 border-r-3 border-cyan-600'
-                        : darkMode ? 'text-gray-400 hover:text-white hover:bg-slate-800' : 'text-gray-600 hover:text-cyan-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className={sidebarCollapsed ? 'text-xl' : 'text-lg'}>{item.icon}</span>
-                    {!sidebarCollapsed && <span className="text-sm font-medium truncate">{item.label}</span>}
-                  </button>
-                ))}
-              </div>
-            );
-          })}
-        </nav>
-        {/* Sidebar footer — logout */}
-        <div className={`shrink-0 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} ${sidebarCollapsed ? 'p-2' : 'p-3'}`}>
-          <button
-            onClick={handleLogout}
-            className={`w-full flex items-center gap-3 ${sidebarCollapsed ? 'justify-center py-2' : 'px-3 py-2'} rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:text-red-400 hover:bg-slate-800' : 'text-gray-500 hover:text-red-500 hover:bg-red-50'}`}
-            title={sidebarCollapsed ? 'Abmelden' : undefined}
-          >
-            <span className="text-lg">🚪</span>
-            {!sidebarCollapsed && <span className="text-sm font-medium">Abmelden</span>}
-          </button>
-        </div>
-      </aside>
+      <DesktopSidebar
+        darkMode={darkMode} sidebarCollapsed={sidebarCollapsed}
+        appConfig={appConfig} user={user} currentView={currentView}
+        setCurrentView={setCurrentView} playSound={playSound}
+        loadFlashcards={loadFlashcards} handleLogout={handleLogout}
+      />
 
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-60'} p-4 relative z-10 pb-20 md:pb-4 ${(appConfig.featureFlags?.quizMaintenance || (appConfig.announcement?.enabled && appConfig.announcement?.message)) ? 'pt-12' : ''}`}>
        <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="text-4xl animate-bounce">🏊‍♂️</div></div>}>
