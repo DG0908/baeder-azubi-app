@@ -137,35 +137,56 @@ export class ForumService {
     const category = this.normalizeCategory(query.category);
     this.assertCanReadCategory(actor.role, category);
 
-    const posts = await this.prisma.forumPost.findMany({
-      where: {
-        organizationId: actor.organizationId!,
-        category
-      },
-      select: forumPostSelect,
-      take: query.limit ?? 50,
-      skip: query.offset ?? 0,
-      orderBy: [
-        { pinned: 'desc' },
-        { lastReplyAt: 'desc' }
-      ]
-    });
+    const limit = query.limit ?? 50;
+    const whereClause = {
+      organizationId: actor.organizationId!,
+      category
+    };
+    const orderBy = [
+      { pinned: 'desc' as const },
+      { lastReplyAt: 'desc' as const },
+      { id: 'desc' as const }
+    ];
 
-    return posts
-      .sort((left: ForumPostRecord, right: ForumPostRecord) => {
+    const sortForumPosts = (list: ForumPostRecord[]) =>
+      list.sort((left, right) => {
         if (left.pinned !== right.pinned) {
           return left.pinned ? -1 : 1;
         }
-
         const leftActivity = left.lastReplyAt?.getTime() ?? left.createdAt.getTime();
         const rightActivity = right.lastReplyAt?.getTime() ?? right.createdAt.getTime();
         if (leftActivity !== rightActivity) {
           return rightActivity - leftActivity;
         }
-
         return right.createdAt.getTime() - left.createdAt.getTime();
-      })
-      .map((entry: ForumPostRecord) => this.toForumPostPayload(entry));
+      });
+
+    if (query.cursor) {
+      const posts = await this.prisma.forumPost.findMany({
+        where: whereClause,
+        select: forumPostSelect,
+        take: limit + 1,
+        cursor: { id: query.cursor },
+        skip: 1,
+        orderBy
+      });
+      const hasMore = posts.length > limit;
+      const page = hasMore ? posts.slice(0, limit) : posts;
+      return {
+        items: sortForumPosts(page).map((entry) => this.toForumPostPayload(entry)),
+        nextCursor: hasMore ? page[page.length - 1]?.id ?? null : null
+      };
+    }
+
+    const posts = await this.prisma.forumPost.findMany({
+      where: whereClause,
+      select: forumPostSelect,
+      take: limit,
+      skip: query.offset ?? 0,
+      orderBy
+    });
+
+    return sortForumPosts(posts).map((entry) => this.toForumPostPayload(entry));
   }
 
   async getThread(actor: AuthenticatedUser, postId: string) {

@@ -269,7 +269,7 @@ describe('ForumService', () => {
 
     it('returns sorted posts', async () => {
       prisma.forumPost.findMany.mockResolvedValue([makePost()]);
-      const result = await service.listPosts(mockActor(), { category: 'fragen' } as any);
+      const result = (await service.listPosts(mockActor(), { category: 'fragen' } as any)) as any[];
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('post-1');
     });
@@ -278,8 +278,33 @@ describe('ForumService', () => {
       const pinned = makePost({ id: 'p2', pinned: true, createdAt: new Date('2026-01-01') });
       const normal = makePost({ id: 'p1', pinned: false, createdAt: new Date('2026-04-01') });
       prisma.forumPost.findMany.mockResolvedValue([normal, pinned]);
-      const result = await service.listPosts(mockActor(), { category: 'fragen' } as any);
+      const result = (await service.listPosts(mockActor(), { category: 'fragen' } as any)) as any[];
       expect(result[0].id).toBe('p2');
+    });
+
+    it('returns wrapped { items, nextCursor } when cursor is provided', async () => {
+      const p1 = makePost({ id: 'p1' });
+      const p2 = makePost({ id: 'p2' });
+      prisma.forumPost.findMany.mockResolvedValue([p1, p2]);
+      const result = (await service.listPosts(
+        mockActor(),
+        { category: 'fragen', cursor: 'p0', limit: 2 } as any
+      )) as { items: any[]; nextCursor: string | null };
+      expect(Array.isArray(result.items)).toBe(true);
+      expect(result.nextCursor).toBeNull();
+    });
+
+    it('returns nextCursor when more results exist', async () => {
+      const p1 = makePost({ id: 'p1' });
+      const p2 = makePost({ id: 'p2' });
+      const p3 = makePost({ id: 'p3' });
+      prisma.forumPost.findMany.mockResolvedValue([p1, p2, p3]);
+      const result = (await service.listPosts(
+        mockActor(),
+        { category: 'fragen', cursor: 'p0', limit: 2 } as any
+      )) as { items: any[]; nextCursor: string | null };
+      expect(result.items).toHaveLength(2);
+      expect(result.nextCursor).toBe('p2');
     });
   });
 
