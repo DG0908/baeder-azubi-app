@@ -41,6 +41,7 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import AvatarBadge from './components/ui/AvatarBadge';
 import { LiveTickerBanner } from './components/ui/LiveTickerBanner';
 import { OfflineBanner, InstallBanner, CookieNotice } from './components/ui/AppBanners';
+import { ToastStack } from './components/ui/ToastStack';
 
 // Lazy-loaded Views — werden erst geladen wenn sie gebraucht werden
 const ChatView = lazy(() => import('./components/views/ChatView'));
@@ -769,36 +770,7 @@ export default function BaederApp() {
 
       {/* Inaktivitäts-Warnung — gehandhabt von AuthGuard */}
 
-      {/* Toast Notifications */}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
-        {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg backdrop-blur-sm animate-slide-in ${
-              toast.type === 'success' ? 'bg-green-500/90 text-white' :
-              toast.type === 'error' ? 'bg-red-500/90 text-white' :
-              toast.type === 'warning' ? 'bg-yellow-500/90 text-white' :
-              'bg-blue-500/90 text-white'
-            }`}
-            style={{ animation: 'slideIn 0.3s ease-out' }}
-          >
-            <span className="text-xl">{toast.icon}</span>
-            <span className="font-medium">{toast.message}</span>
-            <button
-              onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
-              className="ml-2 opacity-70 hover:opacity-100"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-      </div>
-      <style>{`
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-      `}</style>
+      <ToastStack toasts={toasts} setToasts={setToasts} />
 
       {/* Header — slim top bar */}
       <div className={`${darkMode ? 'bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800' : 'bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-600'} text-white shadow-lg relative z-20 ${(appConfig.featureFlags?.quizMaintenance || (appConfig.announcement?.enabled && appConfig.announcement?.message)) ? 'mt-8' : ''}`}>
