@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import toast from 'react-hot-toast';
-import { Trophy, MessageCircle, BookOpen, Bell, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Trophy, MessageCircle, BookOpen, ClipboardList, Users, Plus, Send, Check, X, Upload, Download, Calendar, Award, Brain, Home, Target, TrendingUp, Zap, Star, Shield, Trash2, UserCog, Lock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { useApp } from './context/AppContext';
 import AuthGuard from './components/auth/AuthGuard';
@@ -43,6 +43,8 @@ import { LiveTickerBanner } from './components/ui/LiveTickerBanner';
 import { OfflineBanner, InstallBanner, CookieNotice } from './components/ui/AppBanners';
 import { ToastStack } from './components/ui/ToastStack';
 import { AppBackground } from './components/ui/AppBackground';
+import { AppHeader } from './components/ui/AppHeader';
+import { NotificationsDropdown } from './components/ui/NotificationsDropdown';
 
 // Lazy-loaded Views — werden erst geladen wenn sie gebraucht werden
 const ChatView = lazy(() => import('./components/views/ChatView'));
@@ -73,7 +75,7 @@ import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { useCookieNotice } from './hooks/useCookieNotice';
 import { useViewRouter } from './hooks/useViewRouter';
 
-import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, MENU_GROUP_LABELS, getAvatarById, getLevel, getLevelProgress } from './data/constants';
+import { CATEGORIES, DEFAULT_MENU_ITEMS, DEFAULT_THEME_COLORS, PERMISSIONS, MENU_GROUP_LABELS } from './data/constants';
 import { POOL_CHEMICALS, PERIODIC_TABLE } from './data/chemistry';
 import { SAFETY_SCENARIOS, WORK_SAFETY_TOPICS } from './data/content';
 import { SAMPLE_QUESTIONS } from './data/quizQuestions';
@@ -709,127 +711,28 @@ export default function BaederApp() {
 
       <ToastStack toasts={toasts} setToasts={setToasts} />
 
-      {/* Header — slim top bar */}
-      <div className={`${darkMode ? 'bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800' : 'bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-600'} text-white shadow-lg relative z-20 ${(appConfig.featureFlags?.quizMaintenance || (appConfig.announcement?.enabled && appConfig.announcement?.message)) ? 'mt-8' : ''}`}>
-        <div className={`flex justify-between items-center px-4 py-2 transition-all ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-60'}`}>
-          <div className="flex items-center gap-3">
-            {/* Sidebar toggle — desktop only */}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden md:flex bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors"
-              title={sidebarCollapsed ? 'Menü ausklappen' : 'Menü einklappen'}
-            >
-              <span className="text-lg leading-none">{sidebarCollapsed ? '☰' : '✕'}</span>
-            </button>
-            <button
-              onClick={() => { setCurrentView('profile'); playSound('splash'); }}
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-            >
-              <AvatarBadge
-                avatar={user.avatar ? getAvatarById(user.avatar) : null}
-                size="sm"
-                className="border border-white/40"
-              />
-              <div className="text-left hidden sm:block">
-                <p className="text-sm font-semibold leading-tight">{user.name}</p>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold bg-white/20 rounded-full px-1.5 py-0.5 leading-none">
-                    Lv.{getLevel(getTotalXpFromStats(userStats))}
-                  </span>
-                  <div className="w-10 h-1 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-white/80 rounded-full" style={{ width: `${getLevelProgress(getTotalXpFromStats(userStats)) * 100}%` }} />
-                  </div>
-                </div>
-              </div>
-            </button>
-          </div>
+      <AppHeader
+        darkMode={darkMode} setDarkMode={setDarkMode}
+        soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled}
+        sidebarCollapsed={sidebarCollapsed} setSidebarCollapsed={setSidebarCollapsed}
+        appConfig={appConfig} user={user} userStats={userStats}
+        setCurrentView={setCurrentView} playSound={playSound}
+        updateAvailable={updateAvailable} updatingApp={updatingApp} applyPwaUpdate={applyPwaUpdate}
+        enablePushNotifications={enablePushNotifications}
+        notifications={notifications}
+        showNotificationsPanel={showNotificationsPanel}
+        setShowNotificationsPanel={setShowNotificationsPanel}
+        handleLogout={handleLogout}
+      />
 
-          <h1 className="text-lg font-bold drop-shadow-lg hidden md:block absolute left-1/2 -translate-x-1/2">Bäder-Azubi App</h1>
-          <h1 className="text-lg font-bold drop-shadow-lg md:hidden">Bäder-Azubi</h1>
-
-          <div className="flex items-center gap-2">
-            <button onClick={() => { setDarkMode(!darkMode); playSound('splash'); }} className="bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors" title={darkMode ? 'Tag-Modus' : 'Nacht-Modus'}>
-              {darkMode ? '☀️' : '🌙'}
-            </button>
-            <button onClick={() => { setSoundEnabled(!soundEnabled); if (!soundEnabled) playSound('splash'); }} className="bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors hidden sm:block" title={soundEnabled ? 'Sound aus' : 'Sound an'}>
-              {soundEnabled ? '🔊' : '🔇'}
-            </button>
-            {(updateAvailable || updatingApp) && (
-              <button onClick={() => { void applyPwaUpdate(); }} disabled={updatingApp} className={`px-2 py-1.5 rounded-lg transition-colors flex items-center gap-1 bg-emerald-500/90 hover:bg-emerald-600/90 text-sm ${updatingApp ? 'opacity-70 cursor-not-allowed' : ''}`} title="Neue Version installieren">
-                <span>{updatingApp ? '⏳' : '⬆️'}</span>
-                <span className="hidden sm:inline text-xs font-medium">{updatingApp ? 'Update...' : 'Update'}</span>
-              </button>
-            )}
-            {'Notification' in window && Notification.permission === 'default' && (
-              <button onClick={() => { void enablePushNotifications(); }} className="bg-yellow-500/80 hover:bg-yellow-600/80 px-2 py-1.5 rounded-lg transition-colors font-bold text-xs flex items-center gap-1 animate-pulse" title="Benachrichtigungen erlauben">
-                🔔
-              </button>
-            )}
-            <div className="relative">
-              <button id="notification-bell" onClick={() => { setShowNotificationsPanel(!showNotificationsPanel); playSound('splash'); }} className="bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors relative">
-                <Bell size={20} />
-                {notifications.filter(n => !n.read).length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center animate-pulse">{notifications.filter(n => !n.read).length}</span>
-                )}
-              </button>
-            </div>
-            <button onClick={handleLogout} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors text-sm hidden sm:block">Abmelden</button>
-          </div>
-        </div>
-      </div>
-
-      {/* Notification Dropdown - fixed positioniert um Stacking-Probleme zu vermeiden */}
-      {showNotificationsPanel && (
-        <div
-          className="fixed inset-0 z-[9999]"
-          onClick={() => setShowNotificationsPanel(false)}
-        >
-          <div
-            className={`fixed right-4 top-16 w-96 max-w-[calc(100vw-2rem)] ${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg shadow-2xl max-h-96 overflow-hidden`}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className={`p-4 border-b flex justify-between items-center ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-cyan-50'}`}>
-              <h3 className={`font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-800'}`}>Benachrichtigungen</h3>
-              {notifications.length > 0 && (
-                <button
-                  onClick={clearAllNotifications}
-                  className={`text-sm ${darkMode ? 'text-cyan-300 hover:text-cyan-100' : 'text-cyan-600 hover:text-cyan-800'}`}
-                >
-                  Alle löschen
-                </button>
-              )}
-            </div>
-            <div className="max-h-80 overflow-y-auto">
-              {notifications.length === 0 ? (
-                <p className={`p-4 text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Keine Benachrichtigungen</p>
-              ) : (
-                notifications.map(notif => (
-                  <div
-                    key={notif.id}
-                    onClick={() => markNotificationAsRead(notif.id)}
-                    className={`p-4 border-b cursor-pointer ${
-                      darkMode
-                        ? `hover:bg-slate-700 ${!notif.read ? 'bg-slate-700' : ''} border-slate-700`
-                        : `hover:bg-cyan-50 ${!notif.read ? 'bg-cyan-50' : ''}`
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-1">
-                      <p className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>{notif.title}</p>
-                      {!notif.read && (
-                        <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></span>
-                      )}
-                    </div>
-                    <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{notif.message}</p>
-                    <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                      {new Date(notif.time).toLocaleString()}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <NotificationsDropdown
+        show={showNotificationsPanel}
+        darkMode={darkMode}
+        notifications={notifications}
+        onClose={() => setShowNotificationsPanel(false)}
+        onClear={clearAllNotifications}
+        onMarkRead={markNotificationAsRead}
+      />
 
       {/* Desktop Sidebar */}
       <aside className={`hidden md:flex flex-col fixed top-0 left-0 h-full z-30 transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-60'} ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'} border-r shadow-lg`}>
