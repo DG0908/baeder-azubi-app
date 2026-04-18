@@ -11,6 +11,8 @@ import { useBerichtsheft } from './hooks/useBerichtsheft';
 import { useDuelGame } from './hooks/useDuelGame';
 import { useFlashcards } from './hooks/useFlashcards';
 import { useSwimChallenge, SWIM_BATTLE_WIN_POINTS, SWIM_ARENA_DISCIPLINES } from './hooks/useSwimChallenge';
+import { useSchoolAttendance } from './hooks/useSchoolAttendance';
+import { useExamGrades } from './hooks/useExamGrades';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -73,15 +75,6 @@ import {
   saveTheoryExamAttempt as dsSaveTheoryExamAttempt,
   loadTheoryExamHistory as dsLoadTheoryExamHistory,
   deletePracticalExamAttempt as dsDsPracticalExamAttempt,
-  loadSchoolAttendanceAzubis as dsLoadSchoolAttendanceAzubis,
-  loadSchoolAttendance as dsLoadSchoolAttendance,
-  addSchoolAttendanceEntry as dsAddSchoolAttendance,
-  updateSchoolAttendanceSignature as dsUpdateAttendanceSignature,
-  deleteSchoolAttendanceEntry as dsDeleteSchoolAttendance,
-  loadExamGradesAzubis as dsLoadExamGradesAzubis,
-  loadExamGradeEntries as dsLoadExamGrades,
-  addExamGradeEntry as dsAddExamGrade,
-  deleteExamGradeEntry as dsDeleteExamGrade,
   addMaterialEntry as dsAddMaterial,
   addResourceEntry as dsAddResource,
   deleteResourceEntry as dsDeleteResource,
@@ -590,23 +583,7 @@ export default function BaederApp() {
     return Array.isArray(parsed) ? parsed : [];
   });
 
-  // Kontrollkarte Berufsschule State
-  const [schoolAttendance, setSchoolAttendance] = useState([]);
-  const [newAttendanceDate, setNewAttendanceDate] = useState('');
-  const [newAttendanceStart, setNewAttendanceStart] = useState('');
-  const [newAttendanceEnd, setNewAttendanceEnd] = useState('');
-  const [newAttendanceTeacherSig, setNewAttendanceTeacherSig] = useState('');
-  const [newAttendanceTrainerSig, setNewAttendanceTrainerSig] = useState('');
-  const [signatureModal, setSignatureModal] = useState(null); // { id, field, currentValue }
-  const [tempSignature, setTempSignature] = useState(null); // Temporäre Unterschrift im Modal
-  const [selectedSchoolCardUser, setSelectedSchoolCardUser] = useState(null); // Ausgewählter Azubi für Kontrollkarten-Ansicht
-  const [allAzubisForSchoolCard, setAllAzubisForSchoolCard] = useState([]); // Liste aller Azubis für Auswahl
-
-  // Klasuren/Noten State
-  const [examGrades, setExamGrades] = useState([]);
-  const [selectedExamGradesUser, setSelectedExamGradesUser] = useState(null);
-  const [allAzubisForExamGrades, setAllAzubisForExamGrades] = useState([]);
-
+  // Kontrollkarte Berufsschule + Klasuren: useSchoolAttendance + useExamGrades Hooks
   // Swim state lives in useSwimChallenge hook
 
   const xpAwardQueueRef = useRef(Promise.resolve(0));
@@ -792,6 +769,38 @@ export default function BaederApp() {
     showToast,
     sendNotification,
   });
+
+  // Kontrollkarte Berufsschule: useSchoolAttendance Hook
+  const {
+    schoolAttendance, setSchoolAttendance,
+    newAttendanceDate, setNewAttendanceDate,
+    newAttendanceStart, setNewAttendanceStart,
+    newAttendanceEnd, setNewAttendanceEnd,
+    newAttendanceTeacherSig, setNewAttendanceTeacherSig,
+    newAttendanceTrainerSig, setNewAttendanceTrainerSig,
+    signatureModal, setSignatureModal,
+    tempSignature, setTempSignature,
+    selectedSchoolCardUser, setSelectedSchoolCardUser,
+    allAzubisForSchoolCard,
+    canViewAllSchoolCards,
+    loadAzubisForSchoolCard,
+    loadSchoolAttendance,
+    addSchoolAttendance,
+    updateAttendanceSignature,
+    deleteSchoolAttendance,
+  } = useSchoolAttendance({ user, showToast, sendNotification });
+
+  // Klasuren: useExamGrades Hook
+  const {
+    examGrades, setExamGrades,
+    selectedExamGradesUser, setSelectedExamGradesUser,
+    allAzubisForExamGrades,
+    canViewAllExamGrades,
+    loadAzubisForExamGrades,
+    loadExamGrades,
+    addExamGrade,
+    deleteExamGrade,
+  } = useExamGrades({ user, showToast, sendNotification });
 
   // Schwimm-Badges prüfen wenn sich Sessions ändern
   useEffect(() => {
@@ -2742,158 +2751,6 @@ export default function BaederApp() {
     }
   };
 
-  // Kontrollkarte Berufsschule Funktionen
-  const canViewAllSchoolCards = () => {
-    return user?.role === 'admin' || user?.canViewSchoolCards;
-  };
-
-  const loadAzubisForSchoolCard = async () => {
-    if (!canViewAllSchoolCards()) return;
-    try {
-      const data = await dsLoadSchoolAttendanceAzubis();
-      setAllAzubisForSchoolCard(data);
-    } catch (err) {
-      console.error('Fehler beim Laden der Azubis:', err);
-    }
-  };
-
-  const loadSchoolAttendance = async (targetUserId = null) => {
-    if (!user) return;
-    try {
-      const userIdToLoad = targetUserId || selectedSchoolCardUser?.id || user.id;
-      const data = await dsLoadSchoolAttendance(userIdToLoad);
-      setSchoolAttendance(data);
-    } catch (err) {
-      console.error('Fehler beim Laden der Kontrollkarte:', err);
-    }
-  };
-
-  const addSchoolAttendance = async () => {
-    if (!newAttendanceDate || !newAttendanceStart || !newAttendanceEnd) {
-      toast.error('Bitte alle Felder ausfuellen');
-      return;
-    }
-
-    try {
-      await dsAddSchoolAttendance({
-        userId: user.id, userName: user.name, date: newAttendanceDate,
-        startTime: newAttendanceStart, endTime: newAttendanceEnd,
-        teacherSignature: newAttendanceTeacherSig, trainerSignature: newAttendanceTrainerSig,
-        // Supabase-format fields for fallback
-        user_id: user.id, user_name: user.name,
-        start_time: newAttendanceStart, end_time: newAttendanceEnd,
-        teacher_signature: newAttendanceTeacherSig, trainer_signature: newAttendanceTrainerSig
-      });
-
-      const authorizedUsers = await dsGetAuthorizedReviewers('can_view_school_cards');
-      for (const authUser of authorizedUsers) {
-        if (authUser.id !== user.id && authUser.name) {
-          await sendNotification(
-            authUser.name,
-            '📝 Neuer Kontrollkarten-Eintrag',
-            `${user.name} hat einen neuen Berufsschul-Eintrag vom ${new Date(newAttendanceDate).toLocaleDateString('de-DE')} hinzugefuegt.`,
-            'school_card'
-          );
-        }
-      }
-
-      setNewAttendanceDate('');
-      setNewAttendanceStart('');
-      setNewAttendanceEnd('');
-      setNewAttendanceTeacherSig('');
-      setNewAttendanceTrainerSig('');
-      showToast('Eintrag gespeichert!', 'success');
-      loadSchoolAttendance();
-    } catch (err) {
-      console.error('Fehler beim Speichern:', err);
-      toast.error('Fehler beim Speichern');
-    }
-  };
-
-  const updateAttendanceSignature = async (id, field, value) => {
-    try {
-      await dsUpdateAttendanceSignature(id, field, value);
-      loadSchoolAttendance();
-    } catch (err) {
-      console.error('Fehler beim Aktualisieren:', err);
-    }
-  };
-
-  const deleteSchoolAttendance = async (id) => {
-    if (!confirm('Eintrag wirklich löschen?')) return;
-    try {
-      await dsDeleteSchoolAttendance(id);
-      loadSchoolAttendance();
-    } catch (err) {
-      console.error('Fehler beim Löschen:', err);
-    }
-  };
-
-  // ==================== KLASUREN/NOTEN FUNKTIONEN ====================
-
-  const canViewAllExamGrades = () => {
-    return user?.role === 'admin' || user?.canViewExamGrades;
-  };
-
-  const loadAzubisForExamGrades = async () => {
-    if (!canViewAllExamGrades()) return;
-    try {
-      const data = await dsLoadExamGradesAzubis();
-      setAllAzubisForExamGrades(data);
-    } catch (err) {
-      console.error('Fehler beim Laden der Azubis für Klasuren:', err);
-    }
-  };
-
-  const loadExamGrades = async (targetUserId = null) => {
-    if (!user) return;
-    try {
-      const userIdToLoad = targetUserId || selectedExamGradesUser?.id || user.id;
-      const data = await dsLoadExamGrades(userIdToLoad);
-      setExamGrades(data);
-    } catch (err) {
-      console.error('Fehler beim Laden der Klasuren:', err);
-    }
-  };
-
-  const addExamGrade = async ({ date, subject, topic, grade, notes }) => {
-    try {
-      await dsAddExamGrade({
-        userId: user.id, userName: user.name, date, subject, topic, grade, notes,
-        user_id: user.id, user_name: user.name
-      });
-
-      const authorizedUsers = await dsGetAuthorizedReviewers('can_view_exam_grades');
-      for (const authUser of authorizedUsers) {
-        if (authUser.id !== user.id && authUser.name) {
-          await sendNotification(
-            authUser.name,
-            '📝 Neue Klasur eingetragen',
-            `${user.name} hat eine ${subject}-Klasur vom ${new Date(date).toLocaleDateString('de-DE')} eingetragen: Note ${grade.toFixed(1).replace('.', ',')}`,
-            'exam_grade'
-          );
-        }
-      }
-
-      showToast('Klasur gespeichert!', 'success');
-      loadExamGrades();
-    } catch (err) {
-      console.error('Fehler beim Speichern der Klasur:', err);
-      showToast(friendlyError(err), 'error');
-    }
-  };
-
-  const deleteExamGrade = async (id) => {
-    if (!confirm('Klasur wirklich löschen?')) return;
-    try {
-      await dsDeleteExamGrade(id);
-      showToast('Klasur gelöscht', 'success');
-      loadExamGrades();
-    } catch (err) {
-      console.error('Fehler beim Löschen:', err);
-      showToast(friendlyError(err), 'error');
-    }
-  };
 
   // ==================== DAILY CHALLENGES SYSTEM ====================
 
