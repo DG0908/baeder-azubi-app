@@ -85,9 +85,29 @@ export class ChatService {
       ];
     }
 
+    const limit = query.limit ?? 50;
+
+    if (query.cursor) {
+      const messages = await this.prisma.chatMessage.findMany({
+        where,
+        take: limit + 1,
+        cursor: { id: query.cursor },
+        skip: 1,
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        select: messageSelect
+      });
+
+      const hasMore = messages.length > limit;
+      const page = hasMore ? messages.slice(0, limit) : messages;
+      return {
+        items: page.map((message) => this.serializeMessage(message)),
+        nextCursor: hasMore ? page[page.length - 1]?.id ?? null : null
+      };
+    }
+
     const messages = await this.prisma.chatMessage.findMany({
       where,
-      take: query.limit ?? 50,
+      take: limit,
       skip: query.offset ?? 0,
       orderBy: {
         createdAt: 'asc'
