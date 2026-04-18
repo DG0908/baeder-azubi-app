@@ -29,6 +29,7 @@ import {
 import { containsBannedContent } from './lib/contentModeration';
 import { computeLeaderboard } from './lib/leaderboard';
 import { loadAppData, refreshLightData } from './lib/loadAppData';
+import { parseJsonSafe } from './lib/jsonUtils';
 import { useXpQueue } from './hooks/useXpQueue';
 import { useContentAdmin } from './hooks/useContentAdmin';
 import { useCalculator } from './hooks/useCalculator';
@@ -100,20 +101,6 @@ import {
 
 export default function BaederApp() {
   const QUESTION_REPORTS_STORAGE_KEY = 'question_reports_v1';
-
-  const parseJsonSafe = (value, fallback) => {
-    try {
-      const parsed = JSON.parse(value);
-      return parsed ?? fallback;
-    } catch {
-      return fallback;
-    }
-  };
-
-  const toTimestampMs = (value) => {
-    const timestamp = Date.parse(String(value || ''));
-    return Number.isFinite(timestamp) ? timestamp : 0;
-  };
 
   const {
     authReady,
