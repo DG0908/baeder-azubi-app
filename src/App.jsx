@@ -35,6 +35,8 @@ import {
   calculateDilution,
   calculateFlocculation,
 } from './lib/poolCalc';
+import { containsBannedContent } from './lib/contentModeration';
+import { computeLeaderboard } from './lib/leaderboard';
 import HomeView from './components/views/HomeView';
 import QuizView from './components/views/QuizView';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
@@ -314,24 +316,6 @@ export default function BaederApp() {
       localStorage.setItem('lastView', currentView);
     }
   }, [currentView]);
-
-  // Content moderation
-  const BANNED_WORDS = [
-    // Explizite Inhalte
-    'porn', 'sex', 'xxx', 'nackt', 'nude',
-    // Beleidigungen
-    'arschloch', 'idiot', 'scheiße', 'fuck', 'shit', 'bastard', 'bitch',
-    // Rassismus & Rechtsradikalismus
-    'nazi', 'hitler', 'rassist', 'hure', 'schwuchtel', 'neger',
-    // Weitere problematische Begriffe
-    'hurensohn', 'wichser', 'fotze', 'schlampe'
-  ];
-
-  const containsBannedContent = (text) => {
-    if (!text) return false;
-    const lowerText = text.toLowerCase();
-    return BANNED_WORDS.some(word => lowerText.includes(word));
-  };
 
   const moderateContent = (text, context = 'Text') => {
     if (containsBannedContent(text)) {
@@ -850,7 +834,7 @@ export default function BaederApp() {
         }));
         duel.setAllGames(normalized);
         duel.setActiveGames(normalized.filter(g => g.status !== 'finished'));
-        updateLeaderboard(normalized, allUsers);
+        updateLeaderboard(normalized);
         if (user?.name) {
           setUserStats(prevStats => syncQuizTotalsIntoStats(prevStats, normalized, user.name));
         }
@@ -915,7 +899,7 @@ export default function BaederApp() {
         }));
         duel.setAllGames(games);
         duel.setActiveGames(games.filter(g => g.status !== 'finished'));
-        updateLeaderboard(games, allUsers);
+        updateLeaderboard(games);
         await duel.checkExpiredAndRemindGames(games);
       }
 
@@ -1031,35 +1015,8 @@ export default function BaederApp() {
     }
   };
 
-  const updateLeaderboard = (games, users) => {
-    const stats = {};
-
-    // Nur vollständig gespielte Spiele zählen
-    games.filter(isCountableFinishedQuizGame).forEach(game => {
-      [game.player1, game.player2].forEach(player => {
-        if (!stats[player]) {
-          stats[player] = { name: player, wins: 0, losses: 0, draws: 0, points: 0 };
-        }
-      });
-
-      if (game.winner === game.player1) {
-        stats[game.player1].wins++;
-        stats[game.player2].losses++;
-        stats[game.player1].points += 3;
-      } else if (game.winner === game.player2) {
-        stats[game.player2].wins++;
-        stats[game.player1].losses++;
-        stats[game.player2].points += 3;
-      } else {
-        stats[game.player1].draws++;
-        stats[game.player2].draws++;
-        stats[game.player1].points += 1;
-        stats[game.player2].points += 1;
-      }
-    });
-
-    const ranking = Object.values(stats).sort((a, b) => b.points - a.points);
-    setLeaderboard(ranking);
+  const updateLeaderboard = (games) => {
+    setLeaderboard(computeLeaderboard(games));
   };
 
   const queueXpAwardForUser = (targetUserInput, sourceKey, amount, options = {}) => {
