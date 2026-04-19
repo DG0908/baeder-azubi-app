@@ -971,7 +971,7 @@ const AdminView = ({
         })()}
       </div>
 
-      <div className="bg-white rounded-xl p-6 shadow-lg">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div>
             <h3 className="text-xl font-bold flex items-center">
@@ -1012,7 +1012,7 @@ const AdminView = ({
         )}
       </div>
 
-      <div className="bg-white rounded-xl p-6 shadow-lg">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div>
             <h3 className="text-xl font-bold flex items-center">
@@ -1066,7 +1066,7 @@ const AdminView = ({
         )}
       </div>
 
-      <div className="bg-white rounded-xl p-6 shadow-lg">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <h3 className="text-xl font-bold flex items-center">
@@ -1226,7 +1226,7 @@ const AdminView = ({
         </div>
       )}
 
-      <div className="bg-white rounded-xl p-6 shadow-lg">
+      <div className="glass-card rounded-xl p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="text-xl font-bold flex items-center">
@@ -1294,7 +1294,7 @@ const AdminView = ({
       {user?.role === 'admin' && <FeatureRolloutSection />}
 
       {/* UI Editor Section */}
-      <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
+      <div className="glass-card rounded-xl p-6">
         <h3 className={`text-xl font-bold mb-4 flex items-center ${darkMode ? 'text-white' : 'text-gray-800'}`}>
           <span className="text-2xl mr-2">🎨</span>
           UI-Editor (App-Konfiguration)
