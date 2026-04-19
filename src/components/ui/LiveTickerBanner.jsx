@@ -16,17 +16,21 @@ export function LiveTickerBanner({ appConfig }) {
   return (
     <div
       className="fixed top-0 left-0 right-0 z-[9997] flex items-center overflow-hidden"
-      style={{ background: bgColor, height: '32px' }}
+      style={{
+        background: bgColor,
+        height: 'calc(32px + env(safe-area-inset-top))',
+        paddingTop: 'env(safe-area-inset-top)',
+      }}
     >
       <div
-        className="flex-shrink-0 flex items-center gap-1.5 px-3 h-full text-xs font-black tracking-widest z-10"
-        style={{ background: badgeBg, color: textColor, minWidth: 'max-content' }}
+        className="flex-shrink-0 flex items-center gap-1.5 px-3 text-xs font-black tracking-widest z-10"
+        style={{ background: badgeBg, color: textColor, minWidth: 'max-content', height: '32px' }}
       >
         <span className="animate-live-pulse inline-block w-1.5 h-1.5 rounded-full bg-white" />
         {badgeLabel}
       </div>
 
-      <div className="flex-1 overflow-hidden h-full flex items-center relative">
+      <div className="flex-1 overflow-hidden flex items-center relative" style={{ height: '32px' }}>
         <span
           className={announcementActive ? 'animate-ticker-slow' : 'animate-ticker'}
           style={{ color: textColor, fontSize: '0.78rem', fontWeight: 600 }}

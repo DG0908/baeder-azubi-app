@@ -19,7 +19,10 @@ export function AppHeader({
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className={`${darkMode ? 'bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800' : 'bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-600'} text-white shadow-lg relative z-20 ${tickerVisible ? 'mt-8' : ''}`}>
+    <div
+      className={`${darkMode ? 'bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800' : 'bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-600'} text-white shadow-lg relative z-20`}
+      style={tickerVisible ? { marginTop: 'calc(32px + env(safe-area-inset-top))' } : undefined}
+    >
       <div className={`flex justify-between items-center px-4 py-2 transition-all ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-60'}`}>
         <div className="flex items-center gap-3">
           <button
