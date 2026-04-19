@@ -281,7 +281,7 @@ const ForumView: React.FC = () => {
             <button
               key={cat.id}
               onClick={() => openCategory(cat)}
-              className={`${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-white hover:bg-gray-50'} rounded-xl p-5 shadow-md text-left transition-all flex items-center justify-between group`}
+              className="glass-card glass-card-hover rounded-2xl p-5 text-left flex items-center justify-between group"
             >
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 ${cat.color} rounded-xl flex items-center justify-center text-2xl`}>
@@ -294,11 +294,11 @@ const ForumView: React.FC = () => {
               </div>
               <div className="flex items-center gap-3">
                 {categoryCounts[cat.id] > 0 && (
-                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${darkMode ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'}`}>
                     {categoryCounts[cat.id]}
                   </span>
                 )}
-                <ChevronRight className={`${darkMode ? 'text-gray-600' : 'text-gray-400'} group-hover:translate-x-1 transition-transform`} size={20} />
+                <ChevronRight className={`${darkMode ? 'text-gray-400' : 'text-gray-400'} group-hover:translate-x-1 transition-transform`} size={20} />
               </div>
             </button>
           ))}
@@ -311,7 +311,7 @@ const ForumView: React.FC = () => {
   if (view === 'list') {
     return (
       <div className="space-y-4">
-        <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-md`}>
+        <div className="glass-card rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setView('categories')}
@@ -356,7 +356,7 @@ const ForumView: React.FC = () => {
               <button
                 key={post.id}
                 onClick={() => openThread(post)}
-                className={`w-full text-left ${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-white hover:bg-gray-50'} rounded-xl p-4 shadow-sm transition-all`}
+                className="w-full text-left glass-card glass-card-hover rounded-2xl p-4"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
@@ -381,9 +381,9 @@ const ForumView: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex flex-col items-center gap-1 ml-3">
-                    <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
-                      <MessageSquare size={14} className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
-                      <span className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{post.reply_count || 0}</span>
+                    <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${darkMode ? 'bg-white/10' : 'bg-gray-100'}`}>
+                      <MessageSquare size={14} className={darkMode ? 'text-gray-300' : 'text-gray-500'} />
+                      <span className={`text-sm font-bold ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}>{post.reply_count || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -399,17 +399,17 @@ const ForumView: React.FC = () => {
   if (view === 'new') {
     return (
       <div className="space-y-4">
-        <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-md`}>
+        <div className="glass-card rounded-2xl p-4">
           <button
             onClick={() => setView('list')}
-            className={`flex items-center gap-2 ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
+            className={`flex items-center gap-2 ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
           >
             <ArrowLeft size={20} />
             Zurück zu {activeCategory?.label}
           </button>
         </div>
 
-        <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-md space-y-4`}>
+        <div className="glass-card rounded-2xl p-6 space-y-4">
           <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
             Neues Thema in „{activeCategory?.label}"
           </h3>
@@ -419,7 +419,7 @@ const ForumView: React.FC = () => {
             placeholder="Titel"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className={`w-full px-4 py-3 rounded-lg border ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'border-gray-300'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
+            className={`w-full px-4 py-3 rounded-lg border ${darkMode ? 'bg-white/5 border-white/10 text-white placeholder-gray-400' : 'bg-white/70 border-gray-300'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
           />
 
           <textarea
@@ -427,7 +427,7 @@ const ForumView: React.FC = () => {
             value={newContent}
             onChange={(e) => setNewContent(e.target.value)}
             rows={6}
-            className={`w-full px-4 py-3 rounded-lg border resize-none ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'border-gray-300'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
+            className={`w-full px-4 py-3 rounded-lg border resize-none ${darkMode ? 'bg-white/5 border-white/10 text-white placeholder-gray-400' : 'bg-white/70 border-gray-300'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
           />
 
           <div className="flex gap-3">
@@ -440,7 +440,7 @@ const ForumView: React.FC = () => {
             </button>
             <button
               onClick={() => { setView('list'); setNewTitle(''); setNewContent(''); }}
-              className={`px-6 py-3 rounded-lg font-medium ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+              className={`px-6 py-3 rounded-lg font-medium ${darkMode ? 'bg-white/10 hover:bg-white/15 text-gray-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
             >
               Abbrechen
             </button>
@@ -454,10 +454,10 @@ const ForumView: React.FC = () => {
   if (view === 'thread' && activePost) {
     return (
       <div className="space-y-4">
-        <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-md`}>
+        <div className="glass-card rounded-2xl p-4">
           <button
             onClick={() => { setView('list'); loadPosts(activeCategory!.id); }}
-            className={`flex items-center gap-2 ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
+            className={`flex items-center gap-2 ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
           >
             <ArrowLeft size={20} />
             Zurück zu {activeCategory?.label}
@@ -465,7 +465,7 @@ const ForumView: React.FC = () => {
         </div>
 
         {/* Original Post */}
-        <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-md`}>
+        <div className="glass-card rounded-2xl p-6">
           <div className="flex items-start justify-between gap-2 mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -483,21 +483,21 @@ const ForumView: React.FC = () => {
               <div className="flex gap-1">
                 <button
                   onClick={() => togglePin(activePost.id, activePost.pinned)}
-                  className={`p-2 rounded-lg ${activePost.pinned ? 'bg-amber-100 text-amber-600' : darkMode ? 'bg-slate-700 text-gray-400' : 'bg-gray-100 text-gray-500'} hover:opacity-80`}
+                  className={`p-2 rounded-lg ${activePost.pinned ? 'bg-amber-100 text-amber-600' : darkMode ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500'} hover:opacity-80`}
                   title={activePost.pinned ? 'Loslösen' : 'Anheften'}
                 >
                   <Pin size={16} />
                 </button>
                 <button
                   onClick={() => toggleLock(activePost.id, activePost.locked)}
-                  className={`p-2 rounded-lg ${activePost.locked ? 'bg-red-100 text-red-600' : darkMode ? 'bg-slate-700 text-gray-400' : 'bg-gray-100 text-gray-500'} hover:opacity-80`}
+                  className={`p-2 rounded-lg ${activePost.locked ? 'bg-red-100 text-red-600' : darkMode ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500'} hover:opacity-80`}
                   title={activePost.locked ? 'Entsperren' : 'Sperren'}
                 >
                   <Lock size={16} />
                 </button>
                 <button
                   onClick={() => deletePost(activePost.id)}
-                  className={`p-2 rounded-lg ${darkMode ? 'bg-slate-700 text-red-400' : 'bg-red-50 text-red-500'} hover:opacity-80`}
+                  className={`p-2 rounded-lg ${darkMode ? 'bg-white/10 text-red-400' : 'bg-red-50 text-red-500'} hover:opacity-80`}
                   title="Beitrag löschen"
                 >
                   <Trash2 size={16} />
@@ -507,7 +507,7 @@ const ForumView: React.FC = () => {
             {!isAdmin && canDelete(activePost.user_id) && (
               <button
                 onClick={() => deletePost(activePost.id)}
-                className={`p-2 rounded-lg ${darkMode ? 'bg-slate-700 text-red-400' : 'bg-red-50 text-red-500'} hover:opacity-80`}
+                className={`p-2 rounded-lg ${darkMode ? 'bg-white/10 text-red-400' : 'bg-red-50 text-red-500'} hover:opacity-80`}
                 title="Beitrag löschen"
               >
                 <Trash2 size={16} />
@@ -528,9 +528,9 @@ const ForumView: React.FC = () => {
               {replies.length} {replies.length === 1 ? 'Antwort' : 'Antworten'}
             </h4>
             {replies.map(reply => (
-              <div key={reply.id} className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
+              <div key={reply.id} className="glass-card rounded-2xl p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                     <span className="font-medium">{reply.user_name}</span>
                     {getRoleBadge(reply.user_role)}
                     <span>{formatDate(reply.created_at)}</span>
@@ -538,13 +538,13 @@ const ForumView: React.FC = () => {
                   {canDelete(reply.user_id) && (
                     <button
                       onClick={() => deleteReply(reply.id)}
-                      className={`p-1 rounded ${darkMode ? 'text-red-400 hover:bg-slate-700' : 'text-red-400 hover:bg-red-50'}`}
+                      className={`p-1 rounded ${darkMode ? 'text-red-400 hover:bg-white/10' : 'text-red-400 hover:bg-red-50'}`}
                     >
                       <Trash2 size={14} />
                     </button>
                   )}
                 </div>
-                <div className={`whitespace-pre-wrap ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <div className={`whitespace-pre-wrap ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
                   {reply.content}
                 </div>
               </div>
@@ -554,14 +554,14 @@ const ForumView: React.FC = () => {
 
         {/* Reply input */}
         {!activePost.locked ? (
-          <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-4 shadow-md`}>
+          <div className="glass-card rounded-2xl p-4">
             <div className="flex gap-2">
               <textarea
                 placeholder="Antwort schreiben..."
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
                 rows={2}
-                className={`flex-1 px-4 py-2 rounded-lg border resize-none ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'border-gray-300'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
+                className={`flex-1 px-4 py-2 rounded-lg border resize-none ${darkMode ? 'bg-white/5 border-white/10 text-white placeholder-gray-400' : 'bg-white/70 border-gray-300'} focus:ring-2 focus:ring-indigo-500 focus:border-transparent`}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
