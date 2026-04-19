@@ -6,6 +6,12 @@ import { getAvatarById, getLevel, getLevelProgress } from '../../data/constants'
 
 const EMPTY_STATS = { wins: 0, losses: 0, draws: 0, total: 0, totalXp: 0 };
 
+const getShortName = (name) => {
+  const trimmed = String(name || '').trim();
+  if (!trimmed) return '';
+  return trimmed.split(/\s+/)[0];
+};
+
 const TrainerDashboardView = ({
   allUsers,
   statsByUserId,
@@ -64,7 +70,7 @@ const TrainerDashboardView = ({
                   className="ring-2 ring-cyan-400/40"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className={`font-bold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>{azubi.name}</p>
+                  <p className={`font-bold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`} title={azubi.name}>{getShortName(azubi.name)}</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="text-[10px] font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-full px-2 py-0.5 leading-none">
                       Lv.{level}
