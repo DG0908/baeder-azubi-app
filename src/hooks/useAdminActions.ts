@@ -413,9 +413,7 @@ export function useAdminActions({
       const updated = { ...appConfig, announcement };
       try {
         await (dsSaveAppConfig as (config: Record<string, unknown>) => Promise<void>)({
-          menuItems: appConfig.menuItems,
-          themeColors: appConfig.themeColors,
-          featureFlags: appConfig.featureFlags,
+          announcement,
         });
         setAppConfig(updated);
         showToast(
@@ -456,9 +454,7 @@ export function useAdminActions({
       const updated = { ...appConfig, companies: newCompanies };
       try {
         await (dsSaveAppConfig as (config: Record<string, unknown>) => Promise<void>)({
-          menuItems: appConfig.menuItems,
-          themeColors: appConfig.themeColors,
-          featureFlags: appConfig.featureFlags,
+          companies: newCompanies,
         });
         setAppConfig(updated);
         showToast('Betriebe gespeichert.', 'success');

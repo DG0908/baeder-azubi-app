@@ -12,4 +12,12 @@ export class UpdateAppConfigDto {
   @IsOptional()
   @IsObject()
   featureFlags?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  announcement?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsArray()
+  companies?: unknown[];
 }
