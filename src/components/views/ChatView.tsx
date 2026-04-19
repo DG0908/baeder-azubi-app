@@ -146,7 +146,7 @@ const ChatView: React.FC<ChatViewProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} border rounded-2xl shadow-lg overflow-hidden`}>
+      <div className="glass-card rounded-2xl overflow-hidden">
         <div className={`${darkMode ? 'bg-gradient-to-r from-cyan-900 via-slate-900 to-indigo-900' : 'bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500'} text-white p-5`}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -177,7 +177,7 @@ const ChatView: React.FC<ChatViewProps> = ({
           </div>
         )}
 
-        <div className={`${darkMode ? 'border-slate-700 bg-slate-800/70' : 'border-gray-200 bg-gray-50/80'} border-t p-3`}>
+        <div className={`${darkMode ? 'border-white/10' : 'border-gray-200/70'} border-t p-3`}>
           <div className="flex flex-wrap gap-2">
             {allowedScopes.map((scopeKey) => {
               const scope = CHAT_SCOPE_META[scopeKey];
@@ -193,8 +193,8 @@ const ChatView: React.FC<ChatViewProps> = ({
                     isActive
                       ? 'bg-cyan-500 text-white border-cyan-400 shadow-md'
                       : darkMode
-                        ? 'bg-slate-900 border-slate-700 text-slate-200 hover:border-cyan-500'
-                        : 'bg-white border-gray-200 text-gray-700 hover:border-cyan-400'
+                        ? 'bg-white/5 border-white/10 text-slate-200 hover:border-cyan-500'
+                        : 'bg-white/60 border-gray-200 text-gray-700 hover:border-cyan-400'
                   }`}
                 >
                   <ScopeIcon size={16} />
@@ -209,7 +209,7 @@ const ChatView: React.FC<ChatViewProps> = ({
         </div>
 
         <div className="grid lg:grid-cols-[280px_minmax(0,1fr)] min-h-[620px]">
-          <aside className={`${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-gray-200'} border-r p-4 space-y-4`}>
+          <aside className={`${darkMode ? 'border-white/10' : 'border-gray-200/70'} border-r p-4 space-y-4`}>
             <div>
               <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Chatbereich</h3>
               <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
@@ -234,10 +234,10 @@ const ChatView: React.FC<ChatViewProps> = ({
                         onClick={() => setSelectedChatRecipientId(account.id)}
                         className={`w-full text-left rounded-xl border p-3 transition-all ${
                           isActive
-                            ? 'border-cyan-400 bg-cyan-500/10'
+                            ? 'border-cyan-400 bg-cyan-500/15'
                             : darkMode
-                              ? 'border-slate-700 bg-slate-800 hover:border-cyan-500'
-                              : 'border-gray-200 bg-white hover:border-cyan-400'
+                              ? 'border-white/10 bg-white/5 hover:border-cyan-500'
+                              : 'border-gray-200 bg-white/70 hover:border-cyan-400'
                         }`}
                       >
                         <div className="flex items-center gap-3">
@@ -260,13 +260,13 @@ const ChatView: React.FC<ChatViewProps> = ({
                     );
                   })
                 ) : (
-                  <div className={`${darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-gray-200 text-gray-600'} border rounded-xl p-3 text-sm`}>
+                  <div className={`${darkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white/70 border-gray-200 text-gray-600'} border rounded-xl p-3 text-sm`}>
                     {directChatEmptyText}
                   </div>
                 )}
               </div>
             ) : (
-              <div className={`${darkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-gray-200 text-gray-600'} border rounded-xl p-4 text-sm`}>
+              <div className={`${darkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white/70 border-gray-200 text-gray-600'} border rounded-xl p-4 text-sm`}>
                 <p className="font-semibold mb-2">{selectedScopeMeta.label}</p>
                 <p>{selectedScopeMeta.description}.</p>
                 {chatScope === 'azubi_room' && (
@@ -279,7 +279,7 @@ const ChatView: React.FC<ChatViewProps> = ({
           </aside>
 
           <section className="flex flex-col min-h-0">
-            <div className={`${darkMode ? 'border-slate-800 bg-slate-900/60' : 'border-gray-200 bg-white'} border-b px-5 py-4 flex items-center justify-between gap-3`}>
+            <div className={`${darkMode ? 'border-white/10' : 'border-gray-200/70'} border-b px-5 py-4 flex items-center justify-between gap-3`}>
               <div>
                 <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   {chatScope === 'direct_staff'
@@ -292,14 +292,14 @@ const ChatView: React.FC<ChatViewProps> = ({
               </div>
               <div className={`text-xs px-3 py-1 rounded-full border ${
                 darkMode
-                  ? 'bg-slate-800 border-slate-700 text-slate-300'
-                  : 'bg-slate-50 border-gray-200 text-gray-600'
+                  ? 'bg-white/5 border-white/10 text-slate-300'
+                  : 'bg-white/60 border-gray-200 text-gray-600'
               }`}>
                 {filteredMessages.length} Nachrichten
               </div>
             </div>
 
-            <div className={`${darkMode ? 'bg-slate-950' : 'bg-slate-50/70'} flex-1 overflow-y-auto px-4 py-5 space-y-4`}>
+            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
               {filteredMessages.length > 0 ? (
                 filteredMessages.map((message) => {
                   const isMine = message.senderId === user?.id || message.user === user?.name;
@@ -385,7 +385,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                   );
                 })
               ) : (
-                <div className={`${darkMode ? 'bg-slate-900 border-slate-800 text-slate-300' : 'bg-white border-gray-200 text-gray-600'} border rounded-2xl p-6 text-center max-w-xl mx-auto`}>
+                <div className={`${darkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white/70 border-gray-200 text-gray-600'} border rounded-2xl p-6 text-center max-w-xl mx-auto`}>
                   <p className="font-semibold mb-2">Noch keine Nachrichten vorhanden</p>
                   <p className="text-sm">
                     {chatScope === 'direct_staff'
@@ -399,7 +399,7 @@ const ChatView: React.FC<ChatViewProps> = ({
               <div ref={messagesEndRef} />
             </div>
 
-            <div className={`${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'} border-t p-4`}>
+            <div className={`${darkMode ? 'border-white/10' : 'border-gray-200/70'} border-t p-4`}>
               <div className="flex gap-3">
                 <input
                   type="text"
@@ -415,8 +415,8 @@ const ChatView: React.FC<ChatViewProps> = ({
                   placeholder={inputPlaceholder}
                   className={`flex-1 px-4 py-3 rounded-xl border outline-none transition-all ${
                     darkMode
-                      ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-cyan-500'
-                      : 'bg-slate-50 border-gray-200 text-gray-800 placeholder:text-gray-400 focus:border-cyan-400'
+                      ? 'bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-cyan-500'
+                      : 'bg-white/70 border-gray-200 text-gray-800 placeholder:text-gray-400 focus:border-cyan-400'
                   } ${!canSend ? 'opacity-60 cursor-not-allowed' : ''}`}
                 />
                 <button
