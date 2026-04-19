@@ -774,6 +774,7 @@ model DuelAnswer {
   answeredAt          DateTime     @default(now())
   answerType          String       @default("single")
   keywordText         String?
+  selectedOptionIndices Int[]      @default([])
   points              Int          @default(0)
 
   @@unique([duelQuestionId, userId])
