@@ -1376,6 +1376,19 @@ export const submitDuelKeywordAnswer = async (duelId, duelQuestionId, keywordTex
   });
 };
 
+export const submitDuelMultiAnswer = async (duelId, duelQuestionId, selectedOptionIndices) => {
+  const cleaned = Array.from(new Set(
+    (Array.isArray(selectedOptionIndices) ? selectedOptionIndices : [])
+      .map((idx) => Number(idx))
+      .filter((idx) => Number.isInteger(idx) && idx >= 0 && idx <= 20)
+  ));
+  return secureDuelsApi.submitAnswer(duelId, {
+    duelQuestionId,
+    answerType: 'multi',
+    selectedOptionIndices: cleaned
+  });
+};
+
 export const startDuelRound = async (duelId, categoryId, currentUserId = null) => {
   await secureDuelsApi.startRound(duelId, categoryId);
   return getDuelWithQuestions(duelId, currentUserId);

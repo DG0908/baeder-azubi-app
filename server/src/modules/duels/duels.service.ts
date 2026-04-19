@@ -639,6 +639,11 @@ export class DuelsService {
       const authoritativeCorrectIndex = authoritativeQuestion
         ? (this.readInteger(authoritativeQuestion.correct) ?? duelQuestion.question.correctOptionIndex)
         : duelQuestion.question.correctOptionIndex;
+      const authoritativeCorrectIndices: number[] = authoritativeQuestion && Array.isArray(authoritativeQuestion.correct)
+        ? (authoritativeQuestion.correct as unknown[])
+            .map((value) => this.readInteger(value))
+            .filter((value): value is number => typeof value === 'number')
+        : [];
 
       const existingAnswer = await tx.duelAnswer.findUnique({
         where: {
@@ -688,6 +693,30 @@ export class DuelsService {
           answerType,
           keywordText: dto.keywordText.slice(0, 500),
           points
+        };
+      } else if (answerType === 'multi') {
+        if (!Array.isArray(dto.selectedOptionIndices) || dto.selectedOptionIndices.length === 0) {
+          throw new BadRequestException('selectedOptionIndices is required for multi-select answers.');
+        }
+        const optionCount = authoritativeOptions.length;
+        const uniqueIndices = Array.from(new Set(dto.selectedOptionIndices));
+        if (uniqueIndices.some((idx) => idx < 0 || idx >= optionCount)) {
+          throw new BadRequestException('selectedOptionIndices contains out-of-range values.');
+        }
+        const correctSet = new Set(authoritativeCorrectIndices);
+        const isCorrect = uniqueIndices.length === correctSet.size
+          && uniqueIndices.every((idx) => correctSet.has(idx));
+        answerCreateData = {
+          duelId: duel.id,
+          duelQuestionId: duelQuestion.id,
+          userId: actor.id,
+          selectedOptionIndex: -1,
+          selectedOptionIndices: uniqueIndices,
+          isCorrect,
+          durationMs: dto.durationMs ?? 0,
+          answerType: 'multi',
+          keywordText: null,
+          points: isCorrect ? 1 : 0
         };
       } else {
         if (typeof dto.selectedOptionIndex !== 'number') {
@@ -1256,23 +1285,33 @@ export class DuelsService {
         const storedAnswerType = (storedAnswer as unknown as { answerType?: string }).answerType ?? 'single';
         const storedKeywordText = (storedAnswer as unknown as { keywordText?: string | null }).keywordText ?? null;
         const storedPoints = (storedAnswer as unknown as { points?: number }).points;
-        const baseEntry: Prisma.InputJsonObject = storedAnswerType === 'keyword' || storedAnswerType === 'whoami'
-          ? {
-              questionIndex,
-              correct: storedAnswer.isCorrect,
-              timeout: false,
-              points: Number.isFinite(storedPoints) ? Number(storedPoints) : (storedAnswer.isCorrect ? 1 : 0),
-              answerType: storedAnswerType,
-              keywordText: storedKeywordText ?? ''
-            }
-          : {
-              questionIndex,
-              correct: storedAnswer.isCorrect,
-              timeout: false,
-              points: Number.isFinite(storedPoints) ? Number(storedPoints) : (storedAnswer.isCorrect ? 1 : 0),
-              answerType: 'single',
-              selectedAnswer: storedAnswer.selectedOptionIndex
-            };
+        const storedIndices = (storedAnswer as unknown as { selectedOptionIndices?: number[] }).selectedOptionIndices ?? [];
+        const commonFields = {
+          questionIndex,
+          correct: storedAnswer.isCorrect,
+          timeout: false,
+          points: Number.isFinite(storedPoints) ? Number(storedPoints) : (storedAnswer.isCorrect ? 1 : 0)
+        } as const;
+        let baseEntry: Prisma.InputJsonObject;
+        if (storedAnswerType === 'keyword' || storedAnswerType === 'whoami') {
+          baseEntry = {
+            ...commonFields,
+            answerType: storedAnswerType,
+            keywordText: storedKeywordText ?? ''
+          };
+        } else if (storedAnswerType === 'multi') {
+          baseEntry = {
+            ...commonFields,
+            answerType: 'multi',
+            selectedAnswers: Array.isArray(storedIndices) ? [...storedIndices] : []
+          };
+        } else {
+          baseEntry = {
+            ...commonFields,
+            answerType: 'single',
+            selectedAnswer: storedAnswer.selectedOptionIndex
+          };
+        }
         const answerEntry = this.revalidateAnswerEntry(baseEntry, question);
 
         if (storedAnswer.userId === duel.challengerId) {
