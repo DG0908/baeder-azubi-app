@@ -1,4 +1,14 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsString, MaxLength, Min } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min
+} from 'class-validator';
 
 export class CreateSubmittedQuestionDto {
   @IsString()
@@ -16,7 +26,20 @@ export class CreateSubmittedQuestionDto {
   @MaxLength(500, { each: true })
   answers!: string[];
 
+  @IsOptional()
   @IsInt()
   @Min(0)
-  correct!: number;
+  correct?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(4)
+  @IsInt({ each: true })
+  @Min(0, { each: true })
+  correctIndices?: number[];
+
+  @IsOptional()
+  @IsBoolean()
+  multi?: boolean;
 }

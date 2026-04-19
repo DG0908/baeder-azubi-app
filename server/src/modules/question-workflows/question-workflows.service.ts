@@ -26,6 +26,8 @@ const submittedQuestionSelect = {
   question: true,
   answers: true,
   correct: true,
+  correctIndices: true,
+  multi: true,
   approved: true,
   approvedAt: true,
   createdAt: true,
@@ -76,6 +78,8 @@ type SubmittedQuestionRecord = {
   question: string;
   answers: Prisma.JsonValue;
   correct: number;
+  correctIndices: Prisma.JsonValue | null;
+  multi: boolean;
   approved: boolean;
   approvedAt: Date | null;
   createdAt: Date;
@@ -157,10 +161,28 @@ export class QuestionWorkflowsService {
     const category = this.sanitizeIdentifier(dto.category, 'category');
     const question = this.sanitizeText(dto.question, 'question', 2000);
     const answers = this.sanitizeAnswerList(dto.answers);
-    const correct = Number(dto.correct);
+    const multi = Boolean(dto.multi);
 
-    if (!Number.isInteger(correct) || correct < 0 || correct >= answers.length) {
-      throw new BadRequestException('Correct answer index is invalid.');
+    let correct: number;
+    let correctIndices: number[] | null = null;
+
+    if (multi) {
+      const rawIndices = Array.isArray(dto.correctIndices) ? dto.correctIndices.map(Number) : [];
+      const normalized = Array.from(new Set(rawIndices))
+        .filter((value) => Number.isInteger(value) && value >= 0 && value < answers.length)
+        .sort((a, b) => a - b);
+
+      if (normalized.length !== rawIndices.length || normalized.length < 1) {
+        throw new BadRequestException('Correct indices are invalid.');
+      }
+
+      correctIndices = normalized;
+      correct = normalized[0];
+    } else {
+      correct = Number(dto.correct);
+      if (!Number.isInteger(correct) || correct < 0 || correct >= answers.length) {
+        throw new BadRequestException('Correct answer index is invalid.');
+      }
     }
 
     const autoApprove = this.isStaff(actor.role);
@@ -173,6 +195,8 @@ export class QuestionWorkflowsService {
         question,
         answers,
         correct,
+        correctIndices: correctIndices ?? undefined,
+        multi,
         approved: autoApprove,
         approvedById: autoApprove ? actor.id : null,
         approvedAt: autoApprove ? new Date() : null
@@ -515,12 +539,16 @@ export class QuestionWorkflowsService {
   }
 
   private toSubmittedQuestionPayload(entry: SubmittedQuestionRecord) {
+    const indices = this.toIndexArray(entry.correctIndices);
+    const correctValue = entry.multi && indices.length > 0 ? indices : entry.correct;
+
     return {
       id: entry.id,
       category: entry.category,
       question: entry.question,
       answers: this.toStringArray(entry.answers),
-      correct: entry.correct,
+      correct: correctValue,
+      multi: entry.multi,
       created_by: entry.user.displayName,
       created_by_id: entry.userId,
       approved: entry.approved,
@@ -528,6 +556,15 @@ export class QuestionWorkflowsService {
       approved_by: entry.approvedBy?.displayName ?? null,
       created_at: entry.createdAt.toISOString()
     };
+  }
+
+  private toIndexArray(value: Prisma.JsonValue | null) {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    return value
+      .map((entry) => Number(entry))
+      .filter((entry) => Number.isInteger(entry) && entry >= 0);
   }
 
   private toQuestionReportPayload(entry: QuestionReportRecord) {

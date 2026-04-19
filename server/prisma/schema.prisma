@@ -587,6 +587,8 @@ model SubmittedQuestion {
   question       String
   answers        Json
   correct        Int
+  correctIndices Json?
+  multi          Boolean      @default(false)
   approved       Boolean      @default(false)
   approvedAt     DateTime?
   createdAt      DateTime     @default(now())

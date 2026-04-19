@@ -115,18 +115,26 @@ const mapChatMessageToFrontend = (message, fallback = {}) => ({
   isDeleted: Boolean(message?.deletedAt || message?.deleted_at)
 });
 
-const mapQuestionSubmissionToFrontend = (question, fallback = {}) => ({
-  id: question?.id,
-  text: question?.question || question?.text || fallback.question || '',
-  category: question?.category || fallback.category || '',
-  answers: Array.isArray(question?.answers)
-    ? question.answers
-    : (Array.isArray(fallback.answers) ? fallback.answers : []),
-  correct: question?.correctIndex ?? question?.correct ?? fallback.correct ?? 0,
-  submittedBy: question?.createdBy || question?.creator?.displayName || question?.created_by || fallback.createdBy || '',
-  approved: question?.approved ?? fallback.approved ?? false,
-  time: new Date(question?.createdAt || question?.created_at || Date.now()).getTime()
-});
+const mapQuestionSubmissionToFrontend = (question, fallback = {}) => {
+  const rawCorrect = question?.correctIndex ?? question?.correct ?? fallback.correct ?? 0;
+  const rawMulti = question?.multi ?? fallback.multi ?? Array.isArray(rawCorrect);
+  const correctValue = rawMulti
+    ? (Array.isArray(rawCorrect) ? rawCorrect.map(Number).filter(Number.isFinite) : [Number(rawCorrect)])
+    : (Array.isArray(rawCorrect) ? Number(rawCorrect[0] ?? 0) : Number(rawCorrect));
+  return {
+    id: question?.id,
+    text: question?.question || question?.text || fallback.question || '',
+    category: question?.category || fallback.category || '',
+    answers: Array.isArray(question?.answers)
+      ? question.answers
+      : (Array.isArray(fallback.answers) ? fallback.answers : []),
+    correct: correctValue,
+    multi: Boolean(rawMulti),
+    submittedBy: question?.createdBy || question?.creator?.displayName || question?.created_by || fallback.createdBy || '',
+    approved: question?.approved ?? fallback.approved ?? false,
+    time: new Date(question?.createdAt || question?.created_at || Date.now()).getTime()
+  };
+};
 
 const mapPermissionFieldToProfileColumn = (field) => {
   if (field === 'canSignReports') return 'can_sign_reports';
@@ -1070,12 +1078,22 @@ export const loadCustomQuestions = async () => {
 };
 
 export const createQuestionSubmission = async (payload) => {
-  const result = await secureQuestionWorkflowsApi.createSubmission({
+  const multi = Boolean(payload?.multi);
+  const body = {
     category: payload?.category,
     question: payload?.question,
     answers: payload?.answers,
-    correct: payload?.correct
-  });
+    multi
+  };
+  if (multi) {
+    const indices = Array.isArray(payload?.correct)
+      ? payload.correct
+      : (Array.isArray(payload?.correctIndices) ? payload.correctIndices : []);
+    body.correctIndices = indices.map((value) => Number(value)).filter(Number.isFinite);
+  } else {
+    body.correct = Number(payload?.correct ?? 0);
+  }
+  const result = await secureQuestionWorkflowsApi.createSubmission(body);
   return mapQuestionSubmissionToFrontend(result, payload);
 };
 
