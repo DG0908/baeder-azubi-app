@@ -3,6 +3,7 @@ import { Star } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES, getAvatarById, getLevel, getLevelProgress } from '../../data/constants';
+import { SAMPLE_QUESTIONS } from '../../data/quizQuestions';
 import AvatarBadge from '../ui/AvatarBadge';
 
 interface CategoryStats {
@@ -127,6 +128,23 @@ const StatsView: React.FC<StatsViewProps> = ({ userStats, BADGES, userBadges, al
     if (idx === 2) return '🥉';
     return `${idx + 1}.`;
   };
+
+  const poolEntries = useMemo(() => {
+    const cats = CATEGORIES as Array<{ id: string; name: string; icon: string; color: string }>;
+    return cats
+      .map((cat) => {
+        const pool = (SAMPLE_QUESTIONS as Record<string, unknown[]>)[cat.id];
+        const count = Array.isArray(pool) ? pool.length : 0;
+        return { ...cat, count };
+      })
+      .filter((entry) => entry.count > 0)
+      .sort((a, b) => b.count - a.count);
+  }, []);
+
+  const poolTotal = useMemo(
+    () => poolEntries.reduce((sum, entry) => sum + entry.count, 0),
+    [poolEntries],
+  );
 
   return (
     <div className="space-y-6">
@@ -417,6 +435,39 @@ const StatsView: React.FC<StatsViewProps> = ({ userStats, BADGES, userBadges, al
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {poolEntries.length > 0 && (
+        <div className="glass-card rounded-2xl p-5">
+          <div className="flex items-baseline justify-between mb-4">
+            <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+              📚 Fragenpool
+            </h3>
+            <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              {poolTotal} Fragen gesamt
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {poolEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className={`flex items-center gap-3 rounded-xl p-2.5 ${darkMode ? 'bg-slate-700/50' : 'bg-gray-50'}`}
+              >
+                <div className={`${entry.color} text-white w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0`}>
+                  {entry.icon}
+                </div>
+                <div className="flex-1 min-w-0 flex items-baseline justify-between gap-2">
+                  <p className={`font-medium truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                    {entry.name}
+                  </p>
+                  <span className={`text-sm font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                    {entry.count}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
