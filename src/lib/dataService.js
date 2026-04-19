@@ -1365,7 +1365,15 @@ export const getDuelWithQuestions = async (duelId, currentUserId = null) => {
 };
 
 export const submitDuelAnswer = async (duelId, duelQuestionId, selectedOptionIndex) => {
-  return secureDuelsApi.submitAnswer(duelId, { duelQuestionId, selectedOptionIndex });
+  return secureDuelsApi.submitAnswer(duelId, { duelQuestionId, selectedOptionIndex, answerType: 'single' });
+};
+
+export const submitDuelKeywordAnswer = async (duelId, duelQuestionId, keywordText, answerType = 'keyword') => {
+  return secureDuelsApi.submitAnswer(duelId, {
+    duelQuestionId,
+    answerType,
+    keywordText: String(keywordText ?? '').slice(0, 500)
+  });
 };
 
 export const startDuelRound = async (duelId, categoryId, currentUserId = null) => {

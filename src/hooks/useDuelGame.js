@@ -30,6 +30,7 @@ import {
   acceptDuel as dsAcceptDuel,
   getDuelWithQuestions as dsGetDuelWithQuestions,
   submitDuelAnswer as dsSubmitDuelAnswer,
+  submitDuelKeywordAnswer as dsSubmitDuelKeywordAnswer,
   forfeitDuel as dsForfeitDuel,
   saveDuelState as dsSaveDuelState,
   startDuelRound as dsStartDuelRound,
@@ -173,6 +174,12 @@ export function useDuelGame(deps) {
     resetQuizDuelRuntimeState();
     setCategoryRoundResult(null);
     setCurrentView('quiz');
+  };
+
+  const exitCurrentGame = () => {
+    resetQuizDuelRuntimeState();
+    setCategoryRoundResult(null);
+    setDuelResult(null);
   };
 
   const handleForfeitDuel = async () => {
@@ -1003,12 +1010,18 @@ export function useDuelGame(deps) {
     setUserStats(stats);
 
     // Duel: Antwort an Backend übermitteln
+    const isSingleAuthoritative =
+      answerMeta?.answerType === 'single'
+      && Number.isInteger(answerMeta?.selectedAnswer);
+    const isKeywordAuthoritative =
+      (answerMeta?.answerType === 'keyword' || answerMeta?.answerType === 'whoami')
+      && typeof answerMeta?.keywordText === 'string'
+      && answerMeta.keywordText.trim().length > 0;
     const shouldUseAuthoritativeDuelAnswer =
       currentQuestion?.duelQuestionId
       && gameSnapshot?.id
       && !isTimeout
-      && answerMeta?.answerType === 'single'
-      && Number.isInteger(answerMeta?.selectedAnswer);
+      && (isSingleAuthoritative || isKeywordAuthoritative);
 
     let authoritativeQuestionsSet = false;
 
@@ -1016,7 +1029,16 @@ export function useDuelGame(deps) {
       let answerPersistedOnServer = false;
 
       try {
-        await dsSubmitDuelAnswer(gameSnapshot.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
+        if (isKeywordAuthoritative) {
+          await dsSubmitDuelKeywordAnswer(
+            gameSnapshot.id,
+            currentQuestion.duelQuestionId,
+            answerMeta.keywordText,
+            answerMeta.answerType
+          );
+        } else {
+          await dsSubmitDuelAnswer(gameSnapshot.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
+        }
         answerPersistedOnServer = true;
       } catch (error) {
         if (error?.status === 409) {
@@ -1184,15 +1206,18 @@ export function useDuelGame(deps) {
     const currentCategoryRound = currentGame.categoryRounds[currentGame.categoryRound];
 
     if (currentGame.categoryRound < 3) {
-      currentGame.categoryRound++;
-
       const nextChooser = currentCategoryRound.chooser === currentGame.player1
         ? currentGame.player2
         : currentGame.player1;
+      const nextCategoryRound = (currentGame.categoryRound || 0) + 1;
+      const nextGame = {
+        ...currentGame,
+        categoryRound: nextCategoryRound,
+        currentTurn: nextChooser
+      };
+      setCurrentGame(nextGame);
 
-      currentGame.currentTurn = nextChooser;
-
-      setCategoryRound(currentGame.categoryRound);
+      setCategoryRound(nextCategoryRound);
       setQuestionInCategory(0);
       setQuizCategory(null);
       setCurrentQuestion(null);
@@ -1206,7 +1231,7 @@ export function useDuelGame(deps) {
       resetQuizKeywordState();
       setTimerActive(false);
 
-      const savedAfterRound = await saveGameToSupabase(currentGame);
+      const savedAfterRound = await saveGameToSupabase(nextGame);
       if (savedAfterRound?.id) syncQuizRuntimeFromPersistedGame(savedAfterRound);
 
       if (nextChooser !== user.name) {
@@ -1214,7 +1239,7 @@ export function useDuelGame(deps) {
         await sendNotification(
           nextChooser,
           '🎯 Wähle eine Kategorie!',
-          `Runde ${currentGame.categoryRound + 1}/4 - Du darfst die nächste Kategorie wählen!`,
+          `Runde ${nextCategoryRound + 1}/4 - Du darfst die nächste Kategorie wählen!`,
           'info'
         );
       } else {
@@ -1520,6 +1545,7 @@ export function useDuelGame(deps) {
     categoryRoundResult,
     proceedAfterCategoryResult,
     onForfeit: handleForfeitDuel,
+    exitCurrentGame,
 
     // Actions used by App.jsx
     challengePlayer,

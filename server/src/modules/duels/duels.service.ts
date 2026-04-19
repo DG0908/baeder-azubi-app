@@ -630,6 +630,7 @@ export class DuelsService {
         throw new NotFoundException('Assigned duel question not found.');
       }
 
+      const answerType = dto.answerType ?? 'single';
       const authoritativeGameState = this.mergePersistedAnswersIntoGameState(duel);
       const authoritativeQuestion = this.getQuestionByOrderIndex(authoritativeGameState, duelQuestion.orderIndex);
       const authoritativeOptions = authoritativeQuestion
@@ -666,21 +667,51 @@ export class DuelsService {
         };
       }
 
-      const optionCount = authoritativeOptions.length;
-      if (dto.selectedOptionIndex >= optionCount) {
-        throw new BadRequestException('selectedOptionIndex is outside the question option range.');
-      }
+      let answerCreateData: Prisma.DuelAnswerUncheckedCreateInput;
 
-      await tx.duelAnswer.create({
-        data: {
+      if (answerType === 'keyword' || answerType === 'whoami') {
+        if (typeof dto.keywordText !== 'string' || dto.keywordText.trim().length === 0) {
+          throw new BadRequestException('keywordText is required for keyword/whoami answers.');
+        }
+        const questionRecord = authoritativeQuestion ?? {};
+        const evaluation = this.evaluateKeywordAnswer(questionRecord, dto.keywordText, false);
+        const points = answerType === 'whoami'
+          ? (evaluation.isCorrect ? 1 : 0)
+          : evaluation.awardedPoints;
+        answerCreateData = {
+          duelId: duel.id,
+          duelQuestionId: duelQuestion.id,
+          userId: actor.id,
+          selectedOptionIndex: -1,
+          isCorrect: evaluation.isCorrect,
+          durationMs: dto.durationMs ?? 0,
+          answerType,
+          keywordText: dto.keywordText.slice(0, 500),
+          points
+        };
+      } else {
+        if (typeof dto.selectedOptionIndex !== 'number') {
+          throw new BadRequestException('selectedOptionIndex is required for single-choice answers.');
+        }
+        const optionCount = authoritativeOptions.length;
+        if (dto.selectedOptionIndex >= optionCount) {
+          throw new BadRequestException('selectedOptionIndex is outside the question option range.');
+        }
+        const isCorrect = dto.selectedOptionIndex === authoritativeCorrectIndex;
+        answerCreateData = {
           duelId: duel.id,
           duelQuestionId: duelQuestion.id,
           userId: actor.id,
           selectedOptionIndex: dto.selectedOptionIndex,
-          isCorrect: dto.selectedOptionIndex === authoritativeCorrectIndex,
-          durationMs: dto.durationMs ?? 0
-        }
-      });
+          isCorrect,
+          durationMs: dto.durationMs ?? 0,
+          answerType: 'single',
+          keywordText: null,
+          points: isCorrect ? 1 : 0
+        };
+      }
+
+      await tx.duelAnswer.create({ data: answerCreateData });
 
       const withLatestAnswers = await tx.duel.findUniqueOrThrow({
         where: { id: duel.id },
@@ -1222,14 +1253,27 @@ export class DuelsService {
       const questions = Array.isArray(round.questions) ? round.questions : [];
       const question = this.asRecord(questions[questionIndex] ?? {});
       for (const storedAnswer of duel.answers.filter((answer) => answer.duelQuestionId === assignment.id)) {
-        const answerEntry = this.revalidateAnswerEntry({
-          questionIndex,
-          correct: storedAnswer.isCorrect,
-          timeout: false,
-          points: storedAnswer.isCorrect ? 1 : 0,
-          answerType: 'single',
-          selectedAnswer: storedAnswer.selectedOptionIndex
-        } as Prisma.InputJsonObject, question);
+        const storedAnswerType = (storedAnswer as unknown as { answerType?: string }).answerType ?? 'single';
+        const storedKeywordText = (storedAnswer as unknown as { keywordText?: string | null }).keywordText ?? null;
+        const storedPoints = (storedAnswer as unknown as { points?: number }).points;
+        const baseEntry: Prisma.InputJsonObject = storedAnswerType === 'keyword' || storedAnswerType === 'whoami'
+          ? {
+              questionIndex,
+              correct: storedAnswer.isCorrect,
+              timeout: false,
+              points: Number.isFinite(storedPoints) ? Number(storedPoints) : (storedAnswer.isCorrect ? 1 : 0),
+              answerType: storedAnswerType,
+              keywordText: storedKeywordText ?? ''
+            }
+          : {
+              questionIndex,
+              correct: storedAnswer.isCorrect,
+              timeout: false,
+              points: Number.isFinite(storedPoints) ? Number(storedPoints) : (storedAnswer.isCorrect ? 1 : 0),
+              answerType: 'single',
+              selectedAnswer: storedAnswer.selectedOptionIndex
+            };
+        const answerEntry = this.revalidateAnswerEntry(baseEntry, question);
 
         if (storedAnswer.userId === duel.challengerId) {
           const currentAnswers = Array.isArray(round.player1Answers) ? round.player1Answers : [];
