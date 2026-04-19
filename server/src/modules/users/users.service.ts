@@ -239,9 +239,11 @@ export class UsersService {
       select: {
         id: true,
         displayName: true,
+        avatar: true,
         role: true,
         canSignReports: true,
-        organizationId: true
+        organizationId: true,
+        trainingEnd: true
       },
       orderBy: {
         displayName: 'asc'
