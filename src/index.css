@@ -115,15 +115,21 @@ body {
    - Layered shadow gives depth without muddy edges */
 .glass-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(22px) saturate(190%);
+  -webkit-backdrop-filter: blur(22px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-bottom-color: rgba(2, 44, 64, 0.12);
+  border-right-color: rgba(2, 44, 64, 0.08);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.85) inset,
-    0 10px 30px -12px rgba(2, 44, 64, 0.35),
-    0 2px 6px -2px rgba(2, 44, 64, 0.18);
-  transition: transform 180ms ease, box-shadow 180ms ease;
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 -1px 0 rgba(2, 44, 64, 0.06) inset,
+    0 1px 3px rgba(2, 44, 64, 0.08),
+    0 6px 14px -4px rgba(2, 44, 64, 0.25),
+    0 18px 38px -10px rgba(2, 44, 64, 0.4),
+    0 28px 60px -18px rgba(2, 44, 64, 0.35);
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .glass-card::before {
@@ -132,11 +138,37 @@ body {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.35) 0%,
-    rgba(255, 255, 255, 0) 55%
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.18) 30%,
+      rgba(255, 255, 255, 0) 55%
+    ),
+    radial-gradient(
+      circle at 85% 110%,
+      rgba(2, 44, 64, 0.1) 0%,
+      rgba(2, 44, 64, 0) 50%
+    );
+}
+
+.glass-card::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -14px;
+  height: 18px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(2, 44, 64, 0.28) 0%,
+    rgba(2, 44, 64, 0) 70%
   );
+  filter: blur(6px);
+  opacity: 0.9;
+  z-index: -1;
 }
 
 .glass-card > * {
@@ -149,28 +181,51 @@ body {
 }
 
 .glass-card-hover:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.012);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 18px 40px -14px rgba(2, 44, 64, 0.45),
-    0 4px 10px -2px rgba(2, 44, 64, 0.22);
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 -1px 0 rgba(2, 44, 64, 0.08) inset,
+    0 2px 4px rgba(2, 44, 64, 0.1),
+    0 10px 20px -4px rgba(2, 44, 64, 0.3),
+    0 28px 50px -12px rgba(2, 44, 64, 0.5),
+    0 40px 80px -20px rgba(2, 44, 64, 0.45);
 }
 
 /* Dark-mode variant: dark translucent base with subtle cyan inner glow */
 .dark .glass-card {
   background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-bottom-color: rgba(0, 0, 0, 0.45);
+  border-right-color: rgba(0, 0, 0, 0.35);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 10px 30px -12px rgba(0, 0, 0, 0.55),
-    0 2px 6px -2px rgba(0, 0, 0, 0.35);
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.35) inset,
+    0 1px 3px rgba(0, 0, 0, 0.35),
+    0 6px 14px -4px rgba(0, 0, 0, 0.55),
+    0 18px 38px -10px rgba(0, 0, 0, 0.65),
+    0 28px 60px -18px rgba(0, 0, 0, 0.55);
 }
 
 .dark .glass-card::before {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0) 55%
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.04) 30%,
+      rgba(255, 255, 255, 0) 55%
+    ),
+    radial-gradient(
+      circle at 85% 110%,
+      rgba(0, 0, 0, 0.35) 0%,
+      rgba(0, 0, 0, 0) 50%
+    );
+}
+
+.dark .glass-card::after {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0) 70%
   );
 }
 
