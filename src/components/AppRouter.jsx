@@ -233,10 +233,6 @@ export function AppRouter({
         <TrainerDashboardView
           allUsers={allUsers}
           statsByUserId={statsByUserId}
-          leaderboard={leaderboard}
-          allGames={duel.allGames}
-          namesMatch={namesMatch}
-          isFinishedGameStatus={isFinishedGameStatus}
           theoryExamHistory={examSimApi.theoryExamHistory}
           theoryExamHistoryLoading={examSimApi.theoryExamHistoryLoading}
           loadTheoryExamHistory={loadTheoryExamHistory}
