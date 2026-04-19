@@ -1081,18 +1081,24 @@ export const approveQuestionSubmission = async (questionId) => {
 
 export const loadQuestionReports = async () => {
   const data = await secureQuestionWorkflowsApi.listReports();
-  return (data || []).map(r => ({
+  return (data || []).map((r) => ({
     id: r.id ? String(r.id) : `remote-${Date.now()}`,
-    questionKey: r.questionKey || '',
-    questionText: r.questionText || r.question || '',
+    questionKey: pickPayloadValue(r, 'questionKey', 'question_key') || '',
+    questionText: pickPayloadValue(r, 'questionText', 'question_text', 'question') || '',
     category: r.category || 'unknown',
     source: r.source || 'unknown',
     note: r.note || '',
-    answers: r.answers || [],
-    reportedBy: r.reportedBy || r.reporter?.displayName || 'Unbekannt',
-    reportedById: r.reportedById || r.reporter?.id || null,
+    answers: Array.isArray(r.answers) ? r.answers : [],
+    reportedBy:
+      pickPayloadValue(r, 'reportedBy', 'reported_by')
+      || r.reporter?.displayName
+      || 'Unbekannt',
+    reportedById:
+      pickPayloadValue(r, 'reportedById', 'reported_by_id')
+      || r.reporter?.id
+      || null,
     status: r.status || 'open',
-    createdAt: r.createdAt || new Date().toISOString()
+    createdAt: pickPayloadValue(r, 'createdAt', 'created_at') || new Date().toISOString()
   }));
 };
 
