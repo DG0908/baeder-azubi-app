@@ -31,6 +31,7 @@ import {
   getDuelWithQuestions as dsGetDuelWithQuestions,
   submitDuelAnswer as dsSubmitDuelAnswer,
   submitDuelKeywordAnswer as dsSubmitDuelKeywordAnswer,
+  submitDuelMultiAnswer as dsSubmitDuelMultiAnswer,
   forfeitDuel as dsForfeitDuel,
   saveDuelState as dsSaveDuelState,
   startDuelRound as dsStartDuelRound,
@@ -1017,11 +1018,15 @@ export function useDuelGame(deps) {
       (answerMeta?.answerType === 'keyword' || answerMeta?.answerType === 'whoami')
       && typeof answerMeta?.keywordText === 'string'
       && answerMeta.keywordText.trim().length > 0;
+    const isMultiAuthoritative =
+      answerMeta?.answerType === 'multi'
+      && Array.isArray(answerMeta?.selectedAnswers)
+      && answerMeta.selectedAnswers.length > 0;
     const shouldUseAuthoritativeDuelAnswer =
       currentQuestion?.duelQuestionId
       && gameSnapshot?.id
       && !isTimeout
-      && (isSingleAuthoritative || isKeywordAuthoritative);
+      && (isSingleAuthoritative || isKeywordAuthoritative || isMultiAuthoritative);
 
     let authoritativeQuestionsSet = false;
 
@@ -1035,6 +1040,12 @@ export function useDuelGame(deps) {
             currentQuestion.duelQuestionId,
             answerMeta.keywordText,
             answerMeta.answerType
+          );
+        } else if (isMultiAuthoritative) {
+          await dsSubmitDuelMultiAnswer(
+            gameSnapshot.id,
+            currentQuestion.duelQuestionId,
+            answerMeta.selectedAnswers
           );
         } else {
           await dsSubmitDuelAnswer(gameSnapshot.id, currentQuestion.duelQuestionId, answerMeta.selectedAnswer);
@@ -1258,8 +1269,17 @@ export function useDuelGame(deps) {
 
     const isPlayer1 = user.name === currentGame.player1;
     const myAnswers = isPlayer1 ? currentCategoryRound.player1Answers : currentCategoryRound.player2Answers;
-    const nextQuestionIndex = Math.max(0, myAnswers.length || 0);
-    if (nextQuestionIndex >= currentCategoryRound.questions.length) return;
+    const questionsLen = currentCategoryRound.questions.length;
+    const answeredIndices = new Set(
+      (Array.isArray(myAnswers) ? myAnswers : [])
+        .map((entry) => Number(entry?.questionIndex))
+        .filter((idx) => Number.isInteger(idx) && idx >= 0 && idx < questionsLen)
+    );
+    let nextQuestionIndex = questionsLen;
+    for (let i = 0; i < questionsLen; i += 1) {
+      if (!answeredIndices.has(i)) { nextQuestionIndex = i; break; }
+    }
+    if (nextQuestionIndex >= questionsLen) return;
 
     const restoredQuestions = restoreCorrectForQuestions(
       currentCategoryRound.questions,
