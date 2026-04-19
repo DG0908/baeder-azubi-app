@@ -11,6 +11,8 @@ export function useQuestionSubmission({ user, moderateContent, showToast }) {
   const [newQuestionCategory, setNewQuestionCategory] = useState('org');
   const [newQuestionAnswers, setNewQuestionAnswers] = useState(['', '', '', '']);
   const [newQuestionCorrect, setNewQuestionCorrect] = useState(0);
+  const [newQuestionMulti, setNewQuestionMulti] = useState(false);
+  const [newQuestionCorrectIndices, setNewQuestionCorrectIndices] = useState([]);
 
   const submitQuestion = async () => {
     if (!newQuestionText.trim() || !user) return;
@@ -23,12 +25,44 @@ export function useQuestionSubmission({ user, moderateContent, showToast }) {
       }
     }
 
+    if (newQuestionMulti) {
+      const indices = (newQuestionCorrectIndices || [])
+        .map((i) => Number(i))
+        .filter((i) => Number.isInteger(i) && i >= 0 && i < newQuestionAnswers.length);
+      if (indices.length < 1) {
+        showToast('Bitte mindestens eine richtige Antwort markieren.', 'warning');
+        return;
+      }
+
+      try {
+        const q = await dsCreateQuestionSubmission({
+          category: newQuestionCategory,
+          question: newQuestionText,
+          answers: newQuestionAnswers,
+          correct: indices,
+          multi: true,
+          createdBy: user.name,
+        });
+
+        setSubmittedQuestions((prev) => [...prev, q]);
+        setNewQuestionText('');
+        setNewQuestionAnswers(['', '', '', '']);
+        setNewQuestionCorrectIndices([]);
+        showToast('Frage eingereicht!', 'success');
+      } catch (error) {
+        console.error('Question error:', error);
+        showToast(friendlyError(error), 'error');
+      }
+      return;
+    }
+
     try {
       const q = await dsCreateQuestionSubmission({
         category: newQuestionCategory,
         question: newQuestionText,
         answers: newQuestionAnswers,
         correct: newQuestionCorrect,
+        multi: false,
         createdBy: user.name,
       });
 
@@ -57,6 +91,8 @@ export function useQuestionSubmission({ user, moderateContent, showToast }) {
     newQuestionCategory, setNewQuestionCategory,
     newQuestionAnswers, setNewQuestionAnswers,
     newQuestionCorrect, setNewQuestionCorrect,
+    newQuestionMulti, setNewQuestionMulti,
+    newQuestionCorrectIndices, setNewQuestionCorrectIndices,
     submitQuestion, approveQuestion,
   };
 }

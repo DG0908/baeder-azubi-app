@@ -1,8 +1,15 @@
 import React from 'react';
-import { Brain, Plus, Check, Clock, User as UserIcon } from 'lucide-react';
+import { Brain, Plus, Check, Clock, User as UserIcon, Layers, Circle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES } from '../../data/constants';
+
+const isCorrectAnswer = (question, index) => {
+  if (!question) return false;
+  const c = question.correct;
+  if (Array.isArray(c)) return c.includes(index);
+  return index === c;
+};
 
 const QuestionsView = ({
   submittedQuestions,
@@ -14,6 +21,10 @@ const QuestionsView = ({
   setNewQuestionAnswers,
   newQuestionCorrect,
   setNewQuestionCorrect,
+  newQuestionMulti,
+  setNewQuestionMulti,
+  newQuestionCorrectIndices,
+  setNewQuestionCorrectIndices,
   submitQuestion,
   approveQuestion
 }) => {
@@ -29,6 +40,18 @@ const QuestionsView = ({
 
   const pendingCount = (submittedQuestions || []).filter((q) => !q.approved).length;
   const approvedCount = (submittedQuestions || []).length - pendingCount;
+
+  const toggleCorrectIndex = (i) => {
+    const prev = Array.isArray(newQuestionCorrectIndices) ? newQuestionCorrectIndices : [];
+    if (prev.includes(i)) {
+      setNewQuestionCorrectIndices(prev.filter((x) => x !== i));
+    } else {
+      setNewQuestionCorrectIndices([...prev, i].sort((a, b) => a - b));
+    }
+  };
+
+  const multiOn = Boolean(newQuestionMulti);
+  const selectedIndices = Array.isArray(newQuestionCorrectIndices) ? newQuestionCorrectIndices : [];
 
   return (
     <div className="space-y-6">
@@ -85,18 +108,62 @@ const QuestionsView = ({
           </div>
 
           <div>
+            <label className={`text-sm font-medium block mb-1.5 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Antworttyp</label>
+            <div className={`inline-flex p-1 rounded-xl ${darkMode ? 'bg-white/5' : 'bg-white/60 border border-gray-200'}`}>
+              <button
+                type="button"
+                onClick={() => setNewQuestionMulti && setNewQuestionMulti(false)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition-all ${
+                  !multiOn
+                    ? 'bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white shadow-sm'
+                    : darkMode ? 'text-gray-300 hover:bg-white/5' : 'text-gray-600 hover:bg-white/40'
+                }`}
+              >
+                <Circle size={14} />
+                Einfachauswahl
+              </button>
+              <button
+                type="button"
+                onClick={() => setNewQuestionMulti && setNewQuestionMulti(true)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition-all ${
+                  multiOn
+                    ? 'bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white shadow-sm'
+                    : darkMode ? 'text-gray-300 hover:bg-white/5' : 'text-gray-600 hover:bg-white/40'
+                }`}
+              >
+                <Layers size={14} />
+                Mehrfachauswahl
+              </button>
+            </div>
+            <p className={`text-xs mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              {multiOn
+                ? 'Markiere alle richtigen Antworten — Nutzer müssen alle treffen, um den Punkt zu bekommen.'
+                : 'Genau eine richtige Antwort markieren.'}
+            </p>
+          </div>
+
+          <div>
             <label className={`text-sm font-medium block mb-1.5 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-              Antwortmöglichkeiten <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>— klicke den Kreis links, um die richtige zu markieren</span>
+              Antwortmöglichkeiten{' '}
+              <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+                {multiOn
+                  ? '— wähle mit den Kästchen links alle richtigen Antworten'
+                  : '— klicke den Kreis links, um die richtige zu markieren'}
+              </span>
             </label>
             <div className="space-y-2">
               {[0, 1, 2, 3].map(i => {
-                const isCorrect = i === newQuestionCorrect;
+                const isCorrect = multiOn ? selectedIndices.includes(i) : i === newQuestionCorrect;
+                const shape = multiOn ? 'rounded-md' : 'rounded-full';
                 return (
                   <div key={i} className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setNewQuestionCorrect(i)}
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      onClick={() => {
+                        if (multiOn) toggleCorrectIndex(i);
+                        else setNewQuestionCorrect(i);
+                      }}
+                      className={`w-8 h-8 ${shape} border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                         isCorrect
                           ? 'bg-green-500 border-green-500 text-white'
                           : darkMode
@@ -155,6 +222,7 @@ const QuestionsView = ({
           </h3>
           {sortedQuestions.map(q => {
             const cat = CATEGORIES.find(c => c.id === q.category);
+            const isMulti = Boolean(q.multi) || Array.isArray(q.correct);
             return (
               <div key={q.id} className={`glass-card rounded-2xl p-5 ${q.approved ? '' : ''}`}>
                 <div className="flex justify-between items-start gap-3 mb-3">
@@ -163,6 +231,12 @@ const QuestionsView = ({
                       <span className={`${cat.color} text-white px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1`}>
                         <span>{cat.icon}</span>
                         {cat.name}
+                      </span>
+                    )}
+                    {isMulti && (
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${darkMode ? 'bg-purple-500/20 text-purple-200' : 'bg-purple-100 text-purple-700'}`}>
+                        <Layers size={12} />
+                        Mehrfach
                       </span>
                     )}
                     {q.approved ? (
@@ -193,7 +267,7 @@ const QuestionsView = ({
                 </p>
                 <ul className="space-y-1.5 mb-3">
                   {q.answers.map((a, i) => {
-                    const isRight = i === q.correct;
+                    const isRight = isCorrectAnswer(q, i);
                     return (
                       <li
                         key={i}
@@ -207,7 +281,7 @@ const QuestionsView = ({
                               : 'text-gray-700'
                         }`}
                       >
-                        <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                        <span className={`flex-shrink-0 w-5 h-5 ${isMulti ? 'rounded-md' : 'rounded-full'} flex items-center justify-center text-xs font-bold ${
                           isRight
                             ? 'bg-green-500 text-white'
                             : darkMode
