@@ -52,6 +52,17 @@ type MenuItemPayload = {
 
 const APP_CONFIG_THEME_META_KEY = '__appConfigMeta';
 
+const ANNOUNCEMENT_DEFAULT: { enabled: boolean; message: string } = {
+  enabled: false,
+  message: ''
+};
+
+const COMPANIES_DEFAULT: string[] = ['Freizeitbad Oktopus'];
+
+const ANNOUNCEMENT_MAX_LENGTH = 500;
+const COMPANY_MAX_LENGTH = 120;
+const COMPANIES_MAX_COUNT = 50;
+
 @Injectable()
 export class AppConfigService {
   constructor(
@@ -133,7 +144,13 @@ export class AppConfigService {
       tolerateLegacyPayloadForFeatureFlags
     );
     const featureFlags = this.normalizeFeatureFlags(dto.featureFlags ?? currentConfig.featureFlags ?? {});
-    const persistedThemeColors = this.attachFeatureFlagsMeta(themeColors, featureFlags);
+    const announcement = this.normalizeAnnouncement(
+      dto.announcement !== undefined ? dto.announcement : currentConfig.announcement
+    );
+    const companies = this.normalizeCompanies(
+      dto.companies !== undefined ? dto.companies : currentConfig.companies
+    );
+    const persistedThemeColors = this.attachMeta(themeColors, { featureFlags, announcement, companies });
 
     let updatedPayload: ReturnType<AppConfigService['toPayload']>;
     let updatedConfigId: string;
@@ -225,6 +242,8 @@ export class AppConfigService {
       menuItems: [],
       themeColors: { ...APP_CONFIG_DEFAULT_THEME_COLORS },
       featureFlags: { ...APP_CONFIG_DEFAULT_FEATURE_FLAGS },
+      announcement: { ...ANNOUNCEMENT_DEFAULT },
+      companies: [...COMPANIES_DEFAULT],
       updatedById: null,
       updatedAt: null
     };
@@ -236,6 +255,8 @@ export class AppConfigService {
       menuItems: this.normalizeMenuItemsFromStorage(config.menuItems),
       themeColors: this.normalizeThemeColorsFromStorage(config.themeColors),
       featureFlags: this.normalizeFeatureFlagsFromSources(config.featureFlags, config.themeColors),
+      announcement: this.extractAnnouncementFromMeta(config.themeColors),
+      companies: this.extractCompaniesFromMeta(config.themeColors),
       updatedById: config.updatedById,
       updatedAt: config.updatedAt.toISOString()
     };
@@ -247,6 +268,8 @@ export class AppConfigService {
       menuItems: this.normalizeMenuItemsFromStorage(config.menuItems),
       themeColors: this.normalizeThemeColorsFromStorage(config.themeColors),
       featureFlags: this.normalizeFeatureFlagsFromSources(null, config.themeColors),
+      announcement: this.extractAnnouncementFromMeta(config.themeColors),
+      companies: this.extractCompaniesFromMeta(config.themeColors),
       updatedById: config.updatedById,
       updatedAt: config.updatedAt.toISOString()
     };
@@ -518,12 +541,89 @@ export class AppConfigService {
     themeColors: Record<string, string>,
     featureFlags: Record<AppFeatureFlagKey, boolean>
   ) {
+    return this.attachMeta(themeColors, {
+      featureFlags,
+      announcement: { ...ANNOUNCEMENT_DEFAULT },
+      companies: [...COMPANIES_DEFAULT]
+    });
+  }
+
+  private attachMeta(
+    themeColors: Record<string, string>,
+    meta: {
+      featureFlags: Record<AppFeatureFlagKey, boolean>;
+      announcement: { enabled: boolean; message: string };
+      companies: string[];
+    }
+  ) {
     return {
       ...themeColors,
       [APP_CONFIG_THEME_META_KEY]: {
-        featureFlags
+        featureFlags: meta.featureFlags,
+        announcement: meta.announcement,
+        companies: meta.companies
       }
     };
+  }
+
+  private readMetaObject(themeColorsValue: Prisma.JsonValue | null | undefined): Record<string, unknown> | null {
+    if (!themeColorsValue || typeof themeColorsValue !== 'object' || Array.isArray(themeColorsValue)) {
+      return null;
+    }
+    const source = themeColorsValue as Record<string, unknown>;
+    const meta = source[APP_CONFIG_THEME_META_KEY];
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
+      return null;
+    }
+    return meta as Record<string, unknown>;
+  }
+
+  private extractAnnouncementFromMeta(themeColorsValue: Prisma.JsonValue | null | undefined) {
+    const meta = this.readMetaObject(themeColorsValue);
+    if (!meta) return { ...ANNOUNCEMENT_DEFAULT };
+    return this.normalizeAnnouncement(meta.announcement);
+  }
+
+  private extractCompaniesFromMeta(themeColorsValue: Prisma.JsonValue | null | undefined) {
+    const meta = this.readMetaObject(themeColorsValue);
+    if (!meta) return [...COMPANIES_DEFAULT];
+    return this.normalizeCompanies(meta.companies);
+  }
+
+  private normalizeAnnouncement(value: unknown): { enabled: boolean; message: string } {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return { ...ANNOUNCEMENT_DEFAULT };
+    }
+    const source = value as Record<string, unknown>;
+    const enabled = Boolean(source.enabled);
+    const rawMessage = source.message !== undefined && source.message !== null ? String(source.message) : '';
+    const sanitized = sanitizeHtml(rawMessage, {
+      allowedTags: [],
+      allowedAttributes: {}
+    }).trim().slice(0, ANNOUNCEMENT_MAX_LENGTH);
+    return { enabled: enabled && sanitized.length > 0, message: sanitized };
+  }
+
+  private normalizeCompanies(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+      return [...COMPANIES_DEFAULT];
+    }
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const entry of value) {
+      if (entry === null || entry === undefined) continue;
+      const sanitized = sanitizeHtml(String(entry), {
+        allowedTags: [],
+        allowedAttributes: {}
+      }).trim().slice(0, COMPANY_MAX_LENGTH);
+      if (!sanitized) continue;
+      const key = sanitized.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(sanitized);
+      if (out.length >= COMPANIES_MAX_COUNT) break;
+    }
+    return out.length > 0 ? out : [...COMPANIES_DEFAULT];
   }
 
   private isMissingFeatureFlagsColumnError(error: unknown) {
