@@ -1,6 +1,7 @@
 import React from 'react';
-import { Brain, Plus, Check } from 'lucide-react';
+import { Brain, Plus, Check, Clock, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
 import { CATEGORIES } from '../../data/constants';
 
 const QuestionsView = ({
@@ -17,111 +18,218 @@ const QuestionsView = ({
   approveQuestion
 }) => {
   const { user } = useAuth();
+  const { darkMode } = useApp();
+  const canApprove = !!user?.permissions?.canApproveQuestions;
+
+  const sortedQuestions = [...(submittedQuestions || [])].sort((a, b) => {
+    if (!a.approved && b.approved) return -1;
+    if (a.approved && !b.approved) return 1;
+    return 0;
+  });
+
+  const pendingCount = (submittedQuestions || []).filter((q) => !q.approved).length;
+  const approvedCount = (submittedQuestions || []).length - pendingCount;
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-xl p-6 shadow-lg">
-        <h2 className="text-2xl font-bold mb-4 flex items-center">
-          <Brain className="mr-2 text-purple-500" />
+      <div className={`${darkMode ? 'bg-gradient-to-r from-purple-900 via-slate-900 to-fuchsia-900' : 'bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500'} text-white rounded-2xl p-8 shadow-lg`}>
+        <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+          <Brain size={30} />
           Fragen einreichen
         </h2>
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h3 className="font-bold mb-3">Neue Quizfrage vorschlagen</h3>
-          <div className="space-y-3">
+        <p className="text-white/80">
+          Schlage neue Quizfragen vor — nach Freigabe landen sie im Fragenpool für alle.
+        </p>
+        {submittedQuestions?.length > 0 && (
+          <div className="flex gap-3 mt-4">
+            <div className="bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2 text-sm">
+              <span className="font-bold text-lg">{pendingCount}</span>
+              <span className="opacity-80 ml-2">ausstehend</span>
+            </div>
+            <div className="bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2 text-sm">
+              <span className="font-bold text-lg">{approvedCount}</span>
+              <span className="opacity-80 ml-2">genehmigt</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="glass-card rounded-2xl p-6">
+        <h3 className={`font-bold mb-4 flex items-center gap-2 ${darkMode ? 'text-purple-300' : 'text-gray-800'}`}>
+          <Plus size={18} />
+          Neue Quizfrage vorschlagen
+        </h3>
+        <div className="space-y-4">
+          <div>
+            <label className={`text-sm font-medium block mb-1.5 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Frage</label>
             <textarea
               value={newQuestionText}
               onChange={(e) => setNewQuestionText(e.target.value)}
-              placeholder="Deine Frage..."
+              placeholder="Formuliere deine Frage klar und eindeutig..."
               rows="2"
-              className="w-full px-4 py-2 border rounded-lg"
+              className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-purple-400 resize-none ${darkMode ? 'bg-white/5 border-white/10 text-white placeholder-gray-400' : 'bg-white/70 border-gray-300'}`}
             />
+          </div>
+
+          <div>
+            <label className={`text-sm font-medium block mb-1.5 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Kategorie</label>
             <select
               value={newQuestionCategory}
               onChange={(e) => setNewQuestionCategory(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
+              className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-purple-400 ${darkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white/70 border-gray-300'}`}
             >
               {CATEGORIES.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
               ))}
             </select>
-            {[0, 1, 2, 3].map(i => (
-              <input
-                key={i}
-                type="text"
-                value={newQuestionAnswers[i]}
-                onChange={(e) => {
-                  const newAnswers = [...newQuestionAnswers];
-                  newAnswers[i] = e.target.value;
-                  setNewQuestionAnswers(newAnswers);
-                }}
-                placeholder={`Antwort ${i + 1} ${i === newQuestionCorrect ? '(richtig)' : ''}`}
-                className={`w-full px-4 py-2 border rounded-lg ${i === newQuestionCorrect ? 'border-green-500' : ''}`}
-              />
-            ))}
-            <select
-              value={newQuestionCorrect}
-              onChange={(e) => setNewQuestionCorrect(Number(e.target.value))}
-              className="w-full px-4 py-2 border rounded-lg"
-            >
-              {[0, 1, 2, 3].map(i => (
-                <option key={i} value={i}>Richtige Antwort: {i + 1}</option>
-              ))}
-            </select>
-            <button
-              onClick={submitQuestion}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg"
-            >
-              <Plus className="inline mr-2" size={18} />
-              Frage einreichen
-            </button>
           </div>
+
+          <div>
+            <label className={`text-sm font-medium block mb-1.5 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+              Antwortmöglichkeiten <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>— klicke den Kreis links, um die richtige zu markieren</span>
+            </label>
+            <div className="space-y-2">
+              {[0, 1, 2, 3].map(i => {
+                const isCorrect = i === newQuestionCorrect;
+                return (
+                  <div key={i} className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setNewQuestionCorrect(i)}
+                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                        isCorrect
+                          ? 'bg-green-500 border-green-500 text-white'
+                          : darkMode
+                            ? 'border-white/20 hover:border-green-400'
+                            : 'border-gray-300 hover:border-green-400'
+                      }`}
+                      title={isCorrect ? 'Richtige Antwort' : 'Als richtige Antwort markieren'}
+                    >
+                      {isCorrect ? <Check size={16} /> : <span className="text-xs font-semibold opacity-60">{i + 1}</span>}
+                    </button>
+                    <input
+                      type="text"
+                      value={newQuestionAnswers[i]}
+                      onChange={(e) => {
+                        const newAnswers = [...newQuestionAnswers];
+                        newAnswers[i] = e.target.value;
+                        setNewQuestionAnswers(newAnswers);
+                      }}
+                      placeholder={`Antwort ${i + 1}`}
+                      className={`flex-1 px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-purple-400 ${
+                        isCorrect ? 'border-green-500' : darkMode ? 'border-white/10' : 'border-gray-300'
+                      } ${darkMode ? 'bg-white/5 text-white placeholder-gray-400' : 'bg-white/70'}`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <button
+            onClick={submitQuestion}
+            className="bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-600 hover:to-fuchsia-600 text-white px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 transition-colors"
+          >
+            <Plus size={18} />
+            Frage einreichen
+          </button>
         </div>
+      </div>
+
+      {submittedQuestions.length === 0 ? (
+        <div className="glass-card rounded-2xl p-12 text-center">
+          <div className={`w-20 h-20 mx-auto mb-5 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-white/5' : 'bg-purple-50'}`}>
+            <Brain size={36} className={darkMode ? 'text-purple-300' : 'text-purple-500'} />
+          </div>
+          <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+            Noch keine Fragen eingereicht
+          </h3>
+          <p className={`text-sm max-w-md mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            Nutze das Formular oben, um deinen ersten Fragen-Vorschlag zu erstellen.
+          </p>
+        </div>
+      ) : (
         <div className="space-y-3">
-          <h3 className="font-bold text-lg">Eingereichte Fragen</h3>
-          {submittedQuestions.map(q => {
+          <h3 className={`font-bold text-lg px-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+            Eingereichte Fragen
+          </h3>
+          {sortedQuestions.map(q => {
             const cat = CATEGORIES.find(c => c.id === q.category);
             return (
-              <div key={q.id} className={`border rounded-lg p-4 ${q.approved ? 'bg-green-50 border-green-500' : 'bg-gray-50'}`}>
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className={`${cat.color} text-white px-3 py-1 rounded-full text-xs font-medium`}>
+              <div key={q.id} className={`glass-card rounded-2xl p-5 ${q.approved ? '' : ''}`}>
+                <div className="flex justify-between items-start gap-3 mb-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {cat && (
+                      <span className={`${cat.color} text-white px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1`}>
+                        <span>{cat.icon}</span>
                         {cat.name}
                       </span>
-                      {q.approved && (
-                        <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                          <Check size={14} className="mr-1" />
-                          Genehmigt
-                        </span>
-                      )}
-                    </div>
-                    <p className="font-bold mb-2">{q.text}</p>
-                    <ul className="text-sm space-y-1">
-                      {q.answers.map((a, i) => (
-                        <li key={i} className={i === q.correct ? 'text-green-600 font-medium' : ''}>
-                          {i + 1}. {a}
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="text-xs text-gray-500 mt-2">Von {q.submittedBy}</p>
+                    )}
+                    {q.approved ? (
+                      <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                        <Check size={12} />
+                        Genehmigt
+                      </span>
+                    ) : (
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${darkMode ? 'bg-amber-500/20 text-amber-200' : 'bg-amber-100 text-amber-800'}`}>
+                        <Clock size={12} />
+                        Ausstehend
+                      </span>
+                    )}
                   </div>
-                  {user.permissions.canApproveQuestions && !q.approved && (
+                  {canApprove && !q.approved && (
                     <button
                       onClick={() => approveQuestion(q.id)}
-                      className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg ml-4"
+                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-sm font-semibold flex-shrink-0 transition-colors"
+                      title="Frage genehmigen"
                     >
-                      <Check size={20} />
+                      <Check size={16} />
+                      Genehmigen
                     </button>
                   )}
+                </div>
+                <p className={`font-bold mb-3 break-words ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  {q.text}
+                </p>
+                <ul className="space-y-1.5 mb-3">
+                  {q.answers.map((a, i) => {
+                    const isRight = i === q.correct;
+                    return (
+                      <li
+                        key={i}
+                        className={`flex items-start gap-2 text-sm px-3 py-1.5 rounded-lg ${
+                          isRight
+                            ? darkMode
+                              ? 'bg-green-500/15 text-green-200'
+                              : 'bg-green-50 text-green-800'
+                            : darkMode
+                              ? 'text-gray-200'
+                              : 'text-gray-700'
+                        }`}
+                      >
+                        <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                          isRight
+                            ? 'bg-green-500 text-white'
+                            : darkMode
+                              ? 'bg-white/10 text-gray-300'
+                              : 'bg-gray-200 text-gray-600'
+                        }`}>
+                          {isRight ? <Check size={12} /> : i + 1}
+                        </span>
+                        <span className="break-words">{a}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className={`flex items-center gap-1 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <UserIcon size={12} />
+                  Von {q.submittedBy || 'Unbekannt'}
                 </div>
               </div>
             );
           })}
-          {submittedQuestions.length === 0 && (
-            <p className="text-gray-500 text-center py-8">Noch keine Fragen eingereicht</p>
-          )}
         </div>
-      </div>
+      )}
     </div>
   );
 };
