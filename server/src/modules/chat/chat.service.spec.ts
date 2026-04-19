@@ -54,7 +54,8 @@ const createMockPrisma = () => ({
     update: jest.fn()
   },
   user: {
-    findFirst: jest.fn()
+    findFirst: jest.fn(),
+    findMany: jest.fn().mockResolvedValue([])
   }
 });
 
@@ -63,7 +64,8 @@ const createMockAuditLog = () => ({
 });
 
 const createMockNotifications = () => ({
-  createForUser: jest.fn().mockResolvedValue(undefined)
+  createForUser: jest.fn().mockResolvedValue(undefined),
+  createForUsers: jest.fn().mockResolvedValue([])
 });
 
 // ---------------------------------------------------------------------------
@@ -284,9 +286,48 @@ describe('ChatService', () => {
 
     it('creates staff room message', async () => {
       prisma.chatMessage.create.mockResolvedValue(makeMessage());
-      const result = await service.createMessage(mockActor(), { scope: ChatScope.STAFF_ROOM, content: 'Hallo!' } as any);
+      const result = await service.createMessage(
+        mockActor({ role: AppRole.ADMIN }),
+        { scope: ChatScope.STAFF_ROOM, content: 'Hallo!' } as any
+      );
       expect(result.id).toBe('msg-1');
       expect(notifications.createForUser).not.toHaveBeenCalled();
+    });
+
+    it('notifies other staff on staff room message', async () => {
+      prisma.chatMessage.create.mockResolvedValue(makeMessage());
+      prisma.user.findMany.mockResolvedValue([{ id: 'user-2' }, { id: 'user-3' }]);
+      await service.createMessage(
+        mockActor({ role: AppRole.ADMIN }),
+        { scope: ChatScope.STAFF_ROOM, content: 'Moin Team' } as any
+      );
+      expect(notifications.createForUsers).toHaveBeenCalledWith(
+        ['user-2', 'user-3'],
+        expect.objectContaining({ title: 'Neue Nachricht im Staff-Chat' })
+      );
+    });
+
+    it('notifies other apprentices on azubi room message', async () => {
+      prisma.chatMessage.create.mockResolvedValue(makeMessage({ scope: ChatScope.AZUBI_ROOM }));
+      prisma.user.findMany.mockResolvedValue([{ id: 'user-2' }]);
+      await service.createMessage(
+        mockActor(),
+        { scope: ChatScope.AZUBI_ROOM, content: 'Frage zum Lehrplan' } as any
+      );
+      expect(notifications.createForUsers).toHaveBeenCalledWith(
+        ['user-2'],
+        expect.objectContaining({ title: 'Neue Nachricht im Azubi-Chat' })
+      );
+    });
+
+    it('skips room notification when no recipients exist', async () => {
+      prisma.chatMessage.create.mockResolvedValue(makeMessage());
+      prisma.user.findMany.mockResolvedValue([]);
+      await service.createMessage(
+        mockActor({ role: AppRole.ADMIN }),
+        { scope: ChatScope.STAFF_ROOM, content: 'Test' } as any
+      );
+      expect(notifications.createForUsers).not.toHaveBeenCalled();
     });
 
     it('sends notification for direct message', async () => {

@@ -148,21 +148,75 @@ export class ChatService {
       select: messageSelect
     });
 
-    if (dto.scope === ChatScope.DIRECT_STAFF && recipientId) {
-      const preview = sanitizedContent.slice(0, 80);
+    await this.notifyChatRecipients(actor, dto.scope, recipientId, sanitizedContent);
+
+    return this.serializeMessage(message);
+  }
+
+  private async notifyChatRecipients(
+    actor: AuthenticatedUser,
+    scope: ChatScope,
+    recipientId: string | null,
+    content: string
+  ) {
+    const preview = content.slice(0, 80);
+    const previewText = `${actor.displayName}: ${preview}${content.length > 80 ? '...' : ''}`;
+
+    if (scope === ChatScope.DIRECT_STAFF && recipientId) {
       await this.notificationsService.createForUser(recipientId, {
         title: 'Neue Chatnachricht',
-        message: `${actor.displayName}: ${preview}${sanitizedContent.length > 80 ? '...' : ''}`,
+        message: previewText,
         type: NotificationType.INFO,
         metadata: {
-          scope: dto.scope,
+          scope,
           senderId: actor.id,
           recipientId
         }
       });
+      return;
     }
 
-    return this.serializeMessage(message);
+    const roleFilter =
+      scope === ChatScope.AZUBI_ROOM
+        ? { in: [AppRole.AZUBI, AppRole.RETTUNGSSCHWIMMER_AZUBI] }
+        : scope === ChatScope.STAFF_ROOM
+          ? { in: [AppRole.ADMIN, AppRole.AUSBILDER] }
+          : null;
+
+    if (!roleFilter) {
+      return;
+    }
+
+    const recipients = await this.prisma.user.findMany({
+      where: {
+        organizationId: actor.organizationId,
+        status: AccountStatus.APPROVED,
+        isDeleted: false,
+        role: roleFilter,
+        id: { not: actor.id }
+      },
+      select: { id: true }
+    });
+
+    if (recipients.length === 0) {
+      return;
+    }
+
+    const title =
+      scope === ChatScope.AZUBI_ROOM ? 'Neue Nachricht im Azubi-Chat' : 'Neue Nachricht im Staff-Chat';
+
+    await this.notificationsService.createForUsers(
+      recipients.map((recipient) => recipient.id),
+      {
+        title,
+        message: previewText,
+        type: NotificationType.INFO,
+        metadata: {
+          scope,
+          senderId: actor.id
+        }
+      }
+    );
   }
 
   async deleteMessage(actor: AuthenticatedUser, messageId: string, request: Request) {
