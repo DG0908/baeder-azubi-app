@@ -1,10 +1,12 @@
 import { MENU_GROUP_LABELS } from '../../data/constants';
+import { useFeatureContext } from '../../context/FeatureContext';
 
 export function DesktopSidebar({
   darkMode, sidebarCollapsed,
   appConfig, user, currentView,
   setCurrentView, playSound, loadFlashcards, handleLogout,
 }) {
+  const { hasFeature } = useFeatureContext();
   return (
     <aside className={`hidden md:flex flex-col fixed top-0 left-0 h-full z-30 transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-60'} ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'} border-r shadow-lg`}>
       <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'px-4'} h-11 shrink-0 ${darkMode ? 'border-slate-700' : 'border-gray-200'} border-b`}>
@@ -17,7 +19,8 @@ export function DesktopSidebar({
             .filter((item) => {
               if (!item.visible) return false;
               if ((item.group || 'lernen') !== groupId) return false;
-              if (item.requiresPermission) return user.permissions[item.requiresPermission];
+              if (item.requiresPermission && !user.permissions[item.requiresPermission]) return false;
+              if (!hasFeature(item.id)) return false;
               return true;
             })
             .sort((a, b) => a.order - b.order);

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { useFeatureContext } from '../context/FeatureContext';
 
 const VIEW_TO_PATH: Record<string, string> = {
   home: '/',
@@ -37,6 +39,7 @@ const PATH_TO_VIEW: Record<string, string> = Object.fromEntries(
 export const useViewRouter = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { hasFeature, isLoading } = useFeatureContext();
 
   const knownPath = PATH_TO_VIEW[location.pathname] !== undefined;
 
@@ -51,10 +54,25 @@ export const useViewRouter = () => {
     }
   }, [knownPath, location.pathname, navigate]);
 
+  // Redirect when current view is feature-gated and user has no access.
+  // Warten bis Feature-Map geladen ist, sonst blitzt der Toast waehrend Cold-Start.
+  useEffect(() => {
+    if (isLoading) return;
+    if (currentView === 'home') return;
+    if (hasFeature(currentView)) return;
+    toast('Bereich aktuell nicht verfuegbar.', { icon: 'ℹ️' });
+    navigate('/', { replace: true });
+  }, [currentView, hasFeature, isLoading, navigate]);
+
   const setCurrentView = useCallback((viewId: string) => {
+    if (viewId !== 'home' && !hasFeature(viewId)) {
+      toast('Bereich aktuell nicht verfuegbar.', { icon: 'ℹ️' });
+      navigate('/');
+      return;
+    }
     const path = VIEW_TO_PATH[viewId] || '/';
     navigate(path);
-  }, [navigate]);
+  }, [navigate, hasFeature]);
 
   return { currentView, setCurrentView };
 };

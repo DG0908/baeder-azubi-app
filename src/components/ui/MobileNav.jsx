@@ -1,10 +1,12 @@
 import { MENU_GROUP_LABELS } from '../../data/constants';
+import { useFeatureContext } from '../../context/FeatureContext';
 
 export function MobileNav({
   darkMode, currentView, setCurrentView, playSound,
   showMehrDrawer, setShowMehrDrawer,
   appConfig, user, loadFlashcards, handleLogout,
 }) {
+  const { hasFeature } = useFeatureContext();
   return (
     <>
       <div className={`fixed bottom-0 left-0 right-0 z-50 md:hidden ${darkMode ? 'bg-slate-900/97 border-slate-700' : 'bg-white/97 border-gray-200'} border-t backdrop-blur-sm flex`}
@@ -15,7 +17,7 @@ export function MobileNav({
           { id: 'quiz', icon: '🎮', label: 'Quiz' },
           { id: 'berichtsheft', icon: '📖', label: 'Bericht' },
           { id: '__mehr', icon: '☰', label: 'Mehr' },
-        ].map(tab => (
+        ].filter(tab => tab.id === '__mehr' || hasFeature(tab.id)).map(tab => (
           <button
             key={tab.id}
             onClick={() => {
@@ -64,7 +66,8 @@ export function MobileNav({
                     .filter(item => {
                       if (!item.visible) return false;
                       if ((item.group || 'lernen') !== groupId) return false;
-                      if (item.requiresPermission) return user.permissions[item.requiresPermission];
+                      if (item.requiresPermission && !user.permissions[item.requiresPermission]) return false;
+                      if (!hasFeature(item.id)) return false;
                       return true;
                     })
                     .sort((a, b) => a.order - b.order);
