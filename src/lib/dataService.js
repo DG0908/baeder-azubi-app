@@ -388,6 +388,7 @@ export const loadUsers = async (currentUser) => {
       ...mapped,
       name: mapped.name || u.displayName,
       approved: mapped.approved,
+      profile_banner_key: mapped.profileBannerKey,
       organization_id: mapped.organizationId,
       birth_date: mapped.birthDate,
       training_end: mapped.trainingEnd,
@@ -423,6 +424,9 @@ export const updateMyProfile = async (userId, payload) => {
   }
   if (payload?.avatar !== undefined) {
     securePayload.avatar = payload.avatar;
+  }
+  if (payload?.profileBannerKey !== undefined) {
+    securePayload.profileBannerKey = payload.profileBannerKey;
   }
   if (payload?.company !== undefined) {
     securePayload.company = payload.company;

@@ -33,6 +33,7 @@ interface BackendUser {
   role: string;
   status?: string;
   avatar?: string | null;
+  profileBannerKey?: string | null;
   company?: string | null;
   birthDate?: string | null;
   organizationId?: string | null;
@@ -62,6 +63,7 @@ export interface FrontendUser {
   isOwner: boolean;
   is_owner: boolean;
   avatar: string | null;
+  profileBannerKey: string | null;
   company: string | null;
   birthDate: string | null;
   organizationId: string | null;
@@ -103,6 +105,7 @@ export const mapBackendUserToFrontendUser = (user: BackendUser | null | undefine
     isOwner: false,
     is_owner: false,
     avatar: user.avatar || null,
+    profileBannerKey: user.profileBannerKey || null,
     company: user.company || null,
     birthDate: user.birthDate || null,
     organizationId: user.organizationId || user.organization?.id || null,

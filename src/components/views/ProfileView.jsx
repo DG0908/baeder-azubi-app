@@ -10,6 +10,7 @@ import {
   adminUpdateAvatarUnlocks as dsAdminUpdateAvatarUnlocks
 } from '../../lib/dataService';
 import { AVATARS, PERMISSIONS, getAvatarById, getLevel, getStickerSpriteStyle, isStickerAvatar } from '../../data/constants';
+import { PROFILE_BANNERS, getProfileBannerGradient } from '../../data/profileBanners';
 import AvatarBadge from '../ui/AvatarBadge';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
@@ -43,6 +44,7 @@ const ProfileView = ({
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [pushActionLoading, setPushActionLoading] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [showBannerPicker, setShowBannerPicker] = useState(false);
   const [avatarFilter, setAvatarFilter] = useState('all');
   const [adminStickerSaving, setAdminStickerSaving] = useState(false);
   const [totpEnabled, setTotpEnabled] = useState(false);
@@ -316,6 +318,22 @@ const ProfileView = ({
     }
   };
 
+  const updateProfileBanner = async (bannerKey) => {
+    setProfileSaving(true);
+    try {
+      await dsUpdateMyProfile(user.id, { profileBannerKey: bannerKey });
+      const updatedUser = { ...user, profileBannerKey: bannerKey, profile_banner_key: bannerKey };
+      setUser(updatedUser);
+      localStorage.setItem('bäder_user', JSON.stringify(updatedUser));
+      showToast(bannerKey ? 'Banner geändert!' : 'Banner zurückgesetzt', 'success');
+    } catch (error) {
+      console.error('Error updating banner:', error);
+      showToast('Fehler beim Ändern des Banners', 'error');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
   // Admin: einzelnen Sticker für sich selbst ein-/ausschalten
   const adminToggleStickerForSelf = async (avatarId) => {
     if (!isAdmin || adminStickerSaving) return;
@@ -457,25 +475,42 @@ const ProfileView = ({
       )}
 
       {/* Profil-Header */}
-      <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl p-8 text-center">
-        <div className="mb-3 flex justify-center">
-          <button onClick={() => setShowAvatarPicker(true)} className="relative group" title="Avatar ändern">
-            <PremiumAvatarBadge
-              avatar={equippedAvatar || fallbackAvatar}
-              size="xl"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-              <Pencil size={24} />
-            </div>
-          </button>
+      <div
+        className="relative text-white rounded-xl p-8 text-center overflow-hidden shadow-lg"
+        style={{ background: getProfileBannerGradient(user?.profileBannerKey || user?.profile_banner_key) }}
+      >
+        {/* Dunkler Overlay unten für Lesbarkeit */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.35) 100%)' }}
+        />
+        <button
+          onClick={() => setShowBannerPicker(true)}
+          title="Banner ändern"
+          className="absolute top-3 right-3 z-10 px-3 py-1.5 rounded-full bg-black/30 hover:bg-black/50 text-white text-xs font-semibold backdrop-blur-sm transition-all flex items-center gap-1.5"
+        >
+          <Pencil size={12} /> Banner
+        </button>
+        <div className="relative z-10">
+          <div className="mb-3 flex justify-center">
+            <button onClick={() => setShowAvatarPicker(true)} className="relative group" title="Avatar ändern">
+              <PremiumAvatarBadge
+                avatar={equippedAvatar || fallbackAvatar}
+                size="xl"
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <Pencil size={24} />
+              </div>
+            </button>
+          </div>
+          <h2 className="text-3xl font-bold mb-2 drop-shadow">{user.name}</h2>
+          <p className="opacity-95 drop-shadow">{PERMISSIONS[user.role]?.label || user.role}</p>
+          {profileNameLooksLikeEmail && (
+            <p className="mt-2 text-sm bg-white/20 rounded-lg px-3 py-1 inline-block">
+              Tipp: Ändere deinen Anzeigenamen unten — gerade sehen andere deine E-Mail!
+            </p>
+          )}
         </div>
-        <h2 className="text-3xl font-bold mb-2">{user.name}</h2>
-        <p className="opacity-90">{PERMISSIONS[user.role]?.label || user.role}</p>
-        {profileNameLooksLikeEmail && (
-          <p className="mt-2 text-sm bg-white/20 rounded-lg px-3 py-1 inline-block">
-            Tipp: Ändere deinen Anzeigenamen unten — gerade sehen andere deine E-Mail!
-          </p>
-        )}
       </div>
 
       {/* Avatar kompakt + Modal */}
@@ -581,8 +616,8 @@ const ProfileView = ({
                         {isAdmin && isAdminOnly ? '➕' : '🔒'}
                       </span>
                     )}
-                    <div className={`mb-2 rounded-lg border px-3 py-2 flex items-center justify-center ${darkMode ? 'bg-slate-800 border-slate-500' : 'bg-white border-gray-200'}`}>
-                      <AvatarBadge avatar={avatar} size="md" className="border border-white/40" />
+                    <div className={`mb-2 rounded-lg border px-3 py-4 flex items-center justify-center ${darkMode ? 'bg-slate-800 border-slate-500' : 'bg-white border-gray-200'}`}>
+                      <AvatarBadge avatar={avatar} size="xl" className="border border-white/40" />
                     </div>
                     <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                       {avatar.label}
@@ -617,6 +652,64 @@ const ProfileView = ({
                 className={`mt-4 text-sm ${darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-500'} transition-colors`}
               >
                 Avatar entfernen
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Banner-Picker Modal */}
+      {showBannerPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setShowBannerPicker(false)}>
+          <div
+            className={`w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl shadow-2xl ${darkMode ? 'bg-slate-800' : 'bg-white'} p-6`}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Banner auswählen</h3>
+              <button onClick={() => setShowBannerPicker(false)} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-slate-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
+                <XIcon size={20} />
+              </button>
+            </div>
+            <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Wähle einen Hintergrund für deinen Profil-Header. Empfohlene Bildmaße für spätere eigene Uploads: 1500×500 px (3:1), WebP/JPEG unter 300 KB.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {PROFILE_BANNERS.map((banner) => {
+                const currentKey = user?.profileBannerKey || user?.profile_banner_key;
+                const isSelected = currentKey === banner.id;
+                return (
+                  <button
+                    key={banner.id}
+                    onClick={() => { updateProfileBanner(banner.id); setShowBannerPicker(false); }}
+                    disabled={profileSaving}
+                    className={`relative h-24 rounded-xl overflow-hidden border-2 transition-all hover:-translate-y-0.5 ${
+                      isSelected
+                        ? 'ring-2 ring-cyan-400 border-cyan-400'
+                        : darkMode ? 'border-slate-600 hover:border-slate-400' : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                    style={{ background: banner.gradient }}
+                    title={banner.label}
+                  >
+                    <div className="absolute inset-0 flex items-end justify-start p-2 bg-gradient-to-t from-black/50 to-transparent">
+                      <span className="text-white text-sm font-semibold drop-shadow">{banner.label}</span>
+                    </div>
+                    {isSelected && (
+                      <span className="absolute top-2 right-2 bg-cyan-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        aktiv
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {(user?.profileBannerKey || user?.profile_banner_key) && (
+              <button
+                onClick={() => { updateProfileBanner(null); setShowBannerPicker(false); }}
+                disabled={profileSaving}
+                className={`mt-4 text-sm ${darkMode ? 'text-gray-400 hover:text-red-400' : 'text-gray-500 hover:text-red-500'} transition-colors`}
+              >
+                Auf Standard zurücksetzen
               </button>
             )}
           </div>
