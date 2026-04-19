@@ -132,6 +132,8 @@ model User {
   lastLoginAt                  DateTime?
   retentionWarnedAt            DateTime?
   isDeleted                    Boolean                 @default(false)
+  isBetaTester                 Boolean                 @default(false)
+  featureOverrides             Json?
   createdAt                    DateTime                @default(now())
   updatedAt                    DateTime                @updatedAt
   sentChatMessages             ChatMessage[]           @relation("SentChatMessages")
@@ -231,6 +233,7 @@ model AppConfig {
   menuItems      Json
   themeColors    Json
   featureFlags   Json         @default("{}")
+  featureStages  Json         @default("{}")
   updatedById    String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt

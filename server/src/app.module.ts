@@ -17,6 +17,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { ContentModule } from './modules/content/content.module';
 import { DuelsModule } from './modules/duels/duels.module';
 import { ExamSimulatorModule } from './modules/exam-simulator/exam-simulator.module';
+import { FeatureRolloutModule } from './modules/feature-rollout/feature-rollout.module';
 import { FlashcardsModule } from './modules/flashcards/flashcards.module';
 import { ForumModule } from './modules/forum/forum.module';
 import { HealthModule } from './modules/health/health.module';
@@ -56,6 +57,7 @@ import { BadgesModule } from './modules/badges/badges.module';
     FlashcardsModule,
     ForumModule,
     ExamSimulatorModule,
+    FeatureRolloutModule,
     NotificationsModule,
     QuestionWorkflowsModule,
     SchoolAttendanceModule,
