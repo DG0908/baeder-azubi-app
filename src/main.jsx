@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast'
 import BaederApp from './App.jsx'
 import { AuthProvider } from './context/AuthContext'
 import { AppProvider } from './context/AppContext'
+import { FeatureProvider } from './context/FeatureContext'
 import './index.css'
 
 const queryClient = new QueryClient({
@@ -175,18 +176,20 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <AppProvider>
-            <BaederApp />
-            <Toaster
-              position="top-center"
-              toastOptions={{
-                duration: 4000,
-                style: { fontSize: '14px', maxWidth: '90vw' },
-                success: { duration: 3000 },
-                error: { duration: 5000 },
-              }}
-            />
-          </AppProvider>
+          <FeatureProvider>
+            <AppProvider>
+              <BaederApp />
+              <Toaster
+                position="top-center"
+                toastOptions={{
+                  duration: 4000,
+                  style: { fontSize: '14px', maxWidth: '90vw' },
+                  success: { duration: 3000 },
+                  error: { duration: 5000 },
+                }}
+              />
+            </AppProvider>
+          </FeatureProvider>
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
