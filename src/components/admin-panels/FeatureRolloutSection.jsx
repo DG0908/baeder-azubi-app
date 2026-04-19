@@ -92,7 +92,7 @@ export const FeatureRolloutSection = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-md">
+    <div className="glass-card rounded-xl p-6">
       <button
         type="button"
         onClick={() => setIsExpanded((v) => !v)}
