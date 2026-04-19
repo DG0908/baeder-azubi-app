@@ -1,6 +1,9 @@
 const FRONTEND_URL = String(process.env.SMOKE_FRONTEND_URL || 'https://azubi.smartbaden.de').trim();
 const FRONTEND_PATH = String(process.env.SMOKE_FRONTEND_PATH || '/').trim() || '/';
 const API_BASE_URL = String(process.env.SMOKE_API_BASE_URL || 'https://api.smartbaden.de/api').trim();
+// NestJS app uses URI versioning (defaultVersion '1'), so every module route sits under /api/v1/.
+// Only VERSION_NEUTRAL controllers (health) remain at /api/ directly.
+const API_VERSIONED_BASE_URL = String(process.env.SMOKE_API_VERSIONED_BASE_URL || `${API_BASE_URL.replace(/\/+$/, '')}/v1`).trim();
 const TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS || 15000);
 
 const roleChecks = [
@@ -254,7 +257,7 @@ const runRoleCheck = async (roleCheck) => {
     return;
   }
 
-  const loginUrl = buildUrl(API_BASE_URL, '/auth/login');
+  const loginUrl = buildUrl(API_VERSIONED_BASE_URL, '/auth/login');
   const loginBody = await runCheck(`${roleCheck.label}-login`, async () => {
     const body = await request(
       `${roleCheck.label}-login`,
@@ -285,7 +288,7 @@ const runRoleCheck = async (roleCheck) => {
     return;
   }
 
-  const meUrl = buildUrl(API_BASE_URL, '/auth/me');
+  const meUrl = buildUrl(API_VERSIONED_BASE_URL, '/auth/me');
   await runCheck(`${roleCheck.label}-me`, async () => {
     const body = await request(`${roleCheck.label}-me`, meUrl, {
       method: 'GET',
@@ -299,7 +302,7 @@ const runRoleCheck = async (roleCheck) => {
     return body.email || body.displayName || body.id;
   });
 
-  const refreshUrl = buildUrl(API_BASE_URL, '/auth/refresh');
+  const refreshUrl = buildUrl(API_VERSIONED_BASE_URL, '/auth/refresh');
   const refreshBody = await runCheck(`${roleCheck.label}-refresh`, async () => {
     const body = await request(
       `${roleCheck.label}-refresh`,
@@ -323,7 +326,7 @@ const runRoleCheck = async (roleCheck) => {
   }
 
   for (const readCheck of roleReadChecks) {
-    const url = buildUrl(API_BASE_URL, readCheck.path);
+    const url = buildUrl(API_VERSIONED_BASE_URL, readCheck.path);
     await runCheck(`${roleCheck.label}-${readCheck.labelSuffix}`, async () => {
       const body = await request(`${roleCheck.label}-${readCheck.labelSuffix}`, url, {
         method: 'GET',
@@ -333,7 +336,7 @@ const runRoleCheck = async (roleCheck) => {
     });
   }
 
-  const exportUrl = buildUrl(API_BASE_URL, '/users/me/export');
+  const exportUrl = buildUrl(API_VERSIONED_BASE_URL, '/users/me/export');
   await runCheck(`${roleCheck.label}-export`, async () => {
     const exportBody = await request(`${roleCheck.label}-export`, exportUrl, {
       method: 'GET',
@@ -353,7 +356,7 @@ const runRoleCheck = async (roleCheck) => {
 
   if (roleCheck.expectedRole === 'admin') {
     for (const adminCheck of adminReadChecks) {
-      const url = buildUrl(API_BASE_URL, adminCheck.path);
+      const url = buildUrl(API_VERSIONED_BASE_URL, adminCheck.path);
       await runCheck(`${roleCheck.label}-${adminCheck.labelSuffix}`, async () => {
         const body = await request(`${roleCheck.label}-${adminCheck.labelSuffix}`, url, {
           method: 'GET',
@@ -389,7 +392,7 @@ const ADMIN_ONLY_PATHS = [
 
 const checkUnauthenticated401s = async () => {
   for (const path of PROTECTED_PATHS) {
-    const url = buildUrl(API_BASE_URL, path);
+    const url = buildUrl(API_VERSIONED_BASE_URL, path);
     await runCheck(`unauth-401-${path}`, async () => {
       const response = await fetchWithTimeout(url, { method: 'GET' });
       if (response.status !== 401) {
@@ -406,7 +409,7 @@ const checkAzubiRbac403s = async (azubiToken) => {
     return;
   }
   for (const path of ADMIN_ONLY_PATHS) {
-    const url = buildUrl(API_BASE_URL, path);
+    const url = buildUrl(API_VERSIONED_BASE_URL, path);
     await runCheck(`rbac-403-${path}`, async () => {
       const response = await fetchWithTimeout(url, {
         method: 'GET',
@@ -423,7 +426,7 @@ const checkAzubiRbac403s = async (azubiToken) => {
 const main = async () => {
   console.log('Running smoke checks...');
   console.log(`Frontend: ${buildUrl(FRONTEND_URL, FRONTEND_PATH)}`);
-  console.log(`API: ${API_BASE_URL}`);
+  console.log(`API: ${API_BASE_URL} (versioned: ${API_VERSIONED_BASE_URL})`);
 
   validateRoleEnv();
   await checkFrontendShell();
@@ -436,7 +439,7 @@ const main = async () => {
   const azubiEmail = String(azubiRoleCheck?.email || '').trim();
   const azubiPassword = String(azubiRoleCheck?.password || '');
   if (azubiEmail && azubiPassword) {
-    const loginUrl = buildUrl(API_BASE_URL, '/auth/login');
+    const loginUrl = buildUrl(API_VERSIONED_BASE_URL, '/auth/login');
     try {
       const response = await fetchWithTimeout(loginUrl, buildJsonRequest({ email: azubiEmail, password: azubiPassword }));
       const body = await parseBody(response);
