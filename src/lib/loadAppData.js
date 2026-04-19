@@ -13,16 +13,10 @@ import {
 } from './dataService';
 import {
   buildUserStatsFromRow,
-  buildQuizTotalsFromFinishedGames,
   createEmptyUserStats,
-  doesUserStatsRowNeedRepair,
   ensureUserStatsStructure,
   getXpMetaFromCategoryStats,
-  haveQuizTotalsChanged,
-  isCountableFinishedQuizGame,
-  normalizePlayerName,
   normalizeChallengeTimeoutMinutes,
-  syncQuizTotalsIntoStats,
 } from './quizHelpers';
 import { mergeMenuItemsWithDefaults } from './menuConfig';
 import { getQuestionPerformanceKey } from './questionKey';
@@ -95,7 +89,6 @@ export async function loadAppData({
     await loadCustomSwimTrainingPlans();
 
     const gamesRaw = await dsLoadGames(200, user?.id);
-    const gamesData = gamesRaw;
     if (gamesRaw.length > 0) {
       const games = gamesRaw.map((g) => ({
         ...g,
@@ -130,30 +123,10 @@ export async function loadAppData({
       setStatsByUserId({});
     }
 
-    if (user && user.id && gamesData) {
+    if (user && user.id) {
       try {
         const statsData = await dsGetUserStats(user);
-        let stats = buildUserStatsFromRow(statsData);
-        const shouldPersistStats = doesUserStatsRowNeedRepair(statsData, stats);
-        const currentUserName = normalizePlayerName(user.name);
-        const finishedGames = (gamesData || []).filter((g) => {
-          if (!isCountableFinishedQuizGame(g)) return false;
-          const p1 = normalizePlayerName(g.player1);
-          const p2 = normalizePlayerName(g.player2);
-          return p1 === currentUserName || p2 === currentUserName;
-        });
-        buildQuizTotalsFromFinishedGames(finishedGames, currentUserName, stats);
-
-        const syncedTotals = syncQuizTotalsIntoStats(stats, finishedGames, currentUserName);
-        if (haveQuizTotalsChanged(stats, syncedTotals)) {
-          stats = syncedTotals;
-        }
-
-        if (shouldPersistStats) {
-          await duel.saveUserStatsToSupabase(user, stats);
-        }
-
-        setUserStats(stats);
+        setUserStats(buildUserStatsFromRow(statsData));
       } catch (e) {
         console.log('Stats load:', e);
         setUserStats(ensureUserStatsStructure(createEmptyUserStats()));
@@ -229,8 +202,14 @@ export async function refreshLightData({
       duel.setAllGames(normalized);
       duel.setActiveGames(normalized.filter((g) => g.status !== 'finished'));
       updateLeaderboard(normalized);
-      if (user?.name) {
-        setUserStats((prevStats) => syncQuizTotalsIntoStats(prevStats, normalized, user.name));
+    }
+
+    if (user?.id) {
+      try {
+        const statsData = await dsGetUserStats(user);
+        setUserStats(buildUserStatsFromRow(statsData));
+      } catch (e) {
+        console.log('Stats refresh error:', e.message);
       }
     }
 
