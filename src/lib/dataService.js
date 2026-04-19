@@ -1236,10 +1236,11 @@ export const deletePracticalExamAttempt = async (attemptId) => {
 // ─── School Attendance ──────────────────────────────────────────────
 
 export const loadSchoolAttendanceAzubis = async () => {
-  const users = await secureUsersApi.list();
+  // Org-scoped: /users/contacts filtert serverseitig auf actor.organizationId + status=APPROVED.
+  const users = await secureUsersApi.contacts();
   return (users || [])
-    .filter(u => String(u.role).toUpperCase() === 'AZUBI' && String(u.status).toUpperCase() === 'APPROVED')
-    .map(u => ({ id: u.id, name: u.displayName, email: u.email }))
+    .filter(u => String(u.role).toUpperCase() === 'AZUBI')
+    .map(u => ({ id: u.id, name: u.displayName }))
     .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
 };
 
