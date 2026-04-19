@@ -772,6 +772,9 @@ model DuelAnswer {
   isCorrect           Boolean
   durationMs          Int
   answeredAt          DateTime     @default(now())
+  answerType          String       @default("single")
+  keywordText         String?
+  points              Int          @default(0)
 
   @@unique([duelQuestionId, userId])
   @@index([duelId, userId])

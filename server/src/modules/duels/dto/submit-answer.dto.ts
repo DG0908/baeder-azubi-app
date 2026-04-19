@@ -1,13 +1,25 @@
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+
+export type DuelAnswerType = 'single' | 'keyword' | 'whoami';
 
 export class SubmitAnswerDto {
   @IsString()
   duelQuestionId!: string;
 
+  @IsOptional()
+  @IsIn(['single', 'keyword', 'whoami'])
+  answerType?: DuelAnswerType;
+
+  @IsOptional()
   @IsInt()
   @Min(0)
   @Max(20)
-  selectedOptionIndex!: number;
+  selectedOptionIndex?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  keywordText?: string;
 
   @IsOptional()
   @IsInt()
