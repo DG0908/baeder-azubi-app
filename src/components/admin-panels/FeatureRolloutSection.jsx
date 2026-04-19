@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Rocket, RefreshCw, Lock } from 'lucide-react';
+import { Rocket, RefreshCw, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { featureRolloutAdminApi } from '../../lib/api/features';
 import { FEATURE_STAGES } from '../../lib/featureRegistry';
@@ -66,10 +66,12 @@ const StageSwitch = ({ currentStage, disabled, onChange }) => (
 export const FeatureRolloutSection = () => {
   const { showToast } = useApp();
   const queryClient = useQueryClient();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: ['admin-feature-rollout'],
-    queryFn: featureRolloutAdminApi.snapshot
+    queryFn: featureRolloutAdminApi.snapshot,
+    enabled: isExpanded
   });
 
   const stageMutation = useMutation({
@@ -91,7 +93,12 @@ export const FeatureRolloutSection = () => {
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-md">
-      <div className="flex items-start justify-between mb-4 gap-3 flex-wrap">
+      <button
+        type="button"
+        onClick={() => setIsExpanded((v) => !v)}
+        aria-expanded={isExpanded}
+        className="w-full flex items-center justify-between gap-3 text-left"
+      >
         <div className="flex items-start gap-3">
           <Rocket className="text-cyan-600 mt-1" size={24} />
           <div>
@@ -102,28 +109,36 @@ export const FeatureRolloutSection = () => {
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
-        >
-          <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
-          Aktualisieren
-        </button>
-      </div>
+        <span className="flex-shrink-0 inline-flex items-center gap-1 text-sm text-gray-500">
+          {isExpanded ? <>Einklappen <ChevronUp size={16} /></> : <>Ausklappen <ChevronDown size={16} /></>}
+        </span>
+      </button>
 
-      {isLoading && (
-        <div className="py-6 text-center text-sm text-gray-500">Features werden geladen...</div>
-      )}
+      {isExpanded && (
+        <div className="mt-4">
+          <div className="flex justify-end mb-3">
+            <button
+              type="button"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+            >
+              <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
+              Aktualisieren
+            </button>
+          </div>
 
-      {isError && (
-        <div className="py-4 px-4 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
-          Fehler beim Laden: {error?.message || 'Unbekannter Fehler'}
-        </div>
-      )}
+          {isLoading && (
+            <div className="py-6 text-center text-sm text-gray-500">Features werden geladen...</div>
+          )}
 
-      {data && (
+          {isError && (
+            <div className="py-4 px-4 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+              Fehler beim Laden: {error?.message || 'Unbekannter Fehler'}
+            </div>
+          )}
+
+          {data && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -181,6 +196,8 @@ export const FeatureRolloutSection = () => {
               })}
             </tbody>
           </table>
+        </div>
+      )}
         </div>
       )}
     </div>
