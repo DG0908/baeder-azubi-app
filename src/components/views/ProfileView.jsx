@@ -10,7 +10,7 @@ import {
   adminUpdateAvatarUnlocks as dsAdminUpdateAvatarUnlocks
 } from '../../lib/dataService';
 import { AVATARS, PERMISSIONS, getAvatarById, getLevel, getStickerSpriteStyle, isStickerAvatar } from '../../data/constants';
-import { PROFILE_BANNERS, getProfileBannerGradient } from '../../data/profileBanners';
+import { getProfileBannerBackground, getVisibleBanners } from '../../data/profileBanners';
 import AvatarBadge from '../ui/AvatarBadge';
 import PremiumAvatarBadge from '../ui/PremiumAvatarBadge';
 import { getAgeHandicap } from '../../data/swimming';
@@ -477,7 +477,7 @@ const ProfileView = ({
       {/* Profil-Header */}
       <div
         className="relative text-white rounded-xl p-8 text-center overflow-hidden shadow-lg"
-        style={{ background: getProfileBannerGradient(user?.profileBannerKey || user?.profile_banner_key) }}
+        style={{ background: getProfileBannerBackground(user?.profileBannerKey || user?.profile_banner_key) }}
       >
         {/* Dunkler Overlay unten für Lesbarkeit */}
         <div
@@ -675,9 +675,12 @@ const ProfileView = ({
               Wähle einen Hintergrund für deinen Profil-Header. Empfohlene Bildmaße für spätere eigene Uploads: 1500×500 px (3:1), WebP/JPEG unter 300 KB.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {PROFILE_BANNERS.map((banner) => {
+              {getVisibleBanners(user?.role).map((banner) => {
                 const currentKey = user?.profileBannerKey || user?.profile_banner_key;
                 const isSelected = currentKey === banner.id;
+                const background = banner.imageUrl
+                  ? `url('${banner.imageUrl}') center/cover no-repeat, ${banner.gradient}`
+                  : banner.gradient;
                 return (
                   <button
                     key={banner.id}
@@ -688,12 +691,17 @@ const ProfileView = ({
                         ? 'ring-2 ring-cyan-400 border-cyan-400'
                         : darkMode ? 'border-slate-600 hover:border-slate-400' : 'border-gray-200 hover:border-gray-400'
                     }`}
-                    style={{ background: banner.gradient }}
+                    style={{ background }}
                     title={banner.label}
                   >
                     <div className="absolute inset-0 flex items-end justify-start p-2 bg-gradient-to-t from-black/50 to-transparent">
                       <span className="text-white text-sm font-semibold drop-shadow">{banner.label}</span>
                     </div>
+                    {banner.tier === 'admin' && (
+                      <span className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        Admin
+                      </span>
+                    )}
                     {isSelected && (
                       <span className="absolute top-2 right-2 bg-cyan-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                         aktiv
