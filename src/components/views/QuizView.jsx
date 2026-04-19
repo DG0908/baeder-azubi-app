@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Trophy, ChevronDown } from 'lucide-react';
+import { Target, Trophy, ChevronDown, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES, PERMISSIONS, getAvatarById } from '../../data/constants';
@@ -70,6 +70,7 @@ const QuizView = ({
   categoryRoundResult,
   proceedAfterCategoryResult,
   onForfeit,
+  exitCurrentGame,
 }) => {
   const { user } = useAuth();
   const { darkMode, playSound } = useApp();
@@ -691,6 +692,17 @@ const QuizView = ({
 
       {currentGame && (
         <div className={`rounded-xl p-6 shadow-lg mb-6 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+          {exitCurrentGame && !currentQuestion && (
+            <div className="flex justify-start mb-3">
+              <button
+                onClick={exitCurrentGame}
+                className={`text-xs px-3 py-1 rounded-lg font-medium inline-flex items-center gap-1.5 ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+              >
+                <ArrowLeft className="w-3 h-3" />
+                Zur Herausforderungsliste
+              </button>
+            </div>
+          )}
           <div className="text-center mb-4">
             <span className={`${currentDifficulty.color} text-white px-6 py-2 rounded-full font-bold inline-flex items-center gap-2`}>
               {currentDifficulty.icon} {currentDifficulty.label} - {(currentQuestion ? questionTimeLimit : currentDifficulty.time)} Sekunden pro Frage
