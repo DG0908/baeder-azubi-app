@@ -38,6 +38,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(DARK_MODE_STORAGE_KEY, darkMode ? 'true' : 'false');
+    document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
 
   const showToast = (message: string, type: ToastType = 'success', duration = 3000) => {
