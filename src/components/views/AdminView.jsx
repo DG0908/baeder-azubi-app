@@ -182,7 +182,7 @@ const OrganizationManager = () => {
       )}
 
       {/* Betriebe */}
-      <div className="bg-white rounded-xl p-6 shadow-lg">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold flex items-center">
             <Building2 className="mr-2 text-indigo-500" />
@@ -267,7 +267,7 @@ const OrganizationManager = () => {
       </div>
 
       {/* Einladungscodes */}
-      <div className="bg-white rounded-xl p-6 shadow-lg">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold flex items-center">
             <Ticket className="mr-2 text-emerald-500" />
@@ -891,7 +891,7 @@ const AdminView = ({
           const stats = getAdminStats();
           return (
             <>
-              <div className="bg-white rounded-xl p-6 shadow-md">
+              <div className="glass-card glass-card-hover rounded-xl p-6">
                 <div className="flex items-center justify-between mb-2">
                   <Users className="text-blue-500" size={32} />
                   <span className="text-3xl font-bold text-blue-600">{stats.totalUsers}</span>
@@ -902,7 +902,7 @@ const AdminView = ({
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md">
+              <div className="glass-card glass-card-hover rounded-xl p-6">
                 <div className="flex items-center justify-between mb-2">
                   <AlertTriangle className="text-yellow-500" size={32} />
                   <span className="text-3xl font-bold text-yellow-600">{stats.pendingApprovals}</span>
@@ -910,7 +910,7 @@ const AdminView = ({
                 <p className="text-sm text-gray-600">Ausstehende Freischaltungen</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md">
+              <div className="glass-card glass-card-hover rounded-xl p-6">
                 <div className="flex items-center justify-between mb-2">
                   <Trophy className="text-green-500" size={32} />
                   <span className="text-3xl font-bold text-green-600">{stats.totalGames}</span>
@@ -919,7 +919,7 @@ const AdminView = ({
                 <p className="text-xs text-gray-500 mt-1">{stats.activeGamesCount} aktiv</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md">
+              <div className="glass-card glass-card-hover rounded-xl p-6">
                 <div className="flex items-center justify-between mb-2">
                   <Brain className="text-purple-500" size={32} />
                   <span className="text-3xl font-bold text-purple-600">{stats.totalQuestions}</span>
@@ -930,7 +930,7 @@ const AdminView = ({
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md">
+              <div className="glass-card glass-card-hover rounded-xl p-6">
                 <div className="flex items-center justify-between mb-2">
                   <BookOpen className="text-blue-500" size={32} />
                   <span className="text-3xl font-bold text-blue-600">{stats.totalMaterials}</span>
@@ -938,7 +938,7 @@ const AdminView = ({
                 <p className="text-sm text-gray-600">Lernmaterialien</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md">
+              <div className="glass-card glass-card-hover rounded-xl p-6">
                 <div className="flex items-center justify-between mb-2">
                   <MessageCircle className="text-green-500" size={32} />
                   <span className="text-3xl font-bold text-green-600">{stats.totalMessages}</span>
@@ -946,8 +946,8 @@ const AdminView = ({
                 <p className="text-sm text-gray-600">Chat-Nachrichten</p>
               </div>
 
-              <div className={`bg-white rounded-xl p-6 shadow-md ${
-                stats.usersToDeleteSoon > 0 ? 'border-2 border-red-400' : ''
+              <div className={`glass-card glass-card-hover rounded-xl p-6 ${
+                stats.usersToDeleteSoon > 0 ? 'ring-2 ring-red-400/70' : ''
               }`}>
                 <div className="flex items-center justify-between mb-2">
                   <Trash2 className={stats.usersToDeleteSoon > 0 ? 'text-red-500' : 'text-gray-400'} size={32} />
@@ -959,7 +959,7 @@ const AdminView = ({
                 <p className="text-xs text-gray-500 mt-1">Innerhalb 30 Tage</p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-md">
+              <div className="glass-card glass-card-hover rounded-xl p-6">
                 <div className="flex items-center justify-between mb-2">
                   <Shield className="text-indigo-500" size={32} />
                   <span className="text-3xl font-bold text-indigo-600">{stats.admins}</span>
