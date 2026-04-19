@@ -299,7 +299,7 @@ function BeckenDeepDive({ metrics, xrayMode = false }) {
 }
 
 // ─── Überlaufrinne 3D Deep-Dive ─────────────────────────────────────────────────
-function ÜberlaufDeepDive({ xrayMode = false }) {
+function UeberlaufDeepDive({ xrayMode = false }) {
   const [rx, setRx] = useState(-28);
   const [ry, setRy] = useState(38);
   const [drag, setDrag] = useState(null);
@@ -1941,7 +1941,7 @@ function DeepDiveSVG({ stationId, metrics, controls, xrayMode }) {
   }
 
   if (stationId === 'überlauf') {
-    return <ÜberlaufDeepDive xrayMode={xrayMode}/>;
+    return <UeberlaufDeepDive xrayMode={xrayMode}/>;
   }
 
   if (stationId === 'rücklauf') {

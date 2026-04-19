@@ -1167,7 +1167,7 @@ const AdminView = ({
                       </button>
                       <button
                         onClick={() => {
-                          const note = prompt('Grund für Ablehnung (optional):');
+                          const note = window.prompt('Grund für Ablehnung (optional):');
                           verifyParentalConsent(acc.id, 'REJECTED', note || undefined);
                         }}
                         className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-bold"
