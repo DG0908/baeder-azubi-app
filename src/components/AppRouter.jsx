@@ -156,7 +156,8 @@ export function AppRouter({
           userStats={userStats}
           BADGES={BADGES}
           userBadges={userBadges}
-          leaderboard={leaderboard}
+          allUsers={allUsers}
+          statsByUserId={statsByUserId}
         />
       )}
 
