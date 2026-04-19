@@ -93,7 +93,6 @@ const StatsView: React.FC<StatsViewProps> = ({ userStats, BADGES, userBadges, al
     }
 
     const rows: LeaderRow[] = pool
-      .filter((u) => u.role !== 'admin')
       .map((u) => {
         const s = statsByUserId?.[u.id] || {};
         const wins = s.wins || 0;
