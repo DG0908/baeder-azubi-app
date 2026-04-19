@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, AlertTriangle, Trophy, Brain, BookOpen, MessageCircle, Trash2, Shield, Check, X, Download, KeyRound, Building2, Ticket, Copy, Plus, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
+import FeatureRolloutSection from '../admin-panels/FeatureRolloutSection';
 
 import {
   loadOrganizationsAndInvitations as dsLoadOrganizationsAndInvitations,
@@ -1251,6 +1252,9 @@ const AdminView = ({
           </div>
         )}
       </div>
+
+      {/* Feature-Freigabe (Rollout-Stufen) — nur Admins */}
+      {user?.role === 'admin' && <FeatureRolloutSection />}
 
       {/* UI Editor Section */}
       <div className={`${darkMode ? 'bg-slate-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-xl p-6 shadow-lg`}>
