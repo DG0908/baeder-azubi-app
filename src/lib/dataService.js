@@ -1552,6 +1552,14 @@ export const updateQuestionReportStatus = async (reportId, status) => {
   return secureQuestionWorkflowsApi.updateReportStatus(reportId, { status });
 };
 
+export const deleteQuestionReport = async (reportId) => {
+  return secureQuestionWorkflowsApi.deleteReport(reportId);
+};
+
+export const deleteResolvedQuestionReports = async () => {
+  return secureQuestionWorkflowsApi.deleteResolvedReports();
+};
+
 // ─── Utility ────────────────────────────────────────────────────────
 
 export const repairQuizStatsRemote = async (fetchPushBackendWithAuth) => {

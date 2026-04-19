@@ -645,6 +645,12 @@ export const secureQuestionWorkflowsApi = {
   updateReportStatus: (reportId: string, payload: Record<string, unknown>) => apiRequest(`/question-workflows/reports/${reportId}/status`, {
     method: 'PATCH',
     body: JSON.stringify(payload)
+  }),
+  deleteReport: (reportId: string) => apiRequest(`/question-workflows/reports/${reportId}`, {
+    method: 'DELETE'
+  }),
+  deleteResolvedReports: () => apiRequest('/question-workflows/reports/resolved', {
+    method: 'DELETE'
   })
 };
 

@@ -395,6 +395,61 @@ export class QuestionWorkflowsService {
     return this.toQuestionReportPayload(updated);
   }
 
+  async deleteQuestionReport(actor: AuthenticatedUser, reportId: string, request: Request) {
+    this.assertOrganization(actor);
+    this.assertStaff(actor);
+
+    const existing = await this.prisma.questionReport.findFirst({
+      where: {
+        id: reportId,
+        organizationId: actor.organizationId!
+      },
+      select: { id: true, status: true }
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Question report not found.');
+    }
+
+    await this.prisma.questionReport.delete({
+      where: { id: existing.id }
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'question_report.deleted',
+      'QuestionReport',
+      existing.id,
+      { status: existing.status },
+      request
+    );
+
+    return { id: existing.id, deleted: true };
+  }
+
+  async deleteResolvedQuestionReports(actor: AuthenticatedUser, request: Request) {
+    this.assertOrganization(actor);
+    this.assertStaff(actor);
+
+    const result = await this.prisma.questionReport.deleteMany({
+      where: {
+        organizationId: actor.organizationId!,
+        status: 'RESOLVED'
+      }
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'question_report.deleted_resolved_bulk',
+      'QuestionReport',
+      'bulk',
+      { count: result.count },
+      request
+    );
+
+    return { deletedCount: result.count };
+  }
+
   private async notifyStaffAboutPendingSubmission(actor: AuthenticatedUser, questionId: string, category: string) {
     const recipients = await this.getStaffRecipients(actor);
     if (!recipients.length) {

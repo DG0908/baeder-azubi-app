@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AppRole } from '@prisma/client';
@@ -70,5 +70,24 @@ export class QuestionWorkflowsController {
     @Req() request: Request
   ) {
     return this.questionWorkflowsService.updateQuestionReportStatus(actor, reportId, dto, request);
+  }
+
+  @Roles(AppRole.ADMIN, AppRole.AUSBILDER)
+  @Delete('reports/resolved')
+  deleteResolvedQuestionReports(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Req() request: Request
+  ) {
+    return this.questionWorkflowsService.deleteResolvedQuestionReports(actor, request);
+  }
+
+  @Roles(AppRole.ADMIN, AppRole.AUSBILDER)
+  @Delete('reports/:id')
+  deleteQuestionReport(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') reportId: string,
+    @Req() request: Request
+  ) {
+    return this.questionWorkflowsService.deleteQuestionReport(actor, reportId, request);
   }
 }
