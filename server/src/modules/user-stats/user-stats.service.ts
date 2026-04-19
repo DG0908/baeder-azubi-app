@@ -10,8 +10,11 @@ import {
   ensureUserStatsStructure,
   getXpMetaFromCategoryStats,
   toJsonObject,
+  USER_STATS_XP_META_KEY,
   UserStatsShape
 } from './user-stats.util';
+
+const QUIZ_WIN_XP = 40;
 
 const userStatsSelect = {
   userId: true,
@@ -257,7 +260,14 @@ export class UserStatsService {
     const userNameById = new Map(users.map((user) => [user.id, user.displayName]));
     const existingStatsByUserId = new Map(existingStatsRows.map((row) => [row.userId, row]));
     const computedStatsByUserId = new Map<string, RepairLocalStats>();
+    const winningDuelIdsByUser = new Map<string, string[]>();
     let skippedDuelsMissingUsers = 0;
+
+    const recordWinningDuel = (userId: string, duelId: string) => {
+      const list = winningDuelIdsByUser.get(userId) ?? [];
+      list.push(duelId);
+      winningDuelIdsByUser.set(userId, list);
+    };
 
     const ensureStats = (userId: string, displayName: string) => {
       const existing = computedStatsByUserId.get(userId);
@@ -323,6 +333,7 @@ export class UserStatsService {
           challengerStats.currentWinStreak
         );
         opponentStats.currentWinStreak = 0;
+        recordWinningDuel(duel.challengerId, duel.id);
         continue;
       }
 
@@ -337,6 +348,7 @@ export class UserStatsService {
           opponentStats.currentWinStreak
         );
         challengerStats.currentWinStreak = 0;
+        recordWinningDuel(duel.opponentId, duel.id);
       }
     }
 
@@ -370,6 +382,34 @@ export class UserStatsService {
       const nextOpponents = this.mergeOpponentStatsByMax(existing?.opponents, computed?.opponents ?? {});
       const nextCategoryStats = this.asObject(existing?.categoryStats);
 
+      // Sync quizWins XP to reflect repaired win count — quizWins XP is
+      // always (wins × QUIZ_WIN_XP) by construction, so if wins went up
+      // from the repair, XP must follow. Also mark all winning duels in
+      // awardedEvents so live duel completions can't double-award.
+      const winningDuelIds = winningDuelIdsByUser.get(user.id) ?? [];
+      const existingMeta = getXpMetaFromCategoryStats(nextCategoryStats);
+      const targetQuizWinsXp = nextWins * QUIZ_WIN_XP;
+      const xpNeedsUpdate = (existingMeta.breakdown.quizWins || 0) !== targetQuizWinsXp
+        || winningDuelIds.some((duelId) => !existingMeta.awardedEvents[`quiz_win_${duelId}_${user.id}`]);
+
+      if (xpNeedsUpdate) {
+        const nextBreakdown = { ...existingMeta.breakdown, quizWins: targetQuizWinsXp };
+        const nextAwardedEvents = { ...existingMeta.awardedEvents };
+        const now = Date.now();
+        winningDuelIds.forEach((duelId) => {
+          const key = `quiz_win_${duelId}_${user.id}`;
+          if (!nextAwardedEvents[key]) {
+            nextAwardedEvents[key] = now;
+          }
+        });
+        const nextTotalXp = Object.values(nextBreakdown).reduce((sum, v) => sum + (Number(v) || 0), 0);
+        nextCategoryStats[USER_STATS_XP_META_KEY] = {
+          totalXp: nextTotalXp,
+          breakdown: nextBreakdown,
+          awardedEvents: nextAwardedEvents
+        };
+      }
+
       const totalsChanged = (
         nextWins !== existingWins
         || nextLosses !== existingLosses
@@ -384,7 +424,7 @@ export class UserStatsService {
         continue;
       }
 
-      if (existing && !totalsChanged && !opponentsChanged) {
+      if (existing && !totalsChanged && !opponentsChanged && !xpNeedsUpdate) {
         continue;
       }
 
