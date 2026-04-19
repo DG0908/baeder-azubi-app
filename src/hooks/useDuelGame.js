@@ -38,6 +38,8 @@ import {
   getUserStats as dsGetUserStats,
   reportQuestion as dsReportQuestion,
   updateQuestionReportStatus as dsUpdateQuestionReportStatus,
+  deleteQuestionReport as dsDeleteQuestionReport,
+  deleteResolvedQuestionReports as dsDeleteResolvedQuestionReports,
   resolveUserIdentity as dsResolveUserIdentity,
 } from '../lib/dataService';
 import { normalizeQuestionText, getQuestionPerformanceKey } from '../lib/questionKey';
@@ -415,6 +417,43 @@ export function useDuelGame(deps) {
       }
     }
     showToast(nextStatus === 'resolved' ? 'Meldung als erledigt markiert.' : 'Meldung wieder geoeffnet.', 'info', 1800);
+  };
+
+  const deleteQuestionReport = async (reportId) => {
+    const existing = questionReports.find((entry) => entry.id === reportId);
+    if (!existing) return;
+    setQuestionReports((prev) => prev.filter((entry) => entry.id !== reportId));
+    if (!String(reportId).startsWith('local-')) {
+      try {
+        await dsDeleteQuestionReport(reportId);
+      } catch (error) {
+        setQuestionReports((prev) => (prev.some((entry) => entry.id === reportId) ? prev : [...prev, existing]));
+        showToast(error?.message || 'Meldung konnte nicht geloescht werden.', 'error');
+        return;
+      }
+    }
+    showToast('Meldung geloescht.', 'success', 1800);
+  };
+
+  const deleteResolvedQuestionReports = async () => {
+    const resolved = questionReports.filter((entry) => entry.status === 'resolved');
+    if (resolved.length === 0) return;
+    const remoteResolved = resolved.filter((entry) => !String(entry.id).startsWith('local-'));
+    setQuestionReports((prev) => prev.filter((entry) => entry.status !== 'resolved'));
+    if (remoteResolved.length > 0) {
+      try {
+        await dsDeleteResolvedQuestionReports();
+      } catch (error) {
+        setQuestionReports((prev) => {
+          const ids = new Set(prev.map((entry) => entry.id));
+          const restored = resolved.filter((entry) => !ids.has(entry.id));
+          return restored.length > 0 ? [...prev, ...restored] : prev;
+        });
+        showToast(error?.message || 'Meldungen konnten nicht geloescht werden.', 'error');
+        return;
+      }
+    }
+    showToast(`${resolved.length} erledigte Meldungen geloescht.`, 'success', 2200);
   };
 
   // ===================== Game save / sync =====================
@@ -1627,6 +1666,8 @@ export function useDuelGame(deps) {
     pickLearningQuestions,
     restoreCorrectForQuestions,
     toggleQuestionReportStatus,
+    deleteQuestionReport,
+    deleteResolvedQuestionReports,
     getQuestionPerformanceKey,
     getQuestionPerformanceEntry,
     getAdaptiveQuestionWeight,

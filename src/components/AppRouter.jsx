@@ -91,6 +91,8 @@ export function AppRouter({
           canEditAppConfig={Boolean(user.isOwner) || (user.role === 'admin' && !allUsers.some((account) => Boolean(account?.is_owner)))}
           questionReports={questionReports}
           toggleQuestionReportStatus={duel.toggleQuestionReportStatus}
+          deleteQuestionReport={duel.deleteQuestionReport}
+          deleteResolvedQuestionReports={duel.deleteResolvedQuestionReports}
           pendingUsers={pendingUsers}
           loadData={loadData}
           allUsers={allUsers}

@@ -563,6 +563,8 @@ const AdminView = ({
   getAdminStats,
   questionReports,
   toggleQuestionReportStatus,
+  deleteQuestionReport,
+  deleteResolvedQuestionReports,
   pendingUsers,
   approveUser,
   loadData,
@@ -688,20 +690,43 @@ const AdminView = ({
             Hinweis: {report.note}
           </p>
         )}
-        <button
-          onClick={() => {
-            void toggleQuestionReportStatus(report.id);
-          }}
-          className={`px-3 py-2 rounded-lg text-sm font-bold ${
-            isResolved
-              ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-              : 'bg-green-500 hover:bg-green-600 text-white'
-          }`}
-        >
-          {isResolved ? 'Wieder oeffnen' : 'Als erledigt markieren'}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              void toggleQuestionReportStatus(report.id);
+            }}
+            className={`px-3 py-2 rounded-lg text-sm font-bold ${
+              isResolved
+                ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                : 'bg-green-500 hover:bg-green-600 text-white'
+            }`}
+          >
+            {isResolved ? 'Wieder oeffnen' : 'Als erledigt markieren'}
+          </button>
+          {typeof deleteQuestionReport === 'function' && (
+            <button
+              onClick={() => {
+                if (!window.confirm('Diese Meldung endgueltig loeschen?')) return;
+                void deleteQuestionReport(report.id);
+              }}
+              className="px-3 py-2 rounded-lg text-sm font-bold bg-red-500 hover:bg-red-600 text-white inline-flex items-center gap-1"
+              title="Meldung endgueltig loeschen"
+            >
+              <Trash2 size={14} />
+              Loeschen
+            </button>
+          )}
+        </div>
       </div>
     );
+  };
+
+  const handleDeleteResolvedReports = () => {
+    if (typeof deleteResolvedQuestionReports !== 'function') return;
+    const count = resolvedQuestionReports.length;
+    if (count === 0) return;
+    if (!window.confirm(`Alle ${count} erledigten Meldungen endgueltig loeschen?`)) return;
+    void deleteResolvedQuestionReports();
   };
 
   const renderUserCard = (acc) => {
@@ -1090,13 +1115,25 @@ const AdminView = ({
 
             {resolvedQuestionReports.length > 0 && (
               <div className="border-t border-gray-200 pt-4">
-                <button
-                  onClick={() => setShowResolvedQuestionReports((current) => !current)}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200"
-                >
-                  {showResolvedQuestionReports ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                  Erledigte Meldungen ({resolvedQuestionReports.length})
-                </button>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <button
+                    onClick={() => setShowResolvedQuestionReports((current) => !current)}
+                    className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200"
+                  >
+                    {showResolvedQuestionReports ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    Erledigte Meldungen ({resolvedQuestionReports.length})
+                  </button>
+                  {typeof deleteResolvedQuestionReports === 'function' && (
+                    <button
+                      onClick={handleDeleteResolvedReports}
+                      className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-bold text-white hover:bg-red-600"
+                      title="Alle erledigten Meldungen endgueltig loeschen"
+                    >
+                      <Trash2 size={14} />
+                      Alle erledigten loeschen
+                    </button>
+                  )}
+                </div>
 
                 {showResolvedQuestionReports && (
                   <div className="mt-3 space-y-3 max-h-[320px] overflow-y-auto pr-1">
