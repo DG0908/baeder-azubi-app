@@ -104,6 +104,7 @@ model User {
   email                        String                  @unique
   displayName                  String
   avatar                       String?
+  profileBannerKey             String?
   company                      String?
   birthDate                    DateTime?
   passwordHash                 String

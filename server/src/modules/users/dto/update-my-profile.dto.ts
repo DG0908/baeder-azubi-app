@@ -15,6 +15,12 @@ export class UpdateMyProfileDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(120)
+  @Matches(/^[a-z0-9_-]+$/i)
+  profileBannerKey?: string | null;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(160)
   company?: string | null;
 

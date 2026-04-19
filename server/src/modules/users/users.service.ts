@@ -25,6 +25,7 @@ const currentUserSelect = {
   email: true,
   displayName: true,
   avatar: true,
+  profileBannerKey: true,
   company: true,
   birthDate: true,
   role: true,
@@ -55,6 +56,7 @@ const adminUserSelect = {
   email: true,
   displayName: true,
   avatar: true,
+  profileBannerKey: true,
   company: true,
   birthDate: true,
   role: true,
@@ -134,6 +136,14 @@ export class UsersService {
       data.avatar = avatar;
       metadata.previousAvatar = existingUser.avatar;
       metadata.nextAvatar = avatar;
+    }
+
+    if (dto.profileBannerKey !== undefined) {
+      const profileBannerKey =
+        dto.profileBannerKey === null ? null : this.normalizeAvatar(dto.profileBannerKey);
+      data.profileBannerKey = profileBannerKey;
+      metadata.previousProfileBannerKey = existingUser.profileBannerKey;
+      metadata.nextProfileBannerKey = profileBannerKey;
     }
 
     if (dto.company !== undefined) {
