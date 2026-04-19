@@ -3,6 +3,9 @@ import { Bell, Calendar, Brain, Trophy, Zap, Target, ChevronDown, ChevronUp } fr
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { DAILY_WISDOM, DID_YOU_KNOW_FACTS } from '../../data/content';
+import { getAvatarById, getLevel, getLevelProgress } from '../../data/constants';
+import { getTotalXpFromStats } from '../../lib/quizHelpers';
+import AvatarBadge from '../ui/AvatarBadge';
 
 const DIFFICULTY_SETTINGS = {
   anfaenger: { time: 45, label: 'Anfaenger', icon: '\u{1F7E2}', color: 'bg-green-500' },
@@ -118,12 +121,35 @@ const HomeView = ({
 
   return (
     <div className="space-y-3">
-      {/* Hero — kompakter Greeting + Stats als Pills */}
-      <div className={`${darkMode ? 'bg-gradient-to-br from-cyan-900/80 to-slate-800' : 'bg-gradient-to-br from-cyan-500 to-cyan-600'} text-white rounded-xl p-4 shadow-xl`}>
+      {/* Hero — Greeting + Avatar + Level + Stats */}
+      <div className={`${darkMode ? 'bg-gradient-to-br from-cyan-900/80 to-slate-800' : 'bg-gradient-to-br from-cyan-500 to-cyan-600'} text-white rounded-2xl p-4 shadow-xl`}>
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-bold">Hallo, {(user.name || '').split(/\s+/)[0]}!</h2>
-            <p className="text-xs text-white/70 mt-1 leading-relaxed">{dailyWisdom || DAILY_WISDOM[0] || DID_YOU_KNOW_FACTS[0] || ''}</p>
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <AvatarBadge
+              avatar={user.avatar ? getAvatarById(user.avatar) : null}
+              size="lg"
+              className="ring-2 ring-white/40 flex-shrink-0"
+            />
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg font-bold truncate">Hallo, {(user.name || '').split(/\s+/)[0]}!</h2>
+              {(() => {
+                const xp = getTotalXpFromStats(userStats);
+                const lvl = getLevel(xp);
+                const progress = Math.round(getLevelProgress(xp) * 100);
+                return (
+                  <div className="mt-1.5">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-[10px] font-bold bg-white/25 backdrop-blur-sm rounded-full px-2 py-0.5 leading-none">Lv.{lvl}</span>
+                      <span className="text-[10px] text-white/70">{xp.toLocaleString('de-DE')} XP</span>
+                    </div>
+                    <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-white/80 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                    </div>
+                  </div>
+                );
+              })()}
+              <p className="text-xs text-white/70 mt-2 leading-relaxed line-clamp-2">{dailyWisdom || DAILY_WISDOM[0] || DID_YOU_KNOW_FACTS[0] || ''}</p>
+            </div>
           </div>
           {userStats && (
             <div className="flex flex-col gap-1 flex-shrink-0">
@@ -144,7 +170,7 @@ const HomeView = ({
 
       {/* Aufgaben + Challenges + Streak in einer Karte */}
       {(actionableChallenges.length > 0 || dueCards > 0 || (userStats && userStats.winStreak >= 3) || (dailyChallenges?.length > 0)) && (
-        <div className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} border rounded-xl p-4 shadow-lg space-y-3`}>
+        <div className="glass-card rounded-2xl p-4 space-y-3">
           {/* Win Streak inline */}
           {userStats && userStats.winStreak >= 3 && (
             <div className={`flex items-center gap-2 p-2 rounded-lg ${
@@ -258,7 +284,7 @@ const HomeView = ({
       {(news.length > 0 || exams.length > 0) && (
         <div className="grid md:grid-cols-2 gap-3">
           {news.length > 0 && (
-            <div className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} border rounded-xl p-3 shadow-lg`}>
+            <div className="glass-card rounded-2xl p-3">
               <div className="flex items-center justify-between mb-2">
                 <h3 className={`text-xs font-bold flex items-center gap-1.5 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   <Bell size={14} /> News
@@ -276,7 +302,7 @@ const HomeView = ({
             </div>
           )}
           {exams.length > 0 && (
-            <div className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} border rounded-xl p-3 shadow-lg`}>
+            <div className="glass-card rounded-2xl p-3">
               <div className="flex items-center justify-between mb-2">
                 <h3 className={`text-xs font-bold flex items-center gap-1.5 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   <Calendar size={14} /> Klausuren
@@ -308,7 +334,7 @@ const HomeView = ({
       )}
 
       {/* Wochenziele — standardmäßig eingeklappt */}
-      <div className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'} border rounded-xl shadow-lg overflow-hidden`}>
+      <div className="glass-card rounded-2xl overflow-hidden">
         <button
           onClick={() => setWeeklyGoalsExpanded(prev => !prev)}
           className={`w-full flex items-center justify-between p-4 transition-all ${darkMode ? 'hover:bg-slate-700/50' : 'hover:bg-gray-50'}`}
@@ -392,9 +418,7 @@ const HomeView = ({
               { icon: '\u{1F393}', title: 'Interaktives Lernen', sub: 'Deep Dives & Simulationen', onClick: () => openView('interactive-learning'), color: 'violet' },
               { icon: '\u{1F6A8}', title: 'Notfall-Trainer', sub: 'Einsatzsimulationen', onClick: () => openView('notfall-trainer'), color: 'red' },
             ].map(c => (
-              <button key={c.title} onClick={c.onClick} className={`p-4 rounded-xl text-left transition-all hover:-translate-y-0.5 ${
-                darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm'
-              } border`}>
+              <button key={c.title} onClick={c.onClick} className="glass-card glass-card-hover rounded-2xl p-4 text-left transition-all hover:-translate-y-0.5">
                 <span className="text-2xl">{c.icon}</span>
                 <p className={`text-sm font-bold mt-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{c.title}</p>
                 <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{c.sub}</p>
@@ -414,9 +438,7 @@ const HomeView = ({
               { icon: '\u{1F4CB}', title: 'Klausuren', sub: exams.length > 0 ? `${exams.length} eingetragen` : 'Termine', onClick: () => openView('exams'), color: 'red' },
               { icon: '\u{1F4A1}', title: 'Fragen', sub: 'Pool erweitern', onClick: () => openView('questions'), color: 'amber' },
             ].map(c => (
-              <button key={c.title} onClick={c.onClick} className={`p-4 rounded-xl text-left transition-all hover:-translate-y-0.5 ${
-                darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm'
-              } border`}>
+              <button key={c.title} onClick={c.onClick} className="glass-card glass-card-hover rounded-2xl p-4 text-left transition-all hover:-translate-y-0.5">
                 <span className="text-2xl">{c.icon}</span>
                 <p className={`text-sm font-bold mt-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{c.title}</p>
                 <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{c.sub}</p>
@@ -438,9 +460,7 @@ const HomeView = ({
               { icon: '\u{1F4DD}', title: 'Forum', sub: 'Fragen & Diskussionen', onClick: () => openView('forum') },
               { icon: '\u{1F4E2}', title: 'News', sub: news.length > 0 ? `${news.length} Beiträge` : 'Neuigkeiten', onClick: () => openView('news') },
             ].map(c => (
-              <button key={c.title} onClick={c.onClick} className={`p-4 rounded-xl text-left transition-all hover:-translate-y-0.5 ${
-                darkMode ? 'bg-slate-800 hover:bg-slate-700 border-slate-700' : 'bg-white hover:bg-gray-50 border-gray-200 shadow-sm'
-              } border`}>
+              <button key={c.title} onClick={c.onClick} className="glass-card glass-card-hover rounded-2xl p-4 text-left transition-all hover:-translate-y-0.5">
                 <span className="text-2xl">{c.icon}</span>
                 <p className={`text-sm font-bold mt-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>{c.title}</p>
                 <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{c.sub}</p>
