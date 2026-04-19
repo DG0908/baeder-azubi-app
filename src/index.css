@@ -229,6 +229,22 @@ body {
   );
 }
 
+/* Retrofit: text colors inside glass cards in dark mode.
+   Original components use text-gray-600/500/700/800 assuming a white
+   card background. With the dark-glass variant the card is dark slate,
+   so these grays disappear. Force readable slate tones instead. */
+.dark .glass-card .text-gray-400 { color: rgb(148 163 184); }  /* slate-400 */
+.dark .glass-card .text-gray-500 { color: rgb(203 213 225); }  /* slate-300 */
+.dark .glass-card .text-gray-600 { color: rgb(226 232 240); }  /* slate-200 */
+.dark .glass-card .text-gray-700 { color: rgb(241 245 249); }  /* slate-100 */
+.dark .glass-card .text-gray-800 { color: rgb(248 250 252); }  /* slate-50 */
+.dark .glass-card .text-gray-900 { color: rgb(255 255 255); }
+
+/* Same idea for small pill / code chips baked into the markup */
+.dark .glass-card .bg-gray-100 { background-color: rgba(148, 163, 184, 0.18); }
+.dark .glass-card .bg-gray-200 { background-color: rgba(148, 163, 184, 0.24); }
+.dark .glass-card .bg-gray-50  { background-color: rgba(148, 163, 184, 0.12); }
+
 /* Fallback for browsers without backdrop-filter support (older Android WebView) */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass-card {
