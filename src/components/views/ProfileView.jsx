@@ -679,7 +679,7 @@ const ProfileView = ({
                 const currentKey = user?.profileBannerKey || user?.profile_banner_key;
                 const isSelected = currentKey === banner.id;
                 const background = banner.imageUrl
-                  ? `url('${banner.imageUrl}') center/cover no-repeat, ${banner.gradient}`
+                  ? `url('${banner.imageUrl}') center/contain no-repeat, ${banner.gradient}`
                   : banner.gradient;
                 return (
                   <button

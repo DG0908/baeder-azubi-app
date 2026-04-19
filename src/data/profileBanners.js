@@ -92,7 +92,7 @@ export const getProfileBannerGradient = (id) => resolveBanner(id).gradient;
 export const getProfileBannerBackground = (id) => {
   const banner = resolveBanner(id);
   if (banner.imageUrl) {
-    return `url('${banner.imageUrl}') center/cover no-repeat, ${banner.gradient}`;
+    return `url('${banner.imageUrl}') center/contain no-repeat, ${banner.gradient}`;
   }
   return banner.gradient;
 };
