@@ -31,6 +31,7 @@ const authUserSelect = {
   email: true,
   displayName: true,
   avatar: true,
+  profileBannerKey: true,
   company: true,
   birthDate: true,
   role: true,
