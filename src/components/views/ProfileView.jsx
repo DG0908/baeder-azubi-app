@@ -479,7 +479,7 @@ const ProfileView = ({
       </div>
 
       {/* Avatar kompakt + Modal */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <AvatarBadge avatar={equippedAvatar || fallbackAvatar} size="md" />
@@ -624,7 +624,7 @@ const ProfileView = ({
       )}
 
       {/* Persönliche Daten — alles in einer Karte */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+      <div className="glass-card rounded-xl p-6">
         <h3 className={`text-xl font-bold mb-5 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
           Persönliche Daten
         </h3>
@@ -755,7 +755,7 @@ const ProfileView = ({
       </div>
 
       {/* Aktivitäts-Statistik */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+      <div className="glass-card rounded-xl p-6">
         <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
           Meine Aktivitäten
         </h3>
@@ -812,7 +812,7 @@ const ProfileView = ({
       </div>
 
       {/* Handy-Benachrichtigungen */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+      <div className="glass-card rounded-xl p-6">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
           <div>
             <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
@@ -977,7 +977,7 @@ const ProfileView = ({
       </div>
 
       {/* Sicherheit — Passwort + Abmelden */}
-      <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
+      <div className="glass-card rounded-xl p-6">
         <h3 className={`text-xl font-bold mb-5 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
           Sicherheit
         </h3>
