@@ -364,23 +364,74 @@ const LoginScreen: React.FC = () => {
         animation: 'waves 8s linear infinite'
       }}></div>
 
+      {/* Glow Orbs — pulsierende Farb-Highlights im Hintergrund */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute rounded-full" style={{
+          width: '520px', height: '520px',
+          top: '-140px', left: '-120px',
+          background: 'radial-gradient(circle, rgba(125,211,252,0.55) 0%, rgba(125,211,252,0) 65%)',
+          animation: 'orbDriftA 16s ease-in-out infinite',
+        }} />
+        <div className="absolute rounded-full" style={{
+          width: '460px', height: '460px',
+          bottom: '-140px', right: '-100px',
+          background: 'radial-gradient(circle, rgba(16,185,129,0.45) 0%, rgba(16,185,129,0) 65%)',
+          animation: 'orbDriftB 22s ease-in-out infinite',
+        }} />
+        <div className="absolute rounded-full" style={{
+          width: '360px', height: '360px',
+          top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          background: 'radial-gradient(circle, rgba(14,165,233,0.35) 0%, rgba(14,165,233,0) 70%)',
+          animation: 'orbPulse 9s ease-in-out infinite',
+        }} />
+      </div>
+
+      {/* Caustics — schwebende Lichtreflexe */}
+      <div className="absolute inset-0 pointer-events-none opacity-30" style={{
+        backgroundImage: 'radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.25) 0%, transparent 60%), radial-gradient(ellipse 50% 30% at 80% 70%, rgba(255,255,255,0.2) 0%, transparent 60%)',
+        animation: 'causticsDrift 12s ease-in-out infinite',
+      }} />
+
       {/* Bubbles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
+        {[...Array(20)].map((_, i) => (
           <div
             key={i}
-            className="absolute rounded-full bg-white opacity-20"
+            className="absolute rounded-full"
             style={{
-              width: `${Math.random() * 30 + 10}px`,
-              height: `${Math.random() * 30 + 10}px`,
+              width: `${Math.random() * 32 + 8}px`,
+              height: `${Math.random() * 32 + 8}px`,
               left: `${Math.random() * 100}%`,
               bottom: '-50px',
-              animation: `bubble ${Math.random() * 10 + 5}s linear infinite`,
-              animationDelay: `${Math.random() * 5}s`
+              background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.7), rgba(255,255,255,0.1) 70%)',
+              boxShadow: 'inset 0 0 4px rgba(255,255,255,0.5)',
+              animation: `bubble ${Math.random() * 10 + 6}s linear infinite`,
+              animationDelay: `${Math.random() * 8}s`,
+              opacity: 0.4,
             }}
           ></div>
         ))}
       </div>
+
+      {/* Wellen-SVG am unteren Rand */}
+      <svg
+        className="absolute bottom-0 left-0 right-0 pointer-events-none w-full"
+        viewBox="0 0 1440 200"
+        preserveAspectRatio="none"
+        style={{ height: '140px' }}
+        aria-hidden="true"
+      >
+        <path
+          d="M0,96 C240,160 480,32 720,80 C960,128 1200,192 1440,112 L1440,200 L0,200 Z"
+          fill="rgba(255,255,255,0.08)"
+          style={{ animation: 'waveMorph 10s ease-in-out infinite' }}
+        />
+        <path
+          d="M0,128 C240,80 480,176 720,128 C960,80 1200,144 1440,96 L1440,200 L0,200 Z"
+          fill="rgba(255,255,255,0.12)"
+          style={{ animation: 'waveMorph 14s ease-in-out infinite reverse' }}
+        />
+      </svg>
 
       <style>{`
         @keyframes waterFlow {
@@ -392,20 +443,81 @@ const LoginScreen: React.FC = () => {
           100% { transform: translateY(-40px); }
         }
         @keyframes bubble {
-          0% { transform: translateY(0) scale(1); opacity: 0.2; }
-          50% { opacity: 0.3; }
-          100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+          0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.4; }
+          50% { opacity: 0.55; transform: translateY(-50vh) translateX(20px) scale(0.85); }
+          100% { transform: translateY(-100vh) translateX(-10px) scale(0.5); opacity: 0; }
+        }
+        @keyframes orbDriftA {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(60px, 40px) scale(1.1); }
+        }
+        @keyframes orbDriftB {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-50px, -30px) scale(1.15); }
+        }
+        @keyframes orbPulse {
+          0%, 100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
+          50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+        @keyframes causticsDrift {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(30px, -20px); }
+        }
+        @keyframes waveMorph {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(-40px); }
+        }
+        @keyframes shimmerSweep {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        @keyframes borderRotate {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes logoFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        .login-panel-wrapper {
+          position: relative;
+          border-radius: 1.5rem;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(125,211,252,0.4), rgba(16,185,129,0.3), rgba(255,255,255,0.6));
+          background-size: 300% 300%;
+          animation: borderRotate 12s linear infinite;
+        }
+        .login-panel-wrapper::before {
+          content: '';
+          position: absolute;
+          inset: -2px;
+          border-radius: 1.5rem;
+          background: conic-gradient(from 0deg, rgba(125,211,252,0.5), rgba(16,185,129,0.4), rgba(14,165,233,0.5), rgba(125,211,252,0.5));
+          filter: blur(20px);
+          opacity: 0.5;
+          z-index: -1;
+          animation: borderRotate 16s linear infinite;
+        }
+        .login-title-shimmer {
+          background: linear-gradient(90deg, #0e7490 0%, #0891b2 30%, #e0f2fe 50%, #0891b2 70%, #0e7490 100%);
+          background-size: 200% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: shimmerSweep 4s ease-in-out infinite;
         }
       `}</style>
 
-      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 p-8 max-w-md w-full relative z-10 overflow-hidden">
+      <div className="login-panel-wrapper max-w-md w-full relative z-10">
+      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 p-8 w-full relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500" />
         <div className="text-center mb-8">
-          <div className="relative w-24 h-24 mx-auto mb-4">
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-cyan-400 to-sky-500 blur-xl opacity-40" />
-            <img src="/icons/icon-192x192.png" alt="Bäder Azubi Logo" className="relative w-24 h-24 rounded-2xl" />
+          <div className="relative w-24 h-24 mx-auto mb-4" style={{ animation: 'logoFloat 4s ease-in-out infinite' }}>
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-cyan-400 to-sky-500 blur-xl opacity-50" />
+            <div className="absolute -inset-2 rounded-3xl bg-gradient-to-br from-cyan-300 via-sky-400 to-emerald-400 blur-2xl opacity-30" />
+            <img src="/icons/icon-192x192.png" alt="Bäder Azubi Logo" className="relative w-24 h-24 rounded-2xl shadow-lg" />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-700 to-sky-600 bg-clip-text text-transparent mb-2">Bäder Azubi</h1>
+          <h1 className="text-3xl font-bold login-title-shimmer mb-2">Bäder Azubi</h1>
           <p className="text-xs font-mono tracking-wider text-cyan-600 inline-flex items-center gap-1.5">
             <GraduationCap size={14} />
             PROFESSIONELLE LERN-PLATTFORM
@@ -624,6 +736,7 @@ const LoginScreen: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
