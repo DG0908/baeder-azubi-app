@@ -8,10 +8,10 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 
-const TabButton = ({ active, onClick, icon: Icon, label, darkMode }) => (
+const TabButton = ({ active, onClick, icon: Icon, label, darkMode, badge }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+    className={`relative flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all ${
       active
         ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/30'
         : darkMode
@@ -21,6 +21,17 @@ const TabButton = ({ active, onClick, icon: Icon, label, darkMode }) => (
   >
     <Icon size={16} />
     {label}
+    {badge != null && badge > 0 && (
+      <span
+        className={`ml-1 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold ${
+          active
+            ? 'bg-white/25 text-white'
+            : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
+        }`}
+      >
+        {badge}
+      </span>
+    )}
   </button>
 );
 
@@ -30,6 +41,7 @@ const BerichtsheftTabs = ({
   openBerichtsheftDraftForCurrentWeek,
   setBerichtsheftViewMode,
   canManageBerichtsheftSignatures,
+  pendingSignatureCount,
 }) => (
   <div className="glass-card rounded-2xl p-3">
     <div className="flex flex-wrap gap-2">
@@ -75,6 +87,7 @@ const BerichtsheftTabs = ({
           icon={PenTool}
           label="Zum Unterschreiben"
           darkMode={darkMode}
+          badge={pendingSignatureCount}
         />
       )}
     </div>
