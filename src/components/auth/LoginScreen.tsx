@@ -471,46 +471,57 @@ const LoginScreen: React.FC = () => {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
-        @keyframes borderRotate {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
         @keyframes logoFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
+          0%, 100% { transform: translateY(0) rotateX(0deg); }
+          50% { transform: translateY(-6px) rotateX(4deg); }
         }
-        .login-panel-wrapper {
-          position: relative;
-          border-radius: 1.5rem;
-          padding: 1px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(125,211,252,0.4), rgba(16,185,129,0.3), rgba(255,255,255,0.6));
-          background-size: 300% 300%;
-          animation: borderRotate 12s linear infinite;
+        @keyframes haloBreath {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.05); }
         }
-        .login-panel-wrapper::before {
-          content: '';
-          position: absolute;
-          inset: -2px;
-          border-radius: 1.5rem;
-          background: conic-gradient(from 0deg, rgba(125,211,252,0.5), rgba(16,185,129,0.4), rgba(14,165,233,0.5), rgba(125,211,252,0.5));
-          filter: blur(20px);
-          opacity: 0.5;
-          z-index: -1;
-          animation: borderRotate 16s linear infinite;
+        @keyframes panelBreath {
+          0%, 100% { transform: perspective(1200px) rotateX(2deg) translateY(0); }
+          50% { transform: perspective(1200px) rotateX(2deg) translateY(-4px); }
         }
         .login-title-shimmer {
-          background: linear-gradient(90deg, #0e7490 0%, #0891b2 30%, #e0f2fe 50%, #0891b2 70%, #0e7490 100%);
+          background: linear-gradient(90deg, #0e7490 0%, #0891b2 25%, #14b8a6 45%, #f0fdfa 50%, #14b8a6 55%, #0891b2 75%, #0e7490 100%);
           background-size: 200% 100%;
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
           animation: shimmerSweep 4s ease-in-out infinite;
         }
+        .login-panel-3d {
+          animation: panelBreath 8s ease-in-out infinite;
+          transform-style: preserve-3d;
+          box-shadow:
+            0 30px 60px -20px rgba(8, 47, 73, 0.6),
+            0 18px 36px -10px rgba(14, 116, 144, 0.45),
+            0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+            0 1px 0 rgba(255, 255, 255, 0.9) inset;
+        }
       `}</style>
 
-      <div className="login-panel-wrapper max-w-md w-full relative z-10">
-      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 p-8 w-full relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500" />
+      <div className="max-w-md w-full relative z-10">
+        {/* Multi-color Halo hinter dem Panel - statisch, kein Drehen */}
+        <div
+          className="absolute -inset-6 rounded-[2rem] pointer-events-none"
+          style={{
+            background: 'conic-gradient(from 210deg at 50% 50%, rgba(125,211,252,0.55), rgba(20,184,166,0.5), rgba(56,189,248,0.4), rgba(99,102,241,0.35), rgba(125,211,252,0.55))',
+            filter: 'blur(32px)',
+            animation: 'haloBreath 6s ease-in-out infinite',
+          }}
+        />
+      <div className="login-panel-3d bg-white/90 backdrop-blur-xl rounded-3xl border border-white/60 p-8 w-full relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-teal-500 to-indigo-500" />
+        {/* Inner-Top-Reflection - Lichtkante oben wie gebogenes Glas */}
+        <div
+          className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
+          style={{
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 100%)',
+            mixBlendMode: 'overlay',
+          }}
+        />
         <div className="text-center mb-8">
           <div className="relative w-24 h-24 mx-auto mb-4" style={{ animation: 'logoFloat 4s ease-in-out infinite' }}>
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-cyan-400 to-sky-500 blur-xl opacity-50" />
