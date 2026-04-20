@@ -221,19 +221,19 @@
           "id": "rescue_chain",
           "type": "ordering",
           "title": "Rettungskette ordnen",
-          "prompt": "Bringe die Maßnahmen nach der Bergung einer bewusstlosen, nicht atmenden Person in die richtige Reihenfolge.",
+          "prompt": "Zwei Kollegen sind am Beckenrand bei dir. Bringe die Maßnahmen nach der Bergung einer bewusstlosen, nicht atmenden Person in die richtige Reihenfolge. Hinweis: Notruf und AED werden an Kollegen delegiert, während du selbst weitermachst.",
           "points": 15,
           "items": [
             { "id": "1", "text": "5 initiale Beatmungen (Ertrinken: Beatmung vor HDM!)" },
             { "id": "2", "text": "Atemkontrolle (max. 10 Sekunden)" },
-            { "id": "3", "text": "Notruf 112 und AED veranlassen" },
+            { "id": "3", "text": "Notruf 112 und AED an Kollegen delegieren" },
             { "id": "4", "text": "HLW 30:2 fortführen bis AED da" }
           ],
           "correctOrder": ["2", "3", "1", "4"],
           "feedback": {
-            "success": "Richtig. Beim Ertrinken kommen 5 Beatmungen VOR der Herzdruckmassage – Sauerstoffmangel ist das primäre Problem.",
-            "partial": "Fast. Denk daran: Beim Ertrinkungsunfall steht die Beatmung am Anfang – Sauerstoff hat Vorrang.",
-            "failure": "Nicht korrekt. Beim Ertrinken gilt: erst beatmen, dann HDM – im Gegensatz zum Herz-Kreislauf-Stillstand."
+            "success": "Richtig. Beim Ertrinken kommen 5 Beatmungen VOR der Herzdruckmassage – Sauerstoffmangel ist das primäre Problem. Mit Helfern läuft der Notruf parallel. Bist du allein, mach erst 1 Minute HLW, dann selbst den Notruf.",
+            "partial": "Fast. Denk daran: Beim Ertrinkungsunfall steht die Beatmung am Anfang – Sauerstoff hat Vorrang. Notruf an Kollegen delegieren, damit du keine Zeit verlierst.",
+            "failure": "Nicht korrekt. Beim Ertrinken gilt: erst beatmen, dann HDM – im Gegensatz zum Herz-Kreislauf-Stillstand. Allein? 1 Min HLW vor dem Notruf."
           }
         }
       ]
@@ -316,7 +316,7 @@
           "points": 25,
           "options": [
             { "id": "a", "text": "Zwei-Handtechnik wie beim Erwachsenen, volle Kraft", "isCorrect": false, "feedback": "Falsch. Volle Erwachsenenkraft kann bei Kindern Rippen brechen. Kraft anpassen." },
-            { "id": "b", "text": "Eine oder zwei Hände, ca. 4–5 cm Drucktiefe, 100–120/min", "isCorrect": true, "feedback": "Richtig. Drucktiefe ca. 1/3 des Brustkorbs, Frequenz gleich wie beim Erwachsenen." },
+            { "id": "b", "text": "Eine oder zwei Hände, ca. 1/3 Brustkorbtiefe (ca. 5 cm), 100–120/min", "isCorrect": true, "feedback": "Richtig. Drucktiefe ca. 1/3 des Brustkorbs (bei Schulkindern ~5 cm), Frequenz 100–120/min wie beim Erwachsenen. Kraft an die Körpergröße anpassen." },
             { "id": "c", "text": "Nur zwei Finger, weil das Kind klein ist", "isCorrect": false, "feedback": "Zwei Finger nur bei Säuglingen. Ab ca. Schulkindalter eine oder zwei Hände verwenden." },
             { "id": "d", "text": "Druckmassage auf dem Bauch, weil der Brustkorb noch weich ist", "isCorrect": false, "feedback": "Falsch. HDM immer am Brustbein, nie auf dem Bauch." }
           ]
@@ -544,6 +544,333 @@
             "success": "Vollständig. Unfallhergang, Verletzungszeichen, Schocksymptome und Maßnahmen – perfekte Übergabe.",
             "partial": "Gut, aber ergänze: Unfallhergang (wie ist er gestürzt?) und was du bereits gemacht hast.",
             "failure": "Zu wenig. Der Rettungsdienst braucht: Wie passiert? Was verletzt? Was gemacht?"
+          }
+        }
+      ]
+    },
+    {
+      "id": "emergency-call-confidence-006",
+      "title": "Den Notruf 112 souverän absetzen",
+      "subtitle": "Hemmschwelle überwinden – richtig anrufen, ruhig bleiben",
+      "icon": "📞",
+      "mode": "training",
+      "difficulty": "leicht",
+      "estimatedMinutes": 3,
+      "timerSeconds": 120,
+      "category": "Erste Hilfe",
+      "learningGoals": [
+        "Sicher erkennen wann 112 gerufen wird",
+        "Die wichtigsten W-Fragen beherrschen",
+        "Nicht zu früh auflegen",
+        "Auch bei Unsicherheit anrufen"
+      ],
+      "criticalFailures": [
+        { "id": "hung_up_early", "label": "Aufgelegt bevor die Leitstelle Rückfragen stellen konnte", "effect": "hard_fail" }
+      ],
+      "scoring": {
+        "maxPoints": 100,
+        "passThreshold": 60,
+        "timeBonusThresholdSeconds": 90,
+        "timeBonusPoints": 5,
+        "criticalFailurePenalty": "fail_case"
+      },
+      "debrief": {
+        "headline": "Der Notruf kennt kein Falsch",
+        "summary": "Die 112 ist kostenlos und immer richtig, wenn du unsicher bist. Die Leitstelle entscheidet, welche Hilfe kommt – nicht du. Bleib dran, bis die Leitstelle dich entlässt.",
+        "keyTakeaways": [
+          "Im Zweifel IMMER anrufen – die Leitstelle entscheidet über die passende Hilfe.",
+          "Die fünf W: Wo – Was – Wie viele Verletzte – Welche Verletzung – Warten auf Rückfragen.",
+          "Nicht selbst auflegen. Die Leitstelle beendet das Gespräch.",
+          "Ruhig sprechen, kurz antworten, klare Standortangabe."
+        ],
+        "commonMistakes": [
+          "Erst Kollegen fragen 'soll ich wirklich anrufen?' – das kostet Minuten.",
+          "Nach dem Erzählen sofort auflegen, bevor Rückfragen kommen.",
+          "Adresse unklar oder 'irgendwo hinten im Bad' statt konkreter Standort."
+        ],
+        "merksatz": "112 ist für dich da – auch wenn du dir nicht sicher bist. Sprechen, bleiben, warten."
+      },
+      "steps": [
+        {
+          "id": "when_to_call",
+          "type": "single_choice",
+          "title": "Wann anrufen?",
+          "prompt": "Ein Badegast fasst sich an die Brust, ist blass, schwitzt und sagt, er habe Druck. Du bist unsicher, ob es schon ein Notfall ist. Was tust du?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "Sofort 112 wählen und die Symptome schildern – die Leitstelle entscheidet", "isCorrect": true, "feedback": "Richtig. Brustschmerz + Blässe + Schweiß = möglicher Herzinfarkt. Im Zweifel rufen, Leitstelle entscheidet." },
+            { "id": "b", "text": "Warten, ob es von alleine besser wird – schließlich ist die Leitstelle voll", "isCorrect": false, "feedback": "Falsch. Die 112 ist für genau solche Situationen da. Verzögerung kann Leben kosten." },
+            { "id": "c", "text": "Erst den Betriebsleiter fragen, ob du anrufen darfst", "isCorrect": false, "feedback": "Falsch. Bei Notfallverdacht brauchst du keine Erlaubnis – die 112 hat immer Vorrang." },
+            { "id": "d", "text": "Die Person bitten, selbst anzurufen, wenn es schlimmer wird", "isCorrect": false, "feedback": "Falsch. Bei Verdacht auf Herzinfarkt übernimmst DU die Verantwortung – nicht die betroffene Person." }
+          ]
+        },
+        {
+          "id": "five_w",
+          "type": "ordering",
+          "title": "Die fünf W – richtige Reihenfolge",
+          "prompt": "Du hast die 112 gewählt. Bringe die W-Fragen in die Reihenfolge, die die Leitstelle typischerweise braucht.",
+          "points": 25,
+          "items": [
+            { "id": "1", "text": "Wo ist der Notfall? (Ort, Adresse, konkreter Punkt im Bad)" },
+            { "id": "2", "text": "Was ist passiert? (Kurzbeschreibung des Vorfalls)" },
+            { "id": "3", "text": "Wie viele Betroffene?" },
+            { "id": "4", "text": "Welche Verletzungen/Beschwerden?" },
+            { "id": "5", "text": "Warten auf Rückfragen der Leitstelle" }
+          ],
+          "correctOrder": ["1", "2", "3", "4", "5"],
+          "feedback": {
+            "success": "Richtig. Der Standort kommt zuerst – falls die Verbindung abbricht, weiß die Leitstelle wohin.",
+            "partial": "Fast. Der Standort ist immer der erste Punkt – alles andere kommt danach.",
+            "failure": "Nicht korrekt. Merke: WO zuerst, dann WAS, dann Details, zum Schluss Rückfragen abwarten."
+          }
+        },
+        {
+          "id": "dont_hang_up",
+          "type": "single_choice",
+          "title": "Nicht auflegen",
+          "prompt": "Du hast der Leitstelle die Situation geschildert. Sie sagt 'Bleiben Sie bitte am Telefon'. Was tust du?",
+          "points": 30,
+          "options": [
+            { "id": "a", "text": "Dranbleiben, Anweisungen befolgen, Updates zur Situation geben", "isCorrect": true, "feedback": "Richtig. Die Leitstelle kann dich zu Erste-Hilfe-Maßnahmen anleiten und erwartet Updates." },
+            { "id": "b", "text": "Auflegen – jetzt wissen sie ja Bescheid und der Rettungsdienst kommt", "isCorrect": false, "feedback": "Falsch. Die Leitstelle hat oft noch Rückfragen und kann dich aktiv durch die Maßnahmen leiten." },
+            { "id": "c", "text": "Das Telefon weglegen und zur Person laufen", "isCorrect": false, "feedback": "Teilweise – zur Person gehen ja, aber nimm das Telefon auf Lautsprecher mit." },
+            { "id": "d", "text": "Nur wenn der Betroffene stabil ist, auflegen", "isCorrect": false, "feedback": "Falsch. Die Leitstelle beendet das Gespräch, nicht du. Immer warten." }
+          ]
+        },
+        {
+          "id": "call_text",
+          "type": "keyword_input",
+          "title": "Was sagst du genau?",
+          "prompt": "Formuliere deinen Notrufanfang in eigenen Worten. Nenne mindestens 4 der Kernpunkte: Standort, Art des Notfalls, Anzahl, Zustand, deine Rolle.",
+          "points": 20,
+          "placeholder": "z. B. Hier ist [Name], ich rufe aus dem Schwimmbad [Adresse], eine Person, Verdacht auf Herzinfarkt, bei Bewusstsein, ich kann sie sehen ...",
+          "keywordGroups": [
+            ["schwimmbad", "freibad", "hallenbad", "bad", "adresse", "ort"],
+            ["herzinfarkt", "brustschmerz", "bewusstlos", "sturz", "ertrunken", "blutung"],
+            ["eine person", "1 person", "badegast", "kind", "erwachsener"],
+            ["ansprechbar", "bei bewusstsein", "bewusstlos", "atmet", "blutet"],
+            ["mitarbeiter", "fachangestellter", "aufsicht", "rettungsschwimmer", "azubi"]
+          ],
+          "minimumGroupsRequired": 4,
+          "feedback": {
+            "success": "Sehr gut. Klare Angabe von Ort, Notfall, Betroffenen, Zustand und deiner Funktion.",
+            "partial": "Gut angesetzt. Achte darauf, dass Standort und konkreter Notfall immer drin sind.",
+            "failure": "Zu unpräzise. Orientiere dich an: Ort – Was – Wer – Wie – Wer ruft an."
+          }
+        }
+      ]
+    },
+    {
+      "id": "severe-bleeding-007",
+      "title": "Starke Blutung durch Glasscherbe",
+      "subtitle": "Arterielle Blutung stoppen und Schock verhindern",
+      "icon": "🩸",
+      "mode": "einsatz",
+      "difficulty": "mittel",
+      "estimatedMinutes": 3,
+      "timerSeconds": 120,
+      "category": "Erste Hilfe",
+      "learningGoals": [
+        "Arterielle von venöser Blutung unterscheiden",
+        "Direkten Druck und Druckverband anlegen",
+        "Schockzeichen erkennen und Lagerung wählen",
+        "Eigenschutz bei Blutkontakt"
+      ],
+      "criticalFailures": [
+        { "id": "no_pressure", "label": "Keinen direkten Druck auf die Wunde aufgebracht", "effect": "hard_fail" },
+        { "id": "no_self_protection", "label": "Keine Handschuhe bei sichtbarer Blutung benutzt", "effect": "hard_fail" }
+      ],
+      "scoring": {
+        "maxPoints": 100,
+        "passThreshold": 70,
+        "timeBonusThresholdSeconds": 85,
+        "timeBonusPoints": 5,
+        "criticalFailurePenalty": "fail_case"
+      },
+      "debrief": {
+        "headline": "Druck drauf – hoch lagern – 112",
+        "summary": "Starke Blutungen werden durch direkten, kräftigen Druck gestoppt. Handschuhe schützen dich. Bei arterieller Blutung zählen Sekunden.",
+        "keyTakeaways": [
+          "Handschuhe an, bevor du Blut berührst – Eigenschutz geht vor.",
+          "Direkter Druck mit sterilem Verbandpäckchen oder sauberem Tuch.",
+          "Verletzte Extremität hochlagern, wenn möglich.",
+          "Druckverband nur anlegen wenn du es beherrschst – sonst Druck per Hand halten.",
+          "Schockzeichen beobachten: Blässe, kalter Schweiß, schneller Puls."
+        ],
+        "commonMistakes": [
+          "Ohne Handschuhe handeln – Infektionsrisiko (Hepatitis, HIV).",
+          "Abbinden als Erstmaßnahme – nur letzter Ausweg bei nicht stillbarer Blutung.",
+          "Fremdkörper (Glasscherbe) entfernen wollen – kann die Blutung verstärken."
+        ],
+        "merksatz": "Handschuhe – Druck – hoch – 112. Fremdkörper bleibt drin."
+      },
+      "steps": [
+        {
+          "id": "bleeding_assessment",
+          "type": "single_choice",
+          "title": "Blutung einschätzen",
+          "prompt": "Ein Badegast ist in eine Glasscherbe am Beckenrand getreten. Aus der Fußsohle spritzt rhythmisch hellrotes Blut. Was ist die erste Maßnahme?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "Handschuhe anziehen, dann sofort direkten Druck auf die Wunde ausüben", "isCorrect": true, "feedback": "Richtig. Hellrot + rhythmisch = arterielle Blutung. Handschuhe schützen dich, Druck stoppt die Blutung." },
+            { "id": "b", "text": "Die Glasscherbe sofort entfernen, dann die Wunde reinigen", "isCorrect": false, "feedback": "Falsch. Fremdkörper bleibt drin – Entfernen kann die Blutung verstärken." },
+            { "id": "c", "text": "Die Person ins Wasser setzen, damit die Wunde ausgespült wird", "isCorrect": false, "feedback": "Falsch. Wasser verdünnt die Blutgerinnung. Trocken halten und Druck ausüben." },
+            { "id": "d", "text": "Ein Abbindesystem am Oberschenkel anlegen", "isCorrect": false, "feedback": "Falsch. Abbinden ist letztes Mittel, nicht Erstmaßnahme. Erst direkter Druck." }
+          ]
+        },
+        {
+          "id": "pressure_technique",
+          "type": "single_choice",
+          "title": "Druck richtig aufbringen",
+          "prompt": "Du hast Handschuhe an und ein steriles Verbandpäckchen. Wie machst du weiter?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "Verbandpäckchen direkt auf die Wunde drücken, Fuß hochlagern, Druck halten bis Rettungsdienst da ist", "isCorrect": true, "feedback": "Richtig. Direkter Druck + Hochlagerung reduziert den Blutverlust deutlich." },
+            { "id": "b", "text": "Die Wunde mit Desinfektionsmittel ausspülen, dann Pflaster", "isCorrect": false, "feedback": "Falsch. Bei starker Blutung zuerst stoppen, dann versorgen. Desinfektion kommt später." },
+            { "id": "c", "text": "Verband locker um den Fuß wickeln, damit nichts drückt", "isCorrect": false, "feedback": "Falsch. Lockerer Verband stoppt die Blutung nicht. Fester Druck ist nötig." },
+            { "id": "d", "text": "Kurz nachschauen, ob die Scherbe tief drin steckt, bevor du etwas tust", "isCorrect": false, "feedback": "Falsch. Jede Sekunde zählt bei arterieller Blutung – erst Druck, dann schauen." }
+          ]
+        },
+        {
+          "id": "call_and_shock",
+          "type": "single_choice",
+          "title": "Notruf und Schock",
+          "prompt": "Die Blutung ist unter Kontrolle, aber die Person wird blass, schwitzt und fühlt sich unwohl. Was tust du?",
+          "points": 30,
+          "options": [
+            { "id": "a", "text": "Schockzeichen – Beine hochlagern, warm halten, 112 informieren, Druck weiter halten", "isCorrect": true, "feedback": "Richtig. Schockzeichen nach Blutverlust – Lagerung anpassen, Wärme, Rettungsdienst." },
+            { "id": "b", "text": "Person aufrecht hinsetzen und Wasser trinken lassen", "isCorrect": false, "feedback": "Falsch. Im Schock nichts trinken, nicht aufrichten – Blut muss zu Gehirn und Herz." },
+            { "id": "c", "text": "Person nach Hause schicken, weil die Blutung gestoppt ist", "isCorrect": false, "feedback": "Falsch. Nach arterieller Blutung immer Rettungsdienst – Blutverlust kann unterschätzt sein." },
+            { "id": "d", "text": "Warten, ob es von alleine besser wird", "isCorrect": false, "feedback": "Falsch. Schock ist medizinischer Notfall. Sofort 112 und Lagerung." }
+          ]
+        },
+        {
+          "id": "handover_bleeding",
+          "type": "keyword_input",
+          "title": "Übergabe an Rettungsdienst",
+          "prompt": "Was meldest du dem Rettungsdienst? Nenne mindestens 4 relevante Infos.",
+          "points": 20,
+          "placeholder": "z. B. Schnittwunde Fuß, Glasscherbe, arterielle Blutung, Druckverband angelegt, Schockzeichen ...",
+          "keywordGroups": [
+            ["schnittwunde", "glasscherbe", "schnitt", "stichwunde", "verletzung"],
+            ["fuß", "bein", "fußsohle", "wade"],
+            ["arteriell", "spritzend", "starke blutung", "pulsierend"],
+            ["druck", "druckverband", "verband", "hochgelagert"],
+            ["schock", "blass", "schweiß", "kreislauf"]
+          ],
+          "minimumGroupsRequired": 4,
+          "feedback": {
+            "success": "Vollständig. Verletzung, Ort, Blutungstyp, Maßnahme und Zustand – alle Kernpunkte.",
+            "partial": "Gut, aber nenne zusätzlich, welche Maßnahme du bereits ergriffen hast.",
+            "failure": "Zu wenig. Wichtig: Was verletzt? Wo? Wie stark? Was hast du gemacht? Wie ist der Zustand?"
+          }
+        }
+      ]
+    },
+    {
+      "id": "seizure-pool-008",
+      "title": "Krampfanfall im Becken",
+      "subtitle": "Epileptischer Anfall – im Wasser und nach der Bergung",
+      "icon": "⚡",
+      "mode": "einsatz",
+      "difficulty": "schwer",
+      "estimatedMinutes": 4,
+      "timerSeconds": 150,
+      "category": "Erste Hilfe",
+      "learningGoals": [
+        "Krampfanfall erkennen und richtig reagieren",
+        "Ertrinkungsrisiko bei Anfall im Wasser verstehen",
+        "Nach dem Anfall richtig betreuen (Postiktale Phase)",
+        "Keine Zwangsmaßnahmen während des Anfalls anwenden"
+      ],
+      "criticalFailures": [
+        { "id": "held_patient_down", "label": "Person während des Krampfes festgehalten/gefesselt", "effect": "hard_fail" },
+        { "id": "object_in_mouth", "label": "Etwas in den Mund geschoben (Beißschutz, Finger)", "effect": "hard_fail" },
+        { "id": "no_rescue_from_water", "label": "Person bleibt im Wasser trotz Krampfanfall", "effect": "hard_fail" }
+      ],
+      "scoring": {
+        "maxPoints": 100,
+        "passThreshold": 70,
+        "timeBonusThresholdSeconds": 110,
+        "timeBonusPoints": 5,
+        "criticalFailurePenalty": "fail_case"
+      },
+      "debrief": {
+        "headline": "Schützen – nicht festhalten",
+        "summary": "Ein Krampfanfall ist nach 2–3 Minuten meist selbstlimitierend. Deine Aufgabe: Verletzungen verhindern, Kopf freihalten, nach dem Anfall stabile Seitenlage und beobachten. Im Wasser: sofort bergen, sonst Ertrinkungsgefahr.",
+        "keyTakeaways": [
+          "Nicht festhalten, nicht zurückdrücken – nur Umgebung sicher machen.",
+          "Nichts in den Mund – Zungenbiss ist weniger gefährlich als Erstickung durch Fremdkörper.",
+          "Im Wasser: Kopf über Wasser halten und sofort bergen – Ertrinken ist die Lebensgefahr.",
+          "Nach dem Anfall: Stabile Seitenlage, ansprechen, Atmung prüfen, 112.",
+          "Anfalldauer merken – über 5 Minuten = Status epilepticus, lebensbedrohlich."
+        ],
+        "commonMistakes": [
+          "Festhalten wollen, um den Krampf zu stoppen – verursacht Verletzungen.",
+          "Gegenstand in den Mund schieben – Erstickungsgefahr.",
+          "Person zu früh als 'normal' einstufen – Postiktale Verwirrung kann lange dauern."
+        ],
+        "merksatz": "Im Wasser: bergen. An Land: schützen. Nach dem Anfall: Seitenlage und 112."
+      },
+      "steps": [
+        {
+          "id": "seizure_in_water",
+          "type": "single_choice",
+          "title": "Krampf im Becken",
+          "prompt": "Ein Badegast wird im Schwimmerbecken plötzlich steif, die Arme und Beine zucken rhythmisch, der Kopf schlägt gegen die Wasseroberfläche. Was ist die erste Handlung?",
+          "points": 30,
+          "options": [
+            { "id": "a", "text": "Sofort bergen – Kopf über Wasser halten, mit Hilfe aus dem Becken heben", "isCorrect": true, "feedback": "Richtig. Im Wasser droht Ertrinken. Kopf oben halten und Person so schnell wie möglich aus dem Wasser bringen." },
+            { "id": "b", "text": "Warten, bis der Anfall vorbei ist – man darf Betroffene nicht anfassen", "isCorrect": false, "feedback": "Falsch. Im Wasser ist Ertrinken die Hauptgefahr – sofort bergen, auch während des Anfalls." },
+            { "id": "c", "text": "Die Arme festhalten, damit die Zuckungen aufhören", "isCorrect": false, "feedback": "Falsch. Festhalten verursacht Verletzungen und stoppt den Anfall nicht." },
+            { "id": "d", "text": "Das Becken absperren und den Notarzt rufen, ohne zu bergen", "isCorrect": false, "feedback": "Falsch. Bergen geht vor Absperren – sonst ertrinkt die Person." }
+          ]
+        },
+        {
+          "id": "during_seizure",
+          "type": "single_choice",
+          "title": "Während des Anfalls am Boden",
+          "prompt": "Du hast die Person an Land gebracht. Sie krampft weiterhin. Was tust du?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "Harte/spitze Gegenstände wegräumen, Kopf vorsichtig polstern, Zeit stoppen, nicht festhalten", "isCorrect": true, "feedback": "Richtig. Umgebung sichern, Verletzungen verhindern, Dauer beobachten – mehr kannst du während des Anfalls nicht tun." },
+            { "id": "b", "text": "Einen Gurt oder Handtuch zwischen die Zähne schieben", "isCorrect": false, "feedback": "Falsch. Niemals etwas in den Mund – Erstickungsgefahr. Zungenbiss ist harmlos dagegen." },
+            { "id": "c", "text": "Die Beine kräftig festhalten, damit sie nicht mehr zucken", "isCorrect": false, "feedback": "Falsch. Festhalten verursacht Verletzungen und ist sinnlos." },
+            { "id": "d", "text": "Mund-zu-Mund-Beatmung während des Krampfes starten", "isCorrect": false, "feedback": "Falsch. Während des Anfalls ist die Atmung typischerweise gestört, aber Beatmung ist unmöglich. Erst nach dem Anfall prüfen." }
+          ]
+        },
+        {
+          "id": "after_seizure",
+          "type": "single_choice",
+          "title": "Nach dem Anfall",
+          "prompt": "Der Anfall hört nach 90 Sekunden auf. Die Person ist schlaff, atmet aber ruhig und gleichmäßig. Sie reagiert nicht auf Ansprechen. Was tust du?",
+          "points": 25,
+          "options": [
+            { "id": "a", "text": "Stabile Seitenlage, Atmung weiter überwachen, 112 alarmieren, bei der Person bleiben", "isCorrect": true, "feedback": "Richtig. In der postiktalen Phase ist Bewusstlosigkeit normal – Seitenlage schützt die Atemwege." },
+            { "id": "b", "text": "Person wachrütteln, damit sie wieder ansprechbar wird", "isCorrect": false, "feedback": "Falsch. Die postiktale Phase kann Minuten dauern – Wachrütteln bringt nichts und stresst die Person." },
+            { "id": "c", "text": "Person hinsetzen und Wasser anbieten", "isCorrect": false, "feedback": "Falsch. Bewusstlose dürfen nichts trinken – Aspirationsgefahr. Immer Seitenlage." },
+            { "id": "d", "text": "Gehen lassen, wenn die Person wieder wach ist – Krämpfe sind bekannt", "isCorrect": false, "feedback": "Falsch. Auch bekannte Epilepsie nach Badsituation ärztlich abklären – Ertrinkungsrisiko war da." }
+          ]
+        },
+        {
+          "id": "handover_seizure",
+          "type": "keyword_input",
+          "title": "Übergabe an Rettungsdienst",
+          "prompt": "Was meldest du dem Rettungsdienst? Mindestens 4 Kernpunkte.",
+          "points": 20,
+          "placeholder": "z. B. Krampfanfall im Wasser, 90 Sekunden, bewusstlos, Seitenlage, Atmung normal, aus Becken geborgen ...",
+          "keywordGroups": [
+            ["krampf", "anfall", "epilepsie", "krampfanfall"],
+            ["wasser", "becken", "schwimmbad", "beim schwimmen"],
+            ["dauer", "90 sekunden", "1 minute", "2 minuten", "gedauert"],
+            ["seitenlage", "stabile seitenlage", "auf der seite"],
+            ["bewusstlos", "reagiert nicht", "atmet", "atmung"]
+          ],
+          "minimumGroupsRequired": 4,
+          "feedback": {
+            "success": "Perfekt. Ereignis, Ort, Dauer, Maßnahmen und aktueller Zustand – volle Übergabe.",
+            "partial": "Gut, aber nenne zusätzlich die Dauer des Anfalls – das ist für den Rettungsdienst wichtig.",
+            "failure": "Zu wenig. Rettungsdienst braucht: Was? Wo? Wie lange? Was gemacht? Zustand jetzt?"
           }
         }
       ]
