@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import zxcvbn from 'zxcvbn';
-import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle } from 'lucide-react';
+import { Lock, Shield, AlertTriangle, Mail, Building2, CheckCircle, ArrowLeft, FileText, ShieldCheck, GraduationCap } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
   requestPasswordReset as dsRequestPasswordReset,
@@ -132,15 +132,20 @@ const LoginScreen: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center p-4" style={{
         background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
       }}>
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/60 p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500 rounded-t-2xl" />
           <button
             onClick={() => setAuthView('login')}
-            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
+            className="mb-6 inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold bg-white/70 hover:bg-white text-cyan-700 border border-cyan-200 transition-all"
           >
-            ← Zurück zum Login
+            <ArrowLeft size={16} />
+            Zurück zum Login
           </button>
 
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">📜 Impressum</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+            <FileText size={22} className="text-cyan-600" />
+            Impressum
+          </h2>
           <LegalImprintContent />
         </div>
       </div>
@@ -152,15 +157,20 @@ const LoginScreen: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center p-4" style={{
         background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
       }}>
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/60 p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-t-2xl" />
           <button
             onClick={() => setAuthView('login')}
-            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
+            className="mb-6 inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold bg-white/70 hover:bg-white text-cyan-700 border border-cyan-200 transition-all"
           >
-            ← Zurück zum Login
+            <ArrowLeft size={16} />
+            Zurück zum Login
           </button>
 
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">🔒 Datenschutzerklärung</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+            <ShieldCheck size={22} className="text-emerald-600" />
+            Datenschutzerklärung
+          </h2>
           <LegalPrivacyContent />
         </div>
       </div>
@@ -206,10 +216,11 @@ const LoginScreen: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center p-4" style={{
         background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
       }}>
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/60 p-8 max-w-md w-full relative">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500 rounded-t-2xl" />
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="text-cyan-600" size={28} />
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-gradient-to-br from-cyan-400 to-sky-500 shadow-lg shadow-cyan-500/30">
+              <Lock className="text-white" size={28} />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Neues Passwort setzen</h2>
             <p className="text-gray-500 text-sm">Gib dein neues Passwort ein (mindestens {minPasswordLength} Zeichen).</p>
@@ -223,7 +234,7 @@ const LoginScreen: React.FC = () => {
               aria-label="Neues Passwort"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white/70 border border-cyan-200 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all text-gray-800"
             />
             {newPassword.length > 0 && (() => {
               const strength = getPasswordStrength(newPassword);
@@ -253,12 +264,12 @@ const LoginScreen: React.FC = () => {
               aria-label="Neues Passwort wiederholen"
               value={newPasswordConfirm}
               onChange={(e) => setNewPasswordConfirm(e.target.value)}
-              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white/70 border border-cyan-200 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all text-gray-800"
             />
             <button
               type="submit"
               disabled={newPasswordLoading}
-              className="w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors"
+              className="w-full bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-cyan-500/20"
             >
               {newPasswordLoading ? 'Wird gespeichert...' : 'Passwort ändern'}
             </button>
@@ -274,25 +285,29 @@ const LoginScreen: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center p-4" style={{
         background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
       }}>
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/60 p-8 max-w-md w-full relative">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 rounded-t-2xl" />
           <button
             onClick={() => { setAuthView('login'); setResetSent(false); setResetEmail(''); }}
-            className="mb-6 flex items-center gap-2 text-cyan-600 hover:text-cyan-500 transition-colors"
+            className="mb-6 inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold bg-white/70 hover:bg-white text-cyan-700 border border-cyan-200 transition-all"
           >
-            ← Zurück zum Login
+            <ArrowLeft size={16} />
+            Zurück zum Login
           </button>
 
           <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Mail className="text-cyan-600" size={28} />
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-orange-500/30">
+              <Mail className="text-white" size={28} />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Passwort zurücksetzen</h2>
             <p className="text-gray-500 text-sm">Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen.</p>
           </div>
 
           {resetSent ? (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-              <div className="text-4xl mb-3">✅</div>
+            <div className="bg-green-50/80 backdrop-blur border border-green-300 rounded-2xl p-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 shadow-lg shadow-emerald-500/30 flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="text-white" size={28} />
+              </div>
               <h3 className="font-bold text-green-800 mb-2">E-Mail gesendet!</h3>
               <p className="text-sm text-green-700">
                 Prüfe dein Postfach (auch den Spam-Ordner) nach einer E-Mail mit dem Zurücksetzen-Link.
@@ -300,7 +315,7 @@ const LoginScreen: React.FC = () => {
               </p>
               <button
                 onClick={() => { setAuthView('login'); setResetSent(false); setResetEmail(''); }}
-                className="mt-4 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-bold rounded-lg transition-colors"
+                className="mt-4 px-6 py-2 bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white font-bold rounded-xl transition-all shadow-md shadow-cyan-500/20"
               >
                 Zurück zum Login
               </button>
@@ -315,12 +330,12 @@ const LoginScreen: React.FC = () => {
                 aria-label="E-Mail-Adresse für Passwort-Reset"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white/70 border border-cyan-200 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all text-gray-800"
               />
               <button
                 type="submit"
                 disabled={resetLoading}
-                className="w-full bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition-colors"
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-400 text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-orange-500/20"
               >
                 {resetLoading ? 'Wird gesendet...' : 'Reset-Link senden'}
               </button>
@@ -383,30 +398,39 @@ const LoginScreen: React.FC = () => {
         }
       `}</style>
 
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative z-10">
+      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 p-8 max-w-md w-full relative z-10 overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500" />
         <div className="text-center mb-8">
-          <img src="/icons/icon-192x192.png" alt="Bäder Azubi Logo" className="w-24 h-24 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-cyan-700 mb-2">Bäder Azubi</h1>
-          <p className="text-cyan-600">Professionelle Lern-Plattform</p>
+          <div className="relative w-24 h-24 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-cyan-400 to-sky-500 blur-xl opacity-40" />
+            <img src="/icons/icon-192x192.png" alt="Bäder Azubi Logo" className="relative w-24 h-24 rounded-2xl" />
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-700 to-sky-600 bg-clip-text text-transparent mb-2">Bäder Azubi</h1>
+          <p className="text-xs font-mono tracking-wider text-cyan-600 inline-flex items-center gap-1.5">
+            <GraduationCap size={14} />
+            PROFESSIONELLE LERN-PLATTFORM
+          </p>
         </div>
 
-        <div className="flex gap-2 mb-6">
+        <div className={`flex gap-1 mb-6 p-1 rounded-2xl border ${
+          'bg-white/60 border-cyan-100'
+        }`}>
           <button
             onClick={() => setAuthView('login')}
-            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${
               authView === 'login'
-                ? 'bg-cyan-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-gradient-to-r from-cyan-500 to-sky-500 text-white shadow-md shadow-cyan-500/30'
+                : 'text-cyan-700 hover:bg-white/70'
             }`}
           >
             Login
           </button>
           <button
             onClick={() => setAuthView('register')}
-            className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${
               authView === 'register'
-                ? 'bg-cyan-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/30'
+                : 'text-emerald-700 hover:bg-white/70'
             }`}
           >
             Registrieren
@@ -423,7 +447,7 @@ const LoginScreen: React.FC = () => {
               aria-label="E-Mail oder Name"
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white/70 border border-cyan-200 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all text-gray-800"
             />
             <input
               type="password"
@@ -433,13 +457,13 @@ const LoginScreen: React.FC = () => {
               aria-label="Passwort"
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white/70 border border-cyan-200 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all text-gray-800"
             />
             <button
               type="submit"
-              className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 rounded-lg transition-colors"
+              className="w-full bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-cyan-500/20 flex items-center justify-center gap-2"
             >
-              <Lock className="inline mr-2" size={20} />
+              <Lock size={18} />
               Anmelden
             </button>
             <div className="text-center">
@@ -462,10 +486,10 @@ const LoginScreen: React.FC = () => {
               aria-label="Einladungscode"
               value={registerData.invitationCode}
               onChange={(e) => setRegisterData({...registerData, invitationCode: e.target.value.toUpperCase()})}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono tracking-wider text-center text-lg ${
-                codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === true ? 'border-green-400 bg-green-50' :
-                codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === false ? 'border-red-400 bg-red-50' :
-                'border-cyan-300'
+              className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 font-mono tracking-wider text-center text-lg transition-all ${
+                codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === true ? 'border-green-400 bg-green-50/80 text-green-800' :
+                codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === false ? 'border-red-400 bg-red-50/80 text-red-800' :
+                'border-cyan-200 bg-white/70 text-gray-800'
               }`}
               style={{ letterSpacing: '0.15em' }}
             />
@@ -473,7 +497,7 @@ const LoginScreen: React.FC = () => {
               <div className="text-sm text-gray-500 text-center animate-pulse">Code wird geprüft...</div>
             )}
             {codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === true && (
-              <div className="bg-green-50 border border-green-300 rounded-lg p-3 text-sm text-green-800 flex items-center gap-2">
+              <div className="bg-green-50/80 backdrop-blur border border-green-300 rounded-xl p-3 text-sm text-green-800 flex items-center gap-2">
                 <CheckCircle size={18} className="text-green-600 flex-shrink-0" />
                 <div>
                   <div className="font-bold flex items-center gap-1">
@@ -484,20 +508,20 @@ const LoginScreen: React.FC = () => {
               </div>
             )}
             {codeStatus && typeof codeStatus === 'object' && 'valid' in codeStatus && codeStatus.valid === false && (
-              <div className="bg-red-50 border border-red-300 rounded-lg p-3 text-sm text-red-800">
+              <div className="bg-red-50/80 backdrop-blur border border-red-300 rounded-xl p-3 text-sm text-red-800">
                 {(codeStatus as CodeStatusInvalid).reason || 'Ungültiger Einladungscode'}
               </div>
             )}
             {codeStatus && typeof codeStatus === 'object' && 'secureValidation' in codeStatus && (
-              <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
-                <Shield className="inline mr-2" size={16} />
-                Der Einladungscode wird beim Absenden serverseitig geprüft.
+              <div className="bg-cyan-50/80 backdrop-blur border border-cyan-200 rounded-xl p-3 text-sm text-cyan-800 flex items-start gap-2">
+                <Shield className="mt-0.5 flex-shrink-0 text-cyan-600" size={16} />
+                <span>Der Einladungscode wird beim Absenden serverseitig geprüft.</span>
               </div>
             )}
             {!codeStatus && (
-              <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
-                <Shield className="inline mr-2" size={16} />
-                Du brauchst einen Einladungscode von deinem Ausbilder oder Betrieb.
+              <div className="bg-cyan-50/80 backdrop-blur border border-cyan-200 rounded-xl p-3 text-sm text-cyan-800 flex items-start gap-2">
+                <Shield className="mt-0.5 flex-shrink-0 text-cyan-600" size={16} />
+                <span>Du brauchst einen Einladungscode von deinem Ausbilder oder Betrieb.</span>
               </div>
             )}
             <input
@@ -508,7 +532,7 @@ const LoginScreen: React.FC = () => {
               aria-label="Vollständiger Name"
               value={registerData.name}
               onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
-              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white/70 border border-cyan-200 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all text-gray-800"
             />
             <input
               type="email"
@@ -518,7 +542,7 @@ const LoginScreen: React.FC = () => {
               aria-label="E-Mail-Adresse"
               value={registerData.email}
               onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
-              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white/70 border border-cyan-200 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all text-gray-800"
             />
             <input
               type="password"
@@ -528,7 +552,7 @@ const LoginScreen: React.FC = () => {
               aria-label="Neues Passwort"
               value={registerData.password}
               onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
-              className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white/70 border border-cyan-200 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all text-gray-800"
             />
             {registerData.password.length > 0 && (() => {
               const strength = getPasswordStrength(registerData.password);
@@ -559,40 +583,43 @@ const LoginScreen: React.FC = () => {
                 type="date"
                 value={registerData.trainingEnd}
                 onChange={(e) => setRegisterData({...registerData, trainingEnd: e.target.value})}
-                className="w-full px-4 py-3 border border-cyan-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white/70 border border-cyan-200 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all text-gray-800"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                <AlertTriangle className="inline" size={12} /> Das Datum dient der Zuordnung; konkrete Aufbewahrungs- und Löschfristen werden vom Betreiber festgelegt.
+              <p className="text-xs text-gray-500 mt-1 flex items-start gap-1">
+                <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
+                <span>Das Datum dient der Zuordnung; konkrete Aufbewahrungs- und Löschfristen werden vom Betreiber festgelegt.</span>
               </p>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition-colors"
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
             >
-              <Shield className="inline mr-2" size={20} />
+              <Shield size={18} />
               Registrierung beantragen
             </button>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-              <AlertTriangle className="inline mr-2" size={16} />
-              Nach der Registrierung muss dein Account noch freigeschaltet werden.
+            <div className="bg-amber-50/80 backdrop-blur border border-amber-200 rounded-xl p-3 text-sm text-amber-800 flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 flex-shrink-0 text-amber-600" size={16} />
+              <span>Nach der Registrierung muss dein Account noch freigeschaltet werden.</span>
             </div>
           </form>
         )}
 
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="flex justify-center gap-4 text-xs text-gray-600">
+        <div className="mt-6 pt-6 border-t border-cyan-100">
+          <div className="flex justify-center gap-4 text-xs">
             <button
               onClick={() => setAuthView('impressum')}
-              className="text-cyan-600 hover:text-cyan-700 transition-colors"
+              className="inline-flex items-center gap-1 text-cyan-600 hover:text-cyan-800 transition-colors font-medium"
             >
+              <FileText size={12} />
               Impressum
             </button>
-            <span>|</span>
+            <span className="text-gray-300">|</span>
             <button
               onClick={() => setAuthView('datenschutz')}
-              className="text-cyan-600 hover:text-cyan-700 transition-colors"
+              className="inline-flex items-center gap-1 text-cyan-600 hover:text-cyan-800 transition-colors font-medium"
             >
+              <ShieldCheck size={12} />
               Datenschutz
             </button>
           </div>
