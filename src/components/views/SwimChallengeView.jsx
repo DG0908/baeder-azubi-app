@@ -1,10 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import {
-  extractTrainingPlanSelectionFromNotes,
-  stripTrainingPlanTagFromNotes,
-} from '../../lib/swim/swimPlanNotes';
 import SwimHero from './swim/SwimHero';
 import SwimTeamBattleBanner from './swim/SwimTeamBattleBanner';
 import SwimOverviewView from './swim/SwimOverviewView';
