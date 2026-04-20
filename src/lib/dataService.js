@@ -1514,9 +1514,15 @@ export const createCustomSwimTrainingPlanEntry = async (payload) => {
 
 // ─── Berichtsheft ───────────────────────────────────────────────────
 
-export const loadBerichtsheftEntriesFromDb = async (userName) => {
-  const entries = await secureReportBooksApi.list();
+export const loadBerichtsheftEntriesFromDb = async (userName, options = {}) => {
+  const params = options && options.userId ? { userId: options.userId } : {};
+  const entries = await secureReportBooksApi.list(params);
   return (entries || []).map(mapSecureReportBookToFrontendEntry);
+};
+
+export const loadBerichtsheftAzubis = async () => {
+  // Same org-scoped source as Kontrollkarte: /users/contacts
+  return loadSchoolAttendanceAzubis();
 };
 
 export const saveBerichtsheftEntry = async (payload, existingId = null) => {
