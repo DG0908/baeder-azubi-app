@@ -110,6 +110,7 @@ const BerichtsheftView = (props) => {
         openBerichtsheftDraftForCurrentWeek={openBerichtsheftDraftForCurrentWeek}
         setBerichtsheftViewMode={setBerichtsheftViewMode}
         canManageBerichtsheftSignatures={canManageBerichtsheftSignatures}
+        pendingSignatureCount={berichtsheftPendingSignatures?.length || 0}
       />
 
       {berichtsheftViewMode !== 'profile' && profileIncomplete && (
