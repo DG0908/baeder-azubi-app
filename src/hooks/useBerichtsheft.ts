@@ -11,6 +11,7 @@ import {
   updateBerichtsheftProfile as dsUpdateBerichtsheftProfile,
   loadBerichtsheftProfile as dsLoadBerichtsheftProfile,
   getAuthorizedReviewers as dsGetAuthorizedReviewers,
+  loadBerichtsheftAzubis as dsLoadBerichtsheftAzubis,
 } from '../lib/dataService';
 import { friendlyError } from '../lib/friendlyError';
 import { AUSBILDUNGSRAHMENPLAN } from '../data/ausbildungsrahmenplan';
@@ -225,6 +226,13 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
   const [berichtsheftServerDraftsByWeek, setBerichtsheftServerDraftsByWeek] = useState<Record<string, BerichtsheftEntry>>({});
   const [berichtsheftRemoteDraftsEnabled, setBerichtsheftRemoteDraftsEnabled] = useState(true);
 
+  // Progress-Target (Staff kann Fortschritt eines bestimmten Azubis anzeigen)
+  const [progressTargetUserId, setProgressTargetUserIdState] = useState<string | null>(null);
+  const [progressTargetUserName, setProgressTargetUserName] = useState<string>('');
+  const [progressAzubis, setProgressAzubis] = useState<Array<{ id: string; name: string }>>([]);
+  const [progressAzubiEntries, setProgressAzubiEntries] = useState<BerichtsheftEntry[]>([]);
+  const [progressLoading, setProgressLoading] = useState(false);
+
   // Azubi-Profildaten für Berichtsheft
   const [azubiProfile, setAzubiProfile] = useState<AzubiProfile>(() => {
     const saved = localStorage.getItem('azubi_profile');
@@ -397,6 +405,59 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
       setBerichtsheftPendingLoading(false);
     }
   }, [user, canManageBerichtsheftSignatures]);
+
+  // Progress-Target: Staff-Azubi-Liste + Entries eines ausgewählten Azubis
+  const loadProgressAzubis = useCallback(async () => {
+    if (!canManageBerichtsheftSignatures) {
+      setProgressAzubis([]);
+      return;
+    }
+    try {
+      const list = await (dsLoadBerichtsheftAzubis as () => Promise<Array<{ id: string; name: string }>>)();
+      setProgressAzubis(Array.isArray(list) ? list : []);
+    } catch (err) {
+      console.error('Fehler beim Laden der Azubi-Liste:', err);
+      setProgressAzubis([]);
+    }
+  }, [canManageBerichtsheftSignatures]);
+
+  const selectProgressTarget = useCallback(
+    async (userId: string, userName: string) => {
+      if (!userId || !user || !canManageBerichtsheftSignatures) return;
+      if (userId === user.id) {
+        setProgressTargetUserIdState(null);
+        setProgressTargetUserName('');
+        setProgressAzubiEntries([]);
+        return;
+      }
+      setProgressTargetUserIdState(userId);
+      setProgressTargetUserName(userName || '');
+      setProgressLoading(true);
+      try {
+        const entries = await (dsLoadBerichtsheftEntries as (
+          name: string,
+          options?: { userId?: string }
+        ) => Promise<BerichtsheftEntry[]>)(userName || '', { userId });
+        const submitted = (Array.isArray(entries) ? entries : []).filter(
+          (entry) => !isBerichtsheftDraft(entry)
+        );
+        setProgressAzubiEntries(submitted);
+      } catch (err) {
+        console.error('Fehler beim Laden der Azubi-Berichte:', err);
+        setProgressAzubiEntries([]);
+        showToast('Berichte des Azubis konnten nicht geladen werden.', 'error');
+      } finally {
+        setProgressLoading(false);
+      }
+    },
+    [user, canManageBerichtsheftSignatures, showToast]
+  );
+
+  const clearProgressTarget = useCallback(() => {
+    setProgressTargetUserIdState(null);
+    setProgressTargetUserName('');
+    setProgressAzubiEntries([]);
+  }, []);
 
   const notifyBerichtsheftReadyForReview = useCallback(
     async ({ azubiName, weekStart }: { azubiName: string; weekStart: string }) => {
@@ -1105,7 +1166,8 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
       };
     });
 
-    berichtsheftEntries.forEach((entry) => {
+    const source = progressTargetUserId ? progressAzubiEntries : berichtsheftEntries;
+    source.forEach((entry) => {
       if (entry.entries) {
         Object.values(entry.entries).forEach((day) => {
           day.forEach((item) => {
@@ -1121,7 +1183,7 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     });
 
     return progress;
-  }, [berichtsheftEntries]);
+  }, [berichtsheftEntries, progressTargetUserId, progressAzubiEntries]);
 
   const generateBerichtsheftPDF = useCallback(
     (entry: BerichtsheftEntry) => {
@@ -1358,8 +1420,10 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
 
     if (canManageBerichtsheftSignatures) {
       loadBerichtsheftPendingSignatures();
+      loadProgressAzubis();
     } else {
       setBerichtsheftPendingSignatures([]);
+      setProgressAzubis([]);
     }
 
     // Azubi-Profil aus Backend nachladen falls localStorage leer
@@ -1466,6 +1530,15 @@ export function useBerichtsheft({ user, currentView, allUsers, showToast, sendNo
     berichtsheftPendingLoading,
     azubiProfile,
     canManageBerichtsheftSignatures,
+
+    // Progress-Target (Staff)
+    progressTargetUserId,
+    progressTargetUserName,
+    progressAzubis,
+    progressAzubiEntries,
+    progressLoading,
+    selectProgressTarget,
+    clearProgressTarget,
 
     // Setters
     setBerichtsheftYear,
