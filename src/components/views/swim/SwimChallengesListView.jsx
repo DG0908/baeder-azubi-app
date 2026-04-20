@@ -1,12 +1,13 @@
 import React from 'react';
+import { Target, Waves, Zap, Dumbbell, Calendar, Activity, Check, Trophy, Plus } from 'lucide-react';
 
 const FILTER_CATEGORIES = [
-  { id: 'alle', label: '🎯 Alle' },
-  { id: 'distanz', label: '🌊 Distanz' },
-  { id: 'sprint', label: '⚡ Sprint' },
-  { id: 'ausdauer', label: '💪 Ausdauer' },
-  { id: 'regelmaessigkeit', label: '📅 Regelmäßigkeit' },
-  { id: 'technik', label: '🏊 Technik' },
+  { id: 'alle', label: 'Alle', Icon: Target },
+  { id: 'distanz', label: 'Distanz', Icon: Waves },
+  { id: 'sprint', label: 'Sprint', Icon: Zap },
+  { id: 'ausdauer', label: 'Ausdauer', Icon: Dumbbell },
+  { id: 'regelmaessigkeit', label: 'Regelmäßigkeit', Icon: Calendar },
+  { id: 'technik', label: 'Technik', Icon: Activity },
 ];
 
 const SwimChallengesListView = ({
@@ -21,23 +22,30 @@ const SwimChallengesListView = ({
   saveActiveSwimChallenges,
 }) => (
   <div className="space-y-4">
-    <div className="flex gap-2 flex-wrap mb-4">
-      {FILTER_CATEGORIES.map((cat) => (
-        <button
-          key={cat.id}
-          onClick={() => setSwimChallengeFilter(cat.id)}
-          className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-            swimChallengeFilter === cat.id
-              ? 'bg-cyan-500 text-white'
-              : darkMode
-                ? 'bg-slate-700 text-white hover:bg-slate-600'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          {cat.label}
-        </button>
-      ))}
+    <div className="glass-card rounded-2xl p-3">
+      <div className="flex gap-2 flex-wrap">
+        {FILTER_CATEGORIES.map(({ id, label, Icon }) => {
+          const isActive = swimChallengeFilter === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setSwimChallengeFilter(id)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
+                isActive
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-sm'
+                  : darkMode
+                    ? 'bg-white/5 text-gray-300 hover:bg-white/10'
+                    : 'bg-white/60 text-gray-700 hover:bg-white/80'
+              }`}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          );
+        })}
+      </div>
     </div>
+
     <div className="grid md:grid-cols-2 gap-4">
       {SWIM_CHALLENGES.filter(
         (c) => swimChallengeFilter === 'alle' || c.category === swimChallengeFilter,
@@ -49,33 +57,49 @@ const SwimChallengesListView = ({
         return (
           <div
             key={challenge.id}
-            className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-5 shadow-lg ${
-              isCompleted ? 'ring-2 ring-green-500' : ''
+            className={`glass-card rounded-2xl p-5 relative overflow-hidden ${
+              isCompleted ? 'ring-2 ring-emerald-400/70' : ''
             }`}
           >
-            <div className="flex items-start justify-between">
+            <div
+              className={`absolute top-0 left-0 right-0 h-1 ${
+                isCompleted
+                  ? 'bg-gradient-to-r from-emerald-400 to-green-500'
+                  : isActive
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                    : 'bg-gradient-to-r from-slate-400/40 to-slate-500/40'
+              }`}
+            />
+            <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{challenge.icon}</span>
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
+                    darkMode ? 'bg-cyan-900/60' : 'bg-cyan-100'
+                  }`}
+                >
+                  {challenge.icon}
+                </div>
                 <div>
-                  <h4
-                    className={`font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}
-                  >
+                  <h4 className="font-bold flex items-center gap-2 text-gray-800">
                     {challenge.name}
-                    {isCompleted && <span className="text-green-500">✓</span>}
+                    {isCompleted && (
+                      <Check
+                        size={16}
+                        className={darkMode ? 'text-emerald-300' : 'text-emerald-600'}
+                      />
+                    )}
                   </h4>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {challenge.description}
-                  </p>
+                  <p className="text-sm text-gray-600">{challenge.description}</p>
                 </div>
               </div>
               <span
-                className={`px-2 py-1 rounded-full text-xs font-bold ${
+                className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
                   isCompleted
                     ? darkMode
-                      ? 'bg-green-900 text-green-300'
-                      : 'bg-green-100 text-green-700'
+                      ? 'bg-emerald-900/60 text-emerald-300'
+                      : 'bg-emerald-100 text-emerald-700'
                     : darkMode
-                      ? 'bg-cyan-900 text-cyan-300'
+                      ? 'bg-cyan-900/60 text-cyan-300'
                       : 'bg-cyan-100 text-cyan-700'
                 }`}
               >
@@ -85,16 +109,24 @@ const SwimChallengesListView = ({
             </div>
             <div className="mt-4">
               <div className="flex justify-between text-sm mb-1">
-                <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Fortschritt</span>
-                <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                <span className="text-gray-600">Fortschritt</span>
+                <span className="text-gray-600">
                   {challenge.type === 'distance' || challenge.type === 'single_distance'
                     ? `${(progress.current / 1000).toFixed(1)} / ${(challenge.target / 1000).toFixed(1)} km`
                     : `${progress.current} / ${challenge.target} ${challenge.unit}`}
                 </span>
               </div>
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className={`h-2 rounded-full overflow-hidden ${
+                  darkMode ? 'bg-white/10' : 'bg-gray-200'
+                }`}
+              >
                 <div
-                  className={`h-full transition-all ${isCompleted ? 'bg-green-500' : 'bg-cyan-500'}`}
+                  className={`h-full transition-all ${
+                    isCompleted
+                      ? 'bg-gradient-to-r from-emerald-400 to-green-500'
+                      : 'bg-gradient-to-r from-cyan-500 to-blue-500'
+                  }`}
                   style={{ width: `${Math.min(100, progress.percent)}%` }}
                 />
               </div>
@@ -106,21 +138,31 @@ const SwimChallengesListView = ({
                 }
               }}
               disabled={isActive || isCompleted}
-              className={`mt-4 w-full py-2 rounded-lg font-medium transition-all ${
+              className={`mt-4 w-full py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
                 isCompleted
                   ? darkMode
-                    ? 'bg-green-900 text-green-300'
-                    : 'bg-green-100 text-green-700'
+                    ? 'bg-emerald-900/60 text-emerald-300'
+                    : 'bg-emerald-100 text-emerald-700'
                   : isActive
                     ? darkMode
-                      ? 'bg-cyan-900 text-cyan-300'
+                      ? 'bg-cyan-900/60 text-cyan-300'
                       : 'bg-cyan-100 text-cyan-700'
-                    : darkMode
-                      ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
-                      : 'bg-cyan-500 hover:bg-cyan-600 text-white'
+                    : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-sm'
               }`}
             >
-              {isCompleted ? '🏆 Abgeschlossen!' : isActive ? '✓ Aktiv' : 'Challenge starten'}
+              {isCompleted ? (
+                <>
+                  <Trophy size={16} /> Abgeschlossen
+                </>
+              ) : isActive ? (
+                <>
+                  <Check size={16} /> Aktiv
+                </>
+              ) : (
+                <>
+                  <Plus size={16} /> Challenge starten
+                </>
+              )}
             </button>
           </div>
         );

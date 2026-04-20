@@ -81,12 +81,34 @@ const {
     return true;
   });
 
+  const mySessions = swimSessions.filter((s) => s.user_id === user?.id && s.confirmed);
+  const totalDistance = mySessions.reduce((sum, s) => sum + (s.distance || 0), 0);
+  const completedChallenges = SWIM_CHALLENGES.filter((ch) => {
+    const progress = calculateChallengeProgress(ch, swimSessions, user?.id);
+    return progress.percent >= 100;
+  });
+  const swimPoints = calculateSwimPoints(
+    mySessions,
+    completedChallenges.map((c) => c.id),
+  );
+  const swimLevel = getSwimLevel(swimPoints.total);
+  const heroStats = {
+    totalDistanceLabel:
+      totalDistance >= 1000
+        ? `${(totalDistance / 1000).toFixed(1)} km`
+        : `${totalDistance} m`,
+    completedChallenges: completedChallenges.length,
+    points: swimPoints.total,
+    levelName: swimLevel?.name || '',
+  };
+
   return (
           <div className="space-y-6">
             <SwimHero
               darkMode={darkMode}
               swimChallengeView={swimChallengeView}
               setSwimChallengeView={setSwimChallengeView}
+              stats={heroStats}
             />
 
             <SwimTeamBattleBanner

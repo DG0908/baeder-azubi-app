@@ -1,4 +1,5 @@
 import React from 'react';
+import { CheckCircle2, Check, X, Undo2 } from 'lucide-react';
 import {
   extractTrainingPlanSelectionFromNotes,
   stripTrainingPlanTagFromNotes,
@@ -34,12 +35,15 @@ const SwimTrainerConfirmationsView = ({
   };
 
   return (
-    <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-      <h3
-        className={`font-bold text-lg mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}
-      >
-        ✅ Zu bestätigende Einheiten
-        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+    <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
+      <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-gray-800">
+        <CheckCircle2
+          size={20}
+          className={darkMode ? 'text-amber-300' : 'text-amber-600'}
+        />
+        Zu bestätigende Einheiten
+        <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
           {pendingSwimConfirmations.length}
         </span>
       </h3>
@@ -62,19 +66,21 @@ const SwimTrainerConfirmationsView = ({
           return (
             <div
               key={session.id}
-              className={`p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}
+              className={`p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 border ${
+                darkMode ? 'bg-white/5 border-white/10' : 'bg-white/60 border-gray-200'
+              }`}
             >
               <div>
-                <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                <div className="font-medium text-gray-800">
                   {session.user_name} - {session.distance}m in {session.time_minutes} Min
                 </div>
-                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <div className="text-sm text-gray-600">
                   {SWIM_STYLES.find((s) => s.id === session.style)?.name} | {session.date}
                   {cleanNotes && <span className="ml-2 italic">&quot;{cleanNotes}&quot;</span>}
                 </div>
                 {trainingPlan && (
                   <div className={`text-xs mt-1 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
-                    Trainingsplan: {trainingPlan.name} (+{trainingPlan.xpReward} XP bei Erfuellung)
+                    Trainingsplan: {trainingPlan.name} (+{trainingPlan.xpReward} XP bei Erfüllung)
                     {trainingPlanUnit &&
                       trainingPlanUnitIndex >= 0 &&
                       ` | ${getPlanUnitLabelShared(trainingPlanUnit, trainingPlanUnitIndex, SWIM_STYLES)}`}
@@ -89,22 +95,25 @@ const SwimTrainerConfirmationsView = ({
               {isOwnSession ? (
                 <button
                   onClick={() => withdrawSwimSession(session.id)}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium"
+                  className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg font-medium flex items-center gap-2 shadow-sm"
                 >
-                  Zurueckziehen
+                  <Undo2 size={16} />
+                  Zurückziehen
                 </button>
               ) : (
                 <div className="flex gap-2">
                   <button
                     onClick={() => confirmSwimSession(session.id)}
-                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium"
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white rounded-lg font-medium flex items-center gap-2 shadow-sm"
                   >
+                    <Check size={16} />
                     Bestätigen
                   </button>
                   <button
                     onClick={() => rejectSwimSession(session.id)}
-                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
+                    className="px-4 py-2 bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white rounded-lg font-medium flex items-center gap-2 shadow-sm"
                   >
+                    <X size={16} />
                     Ablehnen
                   </button>
                 </div>

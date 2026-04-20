@@ -1,5 +1,6 @@
 import React from 'react';
 import toast from 'react-hot-toast';
+import { Plus, AlertTriangle, Send, CheckCircle2 } from 'lucide-react';
 import {
   normalizePlanUnitForView,
   getPlanUnits as getPlanUnitsShared,
@@ -28,6 +29,13 @@ const getDifficultyMeta = (darkMode) => ({
     badge: darkMode ? 'bg-rose-900/60 text-rose-300' : 'bg-rose-100 text-rose-700',
   },
 });
+
+const inputClass = (darkMode) =>
+  `w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+    darkMode
+      ? 'bg-white/5 border-white/10 text-white placeholder-gray-400'
+      : 'bg-white/70 border-gray-300 text-gray-800'
+  }`;
 
 const SwimSessionFormView = ({
   darkMode,
@@ -87,34 +95,28 @@ const SwimSessionFormView = ({
   };
 
   return (
-    <div className={`${darkMode ? 'bg-slate-800' : 'bg-white'} rounded-xl p-6 shadow-lg`}>
-      <h3 className={`font-bold text-lg mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-        ➕ Neue Trainingseinheit eintragen
+    <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-500" />
+      <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-gray-800">
+        <Plus size={20} className={darkMode ? 'text-cyan-300' : 'text-cyan-600'} />
+        Neue Trainingseinheit eintragen
       </h3>
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label
-            className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-          >
-            Datum
-          </label>
+          <label className="block text-sm font-medium mb-1 text-gray-700">Datum</label>
           <input
             type="date"
             value={swimSessionForm.date}
             onChange={(e) => setSwimSessionForm({ ...swimSessionForm, date: e.target.value })}
-            className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
+            className={inputClass(darkMode)}
           />
         </div>
         <div>
-          <label
-            className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-          >
-            Schwimmstil
-          </label>
+          <label className="block text-sm font-medium mb-1 text-gray-700">Schwimmstil</label>
           <select
             value={swimSessionForm.style}
             onChange={(e) => setSwimSessionForm({ ...swimSessionForm, style: e.target.value })}
-            className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
+            className={inputClass(darkMode)}
           >
             {SWIM_STYLES.map((style) => (
               <option key={style.id} value={style.id}>
@@ -124,32 +126,26 @@ const SwimSessionFormView = ({
           </select>
         </div>
         <div>
-          <label
-            className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-          >
-            Distanz (Meter)
-          </label>
+          <label className="block text-sm font-medium mb-1 text-gray-700">Distanz (Meter)</label>
           <input
             type="number"
             value={swimSessionForm.distance}
             onChange={(e) => setSwimSessionForm({ ...swimSessionForm, distance: e.target.value })}
             placeholder="z.B. 1000"
-            className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+            className={inputClass(darkMode)}
           />
         </div>
         <div>
-          <label
-            className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-          >
+          <label className="block text-sm font-medium mb-1 text-gray-700">
             Zeit{' '}
-            <span
-              className={`font-normal text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}
-            >
-              (Min : Sek , 1/100)
-            </span>
+            <span className="font-normal text-xs text-gray-500">(Min : Sek , 1/100)</span>
           </label>
           <div
-            className={`flex items-center gap-1 px-3 py-2 border rounded-lg font-mono text-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+            className={`flex items-center gap-1 px-3 py-2 rounded-lg border font-mono text-lg ${
+              darkMode
+                ? 'bg-white/5 border-white/10 text-white'
+                : 'bg-white/70 border-gray-300 text-gray-800'
+            }`}
           >
             <input
               type="text"
@@ -168,9 +164,9 @@ const SwimSessionFormView = ({
                 });
               }}
               placeholder="00"
-              className={`w-8 text-center bg-transparent outline-none ${darkMode ? 'placeholder-gray-600' : 'placeholder-gray-400'}`}
+              className="w-8 text-center bg-transparent outline-none placeholder-gray-400"
             />
-            <span className={darkMode ? 'text-gray-400' : 'text-gray-400'}>:</span>
+            <span className="text-gray-400">:</span>
             <input
               type="text"
               inputMode="numeric"
@@ -190,9 +186,9 @@ const SwimSessionFormView = ({
                 setSwimSessionForm({ ...swimSessionForm, time: `${m}:${val},${cs}` });
               }}
               placeholder="00"
-              className={`w-8 text-center bg-transparent outline-none ${darkMode ? 'placeholder-gray-600' : 'placeholder-gray-400'}`}
+              className="w-8 text-center bg-transparent outline-none placeholder-gray-400"
             />
-            <span className={darkMode ? 'text-gray-400' : 'text-gray-400'}>,</span>
+            <span className="text-gray-400">,</span>
             <input
               type="text"
               inputMode="numeric"
@@ -211,14 +207,12 @@ const SwimSessionFormView = ({
                 setSwimSessionForm({ ...swimSessionForm, time: `${beforeComma},${val}` });
               }}
               placeholder="00"
-              className={`w-8 text-center bg-transparent outline-none ${darkMode ? 'placeholder-gray-600' : 'placeholder-gray-400'}`}
+              className="w-8 text-center bg-transparent outline-none placeholder-gray-400"
             />
           </div>
         </div>
         <div className="md:col-span-2">
-          <label
-            className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-          >
+          <label className="block text-sm font-medium mb-1 text-gray-700">
             Trainingsplan (XP-Bonus)
           </label>
           <select
@@ -244,7 +238,7 @@ const SwimSessionFormView = ({
                 trainingPlanUnitId: defaultUnit.id,
               });
             }}
-            className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
+            className={inputClass(darkMode)}
           >
             <option value="">-- Kein Trainingsplan --</option>
             {['ausdauer', 'sprint', 'technik', 'kombi'].map((categoryId) => {
@@ -273,11 +267,7 @@ const SwimSessionFormView = ({
         </div>
         {selectedTrainingPlan && selectedTrainingPlanUnits.length > 1 && (
           <div className="md:col-span-2">
-            <label
-              className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-            >
-              Plan-Einheit
-            </label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">Plan-Einheit</label>
             <select
               value={selectedTrainingPlanUnit?.id || ''}
               onChange={(e) => {
@@ -286,7 +276,7 @@ const SwimSessionFormView = ({
                 if (!nextUnit) return;
                 setSwimSessionForm({ ...swimSessionForm, trainingPlanUnitId: nextUnit.id });
               }}
-              className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
+              className={inputClass(darkMode)}
             >
               {selectedTrainingPlanUnits.map((unit, index) => (
                 <option key={unit.id} value={unit.id}>
@@ -305,17 +295,18 @@ const SwimSessionFormView = ({
               );
               return (
                 <div
-                  className={`rounded-lg p-3 border ${
+                  className={`rounded-xl p-3 border ${
                     isFulfilled
                       ? darkMode
-                        ? 'bg-emerald-900/30 border-emerald-700 text-emerald-300'
+                        ? 'bg-emerald-900/30 border-emerald-500/40 text-emerald-300'
                         : 'bg-emerald-50 border-emerald-300 text-emerald-700'
                       : darkMode
-                        ? 'bg-slate-700 border-slate-600 text-gray-200'
-                        : 'bg-gray-50 border-gray-300 text-gray-700'
+                        ? 'bg-white/5 border-white/10 text-gray-200'
+                        : 'bg-white/60 border-gray-300 text-gray-700'
                   }`}
                 >
-                  <div className="font-semibold">
+                  <div className="font-semibold flex items-center gap-2">
+                    {isFulfilled && <CheckCircle2 size={16} />}
                     Plan: {selectedTrainingPlan.name} | +{selectedTrainingPlan.xpReward} XP
                   </div>
                   <div className="text-sm mt-1">
@@ -336,7 +327,7 @@ const SwimSessionFormView = ({
                   )}
                   <div className="text-sm mt-1">
                     {isFulfilled
-                      ? 'Plan mit aktueller Eingabe erfuellt (XP nach Bestätigung).'
+                      ? 'Plan mit aktueller Eingabe erfüllt (XP nach Bestätigung).'
                       : 'Distanz/Zeit/Stil auf Planziel einstellen, um XP zu erhalten.'}
                   </div>
                 </div>
@@ -345,15 +336,13 @@ const SwimSessionFormView = ({
           </div>
         )}
         <div className="md:col-span-2">
-          <label
-            className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-          >
+          <label className="block text-sm font-medium mb-1 text-gray-700">
             Für Challenge (optional)
           </label>
           <select
             value={swimSessionForm.challengeId}
             onChange={(e) => setSwimSessionForm({ ...swimSessionForm, challengeId: e.target.value })}
-            className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-gray-300'}`}
+            className={inputClass(darkMode)}
           >
             <option value="">-- Keine Challenge --</option>
             {activeSwimChallenges.map((id) => {
@@ -367,25 +356,26 @@ const SwimSessionFormView = ({
           </select>
         </div>
         <div className="md:col-span-2">
-          <label
-            className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-          >
-            Notizen
-          </label>
+          <label className="block text-sm font-medium mb-1 text-gray-700">Notizen</label>
           <textarea
             value={swimSessionForm.notes}
             onChange={(e) => setSwimSessionForm({ ...swimSessionForm, notes: e.target.value })}
             placeholder="Wie lief das Training?"
             rows={2}
-            className={`w-full px-4 py-2 border rounded-lg ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300'}`}
+            className={inputClass(darkMode)}
           />
         </div>
       </div>
       <div
-        className={`mt-4 p-4 rounded-lg ${darkMode ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-300'}`}
+        className={`mt-4 p-4 rounded-xl border flex items-start gap-3 ${
+          darkMode
+            ? 'bg-amber-900/20 border-amber-500/30 text-amber-200'
+            : 'bg-amber-50 border-amber-200 text-amber-800'
+        }`}
       >
-        <p className={`text-sm ${darkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>
-          ⚠️ Die Einheit muss von einem Trainer/Ausbilder bestätigt werden, bevor Punkte und
+        <AlertTriangle size={18} className="mt-0.5 flex-shrink-0" />
+        <p className="text-sm">
+          Die Einheit muss von einem Trainer oder Ausbilder bestätigt werden, bevor Punkte und
           Trainingsplan-XP gutgeschrieben werden.
         </p>
       </div>
@@ -405,7 +395,7 @@ const SwimSessionFormView = ({
                 trainingPlanUnitId: '',
               });
               toast.success(
-                'Trainingseinheit eingereicht! Warte auf Bestaetigung durch einen Trainer.',
+                'Trainingseinheit eingereicht! Warte auf Bestätigung durch einen Trainer.',
               );
             } else {
               toast.error('Fehler beim Speichern: ' + result.error);
@@ -413,15 +403,16 @@ const SwimSessionFormView = ({
           }
         }}
         disabled={!swimSessionForm.distance || !swimSessionForm.time}
-        className={`mt-4 w-full py-3 rounded-lg font-bold transition-all ${
+        className={`mt-4 w-full py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
           swimSessionForm.distance && swimSessionForm.time
-            ? 'bg-cyan-500 hover:bg-cyan-600 text-white'
+            ? 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-sm'
             : darkMode
-              ? 'bg-slate-700 text-gray-500'
+              ? 'bg-white/5 text-gray-500'
               : 'bg-gray-200 text-gray-400'
         }`}
       >
-        📤 Einheit zur Bestätigung einreichen
+        <Send size={18} />
+        Einheit zur Bestätigung einreichen
       </button>
     </div>
   );
