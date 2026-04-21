@@ -4,7 +4,7 @@ $VPS_HOST    = "api.smartbaden.de"
 $VPS_USER    = "root"
 $VPS_PATH    = "/opt/azubi-app/backups"
 $LOCAL_DIR   = "$env:USERPROFILE\Backups\azubi-app"
-$KEEP_COPIES = 8
+$KEEP_COPIES = 30
 
 $ErrorActionPreference = "Stop"
 

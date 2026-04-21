@@ -88,11 +88,11 @@
 
 - Automatisches tägliches Datenbank-Backup per pg_dump (cron, 03:00 Uhr)
 - Backups lokal auf dem Server gespeichert, Aufbewahrung 7 Tage
-- Zusätzliches wöchentliches Backup-Pull auf einen separaten Arbeitsplatz-Rechner (Windows-Aufgabenplaner, Sonntag 10:00 Uhr, 8 Wochen Historie)
+- Zusätzlicher **täglicher** Backup-Pull auf einen separaten Arbeitsplatz-Rechner (Windows-Aufgabenplaner, 18:00 Uhr, 30 Tage Historie, verpasste Läufe werden automatisch nachgeholt) — anbieterunabhängiges Sekundärbackup an einem zweiten physischen Standort
 - Docker-Container mit `restart: unless-stopped` — automatischer Neustart bei Absturz
 - VPS-Ressourcenauslastung wird quartalsweise überprüft und dimensioniert
 
-**Bekannte Lücke (im Rahmen der Risikoabwägung akzeptiert):** Ein georedundanter Off-Site-Backup-Speicher (zweiter Standort / Cloud-Objektspeicher) ist in Vorbereitung. Bis zur Umsetzung dient der wöchentliche Workstation-Pull als Sekundärbackup. Bewertung: Für die Startphase mit geringer Datenmenge akzeptables Restrisiko.
+**Bekannte Lücke (im Rahmen der Risikoabwägung akzeptiert):** Ein vollautomatisches, PC-unabhängiges Cloud-Off-Site-Backup (z. B. Hetzner Storage Box, Backblaze B2) ist für die Skalierungsphase geplant. Der tägliche Workstation-Pull auf einen zweiten physischen Standort deckt derzeit das Risiko „Hoster-Komplettausfall" mit max. 24 h Datenverlust ab. Geplanter Ausbau: NAS mit Snapshot-Versionierung zum Schutz vor Ransomware-Szenarien.
 
 ---
 
