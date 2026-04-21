@@ -408,7 +408,10 @@ const HomeView = ({
       <div className="space-y-4">
         {/* Lernen */}
         <div>
-          <h3 className={`text-sm font-bold uppercase tracking-wide mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Lernen</h3>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-5 rounded-full bg-gradient-to-b from-cyan-400 via-sky-500 to-blue-500" />
+            <h3 className={`text-sm font-black uppercase tracking-wider ${darkMode ? 'text-cyan-200' : 'text-cyan-700'}`}>Lernen</h3>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               { icon: '\u{1F4DD}', title: 'Prüfungssimulator', sub: nextExam ? `Klausur in ${nextExam.daysUntil}d` : 'Theorie & Praxis', onClick: openExamSimulator, color: 'cyan' },
@@ -429,7 +432,10 @@ const HomeView = ({
 
         {/* Praxis */}
         <div>
-          <h3 className={`text-sm font-bold uppercase tracking-wide mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Praxis & Nachweise</h3>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-5 rounded-full bg-gradient-to-b from-emerald-400 via-teal-500 to-cyan-500" />
+            <h3 className={`text-sm font-black uppercase tracking-wider ${darkMode ? 'text-emerald-200' : 'text-emerald-700'}`}>Praxis & Nachweise</h3>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               { icon: '\u{1F3CA}', title: 'Schwimm-Challenge', sub: 'Disziplinen trainieren', onClick: () => openView('swim-challenge'), color: 'cyan' },
@@ -449,7 +455,10 @@ const HomeView = ({
 
         {/* Team & Übersicht */}
         <div>
-          <h3 className={`text-sm font-bold uppercase tracking-wide mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Team & Übersicht</h3>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-5 rounded-full bg-gradient-to-b from-fuchsia-400 via-purple-500 to-indigo-500" />
+            <h3 className={`text-sm font-black uppercase tracking-wider ${darkMode ? 'text-fuchsia-200' : 'text-fuchsia-700'}`}>Team & Übersicht</h3>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               ...(user.permissions.canViewAllStats ? [{ icon: '\u{1F468}\u200D\u{1F3EB}', title: 'Azubi-Übersicht', sub: 'Trainer-Bereich', onClick: () => openView('trainer-dashboard') }] : []),
