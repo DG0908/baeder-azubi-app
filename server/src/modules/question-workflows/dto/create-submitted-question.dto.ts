@@ -3,6 +3,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -20,7 +21,7 @@ export class CreateSubmittedQuestionDto {
   question!: string;
 
   @IsArray()
-  @ArrayMinSize(4)
+  @ArrayMinSize(1)
   @ArrayMaxSize(4)
   @IsString({ each: true })
   @MaxLength(500, { each: true })
@@ -42,4 +43,17 @@ export class CreateSubmittedQuestionDto {
   @IsOptional()
   @IsBoolean()
   multi?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['multiple', 'whoami'])
+  type?: 'multiple' | 'whoami';
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(5)
+  @ArrayMaxSize(5)
+  @IsString({ each: true })
+  @MaxLength(300, { each: true })
+  clues?: string[];
 }

@@ -589,6 +589,8 @@ model SubmittedQuestion {
   correct        Int
   correctIndices Json?
   multi          Boolean      @default(false)
+  type           String       @default("multiple")
+  clues          Json?
   approved       Boolean      @default(false)
   approvedAt     DateTime?
   createdAt      DateTime     @default(now())

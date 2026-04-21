@@ -28,6 +28,8 @@ const submittedQuestionSelect = {
   correct: true,
   correctIndices: true,
   multi: true,
+  type: true,
+  clues: true,
   approved: true,
   approvedAt: true,
   createdAt: true,
@@ -80,6 +82,8 @@ type SubmittedQuestionRecord = {
   correct: number;
   correctIndices: Prisma.JsonValue | null;
   multi: boolean;
+  type: string;
+  clues: Prisma.JsonValue | null;
   approved: boolean;
   approvedAt: Date | null;
   createdAt: Date;
@@ -160,28 +164,40 @@ export class QuestionWorkflowsService {
 
     const category = this.sanitizeIdentifier(dto.category, 'category');
     const question = this.sanitizeText(dto.question, 'question', 2000);
-    const answers = this.sanitizeAnswerList(dto.answers);
-    const multi = Boolean(dto.multi);
+    const type = dto.type === 'whoami' ? 'whoami' : 'multiple';
 
+    let answers: string[];
     let correct: number;
     let correctIndices: number[] | null = null;
+    let multi: boolean;
+    let clues: string[] | null = null;
 
-    if (multi) {
-      const rawIndices = Array.isArray(dto.correctIndices) ? dto.correctIndices.map(Number) : [];
-      const normalized = Array.from(new Set(rawIndices))
-        .filter((value) => Number.isInteger(value) && value >= 0 && value < answers.length)
-        .sort((a, b) => a - b);
-
-      if (normalized.length !== rawIndices.length || normalized.length < 1) {
-        throw new BadRequestException('Correct indices are invalid.');
-      }
-
-      correctIndices = normalized;
-      correct = normalized[0];
+    if (type === 'whoami') {
+      answers = this.sanitizeWhoAmIAnswer(dto.answers);
+      clues = this.sanitizeClueList(dto.clues);
+      correct = 0;
+      multi = false;
     } else {
-      correct = Number(dto.correct);
-      if (!Number.isInteger(correct) || correct < 0 || correct >= answers.length) {
-        throw new BadRequestException('Correct answer index is invalid.');
+      answers = this.sanitizeAnswerList(dto.answers);
+      multi = Boolean(dto.multi);
+
+      if (multi) {
+        const rawIndices = Array.isArray(dto.correctIndices) ? dto.correctIndices.map(Number) : [];
+        const normalized = Array.from(new Set(rawIndices))
+          .filter((value) => Number.isInteger(value) && value >= 0 && value < answers.length)
+          .sort((a, b) => a - b);
+
+        if (normalized.length !== rawIndices.length || normalized.length < 1) {
+          throw new BadRequestException('Correct indices are invalid.');
+        }
+
+        correctIndices = normalized;
+        correct = normalized[0];
+      } else {
+        correct = Number(dto.correct);
+        if (!Number.isInteger(correct) || correct < 0 || correct >= answers.length) {
+          throw new BadRequestException('Correct answer index is invalid.');
+        }
       }
     }
 
@@ -197,6 +213,8 @@ export class QuestionWorkflowsService {
         correct,
         correctIndices: correctIndices ?? undefined,
         multi,
+        type,
+        clues: clues ?? undefined,
         approved: autoApprove,
         approvedById: autoApprove ? actor.id : null,
         approvedAt: autoApprove ? new Date() : null
@@ -549,6 +567,8 @@ export class QuestionWorkflowsService {
       answers: this.toStringArray(entry.answers),
       correct: correctValue,
       multi: entry.multi,
+      type: entry.type,
+      clues: this.toStringArray(entry.clues),
       created_by: entry.user.displayName,
       created_by_id: entry.userId,
       approved: entry.approved,
@@ -630,6 +650,23 @@ export class QuestionWorkflowsService {
     }
 
     return normalized;
+  }
+
+  private sanitizeWhoAmIAnswer(values: string[] | undefined) {
+    const list = Array.isArray(values) ? values : [];
+    if (list.length < 1) {
+      throw new BadRequestException('A solution is required for whoami submissions.');
+    }
+    const solution = this.sanitizeText(list[0], 'answers[0]', 500);
+    return [solution];
+  }
+
+  private sanitizeClueList(values: string[] | undefined) {
+    const list = Array.isArray(values) ? values : [];
+    if (list.length !== 5) {
+      throw new BadRequestException('Exactly five clues are required.');
+    }
+    return list.map((entry, index) => this.sanitizeText(entry, `clues[${index}]`, 300));
   }
 
   private sanitizeOptionalAnswerList(values: string[] | undefined) {
