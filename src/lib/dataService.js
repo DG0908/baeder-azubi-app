@@ -121,6 +121,10 @@ const mapQuestionSubmissionToFrontend = (question, fallback = {}) => {
   const correctValue = rawMulti
     ? (Array.isArray(rawCorrect) ? rawCorrect.map(Number).filter(Number.isFinite) : [Number(rawCorrect)])
     : (Array.isArray(rawCorrect) ? Number(rawCorrect[0] ?? 0) : Number(rawCorrect));
+  const type = question?.type === 'whoami' || fallback.type === 'whoami' ? 'whoami' : 'multiple';
+  const rawClues = Array.isArray(question?.clues)
+    ? question.clues
+    : (Array.isArray(fallback.clues) ? fallback.clues : []);
   return {
     id: question?.id,
     text: question?.question || question?.text || fallback.question || '',
@@ -130,6 +134,8 @@ const mapQuestionSubmissionToFrontend = (question, fallback = {}) => {
       : (Array.isArray(fallback.answers) ? fallback.answers : []),
     correct: correctValue,
     multi: Boolean(rawMulti),
+    type,
+    clues: rawClues.map((c) => String(c || '')),
     submittedBy: question?.createdBy || question?.creator?.displayName || question?.created_by || fallback.createdBy || '',
     approved: question?.approved ?? fallback.approved ?? false,
     time: new Date(question?.createdAt || question?.created_at || Date.now()).getTime()
@@ -1078,12 +1084,31 @@ export const loadCustomQuestions = async () => {
 };
 
 export const createQuestionSubmission = async (payload) => {
+  const type = payload?.type === 'whoami' ? 'whoami' : 'multiple';
+
+  if (type === 'whoami') {
+    const answer = String(payload?.answer ?? '').trim();
+    const clues = Array.isArray(payload?.clues) ? payload.clues.map((c) => String(c ?? '').trim()) : [];
+    const body = {
+      category: payload?.category,
+      question: payload?.question,
+      answers: [answer],
+      correct: 0,
+      multi: false,
+      type: 'whoami',
+      clues
+    };
+    const result = await secureQuestionWorkflowsApi.createSubmission(body);
+    return mapQuestionSubmissionToFrontend(result, { ...payload, type: 'whoami' });
+  }
+
   const multi = Boolean(payload?.multi);
   const body = {
     category: payload?.category,
     question: payload?.question,
     answers: payload?.answers,
-    multi
+    multi,
+    type: 'multiple'
   };
   if (multi) {
     const indices = Array.isArray(payload?.correct)
