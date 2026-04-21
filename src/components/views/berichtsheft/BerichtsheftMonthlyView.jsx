@@ -63,7 +63,8 @@ const BerichtsheftMonthlyView = ({ darkMode, currentUser, allUsers }) => {
   const [assignOpen, setAssignOpen] = useState(false);
   const initialDate = today();
   const [assignForm, setAssignForm] = useState({
-    azubiId: '',
+    azubiIds: [],
+    assignToAll: false,
     year: initialDate.year,
     month: initialDate.month,
     activity: '',
@@ -96,23 +97,33 @@ const BerichtsheftMonthlyView = ({ darkMode, currentUser, allUsers }) => {
 
   const handleAssign = async (event) => {
     event?.preventDefault?.();
-    if (!assignForm.azubiId || !assignForm.activity.trim()) {
-      app?.showToast?.('Azubi und Tätigkeit sind Pflichtfelder.', 'warning');
+    if (!assignForm.activity.trim()) {
+      app?.showToast?.('Tätigkeit ist Pflichtfeld.', 'warning');
+      return;
+    }
+    if (!assignForm.assignToAll && assignForm.azubiIds.length === 0) {
+      app?.showToast?.('Bitte mindestens einen Azubi auswählen.', 'warning');
       return;
     }
     setBusyId('assign');
     try {
-      await assignMonthlyReport({
-        azubiId: assignForm.azubiId,
+      const result = await assignMonthlyReport({
+        azubiIds: assignForm.assignToAll ? undefined : assignForm.azubiIds,
+        assignToAll: assignForm.assignToAll || undefined,
         year: Number(assignForm.year),
         month: Number(assignForm.month),
         activity: assignForm.activity.trim(),
         activityDescription: assignForm.activityDescription.trim() || undefined,
       });
-      app?.showToast?.('Monatsbericht zugewiesen.', 'success');
+      const createdCount = result.created.length;
+      const skippedCount = result.skipped.length;
+      const toastMessage = skippedCount > 0
+        ? `${createdCount} zugewiesen, ${skippedCount} übersprungen (bereits vorhanden).`
+        : `${createdCount} Monatsbericht${createdCount === 1 ? '' : 'e'} zugewiesen.`;
+      app?.showToast?.(toastMessage, skippedCount > 0 ? 'warning' : 'success');
       setAssignOpen(false);
       const reset = today();
-      setAssignForm({ azubiId: '', year: reset.year, month: reset.month, activity: '', activityDescription: '' });
+      setAssignForm({ azubiIds: [], assignToAll: false, year: reset.year, month: reset.month, activity: '', activityDescription: '' });
       await load();
     } catch (err) {
       console.error(err);
@@ -120,6 +131,15 @@ const BerichtsheftMonthlyView = ({ darkMode, currentUser, allUsers }) => {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const toggleAzubi = (azubiId) => {
+    setAssignForm((prev) => {
+      const set = new Set(prev.azubiIds);
+      if (set.has(azubiId)) set.delete(azubiId);
+      else set.add(azubiId);
+      return { ...prev, azubiIds: Array.from(set) };
+    });
   };
 
   const handleSubmit = async (report) => {
@@ -354,56 +374,96 @@ const BerichtsheftMonthlyView = ({ darkMode, currentUser, allUsers }) => {
       {assignOpen && isTrainer && (
         <form onSubmit={handleAssign} className="glass-card rounded-2xl p-5 space-y-3">
           <h3 className={`text-base font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Neue Tätigkeit zuweisen</h3>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-2 gap-2">
             <label className="space-y-1 text-sm">
-              <span className={darkMode ? 'text-gray-200' : 'text-gray-700'}>Azubi</span>
+              <span className={darkMode ? 'text-gray-200' : 'text-gray-700'}>Monat</span>
               <select
-                value={assignForm.azubiId}
-                onChange={(event) => setAssignForm((prev) => ({ ...prev, azubiId: event.target.value }))}
-                required
+                value={assignForm.month}
+                onChange={(event) => setAssignForm((prev) => ({ ...prev, month: Number(event.target.value) }))}
                 className={`w-full rounded-xl p-2.5 text-sm border ${
                   darkMode ? 'bg-white/5 text-white border-white/10' : 'bg-white text-gray-900 border-slate-200'
                 }`}
               >
-                <option value="">-- bitte wählen --</option>
-                {azubiOptions.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.name}
+                {monthLabels.map((name, index) => (
+                  <option key={name} value={index + 1}>
+                    {name}
                   </option>
                 ))}
               </select>
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="space-y-1 text-sm">
-                <span className={darkMode ? 'text-gray-200' : 'text-gray-700'}>Monat</span>
-                <select
-                  value={assignForm.month}
-                  onChange={(event) => setAssignForm((prev) => ({ ...prev, month: Number(event.target.value) }))}
-                  className={`w-full rounded-xl p-2.5 text-sm border ${
-                    darkMode ? 'bg-white/5 text-white border-white/10' : 'bg-white text-gray-900 border-slate-200'
-                  }`}
-                >
-                  {monthLabels.map((name, index) => (
-                    <option key={name} value={index + 1}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="space-y-1 text-sm">
-                <span className={darkMode ? 'text-gray-200' : 'text-gray-700'}>Jahr</span>
+            <label className="space-y-1 text-sm">
+              <span className={darkMode ? 'text-gray-200' : 'text-gray-700'}>Jahr</span>
+              <input
+                type="number"
+                min={2024}
+                max={2100}
+                value={assignForm.year}
+                onChange={(event) => setAssignForm((prev) => ({ ...prev, year: Number(event.target.value) }))}
+                className={`w-full rounded-xl p-2.5 text-sm border ${
+                  darkMode ? 'bg-white/5 text-white border-white/10' : 'bg-white text-gray-900 border-slate-200'
+                }`}
+              />
+            </label>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                Azubis auswählen
+              </span>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input
-                  type="number"
-                  min={2024}
-                  max={2100}
-                  value={assignForm.year}
-                  onChange={(event) => setAssignForm((prev) => ({ ...prev, year: Number(event.target.value) }))}
-                  className={`w-full rounded-xl p-2.5 text-sm border ${
-                    darkMode ? 'bg-white/5 text-white border-white/10' : 'bg-white text-gray-900 border-slate-200'
-                  }`}
+                  type="checkbox"
+                  checked={assignForm.assignToAll}
+                  onChange={(event) =>
+                    setAssignForm((prev) => ({
+                      ...prev,
+                      assignToAll: event.target.checked,
+                      azubiIds: event.target.checked ? [] : prev.azubiIds,
+                    }))
+                  }
+                  className="w-4 h-4 rounded accent-cyan-500"
                 />
+                <span className={darkMode ? 'text-cyan-300' : 'text-cyan-700'}>Alle Azubis</span>
               </label>
             </div>
+            {!assignForm.assignToAll && (
+              <div
+                className={`max-h-56 overflow-y-auto rounded-xl p-2 border ${
+                  darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
+                }`}
+              >
+                {azubiOptions.length === 0 ? (
+                  <div className={`p-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    Keine Azubis verfügbar.
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {azubiOptions.map((account) => (
+                      <label
+                        key={account.id}
+                        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer text-sm ${
+                          darkMode ? 'hover:bg-white/5 text-gray-200' : 'hover:bg-slate-100 text-gray-700'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={assignForm.azubiIds.includes(account.id)}
+                          onChange={() => toggleAzubi(account.id)}
+                          className="w-4 h-4 rounded accent-cyan-500"
+                        />
+                        <span>{account.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {!assignForm.assignToAll && assignForm.azubiIds.length > 0 && (
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {assignForm.azubiIds.length} ausgewählt
+              </div>
+            )}
           </div>
           <label className="space-y-1 text-sm block">
             <span className={darkMode ? 'text-gray-200' : 'text-gray-700'}>Tätigkeit</span>
