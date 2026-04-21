@@ -1,6 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import * as Sentry from '@sentry/react'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
@@ -20,26 +19,6 @@ const queryClient = new QueryClient({
     },
   },
 })
-
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
-if (SENTRY_DSN) {
-  Sentry.init({
-    dsn: SENTRY_DSN,
-    environment: import.meta.env.MODE,
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
-    ],
-    tracesSampleRate: 0.2,       // 20% der Requests tracen
-    replaysSessionSampleRate: 0, // keine automatischen Replays
-    replaysOnErrorSampleRate: 1, // bei Fehler immer Replay aufnehmen
-    beforeSend(event) {
-      // Keine Fehler aus Dev-Modus senden
-      if (import.meta.env.DEV) return null;
-      return event;
-    },
-  });
-}
 
 // Prevent white-screen after deploy when a stale tab requests an old chunk.
 // Vite emits `vite:preloadError` for failed dynamic imports.
