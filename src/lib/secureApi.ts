@@ -456,6 +456,13 @@ export const secureContentApi = {
 
 export const secureForumApi = {
   listCategories: () => apiRequest('/forum/categories', { method: 'GET' }),
+  createCategory: (payload: Record<string, unknown>) => apiRequest('/forum/categories', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  removeCategory: (categoryId: string) => apiRequest(`/forum/categories/${categoryId}`, {
+    method: 'DELETE'
+  }),
   listPosts: (params: Record<string, unknown> = {}) => apiRequest(`/forum/posts${buildQueryString(params)}`, { method: 'GET' }),
   getThread: (postId: string) => apiRequest(`/forum/posts/${postId}/replies`, { method: 'GET' }),
   createPost: (payload: Record<string, unknown>) => apiRequest('/forum/posts', {

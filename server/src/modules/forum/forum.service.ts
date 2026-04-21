@@ -11,14 +11,33 @@ import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.in
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { CreateForumCategoryDto, FORUM_CUSTOM_COLOR_KEYS } from './dto/create-forum-category.dto';
 import { CreateForumPostDto } from './dto/create-forum-post.dto';
 import { CreateForumReplyDto } from './dto/create-forum-reply.dto';
 import { ListForumPostsQueryDto } from './dto/list-forum-posts-query.dto';
 import {
   FORUM_CATEGORY_IDS,
   FORUM_CATEGORY_RULES,
-  ForumCategoryId
+  ForumCategoryId,
+  isBuiltInForumCategory
 } from './forum-categories';
+
+type ForumCategoryMetadata = {
+  id: string;
+  slug: string;
+  name: string;
+  icon: string;
+  colorKey: string;
+  description: string;
+  order: number;
+  custom: boolean;
+  customId: string | null;
+  canRead: boolean;
+  canPost: boolean;
+  canDelete: boolean;
+  createdBy?: { id: string; displayName: string } | null;
+  createdAt?: string | null;
+};
 
 type ForumPostRecord = {
   id: string;
@@ -107,35 +126,216 @@ export class ForumService {
   async listCategoryCounts(actor: AuthenticatedUser) {
     this.assertOrganization(actor);
 
-    const readableCategories = FORUM_CATEGORY_RULES
-      .filter((rule) => this.canReadCategory(actor.role, rule.id))
-      .map((rule) => rule.id);
+    const customCategories = await this.prisma.forumCategorySetting.findMany({
+      where: { organizationId: actor.organizationId! },
+      orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+      include: {
+        createdBy: {
+          select: { id: true, displayName: true }
+        }
+      }
+    });
 
-    const grouped = readableCategories.length > 0
+    const readableBuiltIns = FORUM_CATEGORY_RULES
+      .filter((rule) => this.canReadCategory(actor.role, rule.id))
+      .map((rule) => rule.id as string);
+
+    const readableCustomSlugs = customCategories.map((entry) => entry.slug);
+    const readableSlugs = [...readableBuiltIns, ...readableCustomSlugs];
+
+    const grouped = readableSlugs.length > 0
       ? await this.prisma.forumPost.groupBy({
           by: ['category'],
           where: {
             organizationId: actor.organizationId!,
-            category: {
-              in: readableCategories
-            }
+            category: { in: readableSlugs }
           },
-          _count: {
-            _all: true
-          }
+          _count: { _all: true }
         })
       : [];
 
-    return readableCategories.map((category) => ({
-      category,
-      count: grouped.find((entry) => entry.category === category)?._count._all ?? 0
+    const countOf = (slug: string) =>
+      grouped.find((entry) => entry.category === slug)?._count._all ?? 0;
+
+    const isAdminActor = this.isAdmin(actor.role);
+
+    const builtInMetadata: ForumCategoryMetadata[] = FORUM_CATEGORY_RULES
+      .filter((rule) => this.canReadCategory(actor.role, rule.id))
+      .map((rule) => ({
+        id: rule.id,
+        slug: rule.id,
+        name: rule.name,
+        icon: rule.icon,
+        colorKey: rule.colorKey,
+        description: rule.description,
+        order: rule.order,
+        custom: false,
+        customId: null,
+        canRead: true,
+        canPost: this.canPostCategory(actor.role, rule.id),
+        canDelete: false
+      }));
+
+    const customMetadata: ForumCategoryMetadata[] = customCategories.map((entry) => ({
+      id: entry.slug,
+      slug: entry.slug,
+      name: entry.name,
+      icon: entry.icon,
+      colorKey: entry.colorKey,
+      description: entry.description ?? '',
+      order: entry.order,
+      custom: true,
+      customId: entry.id,
+      canRead: true,
+      canPost: true,
+      canDelete: isAdminActor,
+      createdBy: entry.createdBy
+        ? { id: entry.createdBy.id, displayName: entry.createdBy.displayName }
+        : null,
+      createdAt: entry.createdAt.toISOString()
     }));
+
+    return [...builtInMetadata, ...customMetadata]
+      .sort((a, b) => a.order - b.order)
+      .map((entry) => ({
+        ...entry,
+        category: entry.slug,
+        count: countOf(entry.slug)
+      }));
+  }
+
+  async createCustomCategory(
+    actor: AuthenticatedUser,
+    dto: CreateForumCategoryDto,
+    request: Request
+  ) {
+    this.assertOrganization(actor);
+    this.assertAdmin(actor.role);
+
+    const slug = this.sanitizeSlug(dto.slug);
+    if (isBuiltInForumCategory(slug)) {
+      throw new BadRequestException('Der Slug ist für eine Standard-Kategorie reserviert.');
+    }
+
+    const name = this.sanitizeText(dto.name, 'name', 48);
+    const icon = this.sanitizeIcon(dto.icon);
+    const colorKey = this.sanitizeColorKey(dto.colorKey);
+    const description = dto.description
+      ? this.sanitizeText(dto.description, 'description', 160)
+      : null;
+
+    const existing = await this.prisma.forumCategorySetting.findFirst({
+      where: { organizationId: actor.organizationId!, slug }
+    });
+
+    if (existing) {
+      throw new BadRequestException('Slug ist bereits vergeben.');
+    }
+
+    const created = await this.prisma.forumCategorySetting.create({
+      data: {
+        organizationId: actor.organizationId!,
+        createdById: actor.id,
+        slug,
+        name,
+        icon,
+        colorKey,
+        description,
+        order: 100
+      },
+      include: {
+        createdBy: { select: { id: true, displayName: true } }
+      }
+    });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'forum_category.created',
+      'ForumCategorySetting',
+      created.id,
+      { slug, name },
+      request
+    );
+
+    return this.toCustomCategoryPayload(created);
+  }
+
+  async deleteCustomCategory(actor: AuthenticatedUser, categoryId: string, request: Request) {
+    this.assertOrganization(actor);
+    this.assertAdmin(actor.role);
+
+    const existing = await this.prisma.forumCategorySetting.findFirst({
+      where: { id: categoryId, organizationId: actor.organizationId! }
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Forum-Kategorie nicht gefunden.');
+    }
+
+    const postCount = await this.prisma.forumPost.count({
+      where: {
+        organizationId: actor.organizationId!,
+        category: existing.slug
+      }
+    });
+
+    if (postCount > 0) {
+      throw new BadRequestException(
+        'Kategorie enthält noch Beiträge. Bitte zuerst alle Beiträge löschen.'
+      );
+    }
+
+    await this.prisma.forumCategorySetting.delete({ where: { id: existing.id } });
+
+    await this.auditLogService.writeForUser(
+      actor,
+      'forum_category.deleted',
+      'ForumCategorySetting',
+      existing.id,
+      { slug: existing.slug, name: existing.name },
+      request
+    );
+
+    return { id: existing.id, slug: existing.slug };
+  }
+
+  private toCustomCategoryPayload(entry: {
+    id: string;
+    slug: string;
+    name: string;
+    icon: string;
+    colorKey: string;
+    description: string | null;
+    order: number;
+    createdAt: Date;
+    createdBy: { id: string; displayName: string } | null;
+  }) {
+    return {
+      id: entry.slug,
+      slug: entry.slug,
+      customId: entry.id,
+      name: entry.name,
+      icon: entry.icon,
+      colorKey: entry.colorKey,
+      description: entry.description ?? '',
+      order: entry.order,
+      custom: true,
+      canRead: true,
+      canPost: true,
+      canDelete: true,
+      category: entry.slug,
+      count: 0,
+      createdAt: entry.createdAt.toISOString(),
+      createdBy: entry.createdBy
+        ? { id: entry.createdBy.id, displayName: entry.createdBy.displayName }
+        : null
+    };
   }
 
   async listPosts(actor: AuthenticatedUser, query: ListForumPostsQueryDto) {
     this.assertOrganization(actor);
-    const category = this.normalizeCategory(query.category);
-    this.assertCanReadCategory(actor.role, category);
+    const category = await this.resolveCategorySlug(actor, query.category);
+    await this.assertCanReadCategoryAsync(actor, category);
 
     const limit = query.limit ?? 50;
     const whereClause = {
@@ -204,7 +404,7 @@ export class ForumService {
       throw new NotFoundException('Forum post not found.');
     }
 
-    this.assertCanReadCategory(actor.role, this.normalizeCategory(post.category));
+    await this.assertCanReadCategoryAsync(actor, post.category);
 
     const replies = await this.prisma.forumReply.findMany({
       where: {
@@ -226,8 +426,8 @@ export class ForumService {
   async createPost(actor: AuthenticatedUser, dto: CreateForumPostDto, request: Request) {
     this.assertOrganization(actor);
 
-    const category = this.normalizeCategory(dto.category);
-    this.assertCanPostCategory(actor.role, category);
+    const category = await this.resolveCategorySlug(actor, dto.category);
+    await this.assertCanPostCategoryAsync(actor, category);
 
     const title = this.sanitizeText(dto.title, 'title', 200);
     const content = this.sanitizeText(dto.content, 'content', 6000);
@@ -277,9 +477,9 @@ export class ForumService {
       throw new NotFoundException('Forum post not found.');
     }
 
-    const category = this.normalizeCategory(post.category);
-    this.assertCanReadCategory(actor.role, category);
-    this.assertCanPostCategory(actor.role, category);
+    const category = post.category;
+    await this.assertCanReadCategoryAsync(actor, category);
+    await this.assertCanPostCategoryAsync(actor, category);
 
     if (post.locked) {
       throw new ForbiddenException('This forum thread is locked.');
@@ -581,6 +781,76 @@ export class ForumService {
     }
 
     return normalized as ForumCategoryId;
+  }
+
+  private async resolveCategorySlug(actor: AuthenticatedUser, value: string): Promise<string> {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (!normalized) {
+      throw new BadRequestException('Forum category is invalid.');
+    }
+    if (isBuiltInForumCategory(normalized)) {
+      return normalized;
+    }
+    const custom = await this.prisma.forumCategorySetting.findFirst({
+      where: { organizationId: actor.organizationId!, slug: normalized }
+    });
+    if (!custom) {
+      throw new BadRequestException('Forum category is invalid.');
+    }
+    return custom.slug;
+  }
+
+  private async assertCanReadCategoryAsync(actor: AuthenticatedUser, slug: string) {
+    if (isBuiltInForumCategory(slug)) {
+      this.assertCanReadCategory(actor.role, slug);
+      return;
+    }
+    const custom = await this.prisma.forumCategorySetting.findFirst({
+      where: { organizationId: actor.organizationId!, slug }
+    });
+    if (!custom) {
+      throw new ForbiddenException('You may not access this forum category.');
+    }
+  }
+
+  private async assertCanPostCategoryAsync(actor: AuthenticatedUser, slug: string) {
+    if (isBuiltInForumCategory(slug)) {
+      this.assertCanPostCategory(actor.role, slug);
+      return;
+    }
+    const custom = await this.prisma.forumCategorySetting.findFirst({
+      where: { organizationId: actor.organizationId!, slug }
+    });
+    if (!custom) {
+      throw new ForbiddenException('You may not post in this forum category.');
+    }
+  }
+
+  private sanitizeSlug(value: string) {
+    const slug = String(value || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    if (slug.length < 2 || slug.length > 32) {
+      throw new BadRequestException('Slug must be 2-32 characters (a-z, 0-9, hyphen).');
+    }
+    return slug;
+  }
+
+  private sanitizeIcon(value: string) {
+    const icon = String(value || '').trim();
+    if (!icon) {
+      throw new BadRequestException('Icon is required.');
+    }
+    if (icon.length > 8) {
+      throw new BadRequestException('Icon may be at most 8 characters (emoji).');
+    }
+    return icon;
+  }
+
+  private sanitizeColorKey(value: string | undefined) {
+    const colorKey = String(value || 'slate').trim().toLowerCase();
+    if (!(FORUM_CUSTOM_COLOR_KEYS as readonly string[]).includes(colorKey)) {
+      throw new BadRequestException('colorKey is invalid.');
+    }
+    return colorKey;
   }
 
   private assertOrganization(actor: AuthenticatedUser) {

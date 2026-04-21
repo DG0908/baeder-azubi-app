@@ -91,6 +91,7 @@ model Organization {
   scheduledExams          ScheduledExam[]
   forumPosts              ForumPost[]
   forumReplies            ForumReply[]
+  forumCategorySettings   ForumCategorySetting[]
   submittedQuestions      SubmittedQuestion[]
   questionReports         QuestionReport[]
   theoryExamSessions      TheoryExamSession[]
@@ -166,6 +167,7 @@ model User {
   scheduledExamsCreated        ScheduledExam[]         @relation("CreatedScheduledExams")
   forumPosts                   ForumPost[]             @relation("CreatedForumPosts")
   forumReplies                 ForumReply[]            @relation("CreatedForumReplies")
+  forumCategorySettings        ForumCategorySetting[]  @relation("CreatedForumCategorySettings")
   submittedQuestions           SubmittedQuestion[]     @relation("CreatedSubmittedQuestions")
   approvedQuestions            SubmittedQuestion[]     @relation("ApprovedSubmittedQuestions")
   questionReports              QuestionReport[]        @relation("CreatedQuestionReports")
@@ -573,6 +575,25 @@ model ForumReply {
   @@index([postId, createdAt])
   @@index([organizationId, createdAt])
   @@index([userId, createdAt])
+}
+
+model ForumCategorySetting {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  createdById    String
+  createdBy      User         @relation("CreatedForumCategorySettings", fields: [createdById], references: [id], onDelete: Cascade)
+  slug           String
+  name           String
+  icon           String
+  colorKey       String       @default("slate")
+  description    String?
+  order          Int          @default(100)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, order])
 }
 
 model SubmittedQuestion {

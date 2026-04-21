@@ -65,7 +65,8 @@ const createMockPrisma = () => ({
   forumPost: {
     findFirst: jest.fn(),
     findMany: jest.fn(),
-    groupBy: jest.fn(),
+    groupBy: jest.fn().mockResolvedValue([]),
+    count: jest.fn().mockResolvedValue(0),
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn()
@@ -73,6 +74,12 @@ const createMockPrisma = () => ({
   forumReply: {
     findFirst: jest.fn(),
     findMany: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn()
+  },
+  forumCategorySetting: {
+    findMany: jest.fn().mockResolvedValue([]),
+    findFirst: jest.fn().mockResolvedValue(null),
     create: jest.fn(),
     delete: jest.fn()
   },
