@@ -381,11 +381,17 @@ const BerichtsheftMonthlyView = ({ darkMode, currentUser, allUsers }) => {
                 value={assignForm.month}
                 onChange={(event) => setAssignForm((prev) => ({ ...prev, month: Number(event.target.value) }))}
                 className={`w-full rounded-xl p-2.5 text-sm border ${
-                  darkMode ? 'bg-white/5 text-white border-white/10' : 'bg-white text-gray-900 border-slate-200'
+                  darkMode
+                    ? 'bg-slate-800 text-white border-white/10'
+                    : 'bg-white text-gray-900 border-slate-200'
                 }`}
               >
                 {monthLabels.map((name, index) => (
-                  <option key={name} value={index + 1}>
+                  <option
+                    key={name}
+                    value={index + 1}
+                    className={darkMode ? 'bg-slate-800 text-white' : 'bg-white text-gray-900'}
+                  >
                     {name}
                   </option>
                 ))}
@@ -430,31 +436,40 @@ const BerichtsheftMonthlyView = ({ darkMode, currentUser, allUsers }) => {
             {!assignForm.assignToAll && (
               <div
                 className={`max-h-56 overflow-y-auto rounded-xl p-2 border ${
-                  darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
+                  darkMode ? 'bg-slate-900/60 border-white/10' : 'bg-white border-slate-200'
                 }`}
               >
                 {azubiOptions.length === 0 ? (
-                  <div className={`p-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <div className={`p-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
                     Keine Azubis verfügbar.
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    {azubiOptions.map((account) => (
-                      <label
-                        key={account.id}
-                        className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer text-sm ${
-                          darkMode ? 'hover:bg-white/5 text-gray-200' : 'hover:bg-slate-100 text-gray-700'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={assignForm.azubiIds.includes(account.id)}
-                          onChange={() => toggleAzubi(account.id)}
-                          className="w-4 h-4 rounded accent-cyan-500"
-                        />
-                        <span>{account.name}</span>
-                      </label>
-                    ))}
+                    {azubiOptions.map((account) => {
+                      const checked = assignForm.azubiIds.includes(account.id);
+                      return (
+                        <label
+                          key={account.id}
+                          className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer text-sm transition-colors ${
+                            checked
+                              ? darkMode
+                                ? 'bg-cyan-500/20 text-cyan-50'
+                                : 'bg-cyan-50 text-cyan-900'
+                              : darkMode
+                                ? 'text-gray-100 hover:bg-cyan-500/15'
+                                : 'text-gray-800 hover:bg-slate-100'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleAzubi(account.id)}
+                            className="w-4 h-4 rounded accent-cyan-500"
+                          />
+                          <span className="font-medium">{account.name}</span>
+                        </label>
+                      );
+                    })}
                   </div>
                 )}
               </div>
