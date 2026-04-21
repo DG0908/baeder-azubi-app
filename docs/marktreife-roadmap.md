@@ -50,12 +50,12 @@
 | # | Aufgabe | Modell | Branch | Zeit | Status |
 |---|---|---|---|---|---|
 | P1.1 | **CSP in [nginx.conf](../nginx.conf) strikt** — `unsafe-inline/eval` raus, Supabase-Hosts raus, Header im Nginx setzen, `<meta>` aus [index.html](../index.html) entfernen. Frontend gegen gehärtete CSP testen. | **Opus** | direkt auf main | 0.5 d | [x] Opus 16.04.2026 |
-| P1.2 | **Sentry-PII-Masking** — `maskAllText: true, blockAllMedia: true` in [main.jsx:16](../src/main.jsx#L16). Datenschutzerklärung checken, ob Sentry korrekt erwähnt. | Sonnet | direkt auf main | 10 min | [x] Opus 16.04.2026 |
+| P1.2 | ~~**Sentry-PII-Masking** — `maskAllText: true, blockAllMedia: true` in [main.jsx:16](../src/main.jsx#L16). Datenschutzerklärung checken, ob Sentry korrekt erwähnt.~~ | Sonnet | direkt auf main | 10 min | [x] Opus 16.04.2026 · **zurückgerollt 21.04.2026:** Sentry war in Prod nie als `VITE_SENTRY_DSN` aktiviert, vollständig aus Code+Doku entfernt |
 | P1.3 | **`console.log` aus Prod-Bundle strippen** — in [vite.config.js](../vite.config.js) `esbuild: { drop: ['console', 'debugger'] }` ergänzen (nur für build, nicht dev). | Sonnet | direkt auf main | 15 min | [x] Opus 16.04.2026 |
 | P1.4 | **TOTP-Encryption-Key in Prod required** — [env.validation.ts](../server/src/common/config/env.validation.ts) auf `Joi.when('NODE_ENV', ...)` umstellen. `.env.example` dokumentieren. | Sonnet | direkt auf main | 30 min | [x] Opus 16.04.2026 |
 | P1.5 | **ESLint + Prettier Setup** — Konfig für JSX, `npm run lint` Script, CI-Gate in [ci.yml](../.github/workflows/ci.yml) ergänzen. Erstlauf mit `--fix`, offene Warnungen in Issue festhalten (nicht alles auf einmal fixen). | **Qwen** (mechanisch) + **Opus** Review der Config | `chore/eslint-prettier-init` | 1 d | [x] Haiku 16.04.2026 |
 | P1.6 | **`alert()` → Toast-System** — `react-hot-toast` eingebaut. 41 `alert()`-Aufrufe in 6 Dateien ersetzt (AuthContext, LoginScreen, App.jsx, AdminView, FlashcardsView, SwimChallengeView). | Sonnet | `refactor/alert-to-toast-auth` | 0.5 d | [x] Haiku 16.04.2026 |
-| P1.7 | **Sentry-DSGVO-Ergänzung** — Neuer Abschnitt 9 in Datenschutzerklärung, Sentry als Dienstleister gelistet, Datum aktualisiert. | **Opus** (rechtliche Einschätzung) | `docs/sentry-avv` | 0.5 d | [x] Haiku 16.04.2026 |
+| P1.7 | ~~**Sentry-DSGVO-Ergänzung** — Neuer Abschnitt 9 in Datenschutzerklärung, Sentry als Dienstleister gelistet, Datum aktualisiert.~~ | **Opus** (rechtliche Einschätzung) | `docs/sentry-avv` | 0.5 d | [x] Haiku 16.04.2026 · **zurückgerollt 21.04.2026:** Abschnitt aus Datenschutzerklärung entfernt, da Sentry in Prod nicht aktiv war (Datenschutzerklärung beschrieb Ist-Zustand nicht) |
 
 **Abschluss-Kriterium Phase 1:** 
 - CSP-Header in Browser-DevTools strikt · `npm run lint` grün in CI · Keine `alert()` im Auth-Flow mehr · Sentry maskiert nachweislich
