@@ -25,8 +25,10 @@
 - [x] Backup-Aufbewahrung: 7 Tage
 - [x] Backup-Restore getestet und dokumentiert
 - [x] Alle Prisma-Migrationen deployed
-- [x] **Lokales PC-Backup eingerichtet** — wöchentlich (Sonntag 10:00 Uhr) via Windows Aufgabenplaner, Script: `ops/pull-backup-to-local.ps1`, gespeichert unter `C:\Users\User\Backups\azubi-app\`, 8 Wochen Verlauf
-- [ ] **Off-Site-Backup** — täglicher Push auf georedundanten Speicher (Hetzner Storage Box o. ä.), unabhängig vom VPS-Hoster. Aufwand ca. 2 h, Kosten ~3 €/Monat
+- [x] **Lokales PC-Backup eingerichtet** — **täglich** (18:00 Uhr) via Windows Aufgabenplaner, Script: `ops/pull-backup-to-local.ps1`, gespeichert unter `C:\Users\User\Backups\azubi-app\`, **30 Tage Verlauf**, verpasste Läufe werden automatisch nachgeholt. Damit anbieterunabhängiges Sekundärbackup mit max. 24 h Datenverlust.
+- [ ] **Hostinger Daily Backup-Addon** (~2 €/Monat) — optional, für 1-Klick-Restore des kompletten VPS
+- [ ] **Cloud-Off-Site** (Hetzner Storage Box o. ä.) — PC-unabhängig, erst ab Skalierungsphase
+- [ ] **NAS mit Snapshot-Versionierung** als Ersatz für PC-Pull — geplant für Ausbauphase, Ransomware-Schutz durch read-only Snapshots
 
 ---
 
