@@ -59,6 +59,50 @@
 
 ---
 
+## 3a. Einschränkung der Verarbeitung (Art. 18 DSGVO)
+
+**Wann:** Eine Person bestreitet die Richtigkeit ihrer Daten oder die Rechtmäßigkeit der Verarbeitung, eine sofortige Löschung soll aber nicht erfolgen (z. B. weil die Daten als Beweismittel benötigt werden).
+
+**Frist:** Unverzüglich, spätestens **1 Monat**.
+
+**Vorgehen:**
+1. Identität verifizieren
+2. In der App: Admin → Benutzer auf Status `DISABLED` setzen (kein Login mehr möglich, Daten bleiben erhalten)
+3. Notiz im Audit-Log: „Verarbeitung eingeschränkt gemäß Art. 18 DSGVO, Grund: ..."
+4. Bestätigung per E-Mail
+5. Vorgang dokumentieren, Wiederaufnahme oder Löschung nach Klärung
+
+---
+
+## 3b. Datenübertragbarkeit (Art. 20 DSGVO)
+
+**Wann:** Eine Person verlangt ihre personenbezogenen Daten in einem strukturierten, gängigen und maschinenlesbaren Format.
+
+**Frist:** Unverzüglich, spätestens **1 Monat**.
+
+**Vorgehen:**
+1. Identität verifizieren
+2. In der App als Admin: DSGVO-Export für den Nutzer auslösen (JSON-Export mit allen Nutzerdaten inkl. Berichtshefte, Quiz-Historie, Badges)
+3. Export als Datei (JSON, optional ZIP) per sicher versandter E-Mail oder Download-Link (zeitlich begrenzt, TLS-geschützt)
+4. Vorgang dokumentieren
+
+---
+
+## 3c. Widerspruch (Art. 21 DSGVO)
+
+**Wann:** Eine Person widerspricht einer auf berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO) gestützten Verarbeitung — z. B. gegen die Protokollierung in Audit-Logs über das gesetzlich Erforderliche hinaus.
+
+**Frist:** Unverzüglich, spätestens **1 Monat**.
+
+**Vorgehen:**
+1. Identität verifizieren
+2. Abwägung: zwingende schutzwürdige Gründe des Verantwortlichen vs. Interessen der betroffenen Person
+3. Bei Stattgabe: Betroffene Verarbeitung beenden (z. B. Entfernung aus Newsletter, Einschränkung von Auswertungen)
+4. Bei Ablehnung: begründete Antwort mit Verweis auf überwiegendes Interesse
+5. Vorgang dokumentieren
+
+---
+
 ## 4. Datenpanne / Datenschutzverletzung (Art. 33 DSGVO)
 
 **Wann:** Unbefugter Zugriff auf Daten, Datenverlust, Datenleck.
@@ -68,13 +112,26 @@
 **Vorgehen:**
 
 ### Sofortmaßnahmen (erste Stunde):
-1. Angriffsvektor identifizieren und sofort schließen (ggf. Server offline nehmen)
-2. Betroffene Nutzerkonten sperren
-3. Alle Admin-Passwörter und Secrets rotieren
-4. Server-Logs sichern:
+
+**Wichtig vor Aktionen:** Forensik schützen. Laufende Prozesse, RAM-Inhalte und aktuelle Logs sind oft beweisrelevant — einen Server komplett offline zu nehmen zerstört diese Beweise.
+
+1. **Netzwerk-Isolation statt Offline-Nehmen:** Eingehende Verbindungen per Firewall-Regel blocken (alle Ports außer SSH für Admin-Zugriff), Prozesse weiterlaufen lassen:
    ```bash
-   docker compose logs server > /opt/azubi-app/incident-$(date +%Y%m%d).log
+   # auf dem VPS als root:
+   ufw default deny incoming
+   ufw allow from <deine-IP> to any port 22
+   ufw reload
    ```
+2. Log-Snapshot sichern (vor weiteren Aktionen, damit Beweiskette erhalten bleibt):
+   ```bash
+   docker compose logs server > /opt/azubi-app/incident-$(date +%Y%m%d-%H%M)-server.log
+   docker compose logs postgres > /opt/azubi-app/incident-$(date +%Y%m%d-%H%M)-db.log
+   journalctl --since "24 hours ago" > /opt/azubi-app/incident-$(date +%Y%m%d-%H%M)-system.log
+   ```
+3. Angriffsvektor identifizieren (Logs, ungewöhnliche Requests, neue User, veränderte Dateien mit `find /opt/azubi-app -newer /tmp/reference -type f`)
+4. Betroffene Nutzerkonten sperren (siehe Abschnitt 5)
+5. Alle Admin-Passwörter und Secrets rotieren (JWT-Secrets, TOTP-Encryption-Key, DB-Passwort, SSH-Keys)
+6. Erst nach Abschluss von 1–5 und dokumentierter Beweissicherung: betroffene Services bei Bedarf stoppen
 
 ### Meldung an Aufsichtsbehörde:
 - **Zuständig:** Landesbeauftragter für Datenschutz des Bundeslandes des Verantwortlichen (Nutzerbetrieb)
@@ -91,7 +148,11 @@
 
 ### Dokumentation:
 - Alle Vorfälle dokumentieren — auch wenn keine Meldepflicht besteht
-- Datei: `/docs/datenschutz/Vorfallsprotokoll.md`
+- Datei: `/docs/datenschutz/Vorfallsprotokoll.md` (bei erstem Vorfall anlegen)
+- Mindestangaben pro Eintrag: Datum/Uhrzeit der Entdeckung, Art der Verletzung, Kategorie und Anzahl betroffener Datensätze, Ursache, ergriffene Maßnahmen, Meldung an Aufsichtsbehörde (ja/nein, wann), Benachrichtigung der Betroffenen (ja/nein, wann)
+
+### Muster-Mail an Betroffene (Art. 34 DSGVO):
+Im Verzeichnis `/docs/datenschutz/Muster-Benachrichtigung-Datenpanne.md` (bei Bedarf anlegen). Pflichtinhalte: Art der Verletzung, wahrscheinliche Folgen, ergriffene Maßnahmen, Kontakt DSB, Empfehlungen zur Eigen-Absicherung (z. B. Passwortwechsel).
 
 ---
 

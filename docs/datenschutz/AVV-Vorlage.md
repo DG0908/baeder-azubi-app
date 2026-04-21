@@ -69,9 +69,9 @@ E-Mail: [deine E-Mail]
 
 (1) Der Auftragsverarbeiter setzt folgende Unterauftragsverarbeiter ein:
 
-| Anbieter | Zweck | Standort |
-|----------|-------|----------|
-| Hostinger International Ltd. | Serverbetrieb (VPS) und E-Mail-Versand (SMTP), Frankfurt | EU (Deutschland) |
+| Anbieter | Zweck | Unternehmenssitz | Verarbeitungsstandort |
+|----------|-------|------------------|-----------------------|
+| Hostinger International Ltd. | VPS-Serverbetrieb und E-Mail-Versand (SMTP) | Zypern (EU) | Frankfurt, Deutschland (EU) |
 
 (2) Der Auftragsverarbeiter informiert den Verantwortlichen über geplante Änderungen (Hinzufügung/Austausch von Unterauftragsverarbeitern) rechtzeitig, sodass der Verantwortliche Einwände erheben kann.
 
@@ -79,9 +79,11 @@ E-Mail: [deine E-Mail]
 
 ## § 5 Datenlöschung und Rückgabe
 
-(1) Nach Beendigung der Hauptleistung löscht der Auftragsverarbeiter alle personenbezogenen Daten des Verantwortlichen innerhalb von **30 Tagen**, sofern keine gesetzliche Aufbewahrungspflicht besteht.
+(1) **Automatisierte Löschung während der Laufzeit:** Der Auftragsverarbeiter löscht inaktive Nutzerkonten automatisiert. Betroffene Nutzer werden nach **22 Monaten Inaktivität** per E-Mail vorgewarnt. Erfolgt innerhalb von zwei weiteren Monaten keine Anmeldung, wird das Konto nach **24 Monaten Inaktivität** per Soft-Delete deaktiviert. Ausbildungsbezogene Aufbewahrungspflichten (z. B. Berichtshefte nach BBiG) bleiben unberührt; der Verantwortliche kann für einzelne Nutzer per Weisung Abweichungen verfügen.
 
-(2) Auf Anfrage des Verantwortlichen erfolgt die Löschung auch während der Laufzeit.
+(2) **Löschung auf Anfrage:** Auf dokumentierte Weisung des Verantwortlichen oder bei Geltendmachung von Betroffenenrechten (Art. 17 DSGVO) erfolgt die Löschung einzelner Datensätze unverzüglich, spätestens innerhalb eines Monats.
+
+(3) **Löschung nach Beendigung der Hauptleistung:** Nach Beendigung dieses Vertrages werden alle verbleibenden personenbezogenen Daten des Verantwortlichen innerhalb von **30 Tagen** gelöscht, sofern keine gesetzliche Aufbewahrungspflicht entgegensteht. Datenbank-Backups werden nach ihrer regulären Rotationsdauer (siehe TOMs, Abschnitt 8) überschrieben.
 
 ---
 

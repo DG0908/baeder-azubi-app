@@ -24,7 +24,8 @@
 - Root-Login per SSH deaktiviert
 - Firewall: nur Ports 80, 443 und SSH öffentlich erreichbar
 - Automatische Sicherheitsupdates für das Betriebssystem aktiviert
-- Admin-Zugang zur Weboberfläche (Coolify) nur über HTTPS
+- Coolify (Deploy-Pipeline für das Frontend) nur über HTTPS und eigenes Admin-Konto erreichbar
+- Admin-Oberfläche der Anwendung (azubi.smartbaden.de) nur über HTTPS, eigene Authentifizierung mit TOTP-2FA
 
 ---
 
@@ -53,10 +54,15 @@
 ## 5. Pseudonymisierung / Verschlüsselung
 *Schutz personenbezogener Daten durch technische Maßnahmen*
 
+**Verschlüsselung:**
 - Alle Verbindungen zur App ausschließlich über HTTPS/TLS (Let's Encrypt, automatische Erneuerung)
 - Datenbank-Verbindung innerhalb des Docker-Netzwerks (nicht öffentlich erreichbar)
 - TOTP-Secrets in der Datenbank mit AES-256-GCM verschlüsselt
 - Passwörter werden niemals im Klartext gespeichert (Argon2id-Hash)
+
+**Pseudonymisierung:**
+- Audit-Logs und interne Referenzen verwenden technische User-IDs, nicht Klarnamen
+- Bei Soft-Delete eines Nutzerkontos werden identifizierende Felder (Name, E-Mail) anonymisiert, die technische ID bleibt erhalten, um Integritätsbezüge (z. B. Forenbeiträge) zu wahren
 
 ---
 
@@ -82,8 +88,11 @@
 
 - Automatisches tägliches Datenbank-Backup per pg_dump (cron, 03:00 Uhr)
 - Backups lokal auf dem Server gespeichert, Aufbewahrung 7 Tage
+- Zusätzliches wöchentliches Backup-Pull auf einen separaten Arbeitsplatz-Rechner (Windows-Aufgabenplaner, Sonntag 10:00 Uhr, 8 Wochen Historie)
 - Docker-Container mit `restart: unless-stopped` — automatischer Neustart bei Absturz
-- VPS mit 95,82 GB Speicher, 38% RAM-Auslastung (Stand April 2026)
+- VPS-Ressourcenauslastung wird quartalsweise überprüft und dimensioniert
+
+**Bekannte Lücke (im Rahmen der Risikoabwägung akzeptiert):** Ein georedundanter Off-Site-Backup-Speicher (zweiter Standort / Cloud-Objektspeicher) ist in Vorbereitung. Bis zur Umsetzung dient der wöchentliche Workstation-Pull als Sekundärbackup. Bewertung: Für die Startphase mit geringer Datenmenge akzeptables Restrisiko.
 
 ---
 
