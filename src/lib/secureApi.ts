@@ -547,6 +547,27 @@ export const secureReportBooksApi = {
   })
 };
 
+// ─── Monthly Reports API ─────────────────────────────────
+
+export const secureMonthlyReportsApi = {
+  list: (params: Record<string, unknown> = {}) => apiRequest(`/monthly-reports${buildQueryString(params)}`, { method: 'GET' }),
+  assign: (payload: Record<string, unknown>) => apiRequest('/monthly-reports', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }),
+  submit: (reportId: string, payload: Record<string, unknown>) => apiRequest(`/monthly-reports/${reportId}/submit`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
+  }),
+  sign: (reportId: string, payload: Record<string, unknown>) => apiRequest(`/monthly-reports/${reportId}/sign`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
+  }),
+  remove: (reportId: string) => apiRequest(`/monthly-reports/${reportId}`, {
+    method: 'DELETE'
+  })
+};
+
 // ─── Swim Sessions API ────────────────────────────────────
 
 export const secureSwimSessionsApi = {

@@ -268,6 +268,8 @@ export function AppRouter({
         <BerichtsheftView
           {...berichtsheft}
           signAssignableUsers={allUsers.filter((account) => account.role === 'trainer' || account.role === 'admin')}
+          currentUser={user}
+          allUsers={allUsers}
         />
       )}
 

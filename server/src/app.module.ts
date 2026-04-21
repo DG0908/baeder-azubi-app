@@ -27,6 +27,7 @@ import { QuestionWorkflowsModule } from './modules/question-workflows/question-w
 import { SchoolAttendanceModule } from './modules/school-attendance/school-attendance.module';
 import { ExamGradesModule } from './modules/exam-grades/exam-grades.module';
 import { ReportBooksModule } from './modules/report-books/report-books.module';
+import { MonthlyReportsModule } from './modules/monthly-reports/monthly-reports.module';
 import { SwimSessionsModule } from './modules/swim-sessions/swim-sessions.module';
 import { SwimTrainingPlansModule } from './modules/swim-training-plans/swim-training-plans.module';
 import { UserStatsModule } from './modules/user-stats/user-stats.module';
@@ -63,6 +64,7 @@ import { BadgesModule } from './modules/badges/badges.module';
     SchoolAttendanceModule,
     ExamGradesModule,
     ReportBooksModule,
+    MonthlyReportsModule,
     SwimTrainingPlansModule,
     SwimSessionsModule,
     UserStatsModule,

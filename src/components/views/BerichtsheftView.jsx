@@ -9,6 +9,7 @@ import BerichtsheftListView from './berichtsheft/BerichtsheftListView';
 import BerichtsheftSignView from './berichtsheft/BerichtsheftSignView';
 import BerichtsheftProgressView from './berichtsheft/BerichtsheftProgressView';
 import BerichtsheftCalendarView from './berichtsheft/BerichtsheftCalendarView';
+import BerichtsheftMonthlyView from './berichtsheft/BerichtsheftMonthlyView';
 
 const BerichtsheftView = (props) => {
   const {
@@ -63,6 +64,8 @@ const BerichtsheftView = (props) => {
     progressLoading,
     selectProgressTarget,
     clearProgressTarget,
+    currentUser,
+    allUsers,
   } = props;
 
   const { darkMode } = useApp();
@@ -235,6 +238,14 @@ const BerichtsheftView = (props) => {
           berichtsheftEntries={berichtsheftEntries}
           loadBerichtsheftForEdit={loadBerichtsheftForEdit}
           setBerichtsheftViewMode={setBerichtsheftViewMode}
+        />
+      )}
+
+      {berichtsheftViewMode === 'monthly' && (
+        <BerichtsheftMonthlyView
+          darkMode={darkMode}
+          currentUser={currentUser}
+          allUsers={allUsers}
         />
       )}
     </div>

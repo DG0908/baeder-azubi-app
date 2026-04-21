@@ -3,6 +3,7 @@ import {
   BarChart3,
   CalendarDays,
   ClipboardList,
+  FileText,
   PenTool,
   Plus,
   User as UserIcon,
@@ -78,6 +79,13 @@ const BerichtsheftTabs = ({
         onClick={() => setBerichtsheftViewMode('kalender')}
         icon={CalendarDays}
         label="Kalender"
+        darkMode={darkMode}
+      />
+      <TabButton
+        active={berichtsheftViewMode === 'monthly'}
+        onClick={() => setBerichtsheftViewMode('monthly')}
+        icon={FileText}
+        label="Monatsbericht"
         darkMode={darkMode}
       />
       {canManageBerichtsheftSignatures && (
