@@ -7,6 +7,7 @@ import { Allow } from '../../common/decorators/allow.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
+import { CreateForumCategoryDto } from './dto/create-forum-category.dto';
 import { CreateForumPostDto } from './dto/create-forum-post.dto';
 import { CreateForumReplyDto } from './dto/create-forum-reply.dto';
 import { ListForumPostsQueryDto } from './dto/list-forum-posts-query.dto';
@@ -21,6 +22,27 @@ export class ForumController {
   @Get('categories')
   listCategoryCounts(@CurrentUser() actor: AuthenticatedUser) {
     return this.forumService.listCategoryCounts(actor);
+  }
+
+  @Roles(AppRole.ADMIN)
+  @Throttle({ default: { ttl: 600000, limit: 10 } })
+  @Post('categories')
+  createCustomCategory(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Body() dto: CreateForumCategoryDto,
+    @Req() request: Request
+  ) {
+    return this.forumService.createCustomCategory(actor, dto, request);
+  }
+
+  @Roles(AppRole.ADMIN)
+  @Delete('categories/:id')
+  deleteCustomCategory(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id') categoryId: string,
+    @Req() request: Request
+  ) {
+    return this.forumService.deleteCustomCategory(actor, categoryId, request);
   }
 
   @Allow()

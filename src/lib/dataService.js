@@ -12,7 +12,6 @@ import {
   secureAppConfigApi,
   secureDuelsApi,
   secureChatApi,
-  secureForumApi,
   secureNotificationsApi,
   secureContentApi,
   secureFlashcardsApi,
@@ -148,39 +147,6 @@ const mapPermissionFieldToProfileColumn = (field) => {
   if (field === 'canViewExamGrades') return 'can_view_exam_grades';
   return field;
 };
-
-const mapBackendRole = (role) => {
-  const normalized = String(role || '').toUpperCase();
-  if (normalized === 'ADMIN') return 'admin';
-  if (normalized === 'AUSBILDER') return 'trainer';
-  if (normalized === 'RETTUNGSSCHWIMMER_AZUBI') return 'rettungsschwimmer_azubi';
-  return 'azubi';
-};
-
-const mapForumPostToFrontend = (post) => ({
-  id: post?.id,
-  category: post?.category,
-  title: post?.title,
-  content: post?.content,
-  pinned: Boolean(post?.pinned),
-  locked: Boolean(post?.locked),
-  user_id: post?.userId || post?.user_id || null,
-  user_name: post?.user?.displayName || post?.user_name || '',
-  user_role: post?.user ? mapBackendRole(post.user.role) : mapBackendRole(post?.user_role),
-  reply_count: post?.replyCount ?? post?.reply_count ?? 0,
-  created_at: post?.createdAt || post?.created_at || null,
-  last_reply_at: post?.lastReplyAt || post?.last_reply_at || null
-});
-
-const mapForumReplyToFrontend = (reply) => ({
-  id: reply?.id,
-  post_id: reply?.postId || reply?.post_id || null,
-  content: reply?.content,
-  user_id: reply?.userId || reply?.user_id || null,
-  user_name: reply?.user?.displayName || reply?.user_name || '',
-  user_role: reply?.user ? mapBackendRole(reply.user.role) : mapBackendRole(reply?.user_role),
-  created_at: reply?.createdAt || reply?.created_at || null
-});
 
 const mapSecureReportBookToFrontendEntry = (entry) => ({
   id: entry.id,
@@ -872,60 +838,8 @@ export const deleteChatMessage = async (messageId) => {
 };
 
 // ─── Forum ───────────────────────────────────────────────────────────
-
-export const loadForumCategoryCounts = async () => {
-  const data = await secureForumApi.listCategories();
-  const counts = {};
-  (data || []).forEach((entry) => {
-    counts[entry.category] = entry.count || 0;
-  });
-  return counts;
-};
-
-export const loadForumPosts = async (categoryId) => {
-  const data = await secureForumApi.listPosts({ category: categoryId });
-  return (data || []).map(mapForumPostToFrontend);
-};
-
-export const loadForumThread = async (postId) => {
-  const data = await secureForumApi.getThread(postId);
-  return {
-    post: data?.post ? mapForumPostToFrontend(data.post) : null,
-    replies: (data?.replies || []).map(mapForumReplyToFrontend)
-  };
-};
-
-export const createForumPost = async (payload) => {
-  const result = await secureForumApi.createPost({
-    category: payload?.category,
-    title: payload?.title,
-    content: payload?.content
-  });
-  return mapForumPostToFrontend(result?.post || result);
-};
-
-export const createForumReply = async (postId, payload) => {
-  const result = await secureForumApi.createReply(postId, {
-    content: payload?.content
-  });
-  return mapForumReplyToFrontend(result?.reply || result);
-};
-
-export const deleteForumPost = async (postId) => {
-  return secureForumApi.removePost(postId);
-};
-
-export const deleteForumReply = async (replyId) => {
-  return secureForumApi.removeReply(replyId);
-};
-
-export const toggleForumPostPin = async (postId, currentPinned) => {
-  return secureForumApi.togglePin(postId);
-};
-
-export const toggleForumPostLock = async (postId, currentLocked) => {
-  return secureForumApi.toggleLock(postId);
-};
+// Forum-Helfer leben in src/lib/api/forum.ts (dataService-Freeze: neue Domain-APIs
+// dort, nicht in dataService.js). ForumView importiert direkt von dort.
 
 // ─── Notifications ───────────────────────────────────────────────────
 
