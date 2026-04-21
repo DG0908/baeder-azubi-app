@@ -26,6 +26,7 @@
 - [x] Backup-Restore getestet und dokumentiert
 - [x] Alle Prisma-Migrationen deployed
 - [x] **Lokales PC-Backup eingerichtet** — wöchentlich (Sonntag 10:00 Uhr) via Windows Aufgabenplaner, Script: `ops/pull-backup-to-local.ps1`, gespeichert unter `C:\Users\User\Backups\azubi-app\`, 8 Wochen Verlauf
+- [ ] **Off-Site-Backup** — täglicher Push auf georedundanten Speicher (Hetzner Storage Box o. ä.), unabhängig vom VPS-Hoster. Aufwand ca. 2 h, Kosten ~3 €/Monat
 
 ---
 
@@ -40,6 +41,7 @@
 - [x] Passwort-Reset per E-Mail funktioniert (Link zeigt auf azubi.smartbaden.de)
 - [x] Selbstlöschung des eigenen Kontos funktioniert
 - [x] Admin-Löschung von Nutzerkonten funktioniert
+- [ ] **E-Mail-Reputation geprüft** — SPF-, DKIM- und DMARC-Records für `smartbaden.de` gesetzt; Mail-Tester-Score ≥ 9/10 (https://www.mail-tester.com). Verhindert, dass Passwort-Reset-Mails im Spam landen.
 
 ---
 
@@ -69,6 +71,7 @@
 - [x] Hostinger DPA akzeptiert (automatisch mit Vertragsabschluss)
 - [x] Datenschutz-Runbook erstellt (`docs/datenschutz/Datenschutz-Runbook.md`)
 - [ ] **AVV mit erstem Nutzerbetrieb unterzeichnet** ← vor Zugangseröffnung
+- [ ] **Muster-Benachrichtigung Datenpanne** vorbereitet (`docs/datenschutz/Muster-Benachrichtigung-Datenpanne.md`) — Pflichtinhalte nach Art. 34 DSGVO (Art der Verletzung, Folgen, Maßnahmen, Kontakt, Empfehlungen)
 
 ---
 
@@ -92,6 +95,16 @@
 
 ---
 
+## 7a. Kaufmännische Vorbereitung (für bezahlten Betrieb)
+
+- [ ] **Unternehmensform geklärt** (Einzelunternehmen / UG / GmbH) — beeinflusst Haftung und Impressum
+- [ ] **AGB / SaaS-Nutzungsvertrag** erstellt (ggf. mit Anwalt) — Regelt Leistungsumfang, Verfügbarkeit, Zahlung, Kündigung
+- [ ] **Stripe-Konto** angelegt und verifiziert, Testzahlung erfolgreich durchgeführt
+- [ ] **Rechnungs-Workflow** geklärt (automatisiert via Stripe oder manuell)
+- [ ] **Cyber-Versicherung** geprüft — deckt Datenschutzvorfälle, Betriebsunterbrechung, Cyberangriffe. Angebote z. B. Hiscox, Markel, CyberDirekt. Ab erstem zahlenden Betrieb dringend empfohlen.
+
+---
+
 ## 8. Nice-to-have (nach Go-Live)
 
 - [ ] Auth Smoke-Tests (automatisierte E2E-Tests mit Supertest)
@@ -109,3 +122,8 @@ Alle kritischen Punkte (1–6) sind abgehakt bis auf:
 - AVV mit erstem Betrieb unterzeichnen
 - Secrets sicher notieren
 - Test-Accounts aufräumen
+
+**Für bezahlten Betrieb zusätzlich erforderlich (Abschnitt 7a):**
+- Unternehmensform, AGB, Stripe, Cyber-Versicherung
+- Off-Site-Backup (Abschnitt 2)
+- E-Mail-Reputation/DMARC (Abschnitt 3)
