@@ -4,7 +4,8 @@ const OPERATOR = {
   name: 'Dennie Gulbinski',
   street: 'Zeitstraße 108',
   city: '53721 Siegburg',
-  email: 'denniegulbinski@gmail.com'
+  email: 'kontakt@smartbaden.de',
+  taxNumber: '[folgt nach Gewerbeanmeldung]'
 };
 
 const LAST_UPDATED = '21.04.2026';
@@ -35,6 +36,18 @@ export function LegalImprintContent({
       </section>
 
       <section>
+        <h3 className={headingClassName}>Umsatzsteuer</h3>
+        <p className={textClassName}>
+          Kleinunternehmer gemäß § 19 UStG, es wird keine Umsatzsteuer ausgewiesen.
+        </p>
+      </section>
+
+      <section>
+        <h3 className={headingClassName}>Steuernummer</h3>
+        <p className={textClassName}>{OPERATOR.taxNumber}</p>
+      </section>
+
+      <section>
         <h3 className={headingClassName}>Verantwortlich für journalistisch-redaktionelle Inhalte</h3>
         <p className={textClassName}>
           gemäß § 18 Abs. 2 MStV, soweit anwendbar:
@@ -44,6 +57,23 @@ export function LegalImprintContent({
           {OPERATOR.street}
           <br />
           {OPERATOR.city}
+        </p>
+      </section>
+
+      <section>
+        <h3 className={headingClassName}>Streitbeilegung</h3>
+        <p className={textClassName}>
+          Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:{' '}
+          <a
+            href="https://ec.europa.eu/consumers/odr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            https://ec.europa.eu/consumers/odr
+          </a>
+          . Zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle
+          sind wir nicht verpflichtet und nicht bereit.
         </p>
       </section>
 
