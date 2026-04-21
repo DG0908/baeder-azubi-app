@@ -234,23 +234,28 @@ const QuizView = ({
     const opponentScore = duelResult.myName === duelResult.player1 ? duelResult.player2Score : duelResult.player1Score;
     const h2hTotal = duelResult.h2h.wins + duelResult.h2h.losses + duelResult.h2h.draws;
 
+    const resultGradient = iWon
+      ? 'from-amber-400 via-yellow-400 to-orange-500'
+      : isDraw
+        ? 'from-slate-400 via-slate-500 to-slate-600'
+        : 'from-indigo-500 via-slate-600 to-slate-800';
+
     return (
-      <div className={`max-w-lg mx-auto text-center space-y-6 py-8 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+      <div className={`max-w-lg mx-auto text-center space-y-5 py-8 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
         {/* Ergebnis-Grafik */}
-        <div className={`rounded-2xl p-8 shadow-xl ${
-          iWon
-            ? 'bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500'
-            : isDraw
-              ? 'bg-gradient-to-br from-slate-500 via-gray-500 to-slate-600'
-              : 'bg-gradient-to-br from-indigo-800 via-slate-700 to-slate-800'
-        }`}>
-          <div className="text-7xl mb-4">
+        <div className={`glass-card rounded-2xl p-8 relative overflow-hidden`}>
+          <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${resultGradient}`} />
+          <div
+            className="absolute -top-24 -right-24 w-64 h-64 rounded-full pointer-events-none opacity-40"
+            style={{ background: `radial-gradient(circle, ${iWon ? 'rgba(251,191,36,0.55)' : isDraw ? 'rgba(148,163,184,0.45)' : 'rgba(99,102,241,0.45)'} 0%, transparent 70%)` }}
+          />
+          <div className="text-7xl mb-4 relative">
             {iWon ? '🏊‍♂️🏆' : isDraw ? '🤝🏊' : '🌊😵'}
           </div>
-          <h2 className={`text-3xl font-black mb-2 ${iWon || isDraw ? 'text-white' : darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <h2 className={`text-3xl font-black mb-2 relative ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             {iWon ? 'Sieg!' : isDraw ? 'Unentschieden!' : 'Knapp daneben!'}
           </h2>
-          <p className={`text-lg ${iWon || isDraw ? 'text-white/90' : darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          <p className={`text-lg relative ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>
             {iWon
               ? 'Du hast das Becken gerockt!'
               : isDraw
@@ -260,24 +265,25 @@ const QuizView = ({
         </div>
 
         {/* Score */}
-        <div className={`${darkMode ? 'bg-slate-800/90 backdrop-blur-sm border border-slate-600' : 'bg-white border border-gray-200'} rounded-2xl p-6 shadow-xl`}>
+        <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500" />
           <div className="flex items-center justify-center gap-6">
             <div className="text-center flex-1">
-              <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Du</p>
+              <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Du</p>
               <p className={`text-5xl font-black ${iWon ? 'text-emerald-500' : iLost ? 'text-red-400' : darkMode ? 'text-white' : 'text-gray-800'}`}>
                 {myScore}
               </p>
-              <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                 {getFirstName(duelResult.myName)}
               </p>
             </div>
-            <div className={`text-2xl font-bold ${darkMode ? 'text-gray-600' : 'text-gray-300'}`}>:</div>
+            <div className={`text-2xl font-bold ${darkMode ? 'text-slate-600' : 'text-gray-300'}`}>:</div>
             <div className="text-center flex-1">
-              <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gegner</p>
+              <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Gegner</p>
               <p className={`text-5xl font-black ${iLost ? 'text-emerald-500' : iWon ? 'text-red-400' : darkMode ? 'text-white' : 'text-gray-800'}`}>
                 {opponentScore}
               </p>
-              <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                 {getFirstName(duelResult.opponentName)}
               </p>
             </div>
@@ -286,26 +292,27 @@ const QuizView = ({
 
         {/* Head-to-Head Statistik */}
         {h2hTotal > 0 && (
-          <div className={`${darkMode ? 'bg-slate-800/90 backdrop-blur-sm border border-slate-600' : 'bg-white border border-gray-200'} rounded-2xl p-6 shadow-xl`}>
+          <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500" />
             <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
               Bilanz gegen {getFirstName(duelResult.opponentName)}
             </h3>
-            <div className="grid grid-cols-3 gap-4">
-              <div className={`p-3 rounded-xl ${darkMode ? 'bg-emerald-900/40' : 'bg-emerald-50'}`}>
-                <p className={`text-2xl font-black ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{duelResult.h2h.wins}</p>
-                <p className={`text-xs font-semibold ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Siege</p>
+            <div className="grid grid-cols-3 gap-3">
+              <div className={`p-3 rounded-xl border ${darkMode ? 'bg-emerald-500/10 border-emerald-400/30' : 'bg-emerald-50 border-emerald-200'}`}>
+                <p className={`text-2xl font-black ${darkMode ? 'text-emerald-300' : 'text-emerald-600'}`}>{duelResult.h2h.wins}</p>
+                <p className={`text-xs font-semibold ${darkMode ? 'text-emerald-200' : 'text-emerald-700'}`}>Siege</p>
               </div>
-              <div className={`p-3 rounded-xl ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
-                <p className={`text-2xl font-black ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{duelResult.h2h.draws}</p>
-                <p className={`text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Remis</p>
+              <div className={`p-3 rounded-xl border ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white/70 border-gray-200'}`}>
+                <p className={`text-2xl font-black ${darkMode ? 'text-slate-200' : 'text-gray-600'}`}>{duelResult.h2h.draws}</p>
+                <p className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-gray-500'}`}>Remis</p>
               </div>
-              <div className={`p-3 rounded-xl ${darkMode ? 'bg-red-900/40' : 'bg-red-50'}`}>
-                <p className={`text-2xl font-black ${darkMode ? 'text-red-400' : 'text-red-600'}`}>{duelResult.h2h.losses}</p>
-                <p className={`text-xs font-semibold ${darkMode ? 'text-red-300' : 'text-red-700'}`}>Niederlagen</p>
+              <div className={`p-3 rounded-xl border ${darkMode ? 'bg-red-500/10 border-red-400/30' : 'bg-red-50 border-red-200'}`}>
+                <p className={`text-2xl font-black ${darkMode ? 'text-red-300' : 'text-red-600'}`}>{duelResult.h2h.losses}</p>
+                <p className={`text-xs font-semibold ${darkMode ? 'text-red-200' : 'text-red-700'}`}>Niederlagen</p>
               </div>
             </div>
             {h2hTotal >= 3 && (
-              <div className={`mt-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <div className={`mt-3 text-sm ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>
                 {duelResult.h2h.wins > duelResult.h2h.losses
                   ? `Du führst mit ${duelResult.h2h.wins - duelResult.h2h.losses} Sieg${duelResult.h2h.wins - duelResult.h2h.losses > 1 ? 'en' : ''} Vorsprung!`
                   : duelResult.h2h.losses > duelResult.h2h.wins
@@ -320,14 +327,14 @@ const QuizView = ({
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={handleRevanche}
-            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+            className="px-8 py-3 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-600 hover:via-amber-600 hover:to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all flex items-center justify-center gap-2"
           >
             <Target size={18} />
             Revanche!
           </button>
           <button
             onClick={() => setDuelResult(null)}
-            className={`px-8 py-3 font-bold rounded-xl shadow-lg transition-all ${darkMode ? 'bg-slate-600 hover:bg-slate-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+            className={`px-8 py-3 font-bold rounded-xl border transition-all ${darkMode ? 'bg-white/5 hover:bg-white/10 text-slate-200 border-white/10' : 'bg-white/70 hover:bg-white text-gray-700 border-gray-200'}`}
           >
             Zurück zum Quizduell
           </button>
@@ -349,8 +356,11 @@ const QuizView = ({
     return (
       <div className={`max-w-lg mx-auto space-y-4 py-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
         {/* Header */}
-        <div className={`rounded-2xl p-5 text-center ${darkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-gray-200'} shadow-xl`}>
-          <div className="text-sm font-semibold text-gray-500 mb-1">Runde {roundNum} von 4</div>
+        <div className="glass-card rounded-2xl p-5 text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500" />
+          <div className={`text-xs font-mono tracking-wider mb-1 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+            RUNDE {roundNum} VON 4
+          </div>
           <div className="text-4xl mb-2">{cat?.icon || '❓'}</div>
           <h2 className={`text-2xl font-black ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             {categoryRoundResult.categoryName}
@@ -361,25 +371,26 @@ const QuizView = ({
               <span className={`text-3xl font-black ${myRoundCorrect > oppRoundCorrect ? 'text-emerald-500' : myRoundCorrect < oppRoundCorrect ? 'text-red-400' : darkMode ? 'text-white' : 'text-gray-700'}`}>
                 {myRoundCorrect}
               </span>
-              <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Du</p>
+              <p className={`text-xs mt-0.5 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Du</p>
             </div>
-            <div className={`text-xl font-bold ${darkMode ? 'text-gray-600' : 'text-gray-300'}`}>–</div>
+            <div className={`text-xl font-bold ${darkMode ? 'text-slate-600' : 'text-gray-300'}`}>–</div>
             <div className="text-center">
               <span className={`text-3xl font-black ${oppRoundCorrect > myRoundCorrect ? 'text-emerald-500' : oppRoundCorrect < myRoundCorrect ? 'text-red-400' : darkMode ? 'text-white' : 'text-gray-700'}`}>
                 {oppRoundCorrect}
               </span>
-              <p className={`text-xs mt-0.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{getFirstName(categoryRoundResult.opponentName)}</p>
+              <p className={`text-xs mt-0.5 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{getFirstName(categoryRoundResult.opponentName)}</p>
             </div>
           </div>
         </div>
 
         {/* Fragen-Vergleich */}
-        <div className={`rounded-2xl overflow-hidden ${darkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-gray-200'} shadow-xl`}>
+        <div className="glass-card rounded-2xl overflow-hidden relative p-0">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 z-10" />
           {/* Header Row */}
-          <div className={`flex items-center px-4 py-2 text-xs font-bold ${darkMode ? 'bg-slate-700 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
-            <span className="flex-1">Frage</span>
-            <span className="w-10 text-center">Du</span>
-            <span className="w-16 text-center">{getFirstName(categoryRoundResult.opponentName)}</span>
+          <div className={`flex items-center px-4 pt-4 pb-2 text-xs font-mono tracking-wider ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+            <span className="flex-1">FRAGE</span>
+            <span className="w-10 text-center">DU</span>
+            <span className="w-16 text-center">{getFirstName(categoryRoundResult.opponentName).toUpperCase()}</span>
           </div>
           {(categoryRoundResult.questions || []).map((q, idx) => {
             const myAns = (categoryRoundResult.myAnswers || [])[idx];
@@ -389,10 +400,10 @@ const QuizView = ({
             const myTimeout = myAns?.timeout;
             const oppTimeout = oppAns?.timeout;
             return (
-              <div key={idx} className={`flex items-start px-4 py-3 border-t ${darkMode ? 'border-slate-700' : 'border-gray-100'}`}>
+              <div key={idx} className={`flex items-start px-4 py-3 border-t ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
                 <div className="flex-1 pr-2">
-                  <p className={`text-sm leading-snug ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                    <span className={`inline-block text-xs font-bold mr-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{idx + 1}.</span>
+                  <p className={`text-sm leading-snug ${darkMode ? 'text-slate-200' : 'text-gray-800'}`}>
+                    <span className={`inline-block text-xs font-bold mr-1 ${darkMode ? 'text-slate-500' : 'text-gray-400'}`}>{idx + 1}.</span>
                     {q.q || q.prompt || '?'}
                   </p>
                 </div>
@@ -400,7 +411,7 @@ const QuizView = ({
                   {myAns === undefined ? '–' : myTimeout ? '⏱' : myCorrect ? '✅' : '❌'}
                 </div>
                 <div className="w-16 text-center text-xl flex-shrink-0">
-                  {oppAns === undefined ? <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>–</span> : oppTimeout ? '⏱' : oppCorrect ? '✅' : '❌'}
+                  {oppAns === undefined ? <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-gray-400'}`}>–</span> : oppTimeout ? '⏱' : oppCorrect ? '✅' : '❌'}
                 </div>
               </div>
             );
@@ -408,17 +419,18 @@ const QuizView = ({
         </div>
 
         {/* Gesamtstand */}
-        <div className={`rounded-2xl p-4 ${darkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-gray-200'} shadow-xl`}>
-          <p className={`text-sm font-semibold text-center mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gesamtstand</p>
+        <div className="glass-card rounded-2xl p-4 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
+          <p className={`text-xs font-mono tracking-wider text-center mb-3 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>GESAMTSTAND</p>
           <div className="flex items-center justify-center gap-4">
             <div className="text-center flex-1">
               <p className={`text-4xl font-black ${myScore > oppScore ? 'text-emerald-500' : myScore < oppScore ? 'text-red-400' : darkMode ? 'text-white' : 'text-gray-800'}`}>{myScore}</p>
-              <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Du</p>
+              <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Du</p>
             </div>
-            <div className={`text-2xl font-bold ${darkMode ? 'text-gray-600' : 'text-gray-300'}`}>:</div>
+            <div className={`text-2xl font-bold ${darkMode ? 'text-slate-600' : 'text-gray-300'}`}>:</div>
             <div className="text-center flex-1">
               <p className={`text-4xl font-black ${oppScore > myScore ? 'text-emerald-500' : oppScore < myScore ? 'text-red-400' : darkMode ? 'text-white' : 'text-gray-800'}`}>{oppScore}</p>
-              <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{getFirstName(categoryRoundResult.opponentName)}</p>
+              <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{getFirstName(categoryRoundResult.opponentName)}</p>
             </div>
           </div>
         </div>
@@ -426,7 +438,7 @@ const QuizView = ({
         {/* Weiter Button */}
         <button
           onClick={proceedAfterCategoryResult}
-          className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-black text-lg rounded-2xl shadow-lg transition-all active:scale-95"
+          className="w-full py-4 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-600 hover:via-sky-600 hover:to-blue-700 text-white font-black text-lg rounded-2xl shadow-lg shadow-cyan-500/30 transition-all active:scale-95"
         >
           {categoryRoundResult.isLastRound ? '🏁 Ergebnis ansehen' : `Runde ${roundNum + 1} →`}
         </button>
@@ -438,51 +450,81 @@ const QuizView = ({
     <div className="max-w-4xl mx-auto">
       {!currentGame && (
         <>
-          <h2 className="text-3xl font-bold mb-6">Quizduell</h2>
+          <div className="glass-card rounded-2xl p-5 mb-5 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500" />
+            <div className="flex items-start gap-3">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${darkMode ? 'bg-fuchsia-500/15' : 'bg-fuchsia-500/10'}`}>
+                <Target size={24} className={darkMode ? 'text-fuchsia-300' : 'text-fuchsia-600'} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className={`text-xs font-mono tracking-wider mb-1 ${darkMode ? 'text-fuchsia-300' : 'text-fuchsia-700'}`}>
+                  PVP · 1 GEGEN 1
+                </div>
+                <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Quizduell</h2>
+                <p className={`text-sm mt-1 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>
+                  Fordere andere Azubis zum direkten Wissens-Duell heraus.
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-5 text-sm">
-            <p className="font-bold text-amber-800 mb-2">Spielregeln - Zeitlimit & Strafen</p>
-            <ul className="space-y-1 text-amber-700">
+          <div className="glass-card rounded-2xl p-4 mb-5 text-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400" />
+            <p className={`font-bold mb-2 ${darkMode ? 'text-amber-200' : 'text-amber-800'}`}>Spielregeln · Zeitlimit & Strafen</p>
+            <ul className={`space-y-1 ${darkMode ? 'text-slate-300' : 'text-amber-700'}`}>
               <li>Für Herausforderungen kannst du eine <strong>Annahmefrist</strong> festlegen.</li>
               <li>Laufende Duelle behalten <strong>48 Stunden</strong> Zugfrist mit Erinnerung nach 24h.</li>
               <li>Wer seinen Zug nicht rechtzeitig macht oder eine Challenge ignoriert, <strong>verliert die Runde</strong>.</li>
-              <li>Zusaetzlich werden dem Verlierer <strong>100 XP abgezogen</strong>.</li>
+              <li>Zusätzlich werden dem Verlierer <strong>100 XP abgezogen</strong>.</li>
             </ul>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-lg mb-6">
-            <h3 className="text-xl font-bold mb-4">Spieler herausfordern</h3>
+          <div className="glass-card rounded-2xl p-6 mb-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500" />
+            <h3 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Spieler herausfordern</h3>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Schwierigkeitsgrad wählen:
+              <label className={`block text-xs font-mono tracking-wider mb-3 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                SCHWIERIGKEITSGRAD WÄHLEN
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {Object.entries(DIFFICULTY_SETTINGS).map(([key, diff]) => (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedDifficulty(key)}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      selectedDifficulty === key
-                        ? `${diff.color} text-white border-transparent`
-                        : 'bg-white border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <div className="text-3xl mb-2">{diff.icon}</div>
-                    <div className="font-bold">{diff.label}</div>
-                    <div className="text-sm opacity-90">{diff.time} Sekunden</div>
-                  </button>
-                ))}
+                {Object.entries(DIFFICULTY_SETTINGS).map(([key, diff]) => {
+                  const gradientMap = {
+                    anfaenger: 'from-emerald-400 via-green-500 to-teal-500',
+                    profi: 'from-amber-400 via-yellow-500 to-orange-400',
+                    experte: 'from-red-500 via-rose-500 to-pink-500',
+                    extra: 'from-indigo-500 via-violet-500 to-purple-600',
+                  };
+                  const gradient = gradientMap[key] || 'from-cyan-500 to-blue-500';
+                  const active = selectedDifficulty === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setSelectedDifficulty(key)}
+                      className={`p-4 rounded-xl border transition-all relative overflow-hidden ${
+                        active
+                          ? `bg-gradient-to-br ${gradient} text-white border-transparent shadow-lg`
+                          : darkMode
+                            ? 'bg-white/5 border-white/10 text-slate-200 hover:bg-white/10'
+                            : 'bg-white/70 border-gray-200 text-gray-700 hover:bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="text-3xl mb-2 font-black">{diff.icon}</div>
+                      <div className="font-bold">{diff.label}</div>
+                      <div className={`text-xs mt-1 ${active ? 'text-white/90' : darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{diff.time} Sekunden</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="mb-6">
-              <label htmlFor="challenge-timeout" className="block text-sm font-medium text-gray-700 mb-2">
-                Timer für Herausforderung (Annahmefrist):
+              <label htmlFor="challenge-timeout" className={`block text-xs font-mono tracking-wider mb-2 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                TIMER FÜR HERAUSFORDERUNG (ANNAHMEFRIST)
               </label>
               <select
                 id="challenge-timeout"
                 value={challengeTimeoutMinutes}
                 onChange={(event) => setChallengeTimeoutMinutes(Number(event.target.value) || 1440)}
-                className="w-full md:w-64 border border-gray-300 rounded-lg px-3 py-2 bg-white"
+                className={`w-full md:w-64 border rounded-lg px-3 py-2 text-sm ${darkMode ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-white/70 border-gray-200 text-gray-700'}`}
               >
                 {CHALLENGE_TIMEOUT_OPTIONS.map((option) => (
                   <option key={option.minutes} value={option.minutes}>
@@ -540,7 +582,7 @@ const QuizView = ({
                   ? 'text-amber-600'
                   : 'text-gray-500';
                 return (
-                  <div key={u.name} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-3 p-3 rounded-xl transition-all min-[720px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[720px]:items-center ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
+                  <div key={u.name} className={`grid grid-cols-[auto_minmax(0,1fr)] gap-3 p-3 rounded-xl border transition-all min-[720px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[720px]:items-center ${darkMode ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white/70 border-gray-200 hover:bg-white'}`}>
                     {/* Avatar */}
                     <AvatarBadge
                       avatar={u.avatar ? getAvatarById(u.avatar) : null}
@@ -552,15 +594,15 @@ const QuizView = ({
                     <div className="min-w-0">
                       <p className={`font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{firstName}</p>
                       <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
-                        <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+                        <span className={darkMode ? 'text-slate-400' : 'text-gray-500'}>
                           {roleLabel}{company}
                         </span>
                         {winrate !== null ? (
-                          <span className={`font-medium ${winrate >= 50 ? 'text-green-400' : 'text-red-400'}`}>
-                            - {winrate}% W/R ({totalVs} Sp.)
+                          <span className={`font-medium ${winrate >= 50 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            · {winrate}% W/R ({totalVs} Sp.)
                           </span>
                         ) : (
-                          <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>- Noch nicht gespielt</span>
+                          <span className={darkMode ? 'text-slate-500' : 'text-gray-400'}>· Noch nicht gespielt</span>
                         )}
                       </div>
                     </div>
@@ -573,12 +615,12 @@ const QuizView = ({
                               acceptChallenge?.(relatedGame.id);
                               playSound('whistle');
                             }}
-                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg font-bold text-sm transition-all w-full whitespace-normal text-center leading-tight"
+                            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-3 py-2 rounded-lg font-bold text-sm transition-all shadow-md shadow-emerald-500/30 w-full whitespace-normal text-center leading-tight"
                           >
                             Annehmen
                           </button>
                           {countdownHint && (
-                            <div className={`mt-1 text-[11px] text-center font-mono ${darkMode ? 'text-gray-300' : countdownClass}`}>
+                            <div className={`mt-1 text-[11px] text-center font-mono ${darkMode ? 'text-slate-300' : countdownClass}`}>
                               {countdownHint}
                             </div>
                           )}
@@ -590,7 +632,7 @@ const QuizView = ({
                               continueGame?.(relatedGame.id);
                               playSound('whistle');
                             }}
-                            className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-lg font-bold text-sm transition-all w-full whitespace-normal text-center leading-tight animate-pulse"
+                            className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white px-3 py-2 rounded-lg font-bold text-sm transition-all shadow-md shadow-emerald-500/30 w-full whitespace-normal text-center leading-tight animate-pulse"
                           >
                             Weiterspielen
                           </button>
@@ -602,11 +644,11 @@ const QuizView = ({
                         </div>
                       ) : (
                         <div className="col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto">
-                          <span className={`inline-flex w-full min-[720px]:w-auto justify-center text-xs italic px-3 py-1.5 rounded-lg whitespace-normal text-center leading-tight ${darkMode ? 'bg-slate-600 text-gray-300' : 'bg-gray-200 text-gray-500'}`}>
+                          <span className={`inline-flex w-full min-[720px]:w-auto justify-center text-xs italic px-3 py-1.5 rounded-lg border whitespace-normal text-center leading-tight ${darkMode ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white/60 border-gray-200 text-gray-500'}`}>
                             {isOutgoingChallenge ? 'Anfrage gesendet' : 'Läuft'}
                           </span>
                           {countdownHint && (
-                            <div className={`mt-1 text-[11px] text-center font-mono ${darkMode ? 'text-gray-300' : countdownClass}`}>
+                            <div className={`mt-1 text-[11px] text-center font-mono ${darkMode ? 'text-slate-300' : countdownClass}`}>
                               {countdownHint}
                             </div>
                           )}
@@ -615,7 +657,7 @@ const QuizView = ({
                     ) : (
                       <button
                         onClick={() => challengePlayer(u.name, challengeTimeoutMinutes, u.id)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-sm transition-all col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto whitespace-normal text-center leading-tight"
+                        className="bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500 hover:from-cyan-600 hover:via-sky-600 hover:to-blue-600 text-white px-3 py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 text-sm transition-all shadow-md shadow-cyan-500/30 col-span-2 min-[720px]:col-span-1 min-[720px]:justify-self-end w-full min-[720px]:w-auto whitespace-normal text-center leading-tight"
                       >
                         <Target size={16} />
                         <span>Herausfordern</span>
@@ -625,7 +667,7 @@ const QuizView = ({
                 );
               })}
               {allUsers.filter(u => u.name !== user.name).length === 0 && (
-                <p className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Noch keine anderen Spieler vorhanden</p>
+                <p className={`text-center py-8 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Noch keine anderen Spieler vorhanden</p>
               )}
             </div>
           </div>
@@ -635,13 +677,13 @@ const QuizView = ({
             <div className="mt-6">
               <button
                 onClick={() => setShowRecentGames((prev) => !prev)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm transition-all ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border font-bold text-sm transition-all ${darkMode ? 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-200' : 'bg-white/70 border-gray-200 hover:bg-white text-gray-700'}`}
               >
                 <span className="flex items-center gap-2">
-                  <Trophy size={16} />
+                  <Trophy size={16} className={darkMode ? 'text-cyan-300' : 'text-cyan-600'} />
                   Letzte Spiele ({recentFinishedGames.length})
                 </span>
-                <ChevronDown size={18} className={`transition-transform ${showRecentGames ? 'rotate-180' : ''}`} />
+                <ChevronDown size={18} className={`transition-transform ${showRecentGames ? 'rotate-180' : ''} ${darkMode ? 'text-slate-400' : 'text-gray-500'}`} />
               </button>
               {showRecentGames && (
                 <div className="space-y-2 mt-3">
@@ -654,18 +696,24 @@ const QuizView = ({
                       || (isP1 && game.player1Score > game.player2Score)
                       || (!isP1 && game.player2Score > game.player1Score);
                     const isDraw = game.player1Score === game.player2Score;
+                    const accentGradient = iWon
+                      ? 'from-emerald-400 via-teal-500 to-cyan-500'
+                      : isDraw
+                        ? 'from-slate-400 via-slate-500 to-slate-600'
+                        : 'from-red-500 via-rose-500 to-pink-500';
                     return (
                       <div
                         key={game.id}
-                        className={`rounded-xl p-3 border cursor-pointer transition-all hover:scale-[1.01] ${
+                        className={`rounded-xl p-3 border cursor-pointer transition-all hover:scale-[1.01] relative overflow-hidden ${
                           iWon
-                            ? darkMode ? 'bg-emerald-900/30 border-emerald-700' : 'bg-emerald-50 border-emerald-200'
+                            ? darkMode ? 'bg-emerald-500/10 border-emerald-400/30' : 'bg-emerald-50 border-emerald-200'
                             : isDraw
-                              ? darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-50 border-gray-200'
-                              : darkMode ? 'bg-red-900/30 border-red-800' : 'bg-red-50 border-red-200'
+                              ? darkMode ? 'bg-white/5 border-white/10' : 'bg-white/70 border-gray-200'
+                              : darkMode ? 'bg-red-500/10 border-red-400/30' : 'bg-red-50 border-red-200'
                         }`}
                         onClick={() => handleViewUnseenResult(game)}
                       >
+                        <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${accentGradient}`} />
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{iWon ? '🏆' : isDraw ? '🤝' : '😤'}</span>
@@ -673,12 +721,12 @@ const QuizView = ({
                               <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                                 {iWon ? 'Gewonnen' : isDraw ? 'Unentschieden' : 'Verloren'} gegen {getFirstName(opponentName)}
                               </p>
-                              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                                 {myScore} : {oppScore}
                               </p>
                             </div>
                           </div>
-                          <Trophy size={14} className={darkMode ? 'text-gray-500' : 'text-gray-400'} />
+                          <Trophy size={14} className={darkMode ? 'text-slate-500' : 'text-gray-400'} />
                         </div>
                       </div>
                     );
@@ -691,43 +739,56 @@ const QuizView = ({
       )}
 
       {currentGame && (
-        <div className={`rounded-xl p-6 shadow-lg mb-6 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
+        <div className="glass-card rounded-2xl p-6 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500" />
           {exitCurrentGame && !currentQuestion && (
             <div className="flex justify-start mb-3">
               <button
                 onClick={exitCurrentGame}
-                className={`text-xs px-3 py-1 rounded-lg font-medium inline-flex items-center gap-1.5 ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                className={`text-xs px-3 py-1.5 rounded-lg border font-medium inline-flex items-center gap-1.5 transition-all ${darkMode ? 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-200' : 'bg-white/70 border-gray-200 hover:bg-white text-gray-700'}`}
               >
                 <ArrowLeft className="w-3 h-3" />
                 Zur Herausforderungsliste
               </button>
             </div>
           )}
-          <div className="text-center mb-4">
-            <span className={`${currentDifficulty.color} text-white px-6 py-2 rounded-full font-bold inline-flex items-center gap-2`}>
-              {currentDifficulty.icon} {currentDifficulty.label} - {(currentQuestion ? questionTimeLimit : currentDifficulty.time)} Sekunden pro Frage
-            </span>
-          </div>
+          {(() => {
+            const diffGradientMap = {
+              anfaenger: 'from-emerald-400 via-green-500 to-teal-500',
+              profi: 'from-amber-400 via-yellow-500 to-orange-400',
+              experte: 'from-red-500 via-rose-500 to-pink-500',
+              extra: 'from-indigo-500 via-violet-500 to-purple-600',
+            };
+            const diffKey = Object.keys(DIFFICULTY_SETTINGS).find(k => DIFFICULTY_SETTINGS[k] === currentDifficulty) || 'profi';
+            const diffGradient = diffGradientMap[diffKey] || 'from-cyan-500 to-blue-500';
+            return (
+              <div className="text-center mb-4">
+                <span className={`bg-gradient-to-r ${diffGradient} text-white px-6 py-2 rounded-full font-bold inline-flex items-center gap-2 shadow-md`}>
+                  {currentDifficulty.icon} {currentDifficulty.label} · {(currentQuestion ? questionTimeLimit : currentDifficulty.time)} Sekunden pro Frage
+                </span>
+              </div>
+            );
+          })()}
 
           <div className="flex justify-between items-center mb-6">
             <div className="text-center flex-1">
-              <p className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{getFirstName(currentGame.player1)}</p>
-              <p className="text-3xl font-bold text-blue-500">{currentGame.player1Score}</p>
+              <p className={`text-sm mb-1 ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>{getFirstName(currentGame.player1)}</p>
+              <p className={`text-4xl font-black ${darkMode ? 'text-cyan-300' : 'text-cyan-600'}`}>{currentGame.player1Score}</p>
             </div>
             <div className="text-center flex-1">
-              <p className={`text-2xl font-bold ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Kategorie {(currentGame.categoryRound || 0) + 1}/4</p>
+              <p className={`text-xs font-mono tracking-wider ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>KATEGORIE {(currentGame.categoryRound || 0) + 1}/4</p>
               {quizCategory && (
-                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  Frage {questionInCategory + 1}/5
+                <p className={`text-xs font-mono mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                  FRAGE {questionInCategory + 1}/5
                 </p>
               )}
-              <p className={`text-sm mt-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              <p className={`text-sm mt-2 font-semibold ${darkMode ? 'text-slate-200' : 'text-gray-700'}`}>
                 {playerTurn === user.name ? 'Du bist dran!' : `${getFirstName(playerTurn)} ist dran...`}
               </p>
             </div>
             <div className="text-center flex-1">
-              <p className={`text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{getFirstName(currentGame.player2)}</p>
-              <p className="text-3xl font-bold text-red-500">{currentGame.player2Score}</p>
+              <p className={`text-sm mb-1 ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>{getFirstName(currentGame.player2)}</p>
+              <p className="text-4xl font-black text-rose-500">{currentGame.player2Score}</p>
             </div>
           </div>
 
@@ -737,24 +798,24 @@ const QuizView = ({
               {!showForfeitConfirm ? (
                 <button
                   onClick={() => setShowForfeitConfirm(true)}
-                  className={`text-xs px-3 py-1 rounded-lg border font-medium ${darkMode ? 'border-red-700 text-red-400 hover:bg-red-900/30' : 'border-red-300 text-red-500 hover:bg-red-50'}`}
+                  className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition-all ${darkMode ? 'border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20' : 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100'}`}
                 >
                   Aufgeben
                 </button>
               ) : (
-                <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${darkMode ? 'border-red-700 bg-red-900/20' : 'border-red-300 bg-red-50'}`}>
-                  <span className={`text-xs font-medium ${darkMode ? 'text-red-300' : 'text-red-700'}`}>
+                <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${darkMode ? 'border-red-400/30 bg-red-500/10' : 'border-red-200 bg-red-50'}`}>
+                  <span className={`text-xs font-medium ${darkMode ? 'text-red-200' : 'text-red-700'}`}>
                     Wirklich aufgeben? Du verlierst das Duell.
                   </span>
                   <button
                     onClick={() => { setShowForfeitConfirm(false); onForfeit(); }}
-                    className="text-xs px-3 py-1 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold"
+                    className="text-xs px-3 py-1.5 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white font-bold shadow-md shadow-red-500/30"
                   >
                     Ja, aufgeben
                   </button>
                   <button
                     onClick={() => setShowForfeitConfirm(false)}
-                    className={`text-xs px-3 py-1 rounded-lg font-medium ${darkMode ? 'bg-slate-600 hover:bg-slate-500 text-gray-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+                    className={`text-xs px-3 py-1.5 rounded-lg border font-medium ${darkMode ? 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-200' : 'bg-white/70 border-gray-200 hover:bg-white text-gray-700'}`}
                   >
                     Abbrechen
                   </button>
@@ -768,7 +829,7 @@ const QuizView = ({
               {currentGame.categoryRounds.map((cr, idx) => {
                 const cat = CATEGORIES.find(c => c.id === cr.categoryId);
                 return (
-                  <span key={idx} className={`${cat?.color || 'bg-gray-500'} text-white px-3 py-1 rounded-full text-sm`}>
+                  <span key={idx} className={`${cat?.color || 'bg-gray-500'} text-white px-3 py-1 rounded-full text-sm shadow-md`}>
                     {cat?.icon} {cat?.name}
                   </span>
                 );
@@ -778,26 +839,26 @@ const QuizView = ({
 
           {!quizCategory && playerTurn === user.name && !waitingForOpponent && !hasPendingCategoryRound && (
             <div>
-              <div className={`mb-4 flex items-center justify-between gap-3 rounded-lg border p-3 ${darkMode ? 'border-slate-600 bg-slate-700' : 'border-gray-200 bg-gray-50'}`}>
+              <div className={`mb-4 flex items-center justify-between gap-3 rounded-xl border p-3 ${darkMode ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white/70'}`}>
                 <div>
-                  <p className={`text-sm font-bold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Adaptiver Lernmodus</p>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {adaptiveLearningEnabled ? 'Schwerere Fragen kommen oefter.' : 'Reiner Zufall.'}
+                  <p className={`text-sm font-bold ${darkMode ? 'text-slate-100' : 'text-gray-800'}`}>Adaptiver Lernmodus</p>
+                  <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                    {adaptiveLearningEnabled ? 'Schwerere Fragen kommen öfter.' : 'Reiner Zufall.'}
                   </p>
                 </div>
                 <button
                   onClick={() => setAdaptiveLearningEnabled((prev) => !prev)}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold ${
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                     adaptiveLearningEnabled
-                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                      : darkMode ? 'bg-slate-600 hover:bg-slate-500 text-gray-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-md shadow-emerald-500/30'
+                      : darkMode ? 'bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200' : 'bg-white/70 border border-gray-200 hover:bg-white text-gray-700'
                   }`}
                 >
                   {adaptiveLearningEnabled ? 'Aktiv' : 'Aus'}
                 </button>
               </div>
-              <h3 className={`text-xl font-bold text-center mb-4 ${darkMode ? 'text-white' : ''}`}>Wähle eine Kategorie:</h3>
-              <p className={`text-center mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Du wählst 5 Fragen - danach spielt {getFirstName(currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1)} die gleichen Fragen!</p>
+              <h3 className={`text-xl font-bold text-center mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Wähle eine Kategorie</h3>
+              <p className={`text-center text-sm mb-4 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>Du wählst 5 Fragen — danach spielt {getFirstName(currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1)} die gleichen Fragen.</p>
               <div className="grid grid-cols-2 gap-3">
                 {CATEGORIES.filter(cat => {
                   const played = currentGame.categoryRounds?.map(cr => cr.categoryId) || [];
@@ -806,7 +867,7 @@ const QuizView = ({
                   <button
                     key={cat.id}
                     onClick={() => selectCategory(cat.id)}
-                    className={`${cat.color} text-white rounded-xl p-4 hover:scale-105 transition-transform`}
+                    className={`${cat.color} text-white rounded-2xl p-4 hover:scale-105 hover:shadow-xl transition-all shadow-md`}
                   >
                     <div className="text-3xl mb-2">{cat.icon}</div>
                     <div className="font-bold text-sm">{cat.name}</div>
@@ -818,20 +879,20 @@ const QuizView = ({
 
           {!currentQuestion && hasPendingCategoryRound && (
             <div className="text-center py-8">
-              <div className="text-4xl font-black mb-4 text-emerald-500">START</div>
-              <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : ''}`}>
+              <div className="text-4xl font-black mb-4 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 bg-clip-text text-transparent">START</div>
+              <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 {activeCategoryRound?.categoryName || 'Kategorie'}
               </p>
-              <p className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className={`text-sm mb-4 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>
                 {isResumingCategoryRound
                   ? `Du warst bereits bei Frage ${nextPendingQuestionIndex + 1}/${activeCategoryRound?.questions?.length || 5}. Setze diese Kategorie genau dort fort.`
                   : isOpponentReplayRound
                     ? `${getFirstName(currentGame.player1 === user.name ? currentGame.player2 : currentGame.player1)} hat diese Kategorie gespielt. Jetzt bist du dran mit den gleichen ${activeCategoryRound?.questions?.length || 5} Fragen!`
-                    : 'Diese Kategorie ist bereits gestartet. Du setzt jetzt deine laufende Runde fort, statt eine neue Kategorie zu waehlen.'}
+                    : 'Diese Kategorie ist bereits gestartet. Du setzt jetzt deine laufende Runde fort, statt eine neue Kategorie zu wählen.'}
               </p>
               <button
                 onClick={startCategoryAsSecondPlayer}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
+                className="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-emerald-500/30"
               >
                 {isResumingCategoryRound ? 'Fortsetzen' : "Los geht's"}
               </button>
@@ -841,10 +902,10 @@ const QuizView = ({
           {!quizCategory && playerTurn !== user.name && (
             <div className="text-center py-12">
               <div className={`text-4xl mb-4 animate-pulse`}>⏳</div>
-              <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+              <p className={`text-xl font-bold mb-2 ${darkMode ? 'text-slate-100' : 'text-gray-800'}`}>
                 {getFirstName(playerTurn)} ist dran...
               </p>
-              <p className={`text-sm mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p className={`text-sm mt-2 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                 {waitingForOpponent ? 'Dein Gegner spielt jetzt die gleichen Fragen' : 'Dein Gegner wählt eine Kategorie'}
               </p>
             </div>
@@ -854,41 +915,41 @@ const QuizView = ({
             <div className="space-y-4">
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <span className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
                     {(() => {
                       const cat = CATEGORIES.find(c => c.id === quizCategory);
                       return cat ? `${cat.icon} ${cat.name}` : 'Frage';
                     })()}
                   </span>
-                  <span className={`text-2xl font-bold ${
-                    timeLeft <= 10 ? 'text-red-500 animate-pulse' : darkMode ? 'text-blue-400' : 'text-blue-600'
+                  <span className={`text-2xl font-black ${
+                    timeLeft <= 10 ? 'text-red-500 animate-pulse' : darkMode ? 'text-cyan-300' : 'text-cyan-600'
                   }`}>
                     {timeLeft}s
                   </span>
                 </div>
-                <div className={`w-full rounded-full h-3 overflow-hidden ${darkMode ? 'bg-slate-700' : 'bg-gray-200'}`}>
+                <div className={`w-full rounded-full h-3 overflow-hidden ${darkMode ? 'bg-white/10' : 'bg-gray-200'}`}>
                   <div
                     className={`h-3 rounded-full transition-all duration-1000 ${
-                      timeLeft <= 10 ? 'bg-red-500' : 'bg-blue-500'
+                      timeLeft <= 10 ? 'bg-gradient-to-r from-red-500 to-rose-500' : 'bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500'
                     }`}
                     style={{ width: `${(timeLeft / questionTimeLimit) * 100}%` }}
                   />
                 </div>
               </div>
 
-              <div className={`rounded-xl p-6 ${darkMode ? 'bg-slate-700' : 'bg-gray-100'}`}>
-                <p className={`text-xl font-bold text-center ${darkMode ? 'text-white' : ''}`}>
+              <div className={`rounded-2xl p-6 border ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white/70 border-gray-200'}`}>
+                <p className={`text-xl font-bold text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   {questionIsWhoAmI ? (currentQuestion.prompt || 'Was bin ich?') : currentQuestion.q}
                 </p>
                 {questionIsWhoAmI && (
-                  <div className={`mt-4 rounded-xl border p-4 text-left ${darkMode ? 'border-slate-600 bg-slate-800' : 'border-slate-300 bg-white'}`}>
-                    <p className={`text-center text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-slate-700'}`}>
+                  <div className={`mt-4 rounded-xl border p-4 text-left ${darkMode ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-white/70'}`}>
+                    <p className={`text-center text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                       60 Sekunden Zeit. Schwierigkeit <span className="font-bold">{currentDifficulty.label}</span> zeigt dir {whoAmIClueCount} von {currentQuestion?.clues?.length || 5} Eigenschaften.
                     </p>
                     <div className="mt-3 space-y-2">
                       {visibleWhoAmIClues.map((clue, index) => (
-                        <div key={`${currentQuestion?.id || 'whoami'}-${index}`} className={`rounded-lg px-3 py-2 text-sm ${darkMode ? 'bg-slate-700 text-gray-300' : 'bg-slate-100 text-slate-700'}`}>
-                          <span className={`mr-2 font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{index + 1}.</span>
+                        <div key={`${currentQuestion?.id || 'whoami'}-${index}`} className={`rounded-lg px-3 py-2 text-sm border ${darkMode ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-white/80 border-gray-200 text-slate-700'}`}>
+                          <span className={`mr-2 font-bold ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>{index + 1}.</span>
                           {clue}
                         </div>
                       ))}
@@ -896,17 +957,17 @@ const QuizView = ({
                   </div>
                 )}
                 {currentQuestion.multi && !answered && !questionIsKeyword && !questionIsWhoAmI && !quizMCKeywordMode && (
-                  <p className="text-center text-sm text-orange-600 mt-2 font-medium">
-                    Mehrere Antworten sind richtig - wähle alle richtigen aus.
+                  <p className={`text-center text-sm mt-2 font-medium ${darkMode ? 'text-orange-300' : 'text-orange-600'}`}>
+                    Mehrere Antworten sind richtig — wähle alle richtigen aus.
                   </p>
                 )}
                 {questionIsKeyword && (
-                  <p className="text-center text-sm text-indigo-700 mt-2 font-medium">
-                    Extra schwer: Freitext antworten und mindestens {requiredKeywordGroups} Schlagwoerter treffen.
+                  <p className={`text-center text-sm mt-2 font-medium ${darkMode ? 'text-indigo-300' : 'text-indigo-700'}`}>
+                    Extra schwer: Freitext antworten und mindestens {requiredKeywordGroups} Schlagwörter treffen.
                   </p>
                 )}
                 {quizMCKeywordMode && !questionIsKeyword && !questionIsWhoAmI && (
-                  <p className="text-center text-sm text-violet-700 mt-2 font-medium">
+                  <p className={`text-center text-sm mt-2 font-medium ${darkMode ? 'text-violet-300' : 'text-violet-700'}`}>
                     Schlagwort-Modus: Antworte frei und triff die Schlüsselbegriffe.
                   </p>
                 )}
@@ -915,7 +976,7 @@ const QuizView = ({
               {!questionIsKeyword && !questionIsWhoAmI && !quizMCKeywordMode && !answered && (
                 <button
                   onClick={() => setQuizMCKeywordMode(true)}
-                  className={`w-full py-2 rounded-lg text-sm font-medium transition-all border hover:text-violet-700 hover:border-violet-300 hover:bg-violet-50 ${darkMode ? 'bg-slate-700 text-gray-400 border-slate-600' : 'bg-gray-100 text-gray-500 border-gray-200'}`}
+                  className={`w-full py-2 rounded-lg text-sm font-medium transition-all border ${darkMode ? 'bg-white/5 text-slate-300 border-white/10 hover:bg-violet-500/20 hover:border-violet-400/40 hover:text-violet-200' : 'bg-white/70 text-gray-600 border-gray-200 hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700'}`}
                 >
                   Schlagwort-Modus aktivieren
                 </button>
@@ -941,21 +1002,20 @@ const QuizView = ({
                       let buttonClass = '';
                       if (answered) {
                         if (correctKnown && isCorrectAnswer) {
-                          buttonClass = 'bg-green-500 text-white animate-correct-flash';
+                          buttonClass = 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 animate-correct-flash';
                         } else if (correctKnown && ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle))) {
-                          buttonClass = 'bg-red-500 text-white';
+                          buttonClass = 'bg-gradient-to-br from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/30';
                         } else if ((isMulti && isSelectedMulti) || (!isMulti && isSelectedSingle)) {
-                          // Gewählt, aber correct nicht bekannt — neutral blau
-                          buttonClass = 'bg-blue-400 text-white';
+                          buttonClass = 'bg-gradient-to-br from-cyan-500 to-sky-500 text-white shadow-md';
                         } else {
-                          buttonClass = darkMode ? 'bg-slate-600 text-gray-400' : 'bg-gray-200 text-gray-500';
+                          buttonClass = darkMode ? 'bg-white/5 border border-white/10 text-slate-400' : 'bg-white/70 border border-gray-200 text-gray-500';
                         }
                       } else if (isMulti && isSelectedMulti) {
-                        buttonClass = 'bg-blue-500 text-white border-2 border-blue-600';
+                        buttonClass = 'bg-gradient-to-br from-cyan-500 via-sky-500 to-blue-500 text-white shadow-md shadow-cyan-500/30 border-2 border-cyan-400';
                       } else {
                         buttonClass = darkMode
-                          ? 'bg-slate-700 text-gray-200 hover:bg-slate-600 border-2 border-slate-600 hover:border-blue-500'
-                          : 'bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-500';
+                          ? 'bg-white/5 text-slate-100 hover:bg-white/10 border-2 border-white/10 hover:border-cyan-400/50'
+                          : 'bg-white/80 hover:bg-white text-gray-800 border-2 border-gray-200 hover:border-cyan-400';
                       }
 
                       return (
@@ -975,9 +1035,9 @@ const QuizView = ({
                   {currentQuestion.multi && !answered && selectedAnswers.length > 0 && (
                     <button
                       onClick={confirmMultiSelectAnswer}
-                      className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg"
+                      className="w-full mt-4 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 hover:from-emerald-600 hover:via-green-600 hover:to-teal-600 text-white py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-emerald-500/30"
                     >
-                      Antwort bestätigen ({selectedAnswers.length} ausgewaehlt)
+                      Antwort bestätigen ({selectedAnswers.length} ausgewählt)
                     </button>
                   )}
                 </>
@@ -985,16 +1045,16 @@ const QuizView = ({
 
               {questionUsesFreeText && (
                 <div className="space-y-3">
-                  <p className="text-xs text-gray-400">
+                  <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                     Singular und Plural werden beide erkannt. Schreib, wie es natürlich klingt.
                   </p>
                   {questionIsWhoAmI ? (
-                    <p className={`text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-slate-700'}`}>
-                      Gesucht ist genau ein Begriff. Im Quizduell zaehlt bei richtiger Lösung ein normaler Punkt.
+                    <p className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                      Gesucht ist genau ein Begriff. Im Quizduell zählt bei richtiger Lösung ein normaler Punkt.
                     </p>
                   ) : (
-                    <p className={`text-xs font-semibold ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                      Wertung: jedes erkannte Schlagwort = 1 Punkt, vollstaendig geloest = +2 Bonus.
+                    <p className={`text-xs font-semibold ${darkMode ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                      Wertung: jedes erkannte Schlagwort = 1 Punkt, vollständig gelöst = +2 Bonus.
                     </p>
                   )}
                   <textarea
@@ -1002,8 +1062,8 @@ const QuizView = ({
                     onChange={(e) => setKeywordAnswerText(e.target.value)}
                     disabled={answered}
                     rows={5}
-                    placeholder={questionIsWhoAmI ? 'Schreibe den gesuchten Begriff...' : 'Schreibe deine Antwort frei und nenne die wichtigsten Schlagwoerter...'}
-                    className={`w-full px-4 py-3 border-2 border-indigo-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${darkMode ? 'bg-slate-700 text-gray-200 placeholder-gray-500 disabled:bg-slate-800 disabled:text-gray-500' : 'disabled:bg-gray-100 disabled:text-gray-500'}`}
+                    placeholder={questionIsWhoAmI ? 'Schreibe den gesuchten Begriff...' : 'Schreibe deine Antwort frei und nenne die wichtigsten Schlagwörter...'}
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all ${darkMode ? 'bg-white/5 border-indigo-400/40 text-slate-100 placeholder-slate-500 disabled:bg-white/5 disabled:text-slate-500' : 'bg-white/80 border-indigo-300 disabled:bg-gray-100 disabled:text-gray-500'}`}
                   />
                   {!answered && (
                     <button
@@ -1011,7 +1071,7 @@ const QuizView = ({
                       disabled={!keywordAnswerText.trim()}
                       className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
                         keywordAnswerText.trim()
-                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
+                          ? 'bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 hover:from-indigo-700 hover:via-violet-700 hover:to-purple-700 shadow-lg shadow-indigo-500/30'
                           : 'bg-indigo-300 cursor-not-allowed'
                       }`}
                     >
@@ -1020,11 +1080,12 @@ const QuizView = ({
                   )}
 
                   {keywordAnswerEvaluation && (
-                    <div className={`rounded-xl border-2 p-4 ${
+                    <div className={`rounded-xl border-2 p-4 relative overflow-hidden ${
                       keywordAnswerEvaluation.isCorrect
-                        ? darkMode ? 'border-emerald-500 bg-emerald-900/30' : 'border-emerald-400 bg-emerald-50'
-                        : darkMode ? 'border-amber-500 bg-amber-900/30' : 'border-amber-400 bg-amber-50'
+                        ? darkMode ? 'border-emerald-400/40 bg-emerald-500/10' : 'border-emerald-300 bg-emerald-50'
+                        : darkMode ? 'border-amber-400/40 bg-amber-500/10' : 'border-amber-300 bg-amber-50'
                     }`}>
+                      <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${keywordAnswerEvaluation.isCorrect ? 'from-emerald-400 via-teal-500 to-cyan-500' : 'from-amber-400 via-yellow-500 to-orange-400'}`} />
                       <p className={`font-bold ${keywordAnswerEvaluation.isCorrect ? 'text-emerald-500' : 'text-amber-500'}`}>
                         {keywordAnswerEvaluation.isCorrect
                           ? (questionIsWhoAmI ? 'Richtig erkannt.' : 'Treffer! Antwort ist korrekt.')
@@ -1032,16 +1093,16 @@ const QuizView = ({
                       </p>
                       {!questionIsWhoAmI && (
                         <>
-                          <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          <p className={`text-sm mt-1 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
                             Treffer: {keywordAnswerEvaluation.matchedCount}/{keywordAnswerEvaluation.requiredGroups} erforderlich
                           </p>
-                          <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          <p className={`text-sm mt-1 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
                             Punkte: {keywordAnswerEvaluation.basePoints || 0}{Number(keywordAnswerEvaluation.bonusPoints || 0) > 0 ? ` + ${keywordAnswerEvaluation.bonusPoints} Bonus` : ''} = <span className="font-bold">{keywordAnswerEvaluation.awardedPoints || 0}</span>
                           </p>
                         </>
                       )}
                       {keywordAnswerEvaluation.timedOut && (
-                        <p className="text-sm text-red-500 mt-1 font-semibold">Zeit abgelaufen - Antwort wurde als falsch gewertet.</p>
+                        <p className="text-sm text-red-500 mt-1 font-semibold">Zeit abgelaufen — Antwort wurde als falsch gewertet.</p>
                       )}
                       {keywordAnswerEvaluation.matchedLabels?.length > 0 && (
                         <p className="text-sm text-emerald-500 mt-2">
@@ -1054,12 +1115,12 @@ const QuizView = ({
                         </p>
                       )}
                       {currentQuestion.answerGuide && (
-                        <p className={`text-sm mt-3 border-t pt-2 ${darkMode ? 'text-gray-300 border-slate-600' : 'text-gray-700 border-gray-300'}`}>
-                          {questionIsWhoAmI ? `Gesucht war: ${currentQuestion.answerGuide}` : `Musterloesung: ${currentQuestion.answerGuide}`}
+                        <p className={`text-sm mt-3 border-t pt-2 ${darkMode ? 'text-slate-300 border-white/10' : 'text-gray-700 border-gray-300'}`}>
+                          {questionIsWhoAmI ? `Gesucht war: ${currentQuestion.answerGuide}` : `Musterlösung: ${currentQuestion.answerGuide}`}
                         </p>
                       )}
                       {quizMCKeywordMode && !questionIsKeyword && !questionIsWhoAmI && currentQuestion.correct !== undefined && (
-                        <p className={`text-sm mt-3 border-t pt-2 ${darkMode ? 'text-gray-300 border-slate-600' : 'text-gray-700 border-gray-300'}`}>
+                        <p className={`text-sm mt-3 border-t pt-2 ${darkMode ? 'text-slate-300 border-white/10' : 'text-gray-700 border-gray-300'}`}>
                           Korrekte Antwort: {
                             currentQuestion.multi && Array.isArray(currentQuestion.correct)
                               ? currentQuestion.correct.map(idx => formatAnswerLabel(currentQuestion.a[idx])).join(' | ')
@@ -1080,13 +1141,14 @@ const QuizView = ({
                     source: 'quiz'
                   });
                 }}
-                className={`w-full mt-2 py-2 rounded-lg font-semibold border ${darkMode ? 'bg-amber-900/30 hover:bg-amber-900/50 text-amber-400 border-amber-700' : 'bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300'}`}
+                className={`w-full mt-2 py-2 rounded-lg font-semibold border transition-all ${darkMode ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 border-amber-400/30' : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200'}`}
               >
                 Frage melden
               </button>
 
               {answered && timeLeft === 0 && (
-                <div className={`border-2 border-red-500 rounded-xl p-4 text-center ${darkMode ? 'bg-red-900/30' : 'bg-red-100'}`}>
+                <div className={`border-2 rounded-xl p-4 text-center relative overflow-hidden ${darkMode ? 'border-red-400/40 bg-red-500/10' : 'border-red-300 bg-red-50'}`}>
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-500 via-rose-500 to-pink-500" />
                   <p className="text-red-500 font-bold">Zeit abgelaufen!</p>
                 </div>
               )}
@@ -1094,7 +1156,7 @@ const QuizView = ({
               {answered && (
                 <button
                   onClick={proceedToNextRound}
-                  className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-4 rounded-xl font-bold text-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg"
+                  className="w-full mt-4 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-500 hover:from-cyan-600 hover:via-sky-600 hover:to-blue-600 text-white py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-cyan-500/30"
                 >
                   Weiter
                 </button>
