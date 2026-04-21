@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 
 import {
-  loadForumCategories,
+  loadForumCategoryData,
   createForumCategory,
   deleteForumCategory,
   loadForumPosts,
@@ -15,12 +15,31 @@ import {
   deleteForumReply,
   toggleForumPostPin,
   toggleForumPostLock,
-  type ForumCategory,
+  type ForumCustomCategory,
   type ForumPost,
   type ForumReply
 } from '../../lib/api/forum';
 
-const CATEGORY_COLOR_CLASSES: Record<string, string> = {
+interface ForumCategory {
+  id: string;
+  label: string;
+  icon: string;
+  color: string;
+  description: string;
+  canPost: string[];
+  canRead: string[];
+}
+
+const FORUM_CATEGORIES: ForumCategory[] = [
+  { id: 'updates', label: 'Aktualisierungen', icon: '📢', color: 'bg-blue-500', description: 'Neuigkeiten zur App', canPost: ['admin'], canRead: ['all'] },
+  { id: 'wuensche', label: 'Wünsche & Anregungen', icon: '💡', color: 'bg-amber-500', description: 'Feedback und Ideen', canPost: ['all'], canRead: ['all'] },
+  { id: 'fragen', label: 'Fragen', icon: '❓', color: 'bg-orange-500', description: 'Fragen stellen und beantworten', canPost: ['all'], canRead: ['all'] },
+  { id: 'ausbilder', label: 'Ausbilderaustausch', icon: '🎓', color: 'bg-purple-500', description: 'Nur für Ausbilder & Admins', canPost: ['trainer', 'admin'], canRead: ['trainer', 'admin'] },
+  { id: 'azubi', label: 'Azubiaustausch', icon: '🏊', color: 'bg-cyan-500', description: 'Azubis & Ausbilder', canPost: ['all'], canRead: ['all'] },
+  { id: 'nuetzliches', label: 'Interessantes & Nützliches', icon: '⭐', color: 'bg-emerald-500', description: 'Tipps, Links, Wissenswertes', canPost: ['all'], canRead: ['all'] },
+];
+
+const CUSTOM_COLOR_CLASSES: Record<string, string> = {
   slate: 'bg-slate-500',
   blue: 'bg-blue-500',
   cyan: 'bg-cyan-500',
@@ -35,7 +54,7 @@ const CATEGORY_COLOR_CLASSES: Record<string, string> = {
   violet: 'bg-violet-500'
 };
 
-const CATEGORY_COLOR_OPTIONS: Array<{ key: string; label: string }> = [
+const CUSTOM_COLOR_OPTIONS: Array<{ key: string; label: string }> = [
   { key: 'slate', label: 'Grau' },
   { key: 'blue', label: 'Blau' },
   { key: 'cyan', label: 'Cyan' },
@@ -50,7 +69,11 @@ const CATEGORY_COLOR_OPTIONS: Array<{ key: string; label: string }> = [
   { key: 'violet', label: 'Veilchen' }
 ];
 
-const colorClass = (key: string) => CATEGORY_COLOR_CLASSES[key] || CATEGORY_COLOR_CLASSES.slate;
+const customColorClass = (key: string) => CUSTOM_COLOR_CLASSES[key] || CUSTOM_COLOR_CLASSES.slate;
+
+type CustomCategoryEntry = ForumCustomCategory & { kind: 'custom' };
+type BuiltinCategoryEntry = ForumCategory & { kind: 'builtin' };
+type CategoryEntry = BuiltinCategoryEntry | CustomCategoryEntry;
 
 const ForumView: React.FC = () => {
   const auth = useAuth();
@@ -60,8 +83,7 @@ const ForumView: React.FC = () => {
   const showToast = app?.showToast;
 
   const [view, setView] = useState<'categories' | 'list' | 'thread' | 'new'>('categories');
-  const [categories, setCategories] = useState<ForumCategory[]>([]);
-  const [activeCategory, setActiveCategory] = useState<ForumCategory | null>(null);
+  const [activeCategory, setActiveCategory] = useState<CategoryEntry | null>(null);
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [activePost, setActivePost] = useState<ForumPost | null>(null);
   const [replies, setReplies] = useState<ForumReply[]>([]);
@@ -70,6 +92,8 @@ const ForumView: React.FC = () => {
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
   const [replyContent, setReplyContent] = useState('');
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+  const [customCategories, setCustomCategories] = useState<ForumCustomCategory[]>([]);
 
   const [showCreateCategory, setShowCreateCategory] = useState(false);
   const [categoryForm, setCategoryForm] = useState({
@@ -84,25 +108,38 @@ const ForumView: React.FC = () => {
   const userRole = user?.role || 'azubi';
   const isAdmin = userRole === 'admin' || !!(user as Record<string, unknown>)?.isOwner;
 
-  const loadCategories = useCallback(async () => {
+  const canReadCategory = (cat: ForumCategory): boolean => {
+    if (isAdmin) return true;
+    if (cat.canRead.includes('all')) return true;
+    return cat.canRead.includes(userRole);
+  };
+
+  const canPostInCategory = (cat: ForumCategory): boolean => {
+    if (isAdmin) return true;
+    if (cat.canPost.includes('all')) return true;
+    return cat.canPost.includes(userRole);
+  };
+
+  const visibleBuiltIns = FORUM_CATEGORIES.filter(canReadCategory);
+
+  const loadCategoryData = useCallback(async () => {
     try {
-      const list = await loadForumCategories();
-      setCategories(list);
-      setActiveCategory((prev) => (prev ? list.find((entry) => entry.slug === prev.slug) || prev : prev));
-    } catch (error: unknown) {
+      const { counts, customCategories: customs } = await loadForumCategoryData();
+      setCategoryCounts(counts);
+      setCustomCategories(customs);
+    } catch (error) {
       console.error('Forum categories error:', error);
-      showToast?.('Kategorien konnten nicht geladen werden.', 'error');
     }
-  }, [showToast]);
+  }, []);
 
   useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
+    loadCategoryData();
+  }, [loadCategoryData, view]);
 
-  const loadPosts = async (categoryId: string) => {
+  const loadPostsForCategory = async (slug: string) => {
     setLoading(true);
     try {
-      setPosts(await loadForumPosts(categoryId));
+      setPosts(await loadForumPosts(slug));
     } catch (error: unknown) {
       showToast?.('Fehler beim Laden: ' + (error as Error).message, 'error');
     }
@@ -123,9 +160,21 @@ const ForumView: React.FC = () => {
     setLoading(false);
   };
 
-  const openCategory = (cat: ForumCategory) => {
-    setActiveCategory(cat);
-    loadPosts(cat.slug);
+  const activeSlug = (cat: CategoryEntry) => (cat.kind === 'custom' ? cat.slug : cat.id);
+  const activeLabel = (cat: CategoryEntry) => (cat.kind === 'custom' ? cat.name : cat.label);
+  const activeIcon = (cat: CategoryEntry) => cat.icon;
+  const activeCanPost = (cat: CategoryEntry) =>
+    cat.kind === 'custom' ? true : canPostInCategory(cat);
+
+  const openBuiltIn = (cat: ForumCategory) => {
+    setActiveCategory({ ...cat, kind: 'builtin' });
+    loadPostsForCategory(cat.id);
+    setView('list');
+  };
+
+  const openCustom = (cat: ForumCustomCategory) => {
+    setActiveCategory({ ...cat, kind: 'custom' });
+    loadPostsForCategory(cat.slug);
     setView('list');
   };
 
@@ -141,18 +190,15 @@ const ForumView: React.FC = () => {
       return;
     }
     if (!activeCategory) return;
+    const slug = activeSlug(activeCategory);
     try {
-      await createForumPost({
-        category: activeCategory.slug,
-        title: newTitle.trim(),
-        content: newContent.trim()
-      });
+      await createForumPost({ category: slug, title: newTitle.trim(), content: newContent.trim() });
       showToast?.('Beitrag erstellt!', 'success');
       setNewTitle('');
       setNewContent('');
       setView('list');
-      loadCategories();
-      loadPosts(activeCategory.slug);
+      loadCategoryData();
+      loadPostsForCategory(slug);
     } catch (error: unknown) {
       showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
@@ -179,12 +225,12 @@ const ForumView: React.FC = () => {
     try {
       await deleteForumPost(postId);
       showToast?.('Beitrag gelöscht', 'success');
-      loadCategories();
+      loadCategoryData();
       if (view === 'thread') {
         setView('list');
       }
       if (activeCategory) {
-        loadPosts(activeCategory.slug);
+        loadPostsForCategory(activeSlug(activeCategory));
       }
     } catch (error: unknown) {
       showToast?.('Fehler: ' + (error as Error).message, 'error');
@@ -208,7 +254,7 @@ const ForumView: React.FC = () => {
   const togglePin = async (postId: string) => {
     try {
       await toggleForumPostPin(postId);
-      if (activeCategory) loadPosts(activeCategory.slug);
+      if (activeCategory) loadPostsForCategory(activeSlug(activeCategory));
     } catch (error: unknown) {
       showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
@@ -220,7 +266,7 @@ const ForumView: React.FC = () => {
       if (view === 'thread') {
         setActivePost((prev) => (prev ? { ...prev, locked: !currentLocked } : prev));
       }
-      if (activeCategory) loadPosts(activeCategory.slug);
+      if (activeCategory) loadPostsForCategory(activeSlug(activeCategory));
     } catch (error: unknown) {
       showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
@@ -254,7 +300,7 @@ const ForumView: React.FC = () => {
       });
       showToast?.('Kategorie angelegt.', 'success');
       resetCategoryForm();
-      loadCategories();
+      loadCategoryData();
     } catch (error: unknown) {
       showToast?.('Fehler: ' + (error as Error).message, 'error');
     } finally {
@@ -262,13 +308,12 @@ const ForumView: React.FC = () => {
     }
   };
 
-  const handleDeleteCategory = async (cat: ForumCategory) => {
-    if (!cat.customId) return;
+  const handleDeleteCategory = async (cat: ForumCustomCategory) => {
     if (!confirm(`Kategorie „${cat.name}" löschen?`)) return;
     try {
       await deleteForumCategory(cat.customId);
       showToast?.('Kategorie gelöscht.', 'success');
-      loadCategories();
+      loadCategoryData();
     } catch (error: unknown) {
       showToast?.('Fehler: ' + (error as Error).message, 'error');
     }
@@ -300,7 +345,7 @@ const ForumView: React.FC = () => {
     }
   };
 
-  const canDelete = (itemUserId: string): boolean => {
+  const canDeleteItem = (itemUserId: string): boolean => {
     return user!.id === itemUserId || !!isAdmin;
   };
 
@@ -313,51 +358,54 @@ const ForumView: React.FC = () => {
           <p className="opacity-90">Austausch, Ideen & Neuigkeiten</p>
         </div>
 
-        {isAdmin && (
-          <div className="flex justify-end">
-            <button
-              onClick={() => setShowCreateCategory(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium"
-            >
-              <FolderPlus size={16} />
-              Neue Kategorie
-            </button>
-          </div>
-        )}
-
         <div className="grid gap-3">
-          {categories.map((cat) => (
-            <div
-              key={cat.slug}
-              className="glass-card glass-card-hover rounded-2xl p-5 flex items-center justify-between group"
+          {visibleBuiltIns.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => openBuiltIn(cat)}
+              className="glass-card glass-card-hover rounded-2xl p-5 text-left flex items-center justify-between group"
             >
-              <button onClick={() => openCategory(cat)} className="flex items-center gap-4 flex-1 text-left">
-                <div
-                  className={`w-12 h-12 ${colorClass(cat.colorKey)} rounded-xl flex items-center justify-center text-2xl`}
-                >
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 ${cat.color} rounded-xl flex items-center justify-center text-2xl`}>
                   {cat.icon}
                 </div>
                 <div>
-                  <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                    {cat.name}
-                    {cat.custom && (
-                      <span className={`ml-2 text-xs font-normal px-2 py-0.5 rounded-full ${darkMode ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500'}`}>
-                        Eigene
-                      </span>
-                    )}
-                  </h3>
+                  <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>{cat.label}</h3>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{cat.description}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {categoryCounts[cat.id] > 0 && (
+                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${darkMode ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'}`}>
+                    {categoryCounts[cat.id]}
+                  </span>
+                )}
+                <ChevronRight className={`${darkMode ? 'text-gray-400' : 'text-gray-400'} group-hover:translate-x-1 transition-transform`} size={20} />
+              </div>
+            </button>
+          ))}
+
+          {customCategories.map((cat) => (
+            <div
+              key={cat.customId}
+              className="glass-card glass-card-hover rounded-2xl p-5 flex items-center justify-between group"
+            >
+              <button onClick={() => openCustom(cat)} className="flex items-center gap-4 flex-1 text-left">
+                <div className={`w-12 h-12 ${customColorClass(cat.colorKey)} rounded-xl flex items-center justify-center text-2xl`}>
+                  {cat.icon}
+                </div>
+                <div>
+                  <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>{cat.name}</h3>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{cat.description || 'Eigene Kategorie'}</p>
                 </div>
               </button>
               <div className="flex items-center gap-2">
                 {cat.count > 0 && (
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-bold ${darkMode ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'}`}
-                  >
+                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${darkMode ? 'bg-white/10 text-gray-200' : 'bg-gray-100 text-gray-600'}`}>
                     {cat.count}
                   </span>
                 )}
-                {cat.canDelete && cat.customId && (
+                {cat.canDelete && (
                   <button
                     onClick={() => handleDeleteCategory(cat)}
                     className={`p-2 rounded-lg ${darkMode ? 'bg-white/10 text-red-400 hover:bg-white/15' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}
@@ -367,8 +415,8 @@ const ForumView: React.FC = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => openCategory(cat)}
-                  className={`p-1 ${darkMode ? 'text-gray-400' : 'text-gray-400'} group-hover:translate-x-1 transition-transform`}
+                  onClick={() => openCustom(cat)}
+                  className={`${darkMode ? 'text-gray-400' : 'text-gray-400'} group-hover:translate-x-1 transition-transform`}
                   title="Öffnen"
                 >
                   <ChevronRight size={20} />
@@ -377,6 +425,18 @@ const ForumView: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {isAdmin && (
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={() => setShowCreateCategory(true)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${darkMode ? 'bg-white/10 hover:bg-white/15 text-gray-200' : 'bg-white/70 hover:bg-white text-gray-700 border border-gray-200'}`}
+            >
+              <FolderPlus size={16} />
+              Neue Kategorie anlegen
+            </button>
+          </div>
+        )}
 
         {showCreateCategory && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -430,7 +490,7 @@ const ForumView: React.FC = () => {
                       onChange={(e) => setCategoryForm((prev) => ({ ...prev, colorKey: e.target.value }))}
                       className={`w-full px-3 py-2 rounded-lg border text-sm ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-300'}`}
                     >
-                      {CATEGORY_COLOR_OPTIONS.map((option) => (
+                      {CUSTOM_COLOR_OPTIONS.map((option) => (
                         <option key={option.key} value={option.key}>
                           {option.label}
                         </option>
@@ -441,7 +501,7 @@ const ForumView: React.FC = () => {
 
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-medium">Vorschau:</span>
-                  <div className={`w-10 h-10 ${colorClass(categoryForm.colorKey)} rounded-xl flex items-center justify-center text-xl`}>
+                  <div className={`w-10 h-10 ${customColorClass(categoryForm.colorKey)} rounded-xl flex items-center justify-center text-xl`}>
                     {categoryForm.icon || '💬'}
                   </div>
                 </div>
@@ -480,7 +540,7 @@ const ForumView: React.FC = () => {
   }
 
   // ─── POST LIST VIEW ───
-  if (view === 'list') {
+  if (view === 'list' && activeCategory) {
     return (
       <div className="space-y-4">
         <div className="glass-card rounded-2xl p-4">
@@ -493,12 +553,10 @@ const ForumView: React.FC = () => {
               Zurück
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-2xl">{activeCategory?.icon}</span>
-              <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                {activeCategory?.name}
-              </h3>
+              <span className="text-2xl">{activeIcon(activeCategory)}</span>
+              <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-800'}`}>{activeLabel(activeCategory)}</h3>
             </div>
-            {activeCategory?.canPost && (
+            {activeCanPost(activeCategory) && (
               <button
                 onClick={() => setView('new')}
                 className="flex items-center gap-1 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium"
@@ -515,7 +573,7 @@ const ForumView: React.FC = () => {
           <div className={`text-center py-12 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             <MessageSquare size={48} className="mx-auto mb-3 opacity-30" />
             <p>Noch keine Beiträge in dieser Kategorie.</p>
-            {activeCategory?.canPost && (
+            {activeCanPost(activeCategory) && (
               <button
                 onClick={() => setView('new')}
                 className="mt-3 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-medium"
@@ -537,9 +595,7 @@ const ForumView: React.FC = () => {
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       {post.pinned && <Pin size={14} className="text-amber-500" />}
                       {post.locked && <Lock size={14} className="text-red-400" />}
-                      <h4 className={`font-bold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                        {post.title}
-                      </h4>
+                      <h4 className={`font-bold truncate ${darkMode ? 'text-white' : 'text-gray-800'}`}>{post.title}</h4>
                     </div>
                     <p className={`text-sm truncate mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {post.content}
@@ -559,9 +615,7 @@ const ForumView: React.FC = () => {
                   <div className="flex flex-col items-center gap-1 ml-3">
                     <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${darkMode ? 'bg-white/10' : 'bg-gray-100'}`}>
                       <MessageSquare size={14} className={darkMode ? 'text-gray-300' : 'text-gray-500'} />
-                      <span className={`text-sm font-bold ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}>
-                        {post.reply_count || 0}
-                      </span>
+                      <span className={`text-sm font-bold ${darkMode ? 'text-gray-200' : 'text-gray-600'}`}>{post.reply_count || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -574,7 +628,7 @@ const ForumView: React.FC = () => {
   }
 
   // ─── NEW POST VIEW ───
-  if (view === 'new') {
+  if (view === 'new' && activeCategory) {
     return (
       <div className="space-y-4">
         <div className="glass-card rounded-2xl p-4">
@@ -583,13 +637,13 @@ const ForumView: React.FC = () => {
             className={`flex items-center gap-2 ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
           >
             <ArrowLeft size={20} />
-            Zurück zu {activeCategory?.name}
+            Zurück zu {activeLabel(activeCategory)}
           </button>
         </div>
 
         <div className="glass-card rounded-2xl p-6 space-y-4">
           <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            Neues Thema in „{activeCategory?.name}"
+            Neues Thema in „{activeLabel(activeCategory)}"
           </h3>
 
           <input
@@ -617,11 +671,7 @@ const ForumView: React.FC = () => {
               Beitrag erstellen
             </button>
             <button
-              onClick={() => {
-                setView('list');
-                setNewTitle('');
-                setNewContent('');
-              }}
+              onClick={() => { setView('list'); setNewTitle(''); setNewContent(''); }}
               className={`px-6 py-3 rounded-lg font-medium ${darkMode ? 'bg-white/10 hover:bg-white/15 text-gray-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
             >
               Abbrechen
@@ -633,19 +683,16 @@ const ForumView: React.FC = () => {
   }
 
   // ─── THREAD VIEW ───
-  if (view === 'thread' && activePost) {
+  if (view === 'thread' && activePost && activeCategory) {
     return (
       <div className="space-y-4">
         <div className="glass-card rounded-2xl p-4">
           <button
-            onClick={() => {
-              setView('list');
-              if (activeCategory) loadPosts(activeCategory.slug);
-            }}
+            onClick={() => { setView('list'); loadPostsForCategory(activeSlug(activeCategory)); }}
             className={`flex items-center gap-2 ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
           >
             <ArrowLeft size={20} />
-            Zurück zu {activeCategory?.name}
+            Zurück zu {activeLabel(activeCategory)}
           </button>
         </div>
 
@@ -656,9 +703,7 @@ const ForumView: React.FC = () => {
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 {activePost.pinned && <Pin size={14} className="text-amber-500" />}
                 {activePost.locked && <Lock size={14} className="text-red-400" />}
-                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  {activePost.title}
-                </h3>
+                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{activePost.title}</h3>
               </div>
               <div className={`flex items-center gap-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 <span>{activePost.user_name}</span>
@@ -691,7 +736,7 @@ const ForumView: React.FC = () => {
                 </button>
               </div>
             )}
-            {!isAdmin && canDelete(activePost.user_id || '') && (
+            {!isAdmin && canDeleteItem(activePost.user_id || '') && (
               <button
                 onClick={() => handleDeletePost(activePost.id)}
                 className={`p-2 rounded-lg ${darkMode ? 'bg-white/10 text-red-400' : 'bg-red-50 text-red-500'} hover:opacity-80`}
@@ -722,7 +767,7 @@ const ForumView: React.FC = () => {
                     {getRoleBadge(reply.user_role)}
                     <span>{formatDate(reply.created_at || '')}</span>
                   </div>
-                  {canDelete(reply.user_id || '') && (
+                  {canDeleteItem(reply.user_id || '') && (
                     <button
                       onClick={() => handleDeleteReply(reply.id)}
                       className={`p-1 rounded ${darkMode ? 'text-red-400 hover:bg-white/10' : 'text-red-400 hover:bg-red-50'}`}

@@ -2,18 +2,14 @@ import { secureForumApi } from '../secureApi';
 
 type BackendRole = 'ADMIN' | 'AUSBILDER' | 'AZUBI' | 'RETTUNGSSCHWIMMER_AZUBI' | string;
 
-export type ForumCategory = {
-  id: string;
+export type ForumCustomCategory = {
   slug: string;
-  customId: string | null;
+  customId: string;
   name: string;
   icon: string;
   colorKey: string;
   description: string;
   order: number;
-  custom: boolean;
-  canRead: boolean;
-  canPost: boolean;
   canDelete: boolean;
   count: number;
   createdBy: { id: string; displayName: string } | null;
@@ -78,29 +74,41 @@ const mapReply = (reply: any): ForumReply => ({
   created_at: reply?.createdAt || reply?.created_at || null
 });
 
-const mapCategory = (entry: any): ForumCategory => ({
-  id: entry?.id || entry?.slug,
-  slug: entry?.slug || entry?.category,
-  customId: entry?.customId || null,
-  name: entry?.name || entry?.slug || '',
-  icon: entry?.icon || '💬',
-  colorKey: entry?.colorKey || 'slate',
-  description: entry?.description || '',
-  order: Number(entry?.order ?? 100),
-  custom: Boolean(entry?.custom),
-  canRead: Boolean(entry?.canRead ?? true),
-  canPost: Boolean(entry?.canPost ?? true),
-  canDelete: Boolean(entry?.canDelete ?? false),
-  count: Number(entry?.count ?? 0),
-  createdBy: entry?.createdBy
-    ? { id: entry.createdBy.id, displayName: entry.createdBy.displayName }
-    : null,
-  createdAt: entry?.createdAt || null
-});
+const mapCustomCategory = (entry: any): ForumCustomCategory | null => {
+  if (!entry?.custom || !entry?.customId) return null;
+  return {
+    slug: entry.slug || entry.category,
+    customId: entry.customId,
+    name: entry.name || entry.slug || '',
+    icon: entry.icon || '💬',
+    colorKey: entry.colorKey || 'slate',
+    description: entry.description || '',
+    order: Number(entry.order ?? 100),
+    canDelete: Boolean(entry.canDelete),
+    count: Number(entry.count ?? 0),
+    createdBy: entry.createdBy
+      ? { id: entry.createdBy.id, displayName: entry.createdBy.displayName }
+      : null,
+    createdAt: entry.createdAt || null
+  };
+};
 
-export const loadForumCategories = async (): Promise<ForumCategory[]> => {
-  const data = await secureForumApi.listCategories();
-  return ((data as any[]) || []).map(mapCategory);
+export const loadForumCategoryData = async (): Promise<{
+  counts: Record<string, number>;
+  customCategories: ForumCustomCategory[];
+}> => {
+  const data = (await secureForumApi.listCategories()) as any[];
+  const counts: Record<string, number> = {};
+  const customCategories: ForumCustomCategory[] = [];
+  (data || []).forEach((entry) => {
+    const slug = entry?.slug || entry?.category;
+    if (slug) {
+      counts[slug] = Number(entry?.count ?? 0);
+    }
+    const custom = mapCustomCategory(entry);
+    if (custom) customCategories.push(custom);
+  });
+  return { counts, customCategories };
 };
 
 export const createForumCategory = async (payload: {
@@ -109,9 +117,9 @@ export const createForumCategory = async (payload: {
   icon: string;
   colorKey?: string;
   description?: string;
-}): Promise<ForumCategory> => {
+}): Promise<ForumCustomCategory | null> => {
   const result = await secureForumApi.createCategory(payload);
-  return mapCategory(result);
+  return mapCustomCategory(result);
 };
 
 export const deleteForumCategory = async (customId: string): Promise<{ id: string; slug?: string }> => {
