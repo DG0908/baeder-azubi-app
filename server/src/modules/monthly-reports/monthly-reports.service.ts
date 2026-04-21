@@ -98,80 +98,128 @@ export class MonthlyReportsService {
       throw new ForbiddenException('Only trainers may assign monthly reports.');
     }
 
-    const azubi = await this.prisma.user.findFirst({
-      where: {
-        id: dto.azubiId,
-        organizationId: actor.organizationId!,
-        status: AccountStatus.APPROVED,
-        isDeleted: false
-      },
-      select: { id: true, displayName: true }
-    });
-
-    if (!azubi) {
-      throw new BadRequestException('Azubi nicht in deiner Organisation gefunden.');
-    }
-
     const activity = this.sanitizeText(dto.activity, 'activity', 200, 2);
     const activityDescription = dto.activityDescription
       ? this.sanitizeText(dto.activityDescription, 'activityDescription', 2000, 0)
       : null;
 
-    const existing = await this.prisma.monthlyReport.findUnique({
-      where: {
-        organizationId_azubiId_year_month: {
-          organizationId: actor.organizationId!,
-          azubiId: azubi.id,
-          year: dto.year,
-          month: dto.month
-        }
-      },
-      select: monthlyReportSelect
-    });
-
-    if (existing) {
-      throw new ConflictException('Fuer diesen Monat wurde bereits ein Monatsbericht angelegt.');
+    const targets = await this.resolveAssignmentTargets(actor, dto);
+    if (targets.length === 0) {
+      throw new BadRequestException('Keine Azubis ausgewaehlt.');
     }
 
-    const created = await this.prisma.monthlyReport.create({
-      data: {
-        organizationId: actor.organizationId!,
-        azubiId: azubi.id,
-        assignedById: actor.id,
-        year: dto.year,
-        month: dto.month,
-        activity,
-        activityDescription,
-        status: MonthlyReportStatus.ASSIGNED
-      },
-      select: monthlyReportSelect
-    });
+    const created: MonthlyReportRecord[] = [];
+    const skipped: { azubiId: string; azubiName: string; reason: string }[] = [];
 
-    await this.notificationsService.createForUser(azubi.id, {
-      title: 'Neuer Monatsbericht zugewiesen',
-      message: `${actor.displayName} hat dir einen Monatsbericht fuer ${this.formatMonthLabel(created.year, created.month)} zur Taetigkeit "${created.activity}" zugewiesen.`,
-      type: NotificationType.INFO,
-      metadata: {
-        eventType: 'MONTHLY_REPORT_ASSIGNED',
-        monthlyReportId: created.id
+    for (const target of targets) {
+      const existing = await this.prisma.monthlyReport.findUnique({
+        where: {
+          organizationId_azubiId_year_month: {
+            organizationId: actor.organizationId!,
+            azubiId: target.id,
+            year: dto.year,
+            month: dto.month
+          }
+        },
+        select: { id: true }
+      });
+
+      if (existing) {
+        skipped.push({
+          azubiId: target.id,
+          azubiName: target.displayName,
+          reason: 'Fuer diesen Monat bereits vorhanden.'
+        });
+        continue;
       }
+
+      const entry = await this.prisma.monthlyReport.create({
+        data: {
+          organizationId: actor.organizationId!,
+          azubiId: target.id,
+          assignedById: actor.id,
+          year: dto.year,
+          month: dto.month,
+          activity,
+          activityDescription,
+          status: MonthlyReportStatus.ASSIGNED
+        },
+        select: monthlyReportSelect
+      });
+
+      await this.notificationsService.createForUser(target.id, {
+        title: 'Neuer Monatsbericht zugewiesen',
+        message: `${actor.displayName} hat dir einen Monatsbericht fuer ${this.formatMonthLabel(entry.year, entry.month)} zur Taetigkeit "${entry.activity}" zugewiesen.`,
+        type: NotificationType.INFO,
+        metadata: {
+          eventType: 'MONTHLY_REPORT_ASSIGNED',
+          monthlyReportId: entry.id
+        }
+      });
+
+      await this.auditLogService.writeForUser(
+        actor,
+        'monthly_report.assigned',
+        'MonthlyReport',
+        entry.id,
+        {
+          azubiId: target.id,
+          year: entry.year,
+          month: entry.month,
+          activity,
+          bulk: targets.length > 1
+        },
+        request
+      );
+
+      created.push(entry);
+    }
+
+    if (created.length === 0) {
+      throw new ConflictException('Fuer alle ausgewaehlten Azubis existiert bereits ein Monatsbericht in diesem Monat.');
+    }
+
+    return {
+      created: created.map((entry) => this.toPayload(entry)),
+      skipped
+    };
+  }
+
+  private async resolveAssignmentTargets(actor: AuthenticatedUser, dto: AssignMonthlyReportDto) {
+    if (dto.assignToAll) {
+      return this.prisma.user.findMany({
+        where: {
+          organizationId: actor.organizationId!,
+          status: AccountStatus.APPROVED,
+          isDeleted: false,
+          role: { in: [AppRole.AZUBI, AppRole.RETTUNGSSCHWIMMER_AZUBI] }
+        },
+        select: { id: true, displayName: true },
+        orderBy: { displayName: 'asc' }
+      });
+    }
+
+    const ids = Array.isArray(dto.azubiIds) ? [...new Set(dto.azubiIds.filter(Boolean))] : [];
+    if (ids.length === 0) {
+      throw new BadRequestException('Bitte mindestens einen Azubi auswaehlen.');
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        id: { in: ids },
+        organizationId: actor.organizationId!,
+        status: AccountStatus.APPROVED,
+        isDeleted: false
+      },
+      select: { id: true, displayName: true },
+      orderBy: { displayName: 'asc' }
     });
 
-    await this.auditLogService.writeForUser(
-      actor,
-      'monthly_report.assigned',
-      'MonthlyReport',
-      created.id,
-      {
-        azubiId: azubi.id,
-        year: created.year,
-        month: created.month,
-        activity
-      },
-      request
-    );
+    if (users.length !== ids.length) {
+      throw new BadRequestException('Mindestens ein ausgewaehlter Azubi ist nicht (mehr) Teil deiner Organisation.');
+    }
 
-    return this.toPayload(created);
+    return users;
   }
 
   async submit(actor: AuthenticatedUser, reportId: string, dto: SubmitMonthlyReportDto, request: Request) {

@@ -59,15 +59,28 @@ export const listMonthlyReports = async (filter: MonthlyReportListFilter = {}): 
   return (data || []).map(toReport);
 };
 
+export type MonthlyReportAssignResult = {
+  created: MonthlyReport[];
+  skipped: { azubiId: string; azubiName: string; reason: string }[];
+};
+
 export const assignMonthlyReport = async (payload: {
-  azubiId: string;
+  azubiIds?: string[];
+  assignToAll?: boolean;
   year: number;
   month: number;
   activity: string;
   activityDescription?: string;
-}): Promise<MonthlyReport> => {
-  const result = await secureMonthlyReportsApi.assign(payload as Record<string, unknown>);
-  return toReport(result);
+}): Promise<MonthlyReportAssignResult> => {
+  const result = (await secureMonthlyReportsApi.assign(payload as Record<string, unknown>)) as any;
+  return {
+    created: ((result?.created as any[]) || []).map(toReport),
+    skipped: ((result?.skipped as any[]) || []).map((entry) => ({
+      azubiId: entry?.azubiId || '',
+      azubiName: entry?.azubiName || '',
+      reason: entry?.reason || ''
+    }))
+  };
 };
 
 export const submitMonthlyReport = async (reportId: string, content: string): Promise<MonthlyReport> => {

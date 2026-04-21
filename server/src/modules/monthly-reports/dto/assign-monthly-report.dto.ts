@@ -1,8 +1,15 @@
-import { IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 
 export class AssignMonthlyReportDto {
-  @IsString()
-  azubiId!: string;
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(500)
+  @IsString({ each: true })
+  azubiIds?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  assignToAll?: boolean;
 
   @IsInt()
   @Min(2000)
