@@ -938,6 +938,18 @@ const QuizView = ({
               </div>
 
               <div className={`rounded-2xl p-6 border ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white/70 border-gray-200'}`}>
+                {currentQuestion.level && (
+                  <div className="flex justify-center mb-2">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${
+                      currentQuestion.level === 'A1' ? 'bg-emerald-500 text-white'
+                      : currentQuestion.level === 'A2' ? 'bg-teal-500 text-white'
+                      : currentQuestion.level === 'B1' ? 'bg-blue-500 text-white'
+                      : 'bg-slate-500 text-white'
+                    }`}>
+                      {currentQuestion.level}
+                    </span>
+                  </div>
+                )}
                 <p className={`text-xl font-bold text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   {questionIsWhoAmI ? (currentQuestion.prompt || 'Was bin ich?') : currentQuestion.q}
                 </p>
