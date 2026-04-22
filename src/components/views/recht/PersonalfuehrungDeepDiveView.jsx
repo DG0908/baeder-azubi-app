@@ -75,7 +75,7 @@ export default function PersonalfuehrungDeepDiveView({ darkMode }) {
               </div>
               <div className="flex justify-center"><div className="w-0.5 h-4 bg-gray-400" /></div>
               <div className="grid grid-cols-3 gap-2">
-                {['🏊 FaBB (Aufsicht)', '💧 FaBB (Technik)', '🎫 Kasse / Service'].map((item, i) => (
+                {['🏊 FAB (Aufsicht)', '💧 FAB (Technik)', '🎫 Kasse / Service'].map((item, i) => (
                   <div key={i} className="p-2 rounded-xl bg-emerald-100 border border-emerald-400 text-center">
                     <p className="text-xs font-semibold text-emerald-800">{item}</p>
                   </div>

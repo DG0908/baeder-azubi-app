@@ -7,7 +7,7 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was sind Gefahrstoffe?',
     intro:
-      'Im Schwimmbad arbeiten wir taeglich mit Stoffen, die gefaehrlich sein koennen: Chlor, Saeuren, Laugen, Flockungsmittel, Reinigungsmittel. Diese Stoffe heissen Gefahrstoffe. Sie koennen brennen, explodieren, giftig sein, aetzen oder die Umwelt schaedigen. Die Gefahrstoffverordnung (GefStoffV) und das GHS-System regeln, wie diese Stoffe gekennzeichnet, gelagert und gehandhabt werden muessen. Als FaBB arbeitest du regelmaessig mit ihnen — du musst die Regeln kennen und einhalten.',
+      'Im Schwimmbad arbeiten wir taeglich mit Stoffen, die gefaehrlich sein koennen: Chlor, Saeuren, Laugen, Flockungsmittel, Reinigungsmittel. Diese Stoffe heissen Gefahrstoffe. Sie koennen brennen, explodieren, giftig sein, aetzen oder die Umwelt schaedigen. Die Gefahrstoffverordnung (GefStoffV) und das GHS-System regeln, wie diese Stoffe gekennzeichnet, gelagert und gehandhabt werden muessen. Als FAB arbeitest du regelmaessig mit ihnen — du musst die Regeln kennen und einhalten.',
     motto: 'Gefahrstoffe sind keine Ausnahme im Bad — sie sind der Alltag. Kenne sie genau.',
     rules: [
       'Gefahrstoffe muessen nach GHS (Global Harmonisiertes System) gekennzeichnet sein — mit Piktogrammen, H- und P-Saetzen.',

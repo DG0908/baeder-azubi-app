@@ -58,7 +58,7 @@ export default function StrafrechtBadVertieftDeepDiveView({ darkMode }) {
           <Section title="Körperverletzungsdelikte im Überblick">
             <p className="text-sm text-gray-700 mb-3">
               Im Schwimmbad können Körperverletzungen durch Badegäste untereinander, aber auch
-              durch mangelnde Aufsicht entstehen. Als FaBB musst du die Stufen kennen:
+              durch mangelnde Aufsicht entstehen. Als FAB musst du die Stufen kennen:
             </p>
             <ParagraphCard
               para="§ 223 StGB" titel="Einfache Körperverletzung" color="orange"
@@ -82,13 +82,13 @@ export default function StrafrechtBadVertieftDeepDiveView({ darkMode }) {
               para="§ 229 StGB" titel="Fahrlässige Körperverletzung" color="amber"
               tatbestand="Unbeabsichtigte Verletzung durch Sorgfaltspflichtverletzung"
               strafe="Freiheitsstrafe bis 3 Jahre oder Geldstrafe"
-              bad="Rutschiger Boden nicht gesichert → Gast stürzt. FaBB Gefahr nicht beseitigt."
+              bad="Rutschiger Boden nicht gesichert → Gast stürzt. FAB Gefahr nicht beseitigt."
             />
             <ParagraphCard
               para="§ 225 StGB" titel="Misshandlung von Schutzbefohlenen" color="red"
               tatbestand="Quälen oder rohes Misshandeln von Personen unter Fürsorge/Obhut des Täters — besonders Kinder"
               strafe="Freiheitsstrafe 6 Monate bis 10 Jahre"
-              bad="FaBB in Kursen mit Kindern — Schutzbefohlenen-Verhältnis besteht!"
+              bad="FAB in Kursen mit Kindern — Schutzbefohlenen-Verhältnis besteht!"
             />
           </Section>
 
@@ -142,7 +142,7 @@ export default function StrafrechtBadVertieftDeepDiveView({ darkMode }) {
             bad="Unberechtigt ins Bad gelangen (Zaun überklettern, Drehkreuz manipulieren) — auch bei kostenlosem Bad wenn gesperrt"
           />
 
-          <Section title="Maßnahmen für FaBB" color="blue">
+          <Section title="Maßnahmen für FAB" color="blue">
             <p className="text-sm text-gray-700 mb-2">Bei Diebstahl im Bad:</p>
             {[
               'Täter ansprechen — aber NICHT körperlich festhalten (außer Jedermanns-Festnahme §127 StPO)',
@@ -266,7 +266,7 @@ export default function StrafrechtBadVertieftDeepDiveView({ darkMode }) {
             para="§ 13 StGB" titel="Begehen durch Unterlassen" color="amber"
             tatbestand="Wer rechtlich verpflichtet ist, einen Erfolg abzuwenden (Garantenstellung), und es nicht tut, haftet wie ein aktiv Handelnder"
             strafe="Je nach verwirklichtem Delikt"
-            bad="FaBB sieht Ertrinkenden und greift nicht ein — haftet wie jemand der aktiv handelt"
+            bad="FAB sieht Ertrinkenden und greift nicht ein — haftet wie jemand der aktiv handelt"
           />
 
           <Section title="Zusammenfassung: Typische Delikte im Bad" color="blue">
@@ -281,14 +281,14 @@ export default function StrafrechtBadVertieftDeepDiveView({ darkMode }) {
                 </thead>
                 <tbody>
                   {[
-                    { para: '§ 223', delikt: 'Körperverletzung', wer: 'Gast gegenüber Gast / FaBB' },
+                    { para: '§ 223', delikt: 'Körperverletzung', wer: 'Gast gegenüber Gast / FAB' },
                     { para: '§ 242', delikt: 'Diebstahl', wer: 'Gast in Umkleiden' },
                     { para: '§ 201a', delikt: 'Bildaufnahmen', wer: 'Voyeure, Handy-Nutzer' },
                     { para: '§ 123', delikt: 'Hausfriedensbruch', wer: 'Personen mit Hausverbot' },
                     { para: '§ 265a', delikt: 'Erschleichen', wer: 'Schwarzfahrer ins Bad' },
                     { para: '§ 303', delikt: 'Sachbeschädigung', wer: 'Vandalen' },
-                    { para: '§ 323c', delikt: 'Unterlassene Hilfe', wer: 'FaBB / jeder!' },
-                    { para: '§ 13', delikt: 'Unterlassen (Garantenst.)', wer: 'FaBB als Aufsichtsperson' },
+                    { para: '§ 323c', delikt: 'Unterlassene Hilfe', wer: 'FAB / jeder!' },
+                    { para: '§ 13', delikt: 'Unterlassen (Garantenst.)', wer: 'FAB als Aufsichtsperson' },
                   ].map((row, i) => (
                     <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-blue-50'}>
                       <td className="px-3 py-2 font-mono font-bold text-blue-800">{row.para}</td>

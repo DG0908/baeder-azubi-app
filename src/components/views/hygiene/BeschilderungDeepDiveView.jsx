@@ -77,7 +77,7 @@ const TABS = {
     id: 'grundlagen',
     chip: 'Grundlagen',
     title: 'Warum sind Schilder so wichtig?',
-    intro: 'Im Schwimmbad kommen täglich viele Menschen zusammen — Kinder, Erwachsene, Nichtschwimmer, ältere Gäste. Schilder und Kennzeichnungen sind die erste Schutzlinie. Die rechtliche Grundlage bilden die ASR A1.3 (Technische Regeln für Arbeitsstätten), DIN EN ISO 7010 (internationale Sicherheitszeichen) und die DGUV Vorschrift 1 (Grundsätze der Prävention). Als FaBB musst du alle Schilder kennen, ihre Bedeutung erklären können und deren ordnungsgemäßen Zustand sicherstellen.',
+    intro: 'Im Schwimmbad kommen täglich viele Menschen zusammen — Kinder, Erwachsene, Nichtschwimmer, ältere Gäste. Schilder und Kennzeichnungen sind die erste Schutzlinie. Die rechtliche Grundlage bilden die ASR A1.3 (Technische Regeln für Arbeitsstätten), DIN EN ISO 7010 (internationale Sicherheitszeichen) und die DGUV Vorschrift 1 (Grundsätze der Prävention). Als FAB musst du alle Schilder kennen, ihre Bedeutung erklären können und deren ordnungsgemäßen Zustand sicherstellen.',
     motto: 'Ein fehlendes Schild kann ein Unfall sein, der nicht passiert wäre.',
     rules: [
       'Rechtsgrundlage: ASR A1.3 "Sicherheits- und Gesundheitsschutzkennzeichnung" + DIN EN ISO 7010 + DGUV Vorschrift 1.',
@@ -134,7 +134,7 @@ const TABS = {
     id: 'gefahrstoffkennzeichnung',
     chip: 'GHS-Symbole',
     title: 'GHS-Piktogramme & Gefahrenkennzeichnung',
-    intro: 'Im Schwimmbad arbeiten wir mit Chemikalien wie Chlor, Säuren, Laugen und Flockungsmitteln. Diese Stoffe müssen nach dem GHS-System (Global Harmonisiertes System) gekennzeichnet sein. Die Piktogramme warnen vor den spezifischen Gefahren. Als FaBB musst du sie auf Anhieb erkennen.',
+    intro: 'Im Schwimmbad arbeiten wir mit Chemikalien wie Chlor, Säuren, Laugen und Flockungsmitteln. Diese Stoffe müssen nach dem GHS-System (Global Harmonisiertes System) gekennzeichnet sein. Die Piktogramme warnen vor den spezifischen Gefahren. Als FAB musst du sie auf Anhieb erkennen.',
     motto: 'GHS-Piktogramme sind international — sie gelten überall auf der Welt.',
     rules: [
       'GHS = "Globally Harmonised System" — weltweit einheitliche Gefahrstoffkennzeichnung.',
@@ -402,7 +402,7 @@ function SignLexikon({ darkMode }) {
               <p className={`text-sm ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{selected.meaning}</p>
             </div>
             <div className={`p-3 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-white'}`}>
-              <p className={`text-xs font-semibold mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>✅ Was tust du als FaBB?</p>
+              <p className={`text-xs font-semibold mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>✅ Was tust du als FAB?</p>
               <p className={`text-sm ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>{selected.action}</p>
             </div>
           </div>
@@ -417,7 +417,7 @@ function SignLexikon({ darkMode }) {
       <div className={`rounded-xl p-4 border-l-4 border-yellow-500 ${darkMode ? 'bg-slate-800' : 'bg-yellow-50'}`}>
         <h3 className="text-lg font-bold mb-1">Alle Schilder auf einen Blick</h3>
         <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-          Tippe auf ein Schild um Bedeutung, Standort und deine Aufgabe als FaBB zu sehen.
+          Tippe auf ein Schild um Bedeutung, Standort und deine Aufgabe als FAB zu sehen.
         </p>
       </div>
 

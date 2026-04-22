@@ -290,7 +290,7 @@ export default function LungeAtmungDeepDiveView({ darkMode }) {
               { titel: '🤿 Tauchen: Druckausgleich', text: 'Mit Tiefe steigt Luftdruck in Lunge → Gasvolumen komprimiert. Beim Auftauchen: Luft ausdehnen → nicht die Luft anhalten! Gefahr: Lungenüberblähung.' },
               { titel: '⚠️ Shallow Water Blackout', text: 'Hyperventilation vor dem Tauchen → CO₂ zu niedrig → kein Atemreiz → Bewusstlosigkeit ohne Vorwarnung unter Wasser. Strengstes Verbot in Bädern!' },
               { titel: '🌡️ Asthma bronchiale', text: 'Bronchospasmus durch Chlor, Kälte oder Anstrengung möglich. Notfallinhaler des Gastes kennen. Im Notfall: aufrechte Lagerung, beruhigen, 112.' },
-              { titel: '📋 FaBB-Pflicht', text: 'Atemnotfälle erkennen: blaue Lippen (Zyanose), Einziehungen, Nasenflügeln, Spreizgriff. Sofort 112 – Sauerstoff aus dem Bäder-Notfallset.' },
+              { titel: '📋 FAB-Pflicht', text: 'Atemnotfälle erkennen: blaue Lippen (Zyanose), Einziehungen, Nasenflügeln, Spreizgriff. Sofort 112 – Sauerstoff aus dem Bäder-Notfallset.' },
             ].map(({ titel, text }) => (
               <div key={titel} className={`rounded-lg p-3 mb-2 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
                 <div className={`text-xs font-semibold mb-1 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>{titel}</div>

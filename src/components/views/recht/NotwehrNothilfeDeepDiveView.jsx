@@ -160,7 +160,7 @@ export default function NotwehrNothilfeDeepDiveView({ darkMode }) {
             <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-300">
               <p className="font-semibold text-blue-800 text-sm mb-1">Beispiel im Bad:</p>
               <p className="text-xs text-blue-700">
-                FaBB bricht eine verschlossene Kabinentür auf (Sachbeschädigung §303), weil
+                FAB bricht eine verschlossene Kabinentür auf (Sachbeschädigung §303), weil
                 eine Person darin bewusstlos ist (Lebensgefahr). → Rechtfertigender Notstand!
                 Leben &gt;&gt; Tür.
               </p>
@@ -176,7 +176,7 @@ export default function NotwehrNothilfeDeepDiveView({ darkMode }) {
               <p className="text-xs text-orange-700">
                 Voraussetzung: Leibes- oder Lebensgefahr für sich, Angehörige oder nahestehende Personen —
                 keine zumutbare andere Möglichkeit. Gilt <strong>nicht</strong> für Personen mit
-                Sonderpflichten (Feuerwehr, Polizei, FaBB — sie müssen Gefahren in Kauf nehmen!).
+                Sonderpflichten (Feuerwehr, Polizei, FAB — sie müssen Gefahren in Kauf nehmen!).
               </p>
             </div>
           </Section>
@@ -195,13 +195,13 @@ export default function NotwehrNothilfeDeepDiveView({ darkMode }) {
               <p className="font-bold text-blue-800 text-sm mb-1">Jeder darf Nothilfe leisten!</p>
               <p className="text-xs text-blue-700">
                 Es muss kein besonderes Verhältnis zum Angegriffenen bestehen.
-                FaBB, Badegast, jeder der Zeuge eines Angriffs wird, darf eingreifen.
+                FAB, Badegast, jeder der Zeuge eines Angriffs wird, darf eingreifen.
               </p>
             </div>
             <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-300">
               <p className="font-bold text-emerald-800 text-sm mb-1">Beispiel im Bad:</p>
               <p className="text-xs text-emerald-700">
-                Ein Gast schlägt einen anderen. FaBB schreitet ein und schlägt den Angreifer weg.
+                Ein Gast schlägt einen anderen. FAB schreitet ein und schlägt den Angreifer weg.
                 → Nothilfe! Gerechtfertigt solange erforderlich und nicht übermäßig.
               </p>
             </div>
@@ -224,12 +224,12 @@ export default function NotwehrNothilfeDeepDiveView({ darkMode }) {
 
           <Section title="§ 323c StGB — Unterlassene Hilfeleistung" color="red">
             <p className="text-sm text-gray-700 mb-2">
-              Nicht nur FaBB — <strong>jeder</strong> ist verpflichtet, bei einem Unglücksfall Hilfe zu leisten,
+              Nicht nur FAB — <strong>jeder</strong> ist verpflichtet, bei einem Unglücksfall Hilfe zu leisten,
               wenn dies zumutbar ist:
             </p>
             {[
               'Zumutbarkeit: eigene erhebliche Gefahr oder Verletzung anderer Pflichten rechtfertigt Untätigkeit',
-              'FaBB: erhöhte Pflicht durch Garantenstellung (§13 StGB) — höhere Anforderungen',
+              'FAB: erhöhte Pflicht durch Garantenstellung (§13 StGB) — höhere Anforderungen',
               'Strafe: Freiheitsstrafe bis 1 Jahr oder Geldstrafe',
               'Auch Passanten am Beckenrand die einen Ertrinkenden sehen sind zur Hilfe verpflichtet',
             ].map((item, i) => (
@@ -246,7 +246,7 @@ export default function NotwehrNothilfeDeepDiveView({ darkMode }) {
         <div className="space-y-4">
           <Section title="Jedermanns-Festnahme — § 127 StPO">
             <p className="text-sm text-gray-700 mb-3">
-              Jeder Bürger — also auch FaBB und andere Badegäste — darf unter bestimmten
+              Jeder Bürger — also auch FAB und andere Badegäste — darf unter bestimmten
               Voraussetzungen einen Straftäter vorläufig festhalten, ohne Polizist zu sein.
             </p>
             <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-400 mb-3">
@@ -347,13 +347,13 @@ export default function NotwehrNothilfeDeepDiveView({ darkMode }) {
               {[
                 {
                   titel: 'Zwei Ertrinkende gleichzeitig',
-                  beschr: 'FaBB kann physisch nur eine Person retten. Rettet er Person A, verletzt er die Pflicht gegenüber Person B — gerechtfertigt, weil er das Mögliche tut.',
+                  beschr: 'FAB kann physisch nur eine Person retten. Rettet er Person A, verletzt er die Pflicht gegenüber Person B — gerechtfertigt, weil er das Mögliche tut.',
                   ergebnis: '✅ Gerechtfertigt — Unmögliches kann nicht verlangt werden',
                   icon: '🏊',
                 },
                 {
                   titel: 'Aufsicht verlassen für Notruf',
-                  beschr: 'FaBB muss kurz Becken verlassen um Notruf abzusetzen, weil kein Telefon am Aufsichtsposten ist.',
+                  beschr: 'FAB muss kurz Becken verlassen um Notruf abzusetzen, weil kein Telefon am Aufsichtsposten ist.',
                   ergebnis: '✅ Höherwertige Pflicht: Leben retten überwiegt Aufsichtspositionspflicht',
                   icon: '📞',
                 },

@@ -2,7 +2,7 @@
 
 > Gemeinsames Tracking für Claude, Codex und Qwen.  
 > Abzeichnen mit: `[x]` + Kürzel + Datum — z.B. `[x] Claude 11.04.2026`  
-> Ziel: App marktreif für alle FaBB-Azubis in Deutschland.
+> Ziel: App marktreif für alle FAB-Azubis in Deutschland.
 
 ---
 

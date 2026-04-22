@@ -206,7 +206,7 @@ export default function BadevertagHausordnungDeepDiveView({ darkMode }) {
                 },
                 {
                   pflicht: 'Aufsichtspflicht',
-                  detail: 'Qualifiziertes Personal (FaBB), ausreichende Besetzung nach DGUV Regel 107-004, kein Aufsichtsposten unbesetzt lassen.',
+                  detail: 'Qualifiziertes Personal (FAB), ausreichende Besetzung nach DGUV Regel 107-004, kein Aufsichtsposten unbesetzt lassen.',
                   dringlichkeit: 'kritisch', icon: '👁️',
                 },
                 {
@@ -317,7 +317,7 @@ export default function BadevertagHausordnungDeepDiveView({ darkMode }) {
             </div>
             <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-300">
               <p className="text-xs text-blue-700">
-                <strong>Wichtig für FaBB:</strong> Körperliche Gewalt zur Durchsetzung des Hausverbots ist
+                <strong>Wichtig für FAB:</strong> Körperliche Gewalt zur Durchsetzung des Hausverbots ist
                 grundsätzlich nicht erlaubt (außer Notwehr). Polizei rufen ist immer die richtige Lösung.
               </p>
             </div>

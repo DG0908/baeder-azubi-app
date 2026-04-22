@@ -227,7 +227,7 @@ export default function KostenmanagementDeepDiveView({ darkMode }) {
               <div><strong>RFID-Karte:</strong> Abo-Kunden, kontaktloser Einlass, automatische Verlängerung</div>
               <div><strong>Online-Buchung:</strong> Timeslot-Steuerung (Corona-Erfahrung), Kapazitätskontrolle, Wartelisten</div>
               <div className={`rounded p-2 mt-2 ${darkMode ? 'bg-emerald-900/40' : 'bg-emerald-50'}`}>
-                <strong>Vorteil für FaBB:</strong> Weniger Kassenschlangen, bessere Auslastungsplanung, digitale Belegaufbewahrung (GoBD)
+                <strong>Vorteil für FAB:</strong> Weniger Kassenschlangen, bessere Auslastungsplanung, digitale Belegaufbewahrung (GoBD)
               </div>
             </div>
           </Section>

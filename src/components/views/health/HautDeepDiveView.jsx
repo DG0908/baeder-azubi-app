@@ -130,7 +130,7 @@ export default function HautDeepDiveView({ darkMode }) {
             <div className="space-y-2">
               {[
                 { problem: 'Chlorreizung', zeichen: 'Rötung, Juckreiz, trockene Haut nach dem Baden', massnahme: 'Duschen vor/nach dem Baden, pH-neutrale Pflege' },
-                { problem: 'Chlordermatitis', zeichen: 'Anhaltende Hautreizung, Ekzem bei chronischer Chlorexposition', massnahme: 'FaBB-Berufskrankheit — Hautschutz, BG-Meldung' },
+                { problem: 'Chlordermatitis', zeichen: 'Anhaltende Hautreizung, Ekzem bei chronischer Chlorexposition', massnahme: 'FAB-Berufskrankheit — Hautschutz, BG-Meldung' },
                 { problem: 'Augenreizung', zeichen: 'Bindehautentzündung durch Chloramine', massnahme: 'Schutzbrille, Wasser spülen' },
               ].map((item, i) => (
                 <div key={i} className="p-3 rounded-xl bg-white border border-red-200 mb-2">

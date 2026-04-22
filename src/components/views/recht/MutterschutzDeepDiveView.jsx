@@ -72,8 +72,8 @@ const TABS = {
     examples: [
       {
         title: 'Vater will 2 Monate Elternzeit nehmen',
-        given: 'Ein FaBB möchte nach der Geburt seines Kindes 2 Monate Elternzeit nehmen. Sein Arbeitgeber sagt: "Wir können uns das nicht leisten."',
-        question: 'Hat der FaBB Anspruch auf Elternzeit?',
+        given: 'Ein FAB möchte nach der Geburt seines Kindes 2 Monate Elternzeit nehmen. Sein Arbeitgeber sagt: "Wir können uns das nicht leisten."',
+        question: 'Hat der FAB Anspruch auf Elternzeit?',
         steps: [
           ['Recht', 'Ja — BEEG §15 gibt Anspruch, unabhängig von betrieblicher Situation'],
           ['Ablehnung', 'Arbeitgeber kann nur aus dringenden betrieblichen Gründen ablehnen — wirtschaftliche Gründe reichen nicht'],
