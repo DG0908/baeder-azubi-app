@@ -1,4 +1,4 @@
-import { BookOpen, Calculator, Droplets, FlaskConical, Heart, ShieldCheck, Wrench } from 'lucide-react';
+import { BookOpen, Calculator, Droplets, FlaskConical, Heart, Languages, ShieldCheck, Wrench } from 'lucide-react';
 
 export const LEARNING_CATEGORIES = [
   {
@@ -164,6 +164,29 @@ export const LEARNING_CATEGORIES = [
       { id: 'elektrolyse', name: 'Elektrolyse', description: 'Chlor aus Salz erzeugen — Inline, Side-Stream und Membranzelle', icon: 'El', available: true },
       { id: 'elektrolyse-3d', name: 'Elektrolysezelle (3D)', description: 'Interaktives 3D-Schnittbild einer Membranzellenelektrolyse mit Hotspots', icon: '⚡', available: true },
       { id: 'korrosion', name: 'Korrosion & Korrosionsschutz', description: 'Korrosionsarten erkennen und Metalle im Schwimmbad schuetzen', icon: 'Fe', available: true },
+    ],
+  },
+  {
+    id: 'english',
+    name: 'Englisch im Bäderalltag',
+    icon: '🇬🇧',
+    lucideIcon: Languages,
+    description: 'Fach-Englisch für Kasse, Aufsicht und Gäste — von Basics bis Berufspraxis',
+    longDescription: 'Englisch ist im Bäderalltag real gefragt: Gäste an der Kasse, Wegauskünfte, Regeln durchsetzen, Notfall-Kommunikation. Die Lektionen bauen aufeinander auf (A1 → A2 → B1) — jede mit Vokabeln, echten Dialogen und Mini-Quiz.',
+    paragraphs: 'Lernhilfe · Sprache',
+    color: '#4f46e5',
+    colorLight: '#4f46e520',
+    modules: [
+      { id: 'english-a1-alphabet', name: 'Das Alphabet & Aussprache', description: 'Englisches Alphabet mit Lautschrift, typische Stolperfallen und Namen buchstabieren', icon: 'Aa', level: 'A1', available: true },
+      { id: 'english-a1-numbers-time', name: 'Zahlen, Uhrzeit & Datum', description: 'Zahlen 0–1000, Uhrzeit-Regeln, Öffnungszeiten und Eintrittspreise auf Englisch', icon: '123', level: 'A1', available: true },
+      { id: 'english-a1-greetings', name: 'Begrüßung & Smalltalk', description: 'Sich vorstellen, höflich bleiben, Standardfloskeln für den Kundenkontakt', icon: '👋', level: 'A1', available: true },
+      { id: 'english-a1-pool-basics', name: 'Im Schwimmbad — Basiswortschatz', description: 'Räume, Personen, Ausstattung und typische Schilder rund ums Bad', icon: '🏊', level: 'A1', available: true },
+      { id: 'english-a2-guests', name: 'Gäste begrüßen & Eintritt verkaufen', description: 'Vollständige Kassen-Dialoge, Tarife erklären, Sonderwünsche behandeln', icon: '🎫', level: 'A2', available: false },
+      { id: 'english-a2-directions', name: 'Wegbeschreibung im Bad', description: 'Wege erklären, Stockwerke, Richtungen — klar und missverständnisfrei', icon: '🧭', level: 'A2', available: false },
+      { id: 'english-a2-rules', name: 'Hausordnung & Regeln erklären', description: 'Hausordnung durchsetzen, Regeln freundlich aber bestimmt kommunizieren', icon: '📋', level: 'A2', available: false },
+      { id: 'english-b1-first-aid', name: 'Erste Hilfe auf Englisch', description: 'Kritische Notfall-Phrasen: Ansprache, Symptome abfragen, Rettungsdienst alarmieren', icon: '🚑', level: 'B1', available: false },
+      { id: 'english-b1-complaints', name: 'Beschwerden & schwierige Gespräche', description: 'Deeskalation, Hausverbot, Versicherungsfälle, Reklamationen', icon: '💬', level: 'B1', available: false },
+      { id: 'english-b1-tech-chemistry', name: 'Technik- & Chemie-Begriffe', description: 'Fachwortschatz: Chlorung, pH-Wert, Filtration, Wartung auf Englisch', icon: '⚗️', level: 'B1', available: false },
     ],
   },
   {

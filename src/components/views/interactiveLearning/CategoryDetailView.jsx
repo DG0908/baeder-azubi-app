@@ -11,6 +11,15 @@ const CATEGORY_GRADIENT = {
   'mathematik': 'from-teal-500 via-emerald-500 to-green-500',
   'chemie': 'from-blue-500 via-indigo-500 to-violet-500',
   'verwaltung': 'from-emerald-500 via-teal-500 to-cyan-500',
+  'english': 'from-indigo-500 via-blue-500 to-cyan-500',
+};
+
+const LEVEL_BADGE = {
+  A1: 'bg-emerald-500',
+  A2: 'bg-teal-500',
+  B1: 'bg-blue-500',
+  B2: 'bg-indigo-500',
+  C1: 'bg-purple-500',
 };
 
 const CategoryDetailView = ({ categoryId, darkMode, onBack, onSelectModule }) => {
@@ -77,6 +86,11 @@ const CategoryDetailView = ({ categoryId, darkMode, onBack, onSelectModule }) =>
                       <span className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                         {mod.name}
                       </span>
+                      {mod.level && (
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${LEVEL_BADGE[mod.level] || 'bg-slate-500'}`}>
+                          {mod.level}
+                        </span>
+                      )}
                       {mod.available ? (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400">
                           VERFÜGBAR
