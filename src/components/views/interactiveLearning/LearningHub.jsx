@@ -11,6 +11,7 @@ const CATEGORY_GRADIENT = {
   'mathematik': 'from-teal-500 via-emerald-500 to-green-500',
   'chemie': 'from-blue-500 via-indigo-500 to-violet-500',
   'verwaltung': 'from-emerald-500 via-teal-500 to-cyan-500',
+  'english': 'from-indigo-500 via-blue-500 to-cyan-500',
 };
 
 const LearningHub = ({ darkMode, onSelectCategory }) => (
@@ -25,7 +26,7 @@ const LearningHub = ({ darkMode, onSelectCategory }) => (
         </div>
         <div className="flex-1 min-w-0">
           <div className={`text-xs font-mono tracking-wider mb-1 ${darkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>
-            AUSBILDUNGSRAHMENPLAN · §3 FaBB
+            AUSBILDUNGSRAHMENPLAN · §3 FAB
           </div>
           <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             Interaktives Lernen

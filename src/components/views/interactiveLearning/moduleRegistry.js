@@ -81,6 +81,7 @@ const LazyGesellschaftsformenDeepDiveView = lazy(() => import('../recht/Gesellsc
 const LazySozialversicherungDeepDiveView = lazy(() => import('../recht/SozialversicherungDeepDiveView'));
 const LazyKostenmanagementDeepDiveView = lazy(() => import('../recht/KostenmanagementDeepDiveView'));
 const LazyMarketingDeepDiveView = lazy(() => import('../recht/MarketingDeepDiveView'));
+const LazyEnglishLessonView = lazy(() => import('../english/EnglishLessonView'));
 
 const BACK = {
   baedertechnik: 'Bädertechnik',
@@ -91,7 +92,10 @@ const BACK = {
   chemie: 'Chemie-Grundlagen',
   hygiene: 'Hygiene & Sicherheit',
   gesundheit: 'Erste Hilfe & Gesundheitslehre',
+  english: 'Englisch im Bäderalltag',
 };
+
+const englishLessonProps = (moduleId) => ({ lessonId: moduleId });
 
 const heartProps = (moduleId) => ({
   initialTab: moduleId === 'blutkreislauf-gross-klein' ? 'kreislauf' : 'anatomie',
@@ -200,6 +204,11 @@ export const MODULE_REGISTRY = {
   'beschilderung-kennzeichnungen': { Component: LazyBeschilderungDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Beschilderung & Kennzeichnungen' },
   'reinigung-desinfektion': { Component: LazyReinigungDesinfektionDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Reinigung & Desinfektion' },
   'gefahrstoffe': { Component: LazyGefahrstoffeDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Gefahrstoffe' },
+
+  'english-a1-alphabet': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
+  'english-a1-numbers-time': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
+  'english-a1-greetings': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
+  'english-a1-pool-basics': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
 };
 
 // Math basics module is referenced from the "mathe-grundrechenarten" fallback; keep for future use
