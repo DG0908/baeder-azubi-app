@@ -5,7 +5,7 @@ const TABS = {
   grundlagen: {
     id: 'grundlagen', chip: 'Grundlagen',
     title: 'Gewaltenteilung — Warum drei Gewalten?',
-    intro: 'Das Grundgesetz (GG) teilt die Staatsmacht in drei unabhängige Gewalten auf — damit keine einzelne Person oder Gruppe zu viel Macht bekommt. Dieses Prinzip nennt sich Gewaltenteilung (auch: Gewaltentrennung) und ist in Art. 20 GG verankert. Für den FaBB-Azubi ist wichtig: Die Regeln, die du täglich im Schwimmbad anwendest, kommen aus genau diesen drei Gewalten.',
+    intro: 'Das Grundgesetz (GG) teilt die Staatsmacht in drei unabhängige Gewalten auf — damit keine einzelne Person oder Gruppe zu viel Macht bekommt. Dieses Prinzip nennt sich Gewaltenteilung (auch: Gewaltentrennung) und ist in Art. 20 GG verankert. Für den FAB-Azubi ist wichtig: Die Regeln, die du täglich im Schwimmbad anwendest, kommen aus genau diesen drei Gewalten.',
     motto: 'Kontrolle der Macht schützt die Freiheit — das ist das Fundament des Grundgesetzes.',
     rules: [
       'Art. 20 Abs. 2 GG: "Die Staatsgewalt geht vom Volke aus" — wir wählen das Parlament.',
@@ -92,7 +92,7 @@ const TABS = {
   baeder: {
     id: 'baeder', chip: 'Recht im Bad',
     title: 'Staatliches Recht im Bäderbetrieb',
-    intro: 'Im Schwimmbad treffen viele Rechtsbereiche aufeinander: Öffentliches Recht (Genehmigungen, Kontrollen), Privatrecht (Hausordnung, Haftung) und Strafrecht (Sorgfaltspflichten). Als FaBB musst du wissen, welche Normen direkt für deine tägliche Arbeit gelten und wer kontrolliert.',
+    intro: 'Im Schwimmbad treffen viele Rechtsbereiche aufeinander: Öffentliches Recht (Genehmigungen, Kontrollen), Privatrecht (Hausordnung, Haftung) und Strafrecht (Sorgfaltspflichten). Als FAB musst du wissen, welche Normen direkt für deine tägliche Arbeit gelten und wer kontrolliert.',
     motto: 'Recht kennen bedeutet Verantwortung tragen — und sich selbst schützen.',
     rules: [
       'DIN 19643 (Badewasseraufbereitung) ist technische Norm — durch IfSG und Landesrecht bindend.',

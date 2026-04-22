@@ -238,10 +238,10 @@ export default function ZellatmungDeepDiveView({ darkMode }) {
           <S title="Relevanz für den Badebetrieb" darkMode={darkMode}>
             {[
               { titel: '🤿 Tauchen & Sauerstoffschuld', text: 'Beim Tauchen: anaerober Stoffwechsel aktiv. CO₂-Anstieg ist der Atemreiz — nicht O₂-Mangel! Hyperventilation senkt CO₂ → kein Atemreiz → Blackout unter Wasser.' },
-              { titel: '🏊 Ausdauerschwimmen', text: 'Langstreckenschwimmen = überwiegend aerob. Schulen der FaBB: Schüler sollten in der aeroben Zone trainieren. Laktat-Ansammlungen erzeugen Muskelkrämpfe im Wasser.' },
+              { titel: '🏊 Ausdauerschwimmen', text: 'Langstreckenschwimmen = überwiegend aerob. Schulen der FAB: Schüler sollten in der aeroben Zone trainieren. Laktat-Ansammlungen erzeugen Muskelkrämpfe im Wasser.' },
               { titel: '⚡ Muskelkrämpfe im Wasser', text: 'Ursache: Laktat-Übersäuerung, Elektrolytmangel (Na, K, Mg), Dehydration. Behandlung: Muskel dehnen, Aktivität reduzieren, bei starken Krämpfen bergen.' },
               { titel: '🌡️ Wärmeproduktion', text: '~60% der Energie bei der Zellatmung wird als Wärme freigesetzt. Im Wasser kühlt der Körper schneller ab → Schüler/Badegäste frieren → Hypothermie-Risiko bei langen Aufenthalten.' },
-              { titel: '📋 FaBB-Wissen', text: 'Sauerstoffmangel im Wasser = Ertrinken. Anzeichen: blaue Lippen (Zyanose) = O₂ im Blut reicht nicht aus → HLW-Kette sofort einleiten.' },
+              { titel: '📋 FAB-Wissen', text: 'Sauerstoffmangel im Wasser = Ertrinken. Anzeichen: blaue Lippen (Zyanose) = O₂ im Blut reicht nicht aus → HLW-Kette sofort einleiten.' },
             ].map(({ titel, text }) => (
               <div key={titel} className={`rounded-lg p-3 mb-2 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
                 <div className={`text-xs font-semibold mb-1 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>{titel}</div>

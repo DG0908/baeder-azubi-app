@@ -257,7 +257,7 @@ export default function MuskulaturDeepDiveView({ darkMode }) {
           <S title="Muskulatur im Badebetrieb" darkMode={darkMode}>
             {[
               { titel: '🏊 Schwimmen = Ganzkörpertraining', text: 'Beim Kraulschwimmen werden >50 Muskeln aktiv. Schulter-Rotatorenmanschette besonders belastet → häufige Schwimmerschulter bei Leistungsschwimmern.' },
-              { titel: '🆘 Rettungsgriffe & Kraftanforderung', text: 'Bergung aus dem Wasser: Rücken- und Schultermuskulatur extrem belastet. FaBB müssen Körpergewicht aus dem Wasser heben — Rückenschulung wichtig!' },
+              { titel: '🆘 Rettungsgriffe & Kraftanforderung', text: 'Bergung aus dem Wasser: Rücken- und Schultermuskulatur extrem belastet. FAB müssen Körpergewicht aus dem Wasser heben — Rückenschulung wichtig!' },
               { titel: '⚡ Krämpfe bei Badegästen', text: 'Sofort Hilfsmittel (Stange, Ring) einsetzen. Bei Krampf im Wasser: Person kann nicht aktiv helfen. Bergung wie bei Bewusstlosem.' },
               { titel: '🌡️ Kälte und Muskulatur', text: 'Kaltes Wasser (< 20°C): Muskeln verkrampfen → Rettungsschwimmer werden langsamer → eigene Sicherheit! Neoprenanzug oder Zeitlimit.' },
               { titel: '💊 Muskelrelaxanzien-Patienten', text: 'Manche Gäste nehmen Medikamente die Muskeln entspannen (Diazepam etc.) → erhöhtes Ertrinkungsrisiko → Hinweispflicht bei Kursanmeldung.' },

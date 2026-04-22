@@ -61,7 +61,7 @@ export default function AufsichtspflichtDeepDiveView({ darkMode }) {
               {[
                 { wer: 'Betreiber (Träger)', pflicht: 'Gesamtverantwortung — Anlage sicher halten, Personal stellen, Aufsichtsplan erstellen' },
                 { wer: 'Bäderleiter', pflicht: 'Organisation der Aufsicht, Dienstplanung, Kontrolle der Aufsichtspersonen' },
-                { wer: 'FaBB / Rettungsschwimmer', pflicht: 'Wasser- und Beckenaufsicht vor Ort — direkte Schutzpflicht gegenüber Badegästen' },
+                { wer: 'FAB / Rettungsschwimmer', pflicht: 'Wasser- und Beckenaufsicht vor Ort — direkte Schutzpflicht gegenüber Badegästen' },
               ].map((item, i) => (
                 <div key={i} className="flex gap-3 p-3 rounded-lg bg-white border border-emerald-200">
                   <div className="w-32 flex-shrink-0">
@@ -73,9 +73,9 @@ export default function AufsichtspflichtDeepDiveView({ darkMode }) {
             </div>
           </Section>
 
-          <Section title="Garantenstellung des FaBB" color="red">
+          <Section title="Garantenstellung des FAB" color="red">
             <p className="text-sm text-gray-700 mb-2">
-              Als FaBB hast du eine besondere rechtliche Stellung: die <strong>Garantenstellung</strong>.
+              Als FAB hast du eine besondere rechtliche Stellung: die <strong>Garantenstellung</strong>.
               Du bist durch deinen Beruf verpflichtet, Badegäste aktiv zu schützen.
             </p>
             <div className="p-3 rounded-xl bg-red-100 border border-red-400">
@@ -106,7 +106,7 @@ export default function AufsichtspflichtDeepDiveView({ darkMode }) {
             <div className="space-y-1">
               {[
                 'Mindestbesetzung der Aufsicht je nach Beckentyp und -größe',
-                'Qualifikationsanforderungen (FaBB, Rettungsschwimmer DLRG/DRSA Silber)',
+                'Qualifikationsanforderungen (FAB, Rettungsschwimmer DLRG/DRSA Silber)',
                 'Aufsichtsposition und -sichtfeld',
                 'Ablenkungsverbot während der Beckenaufsicht',
                 'Regelungen für Schul- und Vereinsbetrieb',
@@ -143,7 +143,7 @@ export default function AufsichtspflichtDeepDiveView({ darkMode }) {
                 {
                   nr: '2',
                   name: 'Beaufsichtigung des Badebetriebs',
-                  verantwortlich: 'FaBB / erfahrenes Personal',
+                  verantwortlich: 'FAB / erfahrenes Personal',
                   aufgaben: [
                     'Allgemeine Aufsicht über Publikumsbereich',
                     'Einhaltung der Badeordnung kontrollieren',
@@ -157,7 +157,7 @@ export default function AufsichtspflichtDeepDiveView({ darkMode }) {
                 {
                   nr: '3',
                   name: 'Wasser- und Beckenaufsicht',
-                  verantwortlich: 'FaBB / qualifiziertes Personal',
+                  verantwortlich: 'FAB / qualifiziertes Personal',
                   aufgaben: [
                     'Ausschließlich Beobachtung des Beckens',
                     'Volle Aufmerksamkeit auf das Wasser',
@@ -202,7 +202,7 @@ export default function AufsichtspflichtDeepDiveView({ darkMode }) {
               {[
                 { anf: 'Sichtfeld', detail: 'Der gesamte Beckenbereich muss eingesehen werden können. Bei großen Becken: mehrere Aufsichtsposten!' },
                 { anf: 'Position', detail: 'Erhöhter Standort (Aufsichtsturm, Podest) oder Poolside — klar definiert im Aufsichtsplan' },
-                { anf: 'Qualifikation', detail: 'Mindestens: DRSA Silber oder gleichwertig. Für FaBB: Teil der Ausbildung' },
+                { anf: 'Qualifikation', detail: 'Mindestens: DRSA Silber oder gleichwertig. Für FAB: Teil der Ausbildung' },
                 { anf: 'Ablösung', detail: 'Regelmäßige Ablösung nötig — nach spätestens 45–60 Min. nachlässt Konzentration' },
                 { anf: 'Kommunikation', detail: 'Pfiff-Signale definiert, Notruf erreichbar, Kollegen informiert' },
               ].map((item, i) => (
@@ -246,7 +246,7 @@ export default function AufsichtspflichtDeepDiveView({ darkMode }) {
           <Section title="Spezielle Regelungen" color="orange">
             <div className="space-y-2">
               {[
-                { gruppe: 'Schulklassen', regel: 'Lehrkraft übernimmt Aufsichtspflicht für ihre Schüler — FaBB unterstützt, ist aber nicht allein verantwortlich' },
+                { gruppe: 'Schulklassen', regel: 'Lehrkraft übernimmt Aufsichtspflicht für ihre Schüler — FAB unterstützt, ist aber nicht allein verantwortlich' },
                 { gruppe: 'Vereine / Sportgruppen', regel: 'Vereinsverantwortliche (Trainer, Betreuer) tragen Mitverantwortung — schriftlich festhalten' },
                 { gruppe: 'Kurse (Schwimmkurs)', regel: 'Kursleiter ist für Kursteilnehmer verantwortlich während des Kurses' },
                 { gruppe: 'Frühschwimmen / Leihezeiten', regel: 'Auch bei geschlossenem Betrieb muss qualifizierte Aufsicht vorhanden sein' },

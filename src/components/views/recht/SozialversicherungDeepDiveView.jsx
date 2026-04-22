@@ -230,7 +230,7 @@ export default function SozialversicherungDeepDiveView({ darkMode }) {
             <div className="space-y-2">
               {[
                 { titel: 'Arbeitsunfall', text: 'Unfall auf dem Betriebsgelände oder auf dem Weg zur/von der Arbeit', icon: '🤕' },
-                { titel: 'Berufskrankheit', text: 'Krankheit durch typische Berufsbelastung (z.B. Chlorschäden bei FaBB)', icon: '🧪' },
+                { titel: 'Berufskrankheit', text: 'Krankheit durch typische Berufsbelastung (z.B. Chlorschäden bei FAB)', icon: '🧪' },
                 { titel: 'Wegeunfall', text: 'Auch Unfall auf direktem Arbeitsweg ist versichert', icon: '🚗' },
               ].map((item, i) => (
                 <div key={i} className="flex gap-3 p-3 rounded-lg bg-orange-50 border border-orange-200">
@@ -244,7 +244,7 @@ export default function SozialversicherungDeepDiveView({ darkMode }) {
             </div>
             <InfoBox icon={CheckCircle} color="emerald" title="Meldepflicht des Arbeitgebers">
               Jeder Arbeitsunfall mit mehr als 3 Tagen Arbeitsunfähigkeit muss der BG gemeldet werden.
-              Als FaBB musst du Unfälle im Bad sofort dem Vorgesetzten melden — der meldet an die BG.
+              Als FAB musst du Unfälle im Bad sofort dem Vorgesetzten melden — der meldet an die BG.
             </InfoBox>
           </Section>
         </div>

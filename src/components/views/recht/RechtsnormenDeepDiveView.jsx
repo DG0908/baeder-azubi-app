@@ -312,8 +312,8 @@ export default function RechtsnormenDeepDiveView({ darkMode }) {
                 { situation: 'Badegast verletzt anderen Gast absichtlich', recht: 'Öffentl. Recht', details: '§223 StGB — Staatsanwaltschaft ermittelt', icon: '👊' },
                 { situation: 'Gesundheitsamt schließt das Bad', recht: 'Öffentl. Recht', details: 'Verwaltungsakt — Klage beim Verwaltungsgericht', icon: '🏥' },
                 { situation: 'Badegast zahlt Eintritt nicht', recht: 'Zivilrecht', details: 'Badevertrag — Mahnverfahren, Amtsgericht', icon: '💶' },
-                { situation: 'FaBB wird ungerechtfertigt entlassen', recht: 'Zivilrecht (Arbeitsrecht)', details: 'Kündigungsschutzklage — Arbeitsgericht', icon: '📋' },
-                { situation: 'FaBB leistet keine Hilfe bei Notfall', recht: 'Öffentl. Recht', details: '§323c StGB — Strafverfolgung', icon: '🚨' },
+                { situation: 'FAB wird ungerechtfertigt entlassen', recht: 'Zivilrecht (Arbeitsrecht)', details: 'Kündigungsschutzklage — Arbeitsgericht', icon: '📋' },
+                { situation: 'FAB leistet keine Hilfe bei Notfall', recht: 'Öffentl. Recht', details: '§323c StGB — Strafverfolgung', icon: '🚨' },
               ].map((item, i) => (
                 <div key={i} className="p-3 rounded-lg bg-white border border-teal-200">
                   <div className="flex items-start gap-2 mb-1">

@@ -1,6 +1,6 @@
 # Marktreife-Roadmap — Bäder-Azubi-App
 
-> **Zweck:** Täglich abarbeitbarer Plan, um die App von „funktioniert intern für 12 User" auf „produktionsreif für alle FaBB-Azubis in Deutschland" zu heben.
+> **Zweck:** Täglich abarbeitbarer Plan, um die App von „funktioniert intern für 12 User" auf „produktionsreif für alle FAB-Azubis in Deutschland" zu heben.
 >
 > **Basis:** Audit-Report vom 15.04.2026 (Opus 4.6, 13 Kategorien).
 >

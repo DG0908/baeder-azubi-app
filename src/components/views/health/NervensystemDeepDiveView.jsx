@@ -236,7 +236,7 @@ export default function NervensystemDeepDiveView({ darkMode }) {
               <div>Bei Eintauchen des Gesichts in kaltes Wasser: <strong>Bradykardie</strong> (Herzfrequenz ↓), Blutumverteilung zu lebenswichtigen Organen. Reflexartig, unwillkürlich.</div>
               <div>Bei Säuglingen stärker ausgeprägt → Reanimationschancen nach Kaltwater-Ertrinken länger als bei Erwachsenen.</div>
               <div className={`rounded p-2 border-l-4 border-blue-500 ${darkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
-                <strong>FaBB-Wissen:</strong> Ertrunkenes Kind aus kaltem Wasser → immer reanimieren! Das kalte Wasser kann das Gehirn schützen (Hypothermieprotekt). „Nicht tot bis warm und tot" gilt besonders für Kinder.
+                <strong>FAB-Wissen:</strong> Ertrunkenes Kind aus kaltem Wasser → immer reanimieren! Das kalte Wasser kann das Gehirn schützen (Hypothermieprotekt). „Nicht tot bis warm und tot" gilt besonders für Kinder.
               </div>
             </div>
           </S>

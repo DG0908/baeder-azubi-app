@@ -5,7 +5,7 @@ const TABS = {
   grundlagen: {
     id: 'grundlagen', chip: 'Grundlagen',
     title: 'Jugendarbeitsschutzgesetz — Warum und für wen?',
-    intro: 'Das Jugendarbeitsschutzgesetz (JArbSchG) schützt Kinder und Jugendliche vor gesundheitlicher Überlastung, Gefährdung und Ausbeutung in der Arbeit. Es gilt für alle Betriebe — auch für Schwimmbäder. Als FaBB-Azubi bist du selbst noch ein Jugendlicher im Sinne des Gesetzes und wirst von diesen Regeln geschützt. Gleichzeitig musst du das Gesetz kennen, wenn du selbst Jugendliche (z.B. Ferienaushilfen) beaufsichtigst.',
+    intro: 'Das Jugendarbeitsschutzgesetz (JArbSchG) schützt Kinder und Jugendliche vor gesundheitlicher Überlastung, Gefährdung und Ausbeutung in der Arbeit. Es gilt für alle Betriebe — auch für Schwimmbäder. Als FAB-Azubi bist du selbst noch ein Jugendlicher im Sinne des Gesetzes und wirst von diesen Regeln geschützt. Gleichzeitig musst du das Gesetz kennen, wenn du selbst Jugendliche (z.B. Ferienaushilfen) beaufsichtigst.',
     motto: 'JArbSchG schützt nicht nur — es ist auch Pflicht des Arbeitgebers, es einzuhalten.',
     rules: [
       'Kind (§2 Abs. 1 JArbSchG): Unter 15 Jahre — grundsätzlich Beschäftigungsverbot.',

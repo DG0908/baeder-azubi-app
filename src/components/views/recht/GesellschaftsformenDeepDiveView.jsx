@@ -339,7 +339,7 @@ export default function GesellschaftsformenDeepDiveView({ darkMode }) {
           </Section>
 
           <InfoBox icon={CheckCircle} color="emerald" title="Für die Ausbildung relevant">
-            Als FaBB-Azubi arbeitest du wahrscheinlich entweder in einem kommunalen Eigenbetrieb oder einer
+            Als FAB-Azubi arbeitest du wahrscheinlich entweder in einem kommunalen Eigenbetrieb oder einer
             kommunalen GmbH. Das beeinflusst deinen Tarifvertrag (TVöD vs. TV-V), deine Ansprechpartner
             und die Entscheidungswege im Betrieb.
           </InfoBox>
