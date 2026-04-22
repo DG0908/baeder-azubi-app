@@ -7,7 +7,8 @@
   { id: 'swim', name: 'Schwimm- & Rettungslehre', color: 'bg-cyan-500', icon: '\u{1F3CA}' },
   { id: 'first', name: 'Erste Hilfe', color: 'bg-red-500', icon: '\u{1F691}' },
   { id: 'hygiene', name: 'Hygiene', color: 'bg-yellow-500', icon: '\u{1F9FC}' },
-  { id: 'health', name: 'Gesundheitslehre', color: 'bg-pink-500', icon: '\u{1FAC0}' }
+  { id: 'health', name: 'Gesundheitslehre', color: 'bg-pink-500', icon: '\u{1FAC0}' },
+  { id: 'english', name: 'Englisch', color: 'bg-indigo-500', icon: '\u{1F1EC}\u{1F1E7}' }
 ];
 
 export const DEFAULT_MENU_ITEMS = [
