@@ -7,6 +7,11 @@
 // Optional imageUrl overrides the gradient with a cover-image; gradient stays
 // as a graceful fallback while the image loads (or on <img> error).
 
+// Inline-SVG Krone als data-URI — keine externe Asset-Datei nötig.
+// Wird als background-image über dem Gradient gelegt.
+const CHEF_CROWN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120"><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%23fef3c7"/><stop offset="50%" stop-color="%23fcd34d"/><stop offset="100%" stop-color="%23b45309"/></linearGradient><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="%23b45309"/><stop offset="100%" stop-color="%2378350f"/></linearGradient><radialGradient id="gem" cx="0.3" cy="0.3"><stop offset="0%" stop-color="%23fecaca"/><stop offset="100%" stop-color="%23991b1b"/></radialGradient></defs><g transform="translate(200,60)"><path d="M-48 30 L-36 -14 L-18 18 L0 -28 L18 18 L36 -14 L48 30 Z" fill="url(%23cg)" stroke="%2378350f" stroke-width="2" stroke-linejoin="round"/><rect x="-48" y="28" width="96" height="12" rx="2" fill="url(%23rg)"/><line x1="-46" y1="34" x2="46" y2="34" stroke="%23fef3c7" stroke-width="0.8" opacity="0.5"/><circle cx="-36" cy="-14" r="5" fill="%23fef3c7" stroke="%2378350f" stroke-width="1"/><circle cx="0" cy="-28" r="6" fill="url(%23gem)" stroke="%2378350f" stroke-width="1"/><circle cx="36" cy="-14" r="5" fill="%23fef3c7" stroke="%2378350f" stroke-width="1"/><circle cx="-18" cy="18" r="3" fill="url(%23gem)" stroke="%2378350f" stroke-width="0.8"/><circle cx="18" cy="18" r="3" fill="url(%23gem)" stroke="%2378350f" stroke-width="0.8"/></g><g fill="%23fcd34d" opacity="0.55"><circle cx="60" cy="30" r="2"/><circle cx="340" cy="30" r="2"/><circle cx="80" cy="90" r="1.5"/><circle cx="320" cy="90" r="1.5"/><circle cx="120" cy="20" r="1"/><circle cx="280" cy="20" r="1"/></g></svg>`;
+const CHEF_CROWN_DATA_URI = `data:image/svg+xml;utf8,${CHEF_CROWN_SVG}`;
+
 export const PROFILE_BANNERS = [
   {
     id: 'cyan-classic',
@@ -69,11 +74,11 @@ export const PROFILE_BANNERS = [
     gradient: 'linear-gradient(135deg, #fecdd3 0%, #fb7185 55%, #be123c 100%)'
   },
   {
-    id: 'fcb-admin',
+    id: 'chef',
     tier: 'admin',
-    label: 'FC Bayern München',
-    imageUrl: '/banners/fcb-admin.png',
-    gradient: 'linear-gradient(135deg, #7f1d1d 0%, #0c0a09 100%)'
+    label: 'Chef',
+    imageUrl: CHEF_CROWN_DATA_URI,
+    gradient: 'linear-gradient(135deg, #1a0f06 0%, #78350f 30%, #b45309 60%, #fcd34d 100%)'
   }
 ];
 
