@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react';
 
 const TABS = {
-  koerperverletzung: { label: 'Körperverletzung', icon: '🤕' },
+  körperverletzung: { label: 'Körperverletzung', icon: '🤕' },
   diebstahl: { label: 'Diebstahl & Unterschlagung', icon: '💰' },
   sittlichkeit: { label: 'Sittlichkeit & Voyeurismus', icon: '📷' },
   hausfrieden: { label: 'Hausfrieden & Sonstiges', icon: '🚪' },
@@ -35,7 +35,7 @@ const ParagraphCard = ({ para, titel, tatbestand, strafe, bad, color = 'red' }) 
 );
 
 export default function StrafrechtBadVertieftDeepDiveView({ darkMode }) {
-  const [activeTab, setActiveTab] = useState('koerperverletzung');
+  const [activeTab, setActiveTab] = useState('körperverletzung');
 
   return (
     <div className="space-y-4 pb-8">
@@ -53,7 +53,7 @@ export default function StrafrechtBadVertieftDeepDiveView({ darkMode }) {
         ))}
       </div>
 
-      {activeTab === 'koerperverletzung' && (
+      {activeTab === 'körperverletzung' && (
         <div className="space-y-4">
           <Section title="Körperverletzungsdelikte im Überblick">
             <p className="text-sm text-gray-700 mb-3">

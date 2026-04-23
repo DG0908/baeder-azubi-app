@@ -129,14 +129,14 @@ export default function HautDeepDiveView({ darkMode }) {
             <p className="text-sm text-gray-700 mb-3">Chlor im Badewasser greift den natürlichen Säureschutzmantel der Haut an:</p>
             <div className="space-y-2">
               {[
-                { problem: 'Chlorreizung', zeichen: 'Rötung, Juckreiz, trockene Haut nach dem Baden', massnahme: 'Duschen vor/nach dem Baden, pH-neutrale Pflege' },
-                { problem: 'Chlordermatitis', zeichen: 'Anhaltende Hautreizung, Ekzem bei chronischer Chlorexposition', massnahme: 'FAB-Berufskrankheit — Hautschutz, BG-Meldung' },
-                { problem: 'Augenreizung', zeichen: 'Bindehautentzündung durch Chloramine', massnahme: 'Schutzbrille, Wasser spülen' },
+                { problem: 'Chlorreizung', zeichen: 'Rötung, Juckreiz, trockene Haut nach dem Baden', maßnahme: 'Duschen vor/nach dem Baden, pH-neutrale Pflege' },
+                { problem: 'Chlordermatitis', zeichen: 'Anhaltende Hautreizung, Ekzem bei chronischer Chlorexposition', maßnahme: 'FAB-Berufskrankheit — Hautschutz, BG-Meldung' },
+                { problem: 'Augenreizung', zeichen: 'Bindehautentzündung durch Chloramine', maßnahme: 'Schutzbrille, Wasser spülen' },
               ].map((item, i) => (
                 <div key={i} className="p-3 rounded-xl bg-white border border-red-200 mb-2">
                   <p className="font-bold text-red-800 text-sm mb-1">🧪 {item.problem}</p>
                   <p className="text-xs text-gray-600 mb-0.5">Zeichen: {item.zeichen}</p>
-                  <p className="text-xs text-emerald-700 font-medium">→ {item.massnahme}</p>
+                  <p className="text-xs text-emerald-700 font-medium">→ {item.maßnahme}</p>
                 </div>
               ))}
             </div>

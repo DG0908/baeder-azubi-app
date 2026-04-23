@@ -7,21 +7,21 @@ const TABS = {
   grundlagen: {
     id: 'grundlagen',
     chip: 'Grundlagen',
-    title: 'Was ist Saeurekapazitaet?',
+    title: 'Was ist Säurekapazität?',
     intro:
-      'Stell dir vor, dein Beckenwasser hat einen eingebauten Schutzschild fuer den pH-Wert. Genau das ist die Saeurekapazitaet: Sie zeigt, wie gut das Wasser Saeure "schlucken" kann, ohne dass der pH-Wert absackt. Je hoeher die Saeurekapazitaet, desto stabiler bleibt der pH — auch wenn viele Badegaeste im Wasser sind oder Chemikalien dosiert werden. Ohne genuegend Puffer schwankt der pH staendig hin und her.',
-    motto: 'Saeurekapazitaet = Airbag fuer den pH-Wert.',
+      'Stell dir vor, dein Beckenwasser hat einen eingebauten Schutzschild für den pH-Wert. Genau das ist die Säurekapazität: Sie zeigt, wie gut das Wasser Säure "schlucken" kann, ohne dass der pH-Wert absackt. Je höher die Säurekapazität, desto stabiler bleibt der pH — auch wenn viele Badegaeste im Wasser sind oder Chemikalien dosiert werden. Ohne genuegend Puffer schwankt der pH ständig hin und her.',
+    motto: 'Säurekapazität = Airbag für den pH-Wert.',
     rules: [
-      'Die Saeurekapazitaet (auch Pufferkapazitaet genannt) zeigt, wie stabil der pH-Wert des Wassers ist.',
-      'Je hoeher die Saeurekapazitaet, desto mehr Saeure kann das Wasser aufnehmen, ohne dass der pH abstuerzt.',
-      'Die Einheit ist mmol/L (Millimol pro Liter) — das ist einfach eine Mengenangabe fuer geloeste Teilchen.',
-      'Saeurekapazitaet, Wasserhaerte und pH-Wert haengen eng zusammen — aendert sich einer, beeinflusst das die anderen.',
-      'Ein guter Puffer im Schwimmbad sorgt dafuer, dass die Dosieranlage nicht staendig nachregeln muss.'
+      'Die Säurekapazität (auch Pufferkapazität genannt) zeigt, wie stabil der pH-Wert des Wassers ist.',
+      'Je höher die Säurekapazität, desto mehr Säure kann das Wasser aufnehmen, ohne dass der pH abstuerzt.',
+      'Die Einheit ist mmol/L (Millimol pro Liter) — das ist einfach eine Mengenangabe für geloeste Teilchen.',
+      'Säurekapazität, Wasserhärte und pH-Wert haengen eng zusammen — aendert sich einer, beeinflusst das die anderen.',
+      'Ein guter Puffer im Schwimmbad sorgt dafür, dass die Dosieranlage nicht ständig nachregeln muss.'
     ],
     steps: [
       {
         title: '1. Was ist ein Puffer?',
-        text: 'Ein Puffer ist wie ein Stossdaempfer: Er faengt Schwankungen ab. Im Wasser sorgt der Puffer dafuer, dass der pH-Wert nicht bei jeder kleinen Veraenderung sofort springt.'
+        text: 'Ein Puffer ist wie ein Stossdaempfer: Er faengt Schwankungen ab. Im Wasser sorgt der Puffer dafür, dass der pH-Wert nicht bei jeder kleinen Veränderung sofort springt.'
       },
       {
         title: '2. Woher kommt der Puffer?',
@@ -29,22 +29,22 @@ const TABS = {
       },
       {
         title: '3. Was stoert den Puffer?',
-        text: 'Badegaeste bringen Schweiss, Urin und Kosmetik ein. Chlordosierung veraendert den pH. Frischwasserzufuhr verduennt den Puffer. All das greift die Saeurekapazitaet an.'
+        text: 'Badegaeste bringen Schweiss, Urin und Kosmetik ein. Chlordosierung veraendert den pH. Frischwasserzufuhr verduennt den Puffer. All das greift die Säurekapazität an.'
       },
       {
         title: '4. Warum ist das wichtig?',
-        text: 'Ohne Puffer schwankt der pH staendig. Dann wirkt mal das Chlor nicht richtig, mal werden Augen gereizt. Stabile Saeurekapazitaet = stabile Wasserqualitaet!'
+        text: 'Ohne Puffer schwankt der pH ständig. Dann wirkt mal das Chlor nicht richtig, mal werden Augen gereizt. Stabile Säurekapazität = stabile Wasserqualität!'
       }
     ],
     examples: [
       {
         title: 'Vergleich: Wasser mit und ohne Puffer',
-        given: 'Zwei Becken mit pH 7,2. In Becken A ist die Saeurekapazitaet hoch (1,5 mmol/L), in Becken B niedrig (0,3 mmol/L). Beide bekommen die gleiche Menge Saeure.',
+        given: 'Zwei Becken mit pH 7,2. In Becken A ist die Säurekapazität hoch (1,5 mmol/L), in Becken B niedrig (0,3 mmol/L). Beide bekommen die gleiche Menge Säure.',
         question: 'Was passiert mit dem pH-Wert?',
         steps: [
-          ['Becken A (hoher Puffer)', 'pH sinkt nur leicht auf 7,1 — der Puffer faengt die Saeure ab'],
+          ['Becken A (hoher Puffer)', 'pH sinkt nur leicht auf 7,1 — der Puffer faengt die Säure ab'],
           ['Becken B (niedriger Puffer)', 'pH stuerzt auf 6,5 ab — kein Puffer, keine Bremse'],
-          ['Ergebnis', 'Hohe Saeurekapazitaet = stabiler pH, niedrige = pH-Achterbahn']
+          ['Ergebnis', 'Hohe Säurekapazität = stabiler pH, niedrige = pH-Achterbahn']
         ]
       },
       {
@@ -55,111 +55,111 @@ const TABS = {
           ['Blut', 'Hat einen Puffer bei pH 7,4 — deshalb schwankt dein Blut-pH kaum'],
           ['Beckenwasser', 'Hydrogencarbonat-Puffer haelt den pH stabil'],
           ['Leitungswasser', 'Hat von Natur aus Puffer — je nach Region mehr oder weniger'],
-          ['Destilliertes Wasser', 'Hat KEINEN Puffer — ein Tropfen Saeure aendert sofort den pH!']
+          ['Destilliertes Wasser', 'Hat KEINEN Puffer — ein Tropfen Säure aendert sofort den pH!']
         ]
       },
       {
         title: 'Einheiten verstehen',
-        given: 'Die Saeurekapazitaet wird in mmol/L gemessen. Was bedeutet das?',
+        given: 'Die Säurekapazität wird in mmol/L gemessen. Was bedeutet das?',
         question: 'Wie kann man sich das vorstellen?',
         steps: [
-          ['mmol/L', 'Millimol pro Liter — eine winzige Mengeneinheit fuer geloeste Stoffe'],
-          ['1 mmol/L', 'Das Wasser kann 1 Millimol Saeure pro Liter aufnehmen, bevor der pH kippt'],
-          ['Sollwert Bad', 'Mindestens 0,7 mmol/L, besser ueber 1,0 mmol/L'],
+          ['mmol/L', 'Millimol pro Liter — eine winzige Mengeneinheit für geloeste Stoffe'],
+          ['1 mmol/L', 'Das Wasser kann 1 Millimol Säure pro Liter aufnehmen, bevor der pH kippt'],
+          ['Sollwert Bad', 'Mindestens 0,7 mmol/L, besser über 1,0 mmol/L'],
           ['Zu niedrig?', 'Unter 0,7 mmol/L → pH wird instabil, Handlungsbedarf!']
         ]
       }
     ],
     pitfalls: [
-      'Saeurekapazitaet ist NICHT das Gleiche wie der pH-Wert! Der pH sagt dir den aktuellen Stand, die Saeurekapazitaet sagt dir die Stabilitaet.',
+      'Säurekapazität ist NICHT das Gleiche wie der pH-Wert! Der pH sagt dir den aktuellen Stand, die Säurekapazität sagt dir die Stabilitaet.',
       'Weiches Wasser hat oft wenig Puffer — wenn dein Leitungswasser weich ist, musst du den Puffer extra aufbauen.',
-      'Nach Stossdesinfektionen sinkt die Saeurekapazitaet oft ab — danach immer nachmessen!',
-      'Frischwasser verduennt den Puffer: Nach groesserer Frischwasserzufuhr KS4,3-Wert kontrollieren.'
+      'Nach Stossdesinfektionen sinkt die Säurekapazität oft ab — danach immer nachmessen!',
+      'Frischwasser verduennt den Puffer: Nach größerer Frischwasserzufuhr KS4,3-Wert kontrollieren.'
     ],
     quiz: {
-      question: 'Was beschreibt die Saeurekapazitaet am besten?',
+      question: 'Was beschreibt die Säurekapazität am besten?',
       options: [
         'Wie sauer das Wasser gerade ist',
-        'Wie gut das Wasser Saeure abpuffern kann ohne dass der pH absackt',
+        'Wie gut das Wasser Säure abpuffern kann ohne dass der pH absackt',
         'Wie viel Chlor im Wasser geloest ist'
       ],
       correctIndex: 1,
-      explanation: 'Die Saeurekapazitaet zeigt, wie viel Saeure das Wasser aufnehmen kann, bevor der pH-Wert deutlich sinkt. Sie ist der \"Airbag\" fuer den pH-Wert.'
+      explanation: 'Die Säurekapazität zeigt, wie viel Säure das Wasser aufnehmen kann, bevor der pH-Wert deutlich sinkt. Sie ist der \"Airbag\" für den pH-Wert.'
     }
   },
 
-  wasserhaerte: {
+  wasserhärte: {
     id: 'wasserhaerte',
-    chip: 'Wasserhaerte',
+    chip: 'Wasserhärte',
     title: 'Hartes und weiches Wasser',
     intro:
-      'Wasserhaerte — das klingt komisch, aber gemeint ist: Wie viel Kalk ist im Wasser? Genauer gesagt Calcium und Magnesium. Hartes Wasser hat viel Kalk (= viel Calcium), weiches Wasser hat wenig. Beides kann im Schwimmbad Probleme machen: Zu hart → Kalkablagerungen ueberall. Zu weich → das Wasser greift Metalle und Beton an.',
+      'Wasserhärte — das klingt komisch, aber gemeint ist: Wie viel Kalk ist im Wasser? Genauer gesagt Calcium und Magnesium. Hartes Wasser hat viel Kalk (= viel Calcium), weiches Wasser hat wenig. Beides kann im Schwimmbad Probleme machen: Zu hart → Kalkablagerungen überall. Zu weich → das Wasser greift Metalle und Beton an.',
     motto: 'Hartes Wasser = viel Kalk. Weiches Wasser = wenig Kalk.',
     rules: [
-      'Wasserhaerte = Menge an Calcium (Ca²⁺) und Magnesium (Mg²⁺) im Wasser. Je mehr, desto haerter.',
-      'Einheit: °dH (Grad deutsche Haerte). Alternativ auch mmol/L. Umrechnung: 1 °dH = 0,1786 mmol/L.',
-      'Weich: unter 8,4 °dH. Mittel: 8,4 bis 14 °dH. Hart: ueber 14 °dH.',
-      'DIN 19643 empfiehlt Calciumhaerte zwischen 0,9 und 1,6 mmol/L (ca. 5 bis 9 °dH) fuer Schwimmbecken.',
-      'Wasserhaerte und Saeurekapazitaet haengen zusammen — hartes Wasser hat meist auch eine hoehere Saeurekapazitaet.'
+      'Wasserhärte = Menge an Calcium (Ca²⁺) und Magnesium (Mg²⁺) im Wasser. Je mehr, desto härter.',
+      'Einheit: °dH (Grad deutsche Härte). Alternativ auch mmol/L. Umrechnung: 1 °dH = 0,1786 mmol/L.',
+      'Weich: unter 8,4 °dH. Mittel: 8,4 bis 14 °dH. Hart: über 14 °dH.',
+      'DIN 19643 empfiehlt Calciumhärte zwischen 0,9 und 1,6 mmol/L (ca. 5 bis 9 °dH) für Schwimmbecken.',
+      'Wasserhärte und Säurekapazität haengen zusammen — hartes Wasser hat meist auch eine höhere Säurekapazität.'
     ],
     steps: [
       {
-        title: '1. Wasserhaerte messen',
-        text: 'Nimm eine Wasserprobe und miss die Gesamthaerte mit einem Testkit (Titration mit EDTA) oder Photometer. Ergebnis in °dH oder mmol/L ablesen.'
+        title: '1. Wasserhärte messen',
+        text: 'Nimm eine Wasserprobe und miss die Gesamthärte mit einem Testkit (Titration mit EDTA) oder Photometer. Ergebnis in °dH oder mmol/L ablesen.'
       },
       {
         title: '2. Wert einordnen',
-        text: 'Unter 8,4 °dH = weich. 8,4–14 °dH = mittel. Ueber 14 °dH = hart. Fuer das Schwimmbad sind mittlere Werte am besten.'
+        text: 'Unter 8,4 °dH = weich. 8,4–14 °dH = mittel. Über 14 °dH = hart. Für das Schwimmbad sind mittlere Werte am besten.'
       },
       {
         title: '3. Probleme erkennen',
         text: 'Kalkraender am Beckenrand? → Wasser zu hart. Gruene Flecken an Kupferleitungen? → Wasser zu weich und aggressiv. Beides schadet der Technik.'
       },
       {
-        title: '4. Kalk-Kohlensaeure-Gleichgewicht',
-        text: 'Im Wasser gibt es ein Gleichgewicht zwischen Kalk und Kohlensaeure. Ist es gestoert, faellt Kalk aus (Ablagerungen) oder loest sich Kalk auf (Korrosion).'
+        title: '4. Kalk-Kohlensäure-Gleichgewicht',
+        text: 'Im Wasser gibt es ein Gleichgewicht zwischen Kalk und Kohlensäure. Ist es gestoert, faellt Kalk aus (Ablagerungen) oder loest sich Kalk auf (Korrosion).'
       }
     ],
     examples: [
       {
-        title: 'Haertegrade im Vergleich',
+        title: 'Härtegrade im Vergleich',
         given: 'Du bekommst Wasser vom Wasserwerk. Je nach Region ist es unterschiedlich hart.',
         question: 'In welchen Bereich faellt dein Wasser?',
         steps: [
           ['Unter 8,4 °dH', 'Weich — z.B. Schwarzwald, Harz. Wenig Kalk, aber oft wenig Puffer.'],
           ['8,4–14 °dH', 'Mittel — ideal fuers Schwimmbad. Genug Puffer, nicht zu viel Kalk.'],
-          ['Ueber 14 °dH', 'Hart — z.B. Muenchen, Franken. Viel Kalk, Ablagerungen drohen.'],
-          ['Ueber 21 °dH', 'Sehr hart — Kalkprobleme fast garantiert. Enthaertung noetig.']
+          ['Über 14 °dH', 'Hart — z.B. Muenchen, Franken. Viel Kalk, Ablagerungen drohen.'],
+          ['Über 21 °dH', 'Sehr hart — Kalkprobleme fast garantiert. Enthaertung nötig.']
         ]
       },
       {
         title: 'Probleme bei zu hartem Wasser',
-        given: 'Dein Beckenwasser hat 18 °dH Gesamthaerte. Der pH-Wert liegt bei 7,4.',
-        question: 'Welche Probleme koennen auftreten?',
+        given: 'Dein Beckenwasser hat 18 °dH Gesamthärte. Der pH-Wert liegt bei 7,4.',
+        question: 'Welche Probleme können auftreten?',
         steps: [
           ['Beckenrand', 'Weisse Kalkraender bilden sich, besonders an der Wasserlinie'],
           ['Rohrleitungen', 'Kalk setzt sich in den Rohren ab — Querschnitt wird enger'],
-          ['Waermetauscher', 'Kalkschicht wirkt wie Isolierung — Heizleistung sinkt stark'],
+          ['Wärmetauscher', 'Kalkschicht wirkt wie Isolierung — Heizleistung sinkt stark'],
           ['Filter', 'Kalk verstopft die Filterduesen — Spueldruck steigt']
         ]
       },
       {
         title: 'Probleme bei zu weichem Wasser',
-        given: 'Dein Beckenwasser hat nur 3 °dH Gesamthaerte.',
+        given: 'Dein Beckenwasser hat nur 3 °dH Gesamthärte.',
         question: 'Warum ist das auch nicht gut?',
         steps: [
           ['Korrosion', 'Weiches Wasser ist aggressiv — es loest Metalle und Beton an'],
-          ['Kupferleitungen', 'Kupfer loest sich → gruenliche Verfaerbung des Wassers moeglich'],
+          ['Kupferleitungen', 'Kupfer loest sich → gruenliche Verfaerbung des Wassers möglich'],
           ['Fugenmoertel', 'Wird angegriffen und broeckelt mit der Zeit'],
-          ['Puffer fehlt', 'Weiches Wasser hat meist wenig Saeurekapazitaet → pH-Wert instabil']
+          ['Puffer fehlt', 'Weiches Wasser hat meist wenig Säurekapazität → pH-Wert instabil']
         ]
       }
     ],
     pitfalls: [
-      'Wasserhaerte ist NICHT das Gleiche wie Saeurekapazitaet! Haerte = Calcium/Magnesium, Puffer = Hydrogencarbonat. Aber sie haengen zusammen.',
-      'Nur die Gesamthaerte messen reicht nicht — fuer die Beurteilung im Bad ist die Calciumhaerte wichtiger als die Magnesiumhaerte.',
-      'Kalkablagerungen kommen nicht nur von hartem Wasser, sondern auch von zu hohem pH-Wert — beides zusammen pruefen!',
-      'Nach einer Beckenentleerung und Neubefuellung aendert sich die Wasserhaerte — sofort neu messen!'
+      'Wasserhärte ist NICHT das Gleiche wie Säurekapazität! Härte = Calcium/Magnesium, Puffer = Hydrogencarbonat. Aber sie haengen zusammen.',
+      'Nur die Gesamthärte messen reicht nicht — für die Beurteilung im Bad ist die Calciumhärte wichtiger als die Magnesiumhärte.',
+      'Kalkablagerungen kommen nicht nur von hartem Wasser, sondern auch von zu hohem pH-Wert — beides zusammen prüfen!',
+      'Nach einer Beckenentleerung und Neubefuellung aendert sich die Wasserhärte — sofort neu messen!'
     ],
     quiz: {
       question: 'Ab welchem Wert gilt Wasser als "hart"?',
@@ -178,42 +178,42 @@ const TABS = {
     chip: 'KS4,3-Wert',
     title: 'Der Pufferwert fuers Schwimmbad',
     intro:
-      'Der KS4,3-Wert ist DIE wichtige Zahl, wenn es um die Saeurekapazitaet im Schwimmbad geht. Das \"KS\" steht fuer Saeurekapazitaet, die \"4,3\" fuer den pH-Wert 4,3 — bis dahin wird gemessen, wie viel Saeure das Wasser schlucken kann. Je hoeher der KS4,3-Wert, desto stabiler bleibt dein pH-Wert im Becken.',
-    motto: 'KS4,3 mindestens 0,7 mmol/L — besser ueber 1,0!',
+      'Der KS4,3-Wert ist DIE wichtige Zahl, wenn es um die Säurekapazität im Schwimmbad geht. Das \"KS\" steht für Säurekapazität, die \"4,3\" für den pH-Wert 4,3 — bis dahin wird gemessen, wie viel Säure das Wasser schlucken kann. Je höher der KS4,3-Wert, desto stabiler bleibt dein pH-Wert im Becken.',
+    motto: 'KS4,3 mindestens 0,7 mmol/L — besser über 1,0!',
     rules: [
-      'KS4,3 bedeutet: Saeurekapazitaet bis pH 4,3. Man misst, wie viel Salzsaeure man zugeben muss, bis der pH auf 4,3 faellt.',
-      'Sollwert im Schwimmbad: mindestens 0,7 mmol/L. Besser ist ein Wert ueber 1,0 mmol/L fuer stabilen Betrieb.',
-      'Gemessen wird durch Titration: Du gibst tropfenweise Salzsaeure zur Wasserprobe und zahlst, wie viel du brauchst.',
-      'Ist der KS4,3 zu niedrig, schwankt der pH-Wert staendig — das Chlor wird instabil und die Dosieranlage kommt nicht hinterher.',
+      'KS4,3 bedeutet: Säurekapazität bis pH 4,3. Man misst, wie viel Salzsäure man zugeben muss, bis der pH auf 4,3 faellt.',
+      'Sollwert im Schwimmbad: mindestens 0,7 mmol/L. Besser ist ein Wert über 1,0 mmol/L für stabilen Betrieb.',
+      'Gemessen wird durch Titration: Du gibst tropfenweise Salzsäure zur Wasserprobe und zahlst, wie viel du brauchst.',
+      'Ist der KS4,3 zu niedrig, schwankt der pH-Wert ständig — das Chlor wird instabil und die Dosieranlage kommt nicht hinterher.',
       'Den KS4,3 erhoehst du mit Natriumhydrogencarbonat (NaHCO₃, Natron) — das baut den Puffer wieder auf.'
     ],
     steps: [
       {
         title: '1. KS4,3 verstehen',
-        text: 'KS4,3 sagt dir: Wie viel Saeure kann mein Beckenwasser vertragen? Die Zahl in mmol/L zeigt die Pufferstaerke. Hoeher = stabiler.'
+        text: 'KS4,3 sagt dir: Wie viel Säure kann mein Beckenwasser vertragen? Die Zahl in mmol/L zeigt die Pufferstärke. Höher = stabiler.'
       },
       {
         title: '2. Messung durchfuehren',
-        text: 'Titration: Wasserprobe nehmen, Indikator zugeben. Dann tropfenweise 0,1-molare Salzsaeure zugeben bis zum Farbumschlag bei pH 4,3. Verbrauchte Menge ablesen.'
+        text: 'Titration: Wasserprobe nehmen, Indikator zugeben. Dann tropfenweise 0,1-molare Salzsäure zugeben bis zum Farbumschlag bei pH 4,3. Verbrauchte Menge ablesen.'
       },
       {
         title: '3. Wert bewerten',
-        text: 'Unter 0,7 mmol/L → zu wenig Puffer, Massnahme noetig! 0,7–1,5 mmol/L → guter Bereich. Ueber 2,0 mmol/L → sehr stabil, aber auf Kalkausfall achten.'
+        text: 'Unter 0,7 mmol/L → zu wenig Puffer, Maßnahme nötig! 0,7–1,5 mmol/L → guter Bereich. Über 2,0 mmol/L → sehr stabil, aber auf Kalkausfall achten.'
       },
       {
         title: '4. Bei Bedarf nachsteuern',
-        text: 'KS4,3 zu niedrig? Natriumhydrogencarbonat (NaHCO₃) dosieren. Faustregel: ca. 16 g NaHCO₃ pro m³ erhoehen den KS4,3 um ca. 0,1 mmol/L.'
+        text: 'KS4,3 zu niedrig? Natriumhydrogencarbonat (NaHCO₃) dosieren. Faustregel: ca. 16 g NaHCO₃ pro m³ erhöhen den KS4,3 um ca. 0,1 mmol/L.'
       }
     ],
     examples: [
       {
-        title: 'Titration Schritt fuer Schritt',
+        title: 'Titration Schritt für Schritt',
         given: 'Du sollst den KS4,3-Wert deines Beckenwassers bestimmen.',
         question: 'Wie gehst du bei der Titration vor?',
         steps: [
           ['Schritt 1', '100 ml Wasserprobe in ein Becherglas abmessen'],
           ['Schritt 2', 'Mischindikator zugeben (zeigt Farbumschlag bei pH 4,3 an)'],
-          ['Schritt 3', 'Aus der Buerette tropfenweise 0,1 mol/L Salzsaeure zugeben und umruehren'],
+          ['Schritt 3', 'Aus der Buerette tropfenweise 0,1 mol/L Salzsäure zugeben und umruehren'],
           ['Schritt 4', 'Beim Farbumschlag (gruen → rot) stoppen und abgelesenen Verbrauch notieren'],
           ['Ergebnis', 'Verbrauch in ml = KS4,3-Wert in mmol/L (bei 100 ml Probe und 0,1 mol/L HCl)']
         ]
@@ -223,29 +223,29 @@ const TABS = {
         given: 'Du misst KS4,3 = 0,3 mmol/L im Sportbecken. Der Sollwert ist mindestens 0,7 mmol/L.',
         question: 'Welche Folgen hat das?',
         steps: [
-          ['pH-Stabilitaet', 'Der pH-Wert schwankt bei jeder kleinen Veraenderung hin und her'],
+          ['pH-Stabilitaet', 'Der pH-Wert schwankt bei jeder kleinen Veränderung hin und her'],
           ['Chlor', 'Chlorwirkung wird unberechenbar — mal zu viel, mal zu wenig wirksames Chlor'],
-          ['Dosieranlage', 'Regelt staendig nach, kommt aber nicht hinterher → hoher Chemikalienverbrauch'],
-          ['Massnahme', 'NaHCO₃ dosieren: Fuer Erhoehung um 0,4 mmol/L im 500-m³-Becken → 500 × 0,4 × 160 = 32 kg']
+          ['Dosieranlage', 'Regelt ständig nach, kommt aber nicht hinterher → hoher Chemikalienverbrauch'],
+          ['Maßnahme', 'NaHCO₃ dosieren: Für Erhoehung um 0,4 mmol/L im 500-m³-Becken → 500 × 0,4 × 160 = 32 kg']
         ]
       },
       {
         title: 'Auch KS8,2 gibt es',
-        given: 'Neben dem KS4,3 gibt es auch den KB8,2-Wert (Basekapazitaet bis pH 8,2).',
+        given: 'Neben dem KS4,3 gibt es auch den KB8,2-Wert (Basekapazität bis pH 8,2).',
         question: 'Was ist der Unterschied?',
         steps: [
-          ['KS4,3 (Saeurekapazitaet)', 'Misst, wie viel Saeure das Wasser abpuffern kann → wichtigster Wert im Bad'],
-          ['KB8,2 (Basekapazitaet)', 'Misst, wie viel Base das Wasser abpuffern kann → zeigt freie Kohlensaeure'],
-          ['Praxis im Bad', 'KS4,3 ist der Wert, den du taeglich kontrollieren musst'],
-          ['Zusammenhang', 'Beide zusammen ergeben ein komplettes Bild der Pufferkapazitaet des Wassers']
+          ['KS4,3 (Säurekapazität)', 'Misst, wie viel Säure das Wasser abpuffern kann → wichtigster Wert im Bad'],
+          ['KB8,2 (Basekapazität)', 'Misst, wie viel Base das Wasser abpuffern kann → zeigt freie Kohlensäure'],
+          ['Praxis im Bad', 'KS4,3 ist der Wert, den du täglich kontrollieren musst'],
+          ['Zusammenhang', 'Beide zusammen ergeben ein komplettes Bild der Pufferkapazität des Wassers']
         ]
       }
     ],
     pitfalls: [
       'KS4,3 und pH-Wert NICHT verwechseln! Der pH sagt dir den aktuellen Zustand, der KS4,3 sagt dir die Stabilitaet.',
-      'Natriumhydrogencarbonat (NaHCO₃) und Natriumcarbonat (Na₂CO₃) sind NICHT das Gleiche! NaHCO₃ hebt hauptsaechlich den Puffer, Na₂CO₃ hebt staerker den pH.',
+      'Natriumhydrogencarbonat (NaHCO₃) und Natriumcarbonat (Na₂CO₃) sind NICHT das Gleiche! NaHCO₃ hebt hauptsaechlich den Puffer, Na₂CO₃ hebt stärker den pH.',
       'Bei der Titration genau arbeiten! Jeder Tropfen zu viel verfaelscht das Ergebnis. Langsam titrieren und gut umruehren.',
-      'Ein zu hoher KS4,3 (ueber 2,5 mmol/L) kann auch problematisch sein — Kalkausfaellungen drohen, besonders bei hohem pH.'
+      'Ein zu hoher KS4,3 (über 2,5 mmol/L) kann auch problematisch sein — Kalkausfaellungen drohen, besonders bei hohem pH.'
     ],
     quiz: {
       question: 'Was bedeutet ein KS4,3-Wert von 0,4 mmol/L im Schwimmbecken?',
@@ -262,76 +262,76 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Wasserhaerte und Puffer im Alltag',
+    title: 'Wasserhärte und Puffer im Alltag',
     intro:
-      'Jetzt wird es praktisch: Wie kontrollierst du Wasserhaerte und Saeurekapazitaet im taeglichen Badebetrieb? Wie erkennst du Probleme, bevor sie teuer werden? Und wie dosierst du richtig, damit der pH-Wert stabil bleibt? In diesem Abschnitt lernst du die wichtigsten Handgriffe fuer deinen Arbeitsalltag.',
+      'Jetzt wird es praktisch: Wie kontrollierst du Wasserhärte und Säurekapazität im täglichen Badebetrieb? Wie erkennst du Probleme, bevor sie teuer werden? Und wie dosierst du richtig, damit der pH-Wert stabil bleibt? In diesem Abschnitt lernst du die wichtigsten Handgriffe für deinen Arbeitsalltag.',
     motto: 'Messen, bewerten, dosieren — und immer nachmessen!',
     rules: [
-      'Taeglich messen: pH-Wert, freies Chlor, KS4,3-Wert und (mindestens woechentlich) Wasserhaerte.',
-      'Kalkraender am Beckenrand = hartes Wasser + zu hoher pH. Beides pruefen und korrigieren!',
-      'pH-Schwankungen trotz laufender Dosieranlage = zu wenig Puffer. KS4,3 pruefen und NaHCO₃ nachdosieren.',
-      'Alle Werte haengen zusammen: pH, KS4,3, Wasserhaerte und Chlor beeinflussen sich gegenseitig.',
+      'Täglich messen: pH-Wert, freies Chlor, KS4,3-Wert und (mindestens woechentlich) Wasserhärte.',
+      'Kalkraender am Beckenrand = hartes Wasser + zu hoher pH. Beides prüfen und korrigieren!',
+      'pH-Schwankungen trotz laufender Dosieranlage = zu wenig Puffer. KS4,3 prüfen und NaHCO₃ nachdosieren.',
+      'Alle Werte haengen zusammen: pH, KS4,3, Wasserhärte und Chlor beeinflussen sich gegenseitig.',
       'Immer in kleinen Schritten dosieren und nach 1–2 Stunden nachmessen — nie alles auf einmal reinschuetten!'
     ],
     steps: [
       {
         title: '1. Morgendliche Messung',
-        text: 'Vor Badeoeffnung: Wasserprobe nehmen (30 cm unter Oberflaeche, nicht am Einlauf). pH, Chlor und KS4,3 messen. Werte ins Betriebstagebuch eintragen.'
+        text: 'Vor Badeöffnung: Wasserprobe nehmen (30 cm unter Oberfläche, nicht am Einlauf). pH, Chlor und KS4,3 messen. Werte ins Betriebstagebuch eintragen.'
       },
       {
         title: '2. Probleme erkennen',
-        text: 'Kalkraender? → Haerte und pH pruefen. pH springt staendig? → KS4,3 zu niedrig. Gruenlicher Schimmer? → Wasser evtl. zu weich, Kupfer loest sich.'
+        text: 'Kalkraender? → Härte und pH prüfen. pH springt ständig? → KS4,3 zu niedrig. Gruenlicher Schimmer? → Wasser evtl. zu weich, Kupfer loest sich.'
       },
       {
         title: '3. Richtig dosieren',
-        text: 'KS4,3 zu niedrig → NaHCO₃ zugeben (ca. 16 g pro m³ fuer 0,1 mmol/L Erhoehung). Wasser zu hart → Enthaertungsanlage pruefen. pH immer NACH dem Puffer korrigieren.'
+        text: 'KS4,3 zu niedrig → NaHCO₃ zugeben (ca. 16 g pro m³ für 0,1 mmol/L Erhoehung). Wasser zu hart → Enthaertungsanlage prüfen. pH immer NACH dem Puffer korrigieren.'
       },
       {
         title: '4. Dokumentieren und kontrollieren',
-        text: '1–2 Stunden nach Dosierung nachmessen. Alle Werte dokumentieren. Trends beobachten — wenn der KS4,3 staendig absinkt, stimmt etwas Grundsaetzliches nicht.'
+        text: '1–2 Stunden nach Dosierung nachmessen. Alle Werte dokumentieren. Trends beobachten — wenn der KS4,3 ständig absinkt, stimmt etwas Grundsätzliches nicht.'
       }
     ],
     examples: [
       {
         title: 'Dosierung NaHCO₃ berechnen',
-        given: 'Sportbecken mit 500 m³. KS4,3 gemessen: 0,5 mmol/L. Sollwert: 1,0 mmol/L. Faustregel: 16 g NaHCO₃ pro m³ erhoehen den KS4,3 um 0,1 mmol/L.',
+        given: 'Sportbecken mit 500 m³. KS4,3 gemessen: 0,5 mmol/L. Sollwert: 1,0 mmol/L. Faustregel: 16 g NaHCO₃ pro m³ erhöhen den KS4,3 um 0,1 mmol/L.',
         question: 'Wie viel NaHCO₃ brauchst du?',
         steps: [
-          ['Differenz', '1,0 − 0,5 = 0,5 mmol/L Erhoehung noetig'],
+          ['Differenz', '1,0 − 0,5 = 0,5 mmol/L Erhoehung nötig'],
           ['Pro 0,1 mmol/L', '16 g NaHCO₃ pro m³'],
-          ['Fuer 0,5 mmol/L', '5 × 16 g = 80 g pro m³'],
-          ['Fuer 500 m³', '500 × 80 g = 40.000 g = 40 kg NaHCO₃'],
-          ['Wichtig', 'Nicht alles auf einmal! In Portionen ueber den Tag verteilen und nachmessen.']
+          ['Für 0,5 mmol/L', '5 × 16 g = 80 g pro m³'],
+          ['Für 500 m³', '500 × 80 g = 40.000 g = 40 kg NaHCO₃'],
+          ['Wichtig', 'Nicht alles auf einmal! In Portionen über den Tag verteilen und nachmessen.']
         ]
       },
       {
         title: 'Praxisszenario: Kalkraender am Beckenrand',
-        given: 'Nach dem Wochenende findest du weisse Kalkraender an der Wasserlinie. Du misst: pH 7,6, Wasserhaerte 19 °dH, KS4,3 = 1,8 mmol/L.',
+        given: 'Nach dem Wochenende findest du weisse Kalkraender an der Wasserlinie. Du misst: pH 7,6, Wasserhärte 19 °dH, KS4,3 = 1,8 mmol/L.',
         question: 'Was ist die Ursache und was tust du?',
         steps: [
-          ['Analyse', 'Wasserhaerte mit 19 °dH = zu hart (Soll: unter 14 °dH)'],
-          ['Ursache', 'Hohe Calciumhaerte + pH am oberen Rand → Kalk faellt aus dem Wasser aus'],
-          ['Sofortmassnahme', 'Kalkraender mechanisch entfernen (saurer Reiniger oder Schwamm)'],
-          ['Langfristig', 'Enthaertungsanlage pruefen/einsetzen. pH eher bei 7,0–7,2 halten.']
+          ['Analyse', 'Wasserhärte mit 19 °dH = zu hart (Soll: unter 14 °dH)'],
+          ['Ursache', 'Hohe Calciumhärte + pH am oberen Rand → Kalk faellt aus dem Wasser aus'],
+          ['Sofortmaßnahme', 'Kalkraender mechanisch entfernen (saurer Reiniger oder Schwamm)'],
+          ['Langfristig', 'Enthaertungsanlage prüfen/einsetzen. pH eher bei 7,0–7,2 halten.']
         ]
       },
       {
-        title: 'Praxisszenario: pH springt staendig',
-        given: 'Die Dosieranlage zeigt: pH schwankt zwischen 6,8 und 7,5 innerhalb weniger Stunden. Chlorwert ist auch unbestaendig. Du misst KS4,3 = 0,3 mmol/L.',
+        title: 'Praxisszenario: pH springt ständig',
+        given: 'Die Dosieranlage zeigt: pH schwankt zwischen 6,8 und 7,5 innerhalb weniger Stunden. Chlorwert ist auch unbeständig. Du misst KS4,3 = 0,3 mmol/L.',
         question: 'Was ist das Problem und wie loest du es?',
         steps: [
           ['Problem', 'KS4,3 mit 0,3 mmol/L viel zu niedrig (Soll: mind. 0,7 mmol/L)'],
-          ['Folge', 'Kein Puffer → jede kleine Veraenderung laesst den pH stark schwanken'],
-          ['Massnahme', 'NaHCO₃ dosieren. Fuer 300 m³ Becken: 300 × 0,4 × 160 = 19,2 kg NaHCO₃ noetig'],
+          ['Folge', 'Kein Puffer → jede kleine Veränderung lässt den pH stark schwanken'],
+          ['Maßnahme', 'NaHCO₃ dosieren. Für 300 m³ Becken: 300 × 0,4 × 160 = 19,2 kg NaHCO₃ nötig'],
           ['Danach', 'pH stabilisiert sich, Chlorwirkung wird gleichmaessiger, Dosieranlage hat weniger Arbeit']
         ]
       }
     ],
     pitfalls: [
       'Nie gleichzeitig pH korrigieren UND Puffer aufbauen — erst den Puffer (NaHCO₃), dann nach 1–2 Stunden den pH nachjustieren.',
-      'Ionentauscher zur Enthaertung muessen regelmaessig regeneriert werden — vergisst man das, kommt ploetzlich hartes Wasser durch.',
-      'NaHCO₃ nicht direkt ins Becken schuetten! Erst in einem Eimer Wasser aufloesen, dann ueber die Dosieranlage oder gleichmaessig verteilen.',
-      'Alle Werte zusammen betrachten: pH allein sagt nicht genug — immer auch KS4,3 und Wasserhaerte im Blick behalten!'
+      'Ionentauscher zur Enthaertung müssen regelmäßig regeneriert werden — vergisst man das, kommt ploetzlich hartes Wasser durch.',
+      'NaHCO₃ nicht direkt ins Becken schuetten! Erst in einem Eimer Wasser aufloesen, dann über die Dosieranlage oder gleichmaessig verteilen.',
+      'Alle Werte zusammen betrachten: pH allein sagt nicht genug — immer auch KS4,3 und Wasserhärte im Blick behalten!'
     ],
     quiz: {
       question: 'Im Sportbecken (400 m³) ist der KS4,3 bei 0,4 mmol/L. Du willst auf 1,0 mmol/L kommen. Wie viel NaHCO₃ brauchst du ungefaehr? (Faustregel: 16 g pro m³ pro 0,1 mmol/L)',
@@ -341,12 +341,12 @@ const TABS = {
         'Etwa 100 kg NaHCO₃'
       ],
       correctIndex: 1,
-      explanation: 'Differenz: 1,0 − 0,4 = 0,6 mmol/L. Fuer 0,6 mmol/L: 6 × 16 g = 96 g pro m³. Fuer 400 m³: 400 × 96 g = 38.400 g ≈ 38 kg NaHCO₃.'
+      explanation: 'Differenz: 1,0 − 0,4 = 0,6 mmol/L. Für 0,6 mmol/L: 6 × 16 g = 96 g pro m³. Für 400 m³: 400 × 96 g = 38.400 g ≈ 38 kg NaHCO₃.'
     }
   }
 };
 
-const TAB_ORDER = ['grundlagen', 'wasserhaerte', 'ks-wert', 'praxis'];
+const TAB_ORDER = ['grundlagen', 'wasserhärte', 'ks-wert', 'praxis'];
 
 /* ─── Reference tables for sidebar ─────────────────────────────────────────── */
 
@@ -354,16 +354,16 @@ const HAERTEGRADE_TABLE = [
   ['Bereich', '°dH', 'mmol/L Ca', 'Bewertung'],
   ['Weich', '< 8,4', '< 1,5', 'Wenig Kalk, oft wenig Puffer'],
   ['Mittel', '8,4–14', '1,5–2,5', 'Ideal fuers Schwimmbad'],
-  ['Hart', '14–21', '2,5–3,8', 'Kalkablagerungen moeglich'],
+  ['Hart', '14–21', '2,5–3,8', 'Kalkablagerungen möglich'],
   ['Sehr hart', '> 21', '> 3,8', 'Enthaertung dringend empfohlen']
 ];
 
 const SOLLWERTE_TABLE = [
   ['Parameter', 'Sollwert', 'Einheit'],
   ['pH-Wert', '6,5–7,6 (ideal 7,0–7,2)', '—'],
-  ['KS4,3 (Saeurekapazitaet)', '≥ 0,7 (besser > 1,0)', 'mmol/L'],
-  ['Calciumhaerte', '0,9–1,6', 'mmol/L'],
-  ['Gesamthaerte', '5–14', '°dH'],
+  ['KS4,3 (Säurekapazität)', '≥ 0,7 (besser > 1,0)', 'mmol/L'],
+  ['Calciumhärte', '0,9–1,6', 'mmol/L'],
+  ['Gesamthärte', '5–14', '°dH'],
   ['Freies Chlor', '0,3–0,6', 'mg/L'],
   ['Gebundenes Chlor', '< 0,2', 'mg/L']
 ];
@@ -435,7 +435,7 @@ function ExampleCard({ example, darkMode }) {
 
 /* ─── Main component ────────────────────────────────────────────────────────── */
 
-export default function SaeurekapazitaetDeepDiveView() {
+export default function SäurekapazitätDeepDiveView() {
   const { darkMode } = useApp();
   const [activeTab, setActiveTab] = useState('grundlagen');
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -521,7 +521,7 @@ export default function SaeurekapazitaetDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -549,9 +549,9 @@ export default function SaeurekapazitaetDeepDiveView() {
             </ul>
           </InfoCard>
 
-          {/* Haertegrade table (on grundlagen and wasserhaerte tabs) */}
-          {(activeTab === 'grundlagen' || activeTab === 'wasserhaerte') && (
-            <InfoCard darkMode={darkMode} title="Haertegrade-Tabelle">
+          {/* Härtegrade table (on grundlagen and wasserhärte tabs) */}
+          {(activeTab === 'grundlagen' || activeTab === 'wasserhärte') && (
+            <InfoCard darkMode={darkMode} title="Härtegrade-Tabelle">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -588,7 +588,7 @@ export default function SaeurekapazitaetDeepDiveView() {
 
           {/* Sollwerte table (on ks-wert and praxis tabs) */}
           {(activeTab === 'ks-wert' || activeTab === 'praxis') && (
-            <InfoCard darkMode={darkMode} title="Sollwerte-Uebersicht (DIN 19643)">
+            <InfoCard darkMode={darkMode} title="Sollwerte-Übersicht (DIN 19643)">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -626,10 +626,10 @@ export default function SaeurekapazitaetDeepDiveView() {
               <div className="space-y-3">
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-blue-500/30 bg-blue-500/10' : 'border-blue-200 bg-blue-50'}`}>
                   <div className={`text-sm font-semibold ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                    KS4,3 erhoehen (NaHCO₃)
+                    KS4,3 erhöhen (NaHCO₃)
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Ca. 16 g NaHCO₃ pro m³ fuer 0,1 mmol/L Erhoehung
+                    Ca. 16 g NaHCO₃ pro m³ für 0,1 mmol/L Erhoehung
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                     Beispiel: 500 m³ × 0,3 mmol/L × 160 g = 24 kg
@@ -637,13 +637,13 @@ export default function SaeurekapazitaetDeepDiveView() {
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
                   <div className={`text-sm font-semibold ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
-                    Enthaertung noetig?
+                    Enthaertung nötig?
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Bei Gesamthaerte ueber 14 °dH → Ionentauscher einsetzen
+                    Bei Gesamthärte über 14 °dH → Ionentauscher einsetzen
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                    Ionentauscher tauscht Ca²⁺/Mg²⁺ gegen Na⁺ aus. Regelmaessig regenerieren!
+                    Ionentauscher tauscht Ca²⁺/Mg²⁺ gegen Na⁺ aus. Regelmäßig regenerieren!
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-200 bg-emerald-50'}`}>
@@ -675,15 +675,15 @@ export default function SaeurekapazitaetDeepDiveView() {
                     0,7–1,5 mmol/L
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Guter Bereich. pH-Wert bleibt stabil. Regelmaessig kontrollieren.
+                    Guter Bereich. pH-Wert bleibt stabil. Regelmäßig kontrollieren.
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
                   <div className={`text-sm font-semibold ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
-                    Ueber 2,5 mmol/L
+                    Über 2,5 mmol/L
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Sehr hoher Puffer. Achtung: Kalkausfall moeglich bei hohem pH!
+                    Sehr hoher Puffer. Achtung: Kalkausfall möglich bei hohem pH!
                   </p>
                 </div>
               </div>
@@ -730,7 +730,7 @@ export default function SaeurekapazitaetDeepDiveView() {
                     : 'bg-blue-600 text-white hover:bg-blue-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

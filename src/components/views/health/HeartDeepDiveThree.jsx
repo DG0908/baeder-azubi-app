@@ -999,7 +999,7 @@ export default function HeartDeepDiveThree({ initialTab = 'anatomie', initialSce
                   </div>
                 ) : (
                   <p className="text-xs" style={{ color: '#8ab0c0' }}>
-                    Tippe im Modell auf einen Hotspot, um die Struktur zu erklaeren.
+                    Tippe im Modell auf einen Hotspot, um die Struktur zu erklären.
                   </p>
                 )}
 

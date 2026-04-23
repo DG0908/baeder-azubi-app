@@ -44,7 +44,7 @@ const TAB_DATA = {
       { heading: 'Chlorzehrung & Dosierberechnung', items: ['Chlorzehrung: durch Badelast, UV-Strahlung, Temperatur', 'Grundformel: Dosiermenge (g) = Volumen (m³) × Zieldosis (mg/L)', 'Produkt-Wirkgehalt beachten! (z.B. NaOCl 12 % → 120 g/L Cl)', 'Kontinuierliche Messung + Regelung: Zieldosis hält sich automatisch', 'Stoßchlorung: bei Kontamination — kurzzeitig > 1 mg/L', 'Freigabe nach Stoßchlorung erst wieder bei ≤ 1 mg/L Cl (frei)'] },
     ],
   },
-  haerte: {
+  härte: {
     title: 'Wasserhärte & Korrosion',
     color: '#ff7a7a',
     sections: [

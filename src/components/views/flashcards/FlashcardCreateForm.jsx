@@ -44,7 +44,7 @@ const FlashcardCreateForm = ({
         toast.success('Karteikarte hinzugefuegt!');
       } else {
         setPendingFlashcards((current) => [...current, flashcard]);
-        toast.success('Karteikarte eingereicht! Wird nach Pruefung freigeschaltet.');
+        toast.success('Karteikarte eingereicht! Wird nach Prüfung freigeschaltet.');
       }
 
       void queueXpAward('flashcardCreation', XP_REWARDS.FLASHCARD_CREATE, {
@@ -119,7 +119,7 @@ const FlashcardCreateForm = ({
         {!user.permissions.canApproveQuestions && (
           <p className="text-xs text-center text-gray-500 flex items-center justify-center gap-1">
             <Info size={12} />
-            Deine Karteikarte wird nach Pruefung durch einen Trainer freigeschaltet
+            Deine Karteikarte wird nach Prüfung durch einen Trainer freigeschaltet
           </p>
         )}
       </div>

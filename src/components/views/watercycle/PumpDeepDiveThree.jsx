@@ -12,7 +12,7 @@ const PUMP_SPOT_DATA = {
     title: 'Laufrad (Impeller)',
     items: [
       'Das Laufrad wandelt Drehenergie in Druck und Volumenstrom um.',
-      'Mehr Durchfluss bedeutet weniger Förderhoehe auf der Pumpenkurve.',
+      'Mehr Durchfluss bedeutet weniger Förderhöhe auf der Pumpenkurve.',
       'Ablagerungen und Abrieb am Schaufelprofil reduzieren den Wirkungsgrad.',
     ],
   },
@@ -43,7 +43,7 @@ const PUMP_SPOT_DATA = {
     items: [
       'Drehstrommotor mit stabiler Drehzahl für gleichmaessige Förderung.',
       'Lagerzustand und thermischer Schutz sind betriebsentscheidend.',
-      'Frequenzumrichter ermoeglicht effiziente Lastanpassung.',
+      'Frequenzumrichter ermöglicht effiziente Lastanpassung.',
     ],
   },
 };

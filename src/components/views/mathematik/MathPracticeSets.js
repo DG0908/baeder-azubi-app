@@ -47,7 +47,7 @@ export const PRACTICE_SETS = {
     ex('Berechne c bei a = 8 m und b = 15 m.', '17 m', ['8 x 8 + 15 x 15 = 64 + 225 = 289.', 'Ziehe die Wurzel aus 289.', 'Wurzel aus 289 ist 17.', 'Ergebnis: 17 m.']),
     ex('Berechne c bei a = 9 m und b = 12 m.', '15 m', ['9 x 9 + 12 x 12 = 81 + 144 = 225.', 'Ziehe die Wurzel aus 225.', 'Wurzel aus 225 ist 15.', 'Ergebnis: 15 m.'])
   ],
-  flaechen: [
+  flächen: [
     ex('Wie groß ist die Fläche eines Rechtecks mit 12 m und 5 m?', '60 m²', ['Nutze A = a x b.', '12 x 5 = 60.', 'Schreibe die Einheit als Quadratmeter.', 'Ergebnis: 60 m².']),
     ex('Wie groß ist die Fläche eines Rechtecks mit 25 m und 8 m?', '200 m²', ['A = a x b.', '25 x 8 = 200.', 'Die Einheit ist m².', 'Ergebnis: 200 m².']),
     ex('Wie groß ist die Fläche eines Dreiecks mit a = 10 m und h = 6 m?', '30 m²', ['Nutze A = a x h : 2.', '10 x 6 = 60.', '60 : 2 = 30.', 'Ergebnis: 30 m².']),
@@ -89,7 +89,7 @@ export const PRACTICE_SETS = {
     ex('Wie lange braucht man für 200 m bei 4 m/s?', '50 s', ['Nutze t = s : v.', '200 : 4 = 50.', 'Die Einheit ist Sekunden.', 'Ergebnis: 50 s.']),
     ex('Wie groß ist die Geschwindigkeit bei 75 m in 50 s?', '1,5 m/s', ['Nutze v = s : t.', '75 : 50 = 1,5.', 'Die Einheit ist m/s.', 'Ergebnis: 1,5 m/s.'])
   ],
-  waerme: [
+  wärme: [
     ex('Wie viel Energie braucht man grob für 10 m³ Wasser bei 2 K?', '23,2 kWh', ['Nutze Q = 1,16 x m³ x Delta T.', '1,16 x 10 x 2 = 23,2.', 'Die Einheit ist kWh.', 'Ergebnis: 23,2 kWh.']),
     ex('Wie viel Energie braucht man grob für 20 m³ Wasser bei 3 K?', '69,6 kWh', ['Q = 1,16 x 20 x 3.', '1,16 x 60 = 69,6.', 'Die Einheit ist kWh.', 'Ergebnis: 69,6 kWh.']),
     ex('Wie viel Energie braucht man grob für 5 m³ Wasser bei 4 K?', '23,2 kWh', ['Q = 1,16 x 5 x 4.', '1,16 x 20 = 23,2.', 'Das Ergebnis ist eine Energiemenge.', 'Ergebnis: 23,2 kWh.']),

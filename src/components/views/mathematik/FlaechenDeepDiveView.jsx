@@ -7,16 +7,16 @@ const TABS = {
   grundlagen: {
     id: 'grundlagen',
     chip: 'Grundlagen',
-    title: 'Was ist eine Flaeche?',
+    title: 'Was ist eine Fläche?',
     intro:
-      'Eine Flaeche ist der Platz, den etwas einnimmt — zum Beispiel die Wasseroberflaeche eines Beckens oder der Boden einer Schwimmhalle. Flaeche misst man in Quadratmetern (m²). Wenn du weisst, wie lang und wie breit etwas ist, kannst du die Flaeche berechnen.',
-    motto: 'Flaeche = wie viel Platz etwas braucht.',
+      'Eine Fläche ist der Platz, den etwas einnimmt — zum Beispiel die Wasseroberfläche eines Beckens oder der Boden einer Schwimmhalle. Fläche misst man in Quadratmetern (m²). Wenn du weisst, wie lang und wie breit etwas ist, kannst du die Fläche berechnen.',
+    motto: 'Fläche = wie viel Platz etwas braucht.',
     rules: [
-      'Flaeche ist IMMER zweidimensional — sie hat Laenge und Breite, aber keine Hoehe.',
-      'Die Einheit fuer Flaeche ist m² (Quadratmeter) — nicht m (Meter)!',
-      '1 m² ist ein Quadrat mit 1 m Seitenlaenge — also 1 m × 1 m.',
-      'Meter (m) misst eine Strecke, Quadratmeter (m²) misst eine Flaeche — nicht verwechseln!',
-      'Um die Flaeche zu berechnen, brauchst du IMMER mindestens zwei Masse (z.B. Laenge und Breite).'
+      'Fläche ist IMMER zweidimensional — sie hat Länge und Breite, aber keine Höhe.',
+      'Die Einheit für Fläche ist m² (Quadratmeter) — nicht m (Meter)!',
+      '1 m² ist ein Quadrat mit 1 m Seitenlänge — also 1 m × 1 m.',
+      'Meter (m) misst eine Strecke, Quadratmeter (m²) misst eine Fläche — nicht verwechseln!',
+      'Um die Fläche zu berechnen, brauchst du IMMER mindestens zwei Masse (z.B. Länge und Breite).'
     ],
     steps: [
       {
@@ -25,11 +25,11 @@ const TABS = {
       },
       {
         title: '2. Masse herausfinden',
-        text: 'Miss oder lies die Masse ab. Bei einem Rechteck brauchst du Laenge und Breite. Bei einem Kreis den Radius oder Durchmesser.'
+        text: 'Miss oder lies die Masse ab. Bei einem Rechteck brauchst du Länge und Breite. Bei einem Kreis den Radius oder Durchmesser.'
       },
       {
         title: '3. Formel anwenden',
-        text: 'Setze die Masse in die passende Formel ein. Beim Rechteck: Laenge × Breite. Rechne Schritt fuer Schritt.'
+        text: 'Setze die Masse in die passende Formel ein. Beim Rechteck: Länge × Breite. Rechne Schritt für Schritt.'
       },
       {
         title: '4. Einheit nicht vergessen',
@@ -40,48 +40,48 @@ const TABS = {
       {
         title: 'Einfaches Beispiel: Schwimmbecken',
         given: 'Ein Schwimmbecken ist 25 m lang und 10 m breit.',
-        question: 'Wie gross ist die Wasseroberflaeche?',
+        question: 'Wie gross ist die Wasseroberfläche?',
         steps: [
-          ['Form erkennen', 'Rechteck (4 Ecken, gegenueberliegende Seiten gleich lang)'],
-          ['Masse', 'Laenge = 25 m, Breite = 10 m'],
-          ['Formel', 'A = Laenge × Breite = 25 × 10 = 250'],
-          ['Ergebnis', 'Die Wasseroberflaeche ist 250 m²']
+          ['Form erkennen', 'Rechteck (4 Ecken, gegenüberliegende Seiten gleich lang)'],
+          ['Masse', 'Länge = 25 m, Breite = 10 m'],
+          ['Formel', 'A = Länge × Breite = 25 × 10 = 250'],
+          ['Ergebnis', 'Die Wasseroberfläche ist 250 m²']
         ]
       },
       {
-        title: 'Baeder-Beispiel: Umkleidekabine',
+        title: 'Bäder-Beispiel: Umkleidekabine',
         given: 'Eine Umkleidekabine ist 3 m lang und 2 m breit.',
-        question: 'Wie viel Bodenflaeche hat die Kabine?',
+        question: 'Wie viel Bodenfläche hat die Kabine?',
         steps: [
           ['Form erkennen', 'Rechteck'],
-          ['Masse', 'Laenge = 3 m, Breite = 2 m'],
+          ['Masse', 'Länge = 3 m, Breite = 2 m'],
           ['Formel', 'A = 3 × 2 = 6'],
-          ['Ergebnis', 'Die Bodenflaeche ist 6 m²']
+          ['Ergebnis', 'Die Bodenfläche ist 6 m²']
         ]
       },
       {
         title: 'Unterschied m und m²',
         given: 'Ein quadratischer Raum hat Seiten von 4 m.',
-        question: 'Wie gross ist der Umfang und wie gross ist die Flaeche?',
+        question: 'Wie gross ist der Umfang und wie gross ist die Fläche?',
         steps: [
-          ['Umfang (Strecke)', '4 Seiten × 4 m = 16 m (das ist eine Laenge!)'],
-          ['Flaeche', '4 m × 4 m = 16 m² (das ist eine Flaeche!)'],
+          ['Umfang (Strecke)', '4 Seiten × 4 m = 16 m (das ist eine Länge!)'],
+          ['Fläche', '4 m × 4 m = 16 m² (das ist eine Fläche!)'],
           ['Unterschied', '16 m ist die Strecke drum herum, 16 m² ist der Platz darin'],
-          ['Merke', 'm = Strecke, m² = Flaeche — andere Einheit, andere Bedeutung!']
+          ['Merke', 'm = Strecke, m² = Fläche — andere Einheit, andere Bedeutung!']
         ]
       }
     ],
     pitfalls: [
-      'm und m² verwechseln: 10 m ist eine Strecke, 10 m² ist eine Flaeche — das ist ein riesiger Unterschied!',
+      'm und m² verwechseln: 10 m ist eine Strecke, 10 m² ist eine Fläche — das ist ein riesiger Unterschied!',
       'Einheiten vergessen: Wenn du nur "250" schreibst statt "250 m²", gibt es Punktabzug.',
-      'Laenge und Breite muessen die GLEICHE Einheit haben — nicht cm mit m mischen!',
-      'Die Flaeche ist NICHT dasselbe wie der Umfang. Umfang = Strecke drum herum, Flaeche = Platz darin.'
+      'Länge und Breite müssen die GLEICHE Einheit haben — nicht cm mit m mischen!',
+      'Die Fläche ist NICHT dasselbe wie der Umfang. Umfang = Strecke drum herum, Fläche = Platz darin.'
     ],
     quiz: {
-      question: 'Ein Lehrschwimmbecken ist 12 m lang und 8 m breit. Wie gross ist die Wasseroberflaeche?',
+      question: 'Ein Lehrschwimmbecken ist 12 m lang und 8 m breit. Wie gross ist die Wasseroberfläche?',
       options: ['40 m²', '96 m²', '20 m'],
       correctIndex: 1,
-      explanation: 'A = Laenge × Breite = 12 × 8 = 96 m². Achtung: 40 m² waere der Umfang (aber in m, nicht m²) und 20 m ist nur der halbe Umfang.'
+      explanation: 'A = Länge × Breite = 12 × 8 = 96 m². Achtung: 40 m² wäre der Umfang (aber in m, nicht m²) und 20 m ist nur der halbe Umfang.'
     }
   },
 
@@ -90,38 +90,38 @@ const TABS = {
     chip: 'Rechteck & Dreieck',
     title: 'Rechteck und Dreieck berechnen',
     intro:
-      'Die beiden haeufigsten Formen im Schwimmbad: Rechtecke (Becken, Raeume, Fliesen) und Dreiecke (Dachflaechen, Rasenecken). Das Dreieck ist dabei einfach das halbe Rechteck — wenn du das verstanden hast, kannst du beides!',
+      'Die beiden häufigsten Formen im Schwimmbad: Rechtecke (Becken, Räume, Fliesen) und Dreiecke (Dachflächen, Rasenecken). Das Dreieck ist dabei einfach das halbe Rechteck — wenn du das verstanden hast, kannst du beides!',
     motto: 'Dreieck = halbes Rechteck.',
     rules: [
-      'Rechteck-Formel: A = a × b (Laenge mal Breite).',
+      'Rechteck-Formel: A = a × b (Länge mal Breite).',
       'Quadrat ist ein Sonderfall: A = a × a (beide Seiten gleich lang).',
-      'Dreieck-Formel: A = a × h ÷ 2 (Grundseite mal Hoehe geteilt durch 2).',
-      'Die Hoehe beim Dreieck steht IMMER senkrecht (im rechten Winkel) auf der Grundseite.',
-      'Warum ÷ 2? Weil ein Dreieck genau die Haelfte eines Rechtecks mit gleicher Grundseite und Hoehe ist.'
+      'Dreieck-Formel: A = a × h ÷ 2 (Grundseite mal Höhe geteilt durch 2).',
+      'Die Höhe beim Dreieck steht IMMER senkrecht (im rechten Winkel) auf der Grundseite.',
+      'Warum ÷ 2? Weil ein Dreieck genau die Haelfte eines Rechtecks mit gleicher Grundseite und Höhe ist.'
     ],
     steps: [
       {
         title: '1. Rechteck: Seiten bestimmen',
-        text: 'Ein Rechteck hat zwei verschiedene Seitenlaengen: Seite a (Laenge) und Seite b (Breite). Miss beide oder lies sie aus der Aufgabe ab.'
+        text: 'Ein Rechteck hat zwei verschiedene Seitenlängen: Seite a (Länge) und Seite b (Breite). Miss beide oder lies sie aus der Aufgabe ab.'
       },
       {
         title: '2. Rechteck: Multiplizieren',
-        text: 'A = a × b — einfach Laenge mal Breite. Beispiel: 25 m × 10 m = 250 m². Fertig!'
+        text: 'A = a × b — einfach Länge mal Breite. Beispiel: 25 m × 10 m = 250 m². Fertig!'
       },
       {
-        title: '3. Dreieck: Grundseite und Hoehe',
-        text: 'Beim Dreieck brauchst du die Grundseite (a) und die Hoehe (h). Die Hoehe geht senkrecht von der Grundseite zur gegenueberliegenden Spitze.'
+        title: '3. Dreieck: Grundseite und Höhe',
+        text: 'Beim Dreieck brauchst du die Grundseite (a) und die Höhe (h). Die Höhe geht senkrecht von der Grundseite zur gegenüberliegenden Spitze.'
       },
       {
         title: '4. Dreieck: Rechnen wie Rechteck, dann halbieren',
-        text: 'A = a × h ÷ 2 — erst Grundseite mal Hoehe (wie beim Rechteck), dann durch 2 teilen. Beispiel: 6 m × 4 m ÷ 2 = 12 m².'
+        text: 'A = a × h ÷ 2 — erst Grundseite mal Höhe (wie beim Rechteck), dann durch 2 teilen. Beispiel: 6 m × 4 m ÷ 2 = 12 m².'
       }
     ],
     examples: [
       {
         title: 'Rechteck: Beckenboden fliesen',
         given: 'Ein Sportbecken ist 25 m lang und 12,5 m breit.',
-        question: 'Wie viele m² Fliesen braucht man fuer den Boden?',
+        question: 'Wie viele m² Fliesen braucht man für den Boden?',
         steps: [
           ['Form', 'Rechteck'],
           ['Masse', 'a = 25 m, b = 12,5 m'],
@@ -130,14 +130,14 @@ const TABS = {
         ]
       },
       {
-        title: 'Dreieck: Rasendreiecksflaeche',
-        given: 'Eine dreieckige Rasenflaeche neben dem Becken hat eine Grundseite von 10 m und eine Hoehe von 6 m.',
-        question: 'Wie gross ist die Rasenflaeche?',
+        title: 'Dreieck: Rasendreiecksfläche',
+        given: 'Eine dreieckige Rasenfläche neben dem Becken hat eine Grundseite von 10 m und eine Höhe von 6 m.',
+        question: 'Wie gross ist die Rasenfläche?',
         steps: [
           ['Form', 'Dreieck'],
-          ['Masse', 'Grundseite a = 10 m, Hoehe h = 6 m'],
+          ['Masse', 'Grundseite a = 10 m, Höhe h = 6 m'],
           ['Rechnung', 'A = 10 × 6 ÷ 2 = 60 ÷ 2 = 30'],
-          ['Ergebnis', 'Die Rasenflaeche ist 30 m²']
+          ['Ergebnis', 'Die Rasenfläche ist 30 m²']
         ]
       },
       {
@@ -145,7 +145,7 @@ const TABS = {
         given: 'Ein Rechteck ist 8 m × 5 m. Es wird diagonal halbiert.',
         question: 'Wie gross ist jedes der beiden Dreiecke?',
         steps: [
-          ['Rechteck-Flaeche', 'A = 8 × 5 = 40 m²'],
+          ['Rechteck-Fläche', 'A = 8 × 5 = 40 m²'],
           ['Diagonale teilt in 2 Dreiecke', 'Jedes Dreieck = 40 ÷ 2 = 20 m²'],
           ['Probe mit Formel', 'A = 8 × 5 ÷ 2 = 20 m² — stimmt!'],
           ['Merke', 'Jedes Dreieck ist genau die Haelfte des Rechtecks']
@@ -153,13 +153,13 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Beim Dreieck das Teilen durch 2 vergessen — dann ist die Flaeche doppelt so gross!',
-      'Die Hoehe ist NICHT die Seitenlaenge! Die Hoehe steht senkrecht auf der Grundseite.',
-      'Bei Dreiecken: Nicht irgendwelche Seiten multiplizieren — es muss die Grundseite mit der DAZUGEHOERIGEN Hoehe sein.',
+      'Beim Dreieck das Teilen durch 2 vergessen — dann ist die Fläche doppelt so gross!',
+      'Die Höhe ist NICHT die Seitenlänge! Die Höhe steht senkrecht auf der Grundseite.',
+      'Bei Dreiecken: Nicht irgendwelche Seiten multiplizieren — es muss die Grundseite mit der DAZUGEHOERIGEN Höhe sein.',
       'Beim Quadrat beide Seiten gleich lang — aber trotzdem multiplizieren, nicht verdoppeln! 5 m × 5 m = 25 m², nicht 10 m².'
     ],
     quiz: {
-      question: 'Eine dreieckige Sonnensegel-Flaeche hat eine Grundseite von 8 m und eine Hoehe von 5 m. Wie gross ist die Flaeche?',
+      question: 'Eine dreieckige Sonnensegel-Fläche hat eine Grundseite von 8 m und eine Höhe von 5 m. Wie gross ist die Fläche?',
       options: ['40 m²', '20 m²', '13 m²'],
       correctIndex: 1,
       explanation: 'A = a × h ÷ 2 = 8 × 5 ÷ 2 = 40 ÷ 2 = 20 m².'
@@ -169,13 +169,13 @@ const TABS = {
   kreis: {
     id: 'kreis',
     chip: 'Kreis',
-    title: 'Kreisflaeche berechnen',
+    title: 'Kreisfläche berechnen',
     intro:
-      'Runde Becken, Whirlpools, Filterplatten — im Schwimmbad gibt es viele Kreise. Die Kreisflaeche berechnest du mit der Zahl Pi (π ≈ 3,14). Wichtig: Du brauchst den Radius, also den halben Durchmesser!',
+      'Runde Becken, Whirlpools, Filterplatten — im Schwimmbad gibt es viele Kreise. Die Kreisfläche berechnest du mit der Zahl Pi (π ≈ 3,14). Wichtig: Du brauchst den Radius, also den halben Durchmesser!',
     motto: 'A = π × r² — Pi mal Radius zum Quadrat.',
     rules: [
       'Die Kreisformel lautet: A = π × r² (Pi mal Radius hoch 2).',
-      'π (Pi) ist ungefaehr 3,14 — fuer die Pruefung reicht 3,14 meistens aus.',
+      'π (Pi) ist ungefaehr 3,14 — für die Prüfung reicht 3,14 meistens aus.',
       'Der Radius (r) ist der Abstand vom Mittelpunkt zum Rand — also der HALBE Durchmesser.',
       'Der Durchmesser (d) geht von Rand zu Rand durch den Mittelpunkt — also das DOPPELTE vom Radius.',
       'r² bedeutet r × r — also den Radius mit sich selbst malnehmen (nicht mal 2!).'
@@ -191,56 +191,56 @@ const TABS = {
       },
       {
         title: '3. Mit Pi malnehmen',
-        text: 'Nimm das Ergebnis mal π (3,14): A = 3,14 × 9 = 28,26 m². Das ist die Kreisflaeche!'
+        text: 'Nimm das Ergebnis mal π (3,14): A = 3,14 × 9 = 28,26 m². Das ist die Kreisfläche!'
       },
       {
-        title: '4. Ergebnis pruefen',
-        text: 'Die Kreisflaeche ist immer kleiner als das Quadrat, das drum herum passt. Ein Kreis mit r = 3 m passt in ein 6 m × 6 m Quadrat (36 m²). 28,26 < 36 — passt!'
+        title: '4. Ergebnis prüfen',
+        text: 'Die Kreisfläche ist immer kleiner als das Quadrat, das drum herum passt. Ein Kreis mit r = 3 m passt in ein 6 m × 6 m Quadrat (36 m²). 28,26 < 36 — passt!'
       }
     ],
     examples: [
       {
         title: 'Rundbecken (Radius gegeben)',
         given: 'Ein rundes Planschbecken hat einen Radius von 4 m.',
-        question: 'Wie gross ist die Wasseroberflaeche?',
+        question: 'Wie gross ist die Wasseroberfläche?',
         steps: [
           ['Radius', 'r = 4 m'],
           ['r²', '4 × 4 = 16'],
           ['Formel', 'A = π × r² = 3,14 × 16 = 50,24'],
-          ['Ergebnis', 'Die Wasseroberflaeche ist 50,24 m²']
+          ['Ergebnis', 'Die Wasseroberfläche ist 50,24 m²']
         ]
       },
       {
         title: 'Whirlpool (Durchmesser gegeben)',
         given: 'Ein Whirlpool hat einen Durchmesser von 3 m.',
-        question: 'Wie gross ist die Wasserflaeche?',
+        question: 'Wie gross ist die Wasserfläche?',
         steps: [
           ['Durchmesser → Radius', 'd = 3 m → r = 3 ÷ 2 = 1,5 m'],
           ['r²', '1,5 × 1,5 = 2,25'],
           ['Formel', 'A = π × r² = 3,14 × 2,25 = 7,065'],
-          ['Ergebnis', 'Die Wasserflaeche ist ca. 7,07 m²']
+          ['Ergebnis', 'Die Wasserfläche ist ca. 7,07 m²']
         ]
       },
       {
         title: 'Filterplatte',
         given: 'Eine runde Filterplatte hat einen Durchmesser von 60 cm.',
-        question: 'Wie gross ist die Filterflaeche in cm²?',
+        question: 'Wie gross ist die Filterfläche in cm²?',
         steps: [
           ['Durchmesser → Radius', 'd = 60 cm → r = 30 cm'],
           ['r²', '30 × 30 = 900'],
           ['Formel', 'A = π × r² = 3,14 × 900 = 2.826'],
-          ['Ergebnis', 'Die Filterflaeche ist 2.826 cm²']
+          ['Ergebnis', 'Die Filterfläche ist 2.826 cm²']
         ]
       }
     ],
     pitfalls: [
-      'Radius und Durchmesser verwechseln — der Durchmesser ist DOPPELT so gross wie der Radius! Wenn du den Durchmesser statt den Radius einsetzt, ist die Flaeche 4-mal zu gross.',
-      'r² heisst r × r, NICHT r × 2! Das ist der haeufigste Fehler: 5² = 25, nicht 10!',
+      'Radius und Durchmesser verwechseln — der Durchmesser ist DOPPELT so gross wie der Radius! Wenn du den Durchmesser statt den Radius einsetzt, ist die Fläche 4-mal zu gross.',
+      'r² heisst r × r, NICHT r × 2! Das ist der häufigste Fehler: 5² = 25, nicht 10!',
       'Pi (π) nicht vergessen — ohne π ist es kein Kreis, sondern ein Quadrat.',
       'Bei Durchmesser-Angaben: ERST durch 2 teilen, DANN quadrieren. Nicht umgekehrt!'
     ],
     quiz: {
-      question: 'Ein rundes Tauchbecken hat einen Durchmesser von 6 m. Wie gross ist die Wasseroberflaeche? (π ≈ 3,14)',
+      question: 'Ein rundes Tauchbecken hat einen Durchmesser von 6 m. Wie gross ist die Wasseroberfläche? (π ≈ 3,14)',
       options: ['18,84 m²', '28,26 m²', '113,04 m²'],
       correctIndex: 1,
       explanation: 'Durchmesser 6 m → Radius = 3 m. r² = 3 × 3 = 9. A = 3,14 × 9 = 28,26 m².'
@@ -250,16 +250,16 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Flaechenberechnung im Baederalltag',
+    title: 'Flächenberechnung im Bäderalltag',
     intro:
-      'Im Schwimmbad brauchst du Flaechenberechnung staendig: Beckenwasserflaeche fuer die Abdeckung, Bodenflaeche fuer Fliesen, Rasenflaeche fuer Duenger, Filterplatten-Groesse. Hier uebst du mit echten Aufgaben aus dem Baederalltag.',
-    motto: 'Flaeche berechnen gehoert zum Baeder-Alltag.',
+      'Im Schwimmbad brauchst du Flächenberechnung ständig: Beckenwasserfläche für die Abdeckung, Bodenfläche für Fliesen, Rasenfläche für Duenger, Filterplatten-Größe. Hier uebst du mit echten Aufgaben aus dem Bäderalltag.',
+    motto: 'Fläche berechnen gehoert zum Bäder-Alltag.',
     rules: [
-      'Im Schwimmbad sind die meisten Becken rechteckig — also A = Laenge × Breite.',
+      'Im Schwimmbad sind die meisten Becken rechteckig — also A = Länge × Breite.',
       'Runde Becken (Whirlpool, Planschbecken) brauchen die Kreisformel A = π × r².',
-      'Fuer Fliesenberechnung: Erst die Gesamtflaeche berechnen, dann durch die Fliesengroesse teilen.',
+      'Für Fliesenberechnung: Erst die Gesamtfläche berechnen, dann durch die Fliesengröße teilen.',
       'Bei Abdeckplanen: Immer etwas Ueberstand einplanen (ca. 10-20 cm pro Seite).',
-      'Fuer zusammengesetzte Flaechen: In einfache Formen zerlegen, einzeln berechnen, dann addieren.'
+      'Für zusammengesetzte Flächen: In einfache Formen zerlegen, einzeln berechnen, dann addieren.'
     ],
     steps: [
       {
@@ -268,15 +268,15 @@ const TABS = {
       },
       {
         title: '2. Alle Masse sammeln',
-        text: 'Welche Masse sind gegeben? Laenge, Breite, Radius? Muessen Einheiten umgerechnet werden (z.B. cm in m)?'
+        text: 'Welche Masse sind gegeben? Länge, Breite, Radius? Müssen Einheiten umgerechnet werden (z.B. cm in m)?'
       },
       {
         title: '3. Formel anwenden',
-        text: 'Rechteck: A = a × b. Dreieck: A = a × h ÷ 2. Kreis: A = π × r². Bei zusammengesetzten Flaechen: Teilflaechen einzeln berechnen.'
+        text: 'Rechteck: A = a × b. Dreieck: A = a × h ÷ 2. Kreis: A = π × r². Bei zusammengesetzten Flächen: Teilflächen einzeln berechnen.'
       },
       {
-        title: '4. Ergebnis pruefen und runden',
-        text: 'Macht die Groessenordnung Sinn? Ein Sportbecken hat ca. 250-300 m², ein Whirlpool ca. 5-10 m². In der Pruefung: auf 2 Dezimalstellen runden.'
+        title: '4. Ergebnis prüfen und runden',
+        text: 'Macht die Größenordnung Sinn? Ein Sportbecken hat ca. 250-300 m², ein Whirlpool ca. 5-10 m². In der Prüfung: auf 2 Dezimalstellen runden.'
       }
     ],
     examples: [
@@ -285,7 +285,7 @@ const TABS = {
         given: 'Das Sportbecken ist 25 m × 12,5 m. Eine Abdeckplane soll 0,5 m Ueberstand auf jeder Seite haben.',
         question: 'Wie gross muss die Abdeckplane sein?',
         steps: [
-          ['Masse mit Ueberstand', 'Laenge: 25 + 0,5 + 0,5 = 26 m, Breite: 12,5 + 0,5 + 0,5 = 13,5 m'],
+          ['Masse mit Ueberstand', 'Länge: 25 + 0,5 + 0,5 = 26 m, Breite: 12,5 + 0,5 + 0,5 = 13,5 m'],
           ['Formel', 'A = 26 × 13,5 = 351'],
           ['Ergebnis', 'Die Abdeckplane muss mindestens 351 m² gross sein'],
           ['Praxis-Tipp', 'Beim Bestellen lieber aufrunden auf 360 m²']
@@ -294,21 +294,21 @@ const TABS = {
       {
         title: 'Liegewiese duengen',
         given: 'Die Liegewiese ist 40 m lang und 25 m breit. Pro 100 m² braucht man 3 kg Duenger.',
-        question: 'Wie viel Duenger wird benoetigt?',
+        question: 'Wie viel Duenger wird benötigt?',
         steps: [
-          ['Flaeche berechnen', 'A = 40 × 25 = 1.000 m²'],
+          ['Fläche berechnen', 'A = 40 × 25 = 1.000 m²'],
           ['Duenger berechnen', '1.000 ÷ 100 = 10 Einheiten à 3 kg'],
           ['Ergebnis', '10 × 3 = 30 kg Duenger'],
           ['Kontrolle', '1.000 m² ist 10-mal so viel wie 100 m², also 10-mal so viel Duenger']
         ]
       },
       {
-        title: 'Fliesen fuer Beckenboden',
+        title: 'Fliesen für Beckenboden',
         given: 'Ein Nichtschwimmerbecken ist 16 m × 8 m. Die Fliesen sind 20 cm × 20 cm gross.',
-        question: 'Wie viele Fliesen braucht man fuer den Boden?',
+        question: 'Wie viele Fliesen braucht man für den Boden?',
         steps: [
-          ['Beckenflaeche', 'A = 16 × 8 = 128 m²'],
-          ['Fliesengroesse umrechnen', '20 cm = 0,2 m → Fliese = 0,2 × 0,2 = 0,04 m²'],
+          ['Beckenfläche', 'A = 16 × 8 = 128 m²'],
+          ['Fliesengröße umrechnen', '20 cm = 0,2 m → Fliese = 0,2 × 0,2 = 0,04 m²'],
           ['Anzahl berechnen', '128 ÷ 0,04 = 3.200 Fliesen'],
           ['Praxis-Tipp', 'Immer 5-10% Verschnitt einplanen → ca. 3.400-3.500 Fliesen bestellen']
         ]
@@ -316,26 +316,26 @@ const TABS = {
       {
         title: 'Rundbecken-Abdeckung',
         given: 'Das runde Planschbecken hat einen Durchmesser von 8 m.',
-        question: 'Wie gross ist die Wasseroberflaeche?',
+        question: 'Wie gross ist die Wasseroberfläche?',
         steps: [
           ['Radius bestimmen', 'd = 8 m → r = 4 m'],
           ['r²', '4 × 4 = 16'],
-          ['Kreisflaeche', 'A = π × r² = 3,14 × 16 = 50,24 m²'],
-          ['Ergebnis', 'Die Wasseroberflaeche ist ca. 50 m²']
+          ['Kreisfläche', 'A = π × r² = 3,14 × 16 = 50,24 m²'],
+          ['Ergebnis', 'Die Wasseroberfläche ist ca. 50 m²']
         ]
       }
     ],
     pitfalls: [
       'Bei Fliesen: cm in m umrechnen, BEVOR du rechnest! 20 cm = 0,2 m, nicht 20 m.',
-      'Zusammengesetzte Flaechen nicht in einem Schritt rechnen — zerlege sie in Rechtecke, Dreiecke und Kreise.',
+      'Zusammengesetzte Flächen nicht in einem Schritt rechnen — zerlege sie in Rechtecke, Dreiecke und Kreise.',
       'Ueberstand bei Abdeckplanen: Auf JEDER Seite dazurechnen, nicht nur einmal!',
       'Verschnitt nicht vergessen: Bei Fliesen, Folien und Rasen immer 5-10% extra einplanen.'
     ],
     quiz: {
-      question: 'Ein quadratisches Becken hat Seitenlaengen von 10 m. Wie viele Fliesen (25 cm × 25 cm) braucht man fuer den Boden?',
+      question: 'Ein quadratisches Becken hat Seitenlängen von 10 m. Wie viele Fliesen (25 cm × 25 cm) braucht man für den Boden?',
       options: ['400 Fliesen', '1.600 Fliesen', '4.000 Fliesen'],
       correctIndex: 1,
-      explanation: 'Beckenflaeche: 10 × 10 = 100 m². Fliesengroesse: 0,25 × 0,25 = 0,0625 m². Anzahl: 100 ÷ 0,0625 = 1.600 Fliesen.'
+      explanation: 'Beckenfläche: 10 × 10 = 100 m². Fliesengröße: 0,25 × 0,25 = 0,0625 m². Anzahl: 100 ÷ 0,0625 = 1.600 Fliesen.'
     }
   }
 };
@@ -419,7 +419,7 @@ function ExampleCard({ example, darkMode }) {
 
 /* ─── Main component ────────────────────────────────────────────────────────── */
 
-export default function FlaechenDeepDiveView() {
+export default function FlächenDeepDiveView() {
   const { darkMode } = useApp();
   const [activeTab, setActiveTab] = useState('grundlagen');
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -505,7 +505,7 @@ export default function FlaechenDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -535,7 +535,7 @@ export default function FlaechenDeepDiveView() {
 
           {/* Formula reference table (on grundlagen and praxis tabs) */}
           {(activeTab === 'grundlagen' || activeTab === 'praxis') && (
-            <InfoCard darkMode={darkMode} title="Formeluebersicht">
+            <InfoCard darkMode={darkMode} title="Formelübersicht">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -576,10 +576,10 @@ export default function FlaechenDeepDiveView() {
                     Rechteck
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    A = a × b — die ganze Flaeche.
+                    A = a × b — die ganze Fläche.
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                    Stell dir ein Schwimmbecken von oben vor: Laenge × Breite.
+                    Stell dir ein Schwimmbecken von oben vor: Länge × Breite.
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
@@ -672,7 +672,7 @@ export default function FlaechenDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

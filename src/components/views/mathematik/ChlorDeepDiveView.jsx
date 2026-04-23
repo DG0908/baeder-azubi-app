@@ -9,7 +9,7 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist Chlor-Dosierung?',
     intro:
-      'Chlor toetet Keime im Beckenwasser ab. Damit das funktioniert, muss immer genug Chlor im Wasser sein — aber nicht zu viel! Als Fachangestellte/r musst du berechnen koennen, wie viel Chlor du ins Becken geben musst. Der wichtigste Trick dabei: 1 mg/L ist dasselbe wie 1 g/m³.',
+      'Chlor toetet Keime im Beckenwasser ab. Damit das funktioniert, muss immer genug Chlor im Wasser sein — aber nicht zu viel! Als Fachangestellte/r musst du berechnen können, wie viel Chlor du ins Becken geben musst. Der wichtigste Trick dabei: 1 mg/L ist dasselbe wie 1 g/m³.',
     motto: '1 mg/L = 1 g/m³ — das ist dein Schluessel.',
     rules: [
       'Chlor desinfiziert das Wasser — es toetet Bakterien, Viren und Pilze ab.',
@@ -21,7 +21,7 @@ const TABS = {
     steps: [
       {
         title: '1. Was ist Aktivchlor?',
-        text: 'Aktivchlor ist der Anteil im Chlorprodukt, der tatsaechlich desinfiziert. Nicht jedes Produkt ist 100% Aktivchlor — dazu spaeter mehr. Wenn wir "Chlor dosieren" sagen, meinen wir erstmal Aktivchlor.'
+        text: 'Aktivchlor ist der Anteil im Chlorprodukt, der tatsaechlich desinfiziert. Nicht jedes Produkt ist 100% Aktivchlor — dazu später mehr. Wenn wir "Chlor dosieren" sagen, meinen wir erstmal Aktivchlor.'
       },
       {
         title: '2. Die magische Umrechnung',
@@ -33,7 +33,7 @@ const TABS = {
       },
       {
         title: '4. Warum ist die Dosierung so wichtig?',
-        text: 'Zu wenig Chlor = Keime ueberleben = Gesundheitsgefahr. Zu viel Chlor = Augenreizung, Chlorgeruch, Beschwerden. Die richtige Menge schuetzt die Gaeste und haelt die Wasserqualitaet.'
+        text: 'Zu wenig Chlor = Keime ueberleben = Gesundheitsgefahr. Zu viel Chlor = Augenreizung, Chlorgeruch, Beschwerden. Die richtige Menge schuetzt die Gaeste und haelt die Wasserqualität.'
       }
     ],
     examples: [
@@ -45,13 +45,13 @@ const TABS = {
           ['Trick anwenden', '1 mg/L = 1 g/m³'],
           ['Bedeutung', 'Pro m³ Wasser brauchst du 1 g'],
           ['Rechnung', '1 g/m³ × 400 m³ = 400 g'],
-          ['Ergebnis', '400 g Aktivchlor fuer 1 mg/L Anhebung']
+          ['Ergebnis', '400 g Aktivchlor für 1 mg/L Anhebung']
         ]
       },
       {
         title: 'Kleiner Chlorwert-Anstieg',
         given: 'Ein Lehrschwimmbecken hat 150 m³. Der Chlorgehalt soll um 0,5 mg/L steigen.',
-        question: 'Wie viel Aktivchlor ist noetig?',
+        question: 'Wie viel Aktivchlor ist nötig?',
         steps: [
           ['Trick anwenden', '0,5 mg/L = 0,5 g/m³'],
           ['Bedeutung', 'Pro m³ brauchst du 0,5 g'],
@@ -95,7 +95,7 @@ const TABS = {
     rules: [
       'Die Formel lautet: Aktivchlor (g) = Anhebung (mg/L) × Beckenvolumen (m³).',
       'Die Anhebung ist die DIFFERENZ zwischen Soll-Wert und Ist-Wert.',
-      'Das Beckenvolumen findest du im Betriebsbuch oder rechnest es aus (Laenge × Breite × Tiefe).',
+      'Das Beckenvolumen findest du im Betriebsbuch oder rechnest es aus (Länge × Breite × Tiefe).',
       'Das Ergebnis ist in GRAMM Aktivchlor — noch NICHT die Produktmenge!',
       'Diese Formel funktioniert NUR weil 1 mg/L = 1 g/m³ ist.'
     ],
@@ -106,22 +106,22 @@ const TABS = {
       },
       {
         title: '2. Beckenvolumen ermitteln',
-        text: 'Schau im Betriebsbuch nach oder rechne: Laenge × Breite × mittlere Tiefe = Volumen in m³. Ein 25m-Sportbecken mit 6 Bahnen und 1,8 m Tiefe: 25 × 12,5 × 1,8 = 562,5 m³.'
+        text: 'Schau im Betriebsbuch nach oder rechne: Länge × Breite × mittlere Tiefe = Volumen in m³. Ein 25m-Sportbecken mit 6 Bahnen und 1,8 m Tiefe: 25 × 12,5 × 1,8 = 562,5 m³.'
       },
       {
         title: '3. Formel anwenden',
         text: 'Aktivchlor (g) = Anhebung (mg/L) × Volumen (m³). Einfach die zwei Werte multiplizieren. Das Ergebnis sind Gramm Aktivchlor.'
       },
       {
-        title: '4. Ergebnis pruefen',
-        text: 'Faustformel: Fuer 0,3 mg/L Anhebung brauchst du pro 100 m³ etwa 30 g Aktivchlor. Liegt dein Ergebnis in dem Bereich? Dann passt es wahrscheinlich.'
+        title: '4. Ergebnis prüfen',
+        text: 'Faustformel: Für 0,3 mg/L Anhebung brauchst du pro 100 m³ etwa 30 g Aktivchlor. Liegt dein Ergebnis in dem Bereich? Dann passt es wahrscheinlich.'
       }
     ],
     examples: [
       {
         title: 'Standard-Dosierung Sportbecken',
         given: 'Sportbecken 500 m³. Chlor-Ist: 0,2 mg/L. Chlor-Soll: 0,5 mg/L.',
-        question: 'Wie viel Gramm Aktivchlor muessen dosiert werden?',
+        question: 'Wie viel Gramm Aktivchlor müssen dosiert werden?',
         steps: [
           ['Anhebung', '0,5 − 0,2 = 0,3 mg/L'],
           ['Formel', 'Aktivchlor = 0,3 mg/L × 500 m³'],
@@ -132,7 +132,7 @@ const TABS = {
       {
         title: 'Lehrschwimmbecken nachchloren',
         given: 'Lehrschwimmbecken 200 m³. Chlor-Ist: 0,1 mg/L. Chlor-Soll: 0,4 mg/L.',
-        question: 'Wie viel Aktivchlor wird benoetigt?',
+        question: 'Wie viel Aktivchlor wird benötigt?',
         steps: [
           ['Anhebung', '0,4 − 0,1 = 0,3 mg/L'],
           ['Formel', 'Aktivchlor = 0,3 mg/L × 200 m³'],
@@ -156,7 +156,7 @@ const TABS = {
       'NICHT vergessen die Differenz zu bilden — du rechnest mit der ANHEBUNG, nicht mit dem Sollwert!',
       'Das Volumen muss in m³ sein — nicht in Litern! (1 m³ = 1.000 Liter)',
       'Das Ergebnis ist AKTIVCHLOR in Gramm, noch nicht die Menge vom Produkt!',
-      'Bei unregelmaessigen Becken: Die MITTLERE Tiefe nehmen, nicht die tiefste Stelle.'
+      'Bei unregelmäßigen Becken: Die MITTLERE Tiefe nehmen, nicht die tiefste Stelle.'
     ],
     quiz: {
       question: 'Becken 300 m³, Ist-Wert 0,15 mg/L, Soll-Wert 0,45 mg/L. Wie viel Gramm Aktivchlor?',
@@ -171,7 +171,7 @@ const TABS = {
     chip: 'Produktmenge',
     title: 'Vom Aktivchlor zur Produktmenge',
     intro:
-      'Kein Chlorprodukt ist 100% Aktivchlor! Calciumhypochlorit (Granulat) hat ca. 65% Wirkstoff, Natriumhypochlorit (Fluessigchlor) nur ca. 13%. Du musst also mehr Produkt nehmen als Aktivchlor berechnet wurde. Die Formel: Produktmenge = Aktivchlor ÷ Wirkstoffanteil.',
+      'Kein Chlorprodukt ist 100% Aktivchlor! Calciumhypochlorit (Granulat) hat ca. 65% Wirkstoff, Natriumhypochlorit (Flüssigchlor) nur ca. 13%. Du musst also mehr Produkt nehmen als Aktivchlor berechnet wurde. Die Formel: Produktmenge = Aktivchlor ÷ Wirkstoffanteil.',
     motto: 'Produkt = Aktivchlor ÷ Wirkstoffanteil',
     rules: [
       'Calciumhypochlorit (Ca(ClO)₂) hat ca. 65% Aktivchlor (als Dezimalzahl: 0,65).',
@@ -194,8 +194,8 @@ const TABS = {
         text: 'Produktmenge = Aktivchlor ÷ Wirkstoffanteil. Beispiel: 150 g Aktivchlor ÷ 0,65 = 230,8 g Calciumhypochlorit.'
       },
       {
-        title: '4. Ergebnis pruefen',
-        text: 'Die Produktmenge muss IMMER groesser sein als die Aktivchlor-Menge (weil kein Produkt 100% hat). Wenn dein Ergebnis kleiner ist, hast du falsch gerechnet!'
+        title: '4. Ergebnis prüfen',
+        text: 'Die Produktmenge muss IMMER größer sein als die Aktivchlor-Menge (weil kein Produkt 100% hat). Wenn dein Ergebnis kleiner ist, hast du falsch gerechnet!'
       }
     ],
     examples: [
@@ -211,9 +211,9 @@ const TABS = {
         ]
       },
       {
-        title: 'Natriumhypochlorit-Loesung',
+        title: 'Natriumhypochlorit-Lösung',
         given: 'Du brauchst 150 g Aktivchlor. Das Produkt ist Natriumhypochlorit (13% Wirkstoff).',
-        question: 'Wie viel Fluessigchlor brauchst du?',
+        question: 'Wie viel Flüssigchlor brauchst du?',
         steps: [
           ['Aktivchlor-Bedarf', '150 g'],
           ['Wirkstoffanteil', '13% = 0,13'],
@@ -223,21 +223,21 @@ const TABS = {
       },
       {
         title: 'Vergleich beider Produkte',
-        given: 'Sportbecken 500 m³, Anhebung 0,3 mg/L → 150 g Aktivchlor benoetigt.',
+        given: 'Sportbecken 500 m³, Anhebung 0,3 mg/L → 150 g Aktivchlor benötigt.',
         question: 'Wie viel Produkt bei Calciumhypochlorit vs. Natriumhypochlorit?',
         steps: [
-          ['Aktivchlor-Bedarf', '150 g (gleich fuer beide)'],
+          ['Aktivchlor-Bedarf', '150 g (gleich für beide)'],
           ['Calciumhypochlorit', '150 ÷ 0,65 = 231 g Granulat'],
-          ['Natriumhypochlorit', '150 ÷ 0,13 = 1.154 g Fluessigchlor'],
-          ['Ergebnis', 'Fluessigchlor braucht man ca. 5× so viel wie Granulat!']
+          ['Natriumhypochlorit', '150 ÷ 0,13 = 1.154 g Flüssigchlor'],
+          ['Ergebnis', 'Flüssigchlor braucht man ca. 5× so viel wie Granulat!']
         ]
       }
     ],
     pitfalls: [
-      'NICHT multiplizieren statt dividieren! Produktmenge ist IMMER groesser als Aktivchlor-Menge.',
+      'NICHT multiplizieren statt dividieren! Produktmenge ist IMMER größer als Aktivchlor-Menge.',
       'Prozent in Dezimalzahl umrechnen: 65% = 0,65 (nicht 65!). Sonst ist das Ergebnis 100× zu klein.',
-      'Verschiedene Hersteller haben leicht unterschiedliche Wirkstoffanteile — immer das Etikett pruefen!',
-      'Fluessigchlor (Natriumhypochlorit) hat deutlich weniger Wirkstoff als Granulat — darum braucht man viel mehr davon.'
+      'Verschiedene Hersteller haben leicht unterschiedliche Wirkstoffanteile — immer das Etikett prüfen!',
+      'Flüssigchlor (Natriumhypochlorit) hat deutlich weniger Wirkstoff als Granulat — darum braucht man viel mehr davon.'
     ],
     quiz: {
       question: 'Du brauchst 200 g Aktivchlor und hast Calciumhypochlorit (65%). Wie viel Granulat brauchst du?',
@@ -250,16 +250,16 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Chlor-Dosierung im Baederalltag',
+    title: 'Chlor-Dosierung im Bäderalltag',
     intro:
-      'Hier uebst du die komplette Berechnung von Anfang bis Ende: Chlorwert messen, Anhebung bestimmen, Aktivchlor berechnen, Produktmenge ermitteln. Genau so, wie du es jeden Tag im Bad und in der Pruefung brauchst!',
+      'Hier uebst du die komplette Berechnung von Anfang bis Ende: Chlorwert messen, Anhebung bestimmen, Aktivchlor berechnen, Produktmenge ermitteln. Genau so, wie du es jeden Tag im Bad und in der Prüfung brauchst!',
     motto: 'Messen → Rechnen → Dosieren → Kontrollieren.',
     rules: [
-      'Im Alltag laeuft die Dosierung meistens automatisch ueber die Messanlage.',
-      'Manuelle Nachdosierung ist noetig bei Stoerungen, hoher Belastung oder nach der Revision.',
+      'Im Alltag laeuft die Dosierung meistens automatisch über die Messanlage.',
+      'Manuelle Nachdosierung ist nötig bei Störungen, hoher Belastung oder nach der Revision.',
       'Stosschlorung (Schockchlorung) bedeutet: Chlorgehalt auf 1,0–2,0 mg/L anheben.',
       'Nach der Stosschlorung darf NIEMAND ins Wasser, bis der Wert wieder unter 0,6 mg/L ist!',
-      'Pruefungsaufgaben kombinieren oft alle Schritte: Anhebung + Aktivchlor + Produktmenge.'
+      'Prüfungsaufgaben kombinieren oft alle Schritte: Anhebung + Aktivchlor + Produktmenge.'
     ],
     steps: [
       {
@@ -272,7 +272,7 @@ const TABS = {
       },
       {
         title: '3. Produktmenge berechnen',
-        text: 'Produktmenge = Aktivchlor (g) ÷ Wirkstoffanteil. Je nach Produkt (Granulat 0,65 oder fluessig 0,13) brauchst du unterschiedlich viel.'
+        text: 'Produktmenge = Aktivchlor (g) ÷ Wirkstoffanteil. Je nach Produkt (Granulat 0,65 oder flüssig 0,13) brauchst du unterschiedlich viel.'
       },
       {
         title: '4. Dosieren und kontrollieren',
@@ -294,7 +294,7 @@ const TABS = {
       {
         title: 'Komplettberechnung: Kinderbecken',
         given: 'Kinderbecken 80 m³. Ist: 0,25 mg/L. Soll: 0,55 mg/L. Produkt: Natriumhypochlorit (13%).',
-        question: 'Wie viel Fluessigchlor wird benoetigt?',
+        question: 'Wie viel Flüssigchlor wird benötigt?',
         steps: [
           ['Anhebung', '0,55 − 0,25 = 0,3 mg/L'],
           ['Aktivchlor', '0,3 × 80 = 24 g'],
@@ -305,7 +305,7 @@ const TABS = {
       {
         title: 'Stosschlorung nach Verunreinigung',
         given: 'Freizeitbecken 600 m³. Ist: 0,3 mg/L. Soll bei Stosschlorung: 1,5 mg/L. Produkt: Calciumhypochlorit (65%).',
-        question: 'Wie viel Granulat fuer die Stosschlorung?',
+        question: 'Wie viel Granulat für die Stosschlorung?',
         steps: [
           ['Anhebung', '1,5 − 0,3 = 1,2 mg/L'],
           ['Aktivchlor', '1,2 × 600 = 720 g'],
@@ -316,7 +316,7 @@ const TABS = {
       {
         title: 'Tagesroutine: Morgendliche Nachdosierung',
         given: 'Schwimmerbecken 450 m³. Morgenmessung: 0,15 mg/L. Soll: 0,45 mg/L. Produkt: Calciumhypochlorit (65%).',
-        question: 'Wie viel Granulat vor Badeoeffnung?',
+        question: 'Wie viel Granulat vor Badeöffnung?',
         steps: [
           ['Anhebung', '0,45 − 0,15 = 0,3 mg/L'],
           ['Aktivchlor', '0,3 × 450 = 135 g'],
@@ -326,8 +326,8 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Bei der Stosschlorung: IMMER das Becken sperren! Badegaeste duerfen erst wieder rein, wenn der Wert unter 0,6 mg/L liegt.',
-      'In der Pruefung werden oft ALLE drei Schritte abgefragt (Anhebung, Aktivchlor, Produktmenge) — keinen vergessen!',
+      'Bei der Stosschlorung: IMMER das Becken sperren! Badegaeste dürfen erst wieder rein, wenn der Wert unter 0,6 mg/L liegt.',
+      'In der Prüfung werden oft ALLE drei Schritte abgefragt (Anhebung, Aktivchlor, Produktmenge) — keinen vergessen!',
       'Nicht einfach "nach Gefuehl" dosieren — immer rechnen und messen. Zu viel Chlor ist genauso schlimm wie zu wenig.',
       'Nach dem Dosieren mindestens 30 Minuten warten und dann nachmessen — der Wert braucht Zeit zum Verteilen.'
     ],
@@ -347,7 +347,7 @@ const TAB_ORDER = ['grundlagen', 'dosierung', 'produktmenge', 'praxis'];
 const PRODUCT_COMPARISON = [
   ['Chemischer Name', 'Calciumhypochlorit', 'Natriumhypochlorit'],
   ['Kurzform', 'Ca(ClO)₂', 'NaClO'],
-  ['Handelsform', 'Granulat / Tabletten', 'Fluessigkeit'],
+  ['Handelsform', 'Granulat / Tabletten', 'Flüssigkeit'],
   ['Wirkstoffanteil', 'ca. 65%', 'ca. 13%'],
   ['Dezimalzahl', '0,65', '0,13'],
   ['Lagerung', 'Trocken, kuehle Lagerung', 'Dunkel, kuehle Lagerung']
@@ -506,7 +506,7 @@ export default function ChlorDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -640,7 +640,7 @@ export default function ChlorDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

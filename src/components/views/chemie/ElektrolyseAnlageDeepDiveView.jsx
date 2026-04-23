@@ -25,9 +25,9 @@ const DETAIL_MODES = [
     accent: '#34c090',
     focus: ['anode', 'kathode', 'membran', 'solezulauf', 'chlorablauf'],
     detail: [
-      'Sole (NaCl-Loesung) stroemt in die Zelle und wird elektrochemisch zerlegt.',
+      'Sole (NaCl-Lösung) stroemt in die Zelle und wird elektrochemisch zerlegt.',
       'An der Anode entsteht Chlor (Cl₂), an der Kathode Wasserstoff (H₂) und Natronlauge (NaOH).',
-      'Die Membran laesst nur Na⁺-Ionen durch und trennt die Reaktionsprodukte sauber.',
+      'Die Membran lässt nur Na⁺-Ionen durch und trennt die Reaktionsprodukte sauber.',
     ],
     caution: 'Bei zu niedriger Sole-Konzentration sinkt die Chlorproduktion und die Elektrodenbelastung steigt.',
   },
@@ -38,10 +38,10 @@ const DETAIL_MODES = [
     focus: ['membran', 'anode', 'kathode', 'gehaeuse'],
     detail: [
       'Die Ionentauschermembran (z.B. Nafion) ist das Herzstück der Membranzellenelektrolyse.',
-      'Sie laesst Na⁺-Ionen passieren, blockiert aber Cl⁻ und OH⁻ zuverlaessig.',
+      'Sie lässt Na⁺-Ionen passieren, blockiert aber Cl⁻ und OH⁻ zuverlaessig.',
       'Beschaedigung oder Verschmutzung der Membran fuehrt zu unreinem Produkt und Leistungsverlust.',
     ],
-    caution: 'Membran nie mechanisch berühren oder mit sauren/basischen Loesungen unkontrolliert spülen.',
+    caution: 'Membran nie mechanisch berühren oder mit sauren/basischen Lösungen unkontrolliert spülen.',
   },
   {
     id: 'wartung',
@@ -49,8 +49,8 @@ const DETAIL_MODES = [
     accent: '#ffaa40',
     focus: ['anode', 'kathode', 'soletank', 'steuerung', 'gehaeuse'],
     detail: [
-      'Regelmaessige Entkalkung der Elektroden sichert gleichmaessige Chlorproduktion.',
-      'Salzstand im Soletank taeglich kontrollieren und rechtzeitig auffuellen.',
+      'Regelmäßige Entkalkung der Elektroden sichert gleichmaessige Chlorproduktion.',
+      'Salzstand im Soletank täglich kontrollieren und rechtzeitig auffuellen.',
       'Zellenspannung und Stromaufnahme am Display der Steuereinheit ablesen.',
     ],
     caution: 'Wartung nur bei abgeschalteter Stromversorgung und entlüftetem System durchfuehren.',
@@ -61,7 +61,7 @@ const DETAIL_MODES = [
     accent: '#ff7a7a',
     focus: ['h2_entlueftung', 'gleichrichter', 'steuerung', 'gehaeuse'],
     detail: [
-      'Wasserstoff (H₂) ist hochentzuendlich und muss zuverlaessig abgefuehrt werden.',
+      'Wasserstoff (H₂) ist hochentzuendlich und muss zuverlaessig abgeführt werden.',
       'Die H₂-Entlueftung darf niemals blockiert oder verschlossen sein.',
       'Gasdetektion und Ueberdrucksicherung schuetzen vor Knallgasbildung.',
     ],
@@ -79,7 +79,7 @@ const SPOTS = [
     position: [0.0, 0.0, 1.4],
     items: [
       'Das Gehaeuse umschliesst Anoden- und Kathodenkammer druckdicht.',
-      'Material muss chemikalienbestaendig und elektrisch isolierend sein.',
+      'Material muss chemikalienbeständig und elektrisch isolierend sein.',
       'Risse oder Undichtigkeiten fuehren zu Chloraustritt und Kurzschluss.',
     ],
   },
@@ -93,7 +93,7 @@ const SPOTS = [
     items: [
       'Titanelektrode mit Edelmetalloxid-Beschichtung (z.B. RuO₂/IrO₂).',
       'Hier werden Chlorid-Ionen zu Chlorgas oxidiert: 2 Cl⁻ → Cl₂ + 2 e⁻.',
-      'Kalkablagerungen reduzieren die aktive Oberflaeche und erhoehen den Energieverbrauch.',
+      'Kalkablagerungen reduzieren die aktive Oberfläche und erhöhen den Energieverbrauch.',
     ],
   },
   {
@@ -104,7 +104,7 @@ const SPOTS = [
     color: '#5eb7ff',
     position: [0.55, 0.0, 0.6],
     items: [
-      'Stahl- oder Nickelelektrode fuer die Reduktionsreaktion.',
+      'Stahl- oder Nickelelektrode für die Reduktionsreaktion.',
       'Hier entsteht Wasserstoff und Natronlauge: 2 H₂O + 2 e⁻ → H₂ + 2 OH⁻.',
       'Korrosion an der Kathode erhoet den Widerstand und senkt die Effizienz.',
     ],
@@ -118,8 +118,8 @@ const SPOTS = [
     position: [0.0, 0.0, 0.6],
     items: [
       'Ionentauschermembran (z.B. Nafion) trennt Anoden- und Kathodenraum.',
-      'Laesst selektiv Na⁺-Ionen passieren, blockiert Cl⁻ und OH⁻.',
-      'Lebensdauer haengt stark von Wasserqualitaet und Betriebsbedingungen ab.',
+      'Lässt selektiv Na⁺-Ionen passieren, blockiert Cl⁻ und OH⁻.',
+      'Lebensdauer haengt stark von Wasserqualität und Betriebsbedingungen ab.',
     ],
   },
   {
@@ -130,9 +130,9 @@ const SPOTS = [
     color: '#ffd166',
     position: [0.0, 2.2, -0.5],
     items: [
-      'Wandelt Wechselstrom (AC) in Gleichstrom (DC) fuer die Elektrolyse.',
-      'Typische Zellenspannung: 3-4 V bei hoher Stromstaerke.',
-      'Ueberhitzung oder Spannungsspitzen koennen die Elektroden beschaedigen.',
+      'Wandelt Wechselstrom (AC) in Gleichstrom (DC) für die Elektrolyse.',
+      'Typische Zellenspannung: 3-4 V bei hoher Stromstärke.',
+      'Ueberhitzung oder Spannungsspitzen können die Elektroden beschaedigen.',
     ],
   },
   {
@@ -143,7 +143,7 @@ const SPOTS = [
     color: '#34c090',
     position: [-1.6, -0.8, 0.0],
     items: [
-      'Fuehrt gesaettigte Salzloesung (ca. 26% NaCl) in die Anodenkammer.',
+      'Fuehrt gesaettigte Salzlösung (ca. 26% NaCl) in die Anodenkammer.',
       'Durchflussrate bestimmt die Chlorproduktionsmenge.',
       'Verstopfung oder Lufteintrag stoert den Elektrolyseprozess sofort.',
     ],
@@ -156,8 +156,8 @@ const SPOTS = [
     color: '#ff7a7a',
     position: [1.6, -0.8, 0.0],
     items: [
-      'Natriumhypochlorit-Loesung (NaClO) wird ins Schwimmbecken dosiert.',
-      'Konzentration und pH-Wert muessen staendig ueberwacht werden.',
+      'Natriumhypochlorit-Lösung (NaClO) wird ins Schwimmbecken dosiert.',
+      'Konzentration und pH-Wert müssen ständig ueberwacht werden.',
       'Undichte Verbindungen fuehren zu unkontrolliertem Chloraustritt.',
     ],
   },
@@ -170,8 +170,8 @@ const SPOTS = [
     position: [0.8, 1.8, 0.6],
     items: [
       'Wasserstoff ist leichter als Luft und hochentzuendlich (Knallgas!).',
-      'Die Entlueftung muss staendig frei und nach aussen gefuehrt sein.',
-      'Blockierte H₂-Abfuhr kann zu gefaehrlichem Ueberdruck fuehren.',
+      'Die Entlueftung muss ständig frei und nach aussen geführt sein.',
+      'Blockierte H₂-Abfuhr kann zu gefährlichem Ueberdruck fuehren.',
     ],
   },
   {
@@ -182,7 +182,7 @@ const SPOTS = [
     color: '#f38cff',
     position: [2.2, 1.2, 0.0],
     items: [
-      'Regelt Stromstaerke, ueberwacht Zellenspannung und Sole-Durchfluss.',
+      'Regelt Stromstärke, ueberwacht Zellenspannung und Sole-Durchfluss.',
       'Display zeigt Betriebsparameter und Fehlermeldungen an.',
       'Automatische Abschaltung bei Grenzwertueberschreitung.',
     ],
@@ -196,7 +196,7 @@ const SPOTS = [
     position: [-2.2, -1.0, 0.0],
     items: [
       'Loest Salztabletten oder Steinsalz in Wasser zu gesaettigter Sole.',
-      'Fuellstand taeglich pruefen, Nachfuellung rechtzeitig sicherstellen.',
+      'Fuellstand täglich prüfen, Nachfuellung rechtzeitig sicherstellen.',
       'Verunreinigtes Salz fuehrt zu Ablagerungen und verkuerzt die Zellenlebensdauer.',
     ],
   },
@@ -225,8 +225,8 @@ const KENNDATEN = [
 ];
 
 const BETRIEBSCHECKS = [
-  { label: 'Salzgehalt Sole', value: 'ausreichend, Nachfuellung pruefen', ok: true },
-  { label: 'Elektrodenoberflaeche', value: 'kalkfrei, keine Ablagerungen', ok: true },
+  { label: 'Salzgehalt Sole', value: 'ausreichend, Nachfuellung prüfen', ok: true },
+  { label: 'Elektrodenoberfläche', value: 'kalkfrei, keine Ablagerungen', ok: true },
   { label: 'H₂-Entlueftung', value: 'frei, kein Rueckstau', ok: true },
   { label: 'Chlorproduktion', value: 'stabil, Sollwert erreicht', ok: true },
   { label: 'Zellenspannung', value: 'im Normalbereich 3-4 V', ok: true },
@@ -244,7 +244,7 @@ const PROZESSPFAD = [
   '2 Strom fliesst: Na⁺ wandert durch Membran, Cl⁻ zur Anode',
   '3 An der Anode: 2 Cl⁻ → Cl₂ (Chlorgas)',
   '4 An der Kathode: 2 H₂O → H₂ + 2 OH⁻',
-  '5 NaClO-Loesung wird ins Becken dosiert',
+  '5 NaClO-Lösung wird ins Becken dosiert',
 ];
 
 function focusMatch(mode, ids) {
@@ -670,7 +670,7 @@ function CellPartDeepDive({ spot, xrayMode }) {
   if (!spot) return null;
 
   const role = spot.items[0] || 'Bauteilfunktion';
-  const inspection = spot.items[1] || 'Bauteilzustand gezielt pruefen.';
+  const inspection = spot.items[1] || 'Bauteilzustand gezielt prüfen.';
   const risk = spot.items[2] || 'Abweichungen frueh dokumentieren.';
 
   return (

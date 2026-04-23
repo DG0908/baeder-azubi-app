@@ -21,8 +21,8 @@ const HOTSPOT_DATA = {
     short: 'ENTL',
     color: '#4a9eff',
     items: [
-      'Luft aus dem oberen Kesselraum muss beim Fuellen und nach der Spuelung sicher entweichen.',
-      'Ein Luftpolster verkleinert die wirksame Filterflaeche und stoert die Gleichverteilung.',
+      'Luft aus dem oberen Kesselraum muss beim Fuellen und nach der Spülung sicher entweichen.',
+      'Ein Luftpolster verkleinert die wirksame Filterfläche und stoert die Gleichverteilung.',
       'Vor Rueckkehr in den Filtrationsbetrieb muss das Filterbett entlueftet sein.',
     ],
   },
@@ -31,7 +31,7 @@ const HOTSPOT_DATA = {
     short: 'KANAL',
     color: '#7ac8ff',
     items: [
-      'Rueckspuelwasser wird drucklos und sichtbar in den Kanal abgefuehrt.',
+      'Rueckspuelwasser wird drucklos und sichtbar in den Kanal abgeführt.',
       'Freier Auslauf verhindert Rueckstau und unkontrollierten Ueberstau im Filterkessel.',
       'Gerade im Spuelbetrieb muss der Ablauf frei, sauber und hydraulisch sicher sein.',
     ],
@@ -41,9 +41,9 @@ const HOTSPOT_DATA = {
     short: 'BETT',
     color: '#34c090',
     items: [
-      'Das Filterbett muss nach der Spuelung wieder mit ebener Oberflaeche liegen.',
+      'Das Filterbett muss nach der Spülung wieder mit ebener Oberfläche liegen.',
       'Bei Mehrschichtfiltern wird vor bzw. nach dem Spuelvorgang bis zur Filterschicht abgesenkt.',
-      'Nur ein sauber geschichtetes und entlueftetes Bett liefert stabile Filtratqualitaet.',
+      'Nur ein sauber geschichtetes und entlueftetes Bett liefert stabile Filtratqualität.',
     ],
   },
   ablaufrichter: {
@@ -51,8 +51,8 @@ const HOTSPOT_DATA = {
     short: 'TRICH',
     color: '#a070ff',
     items: [
-      'Waehrend des Spuelvorgangs wird der Wasserstand zum Ablaufrichter abgesenkt.',
-      'Die Absenkung schafft freien Austrag fuer Schmutz, Luft und Spuelwasser.',
+      'Während des Spuelvorgangs wird der Wasserstand zum Ablaufrichter abgesenkt.',
+      'Die Absenkung schafft freien Austrag für Schmutz, Luft und Spuelwasser.',
       'Kein Ueberstau: Oberwasserraum bleibt hydraulisch entlastet und beobachtbar.',
     ],
   },
@@ -61,7 +61,7 @@ const HOTSPOT_DATA = {
     short: '10%',
     color: '#f0b26d',
     items: [
-      'Beim Rueckspuelen soll sich das Filterbett kontrolliert aufweiten.',
+      'Beim Rueckspülen soll sich das Filterbett kontrolliert aufweiten.',
       'In der Vorlage ist eine Bettaufweitung um etwa 10 % dargestellt.',
       'Zu geringe Aufweitung reinigt schlecht, zu hohe Aufweitung kann Filtermaterial austragen.',
     ],
@@ -76,8 +76,8 @@ const HOTSPOT_DATA = {
       'Spuelgeschwindigkeit immer material-, temperatur- und anlagenspezifisch abgleichen.',
     ],
   },
-  luftspuelung: {
-    title: 'Luftspuelung',
+  luftspülung: {
+    title: 'Luftspülung',
     short: 'LUFT',
     color: '#ff7a7a',
     items: [
@@ -91,9 +91,9 @@ const HOTSPOT_DATA = {
     short: 'EF',
     color: '#ffd166',
     items: [
-      'Nach der Spuelung wird das erste Filtrat nicht direkt ins Becken gegeben.',
-      'Es geht zunaechst zum Kanal, bis das Wasser wieder klar und betriebssicher ist.',
-      'Damit werden Resttruebung, Luft und aufgewirbelte Partikel sicher ausgespuelt.',
+      'Nach der Spülung wird das erste Filtrat nicht direkt ins Becken gegeben.',
+      'Es geht zunächst zum Kanal, bis das Wasser wieder klar und betriebssicher ist.',
+      'Damit werden Resttrübung, Luft und aufgewirbelte Partikel sicher ausgespült.',
     ],
   },
   duesenboden: {
@@ -103,7 +103,7 @@ const HOTSPOT_DATA = {
     items: [
       'Stuetzt das Filtermaterial mechanisch und verteilt Wasser sowie Luft gleichmaessig.',
       'Verhindert Materialaustrag in die Unterbodenzone und in die Spuelleitungen.',
-      'Beschaedigte oder verstopfte Duesen fuehren sofort zu Schiefspuelung und Totzonen.',
+      'Beschaedigte oder verstopfte Duesen fuehren sofort zu Schiefspülung und Totzonen.',
     ],
   },
 };
@@ -116,8 +116,8 @@ const DETAIL_MODES = [
     focus: ['belueftung', 'filterschicht', 'duesenboden'],
     detail: [
       'Geschlossener Filter arbeitet als druckfester Kessel mit Oberwasserraum, Bett und Unterbau.',
-      'Belueftung, Filterschicht und Duesenboden muessen hydraulisch zusammenpassen.',
-      'Die Kesselgeometrie schafft einen definierten Weg fuer Filtration und Spaeter fuer die Spuelung.',
+      'Belueftung, Filterschicht und Duesenboden müssen hydraulisch zusammenpassen.',
+      'Die Kesselgeometrie schafft einen definierten Weg für Filtration und Später für die Spülung.',
     ],
     caution: 'Schon kleine Schaeden an Entlueftung oder Duesenboden wirken sich direkt auf die Filterwirkung aus.',
   },
@@ -127,35 +127,35 @@ const DETAIL_MODES = [
     accent: '#34c090',
     focus: ['filterschicht', 'freierAblauf', 'erstfiltrat'],
     detail: [
-      'Bei Mehrschichtfiltern wird vor bzw. nach dem Spuelen bis zur Filterschicht abgesenkt.',
-      'Nach dem Spuelen muss die Bettoberflaeche wieder eben und sauber geordnet sein.',
-      'Das erste Filtrat wird zum Kanal gefuehrt, bis die Wasserqualitaet wieder stabil ist.',
+      'Bei Mehrschichtfiltern wird vor bzw. nach dem Spülen bis zur Filterschicht abgesenkt.',
+      'Nach dem Spülen muss die Bettoberfläche wieder eben und sauber geordnet sein.',
+      'Das erste Filtrat wird zum Kanal geführt, bis die Wasserqualität wieder stabil ist.',
     ],
     caution: 'Ein verformtes oder verschobenes Mehrschichtbett verschlechtert die Filtration sofort.',
   },
   {
     id: 'luftspuelung',
-    label: 'Luftspuelung',
+    label: 'Luftspülung',
     accent: '#ff7a7a',
-    focus: ['luftspuelung', 'filterbettAufweitung', 'duesenboden'],
+    focus: ['luftspülung', 'filterbettAufweitung', 'duesenboden'],
     detail: [
-      'Luftspuelung lockert das Festbett und loest eingelagerten Schmutz aus den Kornzwischenraeumen.',
+      'Luftspülung lockert das Festbett und loest eingelagerten Schmutz aus den Kornzwischenräumen.',
       'Der Duesenboden verteilt die Luft gleichmaessig, damit keine Totzonen entstehen.',
-      'Die Spaeter folgende Bettaufweitung kann nur sauber arbeiten, wenn das Bett zuerst geloest wurde.',
+      'Die Später folgende Bettaufweitung kann nur sauber arbeiten, wenn das Bett zuerst geloest wurde.',
     ],
-    caution: 'Zu harte oder zu ungleichmaessige Luftspuelung kann das Bett aufreissen oder Duesen ueberlasten.',
+    caution: 'Zu harte oder zu ungleichmaessige Luftspülung kann das Bett aufreissen oder Duesen ueberlasten.',
   },
   {
     id: 'rueckspuelung',
-    label: 'Rueckspuelung',
+    label: 'Rückspülung',
     accent: '#a070ff',
     focus: ['ablaufrichter', 'wasserumkehr', 'freierAblauf'],
     detail: [
       'Im Rueckspuelbetrieb wird die Wasserfuehrung von unten nach oben umgekehrt.',
       'Der Wasserstand wird zum Ablaufrichter abgesenkt, damit kein Ueberstau entsteht.',
-      'Schmutz und Spuelwasser verlassen den Filter drucklos ueber den freien Ablauf zum Kanal.',
+      'Schmutz und Spuelwasser verlassen den Filter drucklos über den freien Ablauf zum Kanal.',
     ],
-    caution: 'Rueckspuelung ohne freien Ablauf oder mit falscher Geschwindigkeit reinigt schlecht und belastet das Bett.',
+    caution: 'Rückspülung ohne freien Ablauf oder mit falscher Geschwindigkeit reinigt schlecht und belastet das Bett.',
   },
   {
     id: 'wiederanfahren',
@@ -163,28 +163,28 @@ const DETAIL_MODES = [
     accent: '#ffd166',
     focus: ['belueftung', 'erstfiltrat', 'filterschicht'],
     detail: [
-      'Nach der Spuelung wird das Bett wieder gesetzt, entlueftet und hydraulisch beruhigt.',
+      'Nach der Spülung wird das Bett wieder gesetzt, entlueftet und hydraulisch beruhigt.',
       'Erstfiltrat geht zum Kanal, bis Trubstoffe und Restluft ausgetragen sind.',
-      'Erst danach wird der Filter sauber auf den normalen Filtrationsbetrieb zurueckgestellt.',
+      'Erst danach wird der Filter sauber auf den normalen Filtrationsbetrieb zurückgestellt.',
     ],
-    caution: 'Zu fruehes Umschalten ins Becken fuehrt zu Truebung, Luftaustrag und Hygieneproblemen.',
+    caution: 'Zu frühes Umschalten ins Becken fuehrt zu Trübung, Luftaustrag und Hygieneproblemen.',
   },
 ];
 
 const KENNDATEN = [
   { label: 'Bauart', value: 'Geschlossener Festbett-/Druckfilter' },
-  { label: 'Filtertyp', value: 'Mehrschichtfilter moeglich' },
+  { label: 'Filtertyp', value: 'Mehrschichtfilter möglich' },
   { label: 'Normalbetrieb', value: 'Filtration unter Druck durch das Bett' },
-  { label: 'Rueckspuelung', value: 'Wasserfuehrung umgekehrt, unten nach oben' },
+  { label: 'Rückspülung', value: 'Wasserfuehrung umgekehrt, unten nach oben' },
   { label: 'Spuelgeschwindigkeit', value: 'ca. 60 - 65 m/h' },
   { label: 'Bettaufweitung', value: 'ca. 10 % dargestellt' },
 ];
 
 const BETRIEBSCHECKS = [
   { label: 'Freier Ablauf', value: 'sichtbar, drucklos, ohne Rueckstau', ok: true },
-  { label: 'Filterbett', value: 'nach Spuelung eben und sauber gesetzt', ok: true },
+  { label: 'Filterbett', value: 'nach Spülung eben und sauber gesetzt', ok: true },
   { label: 'Entlueftung', value: 'Bett und Oberraum luftfrei', ok: true },
-  { label: 'Erstfiltrat', value: 'zunaechst zum Kanal, nicht ins Becken', ok: true },
+  { label: 'Erstfiltrat', value: 'zunächst zum Kanal, nicht ins Becken', ok: true },
   { label: 'Spuelhydraulik', value: 'Luft + Wasser gleichmaessig verteilt', ok: true },
 ];
 
@@ -207,12 +207,12 @@ const MODE_FLOW_SEGMENTS = {
     { points: [[260, 184], [120, 184]], color: '#34c090' },
     { points: [[300, 372], [182, 386]], color: '#34c090' },
   ],
-  luftspuelung: [
+  luftspülung: [
     { points: [[520, 352], [548, 352], [548, 322]], color: '#ff7a7a' },
     { points: [[548, 322], [548, 270], [548, 236]], color: '#ff7a7a' },
     { points: [[520, 352], [494, 352], [494, 334]], color: '#ff7a7a' },
   ],
-  rueckspuelung: [
+  rückspülung: [
     { points: [[520, 352], [494, 352], [494, 216]], color: '#a070ff' },
     { points: [[494, 216], [452, 184], [452, 154]], color: '#a070ff' },
     { points: [[452, 154], [260, 184], [120, 184]], color: '#a070ff' },
@@ -235,7 +235,7 @@ function ClosedFilterDiagram({ activeSpot, setActiveSpot, xrayMode, showLabels, 
 
   return (
     <div className="w-full" style={{ height: MODEL_HEIGHT }}>
-      <svg viewBox="0 0 820 520" className="w-full h-full" role="img" aria-label="Geschlossener Filter im Schnittbild mit Rueckspuelung">
+      <svg viewBox="0 0 820 520" className="w-full h-full" role="img" aria-label="Geschlossener Filter im Schnittbild mit Rückspülung">
         <defs>
           <clipPath id="closed-filter-shell-clip">
             <path d={VESSEL_PATH} />
@@ -389,7 +389,7 @@ function ClosedFilterDiagram({ activeSpot, setActiveSpot, xrayMode, showLabels, 
           Auflockerung durch
         </text>
         <text x="598" y="404" textAnchor="start" fontSize="11" fill="#7597b2">
-          Luftspuelung
+          Luftspülung
         </text>
 
         {mode.focus.map((spotId) => {
@@ -509,7 +509,7 @@ export default function ClosedFilterDeepDiveView() {
           </p>
           <h3 className="text-lg font-black text-white mt-0.5">Geschlossener Filter / Festbettfilter</h3>
           <p className="text-xs font-mono mt-1" style={{ color: '#58789c' }}>
-            Aufbau - Mehrschichtbetrieb - Luftspuelung - Rueckspuelung - Wiederanfahren
+            Aufbau - Mehrschichtbetrieb - Luftspülung - Rückspülung - Wiederanfahren
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -662,7 +662,7 @@ export default function ClosedFilterDeepDiveView() {
               PRUEFUNGSFRAGE
             </p>
             <p className="text-sm font-semibold mb-2" style={{ color: '#c0d8f0' }}>
-              Warum darf waehrend der Rueckspuelung am geschlossenen Filter kein Ueberstau entstehen?
+              Warum darf während der Rückspülung am geschlossenen Filter kein Ueberstau entstehen?
             </p>
             <details>
               <summary className="text-xs cursor-pointer font-mono" style={{ color: '#4a9eff' }}>

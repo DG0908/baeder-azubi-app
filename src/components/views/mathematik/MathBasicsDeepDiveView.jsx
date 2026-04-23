@@ -19,7 +19,7 @@ const TOPICS = {
 
   pythagoras: makeTopic('Geometrie', 'Satz des Pythagoras', 'Wenn ein Dreieck einen rechten Winkel hat (90°), dann gilt eine magische Regel: Die beiden kurzen Seiten zum Quadrat ergeben zusammen das Quadrat der langen Seite. Im Bad z.B. für Schrägen an Beckenrändern.', 'a² + b² = c² (kurz mal kurz + kurz mal kurz = lang mal lang)', ['a und b sind die kurzen Seiten (Katheten)', 'c ist IMMER die längste Seite (Hypotenuse) — die gegenüber vom rechten Winkel', 'a × a + b × b = c × c, dann Wurzel ziehen für c'], [['1. Rechter Winkel?', 'Prüfe: Hat das Dreieck einen 90°-Winkel? Nur dann funktioniert die Formel!'], ['2. Seiten einsetzen', 'Die zwei kurzen Seiten quadrieren: z.B. 3 × 3 = 9 und 4 × 4 = 16.'], ['3. Addieren', '9 + 16 = 25.'], ['4. Wurzel ziehen', 'Welche Zahl mal sich selbst ergibt 25? → 5! Also c = 5 m.']], [['Gegeben', 'a = 3 m, b = 4 m'], ['Quadrate', '3 × 3 = 9, und 4 × 4 = 16'], ['Summe', '9 + 16 = 25'], ['Ergebnis', 'c = √25 = 5 m']], ['c ist IMMER die längste Seite — die gegenüber vom rechten Winkel.', 'Am Ende die Wurzel nicht vergessen!', 'Funktioniert NUR bei Dreiecken mit rechtem Winkel (90°).'], { question: 'Wie groß ist c bei a = 6 m und b = 8 m?', options: ['10 m', '12 m', '14 m'], correctIndex: 0, explanation: '6² = 36, 8² = 64. 36 + 64 = 100. √100 = 10 m.' }),
 
-  flaechen: makeTopic('Geometrie', 'Flächen berechnen', 'Eine Fläche ist wie ein Teppich — sie hat Länge und Breite, aber keine Tiefe. Im Bad brauchst du Flächen z.B. für Beckenoberflächen, Liegewiesen oder Filterplatten.', 'Fläche = Länge × Breite (beim Rechteck).', ['Rechteck: A = Länge × Breite', 'Dreieck: A = Grundseite × Höhe ÷ 2 (das halbe Rechteck)', 'Kreis: A = π × r × r (π ≈ 3,14, r = Radius = halber Durchmesser)'], [['1. Welche Form?', 'Rechteck, Dreieck oder Kreis? Die Form bestimmt die Formel.'], ['2. Maße sammeln', 'Miss Länge und Breite in der gleichen Einheit (alles in Meter!).'], ['3. In die Formel einsetzen', 'Beim Rechteck einfach mal nehmen: 12 × 4 = 48.'], ['4. Einheit beachten', 'Fläche wird in m² angegeben — das ist Quadratmeter.']], [['Form', 'Rechteck, 12 m lang, 4 m breit'], ['Formel', 'A = Länge × Breite'], ['Rechnung', '12 × 4 = 48'], ['Ergebnis', '48 m²']], ['m² ist NICHT das gleiche wie m — m² sind Quadratmeter (Fläche).', 'Beim Kreis: Radius ist der HALBE Durchmesser, nicht verwechseln!', 'Fläche (m²) ist NICHT Volumen (m³) — Volumen braucht noch die Tiefe.'], { question: 'Wie groß ist die Fläche eines Rechtecks mit 9 m und 5 m?', options: ['14 m²', '45 m²', '90 m²'], correctIndex: 1, explanation: '9 × 5 = 45 m².' }),
+  flächen: makeTopic('Geometrie', 'Flächen berechnen', 'Eine Fläche ist wie ein Teppich — sie hat Länge und Breite, aber keine Tiefe. Im Bad brauchst du Flächen z.B. für Beckenoberflächen, Liegewiesen oder Filterplatten.', 'Fläche = Länge × Breite (beim Rechteck).', ['Rechteck: A = Länge × Breite', 'Dreieck: A = Grundseite × Höhe ÷ 2 (das halbe Rechteck)', 'Kreis: A = π × r × r (π ≈ 3,14, r = Radius = halber Durchmesser)'], [['1. Welche Form?', 'Rechteck, Dreieck oder Kreis? Die Form bestimmt die Formel.'], ['2. Maße sammeln', 'Miss Länge und Breite in der gleichen Einheit (alles in Meter!).'], ['3. In die Formel einsetzen', 'Beim Rechteck einfach mal nehmen: 12 × 4 = 48.'], ['4. Einheit beachten', 'Fläche wird in m² angegeben — das ist Quadratmeter.']], [['Form', 'Rechteck, 12 m lang, 4 m breit'], ['Formel', 'A = Länge × Breite'], ['Rechnung', '12 × 4 = 48'], ['Ergebnis', '48 m²']], ['m² ist NICHT das gleiche wie m — m² sind Quadratmeter (Fläche).', 'Beim Kreis: Radius ist der HALBE Durchmesser, nicht verwechseln!', 'Fläche (m²) ist NICHT Volumen (m³) — Volumen braucht noch die Tiefe.'], { question: 'Wie groß ist die Fläche eines Rechtecks mit 9 m und 5 m?', options: ['14 m²', '45 m²', '90 m²'], correctIndex: 1, explanation: '9 × 5 = 45 m².' }),
 
   volumen: makeTopic('Praxis', 'Beckenvolumen berechnen', 'Volumen heißt: Wie viel Wasser passt rein? Stell dir ein Schwimmbecken vor — du brauchst Länge, Breite und Tiefe. Das brauchst du z.B. für Chlor-Dosierung oder Umwälzzeiten.', 'Volumen = Länge × Breite × Tiefe', ['Erst die Grundfläche: Länge × Breite = Fläche in m²', 'Dann mit der Tiefe malnehmen = Volumen in m³', 'Wichtig: 1 m³ = 1.000 Liter!'], [['1. Länge und Breite messen', 'Z.B. 25 m lang und 10 m breit.'], ['2. Fläche berechnen', '25 × 10 = 250 m².'], ['3. Mit Tiefe malnehmen', '250 × 1,8 = 450 m³.'], ['4. In Liter umrechnen', '450 × 1.000 = 450.000 Liter.']], [['Fläche', '25 × 10 = 250 m²'], ['Mit Tiefe', '250 × 1,8 = 450 m³'], ['In Liter', '450 m³ = 450.000 Liter'], ['Ergebnis', '450 m³ bzw. 450.000 Liter']], ['Bei Becken mit unterschiedlicher Tiefe: Nimm die mittlere Tiefe (flach + tief) ÷ 2.', '1 m³ = 1.000 Liter — das brauchst du ständig!', 'Fläche (m²) ist noch kein Volumen (m³) — dafür brauchst du die Tiefe.'], { question: 'Ein Lehrschwimmbecken ist 12 m lang, 8 m breit und 1,25 m tief. Wie groß ist das Volumen?', options: ['96 m³', '120 m³', '76 m³'], correctIndex: 1, explanation: '12 × 8 = 96 m². Dann 96 × 1,25 = 120 m³.' }),
 
@@ -31,7 +31,7 @@ const TOPICS = {
 
   bewegung: makeTopic('Physik', 'Geschwindigkeit berechnen', 'Wie schnell schwimmt jemand? Dafür brauchst du zwei Dinge: Wie weit (Strecke) und wie lange (Zeit). Daraus rechnest du die Geschwindigkeit aus.', 'Geschwindigkeit = Strecke ÷ Zeit', ['v = s ÷ t → Geschwindigkeit = Strecke geteilt durch Zeit', 's = v × t → Strecke = Geschwindigkeit mal Zeit', 't = s ÷ v → Zeit = Strecke geteilt durch Geschwindigkeit'], [['1. Was suchst du?', 'Die Geschwindigkeit (v), die Strecke (s) oder die Zeit (t)?'], ['2. Einheiten prüfen', 'Meter und Sekunden? Oder Kilometer und Stunden? Nicht mischen!'], ['3. Formel benutzen', 'Für Geschwindigkeit: Strecke ÷ Zeit. Z.B. 50 m ÷ 40 s = 1,25 m/s.'], ['4. Ergebnis mit Einheit', '1,25 m/s heißt: 1,25 Meter pro Sekunde.']], [['Gegeben', '50 Meter in 40 Sekunden'], ['Formel', 'v = s ÷ t'], ['Rechnung', '50 ÷ 40 = 1,25'], ['Ergebnis', '1,25 m/s (Meter pro Sekunde)']], ['km/h und m/s NICHT mischen — erst umrechnen!', 'Die Zeit muss zur Strecke passen (Sekunden zu Metern, Stunden zu Kilometern).', 'Tipp: m/s × 3,6 = km/h.'], { question: 'Wie schnell schwimmt jemand, der 100 m in 80 Sekunden schafft?', options: ['0,8 m/s', '1,25 m/s', '1,8 m/s'], correctIndex: 1, explanation: '100 ÷ 80 = 1,25 m/s.' }),
 
-  waerme: makeTopic('Energie', 'Wärme berechnen — Wasser aufheizen', 'Wie viel Energie brauchst du, um ein Becken aufzuheizen? Das ist im Schwimmbad superwichtig. Dafür brauchst du: Wie viel Wasser (in m³) und wie warm soll es werden.', 'Energie in kWh = 1,16 × m³ × Temperaturdifferenz', ['Temperaturdifferenz = Zieltemperatur minus Starttemperatur', 'Beispiel: Von 24°C auf 28°C = 4 Grad Unterschied', 'Formel für Wasser: Q = 1,16 × Volumen in m³ × Temperaturdifferenz'], [['1. Temperaturen aufschreiben', 'Anfangstemperatur und Zieltemperatur. Z.B. 24°C → 28°C.'], ['2. Differenz berechnen', '28 - 24 = 4 Grad Unterschied.'], ['3. Formel benutzen', 'Q = 1,16 × 20 m³ × 4 = 92,8 kWh.'], ['4. Was bedeutet das?', 'Du brauchst 92,8 Kilowattstunden Energie zum Aufheizen.']], [['Gegeben', '20 m³ Wasser, von 23°C auf 28°C'], ['Temperaturdifferenz', '28 - 23 = 5 Grad'], ['Formel', 'Q = 1,16 × 20 × 5'], ['Ergebnis', '116 kWh Energie']], ['Temperaturdifferenz (Unterschied) ist NICHT die Temperatur selbst!', '1,16 ist eine feste Zahl speziell für Wasser — einfach merken.', 'kWh kennst du von der Stromrechnung — dieselbe Einheit.'], { question: 'Wie viel Energie brauchst du für 10 m³ Wasser bei 2 Grad Temperaturerhöhung?', options: ['11,6 kWh', '23,2 kWh', '116 kWh'], correctIndex: 1, explanation: '1,16 × 10 × 2 = 23,2 kWh.' }),
+  wärme: makeTopic('Energie', 'Wärme berechnen — Wasser aufheizen', 'Wie viel Energie brauchst du, um ein Becken aufzuheizen? Das ist im Schwimmbad superwichtig. Dafür brauchst du: Wie viel Wasser (in m³) und wie warm soll es werden.', 'Energie in kWh = 1,16 × m³ × Temperaturdifferenz', ['Temperaturdifferenz = Zieltemperatur minus Starttemperatur', 'Beispiel: Von 24°C auf 28°C = 4 Grad Unterschied', 'Formel für Wasser: Q = 1,16 × Volumen in m³ × Temperaturdifferenz'], [['1. Temperaturen aufschreiben', 'Anfangstemperatur und Zieltemperatur. Z.B. 24°C → 28°C.'], ['2. Differenz berechnen', '28 - 24 = 4 Grad Unterschied.'], ['3. Formel benutzen', 'Q = 1,16 × 20 m³ × 4 = 92,8 kWh.'], ['4. Was bedeutet das?', 'Du brauchst 92,8 Kilowattstunden Energie zum Aufheizen.']], [['Gegeben', '20 m³ Wasser, von 23°C auf 28°C'], ['Temperaturdifferenz', '28 - 23 = 5 Grad'], ['Formel', 'Q = 1,16 × 20 × 5'], ['Ergebnis', '116 kWh Energie']], ['Temperaturdifferenz (Unterschied) ist NICHT die Temperatur selbst!', '1,16 ist eine feste Zahl speziell für Wasser — einfach merken.', 'kWh kennst du von der Stromrechnung — dieselbe Einheit.'], { question: 'Wie viel Energie brauchst du für 10 m³ Wasser bei 2 Grad Temperaturerhöhung?', options: ['11,6 kWh', '23,2 kWh', '116 kWh'], correctIndex: 1, explanation: '1,16 × 10 × 2 = 23,2 kWh.' }),
 
   mechanik: makeTopic('Technik', 'Kraft, Arbeit und Leistung', 'Du schiebst eine schwere Abdeckung über das Becken. Die Kraft zum Schieben, der Weg den du schiebst, und wie schnell du das machst — das sind Kraft, Arbeit und Leistung.', 'Kraft × Weg = Arbeit. Arbeit ÷ Zeit = Leistung.', ['Kraft (F) wird in Newton (N) gemessen — wie stark du drückst/ziehst', 'Arbeit (W) = Kraft × Weg — in Joule (J)', 'Leistung (P) = Arbeit ÷ Zeit — in Watt (W)'], [['1. Um was geht es?', 'Kraft (wie stark?), Arbeit (wie viel insgesamt?) oder Leistung (wie schnell?).'], ['2. Kraft × Weg = Arbeit', 'Du schiebst mit 200 N über 4 Meter: 200 × 4 = 800 Joule Arbeit.'], ['3. Arbeit ÷ Zeit = Leistung', '800 J in 10 Sekunden: 800 ÷ 10 = 80 Watt Leistung.'], ['4. Einheiten merken', 'Newton (N), Joule (J), Watt (W) — wie bei Elektrogeräten.']], [['Gegeben', '200 N Kraft, 4 Meter Weg'], ['Formel Arbeit', 'W = F × s'], ['Rechnung', '200 × 4 = 800 J'], ['Ergebnis', '800 Joule Arbeit']], ['Joule (Arbeit) und Watt (Leistung) NICHT verwechseln!', 'Leistung braucht immer eine Zeitangabe.', 'Watt kennst du von Glühbirnen — 60W Birne leistet 60 Joule pro Sekunde.'], { question: 'Wie groß ist die Leistung, wenn 6000 J Arbeit in 10 Sekunden geleistet werden?', options: ['60 W', '600 W', '6000 W'], correctIndex: 1, explanation: '6000 ÷ 10 = 600 Watt.' }),
 
@@ -44,7 +44,7 @@ const TOPICS = {
   formelsammlung: makeTopic('Nachschlagen', 'Formelsammlung — alles auf einen Blick', 'Hier findest du die wichtigsten Formeln zum Nachschlagen. Nicht auswendig lernen — verstehen und nachschlagen!', 'Formel finden → Einheiten prüfen → rechnen.', ['Lies Formeln immer MIT den Einheiten', 'Setze nur gleiche Einheiten ein (nicht Minuten und Stunden mischen!)', 'Wenn du unsicher bist: Erst aufschreiben was du weißt, dann die passende Formel suchen'], [['1. Welches Thema?', 'Geometrie? Bewegung? Wärme? Chemie?'], ['2. Formel raussuchen', 'Hier unten im Sammelblatt nachschauen.'], ['3. Einheiten angleichen', 'Alles in m, s, kg — nicht durcheinander!'], ['4. Ergebnis kurz überschlagen', 'Kommt ungefähr das raus, was Sinn macht?']], [['1 m³', '= 1.000 Liter'], ['1 mg/L', '= 1 g pro m³'], ['1 m Wassertiefe', '≈ 0,1 bar Druck'], ['Wärme für Wasser', '1,16 kWh pro m³ und Grad']], ['Einheiten gehören IMMER zur Formel dazu.', 'Nicht jede Formel passt in jeder Situation — lies genau was gegeben ist.', 'Das Sammelblatt ist zum Nachschlagen — den Rechenweg musst du selbst machen.'], { question: 'Welche Formel passt zur Filtergeschwindigkeit?', options: ['vF = Q ÷ A', 'Q = p ÷ A', 'A = a + b'], correctIndex: 0, explanation: 'Filtergeschwindigkeit = Durchfluss Q geteilt durch die Filterfläche A.' }, [{ title: 'Grundlagen', lines: ['Punkt vor Strich', 'Brüche: erst Nenner gleich machen', 'Prozent: Grundwert × (% ÷ 100)'] }, { title: 'Geometrie', lines: ['Rechteck: A = a × b', 'Kreis: A = π × r × r', 'Volumen: V = L × B × T', 'Pythagoras: a² + b² = c²'] }, { title: 'Bewegung', lines: ['v = s ÷ t', 's = v × t', 't = s ÷ v', '1 h = 60 min'] }, { title: 'Hydraulik', lines: ['Förderstrom: Q = V ÷ t', 'Filtergeschw.: vF = Q ÷ A', 'Filterfläche: A = Q ÷ vF', 'Wasserdruck: ≈ 0,1 bar pro m'] }, { title: 'Wärme & Chemie', lines: ['Q = 1,16 × m³ × ΔT (in kWh)', '1 mg/L = 1 g/m³', 'Produkt = Aktivchlor ÷ Wirkstoff-%'] }])
 };
 
-const TOPIC_ORDER = ['grundrechenarten', 'brueche', 'dreisatz', 'prozent', 'formeln', 'pythagoras', 'flaechen', 'volumen', 'zeit', 'auftrieb', 'druck', 'bewegung', 'waerme', 'mechanik', 'pumpen', 'filtration', 'chlor', 'formelsammlung'];
+const TOPIC_ORDER = ['grundrechenarten', 'brueche', 'dreisatz', 'prozent', 'formeln', 'pythagoras', 'flächen', 'volumen', 'zeit', 'auftrieb', 'druck', 'bewegung', 'wärme', 'mechanik', 'pumpen', 'filtration', 'chlor', 'formelsammlung'];
 
 const KNOWN_UNITS = ['m3/h', 'm/s2', 'm/s', 'kwh', 'bar', 'm2', 'm3', 'kg', 'eur', 'sek', 'min', 'std', 'h', 's', 'w', 'j', 'g', 'm'];
 
@@ -180,7 +180,7 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
             </ul>
           </InfoCard>
 
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <div className="grid gap-3 md:grid-cols-2">
               {topic.steps.map(([stepTitle, stepText]) => (
                 <div key={stepTitle} className={`rounded-2xl border p-4 ${darkMode ? 'border-slate-800 bg-slate-950/70' : 'border-cyan-100 bg-cyan-50/60'}`}>
@@ -262,7 +262,7 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
                     : 'bg-cyan-600 text-white hover:bg-cyan-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${
@@ -314,7 +314,7 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
         </InfoCard>
       )}
 
-      <InfoCard darkMode={darkMode} title="5 Uebungsrechnungen">
+      <InfoCard darkMode={darkMode} title="5 Übungsrechnungen">
         <div className="space-y-4">
           {practiceSet.map((exercise, index) => {
             const exerciseKey = `${activeTopicId}-${index}`;
@@ -365,7 +365,7 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
                         : 'cursor-not-allowed bg-gray-200 text-gray-400'
                     }`}
                   >
-                    Loesung vergleichen
+                    Lösung vergleichen
                   </button>
                 </div>
 
@@ -380,7 +380,7 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
                         : 'border-amber-200 bg-amber-50'
                   }`}>
                     <div className={`text-sm font-semibold ${matches ? (darkMode ? 'text-emerald-200' : 'text-emerald-800') : (darkMode ? 'text-amber-100' : 'text-amber-800')}`}>
-                      {matches ? 'Das passt gut.' : 'Vergleiche dein Ergebnis mit dem Loesungsweg.'}
+                      {matches ? 'Das passt gut.' : 'Vergleiche dein Ergebnis mit dem Lösungsweg.'}
                     </div>
                     <div className={`mt-2 text-sm ${darkMode ? 'text-slate-200' : 'text-gray-700'}`}>
                       Dein Ergebnis: <span className="font-semibold">{userInput}</span>
@@ -390,7 +390,7 @@ export default function MathBasicsDeepDiveView({ initialTopic = 'grundrechenarte
                     </div>
                     <div className="mt-3">
                       <div className={`text-xs font-bold uppercase tracking-wide ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                        Loesungsweg
+                        Lösungsweg
                       </div>
                       <ol className={`mt-2 space-y-2 text-sm leading-6 ${darkMode ? 'text-slate-200' : 'text-gray-700'}`}>
                         {exercise.steps.map((step) => (

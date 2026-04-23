@@ -137,7 +137,7 @@ const TotpSetupView = ({ initialEnabled = false, onStatusChange }) => {
   const handleRegenerateRecoveryCodes = async (event) => {
     event.preventDefault();
     if (!regeneratePassword) {
-      showToast('Bitte bestaetige die Erzeugung mit deinem Passwort.', 'error');
+      showToast('Bitte bestätige die Erzeugung mit deinem Passwort.', 'error');
       return;
     }
 
@@ -185,7 +185,7 @@ const TotpSetupView = ({ initialEnabled = false, onStatusChange }) => {
       </div>
 
       <p className={`text-sm mb-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-        Schuetze dein Admin-Konto zusaetzlich mit einem zeitbasierten Einmalpasswort aus einer Authenticator-App.
+        Schuetze dein Admin-Konto zusätzlich mit einem zeitbasierten Einmalpasswort aus einer Authenticator-App.
       </p>
 
       {totpEnabled && (
@@ -196,7 +196,7 @@ const TotpSetupView = ({ initialEnabled = false, onStatusChange }) => {
                 Recovery-Codes verfuegbar: {recoveryCodesRemaining}
               </p>
               <p className={`mt-1 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                Recovery-Codes sind Einmalcodes fuer den Notfall, falls dein Authenticator nicht verfuegbar ist.
+                Recovery-Codes sind Einmalcodes für den Notfall, falls dein Authenticator nicht verfuegbar ist.
               </p>
             </div>
             <button
@@ -235,11 +235,11 @@ const TotpSetupView = ({ initialEnabled = false, onStatusChange }) => {
             </div>
           )}
           <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            2. Gib den 6-stelligen Code aus der App zur Bestaetigung ein.
+            2. Gib den 6-stelligen Code aus der App zur Bestätigung ein.
           </p>
           <form onSubmit={handleConfirmEnable} className="space-y-3">
             <div>
-              <label className={labelClass}>Bestaetigungscode</label>
+              <label className={labelClass}>Bestätigungscode</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -283,7 +283,7 @@ const TotpSetupView = ({ initialEnabled = false, onStatusChange }) => {
             Speichere diese Recovery-Codes jetzt sicher ab.
           </p>
           <p className={`text-xs mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Diese Liste wird nur einmal vollstaendig angezeigt. Jeder Code kann genau einmal verwendet werden.
+            Diese Liste wird nur einmal vollständig angezeigt. Jeder Code kann genau einmal verwendet werden.
           </p>
           <div className={`rounded-lg p-4 font-mono text-sm space-y-1 ${darkMode ? 'bg-slate-900 text-cyan-200' : 'bg-slate-900 text-cyan-100'}`}>
             {recoveryCodes.map((code) => (
@@ -321,7 +321,7 @@ const TotpSetupView = ({ initialEnabled = false, onStatusChange }) => {
       {totpEnabled && showRegenerateForm && (
         <div className={`${cardClass} mt-5`}>
           <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-            Bestaetige mit deinem Passwort, um einen neuen Satz Recovery-Codes zu erzeugen.
+            Bestätige mit deinem Passwort, um einen neuen Satz Recovery-Codes zu erzeugen.
           </p>
           <form onSubmit={handleRegenerateRecoveryCodes} className="space-y-3">
             <div>
@@ -361,7 +361,7 @@ const TotpSetupView = ({ initialEnabled = false, onStatusChange }) => {
       {totpEnabled && showDisableForm && (
         <div className={`${cardClass} mt-5`}>
           <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-            Bestaetige mit deinem Passwort:
+            Bestätige mit deinem Passwort:
           </p>
           <form onSubmit={handleDisable} className="space-y-3">
             <div>

@@ -15,8 +15,8 @@ export const DEEP_DIVE = {
       'Bei Kavitation V3 (Entlüftung) öffnen',
       'Pumpenkurve: Q↑ = H↓ (mehr Durchfluss = weniger Druck)',
     ],
-    pruefungsfrage: 'Was ist Kavitation und wie wird sie verhindert?',
-    pruefungsantwort: 'Kavitation = Dampfblasenbildung durch Unterdruck auf der Saugseite. Vermeidung: Saugleitung dicht halten, Entlüftungsventil V3 öffnen, Saughöhe minimieren.',
+    prüfungsfrage: 'Was ist Kavitation und wie wird sie verhindert?',
+    prüfungsantwort: 'Kavitation = Dampfblasenbildung durch Unterdruck auf der Saugseite. Vermeidung: Saugleitung dicht halten, Entlüftungsventil V3 öffnen, Saughöhe minimieren.',
   },
   filter: {
     icon: '🗂️', subtitle: 'Mehrschichtfilter · Druckfilter',
@@ -28,12 +28,12 @@ export const DEEP_DIVE = {
     ],
     lernpunkte: [
       'Aktivkohle (oben): bindet organische Verbindungen und Chloramine',
-      'Quarzsand (Mitte): Hauptfilterleistung fuer Feinstpartikel',
-      'Stuetzkies (unten): Tragschicht und Lastverteilung ueber dem Duesenboden',
+      'Quarzsand (Mitte): Hauptfilterleistung für Feinstpartikel',
+      'Stuetzkies (unten): Tragschicht und Lastverteilung über dem Duesenboden',
       'Rückspülung löst Schmutz → Kanal/Abwurf',
     ],
-    pruefungsfrage: 'Ab welchem Differenzdruck muss rückgespült werden?',
-    pruefungsantwort: 'Bei ΔP > 0,5 bar oder spätestens nach 72 h Betrieb. Rückspülwasser muss in den Kanal (nicht ins Becken) abgeleitet werden.',
+    prüfungsfrage: 'Ab welchem Differenzdruck muss rückgespült werden?',
+    prüfungsantwort: 'Bei ΔP > 0,5 bar oder spätestens nach 72 h Betrieb. Rückspülwasser muss in den Kanal (nicht ins Becken) abgeleitet werden.',
   },
   desinfektion: {
     icon: '⚗️', subtitle: 'Chlorierung · DIN 19643',
@@ -49,8 +49,8 @@ export const DEEP_DIVE = {
       'Gebundenes Chlor (Chloramine) → Geruch + Reizung',
       'Stoßchlorierung: kurzzeitig bis 5 mg/L für Problemfälle',
     ],
-    pruefungsfrage: 'Wie beeinflusst der pH-Wert die Chlorwirksamkeit?',
-    pruefungsantwort: 'Je niedriger der pH, desto mehr HOCl (wirksam). Bei pH 7,2 ca. 65 % HOCl; bei pH 8,0 nur ~20 %. Deshalb Ziel-pH 7,0–7,4 einhalten.',
+    prüfungsfrage: 'Wie beeinflusst der pH-Wert die Chlorwirksamkeit?',
+    prüfungsantwort: 'Je niedriger der pH, desto mehr HOCl (wirksam). Bei pH 7,2 ca. 65 % HOCl; bei pH 8,0 nur ~20 %. Deshalb Ziel-pH 7,0–7,4 einhalten.',
   },
   heizung: {
     icon: '🌡️', subtitle: 'Plattenwärmetauscher · Gegenstrom',
@@ -66,8 +66,8 @@ export const DEEP_DIVE = {
       'Kalkablagerungen → schlechterer Wärmeübergang',
       'Kinderbecken bis 32 °C; Schwimmerbecken 26–28 °C',
     ],
-    pruefungsfrage: 'Warum ist das Gegenstrom-Prinzip effizienter als Gleichstrom?',
-    pruefungsantwort: 'Beim Gegenstrom bleibt das Temperaturgefälle über die gesamte Länge konstant → maximale Wärmeübertragung. Bei Gleichstrom gleicht sich die Temperatur schnell an.',
+    prüfungsfrage: 'Warum ist das Gegenstrom-Prinzip effizienter als Gleichstrom?',
+    prüfungsantwort: 'Beim Gegenstrom bleibt das Temperaturgefälle über die gesamte Länge konstant → maximale Wärmeübertragung. Bei Gleichstrom gleicht sich die Temperatur schnell an.',
   },
   schwall: {
     icon: '🏊', subtitle: 'Schwallwasserbehälter · Pufferspeicher',
@@ -83,8 +83,8 @@ export const DEEP_DIVE = {
       'Schwallwasser = konzentrierteste Badewasserbelastung',
       'Pegel-Monitoring gibt Rückschluss auf Badegastzahlen',
     ],
-    pruefungsfrage: 'Warum sinkt der Beckenwasserspiegel nicht wenn viele Badegäste einsteigen?',
-    pruefungsantwort: 'Das verdrängte Wasser fließt über die Überlaufrinne in den Schwallwasserbehälter und wird gepuffert. Der Beckenpegel bleibt so stabil.',
+    prüfungsfrage: 'Warum sinkt der Beckenwasserspiegel nicht wenn viele Badegäste einsteigen?',
+    prüfungsantwort: 'Das verdrängte Wasser fließt über die Überlaufrinne in den Schwallwasserbehälter und wird gepuffert. Der Beckenpegel bleibt so stabil.',
   },
   flockung: {
     icon: '🧪', subtitle: 'Flockungsmittel-Dosierung · Koagulation',
@@ -100,8 +100,8 @@ export const DEEP_DIVE = {
       'Flocken wachsen zu > 5 µm → vom Filter abscheidbar',
       'Zu viel Flockungsmittel → Aluminium im Wasser (Grenzwert!)',
     ],
-    pruefungsfrage: 'Welche Partikelgröße kann der Sandfilter ohne Flockung abscheiden?',
-    pruefungsantwort: 'Nur Partikel ≥ 0,1 µm. Kleinere Partikel (Viren, Eiweiße) müssen durch Flockung zu größeren Aggregaten verbunden werden.',
+    prüfungsfrage: 'Welche Partikelgröße kann der Sandfilter ohne Flockung abscheiden?',
+    prüfungsantwort: 'Nur Partikel ≥ 0,1 µm. Kleinere Partikel (Viren, Eiweiße) müssen durch Flockung zu größeren Aggregaten verbunden werden.',
   },
   becken: {
     icon: '🏊‍♂️', subtitle: 'Schwimmbecken · 3D-Interaktiv · DIN 19643',
@@ -122,10 +122,10 @@ export const DEEP_DIVE = {
       'Restentleerung am tiefsten Punkt (Bodengefälle 1–2 % zum Ablauf), Entsorgung: Kanal',
       'Wendewandfliesen: Rutschhemmung R9, T-Markierung 2 m vor Wand, 1 m lang',
     ],
-    pruefungsfrage: 'Wie wird die Turnover-Zeit berechnet und was ist der Grenzwert?',
-    pruefungsantwort: 'Turnover [h] = Beckenvolumen [m³] ÷ Volumenstrom [m³/h]. Grenzwert: max. 12 h für Schwimmer-, max. 4 h für Lehr-/Kinderbecken (DIN 19643). Kleiner Turnover = häufigere Aufbereitung = besser.',
+    prüfungsfrage: 'Wie wird die Turnover-Zeit berechnet und was ist der Grenzwert?',
+    prüfungsantwort: 'Turnover [h] = Beckenvolumen [m³] ÷ Volumenstrom [m³/h]. Grenzwert: max. 12 h für Schwimmer-, max. 4 h für Lehr-/Kinderbecken (DIN 19643). Kleiner Turnover = häufigere Aufbereitung = besser.',
   },
-  ueberlauf: {
+  überlauf: {
     icon: '↩️', subtitle: 'Überlaufrinne · Rinnensysteme · DIN 19643',
     kenndaten: [
       { label: 'Funktion', value: 'Oberflächenwasser kontinuierlich abführen' },
@@ -146,8 +146,8 @@ export const DEEP_DIVE = {
       'Skimmer: nur für Kleinstbecken < 60 m³, kein vollständiger Umfangsüberlauf!',
       'Alle Rinnensysteme führen das höchstbelastete Oberflächenwasser (Öle, Schweiß) kontinuierlich ab',
     ],
-    pruefungsfrage: 'Was ist der Unterschied zwischen lotrechter und eingetauchter Beckenbegrenzung? Welche Rinnensysteme gibt es?',
-    pruefungsantwort: 'Lotrechte Beckenbegrenzung: Wand endet senkrecht am Wasserspiegel → Wiesbadener Rinne (tieflegend offen oder auf Beckenumgangshöhe). Eingetauchte Beckenbegrenzung: Rand taucht unter den Wasserspiegel → St.-Moritz-Rinne, Züricher Rinne, Finnische Rinne (Spaltrinne). Skimmer nur für Kleinstbecken < 60 m³.',
+    prüfungsfrage: 'Was ist der Unterschied zwischen lotrechter und eingetauchter Beckenbegrenzung? Welche Rinnensysteme gibt es?',
+    prüfungsantwort: 'Lotrechte Beckenbegrenzung: Wand endet senkrecht am Wasserspiegel → Wiesbadener Rinne (tieflegend offen oder auf Beckenumgangshöhe). Eingetauchte Beckenbegrenzung: Rand taucht unter den Wasserspiegel → St.-Moritz-Rinne, Züricher Rinne, Finnische Rinne (Spaltrinne). Skimmer nur für Kleinstbecken < 60 m³.',
   },
   ruecklauf: {
     icon: '🔄', subtitle: 'Rücklauf · Einspeisung ins Becken',
@@ -163,8 +163,8 @@ export const DEEP_DIVE = {
       'Gegenstrom zur Überlaufrichtung → optimale Durchmischung',
       'pH und Chlor müssen vor Einspeisung im Soll sein',
     ],
-    pruefungsfrage: 'Was passiert wenn das Rücklaufwasser nicht korrekt aufbereitet ist?',
-    pruefungsantwort: 'Unterchloriertes oder pH-falsches Wasser verletzt hygienische Grenzwerte → Badebetrieb muss eingestellt werden. Laut DIN 19643 täglich messen und dokumentieren.',
+    prüfungsfrage: 'Was passiert wenn das Rücklaufwasser nicht korrekt aufbereitet ist?',
+    prüfungsantwort: 'Unterchloriertes oder pH-falsches Wasser verletzt hygienische Grenzwerte → Badebetrieb muss eingestellt werden. Laut DIN 19643 täglich messen und dokumentieren.',
   },
 };
 
@@ -173,13 +173,13 @@ export const DEEP_DIVE = {
 export const FILTER_REFERENCE_TABS = {
   materialien: [
     'Aktivkohle: Adsorption von organischen Spurenstoffen und Chloraminen',
-    'Quarzsand: Hauptfilterstufe fuer Flocken und Schwebstoffe',
+    'Quarzsand: Hauptfilterstufe für Flocken und Schwebstoffe',
     'Stuetzkies: Tragschicht, Lastverteilung, Schutz des Duesenbodens',
     'Hydroanthrazit: in manchen Filtern als obere Leichtschicht statt Aktivkohle',
     'AFM/Glasgranulat: alternative Mehrschichtmedien mit geringer Biofilmbildung',
   ],
   filterarten: [
-    'Mehrschicht-Druckfilter (am haeufigsten im Schwimmbadkreislauf)',
+    'Mehrschicht-Druckfilter (am häufigsten im Schwimmbadkreislauf)',
     'Einschicht-Sandfilter (kleinere Anlagen/Bestandsanlagen)',
     'Aktivkohlefilter als Zusatzstufe bei Geruchs-/THM-Themen',
     'Kerzen-/Patronenfilter eher in Nebenstrom oder kleinen Technikstrecken',
@@ -190,7 +190,7 @@ export const FILTER_REFERENCE_TABS = {
 export const DEEP_DIVE_MODEL_HEIGHT = 'clamp(360px, 64vh, 820px)';
 
 export const BECKEN_HOTSPOT_DATA = {
-  ueberlauf: {
+  überlauf: {
     color: '#4a9eff', icon: '↩️', title: 'Überlaufrinne',
     items: [
       '📐 Spaltrinne: schmaler Schlitz rundum (häufigste Bauart)',

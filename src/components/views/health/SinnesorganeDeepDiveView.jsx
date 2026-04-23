@@ -212,14 +212,14 @@ export default function SinnesorganeDeepDiveView({ darkMode }) {
           </S>
           <S title="Augenverletzungen im Bad — Erstversorgung" darkMode={darkMode}>
             {[
-              { icon: '🧪', problem: 'Chlorreizung (Konjunktivitis)', massnahme: 'Auge mit klarem Wasser spülen, kurz ausruhen. Schutzbrille trägt vor Chloraminen. Wasserqualität prüfen.' },
-              { icon: '🪨', problem: 'Fremdkörper', massnahme: 'Mit Wasser spülen — NICHT reiben! Eingebetteter FK: sterile Abdeckung, Augenarzt. Kein Herausziehen!' },
-              { icon: '💥', problem: 'Stumpfes Trauma (Aufprall)', massnahme: 'KEIN Druck auf Auge! Sterile Abdeckung, Kopf höher lagern, 112. Beide Augen abdecken (Mitbewegung).' },
-              { icon: '☣️', problem: 'Verätzung (Chemikalien)', massnahme: '15+ Min. Spülen mit viel Wasser, Augenlid aufhalten! 112 rufen. Immer Notaufnahme — Hornhaut kann dauerhaft geschädigt werden.' },
-            ].map(({ icon, problem, massnahme }) => (
+              { icon: '🧪', problem: 'Chlorreizung (Konjunktivitis)', maßnahme: 'Auge mit klarem Wasser spülen, kurz ausruhen. Schutzbrille trägt vor Chloraminen. Wasserqualität prüfen.' },
+              { icon: '🪨', problem: 'Fremdkörper', maßnahme: 'Mit Wasser spülen — NICHT reiben! Eingebetteter FK: sterile Abdeckung, Augenarzt. Kein Herausziehen!' },
+              { icon: '💥', problem: 'Stumpfes Trauma (Aufprall)', maßnahme: 'KEIN Druck auf Auge! Sterile Abdeckung, Kopf höher lagern, 112. Beide Augen abdecken (Mitbewegung).' },
+              { icon: '☣️', problem: 'Verätzung (Chemikalien)', maßnahme: '15+ Min. Spülen mit viel Wasser, Augenlid aufhalten! 112 rufen. Immer Notaufnahme — Hornhaut kann dauerhaft geschädigt werden.' },
+            ].map(({ icon, problem, maßnahme }) => (
               <div key={problem} className={`rounded-lg p-3 mb-2 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
                 <div className={`text-xs font-semibold mb-1 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>{icon} {problem}</div>
-                <div className={`text-xs ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>→ {massnahme}</div>
+                <div className={`text-xs ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>→ {maßnahme}</div>
               </div>
             ))}
             <Tipp darkMode={darkMode}>

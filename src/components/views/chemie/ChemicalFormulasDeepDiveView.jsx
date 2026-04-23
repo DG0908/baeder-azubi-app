@@ -39,7 +39,7 @@ const FORMULA_LIBRARY = {
       ['H', 'Wasserstoff', 2],
       ['O', 'Sauerstoff', 1]
     ],
-    note: 'Die 2 gilt nur fuer H. Hinter O steht keine Zahl, also ist O einmal vorhanden.',
+    note: 'Die 2 gilt nur für H. Hinter O steht keine Zahl, also ist O einmal vorhanden.',
     use: 'Grundstoff jedes Beckenwassers.'
   },
   kohlendioxid: {
@@ -50,8 +50,8 @@ const FORMULA_LIBRARY = {
       ['C', 'Kohlenstoff', 1],
       ['O', 'Sauerstoff', 2]
     ],
-    note: 'Die 2 steht direkt hinter O und zaehlt deshalb nur fuer Sauerstoff.',
-    use: 'Einfaches Beispiel fuer eine Formel mit nur einer Zahl.'
+    note: 'Die 2 steht direkt hinter O und zählt deshalb nur für Sauerstoff.',
+    use: 'Einfaches Beispiel für eine Formel mit nur einer Zahl.'
   },
   natriumchlorid: {
     id: 'natriumchlorid',
@@ -62,7 +62,7 @@ const FORMULA_LIBRARY = {
       ['Cl', 'Chlor', 1]
     ],
     note: 'Zwei Symbole ohne Zahl bedeuten: beide Elemente kommen jeweils einmal vor.',
-    use: 'Salz im Solebetrieb oder als Grundstoff fuer Elektrolyse.'
+    use: 'Salz im Solebetrieb oder als Grundstoff für Elektrolyse.'
   },
   natriumhypochlorit: {
     id: 'natriumhypochlorit',
@@ -73,13 +73,13 @@ const FORMULA_LIBRARY = {
       ['Cl', 'Chlor', 1],
       ['O', 'Sauerstoff', 1]
     ],
-    note: 'Hier fehlen Zahlen komplett. Damit gilt fuer alle drei Elemente die Anzahl 1.',
-    use: CHEMICAL_USE_BY_FORMULA.get('NaClO') || 'Fluessigchlor zur Desinfektion.'
+    note: 'Hier fehlen Zahlen komplett. Damit gilt für alle drei Elemente die Anzahl 1.',
+    use: CHEMICAL_USE_BY_FORMULA.get('NaClO') || 'Flüssigchlor zur Desinfektion.'
   },
-  salzsaeure: {
+  salzsäure: {
     id: 'salzsaeure',
     formula: 'HCl',
-    name: 'Salzsaeure',
+    name: 'Salzsäure',
     atoms: [
       ['H', 'Wasserstoff', 1],
       ['Cl', 'Chlor', 1]
@@ -87,16 +87,16 @@ const FORMULA_LIBRARY = {
     note: 'H und Cl stehen jeweils einmal da. Keine Zahl bedeutet immer 1.',
     use: CHEMICAL_USE_BY_FORMULA.get('HCl') || 'Starker pH-Senker.'
   },
-  schwefelsaeure: {
+  schwefelsäure: {
     id: 'schwefelsaeure',
     formula: 'H2SO4',
-    name: 'Schwefelsaeure',
+    name: 'Schwefelsäure',
     atoms: [
       ['H', 'Wasserstoff', 2],
       ['S', 'Schwefel', 1],
       ['O', 'Sauerstoff', 4]
     ],
-    note: 'Mehrere Zahlen koennen in einer Formel vorkommen. Jede Zahl gehoert nur zu dem Symbol direkt davor.',
+    note: 'Mehrere Zahlen können in einer Formel vorkommen. Jede Zahl gehoert nur zu dem Symbol direkt davor.',
     use: CHEMICAL_USE_BY_FORMULA.get('H2SO4') || 'Starker pH-Senker in technischen Anwendungen.'
   },
   calciumhypochlorit: {
@@ -108,8 +108,8 @@ const FORMULA_LIBRARY = {
       ['Cl', 'Chlor', 2],
       ['O', 'Sauerstoff', 2]
     ],
-    note: 'Die 2 hinter der Klammer gilt fuer die ganze Gruppe ClO. Dadurch werden Chlor und Sauerstoff jeweils verdoppelt.',
-    use: CHEMICAL_USE_BY_FORMULA.get('Ca(ClO)2') || 'Chlorgranulat fuer die Desinfektion.'
+    note: 'Die 2 hinter der Klammer gilt für die ganze Gruppe ClO. Dadurch werden Chlor und Sauerstoff jeweils verdoppelt.',
+    use: CHEMICAL_USE_BY_FORMULA.get('Ca(ClO)2') || 'Chlorgranulat für die Desinfektion.'
   },
   aluminiumsulfat: {
     id: 'aluminiumsulfat',
@@ -130,7 +130,7 @@ const TOPICS = {
     id: 'symbole',
     chip: 'Grundlage',
     title: 'Chemische Formeln verstehen',
-    intro: 'Chemische Formeln wirken zuerst kompliziert, folgen aber ein paar einfachen Regeln. Wenn du Symbole, Zahlen und Klammern sauber liest, kannst du jede Formel Schritt fuer Schritt zerlegen.',
+    intro: 'Chemische Formeln wirken zuerst kompliziert, folgen aber ein paar einfachen Regeln. Wenn du Symbole, Zahlen und Klammern sauber liest, kannst du jede Formel Schritt für Schritt zerlegen.',
     motto: 'Grossbuchstabe = neues Element. Zahl = Anzahl. Klammer = Gruppe.',
     formulaRules: [
       'Ein Grossbuchstabe startet immer ein neues Elementsymbol.',
@@ -155,7 +155,7 @@ const TOPICS = {
         text: 'Zum Beispiel H2O: zwei Wasserstoff, ein Sauerstoff.'
       }
     ],
-    exampleTitle: 'Wichtige Symbole fuer den Einstieg',
+    exampleTitle: 'Wichtige Symbole für den Einstieg',
     exampleRows: ELEMENT_OVERVIEW.map((element) => [element.symbol, element.name]),
     formulaIds: ['wasser', 'natriumchlorid', 'natriumhypochlorit'],
     pitfalls: [
@@ -164,18 +164,18 @@ const TOPICS = {
       'Nicht direkt Stoffname und Elementsymbol verwechseln.'
     ],
     quiz: {
-      question: 'Wofuer steht das Symbol Cl?',
+      question: 'Wofür steht das Symbol Cl?',
       options: ['Calcium', 'Chlor', 'Kohlenstoff'],
       correctIndex: 1,
-      explanation: 'Cl ist das Elementsymbol fuer Chlor. Calcium hat das Symbol Ca.'
+      explanation: 'Cl ist das Elementsymbol für Chlor. Calcium hat das Symbol Ca.'
     }
   },
   zahlen: {
     id: 'zahlen',
     chip: 'Anzahl',
     title: 'Zahlen in Formeln richtig lesen',
-    intro: 'Die kleinen Zahlen sagen dir, wie oft ein Element in der Formel vorkommt. Sie gelten immer nur fuer das Symbol direkt davor.',
-    motto: 'Eine Zahl zaehlt nur das Element direkt vor ihr.',
+    intro: 'Die kleinen Zahlen sagen dir, wie oft ein Element in der Formel vorkommt. Sie gelten immer nur für das Symbol direkt davor.',
+    motto: 'Eine Zahl zählt nur das Element direkt vor ihr.',
     formulaRules: [
       'H2 bedeutet: Wasserstoff kommt zweimal vor.',
       'O4 bedeutet: Sauerstoff kommt viermal vor.',
@@ -205,9 +205,9 @@ const TOPICS = {
       ['CO2', '1 x C, 2 x O'],
       ['H2SO4', '2 x H, 1 x S, 4 x O']
     ],
-    formulaIds: ['wasser', 'kohlendioxid', 'schwefelsaeure'],
+    formulaIds: ['wasser', 'kohlendioxid', 'schwefelsäure'],
     pitfalls: [
-      'Die Zahl 2 in CO2 zaehlt nicht den ganzen Stoff, sondern nur O.',
+      'Die Zahl 2 in CO2 zählt nicht den ganzen Stoff, sondern nur O.',
       'Bei H2SO4 hat jedes Element seine eigene Anzahl.',
       'Nicht vergessen: Wenn keine Zahl folgt, bleibt das Element einmal vorhanden.'
     ],
@@ -223,7 +223,7 @@ const TOPICS = {
     chip: 'Klammer',
     title: 'Klammern in Formeln verstehen',
     intro: 'Klammern fassen eine Gruppe zusammen. Die Zahl hinter der Klammer vervielfacht alles, was in der Klammer steht.',
-    motto: 'Die Zahl hinter der Klammer zaehlt die ganze Gruppe.',
+    motto: 'Die Zahl hinter der Klammer zählt die ganze Gruppe.',
     formulaRules: [
       'ClO in einer Klammer ist eine feste Gruppe.',
       'Ca(ClO)2 bedeutet: die Gruppe ClO kommt zweimal vor.',
@@ -254,7 +254,7 @@ const TOPICS = {
     ],
     formulaIds: ['calciumhypochlorit', 'aluminiumsulfat'],
     pitfalls: [
-      'Die Zahl hinter der Klammer zaehlt nicht nur das letzte Symbol, sondern die ganze Gruppe.',
+      'Die Zahl hinter der Klammer zählt nicht nur das letzte Symbol, sondern die ganze Gruppe.',
       'SO4 mal 3 bedeutet 3 Schwefel und 12 Sauerstoff.',
       'Erst Klammer verstehen, dann das Gesamtergebnis aufschreiben.'
     ],
@@ -265,10 +265,10 @@ const TOPICS = {
       explanation: 'ClO kommt zweimal vor. Deshalb sind 2 Sauerstoffatome enthalten.'
     }
   },
-  baederbetrieb: {
+  bäderbetrieb: {
     id: 'baederbetrieb',
     chip: 'Praxis',
-    title: 'Formeln aus dem Baederbetrieb lesen',
+    title: 'Formeln aus dem Bäderbetrieb lesen',
     intro: 'Im Schwimmbad begegnen dir Formeln nicht nur im Unterricht, sondern auf Gebinden, Sicherheitsdatenblaettern und Dosieranlagen. Wer die Formel lesen kann, versteht den Stoff schneller.',
     motto: 'Erst Formel lesen, dann Stoff und Einsatz einordnen.',
     formulaRules: [
@@ -283,7 +283,7 @@ const TOPICS = {
       },
       {
         title: '2. Verbinde Formel und Stoffname',
-        text: 'NaClO ist Natriumhypochlorit, HCl ist Salzsaeure.'
+        text: 'NaClO ist Natriumhypochlorit, HCl ist Salzsäure.'
       },
       {
         title: '3. Ordne den Einsatzzweck zu',
@@ -291,21 +291,21 @@ const TOPICS = {
       },
       {
         title: '4. Trenne Formel und Sicherheit',
-        text: 'Die Formel hilft beim Verstehen. Schutzmassnahmen liest du trotzdem immer im Sicherheitsdatenblatt nach.'
+        text: 'Die Formel hilft beim Verstehen. Schutzmaßnahmen liest du trotzdem immer im Sicherheitsdatenblatt nach.'
       }
     ],
     exampleTitle: 'Typische Stoffe im Schwimmbad',
     exampleRows: [
-      ['NaClO', CHEMICAL_USE_BY_FORMULA.get('NaClO') || 'Fluessigchlor zur Desinfektion'],
+      ['NaClO', CHEMICAL_USE_BY_FORMULA.get('NaClO') || 'Flüssigchlor zur Desinfektion'],
       ['Ca(ClO)2', CHEMICAL_USE_BY_FORMULA.get('Ca(ClO)2') || 'Chlorgranulat zur Desinfektion'],
       ['HCl', CHEMICAL_USE_BY_FORMULA.get('HCl') || 'pH-Senker'],
       ['Al2(SO4)3', CHEMICAL_USE_BY_FORMULA.get('Al2(SO4)3') || 'Flockungsmittel']
     ],
-    formulaIds: ['natriumhypochlorit', 'calciumhypochlorit', 'salzsaeure', 'aluminiumsulfat'],
+    formulaIds: ['natriumhypochlorit', 'calciumhypochlorit', 'salzsäure', 'aluminiumsulfat'],
     pitfalls: [
       'Die Formel verrät nicht automatisch die Konzentration des Produkts.',
       'Gleiche Elemente bedeuten nicht automatisch gleiche Gefahr oder gleiche Wirkung.',
-      'Einsatzgebiet und Schutzmassnahmen immer getrennt betrachten.'
+      'Einsatzgebiet und Schutzmaßnahmen immer getrennt betrachten.'
     ],
     quiz: {
       question: 'Welche Elemente stecken in NaClO?',
@@ -320,7 +320,7 @@ const TOPICS = {
   }
 };
 
-const TOPIC_ORDER = ['symbole', 'zahlen', 'klammern', 'baederbetrieb'];
+const TOPIC_ORDER = ['symbole', 'zahlen', 'klammern', 'bäderbetrieb'];
 
 function InfoCard({ darkMode, title, children }) {
   return (
@@ -427,7 +427,7 @@ export default function ChemicalFormulasDeepDiveView() {
             </ul>
           </InfoCard>
 
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <div className="grid gap-3 md:grid-cols-2">
               {topic.steps.map((step) => (
                 <div
@@ -516,7 +516,7 @@ export default function ChemicalFormulasDeepDiveView() {
                     : 'bg-blue-600 text-white hover:bg-blue-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

@@ -17,19 +17,19 @@ export const WATER_CYCLE_MISSIONS = [
         { source: 'metric', key: 'flowRate', min: 120 }
       ]
     },
-    successFeedback: 'Luft wurde abgefuehrt. Die Pumpe läuft wieder stabil.'
+    successFeedback: 'Luft wurde abgeführt. Die Pumpe läuft wieder stabil.'
   },
   {
     id: 'filter-rückspuelung',
-    title: 'Mission 2: Filter rückspuelen',
+    title: 'Mission 2: Filter rückspülen',
     level: 'Fortgeschritten',
     symptom: {
       title: 'Filter stark belastet',
-      description: 'Differenzdruck steigt, das Schauglas wirkt trueb. Rückspuelung ist faellig.',
+      description: 'Differenzdruck steigt, das Schauglas wirkt trueb. Rückspülung ist faellig.',
       visualFlags: ['filterTurbidity'],
       audio: 'warning'
     },
-    targetAction: 'Rückspuelmodus starten, Rückspuelventil oeffnen und Rückspuelung bis 100 Prozent durchlaufen lassen.',
+    targetAction: 'Rückspuelmodus starten, Rückspuelventil oeffnen und Rückspülung bis 100 Prozent durchlaufen lassen.',
     solveWhen: {
       all: [
         { source: 'control', key: 'pumpEnabled', equals: true },
@@ -38,7 +38,7 @@ export const WATER_CYCLE_MISSIONS = [
         { source: 'metric', key: 'backwashProgress', min: 100 }
       ]
     },
-    successFeedback: 'Rückspuelung abgeschlossen. Das Filterbett ist regeneriert.'
+    successFeedback: 'Rückspülung abgeschlossen. Das Filterbett ist regeneriert.'
   },
   {
     id: 'chlorunterdosierung',
@@ -46,7 +46,7 @@ export const WATER_CYCLE_MISSIONS = [
     level: 'Profi',
     symptom: {
       title: 'Zu niedriger Chlorwert',
-      description: 'Die Chlorreserve faellt unter den Sollbereich. Keimsicherheit ist gefaehrdet.',
+      description: 'Die Chlorreserve faellt unter den Sollbereich. Keimsicherheit ist gefährdet.',
       visualFlags: ['lowChlorine'],
       audio: 'warning'
     },

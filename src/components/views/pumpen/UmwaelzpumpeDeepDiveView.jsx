@@ -26,7 +26,7 @@ const DETAIL_MODES = [
     focus: ['filterkorb', 'laufradprotektor', 'laufrad', 'motorwelle', 'umfuehrungskanal'],
     detail: [
       'Das Wasser stroemt über Filterkorb und Saugseite in die Laufradzone.',
-      'Das Laufrad beschleunigt das Wasser radial und erzeugt Förderhoehe und Volumenstrom.',
+      'Das Laufrad beschleunigt das Wasser radial und erzeugt Förderhöhe und Volumenstrom.',
       'Der Umfuehrungskanal sammelt die Energie und führt zur Druckseite weiter.',
     ],
     caution: 'Luft, Verstopfungen oder verschlissene Laufradspalte veraendern die Pumpenkennlinie sofort.',
@@ -37,9 +37,9 @@ const DETAIL_MODES = [
     accent: '#a070ff',
     focus: ['gleitringdichtungsprotektor', 'sealguard', 'wellenabdichtung', 'motorwelle', 'lagerung'],
     detail: [
-      'Motorwelle und Wellenabdichtung trennen den wassergefuehrten Bereich vom Motorraum.',
+      'Motorwelle und Wellenabdichtung trennen den wassergeführten Bereich vom Motorraum.',
       'Der Gleitringdichtungsprotektor schützt die sensible Dichtungszone gegen Störstoffe.',
-      'Seal-Guard überwacht Leckage im Dichtungsbereich und meldet fruehe Schäden.',
+      'Seal-Guard überwacht Leckage im Dichtungsbereich und meldet frühe Schäden.',
     ],
     caution: 'Schon kleine Leckagen an der Gleitringdichtung können Lager und Motorraum nachfolgend beschaedigen.',
   },
@@ -50,8 +50,8 @@ const DETAIL_MODES = [
     focus: ['service', 'filterdeckel', 'filterkorb', 'beschichtung', 'lagerung'],
     detail: [
       'Filterdeckel und Wartungspunkt müssen schnell und sicher erreichbar bleiben.',
-      'Filterkorb ist ein regelmaessiger Reinigungs- und Kontrollpunkt.',
-      'Beschichtung und Lagerzustand zeigen fruehzeitig chemische oder mechanische Belastung.',
+      'Filterkorb ist ein regelmäßiger Reinigungs- und Kontrollpunkt.',
+      'Beschichtung und Lagerzustand zeigen frühzeitig chemische oder mechanische Belastung.',
     ],
     caution: 'Wartung nur drucklos, abgesperrt und nach Freigabe der Anlage durchführen.',
   },
@@ -79,8 +79,8 @@ const PUMP_SPOTS = [
     position: [-1.1, 0.15, 1.1],
     items: [
       'Schützt das Gehaeuse gegen Korrosion und chemische Belastung.',
-      'Glatte Oberflaechen reduzieren Anhaftung und hydraulische Verluste.',
-      'Abplatzungen oder Unterrostung fruehzeitig dokumentieren.',
+      'Glatte Oberflächen reduzieren Anhaftung und hydraulische Verluste.',
+      'Abplatzungen oder Unterrostung frühzeitig dokumentieren.',
     ],
   },
   {
@@ -91,7 +91,7 @@ const PUMP_SPOTS = [
     color: '#5eb7ff',
     position: [-0.45, 0.18, 0.75],
     items: [
-      'Schützt den Bereich vor dem Laufrad gegen grobe Fremdkoerper.',
+      'Schützt den Bereich vor dem Laufrad gegen grobe Fremdkörper.',
       'Begrenzt direkte Störstoffeinwirkung auf Schaufeln und Spalt.',
       'Besonders wichtig bei Vorfilterproblemen oder Montagearbeiten.',
     ],
@@ -105,7 +105,7 @@ const PUMP_SPOTS = [
     position: [0.28, 1.05, 0.62],
     items: [
       'Schützt die Gleitringdichtungszone gegen Partikel und Spritzwasser.',
-      'Reduziert Schmutzeintrag in die empfindliche Dichtflaeche.',
+      'Reduziert Schmutzeintrag in die empfindliche Dichtfläche.',
       'Bei Undichtigkeiten auf Sekundaerschaeden an Welle und Lager achten.',
     ],
   },
@@ -119,7 +119,7 @@ const PUMP_SPOTS = [
     items: [
       'Wartungspunkt für schnellen Zugang zu Vorfilter und Gehaeuse.',
       'Nur im drucklosen Zustand und nach Absperrung oeffnen.',
-      'Dichtungssitz, Schrauben und Deckelaufnahmen regelmaessig prüfen.',
+      'Dichtungssitz, Schrauben und Deckelaufnahmen regelmäßig prüfen.',
     ],
   },
   {
@@ -158,7 +158,7 @@ const PUMP_SPOTS = [
     items: [
       'Haelt Haare, Fasern und grobe Störstoffe vor dem Laufrad zurück.',
       'Druckverlust steigt mit Verschmutzung deutlich an.',
-      'Regelmaessige Reinigung schützt Hydraulik und spart Energie.',
+      'Regelmäßige Reinigung schützt Hydraulik und spart Energie.',
     ],
   },
   {
@@ -170,7 +170,7 @@ const PUMP_SPOTS = [
     position: [1.7, 1.4, 1.0],
     items: [
       'Optionale Leckageueberwachung im Dichtungsbereich.',
-      'Erkennt fruehzeitig ansteigende Flüssigkeit im Überwachungsraum.',
+      'Erkennt frühzeitig ansteigende Flüssigkeit im Überwachungsraum.',
       'Hilft, Dichtungsschaeden vor Motorfolgeschaeden zu erkennen.',
     ],
   },
@@ -195,7 +195,7 @@ const PUMP_SPOTS = [
     color: '#ff7a7a',
     position: [0.0, 1.18, 0.0],
     items: [
-      'Übertraegt das Motordrehmoment auf das Laufrad.',
+      'Überträgt das Motordrehmoment auf das Laufrad.',
       'Fluchtung und Rundlauf sind für ruhigen Betrieb kritisch.',
       'Korrosion oder Schlag führen zu Dichtungs- und Lagerschaeden.',
     ],
@@ -209,7 +209,7 @@ const PUMP_SPOTS = [
     position: [0.02, 0.82, 0.58],
     items: [
       'Dichtet die rotierende Welle gegen austretendes Wasser ab.',
-      'Typisch als Gleitringdichtung im Bäderbereich ausgefuehrt.',
+      'Typisch als Gleitringdichtung im Bäderbereich ausgeführt.',
       'Trockenlauf und Schmutzeintrag gehören zu den häufigsten Schadensursachen.',
     ],
   },
@@ -230,7 +230,7 @@ const PUMP_SPOTS = [
     id: 'lagerung',
     number: '13',
     short: 'Lager',
-    label: 'Verstaerkte Lagerung',
+    label: 'Verstärkte Lagerung',
     color: '#ffd166',
     position: [0.0, 1.58, 0.25],
     items: [

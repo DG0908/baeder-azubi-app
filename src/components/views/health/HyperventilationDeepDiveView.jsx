@@ -4,7 +4,7 @@ import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
 const TABS = {
   grundlagen: { label: 'Grundlagen', icon: '🧬' },
   symptome: { label: 'Symptome', icon: '🌬️' },
-  massnahmen: { label: 'Erstmaßnahmen', icon: '🤝' },
+  maßnahmen: { label: 'Erstmaßnahmen', icon: '🤝' },
   bad: { label: 'Im Schwimmbad', icon: '🏊' },
 };
 
@@ -142,22 +142,22 @@ export default function HyperventilationDeepDiveView({ darkMode }) {
         </div>
       )}
 
-      {activeTab === 'massnahmen' && (
+      {activeTab === 'maßnahmen' && (
         <div className="space-y-4">
           <Section title="Erstmaßnahmen">
             <div className="space-y-2">
               {[
-                { nr: '1', massnahme: 'Ruhe bewahren und beruhigen', detail: '"Ich bin bei Ihnen, das geht vorbei." — eigene Ruhe überträgt sich!', prio: true },
-                { nr: '2', massnahme: 'Aus der Situation nehmen', detail: 'Ruhige Umgebung, weg vom Lärm und Publikum', prio: false },
-                { nr: '3', massnahme: 'Atemführung', detail: 'Gemeinsam tief und langsam atmen — vorzumachen hilft: "Wie ich — ein... aus..."', prio: true },
-                { nr: '4', massnahme: 'Hohle Hand vorhalten', detail: 'Person in eigene hohle Hände atmen lassen → CO₂ wieder einatmen', prio: false },
-                { nr: '5', massnahme: 'Ablenkung', detail: 'Fragen stellen, zählen lassen — Fokus weg von der Atmung', prio: false },
-                { nr: '6', massnahme: 'Überwachen', detail: 'Besserung? Oder medizinische Ursache? → Notruf wenn kein Besserung', prio: false },
+                { nr: '1', maßnahme: 'Ruhe bewahren und beruhigen', detail: '"Ich bin bei Ihnen, das geht vorbei." — eigene Ruhe überträgt sich!', prio: true },
+                { nr: '2', maßnahme: 'Aus der Situation nehmen', detail: 'Ruhige Umgebung, weg vom Lärm und Publikum', prio: false },
+                { nr: '3', maßnahme: 'Atemführung', detail: 'Gemeinsam tief und langsam atmen — vorzumachen hilft: "Wie ich — ein... aus..."', prio: true },
+                { nr: '4', maßnahme: 'Hohle Hand vorhalten', detail: 'Person in eigene hohle Hände atmen lassen → CO₂ wieder einatmen', prio: false },
+                { nr: '5', maßnahme: 'Ablenkung', detail: 'Fragen stellen, zählen lassen — Fokus weg von der Atmung', prio: false },
+                { nr: '6', maßnahme: 'Überwachen', detail: 'Besserung? Oder medizinische Ursache? → Notruf wenn kein Besserung', prio: false },
               ].map((item, i) => (
                 <div key={i} className={`flex gap-3 p-3 rounded-xl border ${item.prio ? 'bg-red-50 border-red-300' : 'bg-white border-gray-200'}`}>
                   <span className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center flex-shrink-0 ${item.prio ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700'}`}>{item.nr}</span>
                   <div>
-                    <p className={`font-semibold text-sm ${item.prio ? 'text-red-800' : 'text-gray-800'}`}>{item.massnahme}</p>
+                    <p className={`font-semibold text-sm ${item.prio ? 'text-red-800' : 'text-gray-800'}`}>{item.maßnahme}</p>
                     <p className="text-xs text-gray-600 mt-0.5">{item.detail}</p>
                   </div>
                 </div>

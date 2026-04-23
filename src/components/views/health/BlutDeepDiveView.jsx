@@ -179,10 +179,10 @@ export default function BlutDeepDiveView({ darkMode }) {
               ['Arteriell (spritzend)', 'Starker Druck. Bei Extremität: Abbindemanschette als letztes Mittel. 112 rufen.'],
               ['Nasenbluten', 'Nach vorn beugen, Nasenflügel zusammendrücken (10 Min), Kühlpack im Nacken.'],
               ['Innere Blutung', 'Nicht sichtbar! Schockzeichen (Blässe, Tachykardie) beachten. Stabile Seitenlage, 112.'],
-            ].map(([situation, massnahme]) => (
+            ].map(([situation, maßnahme]) => (
               <div key={situation} className={`py-1.5 border-b last:border-0 text-xs ${darkMode ? 'border-slate-700' : 'border-gray-100'}`}>
                 <span className={`font-semibold block ${darkMode ? 'text-slate-200' : 'text-gray-800'}`}>{situation}</span>
-                <span className={darkMode ? 'text-slate-400' : 'text-gray-600'}>{massnahme}</span>
+                <span className={darkMode ? 'text-slate-400' : 'text-gray-600'}>{maßnahme}</span>
               </div>
             ))}
           </S>

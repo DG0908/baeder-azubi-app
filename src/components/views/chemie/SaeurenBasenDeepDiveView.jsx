@@ -9,14 +9,14 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist der pH-Wert?',
     intro:
-      'Der pH-Wert sagt dir, ob eine Fluessigkeit sauer, neutral oder basisch (= alkalisch) ist. Die Skala geht von 0 bis 14. Alles unter 7 ist sauer, genau 7 ist neutral, alles ueber 7 ist basisch. Im Schwimmbad ist der pH-Wert super wichtig: Nur wenn er stimmt, wirkt das Chlor richtig und die Badegaeste bekommen keine Hautprobleme.',
+      'Der pH-Wert sagt dir, ob eine Flüssigkeit sauer, neutral oder basisch (= alkalisch) ist. Die Skala geht von 0 bis 14. Alles unter 7 ist sauer, genau 7 ist neutral, alles über 7 ist basisch. Im Schwimmbad ist der pH-Wert super wichtig: Nur wenn er stimmt, wirkt das Chlor richtig und die Badegaeste bekommen keine Hautprobleme.',
     motto: 'pH 0–6 = sauer, pH 7 = neutral, pH 8–14 = basisch.',
     rules: [
       'Die pH-Skala geht von 0 (stark sauer) bis 14 (stark basisch). 7 ist genau in der Mitte = neutral.',
       'Im Schwimmbad muss der pH-Wert zwischen 6,5 und 7,6 liegen (DIN 19643). Ideal ist 7,0 bis 7,2.',
       'Ist der pH zu niedrig (unter 6,5): Die Haut und Augen werden gereizt, Metalle im Becken rosten.',
-      'Ist der pH zu hoch (ueber 7,6): Das Chlor wirkt kaum noch — Keime koennen sich vermehren!',
-      'Du misst den pH-Wert taeglich — entweder mit der Messzelle der Dosieranlage oder mit einer Handmessung (DPD/Phenolrot).'
+      'Ist der pH zu hoch (über 7,6): Das Chlor wirkt kaum noch — Keime können sich vermehren!',
+      'Du misst den pH-Wert täglich — entweder mit der Messzelle der Dosieranlage oder mit einer Handmessung (DPD/Phenolrot).'
     ],
     steps: [
       {
@@ -42,7 +42,7 @@ const TABS = {
         given: 'Hier siehst du typische pH-Werte von bekannten Stoffen.',
         question: 'Welche sind sauer, welche basisch?',
         steps: [
-          ['Magensaeure', 'pH 1 — stark sauer'],
+          ['Magensäure', 'pH 1 — stark sauer'],
           ['Zitronensaft', 'pH 2 — sauer'],
           ['Cola', 'pH 3 — sauer'],
           ['Reines Wasser', 'pH 7 — neutral'],
@@ -58,26 +58,26 @@ const TABS = {
           ['Messwert', 'pH 7,9'],
           ['Erlaubter Bereich', 'pH 6,5 bis 7,6 (DIN 19643)'],
           ['Bewertung', '7,9 liegt UEBER dem erlaubten Bereich'],
-          ['Massnahme', 'pH muss gesenkt werden (Saeure zugeben)']
+          ['Maßnahme', 'pH muss gesenkt werden (Säure zugeben)']
         ]
       },
       {
         title: 'Warum Chlor bei hohem pH nicht wirkt',
-        given: 'Bei pH 7,0 liegt ca. 73 % des Chlors als wirksame Hypochlorsaeure (HOCl) vor. Bei pH 8,0 sind es nur noch ca. 22 %.',
-        question: 'Was bedeutet das fuer die Desinfektion?',
+        given: 'Bei pH 7,0 liegt ca. 73 % des Chlors als wirksame Hypochlorsäure (HOCl) vor. Bei pH 8,0 sind es nur noch ca. 22 %.',
+        question: 'Was bedeutet das für die Desinfektion?',
         steps: [
           ['pH 7,0', '73 % wirksames Chlor (HOCl)'],
           ['pH 7,5', 'ca. 50 % wirksames Chlor'],
           ['pH 8,0', 'nur 22 % wirksames Chlor'],
-          ['Ergebnis', 'Bei pH 8,0 braucht man 3× mehr Chlor fuer die gleiche Wirkung!']
+          ['Ergebnis', 'Bei pH 8,0 braucht man 3× mehr Chlor für die gleiche Wirkung!']
         ]
       }
     ],
     pitfalls: [
       'pH-Wert und Chlorwert haengen zusammen — IMMER zuerst den pH korrigieren, dann Chlor anpassen!',
       'Wasserprobe nicht am Einlauf nehmen! Dort ist das Wasser frisch dosiert und nicht repraesentativ.',
-      'Phenolrot-Tabletten (Handmessung) verfaerben sich bei pH ueber 8,2 violett — das heisst NICHT \"alles OK\"!',
-      'Ein pH-Sprung von 7 auf 8 klingt klein, ist aber eine 10-fache Aenderung (logarithmische Skala).'
+      'Phenolrot-Tabletten (Handmessung) verfaerben sich bei pH über 8,2 violett — das heisst NICHT \"alles OK\"!',
+      'Ein pH-Sprung von 7 auf 8 klingt klein, ist aber eine 10-fache Änderung (logarithmische Skala).'
     ],
     quiz: {
       question: 'Der pH-Wert im Schwimmbecken muss laut DIN 19643 zwischen welchen Werten liegen?',
@@ -87,104 +87,104 @@ const TABS = {
     }
   },
 
-  saeuren: {
+  säuren: {
     id: 'saeuren',
-    chip: 'Saeuren',
-    title: 'Saeuren im Baederalltag',
+    chip: 'Säuren',
+    title: 'Säuren im Bäderalltag',
     intro:
-      'Saeuren sind Stoffe, die in Wasser H⁺-Ionen (Wasserstoff-Ionen) abgeben. Du erkennst sie oft daran, dass ihre Formel mit H beginnt, z.B. HCl (Salzsaeure). Im Schwimmbad brauchst du Saeuren, um den pH-Wert zu senken, wenn er zu hoch ist. Aber Vorsicht: Saeuren koennen Veraetzungen verursachen!',
-    motto: 'Saeuren senken den pH-Wert — Formel beginnt oft mit H.',
+      'Säuren sind Stoffe, die in Wasser H⁺-Ionen (Wasserstoff-Ionen) abgeben. Du erkennst sie oft daran, dass ihre Formel mit H beginnt, z.B. HCl (Salzsäure). Im Schwimmbad brauchst du Säuren, um den pH-Wert zu senken, wenn er zu hoch ist. Aber Vorsicht: Säuren können Veraetzungen verursachen!',
+    motto: 'Säuren senken den pH-Wert — Formel beginnt oft mit H.',
     rules: [
-      'Saeuren geben H⁺-Ionen (Protonen) ab — das macht sie sauer.',
-      'Der pH-Wert von Saeuren liegt unter 7. Je niedriger, desto staerker die Saeure.',
+      'Säuren geben H⁺-Ionen (Protonen) ab — das macht sie sauer.',
+      'Der pH-Wert von Säuren liegt unter 7. Je niedriger, desto stärker die Säure.',
       'Erkennungsmerkmal: Die chemische Formel beginnt oft mit H (HCl, H₂SO₄, HNO₃).',
-      'Im Schwimmbad nutzt man Saeuren als pH-Senker: Salzsaeure (HCl) oder Natriumhydrogensulfat (NaHSO₄).',
-      'WICHTIGSTE Sicherheitsregel: Immer Saeure ins Wasser giessen, NIE Wasser in Saeure! (Merke: Zuerst das Wasser, dann die Saeure, sonst geschieht das Ungeheure!)'
+      'Im Schwimmbad nutzt man Säuren als pH-Senker: Salzsäure (HCl) oder Natriumhydrogensulfat (NaHSO₄).',
+      'WICHTIGSTE Sicherheitsregel: Immer Säure ins Wasser giessen, NIE Wasser in Säure! (Merke: Zuerst das Wasser, dann die Säure, sonst geschieht das Ungeheure!)'
     ],
     steps: [
       {
-        title: '1. Saeure erkennen',
-        text: 'Schau auf die Formel: Beginnt sie mit H? Dann ist es wahrscheinlich eine Saeure. Beispiele: HCl (Salzsaeure), H₂SO₄ (Schwefelsaeure).'
+        title: '1. Säure erkennen',
+        text: 'Schau auf die Formel: Beginnt sie mit H? Dann ist es wahrscheinlich eine Säure. Beispiele: HCl (Salzsäure), H₂SO₄ (Schwefelsäure).'
       },
       {
         title: '2. Einsatz im Bad',
-        text: 'Wenn der pH-Wert zu hoch ist (z.B. pH 7,8), wird Saeure zugegeben, um den pH zu senken. Die Dosieranlage macht das oft automatisch.'
+        text: 'Wenn der pH-Wert zu hoch ist (z.B. pH 7,8), wird Säure zugegeben, um den pH zu senken. Die Dosieranlage macht das oft automatisch.'
       },
       {
         title: '3. Neutralisation verstehen',
-        text: 'Saeure + Base ergibt Salz + Wasser. Beispiel: HCl + NaOH → NaCl + H₂O. Das ist das Grundprinzip der pH-Korrektur.'
+        text: 'Säure + Base ergibt Salz + Wasser. Beispiel: HCl + NaOH → NaCl + H₂O. Das ist das Grundprinzip der pH-Korrektur.'
       },
       {
         title: '4. Sicherheit beachten',
-        text: 'Schutzbrille, Handschuhe und Schutzkleidung sind Pflicht! Bei Hautkontakt sofort mit viel Wasser spuelen. Saeuredaempfe nicht einatmen!'
+        text: 'Schutzbrille, Handschuhe und Schutzkleidung sind Pflicht! Bei Hautkontakt sofort mit viel Wasser spülen. Säuredaempfe nicht einatmen!'
       }
     ],
     examples: [
       {
-        title: 'Wichtige Saeuren im Schwimmbad',
-        given: 'Diese Saeuren begegnen dir im Baederalltag.',
-        question: 'Wofuer werden sie eingesetzt?',
+        title: 'Wichtige Säuren im Schwimmbad',
+        given: 'Diese Säuren begegnen dir im Bäderalltag.',
+        question: 'Wofür werden sie eingesetzt?',
         steps: [
-          ['Salzsaeure (HCl)', 'pH-Senker Nr. 1 — wird am haeufigsten eingesetzt'],
-          ['Schwefelsaeure (H₂SO₄)', 'pH-Senker, aber seltener wegen Sulfat-Problematik'],
+          ['Salzsäure (HCl)', 'pH-Senker Nr. 1 — wird am häufigsten eingesetzt'],
+          ['Schwefelsäure (H₂SO₄)', 'pH-Senker, aber seltener wegen Sulfat-Problematik'],
           ['NaHSO₄', 'Natriumhydrogensulfat — fester pH-Senker, einfacher in der Handhabung'],
-          ['Kohlensaeure (CO₂)', 'Wird als Gas eingeleitet — besonders schonender pH-Senker']
+          ['Kohlensäure (CO₂)', 'Wird als Gas eingeleitet — besonders schonender pH-Senker']
         ]
       },
       {
         title: 'Neutralisation einfach erklaert',
-        given: 'Salzsaeure (HCl) trifft auf Natronlauge (NaOH).',
+        given: 'Salzsäure (HCl) trifft auf Natronlauge (NaOH).',
         question: 'Was passiert bei dieser Reaktion?',
         steps: [
-          ['Saeure', 'HCl gibt H⁺ ab'],
+          ['Säure', 'HCl gibt H⁺ ab'],
           ['Base', 'NaOH gibt OH⁻ ab'],
           ['Reaktion', 'H⁺ + OH⁻ → H₂O (Wasser)'],
           ['Ergebnis', 'HCl + NaOH → NaCl (Kochsalz) + H₂O (Wasser)']
         ]
       },
       {
-        title: 'Warum Saeure ins Wasser?',
-        given: 'Du musst Salzsaeure verduennen. Wie machst du es richtig?',
+        title: 'Warum Säure ins Wasser?',
+        given: 'Du musst Salzsäure verduennen. Wie machst du es richtig?',
         question: 'Welche Reihenfolge ist sicher?',
         steps: [
-          ['RICHTIG', 'Zuerst Wasser in den Behaelter, DANN Saeure langsam dazugiessen'],
-          ['FALSCH', 'Wasser auf konzentrierte Saeure giessen — es spritzt und kocht!'],
-          ['Warum?', 'Saeure + Wasser erzeugt Hitze. Bei wenig Wasser kocht es sofort und spritzt!'],
-          ['Merksatz', '\"Erst das Wasser, dann die Saeure, sonst geschieht das Ungeheure!\"']
+          ['RICHTIG', 'Zuerst Wasser in den Behaelter, DANN Säure langsam dazugiessen'],
+          ['FALSCH', 'Wasser auf konzentrierte Säure giessen — es spritzt und kocht!'],
+          ['Warum?', 'Säure + Wasser erzeugt Hitze. Bei wenig Wasser kocht es sofort und spritzt!'],
+          ['Merksatz', '\"Erst das Wasser, dann die Säure, sonst geschieht das Ungeheure!\"']
         ]
       }
     ],
     pitfalls: [
-      'Saeuren und Chlor NIEMALS mischen! Es entsteht giftiges Chlorgas — Lebensgefahr!',
-      'Salzsaeure dampft an der Luft — immer gut lueften und Daempfe nicht einatmen!',
-      'Konzentrierte Saeure verursacht sofort Veraetzungen. Auch verduennte Saeure kann bei laengerem Kontakt die Haut schaedigen.',
-      'Beim Dosieren immer den Messbecher spuelen — Saeurereste im Becher verfaelschen die naechste Messung.'
+      'Säuren und Chlor NIEMALS mischen! Es entsteht giftiges Chlorgas — Lebensgefahr!',
+      'Salzsäure dampft an der Luft — immer gut lueften und Daempfe nicht einatmen!',
+      'Konzentrierte Säure verursacht sofort Veraetzungen. Auch verduennte Säure kann bei längerem Kontakt die Haut schaedigen.',
+      'Beim Dosieren immer den Messbecher spülen — Säurereste im Becher verfaelschen die nächste Messung.'
     ],
     quiz: {
-      question: 'Was ist die wichtigste Sicherheitsregel beim Verduennen von Saeure?',
+      question: 'Was ist die wichtigste Sicherheitsregel beim Verduennen von Säure?',
       options: [
-        'Wasser in die Saeure giessen',
-        'Saeure in das Wasser giessen',
+        'Wasser in die Säure giessen',
+        'Säure in das Wasser giessen',
         'Beides gleichzeitig zusammenschuetten'
       ],
       correctIndex: 1,
-      explanation: 'Immer Saeure ins Wasser giessen! Merksatz: \"Erst das Wasser, dann die Saeure, sonst geschieht das Ungeheure!\"'
+      explanation: 'Immer Säure ins Wasser giessen! Merksatz: \"Erst das Wasser, dann die Säure, sonst geschieht das Ungeheure!\"'
     }
   },
 
   basen: {
     id: 'basen',
     chip: 'Basen',
-    title: 'Basen (Laugen) im Baederalltag',
+    title: 'Basen (Laugen) im Bäderalltag',
     intro:
-      'Basen sind das Gegenteil von Saeuren: Sie nehmen H⁺-Ionen auf und erhoehen den pH-Wert. Du erkennst sie oft daran, dass ihre Formel OH enthaelt (z.B. NaOH). Im Schwimmbad brauchst du Basen, um den pH-Wert anzuheben, wenn er zu niedrig ist. Basen fuehlen sich seifig an — aber fass sie nie ohne Handschuhe an!',
+      'Basen sind das Gegenteil von Säuren: Sie nehmen H⁺-Ionen auf und erhöhen den pH-Wert. Du erkennst sie oft daran, dass ihre Formel OH enthaelt (z.B. NaOH). Im Schwimmbad brauchst du Basen, um den pH-Wert anzuheben, wenn er zu niedrig ist. Basen fuehlen sich seifig an — aber fass sie nie ohne Handschuhe an!',
     motto: 'Basen heben den pH-Wert — enthalten oft OH in der Formel.',
     rules: [
-      'Basen nehmen H⁺-Ionen auf (oder geben OH⁻-Ionen ab). Das macht die Loesung basisch/alkalisch.',
-      'Der pH-Wert von Basen liegt ueber 7. Je hoeher, desto staerker die Base.',
+      'Basen nehmen H⁺-Ionen auf (oder geben OH⁻-Ionen ab). Das macht die Lösung basisch/alkalisch.',
+      'Der pH-Wert von Basen liegt über 7. Je höher, desto stärker die Base.',
       'Erkennungsmerkmal: Enthalten oft eine OH-Gruppe — z.B. NaOH (Natronlauge), Ca(OH)₂ (Kalkwasser).',
       'Im Schwimmbad nutzt man Basen als pH-Heber: Natriumcarbonat (Na₂CO₃, Soda) ist am gaengigsten.',
-      'Der KS4,3-Wert (Saeurekapazitaet) sagt dir, wie stabil der pH-Wert ist — je hoeher, desto schwerer aendert sich der pH.'
+      'Der KS4,3-Wert (Säurekapazität) sagt dir, wie stabil der pH-Wert ist — je höher, desto schwerer aendert sich der pH.'
     ],
     steps: [
       {
@@ -196,35 +196,35 @@ const TABS = {
         text: 'Wenn der pH-Wert zu niedrig ist (z.B. pH 6,3), wird eine Base zugegeben, um den pH zu heben. Meistens wird Natriumcarbonat (Na₂CO₃) verwendet.'
       },
       {
-        title: '3. Saeurekapazitaet verstehen',
-        text: 'Der KS4,3-Wert (Soll: mindestens 0,7 mmol/l) zeigt die Pufferkapazitaet des Wassers. Ist er zu niedrig, schwankt der pH staendig hin und her.'
+        title: '3. Säurekapazität verstehen',
+        text: 'Der KS4,3-Wert (Soll: mindestens 0,7 mmol/l) zeigt die Pufferkapazität des Wassers. Ist er zu niedrig, schwankt der pH ständig hin und her.'
       },
       {
         title: '4. Sicherheit beachten',
-        text: 'Laugen sind besonders gefaehrlich fuer die Augen! Schutzbrille ist absolute Pflicht. Bei Augenkontakt sofort 15 Minuten mit Wasser spuelen!'
+        text: 'Laugen sind besonders gefährlich für die Augen! Schutzbrille ist absolute Pflicht. Bei Augenkontakt sofort 15 Minuten mit Wasser spülen!'
       }
     ],
     examples: [
       {
         title: 'Wichtige Basen im Schwimmbad',
-        given: 'Diese Basen begegnen dir im Baederalltag.',
-        question: 'Wofuer werden sie eingesetzt?',
+        given: 'Diese Basen begegnen dir im Bäderalltag.',
+        question: 'Wofür werden sie eingesetzt?',
         steps: [
           ['Natriumcarbonat (Na₂CO₃)', 'pH-Heber Nr. 1 — auch als Soda bekannt, erhoeht auch den KS4,3-Wert'],
           ['Natronlauge (NaOH)', 'Starke Base zum pH-Heben, sehr aetzend, erfordert besondere Vorsicht'],
-          ['Calciumhydroxid Ca(OH)₂', 'Auch Kalkwasser genannt — kann Truebung verursachen'],
+          ['Calciumhydroxid Ca(OH)₂', 'Auch Kalkwasser genannt — kann Trübung verursachen'],
           ['Natriumhydrogencarbonat (NaHCO₃)', 'Schwache Base, stabilisiert den pH-Wert sanft (Natron)']
         ]
       },
       {
-        title: 'KS4,3-Wert (Saeurekapazitaet)',
+        title: 'KS4,3-Wert (Säurekapazität)',
         given: 'Du misst den KS4,3-Wert und erhaeltst 0,4 mmol/l. Der Sollwert liegt bei mindestens 0,7 mmol/l.',
         question: 'Was bedeutet das und was tust du?',
         steps: [
           ['Messwert', 'KS4,3 = 0,4 mmol/l — zu niedrig'],
           ['Bedeutung', 'Das Wasser hat wenig Puffer — der pH-Wert schwankt leicht'],
-          ['Massnahme', 'Natriumcarbonat (Na₂CO₃) zugeben — das hebt KS4,3 UND pH'],
-          ['Ergebnis', 'Stabiler pH-Wert und bessere Wasserqualitaet']
+          ['Maßnahme', 'Natriumcarbonat (Na₂CO₃) zugeben — das hebt KS4,3 UND pH'],
+          ['Ergebnis', 'Stabiler pH-Wert und bessere Wasserqualität']
         ]
       },
       {
@@ -232,23 +232,23 @@ const TABS = {
         given: 'Ein Kollege bekommt Natronlauge ins Auge.',
         question: 'Was ist sofort zu tun?',
         steps: [
-          ['Schritt 1', 'Sofort mit viel Wasser spuelen — mindestens 15 Minuten!'],
-          ['Schritt 2', 'Auge offen halten, von der Nase weg spuelen'],
+          ['Schritt 1', 'Sofort mit viel Wasser spülen — mindestens 15 Minuten!'],
+          ['Schritt 2', 'Auge offen halten, von der Nase weg spülen'],
           ['Schritt 3', 'Notruf 112 — Augenarzt ist notwendig!'],
-          ['WICHTIG', 'Laugen sind fuer Augen GEFAEHRLICHER als Saeuren, weil sie tiefer eindringen!']
+          ['WICHTIG', 'Laugen sind für Augen GEFAEHRLICHER als Säuren, weil sie tiefer eindringen!']
         ]
       }
     ],
     pitfalls: [
       'Laugen fuehlen sich \"seifig\" an — wenn sich deine Haut so anfuehlt, hast du schon Lauge dran! Sofort waschen!',
-      'Natronlauge (NaOH) ist eine STARKE Base — selbst verduennt ist sie gefaehrlich. Nie unterschaetzen!',
-      'Calciumhydroxid kann das Wasser trueben — nur einsetzen, wenn man weiss was man tut.',
-      'KS4,3-Wert zu niedrig? Dann reicht pH-Heben allein nicht — du brauchst speziell Natriumcarbonat fuer die Pufferkapazitaet.'
+      'Natronlauge (NaOH) ist eine STARKE Base — selbst verduennt ist sie gefährlich. Nie unterschaetzen!',
+      'Calciumhydroxid kann das Wasser trüben — nur einsetzen, wenn man weiss was man tut.',
+      'KS4,3-Wert zu niedrig? Dann reicht pH-Heben allein nicht — du brauchst speziell Natriumcarbonat für die Pufferkapazität.'
     ],
     quiz: {
-      question: 'Welches Mittel wird im Schwimmbad am haeufigsten verwendet, um den pH-Wert zu heben?',
+      question: 'Welches Mittel wird im Schwimmbad am häufigsten verwendet, um den pH-Wert zu heben?',
       options: [
-        'Salzsaeure (HCl)',
+        'Salzsäure (HCl)',
         'Natriumcarbonat (Na₂CO₃)',
         'Natriumhypochlorit (NaOCl)'
       ],
@@ -262,23 +262,23 @@ const TABS = {
     chip: 'Praxis',
     title: 'pH-Korrektur im Schwimmbad',
     intro:
-      'Jetzt wird es praktisch: Du misst den pH-Wert, entscheidest ob er zu hoch oder zu niedrig ist, und waehlst das richtige Mittel. In diesem Abschnitt lernst du den typischen Tagesablauf der pH-Kontrolle, Dosierberechnungen und Sicherheitsregeln fuer den Umgang mit Chemikalien im Schwimmbad.',
+      'Jetzt wird es praktisch: Du misst den pH-Wert, entscheidest ob er zu hoch oder zu niedrig ist, und waehlst das richtige Mittel. In diesem Abschnitt lernst du den typischen Tagesablauf der pH-Kontrolle, Dosierberechnungen und Sicherheitsregeln für den Umgang mit Chemikalien im Schwimmbad.',
     motto: 'Erst messen, dann denken, dann dosieren.',
     rules: [
       'IMMER zuerst den pH-Wert korrigieren, DANN das Chlor anpassen — in dieser Reihenfolge!',
-      'pH zu hoch (ueber 7,6): Saeure zugeben — meistens Salzsaeure (HCl) oder NaHSO₄.',
+      'pH zu hoch (über 7,6): Säure zugeben — meistens Salzsäure (HCl) oder NaHSO₄.',
       'pH zu niedrig (unter 6,5): Base zugeben — meistens Natriumcarbonat (Na₂CO₃).',
-      'Bei pH 7,0 liegt ca. 73 % des Chlors als wirksame Hypochlorsaeure vor — bei pH 8,0 nur noch 22 %.',
-      'Chemikalien nie mischen! Besonders Saeure und Chlor ergibt giftiges Chlorgas — Lebensgefahr!'
+      'Bei pH 7,0 liegt ca. 73 % des Chlors als wirksame Hypochlorsäure vor — bei pH 8,0 nur noch 22 %.',
+      'Chemikalien nie mischen! Besonders Säure und Chlor ergibt giftiges Chlorgas — Lebensgefahr!'
     ],
     steps: [
       {
         title: '1. pH-Wert messen',
-        text: 'Morgens vor Badeoeffnung: Wasserprobe nehmen (nicht am Einlauf!). Mit Photometer oder Testtabletten messen. Wert ins Betriebstagebuch eintragen.'
+        text: 'Morgens vor Badeöffnung: Wasserprobe nehmen (nicht am Einlauf!). Mit Photometer oder Testtabletten messen. Wert ins Betriebstagebuch eintragen.'
       },
       {
         title: '2. Ergebnis bewerten',
-        text: 'pH zwischen 6,5 und 7,6? Alles OK. Darueber? Saeure noetig. Darunter? Base noetig. Dosieranlage pruefen — laeuft sie noch richtig?'
+        text: 'pH zwischen 6,5 und 7,6? Alles OK. Darüber? Säure nötig. Darunter? Base nötig. Dosieranlage prüfen — laeuft sie noch richtig?'
       },
       {
         title: '3. Richtiges Mittel dosieren',
@@ -286,31 +286,31 @@ const TABS = {
       },
       {
         title: '4. Nachmessen und dokumentieren',
-        text: 'Etwa 1–2 Stunden nach der Korrektur nochmal messen. Ergebnis dokumentieren. Bei starken Abweichungen auch die Dosieranlage pruefen.'
+        text: 'Etwa 1–2 Stunden nach der Korrektur nochmal messen. Ergebnis dokumentieren. Bei starken Abweichungen auch die Dosieranlage prüfen.'
       }
     ],
     examples: [
       {
         title: 'Praxisbeispiel: pH ist zu hoch',
-        given: 'Sportbecken mit 500 m³ Wasserinhalt. Du misst pH 7,8 — Sollwert ist 7,2. Als Faustregel braucht man ca. 10 ml HCl (33 %) pro m³ fuer eine pH-Senkung um 0,1.',
-        question: 'Wie viel Salzsaeure musst du ungefaehr dosieren?',
+        given: 'Sportbecken mit 500 m³ Wasserinhalt. Du misst pH 7,8 — Sollwert ist 7,2. Als Faustregel braucht man ca. 10 ml HCl (33 %) pro m³ für eine pH-Senkung um 0,1.',
+        question: 'Wie viel Salzsäure musst du ungefaehr dosieren?',
         steps: [
-          ['pH-Differenz', '7,8 − 7,2 = 0,6 pH-Punkte Senkung noetig'],
+          ['pH-Differenz', '7,8 − 7,2 = 0,6 pH-Punkte Senkung nötig'],
           ['Dosierung pro 0,1 pH', '10 ml HCl (33 %) pro m³'],
-          ['Fuer 0,6 pH-Punkte', '6 × 10 ml = 60 ml pro m³'],
-          ['Fuer 500 m³', '500 × 60 ml = 30.000 ml = 30 Liter HCl'],
+          ['Für 0,6 pH-Punkte', '6 × 10 ml = 60 ml pro m³'],
+          ['Für 500 m³', '500 × 60 ml = 30.000 ml = 30 Liter HCl'],
           ['Wichtig', 'Das ist ein Richtwert! Nach 1–2 Std. nachmessen und ggf. nachdosieren.']
         ]
       },
       {
         title: 'Praxisbeispiel: pH ist zu niedrig',
-        given: 'Nichtschwimmerbecken mit 200 m³. Du misst pH 6,2 — Sollwert ist 7,0. Als Faustregel braucht man ca. 5 g Na₂CO₃ pro m³ fuer eine pH-Hebung um 0,1.',
+        given: 'Nichtschwimmerbecken mit 200 m³. Du misst pH 6,2 — Sollwert ist 7,0. Als Faustregel braucht man ca. 5 g Na₂CO₃ pro m³ für eine pH-Hebung um 0,1.',
         question: 'Wie viel Natriumcarbonat brauchst du ungefaehr?',
         steps: [
-          ['pH-Differenz', '7,0 − 6,2 = 0,8 pH-Punkte Hebung noetig'],
+          ['pH-Differenz', '7,0 − 6,2 = 0,8 pH-Punkte Hebung nötig'],
           ['Dosierung pro 0,1 pH', '5 g Na₂CO₃ pro m³'],
-          ['Fuer 0,8 pH-Punkte', '8 × 5 g = 40 g pro m³'],
-          ['Fuer 200 m³', '200 × 40 g = 8.000 g = 8 kg Na₂CO₃'],
+          ['Für 0,8 pH-Punkte', '8 × 5 g = 40 g pro m³'],
+          ['Für 200 m³', '200 × 40 g = 8.000 g = 8 kg Na₂CO₃'],
           ['Wichtig', 'Nicht alles auf einmal zugeben! In Portionen dosieren und nachmessen.']
         ]
       },
@@ -327,31 +327,31 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'NIEMALS Saeure und Chlor zusammen lagern oder mischen — es entsteht giftiges Chlorgas!',
+      'NIEMALS Säure und Chlor zusammen lagern oder mischen — es entsteht giftiges Chlorgas!',
       'Grosse pH-Korrekturen nicht auf einmal machen — lieber in kleinen Schritten dosieren und dazwischen messen.',
-      'Faustregel-Dosierungen sind NUR Richtwerte. Jedes Beckenwasser ist anders (Pufferkapazitaet, Temperatur).',
-      'Chemikalienbeghaelter immer sofort verschliessen. Saeuredaempfe greifen Metalle in der Technikzentrale an!'
+      'Faustregel-Dosierungen sind NUR Richtwerte. Jedes Beckenwasser ist anders (Pufferkapazität, Temperatur).',
+      'Chemikalienbeghaelter immer sofort verschliessen. Säuredaempfe greifen Metalle in der Technikzentrale an!'
     ],
     quiz: {
       question: 'Der pH-Wert im Becken ist 7,9. Was tust du?',
       options: [
         'Base (Na₂CO₃) zugeben, um den pH zu heben',
-        'Saeure (HCl) zugeben, um den pH zu senken',
+        'Säure (HCl) zugeben, um den pH zu senken',
         'Mehr Chlor dosieren, damit die Desinfektion stimmt'
       ],
       correctIndex: 1,
-      explanation: 'pH 7,9 ist zu hoch (Sollbereich 6,5–7,6). Du musst Saeure zugeben, um den pH zu senken. Erst danach ggf. Chlor anpassen.'
+      explanation: 'pH 7,9 ist zu hoch (Sollbereich 6,5–7,6). Du musst Säure zugeben, um den pH zu senken. Erst danach ggf. Chlor anpassen.'
     }
   }
 };
 
-const TAB_ORDER = ['grundlagen', 'saeuren', 'basen', 'praxis'];
+const TAB_ORDER = ['grundlagen', 'säuren', 'basen', 'praxis'];
 
 /* ─── Reference tables for sidebar ─────────────────────────────────────────── */
 
 const PH_SCALE_TABLE = [
   ['pH-Wert', 'Bedeutung', 'Beispiel'],
-  ['0–2', 'Stark sauer', 'Magensaeure, Batteriesaeure'],
+  ['0–2', 'Stark sauer', 'Magensäure, Batteriesäure'],
   ['3–4', 'Sauer', 'Zitronensaft, Cola'],
   ['5–6', 'Schwach sauer', 'Kaffee, Regen'],
   ['7', 'Neutral', 'Reines Wasser'],
@@ -362,9 +362,9 @@ const PH_SCALE_TABLE = [
 
 const SAFETY_TABLE = [
   ['Symbol', 'Bedeutung', 'Wo im Bad?'],
-  ['GHS05 (Aetzend)', 'Verursacht Veraetzungen', 'Salzsaeure, Natronlauge'],
-  ['GHS07 (Achtung)', 'Gesundheitsschaedlich', 'Verduennte Saeuren/Basen'],
-  ['GHS09 (Umwelt)', 'Umweltgefaehrlich', 'Chlorprodukte, Saeuren'],
+  ['GHS05 (Aetzend)', 'Verursacht Veraetzungen', 'Salzsäure, Natronlauge'],
+  ['GHS07 (Achtung)', 'Gesundheitsschaedlich', 'Verduennte Säuren/Basen'],
+  ['GHS09 (Umwelt)', 'Umweltgefährlich', 'Chlorprodukte, Säuren'],
   ['GHS06 (Totenkopf)', 'Giftig / Lebensgefahr', 'Chlorgas (bei Verwechslung!)']
 ];
 
@@ -435,7 +435,7 @@ function ExampleCard({ example, darkMode }) {
 
 /* ─── Main component ────────────────────────────────────────────────────────── */
 
-export default function SaeurenBasenDeepDiveView() {
+export default function SäurenBasenDeepDiveView() {
   const { darkMode } = useApp();
   const [activeTab, setActiveTab] = useState('grundlagen');
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -521,7 +521,7 @@ export default function SaeurenBasenDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -551,7 +551,7 @@ export default function SaeurenBasenDeepDiveView() {
 
           {/* pH Scale table (on grundlagen and praxis tabs) */}
           {(activeTab === 'grundlagen' || activeTab === 'praxis') && (
-            <InfoCard darkMode={darkMode} title="pH-Skala Uebersicht">
+            <InfoCard darkMode={darkMode} title="pH-Skala Übersicht">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -587,8 +587,8 @@ export default function SaeurenBasenDeepDiveView() {
             </InfoCard>
           )}
 
-          {/* Safety symbols table (on saeuren and basen tabs) */}
-          {(activeTab === 'saeuren' || activeTab === 'basen') && (
+          {/* Safety symbols table (on säuren and basen tabs) */}
+          {(activeTab === 'säuren' || activeTab === 'basen') && (
             <InfoCard darkMode={darkMode} title="Gefahrensymbole (GHS)">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
@@ -634,10 +634,10 @@ export default function SaeurenBasenDeepDiveView() {
                     pH zu hoch (&gt;7,6)
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Saeure zugeben: HCl oder NaHSO₄
+                    Säure zugeben: HCl oder NaHSO₄
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                    Faustregel: ca. 10 ml HCl (33 %) pro m³ fuer 0,1 pH-Senkung
+                    Faustregel: ca. 10 ml HCl (33 %) pro m³ für 0,1 pH-Senkung
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-blue-500/30 bg-blue-500/10' : 'border-blue-200 bg-blue-50'}`}>
@@ -648,7 +648,7 @@ export default function SaeurenBasenDeepDiveView() {
                     Base zugeben: Na₂CO₃ (Soda)
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                    Faustregel: ca. 5 g Na₂CO₃ pro m³ fuer 0,1 pH-Hebung
+                    Faustregel: ca. 5 g Na₂CO₃ pro m³ für 0,1 pH-Hebung
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-200 bg-emerald-50'}`}>
@@ -722,7 +722,7 @@ export default function SaeurenBasenDeepDiveView() {
                     : 'bg-blue-600 text-white hover:bg-blue-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

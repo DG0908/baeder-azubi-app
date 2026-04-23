@@ -9,7 +9,7 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist der Dreisatz?',
     intro:
-      'Der Dreisatz ist die wichtigste Rechenmethode in der Ausbildung. Du rechnest in genau drei Schritten von einer bekannten Groesse auf eine unbekannte. Ob Chlor-Dosierung, Wasserverbrauch oder Materialkosten — der Dreisatz funktioniert immer gleich.',
+      'Der Dreisatz ist die wichtigste Rechenmethode in der Ausbildung. Du rechnest in genau drei Schritten von einer bekannten Größe auf eine unbekannte. Ob Chlor-Dosierung, Wasserverbrauch oder Materialkosten — der Dreisatz funktioniert immer gleich.',
     motto: 'Drei Schritte, ein Ergebnis.',
     rules: [
       'Der Dreisatz besteht IMMER aus genau 3 Schritten — daher der Name.',
@@ -32,8 +32,8 @@ const TABS = {
         text: 'Nimm den Einzelwert mal die gewuenschte Menge: 4 Euro mal 8 Packungen = 32 Euro. Fertig!'
       },
       {
-        title: '4. Ergebnis pruefen',
-        text: 'Macht das Ergebnis Sinn? 8 Packungen sind mehr als 5, also muss der Preis auch hoeher sein. 32 Euro ist mehr als 20 Euro — passt!'
+        title: '4. Ergebnis prüfen',
+        text: 'Macht das Ergebnis Sinn? 8 Packungen sind mehr als 5, also muss der Preis auch höher sein. 32 Euro ist mehr als 20 Euro — passt!'
       }
     ],
     examples: [
@@ -49,7 +49,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Baeder-Beispiel: Wasserverbrauch',
+        title: 'Bäder-Beispiel: Wasserverbrauch',
         given: 'In 3 Stunden fliessen 90 m³ Wasser durch den Filter.',
         question: 'Wie viel Wasser in 7 Stunden?',
         steps: [
@@ -62,9 +62,9 @@ const TABS = {
     ],
     pitfalls: [
       'NICHT direkt von 5 auf 8 springen — immer erst auf 1 rechnen!',
-      'Die Einheiten muessen zusammenpassen (nicht Stunden mit Minuten mischen).',
-      'Schreib die Einheit IMMER dazu, sonst weisst du spaeter nicht mehr was die Zahl bedeutet.',
-      'Ueberlege VOR dem Rechnen: Muss das Ergebnis groesser oder kleiner werden?'
+      'Die Einheiten müssen zusammenpassen (nicht Stunden mit Minuten mischen).',
+      'Schreib die Einheit IMMER dazu, sonst weisst du später nicht mehr was die Zahl bedeutet.',
+      'Ueberlege VOR dem Rechnen: Muss das Ergebnis größer oder kleiner werden?'
     ],
     quiz: {
       question: '4 Sack Filtersand wiegen 100 kg. Wie viel wiegen 7 Saecke?',
@@ -79,14 +79,14 @@ const TABS = {
     chip: 'Proportional',
     title: 'Proportionaler Dreisatz — je mehr, desto mehr',
     intro:
-      'Beim proportionalen (geraden) Dreisatz gilt: Wenn die eine Groesse groesser wird, wird die andere auch groesser. Mehr Chlortabletten = mehr Kosten. Mehr Stunden = mehr Wasserverbrauch. Das ist der haeufigste Fall im Alltag.',
+      'Beim proportionalen (geraden) Dreisatz gilt: Wenn die eine Größe größer wird, wird die andere auch größer. Mehr Chlortabletten = mehr Kosten. Mehr Stunden = mehr Wasserverbrauch. Das ist der häufigste Fall im Alltag.',
     motto: 'Mehr von dem einen = mehr von dem anderen.',
     rules: [
       'Proportional heisst: Beide Werte aendern sich in die GLEICHE Richtung.',
       'Doppelte Menge = doppelter Preis. Dreifache Menge = dreifacher Preis.',
       'Erkennungsmerkmal: "Je mehr ... desto mehr" oder "je weniger ... desto weniger".',
       'Beim Rechnen: Erst teilen (auf 1), dann malnehmen (auf Ziel).',
-      'Die meisten Dreisatz-Aufgaben in der Pruefung sind proportional.'
+      'Die meisten Dreisatz-Aufgaben in der Prüfung sind proportional.'
     ],
     steps: [
       {
@@ -109,13 +109,13 @@ const TABS = {
     examples: [
       {
         title: 'Chlor-Dosierung',
-        given: 'Fuer 200 m³ Beckenwasser braucht man 60 g Aktivchlor.',
-        question: 'Wie viel braucht man fuer 350 m³?',
+        given: 'Für 200 m³ Beckenwasser braucht man 60 g Aktivchlor.',
+        question: 'Wie viel braucht man für 350 m³?',
         steps: [
           ['Bekannt', '200 m³ → 60 g Aktivchlor'],
           ['Auf 1 m³', '60 g ÷ 200 = 0,3 g pro m³'],
           ['Auf 350 m³', '0,3 g × 350 = 105 g'],
-          ['Ergebnis', 'Fuer 350 m³ braucht man 105 g Aktivchlor']
+          ['Ergebnis', 'Für 350 m³ braucht man 105 g Aktivchlor']
         ]
       },
       {
@@ -131,24 +131,24 @@ const TABS = {
       },
       {
         title: 'Materialbestellung',
-        given: '3 Eimer Fluessigchlor reichen fuer 12 Tage.',
-        question: 'Wie viele Eimer braucht man fuer 40 Tage?',
+        given: '3 Eimer Flüssigchlor reichen für 12 Tage.',
+        question: 'Wie viele Eimer braucht man für 40 Tage?',
         steps: [
           ['Bekannt', '3 Eimer → 12 Tage'],
           ['Auf 1 Tag', '3 ÷ 12 = 0,25 Eimer pro Tag'],
           ['Auf 40 Tage', '0,25 × 40 = 10 Eimer'],
-          ['Ergebnis', 'Fuer 40 Tage braucht man 10 Eimer']
+          ['Ergebnis', 'Für 40 Tage braucht man 10 Eimer']
         ]
       }
     ],
     pitfalls: [
       'Pruefe IMMER zuerst ob es wirklich proportional ist — nicht alles ist "je mehr desto mehr"!',
       'Typischer Fehler: Die Aufgabe ist eigentlich antiproportional, wird aber proportional gerechnet.',
-      'Wenn das Ergebnis unlogisch wirkt (z.B. weniger Chlor fuer ein groesseres Becken), hast du wahrscheinlich die falsche Art gewaehlt.',
+      'Wenn das Ergebnis unlogisch wirkt (z.B. weniger Chlor für ein größeres Becken), hast du wahrscheinlich die falsche Art gewählt.',
       'Beim Teilen und Malnehmen immer BEIDE Seiten gleich behandeln.'
     ],
     quiz: {
-      question: '8 Liter Reinigungsmittel reichen fuer 400 m² Flaeche. Wie viel braucht man fuer 600 m²?',
+      question: '8 Liter Reinigungsmittel reichen für 400 m² Fläche. Wie viel braucht man für 600 m²?',
       options: ['10 Liter', '12 Liter', '14 Liter'],
       correctIndex: 1,
       explanation: '8 ÷ 400 = 0,02 Liter pro m². 0,02 × 600 = 12 Liter.'
@@ -163,7 +163,7 @@ const TABS = {
       'Manchmal ist es umgekehrt: Mehr Arbeiter brauchen WENIGER Zeit. Mehr Pumpen = schneller fertig. Das ist der antiproportionale (umgekehrte) Dreisatz. Hier musst du anders rechnen!',
     motto: 'Mehr von dem einen = weniger von dem anderen.',
     rules: [
-      'Antiproportional heisst: Wenn eine Groesse steigt, sinkt die andere.',
+      'Antiproportional heisst: Wenn eine Größe steigt, sinkt die andere.',
       'Erkennungsmerkmal: "Je mehr ... desto weniger" oder "je weniger ... desto mehr".',
       'Beispiel: 2 Pumpen brauchen 6 Stunden. 3 Pumpen brauchen WENIGER als 6 Stunden!',
       'Trick: Du rechnest auf 1, aber dann TEILST du statt zu malnehmen.',
@@ -180,17 +180,17 @@ const TABS = {
       },
       {
         title: '3. Durch die neue Menge teilen',
-        text: 'Jetzt teilst du den Gesamtaufwand durch die neue Groesse: 12 Arbeitsstunden ÷ 3 Arbeiter = 4 Stunden.'
+        text: 'Jetzt teilst du den Gesamtaufwand durch die neue Größe: 12 Arbeitsstunden ÷ 3 Arbeiter = 4 Stunden.'
       },
       {
-        title: '4. Ergebnis pruefen',
+        title: '4. Ergebnis prüfen',
         text: 'Mehr Arbeiter als vorher? Dann MUSS die Zeit kuerzer sein. 4 < 6 — passt!'
       }
     ],
     examples: [
       {
         title: 'Arbeiter und Zeit',
-        given: '4 Mitarbeiter brauchen 6 Stunden fuer die Beckensaeuberung.',
+        given: '4 Mitarbeiter brauchen 6 Stunden für die Beckensaeuberung.',
         question: 'Wie lange brauchen 8 Mitarbeiter?',
         steps: [
           ['Bekannt', '4 Mitarbeiter → 6 Stunden'],
@@ -223,13 +223,13 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Den haeufigsten Fehler: Proportional und antiproportional verwechseln! Frag dich IMMER: Wird es mehr oder weniger?',
+      'Den häufigsten Fehler: Proportional und antiproportional verwechseln! Frag dich IMMER: Wird es mehr oder weniger?',
       'Beim Antiproportionalen wird im 2. Schritt MALGENOMMEN (nicht geteilt wie beim proportionalen).',
       'Im 3. Schritt wird GETEILT (nicht malgenommen wie beim proportionalen).',
       'Merkhilfe: Proportional = ÷ dann × | Antiproportional = × dann ÷'
     ],
     quiz: {
-      question: '6 Mitarbeiter brauchen 5 Tage fuer die Revision. Wie viele Tage brauchen 10 Mitarbeiter?',
+      question: '6 Mitarbeiter brauchen 5 Tage für die Revision. Wie viele Tage brauchen 10 Mitarbeiter?',
       options: ['2 Tage', '3 Tage', '4 Tage'],
       correctIndex: 1,
       explanation: 'Gesamtaufwand: 6 × 5 = 30 Arbeitstage. 30 ÷ 10 = 3 Tage.'
@@ -239,16 +239,16 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Dreisatz im Baederalltag',
+    title: 'Dreisatz im Bäderalltag',
     intro:
-      'Hier uebst du den Dreisatz mit echten Aufgaben aus dem Schwimmbad. Chlor dosieren, Wassermengen berechnen, Kosten kalkulieren — alles mit dem Dreisatz. Diese Aufgaben kommen in der Pruefung dran!',
+      'Hier uebst du den Dreisatz mit echten Aufgaben aus dem Schwimmbad. Chlor dosieren, Wassermengen berechnen, Kosten kalkulieren — alles mit dem Dreisatz. Diese Aufgaben kommen in der Prüfung dran!',
     motto: 'Im Bad brauchst du den Dreisatz jeden Tag.',
     rules: [
-      'Im Baederalltag sind die meisten Aufgaben proportional (mehr Wasser = mehr Chlor).',
+      'Im Bäderalltag sind die meisten Aufgaben proportional (mehr Wasser = mehr Chlor).',
       'Antiproportionale Aufgaben kommen bei Arbeitszeit und Personal vor.',
       'IMMER die Einheiten mitschreiben — mg/L, m³, Gramm, Stunden.',
-      'Tipp: 1 mg/L = 1 g/m³ — diese Umrechnung brauchst du staendig!',
-      'Bei Pruefungsaufgaben: Erst lesen, dann entscheiden ob proportional oder antiproportional.'
+      'Tipp: 1 mg/L = 1 g/m³ — diese Umrechnung brauchst du ständig!',
+      'Bei Prüfungsaufgaben: Erst lesen, dann entscheiden ob proportional oder antiproportional.'
     ],
     steps: [
       {
@@ -265,19 +265,19 @@ const TABS = {
       },
       {
         title: '4. Plausibilitaets-Check',
-        text: 'Groesseres Becken = mehr Chlor? Mehr Mitarbeiter = weniger Zeit? Stimmt die Richtung, stimmt meistens auch die Rechnung.'
+        text: 'Größeres Becken = mehr Chlor? Mehr Mitarbeiter = weniger Zeit? Stimmt die Richtung, stimmt meistens auch die Rechnung.'
       }
     ],
     examples: [
       {
         title: 'Chlor-Dosierung (proportional)',
-        given: 'Fuer 300 m³ Beckenwasser werden 90 g Aktivchlor benoetigt (0,3 mg/L Anhebung).',
+        given: 'Für 300 m³ Beckenwasser werden 90 g Aktivchlor benötigt (0,3 mg/L Anhebung).',
         question: 'Wie viel Aktivchlor braucht ein 500 m³ Becken?',
         steps: [
           ['Bekannt', '300 m³ → 90 g Aktivchlor'],
           ['Auf 1 m³', '90 ÷ 300 = 0,3 g pro m³'],
           ['Auf 500 m³', '0,3 × 500 = 150 g'],
-          ['Ergebnis', '150 g Aktivchlor fuer 500 m³']
+          ['Ergebnis', '150 g Aktivchlor für 500 m³']
         ]
       },
       {
@@ -293,7 +293,7 @@ const TABS = {
       },
       {
         title: 'Revision (antiproportional)',
-        given: '3 Fachangestellte brauchen 8 Tage fuer die Jahresrevision.',
+        given: '3 Fachangestellte brauchen 8 Tage für die Jahresrevision.',
         question: 'Wie lange dauert es mit 6 Fachangestellten?',
         steps: [
           ['Bekannt', '3 Leute → 8 Tage'],
@@ -315,7 +315,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'In der Pruefung: Lies GENAU was gefragt ist — manchmal wird nach dem Preis gefragt, manchmal nach der Menge.',
+      'In der Prüfung: Lies GENAU was gefragt ist — manchmal wird nach dem Preis gefragt, manchmal nach der Menge.',
       'Bei Chlor: Nicht vergessen, dass das Produkt weniger als 100% Wirkstoff hat!',
       'Taschenrechner-Tipp: Zwischenergebnisse aufschreiben, nicht im Kopf behalten.',
       'Antiproportionale Aufgaben erkennt man oft an Woertern wie "Arbeiter", "Maschinen", "gemeinsam".'
@@ -339,7 +339,7 @@ const COMPARISON = [
   ['Erkennungssatz', '"Je mehr, desto mehr"', '"Je mehr, desto weniger"'],
   ['Schritt 2', 'Teilen (÷)', 'Malnehmen (×)'],
   ['Schritt 3', 'Malnehmen (×)', 'Teilen (÷)'],
-  ['Baeder-Beispiel', 'Mehr Wasser → mehr Chlor', 'Mehr Pumpen → weniger Zeit']
+  ['Bäder-Beispiel', 'Mehr Wasser → mehr Chlor', 'Mehr Pumpen → weniger Zeit']
 ];
 
 /* ─── Shared components ─────────────────────────────────────────────────────── */
@@ -495,7 +495,7 @@ export default function DreisatzDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -629,7 +629,7 @@ export default function DreisatzDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

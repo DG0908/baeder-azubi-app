@@ -1321,13 +1321,13 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
       'Mitte: Quarzsand (Hauptabscheidung von Flocken und Partikeln)',
       'Unten: Stützkies (Tragschicht zur Lastverteilung)',
       'Diese Reihenfolge ist im Modell jetzt entsprechend umgesetzt',
-      'Rückspuelen bei dP > 0,5 bar oder spaetestens nach 72 h',
+      'Rückspülen bei dP > 0,5 bar oder spätestens nach 72 h',
     ]},
     dusenboden: { color: '#ffaa40', icon: 'DB', title: 'Düsenboden', items: [
       'Düsenboden stützt den Filteraufbau mechanisch',
-      'Verteilt Rückspuelwasser gleichmaessig auf die Flaeche',
+      'Verteilt Rückspuelwasser gleichmaessig auf die Fläche',
       'Schlitzweite typ. 0,2-0,4 mm',
-      'Verstopfte Düsen führen zu Totzonen und unvollstaendiger Spülung',
+      'Verstopfte Düsen führen zu Totzonen und unvollständiger Spülung',
     ]},
     filterkerze: { color: '#c090ff', icon: 'FK', title: 'Filterkerze (Taste im Modell)', items: [
       'Mit Taste "KERZE AN/AUS" wird eine Beispiel-Filterkerze eingeblendet',
@@ -1356,9 +1356,9 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
       'Falsche Schaltstellung kann zu hygienischem Risiko führen',
     ]},
     spülluft: { color: '#b0d8ff', icon: 'LU', title: 'Spülluftklappe', items: [
-      'Luft-Wasser-Spülung lockert das Filterbett vor Rückspuelung',
+      'Luft-Wasser-Spülung lockert das Filterbett vor Rückspülung',
       'Verbessert Austrag von Biofilm und Partikeln',
-      'Nur in dafuer freigegebenen Fahrweisen zuschalten',
+      'Nur in dafür freigegebenen Fahrweisen zuschalten',
     ]},
     absenken: { color: '#c090ff', icon: 'AB', title: 'Klappe zum Absenken', items: [
       'Absenkfunktion für Schichtberuhigung oder Wartungsfahrweise',
@@ -1366,17 +1366,17 @@ function FilterDeepDive({ metrics, xrayMode = false }) {
       'Nur nach Betriebsanweisung schalten',
     ]},
     entleerung: { color: '#ffaa40', icon: 'EN', title: 'Entleerung', items: [
-      'Vollstaendige Entleerung für Revision und Reparatur',
+      'Vollständige Entleerung für Revision und Reparatur',
       'Entleerung nur bei gesicherter Absperrung der Zu-/Ablaufe',
-      'Entleerungsweg muss in den Kanal gefuehrt sein',
+      'Entleerungsweg muss in den Kanal geführt sein',
     ]},
     entlueftung: { color: '#7ad0ff', icon: 'VL', title: 'Entlueftung', items: [
       'Entfernt Luftpolster im Kopfbereich',
-      'Luft im Filter reduziert wirksame Filterflaeche',
+      'Luft im Filter reduziert wirksame Filterfläche',
       'Bei Inbetriebnahme und nach Wartung gezielt entlueften',
     ]},
     druck: { color: dpColor, icon: '?', title: 'Differenzdruck (dP)', items: [
-      `Aktuell: ${dp} bar ${dp > 0.5 ? '-> Rückspuelen' : dp > 0.35 ? '(erhöht)' : '(normal)'}`,
+      `Aktuell: ${dp} bar ${dp > 0.5 ? '-> Rückspülen' : dp > 0.35 ? '(erhöht)' : '(normal)'}`,
       'Richtwert sauber: 0,1-0,2 bar',
       'Rückspuelgrenze: > 0,5 bar oder zeitgesteuert',
       'dP-Anstieg zeigt Beladung und hydraulische Belastung',

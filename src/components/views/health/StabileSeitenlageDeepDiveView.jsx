@@ -134,14 +134,14 @@ export default function StabileSeitenlageDeepDiveView({ darkMode }) {
           <Section title="Wenn sich die Situation ändert" color="orange">
             <div className="space-y-2">
               {[
-                { situation: 'Atmung hört auf', massnahme: 'Sofort auf den Rücken drehen → CPR starten!', urgent: true },
-                { situation: 'Person erbricht', massnahme: 'Mund reinigen, Atemweg freimachen, SSL beibehalten', urgent: false },
-                { situation: 'Person wacht auf', massnahme: 'In bequeme Position, beruhigen, Notruf informieren', urgent: false },
-                { situation: 'Seitenlage > 30 Min.', massnahme: 'Auf andere Seite drehen (Druckschäden vermeiden)', urgent: false },
+                { situation: 'Atmung hört auf', maßnahme: 'Sofort auf den Rücken drehen → CPR starten!', urgent: true },
+                { situation: 'Person erbricht', maßnahme: 'Mund reinigen, Atemweg freimachen, SSL beibehalten', urgent: false },
+                { situation: 'Person wacht auf', maßnahme: 'In bequeme Position, beruhigen, Notruf informieren', urgent: false },
+                { situation: 'Seitenlage > 30 Min.', maßnahme: 'Auf andere Seite drehen (Druckschäden vermeiden)', urgent: false },
               ].map((item, i) => (
                 <div key={i} className={`p-3 rounded-lg border ${item.urgent ? 'bg-red-50 border-red-300' : 'bg-orange-50 border-orange-200'}`}>
                   <p className={`font-semibold text-sm ${item.urgent ? 'text-red-800' : 'text-orange-800'}`}>{item.situation}</p>
-                  <p className="text-xs text-gray-700 mt-0.5">→ {item.massnahme}</p>
+                  <p className="text-xs text-gray-700 mt-0.5">→ {item.maßnahme}</p>
                 </div>
               ))}
             </div>

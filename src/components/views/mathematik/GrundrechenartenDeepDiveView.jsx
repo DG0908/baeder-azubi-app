@@ -74,10 +74,10 @@ const TABS = {
     chip: 'Plus & Minus',
     title: 'Addition und Subtraktion',
     intro:
-      'Addition (Plus) und Subtraktion (Minus) sind die einfachsten Rechenarten. Du zaehlst dazu oder ziehst ab. Im Bad brauchst du das staendig: Gaeste zaehlen, Kassenabrechnung, Bestaende pruefen.',
-    motto: 'Plus zaehlt dazu, Minus zieht ab.',
+      'Addition (Plus) und Subtraktion (Minus) sind die einfachsten Rechenarten. Du zaehlst dazu oder ziehst ab. Im Bad brauchst du das ständig: Gaeste zählen, Kassenabrechnung, Bestaende prüfen.',
+    motto: 'Plus zählt dazu, Minus zieht ab.',
     rules: [
-      'Addition (+): Zwei oder mehr Zahlen zusammenzaehlen.',
+      'Addition (+): Zwei oder mehr Zahlen zusammenzählen.',
       'Subtraktion (-): Eine Zahl von einer anderen abziehen.',
       'Die Reihenfolge beim Addieren ist egal: 3 + 5 = 5 + 3.',
       'Beim Subtrahieren ist die Reihenfolge WICHTIG: 8 - 3 ist nicht dasselbe wie 3 - 8.',
@@ -94,16 +94,16 @@ const TABS = {
       },
       {
         title: '3. Uebertrag beachten',
-        text: 'Wenn eine Spalte mehr als 9 ergibt: Die Einer hinschreiben, den Zehner als Uebertrag zur naechsten Spalte.'
+        text: 'Wenn eine Spalte mehr als 9 ergibt: Die Einer hinschreiben, den Zehner als Uebertrag zur nächsten Spalte.'
       },
       {
-        title: '4. Ergebnis pruefen',
+        title: '4. Ergebnis prüfen',
         text: 'Gegenrechnung: Wenn 148 + 67 = 215, dann muss 215 - 67 = 148 sein.'
       }
     ],
     examples: [
       {
-        title: 'Badegaeste zaehlen',
+        title: 'Badegaeste zählen',
         given: 'Vormittags kommen 148 Gaeste, nachmittags 67 Gaeste.',
         question: 'Wie viele Gaeste waren es insgesamt?',
         steps: [
@@ -128,8 +128,8 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Uebertrag nicht vergessen — das ist der haeufigste Fehler!',
-      'Bei Subtraktion: Die groessere Zahl muss oben stehen.',
+      'Uebertrag nicht vergessen — das ist der häufigste Fehler!',
+      'Bei Subtraktion: Die größere Zahl muss oben stehen.',
       'Einheiten immer mitschreiben: 148 Gaeste + 67 Gaeste = 215 Gaeste.'
     ],
     quiz: {
@@ -145,7 +145,7 @@ const TABS = {
     chip: 'Mal & Geteilt',
     title: 'Multiplikation und Division',
     intro:
-      'Mal-Rechnen ist schnelles Zusammenzaehlen: 4 × 5 heisst "5 mal die 4" = 20. Teilen ist das Gegenteil: 20 ÷ 4 = 5. Im Bad brauchst du das fuer Materialbestellungen, Umrechnungen und Flaechenberechnungen.',
+      'Mal-Rechnen ist schnelles Zusammenzählen: 4 × 5 heisst "5 mal die 4" = 20. Teilen ist das Gegenteil: 20 ÷ 4 = 5. Im Bad brauchst du das für Materialbestellungen, Umrechnungen und Flächenberechnungen.',
     motto: 'Mal ist schnelles Plus, Geteilt ist gerechtes Aufteilen.',
     rules: [
       'Multiplikation (×): Eine Zahl wird mehrfach genommen. 4 × 5 = 4 + 4 + 4 + 4 + 4 = 20.',
@@ -157,7 +157,7 @@ const TABS = {
     steps: [
       {
         title: '1. Kleines Einmaleins kennen',
-        text: 'Die Reihen bis 10 × 10 solltest du auswendig koennen. Das spart enorm viel Zeit.'
+        text: 'Die Reihen bis 10 × 10 solltest du auswendig können. Das spart enorm viel Zeit.'
       },
       {
         title: '2. Grosse Zahlen zerlegen',
@@ -197,11 +197,11 @@ const TABS = {
     ],
     pitfalls: [
       'Durch 0 teilen geht NICHT — wenn das in einer Aufgabe vorkommt, stimmt etwas nicht.',
-      'Beim Zerlegen: Nicht die Teile vergessen zusammenzuzaehlen.',
+      'Beim Zerlegen: Nicht die Teile vergessen zusammenzuzählen.',
       'Einheiten beachten: Euro × Stueck ergibt keinen Sinn. Stueck × Euro pro Stueck = Euro.'
     ],
     quiz: {
-      question: '15 Gaeste kaufen je 3 Getraenke fuer 2 Euro. Wie viel wird eingenommen?',
+      question: '15 Gaeste kaufen je 3 Getraenke für 2 Euro. Wie viel wird eingenommen?',
       options: ['60 Euro', '90 Euro', '45 Euro'],
       correctIndex: 1,
       explanation: '15 × 3 × 2 = 90 Euro.'
@@ -211,14 +211,14 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Grundrechenarten im Baederalltag',
+    title: 'Grundrechenarten im Bäderalltag',
     intro:
-      'Im Schwimmbad rechnest du jeden Tag: Gaeste zaehlen, Kasse abrechnen, Material bestellen, Schichtplaene pruefen. Hier uebst du mit echten Aufgaben aus dem Arbeitsalltag.',
+      'Im Schwimmbad rechnest du jeden Tag: Gaeste zählen, Kasse abrechnen, Material bestellen, Schichtplaene prüfen. Hier uebst du mit echten Aufgaben aus dem Arbeitsalltag.',
     motto: 'Jeden Tag rechnen — mit den Grundrechenarten kein Problem.',
     rules: [
       'Bei Textaufgaben: Erst lesen, dann die Zahlen und Rechenzeichen rausschreiben.',
       'Einheiten immer mitfuehren (Euro, Stueck, Liter, Gaeste).',
-      'Ergebnis immer auf Plausibilitaet pruefen: Macht die Zahl Sinn?',
+      'Ergebnis immer auf Plausibilitaet prüfen: Macht die Zahl Sinn?',
       'Taschenrechner ist erlaubt — aber du musst wissen, welche Rechnung du eingibst!',
       'Zwischenergebnisse aufschreiben, nicht im Kopf behalten.'
     ],
@@ -232,12 +232,12 @@ const TABS = {
         text: 'Schreib die Rechnung auf, BEVOR du anfaengst zu rechnen. So machst du weniger Fehler.'
       },
       {
-        title: '3. Schritt fuer Schritt rechnen',
+        title: '3. Schritt für Schritt rechnen',
         text: 'Nicht alles auf einmal — eine Rechnung nach der anderen. Zwischenergebnisse notieren.'
       },
       {
         title: '4. Antwortsatz schreiben',
-        text: 'In der Pruefung: "Es werden 215 Badegaeste erwartet." Nicht nur die nackte Zahl hinschreiben.'
+        text: 'In der Prüfung: "Es werden 215 Badegaeste erwartet." Nicht nur die nackte Zahl hinschreiben.'
       }
     ],
     examples: [
@@ -259,7 +259,7 @@ const TABS = {
         steps: [
           ['Pro Woche', '4 × 35 = 140 Euro'],
           ['6 Wochen', '140 × 6 = 840 Euro'],
-          ['Ergebnis', '840 Euro fuer 6 Wochen']
+          ['Ergebnis', '840 Euro für 6 Wochen']
         ]
       },
       {
@@ -361,7 +361,7 @@ export default function GrundrechenartenDeepDiveView() {
             </ul>
           </InfoCard>
 
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <div className="grid gap-3 md:grid-cols-2">
               {tab.steps.map((step) => (
                 <div key={step.title} className={`rounded-2xl border p-4 ${darkMode ? 'border-slate-800 bg-slate-950/70' : 'border-teal-100 bg-teal-50/60'}`}>
@@ -421,7 +421,7 @@ export default function GrundrechenartenDeepDiveView() {
             </div>
             <button type="button" onClick={() => setRevealedAnswer(true)} disabled={selectedAnswer === null}
               className={`mt-4 w-full rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${selectedAnswer === null ? 'cursor-not-allowed bg-gray-200 text-gray-400' : darkMode ? 'bg-teal-500 text-white hover:bg-teal-400' : 'bg-teal-600 text-white hover:bg-teal-500'}`}>
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${isCorrect ? darkMode ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-800' : darkMode ? 'border-amber-500/40 bg-amber-500/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>

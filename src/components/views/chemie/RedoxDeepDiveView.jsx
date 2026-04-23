@@ -25,7 +25,7 @@ const TABS = {
       },
       {
         title: '2. Oxidation = Abgeben',
-        text: 'Wenn ein Stoff Elektronen ABGIBT, nennt man das Oxidation. Merkhilfe: OxidAtion — das A steht fuer Abgabe. Beispiel: Eisen gibt Elektronen ab und rostet.'
+        text: 'Wenn ein Stoff Elektronen ABGIBT, nennt man das Oxidation. Merkhilfe: OxidAtion — das A steht für Abgabe. Beispiel: Eisen gibt Elektronen ab und rostet.'
       },
       {
         title: '3. Reduktion = Aufnehmen',
@@ -67,7 +67,7 @@ const TABS = {
           ['Sollwert', 'Mindestens 750 mV nach DIN 19643'],
           ['Ist-Wert', '680 mV — das ist zu niedrig!'],
           ['Bedeutung', 'Zu wenig Desinfektionskraft im Wasser'],
-          ['Massnahme', 'Chlor-Dosierung erhoehen, bis >750 mV erreicht sind']
+          ['Maßnahme', 'Chlor-Dosierung erhöhen, bis >750 mV erreicht sind']
         ]
       }
     ],
@@ -81,7 +81,7 @@ const TABS = {
       question: 'Was passiert bei einer Oxidation?',
       options: ['Ein Stoff nimmt Elektronen auf', 'Ein Stoff gibt Elektronen ab', 'Es werden keine Elektronen uebertragen'],
       correctIndex: 1,
-      explanation: 'Oxidation = Elektronen ABGEBEN. Eselsbruecke: OxidAtion — das A steht fuer Abgabe.'
+      explanation: 'Oxidation = Elektronen ABGEBEN. Eselsbruecke: OxidAtion — das A steht für Abgabe.'
     }
   },
 
@@ -90,7 +90,7 @@ const TABS = {
     chip: 'Oxidation',
     title: 'Wenn Stoffe Elektronen abgeben',
     intro:
-      'Oxidation begegnet dir ueberall: Ein Apfel wird braun, Eisen rostet, Silber laeuft an. Im Schwimmbad ist die Oxidation dein bester Freund — denn Chlor OXIDIERT Keime und macht das Wasser sicher. Die Oxidierbarkeit nach DIN 19643 zeigt dir, wie viel organische Verschmutzung im Wasser ist.',
+      'Oxidation begegnet dir überall: Ein Apfel wird braun, Eisen rostet, Silber laeuft an. Im Schwimmbad ist die Oxidation dein bester Freund — denn Chlor OXIDIERT Keime und macht das Wasser sicher. Die Oxidierbarkeit nach DIN 19643 zeigt dir, wie viel organische Verschmutzung im Wasser ist.',
     motto: 'Chlor oxidiert Keime — das IST die Desinfektion.',
     rules: [
       'Oxidation = ein Stoff gibt Elektronen ab. Der Stoff wird dabei "oxidiert".',
@@ -106,11 +106,11 @@ const TABS = {
       },
       {
         title: '2. Oxidation im Bad: Desinfektion',
-        text: 'Wenn du Chlor ins Wasser gibst, reagiert es mit Wasser zu Hypochloriger Saeure (HOCl). Diese HOCl oxidiert alle Keime und organischen Stoffe im Wasser. Das IST die Desinfektion.'
+        text: 'Wenn du Chlor ins Wasser gibst, reagiert es mit Wasser zu Hypochloriger Säure (HOCl). Diese HOCl oxidiert alle Keime und organischen Stoffe im Wasser. Das IST die Desinfektion.'
       },
       {
         title: '3. Oxidierbarkeit messen',
-        text: 'Die Oxidierbarkeit zeigt, wie viel organische Verschmutzung im Wasser ist. Gemessen wird sie als KMnO4-Verbrauch (Kaliumpermanganat). Grenzwert: max. 5 mg/L im Beckenwasser. Ist der Wert hoeher, ist zu viel Schmutz im Wasser.'
+        text: 'Die Oxidierbarkeit zeigt, wie viel organische Verschmutzung im Wasser ist. Gemessen wird sie als KMnO4-Verbrauch (Kaliumpermanganat). Grenzwert: max. 5 mg/L im Beckenwasser. Ist der Wert höher, ist zu viel Schmutz im Wasser.'
       },
       {
         title: '4. Gebundenes Chlor verstehen',
@@ -120,10 +120,10 @@ const TABS = {
     examples: [
       {
         title: 'Oxidation im Alltag: Apfel wird braun',
-        given: 'Du schneidest einen Apfel auf und laesst ihn liegen.',
-        question: 'Warum wird die Schnittflaeche braun?',
+        given: 'Du schneidest einen Apfel auf und lässt ihn liegen.',
+        question: 'Warum wird die Schnittfläche braun?',
         steps: [
-          ['Was passiert', 'Sauerstoff aus der Luft oxidiert die Apfloberflaeche'],
+          ['Was passiert', 'Sauerstoff aus der Luft oxidiert die Apfloberfläche'],
           ['Oxidation', 'Die Inhaltsstoffe des Apfels geben Elektronen ab'],
           ['Reduktion', 'Sauerstoff (O2) nimmt die Elektronen auf'],
           ['Ergebnis', 'Es entstehen braune Verbindungen (gleiche Reaktion wie Rost!)']
@@ -137,7 +137,7 @@ const TABS = {
           ['Grenzwert', 'Max. 5 mg/L nach DIN 19643'],
           ['Ist-Wert', '7,5 mg/L — deutlich zu hoch!'],
           ['Bedeutung', 'Zu viel organische Verschmutzung im Wasser (Schweiss, Hautschuppen, Urin)'],
-          ['Massnahme', 'Mehr Frischwasser zugeben, Filterleistung pruefen, ggf. Badegaeste zum Duschen anhalten']
+          ['Maßnahme', 'Mehr Frischwasser zugeben, Filterleistung prüfen, ggf. Badegaeste zum Duschen anhalten']
         ]
       },
       {
@@ -148,7 +148,7 @@ const TABS = {
           ['Formel', 'Gebundenes Chlor = Gesamtchlor - Freies Chlor'],
           ['Rechnung', '0,7 mg/L - 0,4 mg/L = 0,3 mg/L'],
           ['Grenzwert', 'Max. 0,2 mg/L gebundenes Chlor'],
-          ['Bewertung', '0,3 mg/L ist zu hoch — evtl. Stosschlorung noetig!']
+          ['Bewertung', '0,3 mg/L ist zu hoch — evtl. Stosschlorung nötig!']
         ]
       }
     ],
@@ -162,7 +162,7 @@ const TABS = {
       question: 'Was bedeutet eine Oxidierbarkeit von 7 mg/L KMnO4-Verbrauch im Beckenwasser?',
       options: ['Alles in Ordnung, der Wert ist normal', 'Zu viel organische Verschmutzung — Grenzwert 5 mg/L ueberschritten', 'Der Chlorwert ist zu hoch'],
       correctIndex: 1,
-      explanation: 'Die Oxidierbarkeit darf max. 5 mg/L betragen (DIN 19643). 7 mg/L bedeutet: zu viel organische Verschmutzung im Wasser. Massnahme: mehr Frischwasser, Filterleistung pruefen.'
+      explanation: 'Die Oxidierbarkeit darf max. 5 mg/L betragen (DIN 19643). 7 mg/L bedeutet: zu viel organische Verschmutzung im Wasser. Maßnahme: mehr Frischwasser, Filterleistung prüfen.'
     }
   },
 
@@ -204,8 +204,8 @@ const TABS = {
         given: 'Nach einer Stosschlorung ist der Chlorwert bei 1,8 mg/L. Das Bad soll aber oeffnen.',
         question: 'Was musst du tun?',
         steps: [
-          ['Problem', 'Chlorwert 1,8 mg/L — Badegaeste duerfen erst ab <0,6 mg/L ins Wasser'],
-          ['Loesung', 'Natriumthiosulfat dosieren — es REDUZIERT das ueberschuessige Chlor'],
+          ['Problem', 'Chlorwert 1,8 mg/L — Badegaeste dürfen erst ab <0,6 mg/L ins Wasser'],
+          ['Lösung', 'Natriumthiosulfat dosieren — es REDUZIERT das ueberschuessige Chlor'],
           ['Wirkung', 'Thiosulfat gibt Elektronen an Chlor ab, Chlor wird unschaedlich'],
           ['Danach', 'Chlorwert messen — erst oeffnen wenn Wert im Sollbereich']
         ]
@@ -216,7 +216,7 @@ const TABS = {
         question: 'Darf das Wasser so in den Kanal?',
         steps: [
           ['Vorschrift', 'Chlorhaltiges Wasser darf NICHT direkt in die Kanalisation'],
-          ['Loesung', 'Wasser vorher mit Natriumthiosulfat entchloren'],
+          ['Lösung', 'Wasser vorher mit Natriumthiosulfat entchloren'],
           ['Reaktion', 'Thiosulfat reduziert Chlor — Chlor verliert seine Wirkung'],
           ['Ergebnis', 'Erst wenn kein freies Chlor mehr nachweisbar ist, darf abgeleitet werden']
         ]
@@ -235,13 +235,13 @@ const TABS = {
     ],
     pitfalls: [
       'Ein Reduktionsmittel wird SELBST oxidiert — es gibt ja seine Elektronen ab. Das verwirrt am Anfang.',
-      'Natriumthiosulfat NICHT ueberdosieren — sonst ist gar kein Chlor mehr im Wasser und Keime koennen sich vermehren.',
-      'Nach der Entchlorung IMMER den Chlorwert nachmessen, bevor Badegaeste ins Wasser duerfen.',
+      'Natriumthiosulfat NICHT ueberdosieren — sonst ist gar kein Chlor mehr im Wasser und Keime können sich vermehren.',
+      'Nach der Entchlorung IMMER den Chlorwert nachmessen, bevor Badegaeste ins Wasser dürfen.',
       'Reduktion heisst NICHT, dass etwas weniger wird — es heisst, dass Elektronen AUFGENOMMEN werden.'
     ],
     quiz: {
       question: 'Welches Mittel wird im Schwimmbad zur Entchlorung (Reduktion von Chlor) eingesetzt?',
-      options: ['Calciumhypochlorit', 'Natriumthiosulfat', 'Salzsaeure'],
+      options: ['Calciumhypochlorit', 'Natriumthiosulfat', 'Salzsäure'],
       correctIndex: 1,
       explanation: 'Natriumthiosulfat (Na2S2O3) ist das Standard-Reduktionsmittel im Schwimmbad. Es gibt Elektronen an das Chlor ab und macht es unschaedlich.'
     }
@@ -252,27 +252,27 @@ const TABS = {
     chip: 'Praxis',
     title: 'Redox im Schwimmbad-Alltag',
     intro:
-      'Im taeglichen Badebetrieb musst du die Redox-Spannung ueberwachen. Sie zeigt dir auf einen Blick, ob das Wasser gut desinfiziert ist. Der Sollwert liegt bei mindestens 750 mV nach DIN 19643. Hier lernst du, wie du den Wert abliest, was er bedeutet und was du tun musst, wenn er nicht stimmt.',
+      'Im täglichen Badebetrieb musst du die Redox-Spannung ueberwachen. Sie zeigt dir auf einen Blick, ob das Wasser gut desinfiziert ist. Der Sollwert liegt bei mindestens 750 mV nach DIN 19643. Hier lernst du, wie du den Wert abliest, was er bedeutet und was du tun musst, wenn er nicht stimmt.',
     motto: 'Redox-Spannung >750 mV = Wasser ist gut desinfiziert.',
     rules: [
       'Die Redox-Spannung wird in Millivolt (mV) gemessen — Sollwert: mindestens 750 mV nach DIN 19643.',
       'Zu niedrige Redox-Spannung (<750 mV) = zu wenig Desinfektionskraft — sofort handeln!',
       'Der pH-Wert beeinflusst die Redox-Spannung: Bei hohem pH sinkt die Redox-Spannung.',
-      'Die Redox-Spannung muss regelmaessig abgelesen und im Betriebsbuch dokumentiert werden.',
+      'Die Redox-Spannung muss regelmäßig abgelesen und im Betriebsbuch dokumentiert werden.',
       'Bei der Breakpoint-Chlorung wird so viel Chlor dosiert, dass alles gebundene Chlor zerstoert wird.'
     ],
     steps: [
       {
         title: '1. Redox-Spannung ablesen',
-        text: 'Die Redox-Spannung wird von der Messanlage automatisch gemessen und angezeigt. Du liest den Wert in mV (Millivolt) ab. Ueblich sind Werte zwischen 700 und 850 mV. Unter 750 mV musst du handeln.'
+        text: 'Die Redox-Spannung wird von der Messanlage automatisch gemessen und angezeigt. Du liest den Wert in mV (Millivolt) ab. Üblich sind Werte zwischen 700 und 850 mV. Unter 750 mV musst du handeln.'
       },
       {
         title: '2. Bei zu niedriger Redox-Spannung',
-        text: 'Liegt die Spannung unter 750 mV, ist die Desinfektionskraft zu gering. Massnahmen: Chlor-Dosierung erhoehen, pH-Wert pruefen (optimal 6,5–7,2), bei starkem Abfall evtl. Stosschlorung durchfuehren.'
+        text: 'Liegt die Spannung unter 750 mV, ist die Desinfektionskraft zu gering. Maßnahmen: Chlor-Dosierung erhöhen, pH-Wert prüfen (optimal 6,5–7,2), bei starkem Abfall evtl. Stosschlorung durchfuehren.'
       },
       {
         title: '3. Bei zu hoher Redox-Spannung',
-        text: 'Selten, aber moeglich: Bei Werten deutlich ueber 850 mV ist eventuell zu viel Chlor im Wasser. Chlor-Dosierung reduzieren oder mit Natriumthiosulfat entchloren. Chlorwert mit DPD pruefen.'
+        text: 'Selten, aber möglich: Bei Werten deutlich über 850 mV ist eventuell zu viel Chlor im Wasser. Chlor-Dosierung reduzieren oder mit Natriumthiosulfat entchloren. Chlorwert mit DPD prüfen.'
       },
       {
         title: '4. Breakpoint-Chlorung verstehen',
@@ -288,7 +288,7 @@ const TABS = {
           ['Redox-Spannung', '720 mV — unter dem Sollwert von 750 mV'],
           ['Chlor frei', '0,2 mg/L — zu niedrig (Soll: 0,3–0,6 mg/L)'],
           ['pH-Wert', '7,4 — etwas zu hoch (optimal: 6,5–7,2), senkt die Redox-Spannung'],
-          ['Massnahme', 'Chlor-Dosierung erhoehen UND pH-Wert senken (Salzsaeure). Beides wirkt sich positiv auf die Redox-Spannung aus.']
+          ['Maßnahme', 'Chlor-Dosierung erhöhen UND pH-Wert senken (Salzsäure). Beides wirkt sich positiv auf die Redox-Spannung aus.']
         ]
       },
       {
@@ -296,18 +296,18 @@ const TABS = {
         given: 'Die Redox-Spannung faellt ploetzlich von 780 mV auf 710 mV, obwohl der Chlorwert gleich geblieben ist.',
         question: 'Woran kann das liegen?',
         steps: [
-          ['Chlorwert pruefen', 'Chlor frei: 0,4 mg/L — normal'],
-          ['pH-Wert pruefen', 'pH: 7,8 — viel zu hoch!'],
-          ['Ursache', 'Bei hohem pH-Wert sinkt die Redox-Spannung, weil weniger wirksame Hypochlorige Saeure (HOCl) vorhanden ist'],
-          ['Massnahme', 'pH-Wert auf 7,0–7,2 senken — die Redox-Spannung steigt dann von allein wieder']
+          ['Chlorwert prüfen', 'Chlor frei: 0,4 mg/L — normal'],
+          ['pH-Wert prüfen', 'pH: 7,8 — viel zu hoch!'],
+          ['Ursache', 'Bei hohem pH-Wert sinkt die Redox-Spannung, weil weniger wirksame Hypochlorige Säure (HOCl) vorhanden ist'],
+          ['Maßnahme', 'pH-Wert auf 7,0–7,2 senken — die Redox-Spannung steigt dann von allein wieder']
         ]
       },
       {
         title: 'Stosschlorung bei Verunreinigung',
         given: 'Im Kinderbecken (80 m3) wurde eine Fakalverunreinigung entdeckt. Redox: 650 mV, Chlor frei: 0,1 mg/L.',
-        question: 'Welche Schritte sind noetig?',
+        question: 'Welche Schritte sind nötig?',
         steps: [
-          ['Sofortmassnahme', 'Becken raeumen und sperren!'],
+          ['Sofortmaßnahme', 'Becken räumen und sperren!'],
           ['Stosschlorung', 'Chlorwert auf 1,0–2,0 mg/L anheben (Breakpoint-Chlorung)'],
           ['Abwarten', 'Mindestens 30 Minuten Umwaelzung, dann Chlor und Redox messen'],
           ['Freigabe', 'Erst wieder oeffnen wenn: Chlor frei 0,3–0,6 mg/L, Redox >750 mV, kein Befund mehr']
@@ -317,14 +317,14 @@ const TABS = {
     pitfalls: [
       'Die Redox-Spannung NICHT als einzigen Wert betrachten — immer zusammen mit Chlor frei und pH-Wert beurteilen.',
       'Bei Fakalverunreinigung reicht normales Nachchloren NICHT — es muss eine Stosschlorung mit Beckensperrung sein!',
-      'Die Redox-Sonde muss regelmaessig kalibriert werden — eine falsche Messung ist gefaehrlich.',
+      'Die Redox-Sonde muss regelmäßig kalibriert werden — eine falsche Messung ist gefährlich.',
       'Nach der Stosschlorung Becken NICHT oeffnen, bis der Chlorwert unter 0,6 mg/L UND Redox >750 mV ist.'
     ],
     quiz: {
-      question: 'Die Messanlage zeigt: Redox 710 mV, Chlor frei 0,2 mg/L, pH 7,5. Was ist die wichtigste Massnahme?',
-      options: ['Becken sofort sperren und Stosschlorung durchfuehren', 'Chlor-Dosierung erhoehen und pH-Wert senken', 'Natriumthiosulfat dosieren um den Chlorwert zu senken'],
+      question: 'Die Messanlage zeigt: Redox 710 mV, Chlor frei 0,2 mg/L, pH 7,5. Was ist die wichtigste Maßnahme?',
+      options: ['Becken sofort sperren und Stosschlorung durchfuehren', 'Chlor-Dosierung erhöhen und pH-Wert senken', 'Natriumthiosulfat dosieren um den Chlorwert zu senken'],
       correctIndex: 1,
-      explanation: 'Redox 710 mV ist unter dem Sollwert (750 mV), Chlor ist zu niedrig und der pH-Wert zu hoch. Loesung: Mehr Chlor dosieren und pH-Wert senken (Salzsaeure). Beides zusammen hebt die Redox-Spannung.'
+      explanation: 'Redox 710 mV ist unter dem Sollwert (750 mV), Chlor ist zu niedrig und der pH-Wert zu hoch. Lösung: Mehr Chlor dosieren und pH-Wert senken (Salzsäure). Beides zusammen hebt die Redox-Spannung.'
     }
   }
 };
@@ -336,9 +336,9 @@ const TAB_ORDER = ['grundlagen', 'oxidation', 'reduktion', 'praxis'];
 const REDOX_RICHTWERTE = [
   ['Messwert', 'Bewertung'],
   ['> 750 mV', 'Gut — ausreichende Desinfektion'],
-  ['700–750 mV', 'Grenzwertig — Chlor und pH pruefen'],
+  ['700–750 mV', 'Grenzwertig — Chlor und pH prüfen'],
   ['< 700 mV', 'Kritisch — sofort handeln!'],
-  ['> 850 mV', 'Sehr hoch — Chlorwert pruefen']
+  ['> 850 mV', 'Sehr hoch — Chlorwert prüfen']
 ];
 
 const OXIDATION_VS_REDUKTION = [
@@ -502,7 +502,7 @@ export default function RedoxDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -727,7 +727,7 @@ export default function RedoxDeepDiveView() {
                     : 'bg-blue-600 text-white hover:bg-blue-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

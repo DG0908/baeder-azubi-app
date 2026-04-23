@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 const TABS = {
-  uebersicht: 'Übersicht',
+  übersicht: 'Übersicht',
   stange: 'Stange & Haken',
   ring: 'Ring & Gurtretter',
   wurfleine: 'Wurfleine',
@@ -20,7 +20,7 @@ const InfoBox = ({ title, items, dark, color = '#0891b2' }) => (
   </div>
 );
 
-const GeraetCard = ({ icon, name, desc, specs, einsatz, dark }) => (
+const GerätCard = ({ icon, name, desc, specs, einsatz, dark }) => (
   <div style={{ background: dark ? '#1e293b' : '#f8fafc', border: '1px solid #0891b240', borderRadius: 12, padding: 16, marginBottom: 14 }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
       <span style={{ fontSize: 24 }}>{icon}</span>
@@ -43,8 +43,8 @@ const GeraetCard = ({ icon, name, desc, specs, einsatz, dark }) => (
   </div>
 );
 
-export default function RettungsgeraeteDeepDiveView({ darkMode }) {
-  const [tab, setTab] = useState('uebersicht');
+export default function RettungsgeräteDeepDiveView({ darkMode }) {
+  const [tab, setTab] = useState('übersicht');
   const dark = darkMode;
   const bg = dark ? '#0f172a' : '#ffffff';
   const cardBg = dark ? '#1e293b' : '#f8fafc';
@@ -69,7 +69,7 @@ export default function RettungsgeraeteDeepDiveView({ darkMode }) {
         </div>
 
         {/* ÜBERSICHT */}
-        {tab === 'uebersicht' && (
+        {tab === 'übersicht' && (
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#7dd3fc' : '#0369a1', marginBottom: 14 }}>Rettungsgeräte — Übersicht</h2>
             <p style={{ color: text, fontSize: 14, marginBottom: 16 }}>Grundsatz: Rettungsgeräte bevorzugen — kein unnötiges Einspringen. Rette immer mit Abstand wenn möglich.</p>
@@ -119,7 +119,7 @@ export default function RettungsgeraeteDeepDiveView({ darkMode }) {
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#7dd3fc' : '#0369a1', marginBottom: 14 }}>Rettungsstange & Haken</h2>
 
-            <GeraetCard
+            <GerätCard
               icon="🔱"
               name="Rettungsstange"
               desc="Starre oder teleskopierbare Stange mit Haken oder T-Griff am Ende. Wird Person hingehalten oder untergeschoben. Ermöglicht Rettung ohne ins Wasser zu gehen."
@@ -163,7 +163,7 @@ export default function RettungsgeraeteDeepDiveView({ darkMode }) {
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#7dd3fc' : '#0369a1', marginBottom: 14 }}>Rettungsring & Gurtretter</h2>
 
-            <GeraetCard
+            <GerätCard
               icon="🛟"
               name="Rettungsring"
               desc="Ringförmiger Auftriebskörper aus Schaumstoff oder Kork. Wird zur Person geworfen — gibt ihr Auftrieb. Meist mit Wurfleine verbunden. Person hält sich fest bis Rettung kommt."
@@ -177,7 +177,7 @@ export default function RettungsgeraeteDeepDiveView({ darkMode }) {
               dark={dark}
             />
 
-            <GeraetCard
+            <GerätCard
               icon="🏊"
               name="Gurtretter (Rescue Tube / Can)"
               desc="Weicher Auftriebskörper mit Schulterriemen und angebrachter Leine. Retter trägt ihn beim Einschwimmen um die Schulter. Person greift Griff oder Leine — Retter zieht ans Ufer."
@@ -214,7 +214,7 @@ export default function RettungsgeraeteDeepDiveView({ darkMode }) {
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#7dd3fc' : '#0369a1', marginBottom: 14 }}>Wurfleine</h2>
 
-            <GeraetCard
+            <GerätCard
               icon="🪢"
               name="Wurfleine (Throw Bag)"
               desc="Sack mit aufgerollter Rettungsleine (meist 20–30 m). Wird zur Person geworfen — Person greift die Leine und wird herangezogen. Leicht, schnell einsatzbereit."
@@ -258,7 +258,7 @@ export default function RettungsgeraeteDeepDiveView({ darkMode }) {
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#7dd3fc' : '#0369a1', marginBottom: 14 }}>Spineboard & Sauerstoffversorgung</h2>
 
-            <GeraetCard
+            <GerätCard
               icon="🪵"
               name="Spineboard (Rettungsbrett)"
               desc="Hartes Brett zur Immobilisierung der Wirbelsäule. Unverzichtbar bei Tauchunfällen oder Stürzen ins Wasser mit HWS-Verdacht. Person wird auf dem Brett fixiert und aus dem Wasser gehoben."
@@ -288,7 +288,7 @@ export default function RettungsgeraeteDeepDiveView({ darkMode }) {
               ))}
             </div>
 
-            <GeraetCard
+            <GerätCard
               icon="🫁"
               name="Sauerstoffgerät (O₂-Inhalation)"
               desc="Tragbares Gerät zur Sauerstoffgabe. Erhöht O₂-Konzentration in der Einatemluft von 21% auf bis zu 100%. Bei Badeunfällen, Bewusstlosigkeit, Ertrinken sofort einsetzen."

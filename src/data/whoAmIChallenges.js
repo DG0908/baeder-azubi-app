@@ -52,7 +52,7 @@ export const WHO_AM_I_CHALLENGES = {
       clues: [
         'Ich halte Beckenwasser in Bewegung und schicke es durch den Filter.',
         'Ich arbeite in der Badewasseraufbereitung meist als Kreiselpumpe.',
-        'Mein Laufrad erzeugt den noetigen Volumenstrom.',
+        'Mein Laufrad erzeugt den nötigen Volumenstrom.',
         'Vor mir sitzt oft ein Vorfilter mit Filterkorb.',
         'Wenn ich Luft ziehe, drohen Kavitation und Störungen.'
       ]
@@ -66,7 +66,7 @@ export const WHO_AM_I_CHALLENGES = {
         'Ich dosiere Chemikalien stoossweise und sehr genau.',
         'Meine Fördermenge entsteht über einzelne Huebe.',
         'Eine Membran trennt meinen Antrieb vom Medium.',
-        'Meine Hublaenge kann über einen Knopf eingestellt werden.',
+        'Meine Hublänge kann über einen Knopf eingestellt werden.',
         'In eurer App sehe ich als Magnet-Membrandosierpumpe im Schnittbild aus.'
       ]
     }),
@@ -103,9 +103,9 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['redoxpotential', 'redox', 'redoxwert'],
       clues: [
         'Ich werde in Millivolt angegeben.',
-        'Ich zeige das Verhaeltnis von oxidierenden und reduzierenden Stoffen an.',
+        'Ich zeige das Verhältnis von oxidierenden und reduzierenden Stoffen an.',
         'Bei Suesswasser gelten um 750 mV als wichtiger Richtwert.',
-        'Sinke ich deutlich ab, sollte die Desinfektionskraft geprueft werden.',
+        'Sinke ich deutlich ab, sollte die Desinfektionskraft geprüft werden.',
         'Gemessen werde ich mit einer speziellen Messzelle.'
       ]
     }),
@@ -119,7 +119,7 @@ export const WHO_AM_I_CHALLENGES = {
         'Im Beckenwasser beeinflusse ich die Chlorwirkung direkt.',
         'Ein Zielbereich liegt meist um 7,0 bis 7,4.',
         'Ist mein Wert zu niedrig, wird das Wasser zu sauer.',
-        'Ist mein Wert zu hoch, laesst die Desinfektionswirkung nach.'
+        'Ist mein Wert zu hoch, lässt die Desinfektionswirkung nach.'
       ]
     }),
     buildChallenge({
@@ -142,17 +142,17 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['schwallwasserbehaelter', 'schwallwasserbehälter'],
       clues: [
         'Ich sammele Wasser, das über die Rinne aus dem Becken ablaeuft.',
-        'Badegaeste und Wellen sorgen dafuer, dass ich gefuellt werde.',
+        'Badegaeste und Wellen sorgen dafür, dass ich gefuellt werde.',
         'Frischwasser wird mir zugegeben, um Verluste auszugleichen.',
-        'Von mir aus wird Wasser wieder in den Aufbereitungskreislauf gefoerdert.',
+        'Von mir aus wird Wasser wieder in den Aufbereitungskreislauf gefördert.',
         'Mein Fuellstand ist für die Anlagenfuehrung wichtig.'
       ]
     }),
     buildChallenge({
       id: 'filterspuelung',
       sourceCategory: 'tech',
-      answer: 'Filterspuelung',
-      terms: ['filterspuelung', 'filterspülung', 'rückspuelung', 'rückspülung'],
+      answer: 'Filterspülung',
+      terms: ['filterspülung', 'filterspülung', 'rückspülung', 'rückspülung'],
       clues: [
         'Ich reinige das Filterbett, wenn sich Schmutz und Flocken angesammelt haben.',
         'Dabei wird die Stroemungsrichtung im Filter geaendert.',
@@ -181,7 +181,7 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['finnische rinne'],
       clues: [
         'Ich laufe direkt an der Beckenkante entlang.',
-        'Über mich wird verdraengtes und angeschwapptes Wasser abgefuehrt.',
+        'Über mich wird verdraengtes und angeschwapptes Wasser abgeführt.',
         'Im Startwand-Bild liege ich direkt am Rand unter dem Block.',
         'Ich gehöre zum Überlaufbereich des Beckens.',
         'Ich bin keine Bahnlinie, sondern eine Rinnenkonstruktion.'
@@ -219,7 +219,7 @@ export const WHO_AM_I_CHALLENGES = {
       answer: 'AED',
       terms: ['aed', 'automatisierter externer defibrillator', 'defibrillator'],
       clues: [
-        'Ich bin ein Geraet für den Herz-Kreislauf-Notfall.',
+        'Ich bin ein Gerät für den Herz-Kreislauf-Notfall.',
         'Meine Sprachansagen führen durch die Anwendung.',
         'Ich analysiere den Herzrhythmus automatisch.',
         'Nur wenn es sinnvoll ist, gebe ich einen Schock frei.',
@@ -235,8 +235,8 @@ export const WHO_AM_I_CHALLENGES = {
         'Ich beschreibe ein geordnetes Vorgehen im Notfall.',
         'Absichern, melden, retten und versorgen gehören zu mir.',
         'Ich soll verhindern, dass in Stress wichtige Schritte vergessen werden.',
-        'Bei Badeunfaellen bin ich besonders wichtig.',
-        'Ich bin kein einzelnes Geraet, sondern ein Ablauf.'
+        'Bei Badeunfällen bin ich besonders wichtig.',
+        'Ich bin kein einzelnes Gerät, sondern ein Ablauf.'
       ]
     }),
     buildChallenge({
@@ -271,8 +271,8 @@ export const WHO_AM_I_CHALLENGES = {
       answer: 'Berufsgenossenschaft',
       terms: ['berufsgenossenschaft', 'gesetzliche unfallversicherung'],
       clues: [
-        'Ich bin Traeger der gesetzlichen Unfallversicherung im Betrieb.',
-        'Arbeitsunfaelle und Berufskrankheiten gehören zu meinem Bereich.',
+        'Ich bin Träger der gesetzlichen Unfallversicherung im Betrieb.',
+        'Arbeitsunfälle und Berufskrankheiten gehören zu meinem Bereich.',
         'Ich gebe auch Regeln und Hinweise für sicheres Arbeiten.',
         'Arbeitgeber und Beschaeftigte begegnen mir im Arbeitsschutz.',
         'Meine Abkuerzung wird im Alltag oft nur mit zwei Buchstaben genannt.'
@@ -285,9 +285,9 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['vier stufen methode', '4 stufen methode', 'vier-stufen-methode'],
       clues: [
         'Ich bin eine klassische Unterweisungsmethode in der Ausbildung.',
-        'Vorbereiten, vormachen, nachmachen und ueben gehören zu mir.',
-        'Ich strukturiere Lernschritte für praktische Taetigkeiten.',
-        'Vor allem bei neuen Arbeitsablaeufen bin ich hilfreich.',
+        'Vorbereiten, vormachen, nachmachen und üben gehören zu mir.',
+        'Ich strukturiere Lernschritte für praktische Tätigkeiten.',
+        'Vor allem bei neuen Arbeitsabläufen bin ich hilfreich.',
         'Mein Name nennt direkt die Anzahl meiner Schritte.'
       ]
     }),
@@ -298,7 +298,7 @@ export const WHO_AM_I_CHALLENGES = {
       terms: ['legionellen', 'legionella'],
       clues: [
         'Ich bin ein Bakterium und mag bestimmte warme Wasserbereiche.',
-        'Gefaehrlich werde ich vor allem über eingeatmete Aerosole.',
+        'Gefährlich werde ich vor allem über eingeatmete Aerosole.',
         'Duschanlagen und Warmwassersysteme müssen wegen mir beachtet werden.',
         'Zwischen etwa 25 und 45 Grad Celsius vermehre ich mich besonders gut.',
         'Hygieneplaene und Probenahmen wollen mich im Griff behalten.'
@@ -313,7 +313,7 @@ export const WHO_AM_I_CHALLENGES = {
         'Ich sorge direkt für Desinfektionswirkung im Beckenwasser.',
         'Mein Richtwert im Schwimmbad liegt oft bei 0,3 bis 0,6 Milligramm pro Liter.',
         'Falle ich zu niedrig aus, steigt das Hygienerisiko.',
-        'Mein Verhaeltnis zum pH-Wert ist besonders wichtig.',
+        'Mein Verhältnis zum pH-Wert ist besonders wichtig.',
         'Ich bin nicht dasselbe wie gebundenes Chlor.'
       ]
     }),
@@ -325,7 +325,7 @@ export const WHO_AM_I_CHALLENGES = {
       clues: [
         'Ich sitze an der Startwand unter dem Startblock.',
         'Rückenschwimmer stossen sich an mir beim Start ab.',
-        'Meine Oberflaeche muss griffig und sicher sein.',
+        'Meine Oberfläche muss griffig und sicher sein.',
         'Ich gehöre zur Wettkampfbahn und nicht zur Aufbereitung.',
         'Im Bild vom Startblock bin ich deutlich beschriftet.'
       ]

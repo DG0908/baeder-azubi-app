@@ -312,13 +312,13 @@ export default function NotwehrNothilfeDeepDiveView({ darkMode }) {
           <Section title="Praxis im Bad" color="teal">
             <div className="space-y-2">
               {[
-                { situation: 'Dieb aus Umkleiden auf frischer Tat ertappt', massnahme: '✅ Festhalten erlaubt — Polizei rufen, Person bis dahin nicht gehen lassen' },
-                { situation: 'Verdächtiger der Diebstahl begangen haben könnte', massnahme: '❌ Nur Verdacht reicht NICHT — keine Festnahme, Personalienfeststellung bitten, Polizei rufen' },
-                { situation: 'Person mit Hausverbot betritt Bad', massnahme: '⚠️ Zum Verlassen auffordern — bei Weigerung Polizei wegen Hausfriedensbruch (§123 StGB)' },
+                { situation: 'Dieb aus Umkleiden auf frischer Tat ertappt', maßnahme: '✅ Festhalten erlaubt — Polizei rufen, Person bis dahin nicht gehen lassen' },
+                { situation: 'Verdächtiger der Diebstahl begangen haben könnte', maßnahme: '❌ Nur Verdacht reicht NICHT — keine Festnahme, Personalienfeststellung bitten, Polizei rufen' },
+                { situation: 'Person mit Hausverbot betritt Bad', maßnahme: '⚠️ Zum Verlassen auffordern — bei Weigerung Polizei wegen Hausfriedensbruch (§123 StGB)' },
               ].map((item, i) => (
                 <div key={i} className="p-3 rounded-lg bg-teal-50 border border-teal-200">
                   <p className="font-semibold text-teal-800 text-sm">{item.situation}</p>
-                  <p className="text-xs text-gray-700 mt-0.5">{item.massnahme}</p>
+                  <p className="text-xs text-gray-700 mt-0.5">{item.maßnahme}</p>
                 </div>
               ))}
             </div>

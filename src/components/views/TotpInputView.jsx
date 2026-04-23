@@ -52,7 +52,7 @@ const TotpInputView = () => {
             Zwei-Faktor-Authentifizierung
           </h1>
           <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            Nutze deinen Authenticator-Code oder einen Recovery-Code fuer den Admin-Login.
+            Nutze deinen Authenticator-Code oder einen Recovery-Code für den Admin-Login.
           </p>
         </div>
 
@@ -123,8 +123,8 @@ const TotpInputView = () => {
 
           <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             {authMode === 'app'
-              ? 'Bitte gib den 6-stelligen Code aus deiner Authenticator-App ein. Dieses Geraet wird nach erfolgreicher Bestaetigung fuer 30 Tage gespeichert.'
-              : 'Recovery-Codes sind Einmalcodes fuer den Notfall. Nach der Nutzung musst du einen neuen Satz erzeugen.'}
+              ? 'Bitte gib den 6-stelligen Code aus deiner Authenticator-App ein. Dieses Gerät wird nach erfolgreicher Bestätigung für 30 Tage gespeichert.'
+              : 'Recovery-Codes sind Einmalcodes für den Notfall. Nach der Nutzung musst du einen neuen Satz erzeugen.'}
           </p>
 
           <button
@@ -132,7 +132,7 @@ const TotpInputView = () => {
             disabled={authMode === 'app' ? totpCode.length !== 6 : recoveryCode.trim().length < 6}
             className="w-full py-3 px-4 rounded-xl font-bold text-white bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all"
           >
-            Bestaetigen
+            Bestätigen
           </button>
 
           <button
@@ -144,7 +144,7 @@ const TotpInputView = () => {
                 : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             }`}
           >
-            Zurueck zur Anmeldung
+            Zurück zur Anmeldung
           </button>
         </form>
       </div>

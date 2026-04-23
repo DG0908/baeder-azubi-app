@@ -24,8 +24,8 @@ const HOTSPOT_DATA = {
     short: 'TOP',
     color: '#4a9eff',
     items: [
-      'Auftrittsflaeche mindestens 50 x 50 cm.',
-      'Trittsichere Oberflaeche für nassen Betrieb.',
+      'Auftrittsfläche mindestens 50 x 50 cm.',
+      'Trittsichere Oberfläche für nassen Betrieb.',
       'Blockkante muss klar und rutscharm anlaufbar sein.',
     ],
   },
@@ -34,8 +34,8 @@ const HOTSPOT_DATA = {
     short: 'WINKEL',
     color: '#8dc1ff',
     items: [
-      'Neigung der Oberflaeche kleiner als 10 Grad.',
-      'Leichte Vorneigung unterstuetzt den Startimpuls.',
+      'Neigung der Oberfläche kleiner als 10 Grad.',
+      'Leichte Vorneigung unterstützt den Startimpuls.',
       'Zu steile Neigung erhöht Rutsch- und Fehlstart-Risiko.',
     ],
   },
@@ -46,7 +46,7 @@ const HOTSPOT_DATA = {
     items: [
       'Buegel bieten Handgriff und Position für Rückenstart.',
       'Lage typischerweise etwa 30 bis 60 cm über Wasserspiegel.',
-      'Kanten und Radien müssen verletzungsarm ausgefuehrt sein.',
+      'Kanten und Radien müssen verletzungsarm ausgeführt sein.',
     ],
   },
   standfuesse: {
@@ -56,7 +56,7 @@ const HOTSPOT_DATA = {
     items: [
       'Lastabtrag von Plattform in Beckenumgang/Tragkonstruktion.',
       'Steifigkeit wichtig gegen Schwingung beim Startsprung.',
-      'Korrosionsbestaendige Werkstoffe im Chlor-Umfeld nutzen.',
+      'Korrosionsbeständige Werkstoffe im Chlor-Umfeld nutzen.',
     ],
   },
   anschlagplatte: {
@@ -65,8 +65,8 @@ const HOTSPOT_DATA = {
     color: '#a070ff',
     items: [
       'Sichtbarer Kontrast für Wende und Anschlag am Bahnende.',
-      'Definierte Flaeche als Orientierung für Schwimmer.',
-      'Bei Wettkampfbetrieb regelmaessig auf Beschaedigung prüfen.',
+      'Definierte Fläche als Orientierung für Schwimmer.',
+      'Bei Wettkampfbetrieb regelmäßig auf Beschaedigung prüfen.',
     ],
   },
   startwand: {
@@ -75,7 +75,7 @@ const HOTSPOT_DATA = {
     color: '#f2b15b',
     items: [
       'Tragende Geometrie für Startblock und Anschlagbereich.',
-      'Gleichmaessige Fliesenflaeche für visuelle Orientierung.',
+      'Gleichmaessige Fliesenfläche für visuelle Orientierung.',
       'Anschluss an Rinne und Beckenkante muss dicht und formstabil sein.',
     ],
   },
@@ -84,7 +84,7 @@ const HOTSPOT_DATA = {
     short: 'RINNE',
     color: '#4ad097',
     items: [
-      'Rinnenkante nimmt Oberflaechenwasser am Beckenrand auf.',
+      'Rinnenkante nimmt Oberflächenwasser am Beckenrand auf.',
       'Startwand und Rinnenbereich bilden baulich ein gemeinsames System.',
       'Rost/Spalt und Abdeckung rutsch- sowie trittsicher ausführen.',
     ],
@@ -94,9 +94,9 @@ const HOTSPOT_DATA = {
     short: 'T-MARK',
     color: '#d8a240',
     items: [
-      'T-Markierung signalisiert Schwimmern die Wandnaehe.',
+      'T-Markierung signalisiert Schwimmern die Wandnähe.',
       'In der Regel 2,0 m vor der Wand, gut kontrastiert.',
-      'Querbalken unterstuetzt Orientierung bei Anfahrt zur Wende.',
+      'Querbalken unterstützt Orientierung bei Anfahrt zur Wende.',
     ],
   },
   bahnlinie: {
@@ -112,7 +112,7 @@ const HOTSPOT_DATA = {
 };
 
 const KENNDATEN = [
-  { label: 'Plattformflaeche', value: 'mindestens 50 x 50 cm' },
+  { label: 'Plattformfläche', value: 'mindestens 50 x 50 cm' },
   { label: 'Neigung', value: '< 10 Grad' },
   { label: 'Höhe über Wsp', value: 'ca. 60 - 70 cm' },
   { label: 'Rückenstartbuegel', value: 'ca. 30 - 60 cm über Wsp' },
@@ -127,7 +127,7 @@ const DETAIL_MODES = [
     accent: '#4a9eff',
     focus: ['plattform', 'neigung', 'standfuesse'],
     detail: [
-      'Plattformflaeche muss ausreichend gross und trittsicher sein.',
+      'Plattformfläche muss ausreichend gross und trittsicher sein.',
       'Neigungswinkel bleibt unter 10 Grad für kontrollierten Abdruck.',
       'Tragwerk muss dynamische Startlasten sicher aufnehmen.',
     ],
@@ -139,9 +139,9 @@ const DETAIL_MODES = [
     accent: '#34c090',
     focus: ['rückenstartbuegel', 'anschlagplatte', 'startwand'],
     detail: [
-      'Buegelposition muss für verschiedene Körpergroessen erreichbar sein.',
+      'Buegelposition muss für verschiedene Körpergrößen erreichbar sein.',
       'Anschlagplatte bildet visuelle und taktile Orientierung.',
-      'Startwandflaeche muss rutscharm und kontrastreich bleiben.',
+      'Startwandfläche muss rutscharm und kontrastreich bleiben.',
     ],
     caution: 'Scharfe Kanten oder lose Buegel erzeugen Verletzungsrisiko.',
   },
@@ -155,7 +155,7 @@ const DETAIL_MODES = [
       'Anschlagzone darf keine ausstehenden Kanten besitzen.',
       'Rinnenbereich muss Wasser sicher erfassen ohne Stolperkanten.',
     ],
-    caution: 'Rissbildungen und Fliesenhohllagen fruehzeitig instandsetzen.',
+    caution: 'Rissbildungen und Fliesenhohllagen frühzeitig instandsetzen.',
   },
   {
     id: 'bahnorientierung',
@@ -197,7 +197,7 @@ const MODE_HIGHLIGHT_SEGMENTS = {
 const BAULICHE_CHECKS = [
   { label: 'Plattform', value: '>= 50 x 50 cm, trittsicher', ok: true },
   { label: 'Neigung', value: '< 10 Grad', ok: true },
-  { label: 'Blockhoehe', value: 'ca. 60 - 70 cm über Wsp', ok: true },
+  { label: 'Blockhöhe', value: 'ca. 60 - 70 cm über Wsp', ok: true },
   { label: 'Rückenstartbuegel', value: 'fest, sauber, griffsicher', ok: true },
 ];
 
@@ -798,7 +798,7 @@ export default function StartblockDeepDiveView() {
                 Antwort einblenden
               </summary>
               <p className="text-sm mt-2 leading-relaxed" style={{ color: '#90b0d0' }}>
-                Sie geben bei hoher Schwimmgeschwindigkeit eine fruehe visuelle Orientierung zur Wandlage.
+                Sie geben bei hoher Schwimmgeschwindigkeit eine frühe visuelle Orientierung zur Wandlage.
                 Dadurch sinkt das Risiko von Fehlabstand, Kopfkontakt und unsauberem Anschlag deutlich.
               </p>
             </details>

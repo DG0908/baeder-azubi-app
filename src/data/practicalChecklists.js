@@ -6,9 +6,9 @@ export const PRACTICAL_CHECKLISTS = [
     description: 'Standardablauf vor Öffnung des Bades.',
     items: [
       'Beckenrundgang auf Sicht und Sicherheit durchführen',
-      'Rettungsgeraete auf Vollstaendigkeit und Erreichbarkeit prüfen',
-      'Rutschflaechen, Treppen und Handlaeufe kontrollieren',
-      'Notrufkette und Funkgeraete testen',
+      'Rettungsgeräte auf Vollständigkeit und Erreichbarkeit prüfen',
+      'Rutschflächen, Treppen und Handlaeufe kontrollieren',
+      'Notrufkette und Funkgeräte testen',
       'Betriebstagebuch-Eintrag zum Schichtbeginn machen'
     ]
   },

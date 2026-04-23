@@ -3,7 +3,7 @@ import { useState } from 'react';
 const TABS = {
   dsgvo: 'DSGVO Grundlagen',
   bad: 'DSGVO im Bad',
-  oeffentlichkeit: 'Öffentlichkeitsarbeit',
+  öffentlichkeit: 'Öffentlichkeitsarbeit',
   socialmedia: 'Social Media',
   panne: 'Datenpanne',
 };
@@ -28,10 +28,10 @@ const Row = ({ k, v, dark }) => (
   </div>
 );
 
-const PrinzipCard = ({ name, erklaerung, beispiel, dark }) => (
+const PrinzipCard = ({ name, erklärung, beispiel, dark }) => (
   <div style={{ background: dark ? '#1e293b' : '#f8fafc', border: `1px solid ${accent}40`, borderRadius: 10, padding: 12, marginBottom: 10 }}>
     <div style={{ fontWeight: 700, color: dark ? '#6ee7b7' : '#065f46', marginBottom: 4 }}>{name}</div>
-    <div style={{ fontSize: 13, color: dark ? '#e2e8f0' : '#1e293b', marginBottom: 4 }}>{erklaerung}</div>
+    <div style={{ fontSize: 13, color: dark ? '#e2e8f0' : '#1e293b', marginBottom: 4 }}>{erklärung}</div>
     <div style={{ fontSize: 12, color: accent, fontStyle: 'italic' }}>Bsp.: {beispiel}</div>
   </div>
 );
@@ -78,13 +78,13 @@ export default function DatenschutzOeaDeepDiveView({ darkMode }) {
             </div>
 
             <div style={{ fontWeight: 700, color: dark ? '#6ee7b7' : '#065f46', marginBottom: 10 }}>Die 7 Grundsätze der DSGVO (Art. 5)</div>
-            <PrinzipCard name="1. Rechtmäßigkeit" erklaerung="Daten dürfen nur verarbeitet werden wenn eine Rechtsgrundlage vorliegt (Einwilligung, Vertrag, gesetzliche Pflicht)." beispiel="Kundendaten für Jahreskartenvertrag." dark={dark} />
-            <PrinzipCard name="2. Zweckbindung" erklaerung="Daten nur für den bei Erhebung festgelegten Zweck verwenden." beispiel="E-Mail für Kursbestätigung — nicht für Werbung ohne Zustimmung." dark={dark} />
-            <PrinzipCard name="3. Datenminimierung" erklaerung="Nur die Daten erheben, die wirklich notwendig sind." beispiel="Für Einzel-Badeeintritt: kein Name nötig." dark={dark} />
-            <PrinzipCard name="4. Richtigkeit" erklaerung="Falsche Daten müssen korrigiert oder gelöscht werden." beispiel="Adressänderung im Kundensystem." dark={dark} />
-            <PrinzipCard name="5. Speicherbegrenzung" erklaerung="Daten nur so lange speichern wie nötig." beispiel="Kursanmeldung nach Kursende löschen (wenn keine Aufbewahrungspflicht)." dark={dark} />
-            <PrinzipCard name="6. Integrität & Vertraulichkeit" erklaerung="Daten vor unbefugtem Zugriff schützen (technische + organisatorische Maßnahmen)." beispiel="Kundendaten nur für Mitarbeiter zugänglich — nicht für Aushilfen." dark={dark} />
-            <PrinzipCard name="7. Rechenschaftspflicht" erklaerung="Betrieb muss DSGVO-Konformität nachweisen können." beispiel="Verarbeitungsverzeichnis führen, Datenschutzbeauftragter." dark={dark} />
+            <PrinzipCard name="1. Rechtmäßigkeit" erklärung="Daten dürfen nur verarbeitet werden wenn eine Rechtsgrundlage vorliegt (Einwilligung, Vertrag, gesetzliche Pflicht)." beispiel="Kundendaten für Jahreskartenvertrag." dark={dark} />
+            <PrinzipCard name="2. Zweckbindung" erklärung="Daten nur für den bei Erhebung festgelegten Zweck verwenden." beispiel="E-Mail für Kursbestätigung — nicht für Werbung ohne Zustimmung." dark={dark} />
+            <PrinzipCard name="3. Datenminimierung" erklärung="Nur die Daten erheben, die wirklich notwendig sind." beispiel="Für Einzel-Badeeintritt: kein Name nötig." dark={dark} />
+            <PrinzipCard name="4. Richtigkeit" erklärung="Falsche Daten müssen korrigiert oder gelöscht werden." beispiel="Adressänderung im Kundensystem." dark={dark} />
+            <PrinzipCard name="5. Speicherbegrenzung" erklärung="Daten nur so lange speichern wie nötig." beispiel="Kursanmeldung nach Kursende löschen (wenn keine Aufbewahrungspflicht)." dark={dark} />
+            <PrinzipCard name="6. Integrität & Vertraulichkeit" erklärung="Daten vor unbefugtem Zugriff schützen (technische + organisatorische Maßnahmen)." beispiel="Kundendaten nur für Mitarbeiter zugänglich — nicht für Aushilfen." dark={dark} />
+            <PrinzipCard name="7. Rechenschaftspflicht" erklärung="Betrieb muss DSGVO-Konformität nachweisen können." beispiel="Verarbeitungsverzeichnis führen, Datenschutzbeauftragter." dark={dark} />
 
             <InfoBox title="Betroffenenrechte (Art. 12–22 DSGVO)" dark={dark} items={[
               'Auskunftsrecht: Was wird über mich gespeichert? (Art. 15)',
@@ -137,7 +137,7 @@ export default function DatenschutzOeaDeepDiveView({ darkMode }) {
           </div>
         )}
 
-        {tab === 'oeffentlichkeit' && (
+        {tab === 'öffentlichkeit' && (
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#6ee7b7' : '#065f46', marginBottom: 14 }}>Öffentlichkeitsarbeit (PR)</h2>
             <p style={{ color: text, fontSize: 14, marginBottom: 16 }}>Öffentlichkeitsarbeit (Public Relations) ist die gezielte Kommunikation eines Unternehmens mit der Öffentlichkeit — um Vertrauen und Image zu pflegen.</p>

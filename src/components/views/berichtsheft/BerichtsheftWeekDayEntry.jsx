@@ -59,7 +59,7 @@ const BerichtsheftWeekDayEntry = ({
           (bereich) => bereich.nr === parseInt(entry.bereich, 10),
         );
         const entryKey = `${day}-${entryIndex}`;
-        const bereichSuggestions = getBerichtsheftBereichSuggestions(entry.taetigkeit, berichtsheftYear);
+        const bereichSuggestions = getBerichtsheftBereichSuggestions(entry.tätigkeit, berichtsheftYear);
         const showBereichSuggestions = !entry.bereich && bereichSuggestions.length > 0;
         const inhaltePreview = (selectedBereich?.inhalte || []).slice(0, 6);
         const isEntryHintExpanded = expandedEntryHints.has(entryKey);
@@ -80,8 +80,8 @@ const BerichtsheftWeekDayEntry = ({
               <div className="min-w-0 flex-1">
                 <input
                   type="text"
-                  value={entry.taetigkeit}
-                  onChange={(e) => updateWeekEntry(day, entryIndex, 'taetigkeit', e.target.value)}
+                  value={entry.tätigkeit}
+                  onChange={(e) => updateWeekEntry(day, entryIndex, 'tätigkeit', e.target.value)}
                   placeholder="Ausgeführte Tätigkeit..."
                   className={smallInputClass}
                 />

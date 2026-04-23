@@ -4,29 +4,29 @@ export const KEYWORD_CHALLENGES = {
   org: [
     {
       type: 'keyword',
-      q: 'Nenne mindestens 4 Punkte, die vor Schichtbeginn für die Wasseraufsicht geprueft werden müssen.',
+      q: 'Nenne mindestens 4 Punkte, die vor Schichtbeginn für die Wasseraufsicht geprüft werden müssen.',
       keywordGroups: [
         mkGroup('Rettungsfähigkeit', ['rettungsfähigkeit', 'rettungsschwimmnachweis']),
         mkGroup('Erste Hilfe', ['erste hilfe', 'ersthelfer', 'hlw']),
         mkGroup('Sichtkontrolle', ['sichtkontrolle', 'sichtkontakt', 'aufsichtsgang']),
-        mkGroup('Kommunikation', ['funkgeraet', 'sprechfunk', 'kommunikation']),
+        mkGroup('Kommunikation', ['funkgerät', 'sprechfunk', 'kommunikation']),
         mkGroup('Notfallkette', ['notfallplan', 'meldekette', 'alarmplan'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Vor Schichtbeginn sollten mindestens Rettungsfähigkeit, Erste-Hilfe-Status, Sicht-/Aufsichtsbereiche, Kommunikationsmittel und Notfallkette geprueft werden.'
+      answerGuide: 'Vor Schichtbeginn sollten mindestens Rettungsfähigkeit, Erste-Hilfe-Status, Sicht-/Aufsichtsbereiche, Kommunikationsmittel und Notfallkette geprüft werden.'
     },
     {
       type: 'keyword',
       q: 'Welche 4 Inhalte gehören in einen sicheren Öffnungsrundgang im Bad?',
       keywordGroups: [
         mkGroup('Rutschgefahren', ['rutschgefahr', 'nassbereich', 'boden']),
-        mkGroup('Rettungsgeraete', ['rettungsring', 'wurfleine', 'rettungsgeraet']),
+        mkGroup('Rettungsgeräte', ['rettungsring', 'wurfleine', 'rettungsgerät']),
         mkGroup('Fluchtwege', ['fluchtweg', 'notausgang', 'rettungsweg']),
         mkGroup('Technikstatus', ['technik', 'störung', 'anlage']),
         mkGroup('Beckenkontrolle', ['becken', 'wasserstand', 'sichttiefe'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Typisch sind Boden-/Rutschkontrolle, Rettungsgeraete, Fluchtwege/Notausgaenge, Technikstatus und Beckencheck.'
+      answerGuide: 'Typisch sind Boden-/Rutschkontrolle, Rettungsgeräte, Fluchtwege/Notausgaenge, Technikstatus und Beckencheck.'
     },
     {
       type: 'keyword',
@@ -36,7 +36,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Arbeitszeitrecht', ['arbeitszeitgesetz', 'ruhezeit', 'schichtdauer']),
         mkGroup('Besucheraufkommen', ['besucherzahlen', 'stosszeiten', 'auslastung']),
         mkGroup('Urlaub/Abwesenheit', ['urlaub', 'krankheit', 'abwesenheit']),
-        mkGroup('Mindestbesetzung', ['mindestbesetzung', 'personalstaerke'])
+        mkGroup('Mindestbesetzung', ['mindestbesetzung', 'personalstärke'])
       ],
       minKeywordGroups: 4,
       answerGuide: 'Wichtig sind Qualifikation, gesetzliche Zeiten, Auslastung/Stoßzeiten, Abwesenheiten und Mindestbesetzung.'
@@ -48,7 +48,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Sicherheitsregeln', ['sicherheitsregel', 'sprungverbot', 'verhalten']),
         mkGroup('Hygieneregeln', ['duschen', 'hygiene', 'toiletten']),
         mkGroup('Aufsichtsanweisungen', ['aufsicht', 'anweisung', 'folge leisten']),
-        mkGroup('Sanktionen', ['hausverweis', 'ausschluss', 'ordnungsmassnahme']),
+        mkGroup('Sanktionen', ['hausverweis', 'ausschluss', 'ordnungsmaßnahme']),
         mkGroup('Nutzungszeiten', ['öffnungszeit', 'nutzungszeit', 'schliesszeit'])
       ],
       minKeywordGroups: 4,
@@ -56,10 +56,10 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Eintraege, die im Betriebstagebuch regelmaessig dokumentiert werden sollten.',
+      q: 'Nenne 4 Eintraege, die im Betriebstagebuch regelmäßig dokumentiert werden sollten.',
       keywordGroups: [
         mkGroup('Wasserwerte', ['chlor', 'ph', 'redox']),
-        mkGroup('Filterbetrieb', ['filterspuelung', 'filter', 'rückspuelung']),
+        mkGroup('Filterbetrieb', ['filterspülung', 'filter', 'rückspülung']),
         mkGroup('Störungen', ['störung', 'reparatur', 'ausfall']),
         mkGroup('Chemikalien', ['chemikalienverbrauch', 'dosierung', 'nachfuellung']),
         mkGroup('Besonderheiten', ['zwischenfall', 'vorfall', 'abweichung'])
@@ -76,7 +76,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Freies Chlor', ['freies chlor', 'chlor']),
         mkGroup('pH-Wert', ['ph', 'ph wert']),
         mkGroup('Umwälzung', ['umwälzung', 'umwälzpumpe', 'volumenstrom']),
-        mkGroup('Filtration', ['filter', 'filtration', 'rückspuelung']),
+        mkGroup('Filtration', ['filter', 'filtration', 'rückspülung']),
         mkGroup('Dokumentation', ['dokumentation', 'protokoll', 'betriebstagebuch'])
       ],
       minKeywordGroups: 4,
@@ -88,7 +88,7 @@ export const KEYWORD_CHALLENGES = {
       keywordGroups: [
         mkGroup('Besucherlast', ['hohe besucherzahl', 'auslastung', 'spitzenlast']),
         mkGroup('Dosierung', ['dosieranlage', 'dosierung', 'chemikalie']),
-        mkGroup('Filterproblem', ['filterproblem', 'verblockung', 'rückspuelung']),
+        mkGroup('Filterproblem', ['filterproblem', 'verblockung', 'rückspülung']),
         mkGroup('Messfehler', ['messfehler', 'kuvette', 'reagenz']),
         mkGroup('Hydraulik', ['umwälzung', 'hydraulik', 'stromung'])
       ],
@@ -97,16 +97,16 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Punkte, die bei der Rückspuelung eines Filters zu beachten sind.',
+      q: 'Nenne 4 Punkte, die bei der Rückspülung eines Filters zu beachten sind.',
       keywordGroups: [
         mkGroup('Betriebszustand', ['betrieb stoppen', 'anlage sichern', 'umschalten']),
         mkGroup('Spüldauer', ['spüldauer', 'spülzeit']),
         mkGroup('Spülmenge', ['spülwasser', 'spülmenge', 'spülstrom']),
-        mkGroup('Nachspuelen', ['nachspuelen', 'klarspuelen']),
+        mkGroup('Nachspülen', ['nachspülen', 'klarspülen']),
         mkGroup('Dokumentation', ['dokumentation', 'eintrag', 'protokoll'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Sicherer Ablauf: umschalten/sichern, passende Spülzeit/-menge, Nachspuelen und Dokumentation.'
+      answerGuide: 'Sicherer Ablauf: umschalten/sichern, passende Spülzeit/-menge, Nachspülen und Dokumentation.'
     },
     {
       type: 'keyword',
@@ -115,15 +115,15 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Ozonabbau', ['ozonabbau', 'ozon']),
         mkGroup('Organik', ['organische stoffe', 'adsorption', 'organik']),
         mkGroup('Nebenprodukte', ['nebenprodukte', 'chloramine', 'reaktionsprodukte']),
-        mkGroup('Wasserqualitaet', ['wasserqualitaet', 'klarheit', 'geruch']),
+        mkGroup('Wasserqualität', ['wasserqualität', 'klarheit', 'geruch']),
         mkGroup('Schutz Nachstufe', ['nachgeschaltete stufe', 'schutz'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Typisch sind Ozonabbau, Bindung organischer Stoffe/Nebenprodukte und Stabilisierung der Wasserqualitaet.'
+      answerGuide: 'Typisch sind Ozonabbau, Bindung organischer Stoffe/Nebenprodukte und Stabilisierung der Wasserqualität.'
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Kernparameter, die bei der täglichen technischen Betriebskontrolle geprueft werden.',
+      q: 'Nenne 4 Kernparameter, die bei der täglichen technischen Betriebskontrolle geprüft werden.',
       keywordGroups: [
         mkGroup('Desinfektion', ['chlor', 'desinfektion']),
         mkGroup('pH', ['ph', 'ph wert']),
@@ -157,7 +157,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Freigabe', ['freigabe', 'einzelsprung', 'abstand']),
         mkGroup('Regelverstoesse', ['regelverstoss', 'eingreifen', 'ansprache']),
         mkGroup('Sichtfeld', ['sichtkontakt', 'sichtfeld']),
-        mkGroup('Notfallbereitschaft', ['rettungsgeraet', 'notfall'])
+        mkGroup('Notfallbereitschaft', ['rettungsgerät', 'notfall'])
       ],
       minKeywordGroups: 4,
       answerGuide: 'Sprungaufsicht braucht Tiefenkontrolle, Freigabesystem/Abstaende, lückenloses Sichtfeld und Notfallbereitschaft.'
@@ -223,7 +223,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Atmung vorhanden', ['atmung', 'bewusstlos aber atmet']),
         mkGroup('Körperlage', ['seitenlage', 'stabile lage']),
         mkGroup('Atemwege', ['atemwege frei', 'kopf überstrecken']),
-        mkGroup('Kontrolle', ['regelmaessig kontrollieren', 'atmung beobachten']),
+        mkGroup('Kontrolle', ['regelmäßig kontrollieren', 'atmung beobachten']),
         mkGroup('Notruf', ['notruf', '112'])
       ],
       minKeywordGroups: 4,
@@ -231,7 +231,7 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Nenne 4 Sofortmassnahmen bei stark blutender Wunde.',
+      q: 'Nenne 4 Sofortmaßnahmen bei stark blutender Wunde.',
       keywordGroups: [
         mkGroup('Eigenschutz', ['handschuhe', 'eigensicherung']),
         mkGroup('Druck', ['direkter druck', 'druckverband']),
@@ -246,7 +246,7 @@ export const KEYWORD_CHALLENGES = {
       type: 'keyword',
       q: 'Welche 4 Punkte gehören zu einer sauberen AED-Anwendung?',
       keywordGroups: [
-        mkGroup('Geraet einschalten', ['aed einschalten', 'geraet einschalten']),
+        mkGroup('Gerät einschalten', ['aed einschalten', 'gerät einschalten']),
         mkGroup('Elektroden', ['elektroden', 'pads']),
         mkGroup('Sicherheitsabstand', ['nicht beruehren', 'abstand']),
         mkGroup('Sprachanweisungen', ['sprachanweisung', 'anweisungen folgen']),
@@ -277,11 +277,11 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Bereichstrennung', ['bereichstrennung', 'getrennte utensilien']),
         mkGroup('Handschuhwechsel', ['handschuhwechsel', 'handschuhe wechseln']),
         mkGroup('Reinigungsreihenfolge', ['sauber nach schmutzig', 'reihenfolge']),
-        mkGroup('Haendehygiene', ['haendehygiene', 'haendedesinfektion']),
+        mkGroup('Händehygiene', ['händehygiene', 'händedesinfektion']),
         mkGroup('Dokumentation', ['dokumentation', 'reinigungsplan'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Vermeidung gelingt durch Bereichstrennung, Handschuhwechsel, korrekte Reihenfolge, Haendehygiene und Dokumentation.'
+      answerGuide: 'Vermeidung gelingt durch Bereichstrennung, Handschuhwechsel, korrekte Reihenfolge, Händehygiene und Dokumentation.'
     },
     {
       type: 'keyword',
@@ -294,7 +294,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Lueftung/Feuchte', ['lueftung', 'feuchtigkeit'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Täglich: Parameter, Sicht-/Flaechenkontrollen, Reinigungsnachweise, Zwischenfaelle und Raumklima.'
+      answerGuide: 'Täglich: Parameter, Sicht-/Flächenkontrollen, Reinigungsnachweise, Zwischenfaelle und Raumklima.'
     },
     {
       type: 'keyword',
@@ -304,23 +304,23 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Meldekette', ['meldekette', 'info an team']),
         mkGroup('Maßnahmenplan', ['maßnahmenplan', 'desinfektion', 'wasserwechsel']),
         mkGroup('Dokumentation', ['dokumentation', 'protokoll']),
-        mkGroup('Freigabe', ['freigabe', 'wiedereroeffnung'])
+        mkGroup('Freigabe', ['freigabe', 'wiedereröffnung'])
       ],
       minKeywordGroups: 4,
       answerGuide: 'Ablauf: absichern, intern melden, nach Plan handeln, dokumentieren und erst nach Freigabe oeffnen.'
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Punkte sind für eine wirksame Flaechendesinfektion entscheidend?',
+      q: 'Welche 4 Punkte sind für eine wirksame Flächendesinfektion entscheidend?',
       keywordGroups: [
         mkGroup('Vorreinigung', ['vorreinigung', 'schmutz entfernen']),
         mkGroup('Konzentration', ['konzentration', 'dosierung']),
         mkGroup('Einwirkzeit', ['einwirkzeit']),
-        mkGroup('Vollstaendige Benetzung', ['benetzung', 'flaeche vollstaendig']),
+        mkGroup('Vollständige Benetzung', ['benetzung', 'fläche vollständig']),
         mkGroup('Materialvertraeglichkeit', ['materialvertraeglichkeit'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Wirksam nur mit Vorreinigung, richtiger Konzentration, Einwirkzeit und vollstaendiger Benetzung.'
+      answerGuide: 'Wirksam nur mit Vorreinigung, richtiger Konzentration, Einwirkzeit und vollständiger Benetzung.'
     },
     {
       type: 'keyword',
@@ -348,7 +348,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Unmittelbar', ['unmittelbar'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Zu den Wahlgrundsaetzen zaehlen allgemein, frei, gleich, geheim und unmittelbar.'
+      answerGuide: 'Zu den Wahlgrundsaetzen zählen allgemein, frei, gleich, geheim und unmittelbar.'
     },
     {
       type: 'keyword',
@@ -367,14 +367,14 @@ export const KEYWORD_CHALLENGES = {
       type: 'keyword',
       q: 'Nenne 4 Punkte, die in einem gueltigen Arbeitsvertrag geregelt sein sollten.',
       keywordGroups: [
-        mkGroup('Taetigkeit', ['taetigkeit', 'aufgaben']),
+        mkGroup('Tätigkeit', ['tätigkeit', 'aufgaben']),
         mkGroup('Arbeitszeit', ['arbeitszeit']),
         mkGroup('Verguetung', ['lohn', 'gehalt', 'verguetung']),
         mkGroup('Urlaub', ['urlaub']),
         mkGroup('Kuendigung', ['kuendigung', 'frist'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Sinnvoll geregelt sind Taetigkeit, Arbeitszeit, Verguetung, Urlaub und Kuendigungsfristen.'
+      answerGuide: 'Sinnvoll geregelt sind Tätigkeit, Arbeitszeit, Verguetung, Urlaub und Kuendigungsfristen.'
     },
     {
       type: 'keyword',
@@ -406,14 +406,14 @@ export const KEYWORD_CHALLENGES = {
       type: 'keyword',
       q: 'Welche 4 Aufgaben hat der Bundesrat?',
       keywordGroups: [
-        mkGroup('Laender vertreten', ['laender vertreten', 'laenderinteressen', 'bundeslaender']),
+        mkGroup('Länder vertreten', ['laender vertreten', 'laenderinteressen', 'bundeslaender']),
         mkGroup('Gesetzgebung', ['gesetzgebung', 'gesetze mitwirken', 'mitwirkung']),
-        mkGroup('Verfassungsänderungen', ['verfassungsaenderung', 'grundgesetzaenderung']),
+        mkGroup('Verfassungsänderungen', ['verfassungsänderung', 'grundgesetzänderung']),
         mkGroup('Zustimmungsgesetze', ['zustimmungsgesetz', 'zustimmen']),
         mkGroup('Vermittlung', ['vermittlungsausschuss', 'vermitteln'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Der Bundesrat vertritt die Laender, wirkt an Gesetzen mit, stimmt bei bestimmten Gesetzen und Verfassungsaenderungen zu und wirkt in Vermittlungsverfahren mit.'
+      answerGuide: 'Der Bundesrat vertritt die Länder, wirkt an Gesetzen mit, stimmt bei bestimmten Gesetzen und Verfassungsänderungen zu und wirkt in Vermittlungsverfahren mit.'
     },
     {
       type: 'keyword',
@@ -461,11 +461,11 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Gewerkschaften', ['gewerkschaft', 'gewerkschaften']),
         mkGroup('Arbeitgeberseite', ['arbeitgeberverband', 'arbeitgeberseite', 'arbeitgeber']),
         mkGroup('Tarifvertrag', ['tarifvertrag', 'tarif']),
-        mkGroup('Ohne Staat aushandeln', ['ohne staat', 'eigenstaendig aushandeln', 'selbst aushandeln']),
+        mkGroup('Ohne Staat aushandeln', ['ohne staat', 'eigenständig aushandeln', 'selbst aushandeln']),
         mkGroup('Arbeitsbedingungen', ['arbeitsbedingungen', 'lohn', 'arbeitszeit'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Tarifautonomie bedeutet, dass Gewerkschaften und Arbeitgeber Arbeitsbedingungen eigenstaendig in Tarifvertraegen aushandeln.'
+      answerGuide: 'Tarifautonomie bedeutet, dass Gewerkschaften und Arbeitgeber Arbeitsbedingungen eigenständig in Tarifvertraegen aushandeln.'
     },
     {
       type: 'keyword',
@@ -482,7 +482,7 @@ export const KEYWORD_CHALLENGES = {
     },
     {
       type: 'keyword',
-      q: 'Welche 4 Punkte sind bei einer Kuendigung im Arbeitsverhaeltnis wichtig?',
+      q: 'Welche 4 Punkte sind bei einer Kuendigung im Arbeitsverhältnis wichtig?',
       keywordGroups: [
         mkGroup('Schriftform', ['schriftform', 'schriftlich']),
         mkGroup('Frist', ['frist', 'kuendigungsfrist']),
@@ -501,10 +501,10 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Rentenversicherung', ['rentenversicherung']),
         mkGroup('Arbeitslosenversicherung', ['arbeitslosenversicherung']),
         mkGroup('Pflegeversicherung', ['pflegeversicherung']),
-        mkGroup('Unterstuetzung', ['unterstuetzung', 'sozialhilfe', 'absicherung'])
+        mkGroup('Unterstützung', ['unterstützung', 'sozialhilfe', 'absicherung'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Ein Sozialstaat sichert Menschen über Versicherungen und Unterstuetzungssysteme gegen zentrale Lebensrisiken ab.'
+      answerGuide: 'Ein Sozialstaat sichert Menschen über Versicherungen und Unterstützungssysteme gegen zentrale Lebensrisiken ab.'
     },
     {
       type: 'keyword',
@@ -514,7 +514,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Exekutive', ['exekutive', 'regierung', 'verwaltung']),
         mkGroup('Judikative', ['judikative', 'gerichte', 'rechtsprechung']),
         mkGroup('Kontrolle', ['kontrolle', 'macht begrenzen']),
-        mkGroup('Unabhaengigkeit', ['unabhaengigkeit', 'getrennt'])
+        mkGroup('Unabhängigkeit', ['unabhängigkeit', 'getrennt'])
       ],
       minKeywordGroups: 4,
       answerGuide: 'Gewaltenteilung trennt Gesetzgebung, Regierung und Rechtsprechung und begrenzt Macht durch gegenseitige Kontrolle.'
@@ -577,7 +577,7 @@ export const KEYWORD_CHALLENGES = {
       type: 'keyword',
       q: 'Nenne 4 Rechenthemen aus der Ausbildung, die du im Badalltag direkt brauchst.',
       keywordGroups: [
-        mkGroup('Dreisatz', ['dreisatz', 'verhaeltnisrechnung']),
+        mkGroup('Dreisatz', ['dreisatz', 'verhältnisrechnung']),
         mkGroup('Prozentrechnung', ['prozent', 'rabatt', 'zuschlag']),
         mkGroup('Volumen', ['volumen', 'kubikmeter', 'beckeninhalt']),
         mkGroup('Klammer/Potenzen', ['klammer', 'potenz']),
@@ -599,7 +599,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Puls/Atmung', ['puls', 'atmung'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Typisch sind Schwindel, Blaesse/kalter Schweiss, Uebelkeit, Bewusstseinseintruebung sowie Puls-/Atmungsauffaelligkeiten.'
+      answerGuide: 'Typisch sind Schwindel, Blaesse/kalter Schweiss, Uebelkeit, Bewusstseinseintrübung sowie Puls-/Atmungsauffaelligkeiten.'
     },
     {
       type: 'keyword',
@@ -625,7 +625,7 @@ export const KEYWORD_CHALLENGES = {
         mkGroup('Keine Alleinlassung', ['nicht allein lassen', 'betreuen'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Ruhig lagern/sitzen, Notfallspray unterstuetzen, Atmung beobachten, ggf. 112 und Person betreuen.'
+      answerGuide: 'Ruhig lagern/sitzen, Notfallspray unterstützen, Atmung beobachten, ggf. 112 und Person betreuen.'
     },
     {
       type: 'keyword',
@@ -633,12 +633,12 @@ export const KEYWORD_CHALLENGES = {
       keywordGroups: [
         mkGroup('Technik', ['technik', 'körperhaltung']),
         mkGroup('Belastungssteuerung', ['belastung', 'intensitaet']),
-        mkGroup('Regelmaessigkeit', ['regelmaessig', 'kontinuitaet']),
-        mkGroup('Aufwaermen', ['aufwaermen', 'mobilisation']),
+        mkGroup('Regelmäßigkeit', ['regelmäßig', 'kontinuitaet']),
+        mkGroup('Aufwärmen', ['aufwärmen', 'mobilisation']),
         mkGroup('Schmerzbeachtung', ['schmerz', 'überlastung'])
       ],
       minKeywordGroups: 4,
-      answerGuide: 'Rückentraining profitiert von sauberer Technik, dosierter Belastung, Regelmaessigkeit, Aufwaermen und Schmerzbeachtung.'
+      answerGuide: 'Rückentraining profitiert von sauberer Technik, dosierter Belastung, Regelmäßigkeit, Aufwärmen und Schmerzbeachtung.'
     },
     {
       type: 'keyword',
@@ -646,7 +646,7 @@ export const KEYWORD_CHALLENGES = {
       keywordGroups: [
         mkGroup('Kommunikation', ['kommunikation', 'absprechen']),
         mkGroup('Aufsicht anpassen', ['aufsicht anpassen', 'individuell']),
-        mkGroup('Hilfsmittel', ['hilfsmittel', 'unterstuetzung']),
+        mkGroup('Hilfsmittel', ['hilfsmittel', 'unterstützung']),
         mkGroup('Notfallwissen', ['notfallplan', 'vorerkrankung']),
         mkGroup('Respekt/Datenschutz', ['respekt', 'datenschutz', 'diskretion'])
       ],

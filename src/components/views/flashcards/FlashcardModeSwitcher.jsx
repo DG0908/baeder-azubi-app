@@ -167,7 +167,7 @@ const FlashcardModeSwitcher = ({
             <span className="text-xs text-gray-500">{dueCards.length} Karten faellig</span>
           </div>
           <p className="text-sm text-gray-600">
-            Beantworte mit "Gewusst" oder "Nicht gewusst". Karten, die du nicht wusstest, kommen frueher wieder.
+            Beantworte mit "Gewusst" oder "Nicht gewusst". Karten, die du nicht wusstest, kommen früher wieder.
           </p>
           <div className="flex gap-3 mt-3 flex-wrap">
             {[1, 2, 3, 4, 5, 6].map((level) => (

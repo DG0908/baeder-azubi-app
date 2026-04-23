@@ -385,7 +385,7 @@ const AdminPasswordReset = ({ userId, userEmail, userName }) => {
     setLoading(true);
     try {
       await dsAdminResetUserPassword(userId, userEmail, tempPassword);
-      toast.success(`Neues Passwort fuer ${userName || userEmail}: ${tempPassword}`, { duration: 10000 });
+      toast.success(`Neues Passwort für ${userName || userEmail}: ${tempPassword}`, { duration: 10000 });
     } catch (err) {
       showToast('Fehler: ' + err.message, 'error');
     } finally {
@@ -649,8 +649,8 @@ const AdminView = ({
       setLastTestPushResult(result);
       showToast(
         result?.scheduled
-          ? `${result?.targetScope === 'organization' ? 'Org-' : ''}Test-Push geplant. App jetzt fuer ${result.delaySeconds || 15}s schliessen.`
-          : `Test-Push gesendet: ${result?.sent || 0} Endgeraete erreicht.`,
+          ? `${result?.targetScope === 'organization' ? 'Org-' : ''}Test-Push geplant. App jetzt für ${result.delaySeconds || 15}s schliessen.`
+          : `Test-Push gesendet: ${result?.sent || 0} Endgeräte erreicht.`,
         'success',
         4500
       );
@@ -1092,7 +1092,7 @@ const AdminView = ({
           <p className="text-gray-500 text-sm">Noch keine Rueckmeldungen zu Fragen vorhanden.</p>
         ) : !showQuestionReports ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Die Rueckmeldungen sind eingeklappt. Bei Bedarf kannst du die komplette Liste ueber den Button einblenden.
+            Die Rueckmeldungen sind eingeklappt. Bei Bedarf kannst du die komplette Liste über den Button einblenden.
           </div>
         ) : (
           <div className="space-y-4">
@@ -1253,7 +1253,7 @@ const AdminView = ({
         ) : !showActiveUsers ? (
           <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm text-slate-700">
-              Die Nutzerliste ist eingeklappt. Oeffne sie bei Bedarf ueber den Button.
+              Die Nutzerliste ist eingeklappt. Oeffne sie bei Bedarf über den Button.
             </p>
             <div className="flex flex-wrap gap-2">
               {groupedUsers.slice(0, 6).map((group) => (

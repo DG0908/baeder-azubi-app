@@ -15,13 +15,13 @@ const TABS = {
       '1 Stunde hat 60 Minuten — NICHT 100. Das ist der wichtigste Unterschied zu normalem Rechnen.',
       '1 Minute hat 60 Sekunden — wieder 60, nicht 100.',
       'Du kannst Minuten NICHT einfach wie Kommazahlen behandeln. 1:30 ist NICHT 1,30 Stunden!',
-      'Beim Addieren von Zeiten: Wenn die Minuten ueber 60 kommen, wird daraus eine neue Stunde.',
+      'Beim Addieren von Zeiten: Wenn die Minuten über 60 kommen, wird daraus eine neue Stunde.',
       'Beim Subtrahieren von Zeiten: Wenn die Minuten nicht reichen, musst du dir eine Stunde "borgen" (= 60 Minuten dazunehmen).'
     ],
     steps: [
       {
         title: '1. Zeitformat verstehen',
-        text: 'Zeit wird als Stunden:Minuten geschrieben. 2:45 bedeutet 2 Stunden und 45 Minuten. Die Zahl nach dem Doppelpunkt kann NIE groesser als 59 sein.'
+        text: 'Zeit wird als Stunden:Minuten geschrieben. 2:45 bedeutet 2 Stunden und 45 Minuten. Die Zahl nach dem Doppelpunkt kann NIE größer als 59 sein.'
       },
       {
         title: '2. Zeiten addieren',
@@ -33,7 +33,7 @@ const TABS = {
       },
       {
         title: '4. Dauer berechnen',
-        text: 'Von Startzeit bis Endzeit: Erst die Stunden zaehlen, dann die Minuten. Oder alles in Minuten umrechnen, abziehen, und zurueckrechnen.'
+        text: 'Von Startzeit bis Endzeit: Erst die Stunden zählen, dann die Minuten. Oder alles in Minuten umrechnen, abziehen, und zurückrechnen.'
       }
     ],
     examples: [
@@ -49,7 +49,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Dauer berechnen: Schichtlaenge',
+        title: 'Dauer berechnen: Schichtlänge',
         given: 'Deine Schicht beginnt um 6:30 Uhr und endet um 14:15 Uhr.',
         question: 'Wie lange dauert die Schicht?',
         steps: [
@@ -90,7 +90,7 @@ const TABS = {
     chip: 'Umrechnung',
     title: 'Minuten in Dezimalstunden umrechnen',
     intro:
-      'Fuer Stundenzettel und Gehaltsabrechnung brauchst du Dezimalstunden (Industriestunden). Statt 7 Stunden 45 Minuten schreibst du 7,75 Stunden. Die Umrechnung ist einfach: Minuten geteilt durch 60. Hier lernst du die wichtigsten Werte auswendig.',
+      'Für Stundenzettel und Gehaltsabrechnung brauchst du Dezimalstunden (Industriestunden). Statt 7 Stunden 45 Minuten schreibst du 7,75 Stunden. Die Umrechnung ist einfach: Minuten geteilt durch 60. Hier lernst du die wichtigsten Werte auswendig.',
     motto: 'Minuten ÷ 60 = Dezimalstunden.',
     rules: [
       'Um Minuten in Dezimalstunden umzurechnen: Minuten ÷ 60.',
@@ -113,7 +113,7 @@ const TABS = {
         text: 'Stunden + Dezimalanteil = Dezimalstunden. 6 + 0,33 = 6,33 Stunden.'
       },
       {
-        title: '4. Rueckrechnung pruefen',
+        title: '4. Rueckrechnung prüfen',
         text: 'Zur Kontrolle: 0,33 × 60 = 19,8 ≈ 20 Minuten. Passt!'
       }
     ],
@@ -153,7 +153,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      '0,50 Stunden sind 30 Minuten, NICHT 50 Minuten! Das ist der haeufigste Fehler.',
+      '0,50 Stunden sind 30 Minuten, NICHT 50 Minuten! Das ist der häufigste Fehler.',
       '0,75 Stunden sind 45 Minuten, NICHT 75 Minuten!',
       'Immer auf zwei Nachkommastellen runden, sonst wird der Stundenzettel ungenau.',
       'Nicht vergessen: Bei der Rueckrechnung mit 60 MALNEHMEN, nicht durch 60 teilen.'
@@ -171,12 +171,12 @@ const TABS = {
     chip: 'Industriestunden',
     title: 'Industriestunden im Arbeitsalltag',
     intro:
-      'Industriestunden (auch Dezimalstunden genannt) sind das Zeitformat fuer Stundenzettel, Gehaltsabrechnung und Zeiterfassung. Statt 7:45 schreibst du 7,75. Das macht das Rechnen viel einfacher, weil du normal addieren und subtrahieren kannst — ohne das laestige 60er-System.',
+      'Industriestunden (auch Dezimalstunden genannt) sind das Zeitformat für Stundenzettel, Gehaltsabrechnung und Zeiterfassung. Statt 7:45 schreibst du 7,75. Das macht das Rechnen viel einfacher, weil du normal addieren und subtrahieren kannst — ohne das laestige 60er-System.',
     motto: 'Industriezeit = dezimal = einfacher rechnen.',
     rules: [
       'Industriestunden nutzen das 100er-System (Dezimalsystem) statt des 60er-Systems.',
       'Vorteil: Du kannst ganz normal rechnen — addieren, subtrahieren, malnehmen.',
-      'Arbeitgeber nutzen Industriestunden fuer die Gehaltsabrechnung (Stundenlohn × Industriestunden = Bruttolohn).',
+      'Arbeitgeber nutzen Industriestunden für die Gehaltsabrechnung (Stundenlohn × Industriestunden = Bruttolohn).',
       'Auf Stundenzetteln stehen IMMER Industriestunden, nie normale Stunden:Minuten.',
       'Die Umrechnung zwischen beiden Formaten musst du sicher beherrschen.'
     ],
@@ -195,7 +195,7 @@ const TABS = {
       },
       {
         title: '4. Lohn berechnen',
-        text: 'Industriestunden × Stundenlohn = Verdienst. 7,75 × 14,50 Euro = 112,38 Euro brutto fuer diesen Tag.'
+        text: 'Industriestunden × Stundenlohn = Verdienst. 7,75 × 14,50 Euro = 112,38 Euro brutto für diesen Tag.'
       }
     ],
     examples: [
@@ -250,16 +250,16 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Zeit im Baederalltag',
+    title: 'Zeit im Bäderalltag',
     intro:
-      'Im Schwimmbad brauchst du Zeitrechnung ueberall: Schichtplanung, Stundenzettel, Umwaelzzeiten berechnen, Ueberstunden ermitteln. Hier uebst du mit echten Aufgaben aus dem Baederalltag. Diese Aufgaben kommen in der Pruefung dran!',
-    motto: 'Vom Stundenzettel bis zur Umwaelzzeit — Zeit ist ueberall.',
+      'Im Schwimmbad brauchst du Zeitrechnung überall: Schichtplanung, Stundenzettel, Umwaelzzeiten berechnen, Ueberstunden ermitteln. Hier uebst du mit echten Aufgaben aus dem Bäderalltag. Diese Aufgaben kommen in der Prüfung dran!',
+    motto: 'Vom Stundenzettel bis zur Umwaelzzeit — Zeit ist überall.',
     rules: [
-      'Schichtlaenge = Endzeit - Startzeit - Pause. IMMER die Pause abziehen!',
+      'Schichtlänge = Endzeit - Startzeit - Pause. IMMER die Pause abziehen!',
       'Auf dem Stundenzettel stehen IMMER Industriestunden (Dezimalformat).',
       'Umwaelzzeit = Beckenvolumen ÷ Umwaelzleistung. Das Ergebnis ist in Stunden (Dezimal).',
       'Ueberstunden = Ist-Stunden - Soll-Stunden. Beides in Industriestunden rechnen!',
-      'Bei der Pruefung: Achte darauf, ob die Aufgabe Normalzeit oder Industriezeit verlangt.'
+      'Bei der Prüfung: Achte darauf, ob die Aufgabe Normalzeit oder Industriezeit verlangt.'
     ],
     steps: [
       {
@@ -276,12 +276,12 @@ const TABS = {
       },
       {
         title: '4. Ergebnis im richtigen Format angeben',
-        text: 'Fragt die Aufgabe nach Stunden:Minuten? Dann zurueckrechnen! Fragt sie nach Industriestunden? Dann bist du schon fertig.'
+        text: 'Fragt die Aufgabe nach Stunden:Minuten? Dann zurückrechnen! Fragt sie nach Industriestunden? Dann bist du schon fertig.'
       }
     ],
     examples: [
       {
-        title: 'Schichtlaenge mit Pause',
+        title: 'Schichtlänge mit Pause',
         given: 'Fruehschicht: 5:45 bis 13:30 Uhr, 30 Minuten Pause.',
         question: 'Wie lang ist die Netto-Arbeitszeit in Industriestunden?',
         steps: [
@@ -328,7 +328,7 @@ const TABS = {
     pitfalls: [
       'Bei Schichtberechnung die Pause vergessen — das verfaelscht den ganzen Stundenzettel!',
       'Normalzeit und Industriezeit in einer Rechnung mischen — IMMER erst alles umrechnen.',
-      'Bei der Umwaelzzeit: Einheiten pruefen! Volumen in m³ und Leistung in m³/h ergibt Stunden.',
+      'Bei der Umwaelzzeit: Einheiten prüfen! Volumen in m³ und Leistung in m³/h ergibt Stunden.',
       'Ergebnis im falschen Format angeben: Aufgabe fragt Industriestunden, du gibst Stunden:Minuten an.'
     ],
     quiz: {
@@ -509,7 +509,7 @@ export default function ZeitDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -589,7 +589,7 @@ export default function ZeitDeepDiveView() {
                     Industriezeit (Dezimalstunden)
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Fuer Stundenzettel und Abrechnung. 7,75 = 7 Stunden 45 Minuten. Komma als Trenner.
+                    Für Stundenzettel und Abrechnung. 7,75 = 7 Stunden 45 Minuten. Komma als Trenner.
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                     Nachkommastellen gehen bis 99! Viel einfacher zum Rechnen.
@@ -639,7 +639,7 @@ export default function ZeitDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

@@ -9,12 +9,12 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was macht der Filter im Schwimmbad?',
     intro:
-      'Der Filter ist das Herzstück der Wasseraufbereitung. Er reinigt das Beckenwasser, indem er Schmutzpartikel zurueckhaelt. Damit der Filter gut arbeitet, muss das Wasser mit der richtigen Geschwindigkeit durchfliessen. Zu schnell = schlechte Reinigung. Zu langsam = Verschwendung. Die wichtigste Formel: Filtergeschwindigkeit = Durchfluss geteilt durch Filterflaeche.',
+      'Der Filter ist das Herzstück der Wasseraufbereitung. Er reinigt das Beckenwasser, indem er Schmutzpartikel zurückhaelt. Damit der Filter gut arbeitet, muss das Wasser mit der richtigen Geschwindigkeit durchfliessen. Zu schnell = schlechte Reinigung. Zu langsam = Verschwendung. Die wichtigste Formel: Filtergeschwindigkeit = Durchfluss geteilt durch Filterfläche.',
     motto: 'Ohne Filter kein sauberes Wasser.',
     rules: [
       'Der Filter reinigt das Beckenwasser von Schmutzpartikeln, Truebstoffen und Keimen.',
       'Die Filtergeschwindigkeit (vF) sagt dir, wie schnell das Wasser durch den Filter fliesst.',
-      'Die Formel lautet: vF = Q ÷ A (Durchfluss geteilt durch Filterflaeche).',
+      'Die Formel lautet: vF = Q ÷ A (Durchfluss geteilt durch Filterfläche).',
       'Die Filtergeschwindigkeit wird in Metern pro Stunde (m/h) angegeben.',
       'Ist die Filtergeschwindigkeit zu hoch, wird das Wasser nicht richtig sauber — der Schmutz rutscht durch.'
     ],
@@ -24,8 +24,8 @@ const TABS = {
         text: 'Der Durchfluss (Q) ist die Wassermenge, die pro Stunde durch den Filter fliesst. Einheit: m³/h. Steht meistens am Durchflussmesser oder wird aus der Pumpenleistung abgelesen.'
       },
       {
-        title: '2. Filterflaeche bestimmen',
-        text: 'Die Filterflaeche (A) ist die Querschnittsflaeche des Filters von oben gesehen. Einheit: m². Bei runden Filtern: A = π × r² (pi mal Radius zum Quadrat).'
+        title: '2. Filterfläche bestimmen',
+        text: 'Die Filterfläche (A) ist die Querschnittsfläche des Filters von oben gesehen. Einheit: m². Bei runden Filtern: A = π × r² (pi mal Radius zum Quadrat).'
       },
       {
         title: '3. Formel anwenden',
@@ -33,13 +33,13 @@ const TABS = {
       },
       {
         title: '4. Ergebnis bewerten',
-        text: 'Liegt die Filtergeschwindigkeit zwischen 20 und 30 m/h? Dann ist alles im gruenen Bereich. Ueber 30 m/h ist zu schnell, unter 20 m/h ist unnoetig langsam.'
+        text: 'Liegt die Filtergeschwindigkeit zwischen 20 und 30 m/h? Dann ist alles im gruenen Bereich. Über 30 m/h ist zu schnell, unter 20 m/h ist unnötig langsam.'
       }
     ],
     examples: [
       {
-        title: 'Einfaches Beispiel: Filtergeschwindigkeit pruefen',
-        given: 'Ein Filter hat eine Flaeche von 3 m². Der Durchfluss betraegt 75 m³/h.',
+        title: 'Einfaches Beispiel: Filtergeschwindigkeit prüfen',
+        given: 'Ein Filter hat eine Fläche von 3 m². Der Durchfluss beträgt 75 m³/h.',
         question: 'Wie hoch ist die Filtergeschwindigkeit?',
         steps: [
           ['Formel', 'vF = Q ÷ A'],
@@ -49,8 +49,8 @@ const TABS = {
         ]
       },
       {
-        title: 'Baeder-Beispiel: Ist der Filter zu schnell?',
-        given: 'Ein Hallenbadfilter hat 1,5 m² Filterflaeche. Die Pumpe foerdert 60 m³/h.',
+        title: 'Bäder-Beispiel: Ist der Filter zu schnell?',
+        given: 'Ein Hallenbadfilter hat 1,5 m² Filterfläche. Die Pumpe fördert 60 m³/h.',
         question: 'Ist die Filtergeschwindigkeit in Ordnung?',
         steps: [
           ['Formel', 'vF = Q ÷ A'],
@@ -61,13 +61,13 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Filterflaeche ist NICHT die Aussenflaeche des Kessels, sondern die Querschnittsflaeche von oben!',
+      'Filterfläche ist NICHT die Aussenfläche des Kessels, sondern die Querschnittsfläche von oben!',
       'Durchfluss (m³/h) und Filtergeschwindigkeit (m/h) sind NICHT dasselbe — nicht verwechseln!',
-      'Einheiten muessen stimmen: Q in m³/h und A in m², dann kommt vF in m/h raus.',
+      'Einheiten müssen stimmen: Q in m³/h und A in m², dann kommt vF in m/h raus.',
       'Eine hohe Filtergeschwindigkeit klingt gut, ist aber schlecht — das Wasser wird nicht sauber.'
     ],
     quiz: {
-      question: 'Ein Filter hat 2 m² Flaeche und einen Durchfluss von 50 m³/h. Wie hoch ist die Filtergeschwindigkeit?',
+      question: 'Ein Filter hat 2 m² Fläche und einen Durchfluss von 50 m³/h. Wie hoch ist die Filtergeschwindigkeit?',
       options: ['20 m/h', '25 m/h', '100 m/h'],
       correctIndex: 1,
       explanation: 'vF = Q ÷ A = 50 ÷ 2 = 25 m/h.'
@@ -79,14 +79,14 @@ const TABS = {
     chip: 'Geschwindigkeit',
     title: 'Filtergeschwindigkeit berechnen — vF = Q ÷ A',
     intro:
-      'Die Filtergeschwindigkeit zeigt, wie schnell das Wasser durch die Filterschicht fliesst. Sie wird in Metern pro Stunde (m/h) gemessen. In der Praxis sollte sie zwischen 20 und 30 m/h liegen. Ist sie hoeher, wird das Wasser nicht richtig gereinigt. Ist sie niedriger, ist die Anlage ueberdimensioniert.',
-    motto: 'vF = Q ÷ A — das musst du im Schlaf koennen.',
+      'Die Filtergeschwindigkeit zeigt, wie schnell das Wasser durch die Filterschicht fliesst. Sie wird in Metern pro Stunde (m/h) gemessen. In der Praxis sollte sie zwischen 20 und 30 m/h liegen. Ist sie höher, wird das Wasser nicht richtig gereinigt. Ist sie niedriger, ist die Anlage ueberdimensioniert.',
+    motto: 'vF = Q ÷ A — das musst du im Schlaf können.',
     rules: [
-      'Die Formel ist: vF = Q ÷ A (Filtergeschwindigkeit = Durchfluss geteilt durch Filterflaeche).',
+      'Die Formel ist: vF = Q ÷ A (Filtergeschwindigkeit = Durchfluss geteilt durch Filterfläche).',
       'Q = Durchfluss in m³/h (Kubikmeter pro Stunde).',
-      'A = Filterflaeche in m² (Quadratmeter).',
+      'A = Filterfläche in m² (Quadratmeter).',
       'Erlaubter Bereich: meistens 20 bis 30 m/h (je nach Filtertyp und Vorschrift).',
-      'Wenn vF zu hoch ist, muss entweder der Durchfluss gesenkt oder ein groesserer Filter eingebaut werden.'
+      'Wenn vF zu hoch ist, muss entweder der Durchfluss gesenkt oder ein größerer Filter eingebaut werden.'
     ],
     steps: [
       {
@@ -94,22 +94,22 @@ const TABS = {
         text: 'Lies den Durchfluss von der Pumpe oder dem Durchflussmesser ab. Achte auf die Einheit — es muss m³/h sein! Falls die Angabe in Litern ist: 1.000 Liter = 1 m³.'
       },
       {
-        title: '2. Filterflaeche (A) bestimmen',
+        title: '2. Filterfläche (A) bestimmen',
         text: 'Miss den Durchmesser des Filters. Dann rechne: Radius = Durchmesser ÷ 2. Danach: A = π × r² (also 3,14 × Radius × Radius).'
       },
       {
         title: '3. Dividieren: Q ÷ A',
-        text: 'Teile den Durchfluss durch die Filterflaeche. Das Ergebnis ist die Filtergeschwindigkeit in m/h.'
+        text: 'Teile den Durchfluss durch die Filterfläche. Das Ergebnis ist die Filtergeschwindigkeit in m/h.'
       },
       {
         title: '4. Bewerten',
-        text: 'Liegt das Ergebnis zwischen 20 und 30 m/h? Gut! Darueber? Massnahmen noetig. Darunter? Filter ist grosszuegig dimensioniert.'
+        text: 'Liegt das Ergebnis zwischen 20 und 30 m/h? Gut! Darüber? Maßnahmen nötig. Darunter? Filter ist grosszuegig dimensioniert.'
       }
     ],
     examples: [
       {
         title: 'Standardberechnung',
-        given: 'Durchfluss Q = 80 m³/h. Filterflaeche A = 3,2 m².',
+        given: 'Durchfluss Q = 80 m³/h. Filterfläche A = 3,2 m².',
         question: 'Wie hoch ist die Filtergeschwindigkeit?',
         steps: [
           ['Formel', 'vF = Q ÷ A'],
@@ -124,20 +124,20 @@ const TABS = {
         question: 'Wie hoch ist die Filtergeschwindigkeit?',
         steps: [
           ['Radius', 'r = 2 m ÷ 2 = 1 m'],
-          ['Filterflaeche', 'A = π × 1² = 3,14 m²'],
+          ['Filterfläche', 'A = π × 1² = 3,14 m²'],
           ['Filtergeschwindigkeit', 'vF = 90 ÷ 3,14 = 28,7 m/h'],
           ['Bewertung', '28,7 m/h — noch im erlaubten Bereich, aber knapp']
         ]
       },
       {
         title: 'Zu schnell — was nun?',
-        given: 'Filter mit A = 1,8 m². Pumpe foerdert 72 m³/h.',
+        given: 'Filter mit A = 1,8 m². Pumpe fördert 72 m³/h.',
         question: 'Ist die Filtergeschwindigkeit in Ordnung?',
         steps: [
           ['Formel', 'vF = Q ÷ A'],
           ['Einsetzen', 'vF = 72 ÷ 1,8'],
           ['Ergebnis', 'vF = 40 m/h'],
-          ['Bewertung', '40 m/h ist viel zu hoch! Der Durchfluss muss reduziert oder ein groesserer Filter eingesetzt werden.']
+          ['Bewertung', '40 m/h ist viel zu hoch! Der Durchfluss muss reduziert oder ein größerer Filter eingesetzt werden.']
         ]
       }
     ],
@@ -154,19 +154,19 @@ const TABS = {
     }
   },
 
-  filterflaeche: {
+  filterfläche: {
     id: 'filterflaeche',
-    chip: 'Filterflaeche',
-    title: 'Filterflaeche berechnen — A = Q ÷ vF',
+    chip: 'Filterfläche',
+    title: 'Filterfläche berechnen — A = Q ÷ vF',
     intro:
-      'Wenn du weisst, wie viel Wasser pro Stunde durch den Filter muss und welche Filtergeschwindigkeit erlaubt ist, kannst du die benoetigte Filterflaeche berechnen. Die Formel ist einfach umgestellt: A = Q ÷ vF. Bei runden Filtern rechnest du dann mit A = π × r² zurueck auf den Durchmesser.',
-    motto: 'Erst die Flaeche, dann den Filter auswaehlen.',
+      'Wenn du weisst, wie viel Wasser pro Stunde durch den Filter muss und welche Filtergeschwindigkeit erlaubt ist, kannst du die benötigte Filterfläche berechnen. Die Formel ist einfach umgestellt: A = Q ÷ vF. Bei runden Filtern rechnest du dann mit A = π × r² zurück auf den Durchmesser.',
+    motto: 'Erst die Fläche, dann den Filter auswählen.',
     rules: [
-      'Umgestellte Formel: A = Q ÷ vF (Filterflaeche = Durchfluss geteilt durch Filtergeschwindigkeit).',
+      'Umgestellte Formel: A = Q ÷ vF (Filterfläche = Durchfluss geteilt durch Filtergeschwindigkeit).',
       'Du brauchst den Durchfluss (Q in m³/h) und die gewuenschte Filtergeschwindigkeit (vF in m/h).',
       'Die meisten Schwimmbadfilter sind rund — da gilt: A = π × r².',
-      'Wenn du die Flaeche hast, rechnest du rueckwaerts: r = √(A ÷ π) und Durchmesser = 2 × r.',
-      'Waehle im Zweifelsfall den naechstgroesseren Standardfilter — lieber etwas zu gross als zu klein.'
+      'Wenn du die Fläche hast, rechnest du rueckwaerts: r = √(A ÷ π) und Durchmesser = 2 × r.',
+      'Waehle im Zweifelsfall den naechstgrößeren Standardfilter — lieber etwas zu gross als zu klein.'
     ],
     steps: [
       {
@@ -175,32 +175,32 @@ const TABS = {
       },
       {
         title: '2. Filtergeschwindigkeit (vF) festlegen',
-        text: 'Normalerweise 30 m/h als Maximalwert. Fuer bessere Filterung 20–25 m/h. Steht oft in der Aufgabe oder in der DIN-Norm.'
+        text: 'Normalerweise 30 m/h als Maximalwert. Für bessere Filterung 20–25 m/h. Steht oft in der Aufgabe oder in der DIN-Norm.'
       },
       {
-        title: '3. Flaeche berechnen: A = Q ÷ vF',
-        text: 'Teile den Durchfluss durch die Filtergeschwindigkeit. Das Ergebnis ist die mindestens noetige Filterflaeche in m².'
+        title: '3. Fläche berechnen: A = Q ÷ vF',
+        text: 'Teile den Durchfluss durch die Filtergeschwindigkeit. Das Ergebnis ist die mindestens nötige Filterfläche in m².'
       },
       {
         title: '4. Filterdurchmesser bestimmen',
-        text: 'Bei runden Filtern: r = √(A ÷ π). Dann Durchmesser = 2 × r. Waehle den naechsten verfuegbaren Standarddurchmesser.'
+        text: 'Bei runden Filtern: r = √(A ÷ π). Dann Durchmesser = 2 × r. Waehle den nächsten verfuegbaren Standarddurchmesser.'
       }
     ],
     examples: [
       {
-        title: 'Benoetigte Filterflaeche',
+        title: 'Benötigte Filterfläche',
         given: 'Durchfluss Q = 120 m³/h. Erlaubte Filtergeschwindigkeit vF = 30 m/h.',
-        question: 'Wie gross muss die Filterflaeche sein?',
+        question: 'Wie gross muss die Filterfläche sein?',
         steps: [
           ['Formel', 'A = Q ÷ vF'],
           ['Einsetzen', 'A = 120 ÷ 30'],
           ['Ergebnis', 'A = 4 m²'],
-          ['Bewertung', 'Der Filter braucht mindestens 4 m² Filterflaeche.']
+          ['Bewertung', 'Der Filter braucht mindestens 4 m² Filterfläche.']
         ]
       },
       {
         title: 'Filterdurchmesser bestimmen',
-        given: 'Benoetigte Filterflaeche A = 2 m². Der Filter ist rund.',
+        given: 'Benötigte Filterfläche A = 2 m². Der Filter ist rund.',
         question: 'Welchen Durchmesser braucht der Filter?',
         steps: [
           ['Formel umstellen', 'r = √(A ÷ π)'],
@@ -210,12 +210,12 @@ const TABS = {
         ]
       },
       {
-        title: 'Beckenvolumen → Filtergroesse',
+        title: 'Beckenvolumen → Filtergröße',
         given: 'Becken mit 600 m³ Wasser, Umwaelzzeit 4 Stunden, vF max. 30 m/h.',
-        question: 'Welche Filterflaeche wird benoetigt?',
+        question: 'Welche Filterfläche wird benötigt?',
         steps: [
           ['Durchfluss', 'Q = 600 m³ ÷ 4 h = 150 m³/h'],
-          ['Filterflaeche', 'A = 150 ÷ 30 = 5 m²'],
+          ['Filterfläche', 'A = 150 ÷ 30 = 5 m²'],
           ['Radius', 'r = √(5 ÷ 3,14) = √(1,59) = 1,26 m'],
           ['Durchmesser', 'd = 2 × 1,26 = 2,52 m — oder 2 kleinere Filter verwenden']
         ]
@@ -224,11 +224,11 @@ const TABS = {
     pitfalls: [
       'Vergiss nicht, zuerst den Durchfluss (Q) zu berechnen, wenn nur Beckenvolumen und Umwaelzzeit gegeben sind!',
       'Beim Wurzelziehen den Taschenrechner benutzen — Kopfrechnen geht da meistens schief.',
-      'Standardfiltergroessen beachten: Es gibt nicht jeden Durchmesser zu kaufen.',
-      'Immer aufrunden! Ein zu kleiner Filter ist ein echtes Problem, ein etwas groesserer nicht.'
+      'Standardfiltergrößen beachten: Es gibt nicht jeden Durchmesser zu kaufen.',
+      'Immer aufrunden! Ein zu kleiner Filter ist ein echtes Problem, ein etwas größerer nicht.'
     ],
     quiz: {
-      question: 'Q = 90 m³/h, vF soll maximal 30 m/h sein. Wie gross muss die Filterflaeche mindestens sein?',
+      question: 'Q = 90 m³/h, vF soll maximal 30 m/h sein. Wie gross muss die Filterfläche mindestens sein?',
       options: ['2 m²', '3 m²', '4 m²'],
       correctIndex: 1,
       explanation: 'A = Q ÷ vF = 90 ÷ 30 = 3 m².'
@@ -238,16 +238,16 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Filtration im Baederalltag',
+    title: 'Filtration im Bäderalltag',
     intro:
-      'Hier uebst du mit echten Aufgaben aus dem Schwimmbadbetrieb. Filteranlage dimensionieren, vorhandene Filter pruefen, mehrere Filter berechnen und Spuelwassermengen abschaetzen — das kommt in der Pruefung dran und brauchst du im Alltag.',
+      'Hier uebst du mit echten Aufgaben aus dem Schwimmbadbetrieb. Filteranlage dimensionieren, vorhandene Filter prüfen, mehrere Filter berechnen und Spuelwassermengen abschaetzen — das kommt in der Prüfung dran und brauchst du im Alltag.',
     motto: 'Wer den Filter versteht, versteht die Wasseraufbereitung.',
     rules: [
       'Umwaelzzeit im Hallenbad: meistens 4–6 Stunden (je nach Beckenart laut DIN 19643).',
       'Freibad-Schwimmerbecken: Umwaelzzeit bis 8 Stunden, Nichtschwimmerbecken kuerzer.',
-      'Bei mehreren Filtern: Gesamtflaeche = Flaeche pro Filter × Anzahl Filter.',
-      'Spuelung (Rueckspuelung): Filtergeschwindigkeit dabei ca. 40–60 m/h — absichtlich hoeher, um den Schmutz rauszuwaschen.',
-      'Nach der Spuelung laeuft der Filter kurz im Vorlauf — das Wasser geht nicht ins Becken, bis es sauber ist.'
+      'Bei mehreren Filtern: Gesamtfläche = Fläche pro Filter × Anzahl Filter.',
+      'Spülung (Rückspülung): Filtergeschwindigkeit dabei ca. 40–60 m/h — absichtlich höher, um den Schmutz rauszuwaschen.',
+      'Nach der Spülung laeuft der Filter kurz im Vorlauf — das Wasser geht nicht ins Becken, bis es sauber ist.'
     ],
     steps: [
       {
@@ -256,66 +256,66 @@ const TABS = {
       },
       {
         title: '2. Filtergeschwindigkeit beachten',
-        text: 'Ist eine maximale Filtergeschwindigkeit vorgegeben? Meistens 30 m/h. Damit berechnest du die Mindest-Filterflaeche: A = Q ÷ vF.'
+        text: 'Ist eine maximale Filtergeschwindigkeit vorgegeben? Meistens 30 m/h. Damit berechnest du die Mindest-Filterfläche: A = Q ÷ vF.'
       },
       {
-        title: '3. Filter auswaehlen oder pruefen',
-        text: 'Neuer Filter: Waehle den naechstgroesseren Standarddurchmesser. Vorhandener Filter: Berechne vF und pruefe, ob sie im erlaubten Bereich liegt.'
+        title: '3. Filter auswählen oder prüfen',
+        text: 'Neuer Filter: Waehle den naechstgrößeren Standarddurchmesser. Vorhandener Filter: Berechne vF und pruefe, ob sie im erlaubten Bereich liegt.'
       },
       {
         title: '4. Sonderfaelle beachten',
-        text: 'Mehrere Filter? Flaechen addieren. Spuelung? Spueldurchfluss und Spuelwassermenge berechnen. Ein Filter faellt aus? Restkapazitaet pruefen.'
+        text: 'Mehrere Filter? Flächen addieren. Spülung? Spueldurchfluss und Spuelwassermenge berechnen. Ein Filter faellt aus? Restkapazität prüfen.'
       }
     ],
     examples: [
       {
-        title: 'Filterdimensionierung fuer ein Sportbecken',
+        title: 'Filterdimensionierung für ein Sportbecken',
         given: 'Sportbecken 25 × 12,5 × 2 m = 625 m³. Umwaelzzeit 4,5 Stunden. vF max. 30 m/h.',
-        question: 'Welche Filterflaeche wird benoetigt?',
+        question: 'Welche Filterfläche wird benötigt?',
         steps: [
           ['Durchfluss', 'Q = 625 ÷ 4,5 = 138,9 m³/h'],
-          ['Filterflaeche', 'A = 138,9 ÷ 30 = 4,63 m²'],
+          ['Filterfläche', 'A = 138,9 ÷ 30 = 4,63 m²'],
           ['Aufrunden', 'Mindestens 4,63 m² — z.B. 3 Filter mit je 1,4 m Durchmesser (je 1,54 m² = 4,62 m²) reicht knapp, besser 3 × 1,5 m Durchmesser'],
-          ['Pruefung', '3 Filter à 1,5 m: A = 3 × π × 0,75² = 3 × 1,77 = 5,30 m². vF = 138,9 ÷ 5,30 = 26,2 m/h — passt!']
+          ['Prüfung', '3 Filter à 1,5 m: A = 3 × π × 0,75² = 3 × 1,77 = 5,30 m². vF = 138,9 ÷ 5,30 = 26,2 m/h — passt!']
         ]
       },
       {
-        title: 'Vorhandenen Filter pruefen',
-        given: '2 Rundfilter mit je 1,8 m Durchmesser. Pumpe foerdert 140 m³/h.',
+        title: 'Vorhandenen Filter prüfen',
+        given: '2 Rundfilter mit je 1,8 m Durchmesser. Pumpe fördert 140 m³/h.',
         question: 'Ist die Filtergeschwindigkeit in Ordnung?',
         steps: [
-          ['Einzelflaeche', 'A = π × 0,9² = 3,14 × 0,81 = 2,54 m²'],
-          ['Gesamtflaeche', '2 × 2,54 = 5,09 m²'],
+          ['Einzelfläche', 'A = π × 0,9² = 3,14 × 0,81 = 2,54 m²'],
+          ['Gesamtfläche', '2 × 2,54 = 5,09 m²'],
           ['Filtergeschwindigkeit', 'vF = 140 ÷ 5,09 = 27,5 m/h'],
           ['Bewertung', '27,5 m/h — im erlaubten Bereich, alles in Ordnung']
         ]
       },
       {
         title: 'Ein Filter faellt aus',
-        given: 'Normalerweise laufen 3 Filter mit je 2 m² Flaeche bei Q = 150 m³/h. Ein Filter muss zur Wartung.',
+        given: 'Normalerweise laufen 3 Filter mit je 2 m² Fläche bei Q = 150 m³/h. Ein Filter muss zur Wartung.',
         question: 'Wie hoch ist die Filtergeschwindigkeit mit nur 2 Filtern?',
         steps: [
-          ['Restflaeche', '2 × 2 m² = 4 m²'],
+          ['Restfläche', '2 × 2 m² = 4 m²'],
           ['Neue vF', 'vF = 150 ÷ 4 = 37,5 m/h'],
           ['Bewertung', '37,5 m/h — zu hoch! Durchfluss muss reduziert werden.'],
-          ['Loesung', 'Q reduzieren auf max. 4 × 30 = 120 m³/h, oder Wartung schnell erledigen']
+          ['Lösung', 'Q reduzieren auf max. 4 × 30 = 120 m³/h, oder Wartung schnell erledigen']
         ]
       },
       {
         title: 'Spuelwassermenge berechnen',
-        given: 'Filter mit 2,5 m² Flaeche. Spuelgeschwindigkeit 50 m/h. Spueldauer 5 Minuten.',
+        given: 'Filter mit 2,5 m² Fläche. Spuelgeschwindigkeit 50 m/h. Spueldauer 5 Minuten.',
         question: 'Wie viel Spuelwasser wird verbraucht?',
         steps: [
           ['Spueldurchfluss', 'Q_spuel = vF_spuel × A = 50 × 2,5 = 125 m³/h'],
           ['Umrechnen', '5 Minuten = 5/60 Stunden = 0,0833 h'],
           ['Spuelwassermenge', '125 × 0,0833 = 10,4 m³'],
-          ['Ergebnis', 'Pro Spuelung werden ca. 10,4 m³ Wasser verbraucht']
+          ['Ergebnis', 'Pro Spülung werden ca. 10,4 m³ Wasser verbraucht']
         ]
       }
     ],
     pitfalls: [
       'Umwaelzzeit nicht mit Filtergeschwindigkeit verwechseln — das sind voellig verschiedene Dinge!',
-      'Bei mehreren Filtern: Die Flaechen ADDIEREN, nicht den Durchmesser!',
+      'Bei mehreren Filtern: Die Flächen ADDIEREN, nicht den Durchmesser!',
       'Spuelwasser geht in den Kanal — das muss mit Frischwasser ersetzt werden. Kosten beachten!',
       'Wenn ein Filter ausfaellt, steigt die Geschwindigkeit in den anderen Filtern — immer nachrechnen!'
     ],
@@ -328,15 +328,15 @@ const TABS = {
   }
 };
 
-const TAB_ORDER = ['grundlagen', 'filtergeschwindigkeit', 'filterflaeche', 'praxis'];
+const TAB_ORDER = ['grundlagen', 'filtergeschwindigkeit', 'filterfläche', 'praxis'];
 
 /* ─── Formula overview table ────────────────────────────────────────────────── */
 
 const FORMULAS = [
   ['Filtergeschwindigkeit', 'vF = Q ÷ A', 'm/h'],
-  ['Filterflaeche', 'A = Q ÷ vF', 'm²'],
+  ['Filterfläche', 'A = Q ÷ vF', 'm²'],
   ['Durchfluss', 'Q = vF × A', 'm³/h'],
-  ['Kreisflaeche', 'A = π × r²', 'm²'],
+  ['Kreisfläche', 'A = π × r²', 'm²'],
   ['Radius aus Durchmesser', 'r = d ÷ 2', 'm'],
   ['Durchfluss aus Becken', 'Q = V ÷ t', 'm³/h']
 ];
@@ -494,7 +494,7 @@ export default function FiltrationDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -560,8 +560,8 @@ export default function FiltrationDeepDiveView() {
             </InfoCard>
           )}
 
-          {/* Quick filter check (on filterflaeche and praxis tabs) */}
-          {(activeTab === 'filterflaeche' || activeTab === 'praxis') && (
+          {/* Quick filter check (on filterfläche and praxis tabs) */}
+          {(activeTab === 'filterfläche' || activeTab === 'praxis') && (
             <InfoCard darkMode={darkMode} title="Schnell-Check: Filter richtig dimensioniert?">
               <div className="space-y-3">
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-200 bg-emerald-50'}`}>
@@ -569,7 +569,7 @@ export default function FiltrationDeepDiveView() {
                     vF unter 20 m/h
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Filter ist grosszuegig dimensioniert. Kein Problem, aber eventuell unnoetig teuer.
+                    Filter ist grosszuegig dimensioniert. Kein Problem, aber eventuell unnötig teuer.
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-teal-500/30 bg-teal-500/10' : 'border-teal-200 bg-teal-50'}`}>
@@ -582,10 +582,10 @@ export default function FiltrationDeepDiveView() {
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
                   <div className={`text-sm font-semibold ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
-                    vF ueber 30 m/h
+                    vF über 30 m/h
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Zu schnell! Schlechte Filterwirkung. Durchfluss reduzieren oder groesseren Filter einbauen.
+                    Zu schnell! Schlechte Filterwirkung. Durchfluss reduzieren oder größeren Filter einbauen.
                   </p>
                 </div>
               </div>
@@ -632,7 +632,7 @@ export default function FiltrationDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

@@ -38,10 +38,10 @@ const InfoRow = ({ label, value, darkMode, highlight }) => (
   </div>
 );
 
-const FormelBox = ({ formel, erklaerung, darkMode }) => (
+const FormelBox = ({ formel, erklärung, darkMode }) => (
   <div className={`rounded-lg p-3 mb-3 border-l-4 border-emerald-500 ${darkMode ? 'bg-slate-900' : 'bg-emerald-50'}`}>
     <div className={`font-mono text-sm font-bold mb-1 ${darkMode ? 'text-emerald-300' : 'text-emerald-800'}`}>{formel}</div>
-    {erklaerung && <div className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>{erklaerung}</div>}
+    {erklärung && <div className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>{erklärung}</div>}
   </div>
 );
 
@@ -109,7 +109,7 @@ export default function KostenmanagementDeepDiveView({ darkMode }) {
             </div>
           </Section>
           <Section title="Fix- vs. Variable Kosten im Bad" darkMode={darkMode}>
-            <FormelBox formel="Gesamtkosten = Fixkosten + (variable Kosten × Menge)" erklaerung="Menge = Badegäste, Betriebsstunden, Liter Wasser etc." darkMode={darkMode} />
+            <FormelBox formel="Gesamtkosten = Fixkosten + (variable Kosten × Menge)" erklärung="Menge = Badegäste, Betriebsstunden, Liter Wasser etc." darkMode={darkMode} />
             <div className={`text-xs ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
               <strong>Wichtig für Bäder:</strong> Hoher Fixkostenanteil (≈ 70–80 %) bedeutet: Ob 100 oder 1.000 Gäste kommen — die Grundkosten bleiben. Deshalb ist die <span className={`font-semibold ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>Auslastung</span> der entscheidende Wirtschaftlichkeitsfaktor.
             </div>
@@ -121,7 +121,7 @@ export default function KostenmanagementDeepDiveView({ darkMode }) {
       {activeTab === 'kalkulation' && (
         <div>
           <Section title="Eintrittspreis-Kalkulation" darkMode={darkMode}>
-            <FormelBox formel="Eintrittspreis = Gesamtkosten ÷ Besucherzahl + Gewinnzuschlag" erklaerung="Kommunale Bäder: oft kein Gewinnzuschlag, Ziel: möglichst hohe Kostendeckung" darkMode={darkMode} />
+            <FormelBox formel="Eintrittspreis = Gesamtkosten ÷ Besucherzahl + Gewinnzuschlag" erklärung="Kommunale Bäder: oft kein Gewinnzuschlag, Ziel: möglichst hohe Kostendeckung" darkMode={darkMode} />
             <div className={`rounded-lg overflow-hidden border ${darkMode ? 'border-slate-700' : 'border-gray-200'} mb-3`}>
               <table className="w-full text-xs">
                 <thead className={darkMode ? 'bg-slate-700' : 'bg-gray-100'}>
@@ -152,14 +152,14 @@ export default function KostenmanagementDeepDiveView({ darkMode }) {
             </div>
           </Section>
           <Section title="Deckungsbeitragsrechnung" darkMode={darkMode}>
-            <FormelBox formel="Deckungsbeitrag = Erlöse − Variable Kosten" erklaerung="Der Beitrag zur Deckung der Fixkosten" darkMode={darkMode} />
-            <FormelBox formel="Betriebsergebnis = Deckungsbeitrag − Fixkosten" erklaerung="Positiv = Gewinn, Negativ = Defizit (bei Bädern häufig)" darkMode={darkMode} />
+            <FormelBox formel="Deckungsbeitrag = Erlöse − Variable Kosten" erklärung="Der Beitrag zur Deckung der Fixkosten" darkMode={darkMode} />
+            <FormelBox formel="Betriebsergebnis = Deckungsbeitrag − Fixkosten" erklärung="Positiv = Gewinn, Negativ = Defizit (bei Bädern häufig)" darkMode={darkMode} />
             <div className={`text-xs ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
               <strong>Beispiel Badekurs:</strong> 10 Teilnehmer × 15 € = 150 € Erlös. Variable Kosten (Chlor, Wasser, Kursleiter-Anteil) = 60 €. → DB = 90 €. Kurs lohnt sich, solange DB &gt; 0.
             </div>
           </Section>
           <Section title="Abschreibungen (AfA)" darkMode={darkMode}>
-            <FormelBox formel="Jährliche AfA = Anschaffungswert ÷ Nutzungsdauer (Jahre)" erklaerung="Lineare Abschreibung (üblich bei Kommunen)" darkMode={darkMode} />
+            <FormelBox formel="Jährliche AfA = Anschaffungswert ÷ Nutzungsdauer (Jahre)" erklärung="Lineare Abschreibung (üblich bei Kommunen)" darkMode={darkMode} />
             <div className={`rounded-lg overflow-hidden border ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
               <table className="w-full text-xs">
                 <thead className={darkMode ? 'bg-slate-700' : 'bg-gray-100'}>
@@ -270,21 +270,21 @@ export default function KostenmanagementDeepDiveView({ darkMode }) {
             </div>
           </Section>
           <Section title="Soll-Ist-Vergleich (Budget-Kontrolle)" darkMode={darkMode}>
-            <FormelBox formel="Abweichung = Ist-Kosten − Plan-Kosten" erklaerung="Positiv = Mehrkosten (ungünstig), Negativ = Einsparung (günstig)" darkMode={darkMode} />
+            <FormelBox formel="Abweichung = Ist-Kosten − Plan-Kosten" erklärung="Positiv = Mehrkosten (ungünstig), Negativ = Einsparung (günstig)" darkMode={darkMode} />
             <div className={`text-xs ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
               <strong>Monatliches Controlling:</strong> Energiekosten, Personalstunden, Besucherzahlen, Chemikalienverbrauch — je früher Abweichungen erkannt werden, desto eher kann gegengesteuert werden.
             </div>
           </Section>
           <Section title="Einsparmöglichkeiten im Bad" darkMode={darkMode}>
             {[
-              { bereich: '⚡ Energie', massnahme: 'Wärmerückgewinnung, LED-Beleuchtung, bedarfsgesteuerte Pumpen, Überdachung Außenbecken' },
-              { bereich: '💧 Wasser', massnahme: 'Wasserverlust-Monitoring, Rückspülwasser aufbereiten, Duschen zeitgesteuert' },
-              { bereich: '🧪 Chemikalien', massnahme: 'Dosieroptimierung, UV-Anlage reduziert Chlorbedarf, regelmäßige Kalibrierung' },
-              { bereich: '👤 Personal', massnahme: 'Dienstplanoptimierung, Auslastungsabhängige Besetzung, Kombination Kasse/Aufsicht' },
-            ].map(({ bereich, massnahme }) => (
+              { bereich: '⚡ Energie', maßnahme: 'Wärmerückgewinnung, LED-Beleuchtung, bedarfsgesteuerte Pumpen, Überdachung Außenbecken' },
+              { bereich: '💧 Wasser', maßnahme: 'Wasserverlust-Monitoring, Rückspülwasser aufbereiten, Duschen zeitgesteuert' },
+              { bereich: '🧪 Chemikalien', maßnahme: 'Dosieroptimierung, UV-Anlage reduziert Chlorbedarf, regelmäßige Kalibrierung' },
+              { bereich: '👤 Personal', maßnahme: 'Dienstplanoptimierung, Auslastungsabhängige Besetzung, Kombination Kasse/Aufsicht' },
+            ].map(({ bereich, maßnahme }) => (
               <div key={bereich} className={`rounded-lg p-3 mb-2 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
                 <div className={`text-xs font-semibold mb-1 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>{bereich}</div>
-                <div className={`text-xs ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>{massnahme}</div>
+                <div className={`text-xs ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>{maßnahme}</div>
               </div>
             ))}
           </Section>
@@ -295,7 +295,7 @@ export default function KostenmanagementDeepDiveView({ darkMode }) {
       {activeTab === 'deckungsgrad' && (
         <div>
           <Section title="Kostendeckungsgrad berechnen" darkMode={darkMode}>
-            <FormelBox formel="Kostendeckungsgrad = (Erlöse ÷ Gesamtkosten) × 100" erklaerung="Gibt an, wie viel Prozent der Kosten durch eigene Einnahmen gedeckt werden" darkMode={darkMode} />
+            <FormelBox formel="Kostendeckungsgrad = (Erlöse ÷ Gesamtkosten) × 100" erklärung="Gibt an, wie viel Prozent der Kosten durch eigene Einnahmen gedeckt werden" darkMode={darkMode} />
             <div className={`rounded-lg overflow-hidden border mb-3 ${darkMode ? 'border-slate-700' : 'border-gray-200'}`}>
               <table className="w-full text-xs">
                 <thead className={darkMode ? 'bg-slate-700' : 'bg-gray-100'}>

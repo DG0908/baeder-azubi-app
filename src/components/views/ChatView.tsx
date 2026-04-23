@@ -51,7 +51,7 @@ const CHAT_SCOPE_META: Record<string, { label: string; description: string; icon
   },
   staff_room: {
     label: 'Azubi & Ausbilder',
-    description: 'Gemeinsamer Chat fuer den Betrieb',
+    description: 'Gemeinsamer Chat für den Betrieb',
     icon: Shield
   },
   direct_staff: {
@@ -135,7 +135,7 @@ const ChatView: React.FC<ChatViewProps> = ({
   const inputPlaceholder = !hasChatOrganization
     ? 'Chat erst nach Betriebszuordnung verfuegbar'
     : chatScope === 'direct_staff'
-      ? (selectedPartner ? `Nachricht an ${getFirstName(selectedPartner.name)}...` : 'Zuerst Chatpartner auswaehlen...')
+      ? (selectedPartner ? `Nachricht an ${getFirstName(selectedPartner.name)}...` : 'Zuerst Chatpartner auswählen...')
       : `Nachricht in ${selectedScopeMeta.label} schreiben...`;
 
   const directChatEmptyText = getRoleKey(user?.role) === 'azubi'

@@ -920,7 +920,7 @@ const ProfileView = ({
               Handy-Benachrichtigungen
             </h3>
             <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Aktiviere oder repariere das Push-Abo fuer dieses Geraet direkt in der App.
+              Aktiviere oder repariere das Push-Abo für dieses Gerät direkt in der App.
             </p>
           </div>
           <div className={`px-3 py-2 rounded-lg text-sm font-semibold ${
@@ -932,16 +932,16 @@ const ProfileView = ({
                 ? 'bg-amber-900/50 text-amber-300'
                 : 'bg-amber-100 text-amber-700'
           }`}>
-            {pushDeviceState?.hasSubscription ? 'Dieses Geraet ist gekoppelt' : 'Auf diesem Geraet ist noch kein aktives Push-Abo gespeichert'}
+            {pushDeviceState?.hasSubscription ? 'Dieses Gerät ist gekoppelt' : 'Auf diesem Gerät ist noch kein aktives Push-Abo gespeichert'}
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-4 mb-4">
           <div className={`p-4 rounded-lg ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Geraete-Status</p>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Geräte-Status</p>
             <p className={`mt-1 text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
               {pushDeviceState?.checking
-                ? 'Wird geprueft...'
+                ? 'Wird geprüft...'
                 : pushDeviceState?.hasSubscription
                   ? 'Abo vorhanden'
                   : 'Kein Abo'}
@@ -957,7 +957,7 @@ const ProfileView = ({
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Push-System</p>
             <p className={`mt-1 text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
               {!pushDeviceState?.supported
-                ? 'Nicht unterstuetzt'
+                ? 'Nicht unterstützt'
                 : !pushDeviceState?.configured
                   ? 'Nicht konfiguriert'
                   : 'Bereit'}
@@ -975,7 +975,7 @@ const ProfileView = ({
             }
             className="px-5 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
           >
-            {pushActionLoading ? 'Bitte warten...' : 'Auf diesem Geraet aktivieren'}
+            {pushActionLoading ? 'Bitte warten...' : 'Auf diesem Gerät aktivieren'}
           </button>
           <button
             onClick={handleResyncPushOnDevice}
@@ -997,7 +997,7 @@ const ProfileView = ({
             disabled={pushActionLoading || !pushDeviceState?.supported}
             className="px-5 py-3 bg-rose-500 hover:bg-rose-600 disabled:bg-gray-400 text-white font-bold rounded-lg transition-all"
           >
-            Abo auf diesem Geraet loeschen
+            Abo auf diesem Gerät loeschen
           </button>
         </div>
 
@@ -1008,12 +1008,12 @@ const ProfileView = ({
           </p>
           {pushDeviceState?.permission === 'denied' && (
             <p className={darkMode ? 'text-amber-300' : 'text-amber-700'}>
-              Benachrichtigungen sind fuer diese Web-App aktuell blockiert. Bitte erlaube sie in den Browser- oder App-Einstellungen.
+              Benachrichtigungen sind für diese Web-App aktuell blockiert. Bitte erlaube sie in den Browser- oder App-Einstellungen.
             </p>
           )}
           {!pushDeviceState?.supported && (
             <p className={darkMode ? 'text-amber-300' : 'text-amber-700'}>
-              Dieses Geraet oder dieser Browser unterstuetzt Web-Push in der aktuellen Form nicht.
+              Dieses Gerät oder dieser Browser unterstützt Web-Push in der aktuellen Form nicht.
             </p>
           )}
         </div>

@@ -9,12 +9,12 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist der Satz des Pythagoras?',
     intro:
-      'Der Satz des Pythagoras beschreibt den Zusammenhang der drei Seiten in einem rechtwinkligen Dreieck. Die Formel lautet: a² + b² = c². Damit kannst du jede Seite berechnen, wenn du die anderen beiden kennst. Im Schwimmbad brauchst du das z.B. fuer Diagonalen, Rampen oder Rohrleitungen.',
+      'Der Satz des Pythagoras beschreibt den Zusammenhang der drei Seiten in einem rechtwinkligen Dreieck. Die Formel lautet: a² + b² = c². Damit kannst du jede Seite berechnen, wenn du die anderen beiden kennst. Im Schwimmbad brauchst du das z.B. für Diagonalen, Rampen oder Rohrleitungen.',
     motto: 'a² + b² = c² — gilt NUR im rechtwinkligen Dreieck.',
     rules: [
-      'Der Satz des Pythagoras gilt AUSSCHLIESSLICH fuer rechtwinklige Dreiecke (ein Winkel = 90°).',
+      'Der Satz des Pythagoras gilt AUSSCHLIESSLICH für rechtwinklige Dreiecke (ein Winkel = 90°).',
       'Die zwei kurzen Seiten heissen Katheten (a und b) — sie bilden den rechten Winkel.',
-      'Die lange Seite gegenueber dem rechten Winkel heisst Hypotenuse (c) — sie ist IMMER die laengste Seite.',
+      'Die lange Seite gegenüber dem rechten Winkel heisst Hypotenuse (c) — sie ist IMMER die laengste Seite.',
       'Die Formel lautet: a² + b² = c². Das heisst: Kathete zum Quadrat plus Kathete zum Quadrat = Hypotenuse zum Quadrat.',
       'Wenn du zwei Seiten kennst, kannst du die dritte IMMER berechnen.'
     ],
@@ -25,7 +25,7 @@ const TABS = {
       },
       {
         title: '2. Seiten benennen',
-        text: 'Beschrifte die Seiten: a und b sind die Katheten (am rechten Winkel), c ist die Hypotenuse (die laengste Seite, gegenueber dem rechten Winkel).'
+        text: 'Beschrifte die Seiten: a und b sind die Katheten (am rechten Winkel), c ist die Hypotenuse (die laengste Seite, gegenüber dem rechten Winkel).'
       },
       {
         title: '3. Formel aufschreiben',
@@ -81,14 +81,14 @@ const TABS = {
     chip: 'Berechnung',
     title: 'Die Hypotenuse c berechnen',
     intro:
-      'Am haeufigsten musst du die laengste Seite berechnen — die Hypotenuse c. Dafuer setzt du die beiden Katheten in die Formel ein, quadrierst sie, addierst sie und ziehst die Wurzel. Drei einfache Schritte!',
+      'Am häufigsten musst du die laengste Seite berechnen — die Hypotenuse c. Dafür setzt du die beiden Katheten in die Formel ein, quadrierst sie, addierst sie und ziehst die Wurzel. Drei einfache Schritte!',
     motto: 'Quadrieren, addieren, Wurzel ziehen.',
     rules: [
-      'Die Formel fuer c lautet: c = √(a² + b²).',
+      'Die Formel für c lautet: c = √(a² + b²).',
       'Zuerst jede Kathete einzeln quadrieren (mit sich selbst malnehmen).',
-      'Dann die beiden Quadrate addieren (zusammenzaehlen).',
+      'Dann die beiden Quadrate addieren (zusammenzählen).',
       'Zum Schluss aus der Summe die Quadratwurzel ziehen (√-Taste auf dem Taschenrechner).',
-      'Das Ergebnis c ist IMMER groesser als jede einzelne Kathete — sonst hast du falsch gerechnet.'
+      'Das Ergebnis c ist IMMER größer als jede einzelne Kathete — sonst hast du falsch gerechnet.'
     ],
     steps: [
       {
@@ -104,8 +104,8 @@ const TABS = {
         text: 'Drueck auf dem Taschenrechner die √-Taste und gib die Summe ein. √25 = 5. Das ist c.'
       },
       {
-        title: '4. Ergebnis pruefen',
-        text: 'Ist c groesser als a und groesser als b? Dann passt es. Vergiss die Einheit nicht (cm, m, ...)!'
+        title: '4. Ergebnis prüfen',
+        text: 'Ist c größer als a und größer als b? Dann passt es. Vergiss die Einheit nicht (cm, m, ...)!'
       }
     ],
     examples: [
@@ -168,7 +168,7 @@ const TABS = {
       'Wenn du eine Kathete suchst, stellst du die Formel um: a² = c² - b².',
       'Du kannst auch b suchen: b² = c² - a². Es ist immer das Gleiche — nur die Buchstaben aendern sich.',
       'ACHTUNG: Jetzt wird SUBTRAHIERT (minus), nicht addiert (plus)!',
-      'c² muss IMMER groesser sein als a² oder b² — sonst ist irgendwo ein Fehler.',
+      'c² muss IMMER größer sein als a² oder b² — sonst ist irgendwo ein Fehler.',
       'Am Ende wieder die Wurzel ziehen, um von a² auf a zu kommen.'
     ],
     steps: [
@@ -182,7 +182,7 @@ const TABS = {
       },
       {
         title: '3. Subtrahieren',
-        text: 'Zieh das kleinere Quadrat vom groesseren ab: 169 - 25 = 144. Das ist a².'
+        text: 'Zieh das kleinere Quadrat vom größeren ab: 169 - 25 = 144. Das ist a².'
       },
       {
         title: '4. Wurzel ziehen',
@@ -227,7 +227,7 @@ const TABS = {
     pitfalls: [
       'Beim Umstellen wird aus PLUS ein MINUS — das vergessen viele!',
       'IMMER c² minus Kathete² rechnen — nie andersherum! Sonst kommt eine negative Zahl raus.',
-      'Wenn dein Ergebnis fuer a oder b GROESSER als c ist, hast du falsch gerechnet. Die Hypotenuse ist immer am laengsten!',
+      'Wenn dein Ergebnis für a oder b GROESSER als c ist, hast du falsch gerechnet. Die Hypotenuse ist immer am laengsten!',
       'Aufpassen: a² = c² - b² ist NICHT das gleiche wie a = c - b. Du musst erst quadrieren, dann subtrahieren, dann Wurzel ziehen!'
     ],
     quiz: {
@@ -243,14 +243,14 @@ const TABS = {
     chip: 'Praxis',
     title: 'Pythagoras im Schwimmbadalltag',
     intro:
-      'Im Schwimmbad gibt es viele Stellen, wo du den Satz des Pythagoras brauchst: Beckendiagonalen messen, Rampenlaengen berechnen, Dachneigungen pruefen oder Rohrleitungen verlegen. Hier uebst du mit echten Aufgaben aus dem Baederalltag!',
+      'Im Schwimmbad gibt es viele Stellen, wo du den Satz des Pythagoras brauchst: Beckendiagonalen messen, Rampenlängen berechnen, Dachneigungen prüfen oder Rohrleitungen verlegen. Hier uebst du mit echten Aufgaben aus dem Bäderalltag!',
     motto: 'Rechter Winkel im Bad? Pythagoras hilft!',
     rules: [
-      'Im Schwimmbad findest du rechte Winkel ueberall: Beckenkanten, Waende, Bodenplatten, Rampen.',
-      'Die Diagonale eines Rechtecks teilt es in zwei rechtwinklige Dreiecke — perfekt fuer Pythagoras!',
-      'Bei Rampen: Die Hoehe und die horizontale Laenge sind die Katheten, die Rampe selbst ist die Hypotenuse.',
-      'Bei Rohrleitungen: Wenn ein Rohr schraeg durch eine Wand laeuft, kannst du die Laenge mit Pythagoras berechnen.',
-      'In der Pruefung kommen oft Beckendiagonalen und Rampen dran — diese Aufgaben unbedingt ueben!'
+      'Im Schwimmbad findest du rechte Winkel überall: Beckenkanten, Waende, Bodenplatten, Rampen.',
+      'Die Diagonale eines Rechtecks teilt es in zwei rechtwinklige Dreiecke — perfekt für Pythagoras!',
+      'Bei Rampen: Die Höhe und die horizontale Länge sind die Katheten, die Rampe selbst ist die Hypotenuse.',
+      'Bei Rohrleitungen: Wenn ein Rohr schraeg durch eine Wand laeuft, kannst du die Länge mit Pythagoras berechnen.',
+      'In der Prüfung kommen oft Beckendiagonalen und Rampen dran — diese Aufgaben unbedingt üben!'
     ],
     steps: [
       {
@@ -259,10 +259,10 @@ const TABS = {
       },
       {
         title: '2. Seiten zuordnen',
-        text: 'Welche Laengen kennst du? Welche ist gesucht? Bestimme was a, b und c ist. Die Schraege (Diagonale, Rampe) ist meistens die Hypotenuse c.'
+        text: 'Welche Längen kennst du? Welche ist gesucht? Bestimme was a, b und c ist. Die Schraege (Diagonale, Rampe) ist meistens die Hypotenuse c.'
       },
       {
-        title: '3. Richtige Formel waehlen',
+        title: '3. Richtige Formel wählen',
         text: 'Hypotenuse gesucht? → c = √(a² + b²). Kathete gesucht? → a = √(c² - b²).'
       },
       {
@@ -276,7 +276,7 @@ const TABS = {
         given: 'Ein Schwimmerbecken ist 25 m lang und 12 m breit.',
         question: 'Wie lang ist die Diagonale des Beckens?',
         steps: [
-          ['Seiten zuordnen', 'a = 25 m (Laenge), b = 12 m (Breite), c = Diagonale'],
+          ['Seiten zuordnen', 'a = 25 m (Länge), b = 12 m (Breite), c = Diagonale'],
           ['Formel', 'c = √(a² + b²)'],
           ['Quadrieren', '25² = 625, 12² = 144'],
           ['Addieren', '625 + 144 = 769'],
@@ -285,7 +285,7 @@ const TABS = {
       },
       {
         title: 'Rampe ins Nichtschwimmerbecken',
-        given: 'Eine Rampe fuehrt 1,2 m tief ins Becken. Die horizontale Laenge der Rampe betraegt 5 m.',
+        given: 'Eine Rampe fuehrt 1,2 m tief ins Becken. Die horizontale Länge der Rampe beträgt 5 m.',
         question: 'Wie lang ist die Rampe (die Schraege)?',
         steps: [
           ['Seiten zuordnen', 'a = 1,2 m (Tiefe), b = 5 m (horizontal), c = Rampe'],
@@ -297,10 +297,10 @@ const TABS = {
       },
       {
         title: 'Rohrleitung schraeg durch die Wand',
-        given: 'Ein Rohr laeuft schraeg durch eine 3 m dicke Wand. Es kommt 4 m hoeher auf der anderen Seite raus.',
+        given: 'Ein Rohr laeuft schraeg durch eine 3 m dicke Wand. Es kommt 4 m höher auf der anderen Seite raus.',
         question: 'Wie lang ist das Rohrstueck in der Wand?',
         steps: [
-          ['Seiten zuordnen', 'a = 3 m (Wanddicke), b = 4 m (Hoehe), c = Rohrlaenge'],
+          ['Seiten zuordnen', 'a = 3 m (Wanddicke), b = 4 m (Höhe), c = Rohrlänge'],
           ['Formel', 'c = √(a² + b²)'],
           ['Quadrieren', '3² = 9, 4² = 16'],
           ['Addieren', '9 + 16 = 25'],
@@ -308,11 +308,11 @@ const TABS = {
         ]
       },
       {
-        title: 'Dachneigung pruefen',
-        given: 'Das Dach der Schwimmhalle ist 8 m hoch. Die schraege Dachflaeche ist 17 m lang.',
+        title: 'Dachneigung prüfen',
+        given: 'Das Dach der Schwimmhalle ist 8 m hoch. Die schraege Dachfläche ist 17 m lang.',
         question: 'Wie breit ist die halbe Halle (horizontale Spannweite)?',
         steps: [
-          ['Seiten zuordnen', 'a = 8 m (Hoehe), c = 17 m (Schraege), b = horizontale Breite'],
+          ['Seiten zuordnen', 'a = 8 m (Höhe), c = 17 m (Schraege), b = horizontale Breite'],
           ['Formel umstellen', 'b = √(c² - a²)'],
           ['Quadrieren', '17² = 289, 8² = 64'],
           ['Subtrahieren', '289 - 64 = 225'],
@@ -321,10 +321,10 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Die Diagonale ist IMMER laenger als die laengste Seite des Beckens — wenn nicht, rechne nochmal!',
+      'Die Diagonale ist IMMER länger als die laengste Seite des Beckens — wenn nicht, rechne nochmal!',
       'Bei Rampen: Die Rampe (Schraege) ist die Hypotenuse, NICHT eine Kathete!',
-      'Einheiten muessen uebereinstimmen — nicht Meter und Zentimeter mischen!',
-      'In der Pruefung: Immer eine Skizze machen und den rechten Winkel einzeichnen, bevor du rechnest.'
+      'Einheiten müssen uebereinstimmen — nicht Meter und Zentimeter mischen!',
+      'In der Prüfung: Immer eine Skizze machen und den rechten Winkel einzeichnen, bevor du rechnest.'
     ],
     quiz: {
       question: 'Ein Kinderbecken ist 8 m lang und 6 m breit. Wie lang ist die Diagonale?',
@@ -499,7 +499,7 @@ export default function PythagorasDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -529,7 +529,7 @@ export default function PythagorasDeepDiveView() {
 
           {/* Formula reference table (on berechnung and umstellen tabs) */}
           {(activeTab === 'berechnung' || activeTab === 'umstellen') && (
-            <InfoCard darkMode={darkMode} title="Formel-Uebersicht">
+            <InfoCard darkMode={darkMode} title="Formel-Übersicht">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -574,7 +574,7 @@ export default function PythagorasDeepDiveView() {
                     Hypotenuse c
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Die laengste Seite, gegenueber dem rechten Winkel. Bei Becken: die Diagonale. Bei Rampen: die Schraege.
+                    Die laengste Seite, gegenüber dem rechten Winkel. Bei Becken: die Diagonale. Bei Rampen: die Schraege.
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
@@ -582,7 +582,7 @@ export default function PythagorasDeepDiveView() {
                     Katheten a und b
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Die zwei Seiten, die den rechten Winkel bilden. Bei Becken: Laenge und Breite. Bei Rampen: Hoehe und horizontale Strecke.
+                    Die zwei Seiten, die den rechten Winkel bilden. Bei Becken: Länge und Breite. Bei Rampen: Höhe und horizontale Strecke.
                   </p>
                 </div>
               </div>
@@ -629,7 +629,7 @@ export default function PythagorasDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

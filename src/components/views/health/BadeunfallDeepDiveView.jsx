@@ -163,15 +163,15 @@ export default function BadeunfallDeepDiveView({ darkMode }) {
             </p>
             <div className="space-y-2">
               {[
-                { massnahme: 'Ruhig bleiben', detail: 'Panik ist die Hauptgefahr — auf den Rücken legen, tretwasser' },
-                { massnahme: 'Zehe hochziehen', detail: 'Bei Wadenkrampf: Fuß mit der Hand Richtung Schienbein ziehen' },
-                { massnahme: 'Massage', detail: 'Krampfmuskel kneten — verbessert Durchblutung' },
-                { massnahme: 'Wärme an Land', detail: 'Nach Bergung: Muskel wärmen und dehnen' },
+                { maßnahme: 'Ruhig bleiben', detail: 'Panik ist die Hauptgefahr — auf den Rücken legen, tretwasser' },
+                { maßnahme: 'Zehe hochziehen', detail: 'Bei Wadenkrampf: Fuß mit der Hand Richtung Schienbein ziehen' },
+                { maßnahme: 'Massage', detail: 'Krampfmuskel kneten — verbessert Durchblutung' },
+                { maßnahme: 'Wärme an Land', detail: 'Nach Bergung: Muskel wärmen und dehnen' },
               ].map((item, i) => (
                 <div key={i} className="flex gap-3 p-2 rounded-lg bg-blue-50 border border-blue-200">
                   <CheckCircle size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-blue-800 text-sm">{item.massnahme}</p>
+                    <p className="font-semibold text-blue-800 text-sm">{item.maßnahme}</p>
                     <p className="text-xs text-gray-600">{item.detail}</p>
                   </div>
                 </div>
@@ -246,14 +246,14 @@ export default function BadeunfallDeepDiveView({ darkMode }) {
             </p>
             <div className="space-y-2">
               {[
-                { grad: 'Leicht (35–32°C)', zeichen: 'Zittern, Gänsehaut, Blässe', massnahme: 'Aus dem Wasser, trocknen, Wärme', farbe: 'yellow' },
-                { grad: 'Mittel (32–28°C)', zeichen: 'Koordinationsstörung, Verwirrtheit, Muskelsteife', massnahme: 'Sanft wärmen, horizontal halten, Notruf', farbe: 'orange' },
-                { grad: 'Schwer (< 28°C)', zeichen: 'Bewusstlosigkeit, kaum messbare Vitalzeichen', massnahme: 'CPR, Notruf, schonend wärmen', farbe: 'red' },
+                { grad: 'Leicht (35–32°C)', zeichen: 'Zittern, Gänsehaut, Blässe', maßnahme: 'Aus dem Wasser, trocknen, Wärme', farbe: 'yellow' },
+                { grad: 'Mittel (32–28°C)', zeichen: 'Koordinationsstörung, Verwirrtheit, Muskelsteife', maßnahme: 'Sanft wärmen, horizontal halten, Notruf', farbe: 'orange' },
+                { grad: 'Schwer (< 28°C)', zeichen: 'Bewusstlosigkeit, kaum messbare Vitalzeichen', maßnahme: 'CPR, Notruf, schonend wärmen', farbe: 'red' },
               ].map((item, i) => (
                 <div key={i} className={`p-3 rounded-lg bg-${item.farbe}-50 border border-${item.farbe}-300 mb-2`}>
                   <p className={`font-bold text-${item.farbe}-800 text-sm`}>{item.grad}</p>
                   <p className="text-xs text-gray-600">Zeichen: {item.zeichen}</p>
-                  <p className="text-xs font-medium text-gray-700 mt-0.5">→ {item.massnahme}</p>
+                  <p className="text-xs font-medium text-gray-700 mt-0.5">→ {item.maßnahme}</p>
                 </div>
               ))}
             </div>
@@ -278,14 +278,14 @@ export default function BadeunfallDeepDiveView({ darkMode }) {
             </div>
             <div className="space-y-2">
               {[
-                { symptom: 'Augenbrennen', massnahme: 'Augen mit viel fließendem Wasser spülen (10–15 Min.)' },
-                { symptom: 'Husten / Atemnot', massnahme: 'Frische Luft, aufrecht setzen, Notruf 112' },
-                { symptom: 'Bewusstlosigkeit', massnahme: 'Nur mit Atemschutz Bergen → SSL → Notruf' },
-                { symptom: 'Hautkontakt mit Konzentrat', massnahme: 'Kleidung entfernen, Haut mit viel Wasser spülen (15–20 Min.)' },
+                { symptom: 'Augenbrennen', maßnahme: 'Augen mit viel fließendem Wasser spülen (10–15 Min.)' },
+                { symptom: 'Husten / Atemnot', maßnahme: 'Frische Luft, aufrecht setzen, Notruf 112' },
+                { symptom: 'Bewusstlosigkeit', maßnahme: 'Nur mit Atemschutz Bergen → SSL → Notruf' },
+                { symptom: 'Hautkontakt mit Konzentrat', maßnahme: 'Kleidung entfernen, Haut mit viel Wasser spülen (15–20 Min.)' },
               ].map((item, i) => (
                 <div key={i} className="p-2 rounded-lg bg-white border border-yellow-300 mb-1">
                   <p className="font-semibold text-yellow-800 text-sm">🧪 {item.symptom}</p>
-                  <p className="text-xs text-gray-700 mt-0.5">→ {item.massnahme}</p>
+                  <p className="text-xs text-gray-700 mt-0.5">→ {item.maßnahme}</p>
                 </div>
               ))}
             </div>

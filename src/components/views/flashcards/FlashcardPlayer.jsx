@@ -375,7 +375,7 @@ const FlashcardPlayer = ({
                     : 'Korrekt'
                   : isWhoAmIFlashcard
                     ? 'Noch nicht der gesuchte Begriff'
-                    : 'Noch unvollstaendig'}
+                    : 'Noch unvollständig'}
               </p>
               <p className="text-sm mt-1 text-gray-700">
                 Treffer: {flashcardKeywordEvaluation.matchedCount}/{flashcardKeywordEvaluation.requiredGroups}
@@ -442,7 +442,7 @@ const FlashcardPlayer = ({
               }`}
             >
               <ArrowLeft size={16} />
-              Zurueck
+              Zurück
             </button>
             <div className="text-sm text-gray-700">
               <span className="font-bold">{flashcardIndex + 1}</span> / {flashcards.length}

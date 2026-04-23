@@ -9,27 +9,27 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist Volumen?',
     intro:
-      'Das Volumen sagt dir, wie viel Platz in einem Koerper ist — also wie viel Wasser in ein Becken passt. Fuer deine Ausbildung als Fachangestellte/r fuer Baederbetriebe ist das die wichtigste Groesse ueberhaupt: Du brauchst das Volumen fuer jede Chlor-Dosierung, jede Filterberechnung und jede Wasseraufbereitung.',
-    motto: 'Laenge × Breite × Tiefe = Volumen.',
+      'Das Volumen sagt dir, wie viel Platz in einem Körper ist — also wie viel Wasser in ein Becken passt. Für deine Ausbildung als Fachangestellte/r für Bäderbetriebe ist das die wichtigste Größe ueberhaupt: Du brauchst das Volumen für jede Chlor-Dosierung, jede Filterberechnung und jede Wasseraufbereitung.',
+    motto: 'Länge × Breite × Tiefe = Volumen.',
     rules: [
-      'Volumen = Laenge × Breite × Tiefe (bei rechteckigen Becken).',
-      'Die Einheit fuer Volumen ist Kubikmeter (m³).',
+      'Volumen = Länge × Breite × Tiefe (bei rechteckigen Becken).',
+      'Die Einheit für Volumen ist Kubikmeter (m³).',
       'Die wichtigste Umrechnung: 1 m³ = 1.000 Liter.',
-      'Alle Masse muessen in der GLEICHEN Einheit sein (alles in Metern!).',
-      'Das Volumen brauchst du fuer JEDE Berechnung mit Chemikalien im Schwimmbad.'
+      'Alle Masse müssen in der GLEICHEN Einheit sein (alles in Metern!).',
+      'Das Volumen brauchst du für JEDE Berechnung mit Chemikalien im Schwimmbad.'
     ],
     steps: [
       {
         title: '1. Masse herausfinden',
-        text: 'Miss oder lies die Laenge, Breite und Tiefe des Beckens ab. Achte darauf, dass alle Masse in Metern angegeben sind!'
+        text: 'Miss oder lies die Länge, Breite und Tiefe des Beckens ab. Achte darauf, dass alle Masse in Metern angegeben sind!'
       },
       {
-        title: '2. Flaeche berechnen',
-        text: 'Rechne zuerst die Grundflaeche: Laenge × Breite. Beispiel: 25 m × 12,5 m = 312,5 m². Das ist die Wasserflaeche von oben gesehen.'
+        title: '2. Fläche berechnen',
+        text: 'Rechne zuerst die Grundfläche: Länge × Breite. Beispiel: 25 m × 12,5 m = 312,5 m². Das ist die Wasserfläche von oben gesehen.'
       },
       {
         title: '3. Volumen berechnen',
-        text: 'Nimm die Flaeche mal die Tiefe: 312,5 m² × 2 m = 625 m³. Das ist das Volumen in Kubikmetern.'
+        text: 'Nimm die Fläche mal die Tiefe: 312,5 m² × 2 m = 625 m³. Das ist das Volumen in Kubikmetern.'
       },
       {
         title: '4. In Liter umrechnen',
@@ -43,7 +43,7 @@ const TABS = {
         question: 'Wie gross ist das Volumen in m³ und Litern?',
         steps: [
           ['Masse', 'L = 10 m, B = 6 m, T = 1,2 m'],
-          ['Flaeche', '10 × 6 = 60 m²'],
+          ['Fläche', '10 × 6 = 60 m²'],
           ['Volumen', '60 × 1,2 = 72 m³'],
           ['In Liter', '72 × 1.000 = 72.000 Liter']
         ]
@@ -54,7 +54,7 @@ const TABS = {
         question: 'Wie viel Wasser fasst das Becken?',
         steps: [
           ['Masse', 'L = 25 m, B = 12,5 m, T = 1,8 m'],
-          ['Flaeche', '25 × 12,5 = 312,5 m²'],
+          ['Fläche', '25 × 12,5 = 312,5 m²'],
           ['Volumen', '312,5 × 1,8 = 562,5 m³'],
           ['In Liter', '562,5 × 1.000 = 562.500 Liter']
         ]
@@ -65,15 +65,15 @@ const TABS = {
         question: 'Wie viel Wasser braucht man?',
         steps: [
           ['Masse', 'L = 5 m, B = 4 m, T = 0,3 m'],
-          ['Flaeche', '5 × 4 = 20 m²'],
+          ['Fläche', '5 × 4 = 20 m²'],
           ['Volumen', '20 × 0,3 = 6 m³'],
           ['In Liter', '6 × 1.000 = 6.000 Liter']
         ]
       }
     ],
     pitfalls: [
-      'Alle Masse muessen in der GLEICHEN Einheit sein — nicht Meter mit Zentimetern mischen!',
-      'Volumen ist NICHT das Gleiche wie Flaeche. Flaeche hat m², Volumen hat m³.',
+      'Alle Masse müssen in der GLEICHEN Einheit sein — nicht Meter mit Zentimetern mischen!',
+      'Volumen ist NICHT das Gleiche wie Fläche. Fläche hat m², Volumen hat m³.',
       'Vergiss nie die Umrechnung: 1 m³ = 1.000 Liter (nicht 100 und nicht 10.000!).',
       'Tiefe ist nicht gleich Wasserstand — das Becken ist oft nicht bis oben voll.'
     ],
@@ -88,43 +88,43 @@ const TABS = {
   berechnung: {
     id: 'berechnung',
     chip: 'Berechnung',
-    title: 'Volumen Schritt fuer Schritt berechnen',
+    title: 'Volumen Schritt für Schritt berechnen',
     intro:
-      'Hier lernst du, wie du das Volumen verschiedener Beckenformen berechnest. Rechteckige Becken sind einfach, aber was machst du, wenn die Tiefe nicht ueberall gleich ist? Das kommt oft vor — zum Beispiel bei Nichtschwimmerbecken mit schraegstem Boden.',
-    motto: 'Erst die Flaeche, dann die Tiefe dazu.',
+      'Hier lernst du, wie du das Volumen verschiedener Beckenformen berechnest. Rechteckige Becken sind einfach, aber was machst du, wenn die Tiefe nicht überall gleich ist? Das kommt oft vor — zum Beispiel bei Nichtschwimmerbecken mit schraegstem Boden.',
+    motto: 'Erst die Fläche, dann die Tiefe dazu.',
     rules: [
-      'Bei gleichmaessiger Tiefe: Volumen = Laenge × Breite × Tiefe.',
+      'Bei gleichmaessiger Tiefe: Volumen = Länge × Breite × Tiefe.',
       'Bei unterschiedlicher Tiefe: Nimm die DURCHSCHNITTSTIEFE (tiefste Stelle + flachste Stelle geteilt durch 2).',
       'Durchschnittstiefe = (tiefste Stelle + flachste Stelle) ÷ 2.',
-      'Die Grundflaeche (Laenge × Breite) ist immer der erste Rechenschritt.',
+      'Die Grundfläche (Länge × Breite) ist immer der erste Rechenschritt.',
       'Pruefe dein Ergebnis: Ein 25-m-Becken hat meistens zwischen 400 und 700 m³.'
     ],
     steps: [
       {
         title: '1. Beckenform erkennen',
-        text: 'Ist die Tiefe ueberall gleich? Dann einfach rechnen. Hat das Becken einen schraegen Boden? Dann brauchst du die Durchschnittstiefe.'
+        text: 'Ist die Tiefe überall gleich? Dann einfach rechnen. Hat das Becken einen schraegen Boden? Dann brauchst du die Durchschnittstiefe.'
       },
       {
         title: '2. Durchschnittstiefe berechnen',
         text: 'Bei schraegstem Boden: (tiefste + flachste Stelle) ÷ 2. Beispiel: (2,0 m + 1,0 m) ÷ 2 = 1,5 m Durchschnittstiefe.'
       },
       {
-        title: '3. Grundflaeche berechnen',
-        text: 'Laenge × Breite ergibt die Grundflaeche in m². Das ist immer gleich, egal ob der Boden schraeg ist oder nicht.'
+        title: '3. Grundfläche berechnen',
+        text: 'Länge × Breite ergibt die Grundfläche in m². Das ist immer gleich, egal ob der Boden schraeg ist oder nicht.'
       },
       {
-        title: '4. Volumen = Flaeche × Tiefe',
-        text: 'Grundflaeche × (Durchschnitts-)Tiefe = Volumen in m³. Dann bei Bedarf × 1.000 fuer Liter.'
+        title: '4. Volumen = Fläche × Tiefe',
+        text: 'Grundfläche × (Durchschnitts-)Tiefe = Volumen in m³. Dann bei Bedarf × 1.000 für Liter.'
       }
     ],
     examples: [
       {
         title: 'Becken mit gleichmaessiger Tiefe',
-        given: 'Ein Becken ist 20 m lang, 10 m breit und ueberall 1,35 m tief.',
+        given: 'Ein Becken ist 20 m lang, 10 m breit und überall 1,35 m tief.',
         question: 'Wie gross ist das Volumen?',
         steps: [
-          ['Masse', 'L = 20 m, B = 10 m, T = 1,35 m (ueberall gleich)'],
-          ['Grundflaeche', '20 × 10 = 200 m²'],
+          ['Masse', 'L = 20 m, B = 10 m, T = 1,35 m (überall gleich)'],
+          ['Grundfläche', '20 × 10 = 200 m²'],
           ['Volumen', '200 × 1,35 = 270 m³'],
           ['In Liter', '270 × 1.000 = 270.000 Liter']
         ]
@@ -136,7 +136,7 @@ const TABS = {
         steps: [
           ['Masse', 'L = 16,67 m, B = 8 m, flach = 0,60 m, tief = 1,35 m'],
           ['Durchschnittstiefe', '(0,60 + 1,35) ÷ 2 = 0,975 m'],
-          ['Grundflaeche', '16,67 × 8 = 133,36 m²'],
+          ['Grundfläche', '16,67 × 8 = 133,36 m²'],
           ['Volumen', '133,36 × 0,975 = 130,03 m³ (gerundet)']
         ]
       },
@@ -147,7 +147,7 @@ const TABS = {
         steps: [
           ['Masse', 'L = 25 m, B = 12,5 m, flach = 1,80 m, tief = 3,80 m'],
           ['Durchschnittstiefe', '(1,80 + 3,80) ÷ 2 = 2,80 m'],
-          ['Grundflaeche', '25 × 12,5 = 312,5 m²'],
+          ['Grundfläche', '25 × 12,5 = 312,5 m²'],
           ['Volumen', '312,5 × 2,80 = 875 m³']
         ]
       }
@@ -161,7 +161,7 @@ const TABS = {
       question: 'Ein Becken ist 20 m lang, 10 m breit. Die Tiefe geht von 1,0 m bis 2,0 m. Wie gross ist das Volumen?',
       options: ['200 m³', '300 m³', '400 m³'],
       correctIndex: 1,
-      explanation: 'Durchschnittstiefe: (1,0 + 2,0) ÷ 2 = 1,5 m. Flaeche: 20 × 10 = 200 m². Volumen: 200 × 1,5 = 300 m³.'
+      explanation: 'Durchschnittstiefe: (1,0 + 2,0) ÷ 2 = 1,5 m. Fläche: 20 × 10 = 200 m². Volumen: 200 × 1,5 = 300 m³.'
     }
   },
 
@@ -170,7 +170,7 @@ const TABS = {
     chip: 'Umrechnung',
     title: 'Kubikmeter, Liter und Dezimalliter',
     intro:
-      'Die Umrechnung zwischen m³ und Litern ist das A und O im Schwimmbad. Chemikalien werden in g/m³ oder mg/L dosiert. Ohne sichere Umrechnung kannst du kein Chlor richtig dosieren. Und: 1 dm³ = 1 Liter — das musst du im Schlaf koennen!',
+      'Die Umrechnung zwischen m³ und Litern ist das A und O im Schwimmbad. Chemikalien werden in g/m³ oder mg/L dosiert. Ohne sichere Umrechnung kannst du kein Chlor richtig dosieren. Und: 1 dm³ = 1 Liter — das musst du im Schlaf können!',
     motto: '1 m³ = 1.000 Liter. Immer.',
     rules: [
       '1 m³ = 1.000 Liter — das ist DIE wichtigste Umrechnung.',
@@ -185,7 +185,7 @@ const TABS = {
         text: 'Steht die Angabe in m³ oder in Litern? Lies genau, was gefragt ist. Chemikalien stehen oft in mg/L, Beckenvolumen in m³.'
       },
       {
-        title: '2. Umrechnungsfaktor waehlen',
+        title: '2. Umrechnungsfaktor wählen',
         text: 'Von m³ nach Liter: mal 1.000. Von Liter nach m³: geteilt durch 1.000. Einfach merken: m³ ist die GROESSERE Einheit.'
       },
       {
@@ -193,8 +193,8 @@ const TABS = {
         text: 'Rechne um: z.B. 2,5 m³ × 1.000 = 2.500 Liter. Oder: 8.500 Liter ÷ 1.000 = 8,5 m³.'
       },
       {
-        title: '4. Ergebnis auf Sinn pruefen',
-        text: 'Die Literzahl muss IMMER groesser sein als die m³-Zahl. Wenn nicht, hast du falsch gerechnet!'
+        title: '4. Ergebnis auf Sinn prüfen',
+        text: 'Die Literzahl muss IMMER größer sein als die m³-Zahl. Wenn nicht, hast du falsch gerechnet!'
       }
     ],
     examples: [
@@ -210,7 +210,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Liter zurueck in m³',
+        title: 'Liter zurück in m³',
         given: 'Ein Wassertank fasst 12.000 Liter.',
         question: 'Wie viel m³ sind das?',
         steps: [
@@ -233,10 +233,10 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Der haeufigste Fehler: × 100 statt × 1.000. Es sind TAUSEND Liter pro Kubikmeter!',
-      'dm³ und Liter sind DASSELBE — lass dich in der Pruefung nicht verwirren.',
+      'Der häufigste Fehler: × 100 statt × 1.000. Es sind TAUSEND Liter pro Kubikmeter!',
+      'dm³ und Liter sind DASSELBE — lass dich in der Prüfung nicht verwirren.',
       'Bei mg/L und g/m³: Die Zahlenwerte sind identisch! 0,3 mg/L = 0,3 g/m³.',
-      'Kontrolliere die Richtung: m³ nach Liter = groessere Zahl. Liter nach m³ = kleinere Zahl.'
+      'Kontrolliere die Richtung: m³ nach Liter = größere Zahl. Liter nach m³ = kleinere Zahl.'
     ],
     quiz: {
       question: 'Wie viel Liter sind 3,5 m³?',
@@ -249,16 +249,16 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Beckenvolumen im Baederalltag',
+    title: 'Beckenvolumen im Bäderalltag',
     intro:
-      'Hier uebst du mit echten Beckengroessen aus dem Schwimmbadbetrieb. Schwimmerbecken, Lehrschwimmbecken, Nichtschwimmerbecken, Planschbecken — jedes hat andere Masse. Und das Volumen brauchst du, um die richtige Menge Chlor zu dosieren!',
+      'Hier uebst du mit echten Beckengrößen aus dem Schwimmbadbetrieb. Schwimmerbecken, Lehrschwimmbecken, Nichtschwimmerbecken, Planschbecken — jedes hat andere Masse. Und das Volumen brauchst du, um die richtige Menge Chlor zu dosieren!',
     motto: 'Ohne Volumen keine Dosierung.',
     rules: [
       'Schwimmerbecken (25 m): typisch 400–700 m³ je nach Breite und Tiefe.',
       'Lehrschwimmbecken: typisch 60–150 m³ (kleiner und flacher).',
       'Nichtschwimmerbecken: typisch 100–300 m³ (oft mit schraegstem Boden).',
       'Planschbecken: typisch 3–15 m³ (sehr flach, oft unter 0,40 m Tiefe).',
-      'Fuer die Chlor-Dosierung brauchst du IMMER das aktuelle Wasservolumen, nicht das Beckenvolumen!'
+      'Für die Chlor-Dosierung brauchst du IMMER das aktuelle Wasservolumen, nicht das Beckenvolumen!'
     ],
     steps: [
       {
@@ -267,15 +267,15 @@ const TABS = {
       },
       {
         title: '2. Volumen berechnen',
-        text: 'Laenge × Breite × (Durchschnitts-)Tiefe = Volumen in m³. Bei schraegstem Boden die Durchschnittstiefe nehmen!'
+        text: 'Länge × Breite × (Durchschnitts-)Tiefe = Volumen in m³. Bei schraegstem Boden die Durchschnittstiefe nehmen!'
       },
       {
         title: '3. In Liter umrechnen',
-        text: 'm³ × 1.000 = Liter. Du brauchst die Literzahl fuer viele Dosier-Tabellen und Chemikalien-Berechnungen.'
+        text: 'm³ × 1.000 = Liter. Du brauchst die Literzahl für viele Dosier-Tabellen und Chemikalien-Berechnungen.'
       },
       {
         title: '4. Chlor-Menge berechnen',
-        text: 'Volumen in m³ × gewuenschte Dosierung in g/m³ = benoetigte Chlormenge in Gramm. Beispiel: 500 m³ × 0,3 g/m³ = 150 g.'
+        text: 'Volumen in m³ × gewuenschte Dosierung in g/m³ = benötigte Chlormenge in Gramm. Beispiel: 500 m³ × 0,3 g/m³ = 150 g.'
       }
     ],
     examples: [
@@ -307,7 +307,7 @@ const TABS = {
         question: 'Wie gross ist das Volumen?',
         steps: [
           ['Durchschnittstiefe', '(0,60 + 1,35) ÷ 2 = 0,975 m'],
-          ['Grundflaeche', '16,67 × 10 = 166,7 m²'],
+          ['Grundfläche', '16,67 × 10 = 166,7 m²'],
           ['Volumen', '166,7 × 0,975 = 162,5 m³ (gerundet)'],
           ['In Liter', '162,5 × 1.000 = 162.500 Liter']
         ]
@@ -325,9 +325,9 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Bei Planschbecken: Kleine Volumina bedeuten, dass schon WENIGE Gramm Chlor zu viel sein koennen!',
+      'Bei Planschbecken: Kleine Volumina bedeuten, dass schon WENIGE Gramm Chlor zu viel sein können!',
       'Wasserstand ist NICHT gleich Beckentiefe — das Becken ist oft 5–10 cm unter dem Rand.',
-      'Bei der Pruefung: Aufgaben mit unterschiedlicher Tiefe kommen HAEUFIG dran.',
+      'Bei der Prüfung: Aufgaben mit unterschiedlicher Tiefe kommen HAEUFIG dran.',
       'Vergiss nicht: 1 mg/L = 1 g/m³. Ohne diese Umrechnung wird die Dosierung falsch!'
     ],
     quiz: {
@@ -513,7 +513,7 @@ export default function VolumenDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -657,7 +657,7 @@ export default function VolumenDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

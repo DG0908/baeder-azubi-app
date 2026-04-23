@@ -54,7 +54,7 @@ const HOTSPOT_DATA = {
     short: 'LOESE',
     color: '#a070ff',
     items: [
-      'Hier entsteht die Produktloesung aus angewassertem Feststoff.',
+      'Hier entsteht die Produktlösung aus angewassertem Feststoff.',
       'Unloesliche Nebenbestandteile setzen sich im Sedimentbereich ab.',
       'Abgabe erfolgt erst nach Beruhigungs-/Überlaufphase.',
     ],
@@ -75,7 +75,7 @@ const HOTSPOT_DATA = {
     color: '#ff7a7a',
     items: [
       'Loest Feststoffbruecken durch mechanische Bewegung.',
-      'Verbessert Benetzung aller Feststoffzonen waehrend der Anwasserung.',
+      'Verbessert Benetzung aller Feststoffzonen während der Anwasserung.',
       'Wird zyklisch von der Steuerung gestartet und gestoppt.',
     ],
   },
@@ -85,7 +85,7 @@ const HOTSPOT_DATA = {
     color: '#34b9ff',
     items: [
       'Entnimmt Wasser für Düsensystem und Loeseprozess.',
-      'Stellt den benoetigten Betriebsdruck für gleichmaessige Anwasserung.',
+      'Stellt den benötigten Betriebsdruck für gleichmaessige Anwasserung.',
       'Trockenlaufschutz über Schwimmerschalter zwingend.',
     ],
   },
@@ -94,9 +94,9 @@ const HOTSPOT_DATA = {
     short: 'PROD',
     color: '#4ad097',
     items: [
-      'Puffer für rückstandsarme Calciumhypochlorit-Produktloesung.',
+      'Puffer für rückstandsarme Calciumhypochlorit-Produktlösung.',
       'Membrandosierpumpe entnimmt von hier in Richtung Impfstelle.',
-      'Fuellstand und Konzentration regelmaessig dokumentieren.',
+      'Fuellstand und Konzentration regelmäßig dokumentieren.',
     ],
   },
   schwimmerschalter: {
@@ -128,7 +128,7 @@ const PROCESS_PHASES = [
     detail: [
       'Pumpe entnimmt Wasser und baut gleichmaessigen Druck auf.',
       'Düsen benetzen den Feststoff in kurzen, definierten Pulsen.',
-      'Ziel: vollstaendige Benetzung ohne Überflutung des Vorrats.',
+      'Ziel: vollständige Benetzung ohne Überflutung des Vorrats.',
     ],
     caution: 'Zu lange Anwasserung kann Verkrustungen und unruhige Konzentrationen verursachen.',
   },
@@ -151,8 +151,8 @@ const PROCESS_PHASES = [
     focus: ['loesetank', 'sorptionseinheit', 'produktbehaelter'],
     detail: [
       'Im Loesetank setzen sich unloesliche Bestandteile ab.',
-      'Klare Phase wird über Überlauf/Abgang weitergefuehrt.',
-      'Optionale Sorption stabilisiert die Produktqualitaet.',
+      'Klare Phase wird über Überlauf/Abgang weitergeführt.',
+      'Optionale Sorption stabilisiert die Produktqualität.',
     ],
     caution: 'Bei zu kurzer Beruhigungszeit gelangen Rückstaende in die Produktstrecke.',
   },
@@ -162,7 +162,7 @@ const PROCESS_PHASES = [
     accent: '#34c090',
     focus: ['produktbehaelter', 'steuerung', 'schwimmerschalter'],
     detail: [
-      'Produktloesung wird aus dem Produktbehaelter bedarfsgerecht entnommen.',
+      'Produktlösung wird aus dem Produktbehaelter bedarfsgerecht entnommen.',
       'Steuerung koppelt Dosierung an Messwerte und Betriebsvorgaben.',
       'Fuellstandssignale sichern Nachspeisung und Störabschaltung.',
     ],

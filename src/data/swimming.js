@@ -149,7 +149,7 @@ export const SWIM_TRAINING_PLANS = [
     targetDistance: 1300,
     targetTime: 27,
     xpReward: 28,
-    description: 'Sehr intensive Serien für Tempohaerte und Renndruck.'
+    description: 'Sehr intensive Serien für Tempohärte und Renndruck.'
   },
 
   // ==================== TECHNIK (5) ====================

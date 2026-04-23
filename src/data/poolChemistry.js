@@ -64,7 +64,7 @@ export const FLOCCULANT_PUMP_MODELS = [
       {
         id: 'red_sk_4_0_reinforced',
         color: 'Rot',
-        label: 'SK 4,0 mm (verstaerkt)',
+        label: 'SK 4,0 mm (verstärkt)',
         innerDiameterMm: 4.0,
         minMlH: 50,
         maxMlH: 500,
@@ -109,7 +109,7 @@ export const FLOCCULANT_PUMP_MODELS = [
       {
         id: 'red_sk_4_0_reinforced',
         color: 'Rot',
-        label: 'SK 4,0 mm (verstaerkt)',
+        label: 'SK 4,0 mm (verstärkt)',
         innerDiameterMm: 4.0,
         minMlH: 50,
         maxMlH: 500,

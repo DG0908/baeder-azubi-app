@@ -20,13 +20,13 @@ const InfoBox = ({ title, items, dark, color = '#9333ea' }) => (
   </div>
 );
 
-const ZoneCard = ({ name, risiko, massnahmen, dark, color }) => (
+const ZoneCard = ({ name, risiko, maßnahmen, dark, color }) => (
   <div style={{ background: dark ? '#1e293b' : '#f8fafc', border: `1px solid ${color}40`, borderRadius: 10, padding: 14, marginBottom: 10 }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
       <div style={{ fontWeight: 700, color: color, fontSize: 14 }}>{name}</div>
       <div style={{ background: color + '20', color: color, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>Risiko: {risiko}</div>
     </div>
-    {massnahmen.map((m, i) => (
+    {maßnahmen.map((m, i) => (
       <div key={i} style={{ fontSize: 13, color: dark ? '#cbd5e1' : '#475569', display: 'flex', gap: 6, marginBottom: 3 }}>
         <span style={{ color: color }}>→</span><span>{m}</span>
       </div>
@@ -125,29 +125,29 @@ export default function AufsichtGrundrissDeepDiveView({ darkMode }) {
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#c4b5fd' : '#7c3aed', marginBottom: 14 }}>Gefahrenzonen im Schwimmbad</h2>
             <p style={{ color: text, fontSize: 14, marginBottom: 16 }}>Nicht alle Bereiche sind gleich riskant. Diese Zonen erfordern erhöhte Aufmerksamkeit:</p>
 
-            <ZoneCard name="Sprunganlage & Sprungtürme" risiko="Sehr hoch" color="#dc2626" dark={dark} massnahmen={[
+            <ZoneCard name="Sprunganlage & Sprungtürme" risiko="Sehr hoch" color="#dc2626" dark={dark} maßnahmen={[
               'Nur eine Person auf dem Brett / Turm gleichzeitig',
               'Kein Nachspringen bis Vordermann weg ist',
               'Sprungbereich vor Sprung frei — Aufsicht prüft aktiv',
               'Rückwärtsspringen / Saltos nur mit besonderer Freigabe',
             ]} />
-            <ZoneCard name="Nichtschwimmerbereich / Flachwasser" risiko="Hoch" color="#f97316" dark={dark} massnahmen={[
+            <ZoneCard name="Nichtschwimmerbereich / Flachwasser" risiko="Hoch" color="#f97316" dark={dark} maßnahmen={[
               'Kinder unter 6 Jahren in Begleitung Erwachsener',
               'Grenze Schwimmer/Nichtschwimmer klar markieren (Leine)',
               'Überfüllung beobachten — Sichttiefe nimmt ab',
               'Kleinkinder können in 20 cm Wasser ertrinken',
             ]} />
-            <ZoneCard name="Rutschenauslauf" risiko="Hoch" color="#f97316" dark={dark} massnahmen={[
+            <ZoneCard name="Rutschenauslauf" risiko="Hoch" color="#f97316" dark={dark} maßnahmen={[
               'Auslaufbereich muss frei sein bevor nächster startet',
               'Signal-System mit Rutschen-Eingang abstimmen',
               'Kein Sitzen / Verweilen im Auslauf',
             ]} />
-            <ZoneCard name="Beckenboden (Sichttiefe)" risiko="Mittel-Hoch" color="#eab308" dark={dark} massnahmen={[
+            <ZoneCard name="Beckenboden (Sichttiefe)" risiko="Mittel-Hoch" color="#eab308" dark={dark} maßnahmen={[
               'Trübes Wasser = sofortige Maßnahme (Badebetrieb einstellen)',
               'DIN 19643: Sichttiefe mind. Beckentiefe am tiefsten Punkt',
               'Regelmäßige Sichttiefenmessung und Dokumentation',
             ]} />
-            <ZoneCard name="Umkleiden / Nassbereich / Dusche" risiko="Mittel" color="#eab308" dark={dark} massnahmen={[
+            <ZoneCard name="Umkleiden / Nassbereich / Dusche" risiko="Mittel" color="#eab308" dark={dark} maßnahmen={[
               'Rutschgefahr auf nassen Fliesen — Antirutschmatten',
               'Regelmäßige Kontrollgänge auch in diese Bereiche',
               'Keine direkte visuelle Überwachung möglich — Patrouille',

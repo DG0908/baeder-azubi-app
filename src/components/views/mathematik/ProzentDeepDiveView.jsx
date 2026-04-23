@@ -9,14 +9,14 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was sind Prozente?',
     intro:
-      'Prozent bedeutet "von Hundert". Wenn du 15 % sagst, meinst du 15 von 100. Das ist wie ein Stueck von einem Kuchen, der in 100 Teile geschnitten ist. Im Schwimmbad begegnen dir Prozente ueberall: Chlorkonzentration, Auslastung, Rabatte auf Jahreskarten.',
+      'Prozent bedeutet "von Hundert". Wenn du 15 % sagst, meinst du 15 von 100. Das ist wie ein Stueck von einem Kuchen, der in 100 Teile geschnitten ist. Im Schwimmbad begegnen dir Prozente überall: Chlorkonzentration, Auslastung, Rabatte auf Jahreskarten.',
     motto: 'Prozent = von Hundert.',
     rules: [
       'Prozent kommt vom lateinischen "pro centum" und bedeutet "von Hundert".',
       '15 % heisst: 15 von 100 — oder 15 Hundertstel.',
       '100 % bedeutet das Ganze — alles zusammen.',
       '50 % ist genau die Haelfte, 25 % ist ein Viertel.',
-      'Es gibt drei Groessen: Grundwert (das Ganze), Prozentsatz (der Anteil in %), Prozentwert (das Ergebnis).'
+      'Es gibt drei Größen: Grundwert (das Ganze), Prozentsatz (der Anteil in %), Prozentwert (das Ergebnis).'
     ],
     steps: [
       {
@@ -32,7 +32,7 @@ const TABS = {
         text: 'Der Prozentwert ist das tatsaechliche Ergebnis in Stueck, Euro, Liter usw. Beispiel: 75 % von 400 = 300 Plaetze.'
       },
       {
-        title: '4. Ergebnis pruefen',
+        title: '4. Ergebnis prüfen',
         text: 'Ist der Prozentwert kleiner als der Grundwert? Bei Prozentsaetzen unter 100 % muss das so sein. 300 < 400 — passt!'
       }
     ],
@@ -49,8 +49,8 @@ const TABS = {
         ]
       },
       {
-        title: 'Baeder-Beispiel: Chlorloesung',
-        given: 'Eine Chlorloesung hat 150 Liter. Der Wirkstoffanteil betraegt 10 %.',
+        title: 'Bäder-Beispiel: Chlorlösung',
+        given: 'Eine Chlorlösung hat 150 Liter. Der Wirkstoffanteil beträgt 10 %.',
         question: 'Wie viel Liter reiner Wirkstoff sind enthalten?',
         steps: [
           ['Grundwert', '150 Liter (= 100 %)'],
@@ -74,8 +74,8 @@ const TABS = {
     pitfalls: [
       'Prozent ist NICHT das Gleiche wie eine Menge — 50 % von 10 ist etwas anderes als 50 % von 1.000!',
       'Vergiss nicht: Der Grundwert ist IMMER die 100 %, nicht der Prozentwert.',
-      'Haeufiger Fehler: Das %-Zeichen vergessen und dann mit der falschen Zahl rechnen.',
-      '100 % ist das Ganze. Mehr als 100 % bedeutet: mehr als alles (z.B. 120 % Auslastung = ueberfuellt).'
+      'Häufiger Fehler: Das %-Zeichen vergessen und dann mit der falschen Zahl rechnen.',
+      '100 % ist das Ganze. Mehr als 100 % bedeutet: mehr als alles (z.B. 120 % Auslastung = ueberfüllt).'
     ],
     quiz: {
       question: 'Ein Becken fasst 500 m³ Wasser. Es ist zu 80 % gefuellt. Wie viel Wasser ist im Becken?',
@@ -131,19 +131,19 @@ const TABS = {
       },
       {
         title: 'Wasserverlust',
-        given: 'Ein Becken enthaelt 800 m³ Wasser. Durch Verdunstung gehen taeglich 0,5 % verloren.',
+        given: 'Ein Becken enthaelt 800 m³ Wasser. Durch Verdunstung gehen täglich 0,5 % verloren.',
         question: 'Wie viel Wasser verdunstet pro Tag?',
         steps: [
           ['Grundwert', '800 m³'],
           ['Prozentsatz', '0,5 %'],
           ['Rechnung', '800 × 0,5 ÷ 100 = 4'],
-          ['Ergebnis', '4 m³ Wasser verdunsten taeglich']
+          ['Ergebnis', '4 m³ Wasser verdunsten täglich']
         ]
       },
       {
         title: 'Energiekosten-Erhoehung',
         given: 'Die monatlichen Energiekosten betragen 8.000 Euro. Die Kosten steigen um 12 %.',
-        question: 'Wie viel Euro betraegt die Erhoehung?',
+        question: 'Wie viel Euro beträgt die Erhoehung?',
         steps: [
           ['Grundwert', '8.000 Euro'],
           ['Prozentsatz', '12 %'],
@@ -194,14 +194,14 @@ const TABS = {
         text: 'Grundwert = Prozentwert × 100 ÷ Prozentsatz. ODER: Prozentsatz = Prozentwert × 100 ÷ Grundwert.'
       },
       {
-        title: '4. Ergebnis auf Plausibilitaet pruefen',
-        text: 'Grundwert muss groesser sein als der Prozentwert. Prozentsatz sollte sinnvoll sein (z.B. nicht 500 %, wenn es um Auslastung geht).'
+        title: '4. Ergebnis auf Plausibilitaet prüfen',
+        text: 'Grundwert muss größer sein als der Prozentwert. Prozentsatz sollte sinnvoll sein (z.B. nicht 500 %, wenn es um Auslastung geht).'
       }
     ],
     examples: [
       {
         title: 'Grundwert gesucht: Wie viele Plaetze insgesamt?',
-        given: '150 Plaetze sind belegt. Das sind 60 % der Gesamtkapazitaet.',
+        given: '150 Plaetze sind belegt. Das sind 60 % der Gesamtkapazität.',
         question: 'Wie viele Plaetze hat das Bad insgesamt?',
         steps: [
           ['Prozentwert', '150 Plaetze'],
@@ -218,12 +218,12 @@ const TABS = {
           ['Prozentwert', '280 Besucher'],
           ['Grundwert', '400 Plaetze'],
           ['Rechnung', '280 × 100 ÷ 400 = 70'],
-          ['Ergebnis', 'Die Auslastung betraegt 70 %']
+          ['Ergebnis', 'Die Auslastung beträgt 70 %']
         ]
       },
       {
         title: 'Grundwert gesucht: Originalpreis',
-        given: 'Der Rabatt auf eine Dauerkarte betraegt 36 Euro. Das sind 15 % Ermaessigung.',
+        given: 'Der Rabatt auf eine Dauerkarte beträgt 36 Euro. Das sind 15 % Ermaessigung.',
         question: 'Wie teuer war die Dauerkarte urspruenglich?',
         steps: [
           ['Prozentwert', '36 Euro (Rabatt)'],
@@ -235,12 +235,12 @@ const TABS = {
     ],
     pitfalls: [
       'Grundwert und Prozentwert nicht verwechseln! Der Grundwert ist IMMER das Ganze (100 %).',
-      'Haeufiger Fehler: × 100 vergessen — dann ist der Prozentsatz 100-mal zu klein.',
+      'Häufiger Fehler: × 100 vergessen — dann ist der Prozentsatz 100-mal zu klein.',
       'Beim Grundwert: Wenn dein Ergebnis KLEINER ist als der Prozentwert, hast du falsch gerechnet.',
       'Bei "um ... % reduziert": Erst den Prozentwert ausrechnen, dann vom Grundwert abziehen!'
     ],
     quiz: {
-      question: 'Im Freibad wurden 180 Eintrittskarten verkauft. Das entspricht 45 % der Maximalkapazitaet. Wie viele Besucher passen maximal rein?',
+      question: 'Im Freibad wurden 180 Eintrittskarten verkauft. Das entspricht 45 % der Maximalkapazität. Wie viele Besucher passen maximal rein?',
       options: ['350', '400', '450'],
       correctIndex: 1,
       explanation: 'Grundwert = 180 × 100 ÷ 45 = 400. Maximal passen 400 Besucher rein.'
@@ -250,72 +250,72 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Prozentrechnung im Baederalltag',
+    title: 'Prozentrechnung im Bäderalltag',
     intro:
-      'Prozentrechnung brauchst du im Schwimmbad staendig: Besucherstatistiken auswerten, chemische Konzentrationen berechnen, Auslastung melden, Rabatte gewaehren. Hier uebst du mit echten Aufgaben aus dem Baedalltag. Diese Aufgaben kommen in der Pruefung dran!',
+      'Prozentrechnung brauchst du im Schwimmbad ständig: Besucherstatistiken auswerten, chemische Konzentrationen berechnen, Auslastung melden, Rabatte gewähren. Hier uebst du mit echten Aufgaben aus dem Baedalltag. Diese Aufgaben kommen in der Prüfung dran!',
     motto: 'Prozente begegnen dir im Bad jeden Tag.',
     rules: [
       'Besucherstatistik: Anteil einer Gruppe an der Gesamtbesucherzahl — Prozentsatz berechnen.',
-      'Chemische Konzentrationen: Wirkstoffanteil in einer Loesung — Prozentwert berechnen.',
-      'Auslastung: Aktuelle Besucher im Verhaeltnis zur Kapazitaet — Prozentsatz berechnen.',
+      'Chemische Konzentrationen: Wirkstoffanteil in einer Lösung — Prozentwert berechnen.',
+      'Auslastung: Aktuelle Besucher im Verhältnis zur Kapazität — Prozentsatz berechnen.',
       'Rabatte: Preisermaessigung in Prozent — Prozentwert berechnen und abziehen.',
       'Immer zuerst klaeren: Was ist Grundwert, was ist Prozentsatz, was ist Prozentwert?'
     ],
     steps: [
       {
         title: '1. Aufgabe sortieren',
-        text: 'Was ist gegeben, was ist gesucht? Ordne die Zahlen den drei Groessen zu: Grundwert, Prozentsatz, Prozentwert.'
+        text: 'Was ist gegeben, was ist gesucht? Ordne die Zahlen den drei Größen zu: Grundwert, Prozentsatz, Prozentwert.'
       },
       {
-        title: '2. Richtige Formel waehlen',
+        title: '2. Richtige Formel wählen',
         text: 'Prozentwert gesucht: G × p ÷ 100. Grundwert gesucht: W × 100 ÷ p. Prozentsatz gesucht: W × 100 ÷ G.'
       },
       {
         title: '3. Berechnung durchfuehren',
-        text: 'Setze die Zahlen in die Formel ein. Rechne Schritt fuer Schritt und schreib Zwischenergebnisse auf.'
+        text: 'Setze die Zahlen in die Formel ein. Rechne Schritt für Schritt und schreib Zwischenergebnisse auf.'
       },
       {
-        title: '4. Ergebnis im Kontext pruefen',
-        text: 'Macht das Ergebnis im Baedalltag Sinn? Eine Auslastung von 250 % waere unlogisch. Ein Chlorgehalt von 50 % waere viel zu hoch.'
+        title: '4. Ergebnis im Kontext prüfen',
+        text: 'Macht das Ergebnis im Baedalltag Sinn? Eine Auslastung von 250 % wäre unlogisch. Ein Chlorgehalt von 50 % wäre viel zu hoch.'
       }
     ],
     examples: [
       {
         title: 'Besucherstatistik (Prozentsatz gesucht)',
-        given: 'Am Sonntag kamen 600 Besucher. 180 davon waren Fruehschwimmer.',
-        question: 'Wie viel Prozent der Besucher waren Fruehschwimmer?',
+        given: 'Am Sonntag kamen 600 Besucher. 180 davon waren Frühschwimmer.',
+        question: 'Wie viel Prozent der Besucher waren Frühschwimmer?',
         steps: [
-          ['Prozentwert', '180 Fruehschwimmer'],
+          ['Prozentwert', '180 Frühschwimmer'],
           ['Grundwert', '600 Besucher gesamt'],
           ['Rechnung', '180 × 100 ÷ 600 = 30'],
-          ['Ergebnis', '30 % der Besucher waren Fruehschwimmer']
+          ['Ergebnis', '30 % der Besucher waren Frühschwimmer']
         ]
       },
       {
         title: 'Chemische Konzentration (Prozentwert gesucht)',
-        given: 'Ein Kanister enthaelt 25 Liter Natriumhypochlorit-Loesung mit 13 % Aktivchlor.',
+        given: 'Ein Kanister enthaelt 25 Liter Natriumhypochlorit-Lösung mit 13 % Aktivchlor.',
         question: 'Wie viel Liter reines Aktivchlor sind enthalten?',
         steps: [
-          ['Grundwert', '25 Liter Loesung'],
+          ['Grundwert', '25 Liter Lösung'],
           ['Prozentsatz', '13 %'],
           ['Rechnung', '25 × 13 ÷ 100 = 3,25'],
           ['Ergebnis', '3,25 Liter reines Aktivchlor']
         ]
       },
       {
-        title: 'Kapazitaetsauslastung (Grundwert gesucht)',
-        given: 'Aktuell sind 330 Badegaeste im Freibad. Die Auslastung betraegt 75 %.',
-        question: 'Wie hoch ist die Maximalkapazitaet?',
+        title: 'Kapazitätsauslastung (Grundwert gesucht)',
+        given: 'Aktuell sind 330 Badegaeste im Freibad. Die Auslastung beträgt 75 %.',
+        question: 'Wie hoch ist die Maximalkapazität?',
         steps: [
           ['Prozentwert', '330 Gaeste'],
           ['Prozentsatz', '75 %'],
           ['Rechnung', '330 × 100 ÷ 75 = 440'],
-          ['Ergebnis', 'Die Maximalkapazitaet betraegt 440 Gaeste']
+          ['Ergebnis', 'Die Maximalkapazität beträgt 440 Gaeste']
         ]
       },
       {
         title: 'Rabattaktion (Prozentwert + Abzug)',
-        given: 'Die Tageskarte fuer Erwachsene kostet 8 Euro. Fuer Gruppen ab 10 Personen gibt es 20 % Rabatt.',
+        given: 'Die Tageskarte für Erwachsene kostet 8 Euro. Für Gruppen ab 10 Personen gibt es 20 % Rabatt.',
         question: 'Wie viel zahlt jede Person in der Gruppe?',
         steps: [
           ['Grundwert', '8 Euro (normaler Preis)'],
@@ -327,8 +327,8 @@ const TABS = {
     ],
     pitfalls: [
       'Bei Rabatten: Den Prozentwert vom Grundwert ABZIEHEN, nicht einfach als Ergebnis nehmen!',
-      'Bei Konzentrationen: Aufpassen, ob nach dem reinen Wirkstoff oder der gesamten Loesung gefragt wird.',
-      'In der Pruefung: Lies GENAU ob nach dem Prozentsatz, dem Prozentwert oder dem Grundwert gefragt wird.',
+      'Bei Konzentrationen: Aufpassen, ob nach dem reinen Wirkstoff oder der gesamten Lösung gefragt wird.',
+      'In der Prüfung: Lies GENAU ob nach dem Prozentsatz, dem Prozentwert oder dem Grundwert gefragt wird.',
       'Typischer Fehler: "Wie viel Prozent mehr?" ist NICHT das Gleiche wie "Wie viel Prozent von?"'
     ],
     quiz: {
@@ -357,7 +357,7 @@ const COMPARISON = [
   ['Was ist es?', 'Das Ergebnis in Stueck/Euro/Liter', 'Das Ganze (100 %)', 'Der Anteil in %'],
   ['Formel', 'G × p ÷ 100', 'W × 100 ÷ p', 'W × 100 ÷ G'],
   ['Erkennungsmerkmal', '"Wie viel ist ...?"', '"Wie viel war es insgesamt?"', '"Wie viel Prozent?"'],
-  ['Baeder-Beispiel', '25 % von 800 m³ = 200 m³', '200 m³ sind 25 % → 800 m³ gesamt', '200 von 800 m³ = 25 %']
+  ['Bäder-Beispiel', '25 % von 800 m³ = 200 m³', '200 m³ sind 25 % → 800 m³ gesamt', '200 von 800 m³ = 25 %']
 ];
 
 /* ─── Shared components ─────────────────────────────────────────────────────── */
@@ -513,7 +513,7 @@ export default function ProzentDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -664,7 +664,7 @@ export default function ProzentDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

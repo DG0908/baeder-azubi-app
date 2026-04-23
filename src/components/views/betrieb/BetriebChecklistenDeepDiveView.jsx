@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
 const TABS = {
-  oeffnung: 'Öffnungsroutine',
+  öffnung: 'Öffnungsroutine',
   schicht: 'Schichtroutine',
-  schliessung: 'Schließroutine',
+  schließung: 'Schließroutine',
   wasser: 'Wasserqualität',
   aufbewahrung: 'Aufbewahrung & Fristen',
 };
@@ -30,7 +30,7 @@ const CheckItem = ({ text, dark, done = false }) => (
 );
 
 export default function BetriebChecklistenDeepDiveView({ darkMode }) {
-  const [tab, setTab] = useState('oeffnung');
+  const [tab, setTab] = useState('öffnung');
   const dark = darkMode;
   const bg = dark ? '#0f172a' : '#ffffff';
   const cardBg = dark ? '#1e293b' : '#f8fafc';
@@ -55,7 +55,7 @@ export default function BetriebChecklistenDeepDiveView({ darkMode }) {
           ))}
         </div>
 
-        {tab === 'oeffnung' && (
+        {tab === 'öffnung' && (
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#c4b5fd' : '#7c3aed', marginBottom: 6 }}>Öffnungsroutine</h2>
             <p style={{ color: text, fontSize: 14, marginBottom: 14 }}>Vor der Öffnung muss das Bad vollständig kontrolliert und betriebsbereit sein. Erst wenn alle Punkte abgearbeitet sind, dürfen Besucher eingelassen werden.</p>
@@ -145,7 +145,7 @@ export default function BetriebChecklistenDeepDiveView({ darkMode }) {
           </div>
         )}
 
-        {tab === 'schliessung' && (
+        {tab === 'schließung' && (
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#c4b5fd' : '#7c3aed', marginBottom: 6 }}>Schließroutine</h2>
             <p style={{ color: text, fontSize: 14, marginBottom: 14 }}>Nach Betriebsende müssen alle Bereiche gesichert, gereinigt und technische Anlagen korrekt zurückgefahren werden.</p>

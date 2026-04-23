@@ -6,7 +6,7 @@ const TABS = {
   hierarchie: { label: 'Normenhierarchie', icon: '🏛️' },
   eu: { label: 'EU-Recht', icon: '🇪🇺' },
   gerichte: { label: 'Gerichtssystem', icon: '⚖️' },
-  oeffentlich: { label: 'Öff. Recht vs. Zivilrecht', icon: '🔀' },
+  öffentlich: { label: 'Öff. Recht vs. Zivilrecht', icon: '🔀' },
 };
 
 const TabChip = ({ id, tab, active, onClick }) => (
@@ -214,35 +214,35 @@ export default function RechtsnormenDeepDiveView({ darkMode }) {
                 {
                   zweig: 'Ordentliche Gerichtsbarkeit',
                   instanzen: 'Amtsgericht → Landgericht → Oberlandesgericht → Bundesgerichtshof (BGH)',
-                  zustaendig: 'Zivilrecht (Schadensersatz, Verträge) + Strafrecht',
+                  zuständig: 'Zivilrecht (Schadensersatz, Verträge) + Strafrecht',
                   bad: 'Schadenersatzklage nach Badeunfall, Strafverfolgung bei §323c',
                   color: 'blue', icon: '⚖️',
                 },
                 {
                   zweig: 'Arbeitsgerichtsbarkeit',
                   instanzen: 'Arbeitsgericht → Landesarbeitsgericht → Bundesarbeitsgericht (BAG)',
-                  zustaendig: 'Arbeitsstreitigkeiten (Kündigung, Lohn, Urlaub)',
+                  zuständig: 'Arbeitsstreitigkeiten (Kündigung, Lohn, Urlaub)',
                   bad: 'Kündigungsschutzklage, Lohnstreit im Bäderbetrieb',
                   color: 'orange', icon: '🏢',
                 },
                 {
                   zweig: 'Verwaltungsgerichtsbarkeit',
                   instanzen: 'Verwaltungsgericht → OVG/VGH → Bundesverwaltungsgericht (BVerwG)',
-                  zustaendig: 'Streit mit Behörden (öffentliches Recht)',
+                  zuständig: 'Streit mit Behörden (öffentliches Recht)',
                   bad: 'Klage gegen Bäderschließung, Gewerbeaufsicht-Bescheide',
                   color: 'teal', icon: '🏛️',
                 },
                 {
                   zweig: 'Sozialgerichtsbarkeit',
                   instanzen: 'Sozialgericht → LSG → Bundessozialgericht (BSG)',
-                  zustaendig: 'Sozialversicherungsrecht',
+                  zuständig: 'Sozialversicherungsrecht',
                   bad: 'Streit mit BG über Arbeitsunfall-Anerkennung',
                   color: 'purple', icon: '🏥',
                 },
                 {
                   zweig: 'Finanzgerichtsbarkeit',
                   instanzen: 'Finanzgericht → Bundesfinanzhof (BFH)',
-                  zustaendig: 'Steuerrecht',
+                  zuständig: 'Steuerrecht',
                   bad: 'Gewerbesteuerstreit kommunaler Bäderbetriebe',
                   color: 'yellow', icon: '💶',
                 },
@@ -253,7 +253,7 @@ export default function RechtsnormenDeepDiveView({ darkMode }) {
                     <p className={`font-bold text-${item.color}-800 text-sm`}>{item.zweig}</p>
                   </div>
                   <p className="text-xs text-gray-600 mb-1">📍 {item.instanzen}</p>
-                  <p className="text-xs text-gray-600 mb-1">Zuständig für: {item.zustaendig}</p>
+                  <p className="text-xs text-gray-600 mb-1">Zuständig für: {item.zuständig}</p>
                   <p className={`text-xs font-medium text-${item.color}-700`}>Im Bad: {item.bad}</p>
                 </div>
               ))}
@@ -275,7 +275,7 @@ export default function RechtsnormenDeepDiveView({ darkMode }) {
         </div>
       )}
 
-      {activeTab === 'oeffentlich' && (
+      {activeTab === 'öffentlich' && (
         <div className="space-y-4">
           <Section title="Öffentliches Recht vs. Zivilrecht">
             <p className="text-sm text-gray-700 mb-3">

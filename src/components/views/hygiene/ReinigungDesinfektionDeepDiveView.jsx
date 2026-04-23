@@ -7,36 +7,36 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Reinigung und Desinfektion — was ist der Unterschied?',
     intro:
-      'Viele verwechseln Reinigung und Desinfektion. Reinigung entfernt sichtbaren Schmutz, Fett und organische Rueckstaende — aber toetet keine Keime. Desinfektion reduziert Krankheitserreger auf ein ungefaehrliches Mass — aber entfernt keinen Schmutz. Im Schwimmbad brauchen wir beides: zuerst reinigen, dann desinfizieren. Denn auf schmutzigen Flaechen wirkt ein Desinfektionsmittel nicht richtig!',
+      'Viele verwechseln Reinigung und Desinfektion. Reinigung entfernt sichtbaren Schmutz, Fett und organische Rueckstaende — aber toetet keine Keime. Desinfektion reduziert Krankheitserreger auf ein ungefährliches Mass — aber entfernt keinen Schmutz. Im Schwimmbad brauchen wir beides: zuerst reinigen, dann desinfizieren. Denn auf schmutzigen Flächen wirkt ein Desinfektionsmittel nicht richtig!',
     motto: 'Erst reinigen, dann desinfizieren — nie beides gleichzeitig weglassen.',
     rules: [
       'Reinigung = Entfernung von sichtbarem Schmutz, Biofilm und Rueckstaenden. Toetet keine Keime.',
       'Desinfektion = Abtoeung oder Inaktivierung von Krankheitserregern auf ein sicheres Mass. Entfernt keinen Schmutz.',
       'Reihenfolge: IMMER erst reinigen, dann desinfizieren. Schmutz blockiert die Wirkung von Desinfektionsmitteln.',
       'Einwirkzeit ist entscheidend: Desinfektionsmittel braucht Zeit. Zu frueh abwischen = keine Wirkung.',
-      'Vorbenetzung: Flaechen immer zuerst mit Wasser anfeuchten — Tenside wirken sonst nur punktuell.',
-      'Reinigungsplan und Hygieneplan muessen schriftlich vorliegen und eingehalten werden.',
+      'Vorbenetzung: Flächen immer zuerst mit Wasser anfeuchten — Tenside wirken sonst nur punktuell.',
+      'Reinigungsplan und Hygieneplan müssen schriftlich vorliegen und eingehalten werden.',
     ],
     steps: [
       {
         title: '0. Vorbenetzung — der oft vergessene erste Schritt',
-        text: 'Vor dem Reinigungsmittel kommt immer das Wasser. Trockene Flaechen lassen das Mittel abperlen — die waschaktiven Substanzen (Tenside) koennen sich nicht gleichmaessig verteilen. Mit feuchtem Mop oder Spruehflasche vorbefeuchten, dann erst Reiniger auftragen. Spart Mittel und verbessert die Wirkung deutlich.',
+        text: 'Vor dem Reinigungsmittel kommt immer das Wasser. Trockene Flächen lassen das Mittel abperlen — die waschaktiven Substanzen (Tenside) können sich nicht gleichmaessig verteilen. Mit feuchtem Mop oder Spruehflasche vorbefeuchten, dann erst Reiniger auftragen. Spart Mittel und verbessert die Wirkung deutlich.',
       },
       {
         title: '1. Reinigung: Was und womit?',
-        text: 'Reinigung loest Schmutz, Kalk, Fett, Hautschuppen und Biofilm. Mittel: Allzweckreiniger, alkalische Reiniger (gegen Fett), saure Reiniger (gegen Kalk). Mechanische Unterstuetzung durch Schrubben, Wischen oder Hochdruckreiniger. Ohne mechanischen Effekt wirken auch gute Mittel oft schlecht.'
+        text: 'Reinigung loest Schmutz, Kalk, Fett, Hautschuppen und Biofilm. Mittel: Allzweckreiniger, alkalische Reiniger (gegen Fett), saure Reiniger (gegen Kalk). Mechanische Unterstützung durch Schrubben, Wischen oder Hochdruckreiniger. Ohne mechanischen Effekt wirken auch gute Mittel oft schlecht.'
       },
       {
         title: '2. Desinfektion: Wie und wie lange?',
-        text: 'Nach der Reinigung: Desinfektionsmittel aufbringen und die vorgeschriebene Einwirkzeit einhalten. Einwirkzeiten stehen auf dem Produkt und im Hygieneplan (z.B. 5 Minuten, 15 Minuten). Dann abwischen oder trocknen lassen. Flaechendesis werden unverduernt oder nach Vorschrift verduernt aufgetragen.'
+        text: 'Nach der Reinigung: Desinfektionsmittel aufbringen und die vorgeschriebene Einwirkzeit einhalten. Einwirkzeiten stehen auf dem Produkt und im Hygieneplan (z.B. 5 Minuten, 15 Minuten). Dann abwischen oder trocknen lassen. Flächendesis werden unverduernt oder nach Vorschrift verduernt aufgetragen.'
       },
       {
         title: '3. Typische Bereiche im Schwimmbad',
-        text: 'Beckenumgang: Taeglich reinigen, rutschhemmend halten. Umkleiden und Duschen: Taeglich reinigen, regelmaessig desinfizieren. Toiletten: Mehrmals taeglich reinigen und desinfizieren. Rettungsgeraete: Regelmaessig reinigen, bei Benutzung sofort aufbereiten. Handlauefe und Tueren: Taeglich wischen.'
+        text: 'Beckenumgang: Täglich reinigen, rutschhemmend halten. Umkleiden und Duschen: Täglich reinigen, regelmäßig desinfizieren. Toiletten: Mehrmals täglich reinigen und desinfizieren. Rettungsgeräte: Regelmäßig reinigen, bei Benutzung sofort aufbereiten. Handlauefe und Tueren: Täglich wischen.'
       },
       {
         title: '4. Der Hygieneplan',
-        text: 'Der Hygieneplan regelt: Was wird gereinigt/desinfiziert? Womit (Produkt, Konzentration)? Wann und wie oft? Von wem? Mit welcher Einwirkzeit? Der Plan muss schriftlich vorliegen, allen Mitarbeitern bekannt sein und eingehalten werden. Abweichungen muessen dokumentiert werden.'
+        text: 'Der Hygieneplan regelt: Was wird gereinigt/desinfiziert? Womit (Produkt, Konzentration)? Wann und wie oft? Von wem? Mit welcher Einwirkzeit? Der Plan muss schriftlich vorliegen, allen Mitarbeitern bekannt sein und eingehalten werden. Abweichungen müssen dokumentiert werden.'
       }
     ],
     examples: [
@@ -46,9 +46,9 @@ const TABS = {
         question: 'In welcher Reihenfolge und mit welchen Mitteln?',
         steps: [
           ['Schritt 1', 'Groben Schmutz entfernen, Abfluss reinigen'],
-          ['Schritt 2', 'Reiniger auftragen, einwirken lassen, schrubben, abspuelen'],
-          ['Schritt 3', 'Flaechendesinfektionsmittel aufbringen — Einwirkzeit einhalten (lt. Plan)'],
-          ['Schritt 4', 'Flaechen trocknen lassen oder abwischen, Ergebnis dokumentieren']
+          ['Schritt 2', 'Reiniger auftragen, einwirken lassen, schrubben, abspülen'],
+          ['Schritt 3', 'Flächendesinfektionsmittel aufbringen — Einwirkzeit einhalten (lt. Plan)'],
+          ['Schritt 4', 'Flächen trocknen lassen oder abwischen, Ergebnis dokumentieren']
         ]
       },
       {
@@ -59,15 +59,15 @@ const TABS = {
           ['Sofort', 'Ring aus dem Verkehr nehmen, reinigen und desinfizieren'],
           ['Reinigung', 'Mit Reiniger und Buerste Verunreinigungen entfernen'],
           ['Desinfektion', 'Mit geeignetem Desinfektionsmittel behandeln, Einwirkzeit abwarten'],
-          ['Zurueck', 'Ring erst nach vollstaendiger Aufbereitung wieder einsatzbereit haengen']
+          ['Zurück', 'Ring erst nach vollständiger Aufbereitung wieder einsatzbereit haengen']
         ]
       }
     ],
     pitfalls: [
       'Desinfizieren OHNE vorherige Reinigung ist wirkungslos — Schmutz blockiert den Wirkstoff.',
-      'Einwirkzeit ignorieren ist ein haeufiger Fehler — zu frueh abgewischt = keine Desinfektionswirkung.',
-      'Reinigungsmittel und Desinfektionsmittel duerfen NICHT einfach gemischt werden — oft entstehen gefaehrliche Reaktionen.',
-      'Abgenutzte Wischmoppe und Lappen uebertragen Keime statt sie zu entfernen — regelmaessig wechseln!'
+      'Einwirkzeit ignorieren ist ein häufiger Fehler — zu frueh abgewischt = keine Desinfektionswirkung.',
+      'Reinigungsmittel und Desinfektionsmittel dürfen NICHT einfach gemischt werden — oft entstehen gefährliche Reaktionen.',
+      'Abgenutzte Wischmoppe und Lappen uebertragen Keime statt sie zu entfernen — regelmäßig wechseln!'
     ],
     quiz: {
       question: 'Warum muss vor der Desinfektion immer zuerst gereinigt werden?',
@@ -77,7 +77,7 @@ const TABS = {
         'Weil Desinfektionsmittel teuer ist und man es nicht verschwenden soll'
       ],
       correctIndex: 1,
-      explanation: 'Schmutz und organische Substanzen "verbrauchen" das Desinfektionsmittel, bevor es auf Keime wirken kann. Desinfektion auf schmutzigen Flaechen ist deshalb wirkungslos oder stark abgeschwaecht. Richtige Reihenfolge: reinigen → desinfizieren.'
+      explanation: 'Schmutz und organische Substanzen "verbrauchen" das Desinfektionsmittel, bevor es auf Keime wirken kann. Desinfektion auf schmutzigen Flächen ist deshalb wirkungslos oder stark abgeschwaecht. Richtige Reihenfolge: reinigen → desinfizieren.'
     }
   },
 
@@ -86,19 +86,19 @@ const TABS = {
     chip: 'Reinigungsmittel',
     title: 'Welche Mittel gibt es und wann nutze ich was?',
     intro:
-      'Nicht jedes Reinigungsmittel passt zu jeder Flaeche oder jedem Schmutz. Alkalische Reiniger loesen Fett und Eiweiss. Saure Reiniger loesen Kalk und Urinstein. Neutrale Reiniger sind fuer allgemeine Reinigung. Desinfektionsmittel gibt es auf Basis von Alkohol, Chlor oder Quats. Das richtige Mittel in der richtigen Konzentration spart Zeit, schont Flaechen und ist sicher fuer Mitarbeiter und Gaeste.',
+      'Nicht jedes Reinigungsmittel passt zu jeder Fläche oder jedem Schmutz. Alkalische Reiniger loesen Fett und Eiweiss. Saure Reiniger loesen Kalk und Urinstein. Neutrale Reiniger sind für allgemeine Reinigung. Desinfektionsmittel gibt es auf Basis von Alkohol, Chlor oder Quats. Das richtige Mittel in der richtigen Konzentration spart Zeit, schont Flächen und ist sicher für Mitarbeiter und Gaeste.',
     motto: 'Falsches Mittel kann mehr schaden als nuetzen — kenne deine Produkte.',
     rules: [
-      'Alkalische Reiniger (pH > 8): Loesen Fett, Eiweiss, Hautschuppen. Gut fuer Umkleiden, Duschen, Beckenrand.',
-      'Saure Reiniger (pH < 6): Loesen Kalk, Rost, Urinstein. Gut fuer Fliesen, Armaturen, WC.',
-      'Neutrale Reiniger (pH 6-8): Schonendes Allgemeinreinigen. Fuer Boeden, Glasflaechen, empfindliche Oberflaechen.',
+      'Alkalische Reiniger (pH > 8): Loesen Fett, Eiweiss, Hautschuppen. Gut für Umkleiden, Duschen, Beckenrand.',
+      'Saure Reiniger (pH < 6): Loesen Kalk, Rost, Urinstein. Gut für Fliesen, Armaturen, WC.',
+      'Neutrale Reiniger (pH 6-8): Schonendes Allgemeinreinigen. Für Boeden, Glasflächen, empfindliche Oberflächen.',
       'Desinfektionsmittel: Immer nach Hersteller-Angabe verduernen und Einwirkzeit einhalten.',
-      'Konzentration einhalten: Zu wenig = keine Wirkung, zu viel = Schaeden an Flaechen und Gesundheitsrisiko.'
+      'Konzentration einhalten: Zu wenig = keine Wirkung, zu viel = Schaeden an Flächen und Gesundheitsrisiko.'
     ],
     steps: [
       {
         title: '1. Alkalische Reiniger',
-        text: 'Wirken durch hohen pH-Wert — "verseifern" Fette und loesen Eiweissverbindungen. Anwendung: Duschbereiche, Umkleiden, Beckenumgang. Achtung: Nicht fuer Aluminium und empfindliche Metalle — sie greifen die Oberflaeche an. Bei hoher Konzentration PSA (Handschuhe, Brille) tragen.'
+        text: 'Wirken durch hohen pH-Wert — "verseifern" Fette und loesen Eiweissverbindungen. Anwendung: Duschbereiche, Umkleiden, Beckenumgang. Achtung: Nicht für Aluminium und empfindliche Metalle — sie greifen die Oberfläche an. Bei hoher Konzentration PSA (Handschuhe, Brille) tragen.'
       },
       {
         title: '2. Saure Reiniger',
@@ -106,11 +106,11 @@ const TABS = {
       },
       {
         title: '3. Desinfektionsmittel richtig anwenden',
-        text: 'Es gibt drei Hauptgruppen: Alkohol (schnell, fuer Haende und Flaechen), Chlor (z.B. Natriumhypochlorit, breitwirkend, fuer Sanitaerbereiche), Quats (quartaere Ammoniumverbindungen, fuer Flaechen). Wichtig: Immer laut Herstellerangabe verduennen, Einwirkzeit einhalten, Belueftung sicherstellen.'
+        text: 'Es gibt drei Hauptgruppen: Alkohol (schnell, für Hände und Flächen), Chlor (z.B. Natriumhypochlorit, breitwirkend, für Sanitaerbereiche), Quats (quartaere Ammoniumverbindungen, für Flächen). Wichtig: Immer laut Herstellerangabe verduennen, Einwirkzeit einhalten, Belueftung sicherstellen.'
       },
       {
         title: '4. Dosierung und Verduennung',
-        text: 'Zu konzentriert = Schaeden an Flaechen, Reizungen bei Mitarbeitern und Gaesten, teure Verschwendung. Zu verduernt = keine ausreichende Wirkung, Keime ueberleben. Dosiergeraete nutzen wenn vorhanden. Verduennung immer nachmessen — nicht schatzen!'
+        text: 'Zu konzentriert = Schaeden an Flächen, Reizungen bei Mitarbeitern und Gaesten, teure Verschwendung. Zu verduernt = keine ausreichende Wirkung, Keime ueberleben. Dosiergeräte nutzen wenn vorhanden. Verduennung immer nachmessen — nicht schatzen!'
       }
     ],
     examples: [
@@ -121,7 +121,7 @@ const TABS = {
         steps: [
           ['Mittel', 'Saurer Reiniger (Kalkloeser) — loest Kalkabsatze chemisch'],
           ['Einwirkzeit', 'Mittel auftragen, einige Minuten einwirken lassen, dann schrubben'],
-          ['Achtung', 'Nicht auf Naturstein oder Metall verwenden — Flaeche vorher pruefen'],
+          ['Achtung', 'Nicht auf Naturstein oder Metall verwenden — Fläche vorher prüfen'],
           ['PSA', 'Schutzhandschuhe und Augenschutz tragen — saure Reiniger reizen Haut']
         ]
       },
@@ -132,16 +132,16 @@ const TABS = {
         steps: [
           ['Erreger', 'Magen-Darm-Viren (z.B. Noroviren) erfordern viruzide Desinfektionsmittel'],
           ['Mittel', 'Chlorhaltiges Desinfektionsmittel oder VA-gelistetes viruzides Praeparat'],
-          ['Einwirkzeit', 'Mindestens 15 Minuten, oft laenger — laut Hersteller und VAH-Liste'],
-          ['Schutz', 'Einweghandschuhe, Schuerze, ggf. Mundschutz — danach Haende desinfizieren']
+          ['Einwirkzeit', 'Mindestens 15 Minuten, oft länger — laut Hersteller und VAH-Liste'],
+          ['Schutz', 'Einweghandschuhe, Schuerze, ggf. Mundschutz — danach Hände desinfizieren']
         ]
       }
     ],
     pitfalls: [
       'Saure und chlorhaltige Reiniger NIEMALS mischen — es entsteht giftiges Chlorgas!',
-      'Desinfektionsmittel auf nicht gereinigten Flaechen = Geldverschwendung und keine Wirkung.',
-      'Eigenhaendige Verduennung "nach Gefuehl" ist gefaehrlich — immer mit Messbecher dosieren.',
-      'Abgelaufene Desinfektionsmittel verlieren ihre Wirksamkeit — immer Verfallsdatum pruefen!'
+      'Desinfektionsmittel auf nicht gereinigten Flächen = Geldverschwendung und keine Wirkung.',
+      'Eigenhaendige Verduennung "nach Gefuehl" ist gefährlich — immer mit Messbecher dosieren.',
+      'Abgelaufene Desinfektionsmittel verlieren ihre Wirksamkeit — immer Verfallsdatum prüfen!'
     ],
     quiz: {
       question: 'Welcher Reiniger ist geeignet um Kalkabsatze auf Fliesen zu entfernen?',
@@ -236,31 +236,31 @@ const TABS = {
     chip: 'Hygieneplan',
     title: 'Der Hygieneplan — Pflicht und Praxis',
     intro:
-      'Ein Hygieneplan ist keine Empfehlung — er ist Pflicht. Er regelt verbindlich fuer alle Mitarbeiter, was wann wie oft und womit gereinigt und desinfiziert wird. Im Schwimmbad ist er besonders wichtig, weil viele Menschen auf engem Raum zusammenkommen und Krankheitserreger (Pilze, Viren, Bakterien) sich auf nassen Flaechen schnell ausbreiten koennen. Ein guter Hygieneplan schuetzt Gaeste, Mitarbeiter und den Betrieb.',
+      'Ein Hygieneplan ist keine Empfehlung — er ist Pflicht. Er regelt verbindlich für alle Mitarbeiter, was wann wie oft und womit gereinigt und desinfiziert wird. Im Schwimmbad ist er besonders wichtig, weil viele Menschen auf engem Raum zusammenkommen und Krankheitserreger (Pilze, Viren, Bakterien) sich auf nassen Flächen schnell ausbreiten können. Ein guter Hygieneplan schuetzt Gaeste, Mitarbeiter und den Betrieb.',
     motto: 'Der Hygieneplan steht — er muss auch gelebt werden.',
     rules: [
-      'Jeder Betrieb mit oeffentlichem Badebetrieb braucht einen schriftlichen Hygieneplan.',
-      'Der Plan muss fuer alle Mitarbeiter zugaenglich und verstaendlich sein — am besten im Aufenthaltsraum ausgehaengt.',
-      'Kontrollen und Reinigungsnachweise muessen dokumentiert werden (Unterschrift, Datum, Uhrzeit).',
-      'Der Plan muss regelmaessig aktualisiert werden — z.B. bei neuen Produkten, Umbau oder geaenderten Ablaeufen.',
+      'Jeder Betrieb mit öffentlichem Badebetrieb braucht einen schriftlichen Hygieneplan.',
+      'Der Plan muss für alle Mitarbeiter zugaenglich und verstaendlich sein — am besten im Aufenthaltsraum ausgehängt.',
+      'Kontrollen und Reinigungsnachweise müssen dokumentiert werden (Unterschrift, Datum, Uhrzeit).',
+      'Der Plan muss regelmäßig aktualisiert werden — z.B. bei neuen Produkten, Umbau oder geaenderten Abläufen.',
       'Bei Nichteinhaltung des Hygieneplans hafte der Betrieb bei Schaeden an Gaesten oder Mitarbeitern.'
     ],
     steps: [
       {
         title: '1. Was steht im Hygieneplan?',
-        text: 'Flaechenverzeichnis (was wird gereinigt), Mittelangaben (Produktname, Konzentration), Haeufigkeit (taeglich, woechentlich, monatlich), Einwirkzeiten, Verantwortlichkeiten (wer ist zustaendig), Dokumentationspflicht (wie wird nachgewiesen).'
+        text: 'Flächenverzeichnis (was wird gereinigt), Mittelangaben (Produktname, Konzentration), Häufigkeit (täglich, woechentlich, monatlich), Einwirkzeiten, Verantwortlichkeiten (wer ist zuständig), Dokumentationspflicht (wie wird nachgewiesen).'
       },
       {
         title: '2. Typische Reinigungszyklen',
-        text: 'Taeglich: Beckenumgang, Duschen, WC, Umkleiden, Handlauefe, Schliessflaechen. Woechentlich: Gruendliche Reinigung der Filteranlage-Aussenseiten, Rettungsgeraete pruefen. Monatlich: Tiefenreinigung Technikbereiche, Kontrolle Duschkoepfe auf Legionellen. Jaehrlich: Grosse Inspektion, Schimmelpilz-Kontrolle.'
+        text: 'Täglich: Beckenumgang, Duschen, WC, Umkleiden, Handlauefe, Schliessflächen. Woechentlich: Gruendliche Reinigung der Filteranlage-Aussenseiten, Rettungsgeräte prüfen. Monatlich: Tiefenreinigung Technikbereiche, Kontrolle Duschkoepfe auf Legionellen. Jaehrlich: Grosse Inspektion, Schimmelpilz-Kontrolle.'
       },
       {
         title: '3. Dokumentation richtig fuehren',
-        text: 'Fuer jede Reinigungsmassnahme: Datum, Uhrzeit, Bereiche, verwendetes Mittel, Konzentration, Einwirkzeit, Name des Mitarbeiters. Diese Dokumentation ist im Schadensfall der Beweis, dass der Betrieb seine Pflichten erfuellt hat. Fehlende Dokumentation gilt als nicht durchgefuehrte Reinigung!'
+        text: 'Für jede Reinigungsmaßnahme: Datum, Uhrzeit, Bereiche, verwendetes Mittel, Konzentration, Einwirkzeit, Name des Mitarbeiters. Diese Dokumentation ist im Schadensfall der Beweis, dass der Betrieb seine Pflichten erfüllt hat. Fehlende Dokumentation gilt als nicht durchgeführte Reinigung!'
       },
       {
         title: '4. Sonderfall Legionellen',
-        text: 'Legionellen sind Bakterien die im lauwarmen Wasser (25-55 Grad) gedeihen und ueber Duschwasser eingeatmet werden koennen — gefaehrlich fuer immungeschwaechte Personen. Vorbeugung: Warmwasser immer ueber 60 Grad halten, Kalt-wasser unter 20 Grad, regelmaessige Proben und Duschkopf-Reinigung.'
+        text: 'Legionellen sind Bakterien die im lauwarmen Wasser (25-55 Grad) gedeihen und über Duschwasser eingeatmet werden können — gefährlich für immungeschwaechte Personen. Vorbeugung: Warmwasser immer über 60 Grad halten, Kalt-wasser unter 20 Grad, regelmäßige Proben und Duschkopf-Reinigung.'
       }
     ],
     examples: [
@@ -270,9 +270,9 @@ const TABS = {
         question: 'Was muss vorbereitet sein?',
         steps: [
           ['Hygieneplan', 'Schriftlich, aktuell, unterschrieben von Betriebsleitung'],
-          ['Dokumentation', 'Alle Reinigungsnachweise der letzten Monate vollstaendig'],
-          ['Produkte', 'Sicherheitsdatenblaetter fuer alle verwendeten Mittel vorhanden'],
-          ['Personal', 'Nachweis ueber Hygieneschulungen aller Mitarbeiter']
+          ['Dokumentation', 'Alle Reinigungsnachweise der letzten Monate vollständig'],
+          ['Produkte', 'Sicherheitsdatenblaetter für alle verwendeten Mittel vorhanden'],
+          ['Personal', 'Nachweis über Hygieneschulungen aller Mitarbeiter']
         ]
       },
       {
@@ -280,18 +280,18 @@ const TABS = {
         given: 'In der Herrenumkleide wird Schimmelpilz an der Wand entdeckt.',
         question: 'Wie wird vorgegangen und was ist im Hygieneplan anzupassen?',
         steps: [
-          ['Sofortmassnahme', 'Bereich sperren, Vorgesetzten informieren, Ursache klaeren'],
+          ['Sofortmaßnahme', 'Bereich sperren, Vorgesetzten informieren, Ursache klaeren'],
           ['Behandlung', 'Spezielles Anti-Schimmel-Desinfektionsmittel verwenden, Ursache (Feuchtigkeit) beheben'],
-          ['Hygieneplan', 'Haeufigkeit der Lueftungskontrolle und Feuchtigkeismessung eintragen'],
-          ['Praeventiv', 'Lueftungszeiten erhoehen, Reinigungshaeufigkeit temporaer steigern, dokumentieren']
+          ['Hygieneplan', 'Häufigkeit der Lueftungskontrolle und Feuchtigkeismessung eintragen'],
+          ['Praeventiv', 'Lueftungszeiten erhöhen, Reinigungshäufigkeit temporaer steigern, dokumentieren']
         ]
       }
     ],
     pitfalls: [
       'Hygieneplan im Schrank verstecken reicht nicht — er muss gelebt und dokumentiert werden.',
-      'Mitarbeiter die nicht geschult wurden koennen den Hygieneplan nicht einhalten — Schulungen sind Pflicht.',
-      'Eigenprodukte oder Billigmittel ohne Pruefung einsetzen kann die Wirksamkeit zerstoeren und haftet rechtlich.',
-      'Fehlende Dokumentation ist im Rechtsstreit gleichbedeutend mit nicht durchgefuehrter Reinigung!'
+      'Mitarbeiter die nicht geschult wurden können den Hygieneplan nicht einhalten — Schulungen sind Pflicht.',
+      'Eigenprodukte oder Billigmittel ohne Prüfung einsetzen kann die Wirksamkeit zerstoeren und haftet rechtlich.',
+      'Fehlende Dokumentation ist im Rechtsstreit gleichbedeutend mit nicht durchgeführter Reinigung!'
     ],
     quiz: {
       question: 'Welche Wassertemperatur muss Warmwasser mindestens haben um Legionellen zu verhindern?',
@@ -301,7 +301,7 @@ const TABS = {
         'Mindestens 80 Grad Celsius'
       ],
       correctIndex: 1,
-      explanation: 'Legionellen werden bei Temperaturen ueber 60 Grad Celsius abgetoetet. Warmwasser muss deshalb am Speicher mindestens 60 Grad haben. Die Gefahrenzone fuer Legionellenwachstum liegt zwischen 25 und 55 Grad.'
+      explanation: 'Legionellen werden bei Temperaturen über 60 Grad Celsius abgetoetet. Warmwasser muss deshalb am Speicher mindestens 60 Grad haben. Die Gefahrenzone für Legionellenwachstum liegt zwischen 25 und 55 Grad.'
     }
   }
 };
@@ -311,7 +311,7 @@ const TABS = {
 const GHS_INFO = {
   GHS01: { label: 'Explosiv',          symbol: 'Explodierende Bombe',       color: 'bg-orange-50 border-red-600' },
   GHS02: { label: 'Entzuendlich',      symbol: 'Flamme',                    color: 'bg-orange-50 border-red-600' },
-  GHS03: { label: 'Oxidierend',        symbol: 'Flamme ueber Kreis',        color: 'bg-orange-50 border-red-600' },
+  GHS03: { label: 'Oxidierend',        symbol: 'Flamme über Kreis',        color: 'bg-orange-50 border-red-600' },
   GHS04: { label: 'Gas u. Druck',      symbol: 'Gasflasche',                color: 'bg-blue-50 border-red-600'   },
   GHS05: { label: 'Aetzend',           symbol: 'Korrosion (Hand/Material)', color: 'bg-red-50 border-red-600'    },
   GHS06: { label: 'Akut giftig',       symbol: 'Totenkopf mit Knochen',     color: 'bg-red-50 border-red-600'    },
@@ -331,7 +331,7 @@ const GHS_CHEMICALS = [
       { name: 'Natriumhydroxid (NaOH)', formula: 'pH-Plus, Ablaugreiniger', ghs: ['GHS05'], note: 'Konzentriert stark aetzend. Schutzbrille + Handschuhe Pflicht.' },
       { name: 'Kaliumhydroxid (KOH)', formula: 'Entfetter, Reiniger', ghs: ['GHS05', 'GHS07'], note: 'Aetzend und reizend. Wie NaOH behandeln.' },
       { name: 'Allgemeiner Alkalireiniger', formula: 'gebrauchsfertig verdünnt', ghs: ['GHS07'], note: 'Verduennt nur reizend — trotzdem Handschuhe tragen.' },
-      { name: 'Ammoniakreiniger (NH₃)', formula: '>5% Ammoniak', ghs: ['GHS05', 'GHS07', 'GHS09'], note: 'Aetzend, reizend, umweltgefaehrlich. Nicht mit Chlor mischen — giftiges Gas!' },
+      { name: 'Ammoniakreiniger (NH₃)', formula: '>5% Ammoniak', ghs: ['GHS05', 'GHS07', 'GHS09'], note: 'Aetzend, reizend, umweltgefährlich. Nicht mit Chlor mischen — giftiges Gas!' },
     ],
   },
   {
@@ -340,10 +340,10 @@ const GHS_CHEMICALS = [
     subtitle: 'pH < 6 · gegen Kalk, Rost, Urinstein',
     headerColor: 'bg-red-600',
     chemicals: [
-      { name: 'Salzsaeure (HCl)', formula: '10–32% · pH-Minus', ghs: ['GHS05', 'GHS07'], note: 'NIE mit Chlorprodukten mischen — sofort Chlorgas (GHS06)!' },
-      { name: 'Phosphorsaeure (H₃PO₄)', formula: '25–85%', ghs: ['GHS05'], note: 'Kalkentferner. Maeßig aetzend — trotzdem Schutzbrille!' },
-      { name: 'Schwefelsaeure (H₂SO₄)', formula: 'konzentriert', ghs: ['GHS05'], note: 'Stark aetzend. Selten in Baedern, aber in Technikbetrieben moeglich.' },
-      { name: 'Zitronensaeure', formula: 'gebrauchsfertig', ghs: ['GHS07'], note: 'Milder Kalkentferner — bei hoeher Konzentration reizend.' },
+      { name: 'Salzsäure (HCl)', formula: '10–32% · pH-Minus', ghs: ['GHS05', 'GHS07'], note: 'NIE mit Chlorprodukten mischen — sofort Chlorgas (GHS06)!' },
+      { name: 'Phosphorsäure (H₃PO₄)', formula: '25–85%', ghs: ['GHS05'], note: 'Kalkentferner. Maeßig aetzend — trotzdem Schutzbrille!' },
+      { name: 'Schwefelsäure (H₂SO₄)', formula: 'konzentriert', ghs: ['GHS05'], note: 'Stark aetzend. Selten in Bädern, aber in Technikbetrieben möglich.' },
+      { name: 'Zitronensäure', formula: 'gebrauchsfertig', ghs: ['GHS07'], note: 'Milder Kalkentferner — bei höher Konzentration reizend.' },
     ],
   },
   {
@@ -353,7 +353,7 @@ const GHS_CHEMICALS = [
     headerColor: 'bg-green-600',
     chemicals: [
       { name: 'Tensid-Allzweckreiniger', formula: 'gebrauchsfertig', ghs: [], note: 'Oft ohne GHS-Pflicht bei niedrigem Tensidgehalt (<5%).' },
-      { name: 'Bodenreiniger neutral', formula: 'gebrauchsfertig', ghs: ['GHS07'], note: 'Bei hoeherem Tensidgehalt als reizend eingestuft.' },
+      { name: 'Bodenreiniger neutral', formula: 'gebrauchsfertig', ghs: ['GHS07'], note: 'Bei höherem Tensidgehalt als reizend eingestuft.' },
       { name: 'Glasreiniger', formula: 'gebrauchsfertig', ghs: ['GHS07'], note: 'Alkohol- oder tensidhaltig — leicht reizend bei Augenkontakt.' },
     ],
   },
@@ -363,12 +363,12 @@ const GHS_CHEMICALS = [
     subtitle: 'nach VAH-Liste · gezielt gegen Keime',
     headerColor: 'bg-purple-600',
     chemicals: [
-      { name: 'Natriumhypochlorit (NaOCl)', formula: '5–13% · Fluessigchlor', ghs: ['GHS05', 'GHS09'], note: 'Aetzend, umweltgefaehrlich. Mit Saeure → Chlorgas!' },
-      { name: 'Calciumhypochlorit Ca(OCl)₂', formula: 'Feststoff · Chlorkalk', ghs: ['GHS03', 'GHS05', 'GHS09'], note: 'OXIDIEREND — nie mit Brennbarem, Oel oder Saeure lagern!' },
-      { name: 'Chlorgas (Cl₂)', formula: 'Gas unter Druck', ghs: ['GHS04', 'GHS05', 'GHS06', 'GHS09'], note: 'Hoechste Gefahr — akut giftig, aetzend, umweltgefaehrlich.' },
-      { name: 'Ethanol / Isopropanol', formula: '70–80% · Haende/Flaechen', ghs: ['GHS02', 'GHS07'], note: 'Entflammbar! Nie in Naehe von Chlorgas oder Zuendquellen.' },
-      { name: 'Quats (QAV)', formula: 'Flaechendesinfektion', ghs: ['GHS05', 'GHS07', 'GHS09'], note: 'Nie mit anionischen Tensiden mischen — Wirkungsaufhebung.' },
-      { name: 'Peressigsaeure (PAA)', formula: '15% · Spezialdesinf.', ghs: ['GHS01', 'GHS02', 'GHS03', 'GHS05', 'GHS07'], note: 'Fuenf GHS-Symbole! Hoechste Vorsicht — oxidierend UND entzuendlich.' },
+      { name: 'Natriumhypochlorit (NaOCl)', formula: '5–13% · Flüssigchlor', ghs: ['GHS05', 'GHS09'], note: 'Aetzend, umweltgefährlich. Mit Säure → Chlorgas!' },
+      { name: 'Calciumhypochlorit Ca(OCl)₂', formula: 'Feststoff · Chlorkalk', ghs: ['GHS03', 'GHS05', 'GHS09'], note: 'OXIDIEREND — nie mit Brennbarem, Oel oder Säure lagern!' },
+      { name: 'Chlorgas (Cl₂)', formula: 'Gas unter Druck', ghs: ['GHS04', 'GHS05', 'GHS06', 'GHS09'], note: 'Hoechste Gefahr — akut giftig, aetzend, umweltgefährlich.' },
+      { name: 'Ethanol / Isopropanol', formula: '70–80% · Hände/Flächen', ghs: ['GHS02', 'GHS07'], note: 'Entflammbar! Nie in Nähe von Chlorgas oder Zuendquellen.' },
+      { name: 'Quats (QAV)', formula: 'Flächendesinfektion', ghs: ['GHS05', 'GHS07', 'GHS09'], note: 'Nie mit anionischen Tensiden mischen — Wirkungsaufhebung.' },
+      { name: 'Peressigsäure (PAA)', formula: '15% · Spezialdesinf.', ghs: ['GHS01', 'GHS02', 'GHS03', 'GHS05', 'GHS07'], note: 'Fuenf GHS-Symbole! Hoechste Vorsicht — oxidierend UND entzuendlich.' },
     ],
   },
 ];
@@ -465,7 +465,7 @@ function GHSChemicals({ darkMode }) {
         <h3 className="text-lg font-bold mb-1">GHS-Kennzeichnung nach Reinigungsmitteltyp</h3>
         <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
           Offizielle Piktogramm-Codes nach CLP-Verordnung (EG) Nr. 1272/2008 · ECHA · BAuA · GefStoffV.
-          Tippe auf ein Produkt fuer Details und vollstaendige Symbolerklaerung.
+          Tippe auf ein Produkt für Details und vollständige Symbolerklärung.
         </p>
       </div>
 
@@ -591,7 +591,7 @@ export default function ReinigungDesinfektionDeepDiveView({ onBack }) {
         </ul>
       </Section>}
 
-      {activeTab !== 'ghs' && <Section title="🔢 Schritt fuer Schritt" darkMode={darkMode}>
+      {activeTab !== 'ghs' && <Section title="🔢 Schritt für Schritt" darkMode={darkMode}>
         <div className="space-y-3">
           {tab.steps.map((s, i) => (
             <div key={i} className={`p-3 rounded-lg ${darkMode ? 'bg-slate-600' : 'bg-white'}`}>

@@ -12,34 +12,34 @@ const TABS = {
       'Pumpen sind das Herz jeder Badeanlage. Sie bewegen das Wasser durch Filter, Heizung und Desinfektion. Ohne Pumpen steht das Wasser still — und stehendes Wasser wird schnell unhygienisch. Als Fachangestellter musst du verstehen, wie Pumpen arbeiten und wie man sie berechnet.',
     motto: 'Ohne Pumpe kein sauberes Wasser.',
     rules: [
-      'Pumpen foerdern Wasser von einem Ort zum anderen — das nennt man den Foerderstrom Q.',
-      'Der Foerderstrom Q wird in m³/h (Kubikmeter pro Stunde) angegeben.',
-      'Die Foerderhoehe H beschreibt, wie hoch die Pumpe das Wasser druecken kann (in Metern).',
-      'Jede Pumpe hat eine Pumpenkennlinie — sie zeigt, wie viel Wasser bei welcher Hoehe fliesst.',
-      'Im Schwimmbad laufen Umwaelzpumpen rund um die Uhr — sie muessen zuverlaessig und sparsam sein.'
+      'Pumpen fördern Wasser von einem Ort zum anderen — das nennt man den Förderstrom Q.',
+      'Der Förderstrom Q wird in m³/h (Kubikmeter pro Stunde) angegeben.',
+      'Die Förderhöhe H beschreibt, wie hoch die Pumpe das Wasser druecken kann (in Metern).',
+      'Jede Pumpe hat eine Pumpenkennlinie — sie zeigt, wie viel Wasser bei welcher Höhe fliesst.',
+      'Im Schwimmbad laufen Umwaelzpumpen rund um die Uhr — sie müssen zuverlaessig und sparsam sein.'
     ],
     steps: [
       {
         title: '1. Aufgabe der Pumpe verstehen',
-        text: 'Die Pumpe saugt Wasser aus dem Becken an, drueckt es durch den Filter und die Aufbereitung und bringt es zurueck ins Becken. Dieser Kreislauf heisst Umwaelzung.'
+        text: 'Die Pumpe saugt Wasser aus dem Becken an, drueckt es durch den Filter und die Aufbereitung und bringt es zurück ins Becken. Dieser Kreislauf heisst Umwaelzung.'
       },
       {
-        title: '2. Foerderstrom kennen',
-        text: 'Der Foerderstrom Q sagt dir, wie viel Wasser die Pumpe pro Stunde bewegt. Beispiel: Q = 50 m³/h bedeutet: 50 Kubikmeter Wasser pro Stunde.'
+        title: '2. Förderstrom kennen',
+        text: 'Der Förderstrom Q sagt dir, wie viel Wasser die Pumpe pro Stunde bewegt. Beispiel: Q = 50 m³/h bedeutet: 50 Kubikmeter Wasser pro Stunde.'
       },
       {
-        title: '3. Foerderhoehe verstehen',
-        text: 'Die Foerderhoehe H ist der Widerstand, den die Pumpe ueberwinden muss. Dazu gehoeren: Hoehenunterschied, Rohrreibung und Filterwiderstand. Alles zusammen ergibt die Gesamtfoerderhoehe.'
+        title: '3. Förderhöhe verstehen',
+        text: 'Die Förderhöhe H ist der Widerstand, den die Pumpe ueberwinden muss. Dazu gehoeren: Höhenunterschied, Rohrreibung und Filterwiderstand. Alles zusammen ergibt die Gesamtförderhöhe.'
       },
       {
         title: '4. Umwaelzzeit beachten',
-        text: 'Die Umwaelzzeit sagt dir, wie lange es dauert, bis das gesamte Beckenwasser einmal durch die Aufbereitung gelaufen ist. Je kuerzer, desto besser die Wasserqualitaet.'
+        text: 'Die Umwaelzzeit sagt dir, wie lange es dauert, bis das gesamte Beckenwasser einmal durch die Aufbereitung gelaufen ist. Je kuerzer, desto besser die Wasserqualität.'
       }
     ],
     examples: [
       {
-        title: 'Einfaches Beispiel: Foerderstrom ablesen',
-        given: 'Eine Pumpe foerdert 30 m³/h. Das Becken hat 150 m³ Wasser.',
+        title: 'Einfaches Beispiel: Förderstrom ablesen',
+        given: 'Eine Pumpe fördert 30 m³/h. Das Becken hat 150 m³ Wasser.',
         question: 'Wie oft pro Tag wird das Wasser umgewaelzt?',
         steps: [
           ['Bekannt', 'Q = 30 m³/h, Beckenvolumen = 150 m³'],
@@ -49,78 +49,78 @@ const TABS = {
         ]
       },
       {
-        title: 'Baeder-Beispiel: Foerderhoehe',
-        given: 'Eine Pumpe muss Wasser 3 m hoch foerdern. Dazu kommen 5 m Rohrleitungsverluste und 4 m Filterwiderstand.',
-        question: 'Welche Gesamtfoerderhoehe braucht die Pumpe?',
+        title: 'Bäder-Beispiel: Förderhöhe',
+        given: 'Eine Pumpe muss Wasser 3 m hoch fördern. Dazu kommen 5 m Rohrleitungsverluste und 4 m Filterwiderstand.',
+        question: 'Welche Gesamtförderhöhe braucht die Pumpe?',
         steps: [
-          ['Hoehenunterschied', '3 m'],
+          ['Höhenunterschied', '3 m'],
           ['Rohrverluste', '+ 5 m'],
           ['Filterwiderstand', '+ 4 m'],
-          ['Gesamtfoerderhoehe', '3 + 5 + 4 = 12 m']
+          ['Gesamtförderhöhe', '3 + 5 + 4 = 12 m']
         ]
       }
     ],
     pitfalls: [
-      'Foerderstrom und Foerderhoehe nicht verwechseln — Q ist Menge (m³/h), H ist Druck (m).',
-      'Die Foerderhoehe ist NICHT nur der Hoehenunterschied — Rohrverluste und Filterwiderstand kommen dazu!',
-      'Eine groessere Pumpe ist nicht immer besser — sie verbraucht mehr Strom und kann die Rohre ueberlasten.',
-      'Pumpen koennen nicht beliebig hoch foerdern — bei zu viel Foerderhoehe sinkt der Foerderstrom auf null.'
+      'Förderstrom und Förderhöhe nicht verwechseln — Q ist Menge (m³/h), H ist Druck (m).',
+      'Die Förderhöhe ist NICHT nur der Höhenunterschied — Rohrverluste und Filterwiderstand kommen dazu!',
+      'Eine größere Pumpe ist nicht immer besser — sie verbraucht mehr Strom und kann die Rohre ueberlasten.',
+      'Pumpen können nicht beliebig hoch fördern — bei zu viel Förderhöhe sinkt der Förderstrom auf null.'
     ],
     quiz: {
-      question: 'Eine Pumpe foerdert 40 m³/h. Das Becken fasst 200 m³. Wie lange dauert eine Umwaelzung?',
+      question: 'Eine Pumpe fördert 40 m³/h. Das Becken fasst 200 m³. Wie lange dauert eine Umwaelzung?',
       options: ['4 Stunden', '5 Stunden', '8 Stunden'],
       correctIndex: 1,
-      explanation: '200 m³ ÷ 40 m³/h = 5 Stunden fuer eine komplette Umwaelzung.'
+      explanation: '200 m³ ÷ 40 m³/h = 5 Stunden für eine komplette Umwaelzung.'
     }
   },
 
-  foerderstrom: {
+  förderstrom: {
     id: 'foerderstrom',
-    chip: 'Foerderstrom',
-    title: 'Foerderstrom Q und Umwaelzzeit berechnen',
+    chip: 'Förderstrom',
+    title: 'Förderstrom Q und Umwaelzzeit berechnen',
     intro:
-      'Der Foerderstrom Q ist die wichtigste Kenngroesse einer Pumpe. Er sagt dir, wie viel Wasser pro Stunde bewegt wird. Die Formel ist einfach: Q = V ÷ t. Volumen geteilt durch Zeit. Damit berechnest du auch die Umwaelzzeit — also wie lange es dauert, bis das ganze Beckenwasser einmal durch die Aufbereitung gelaufen ist.',
+      'Der Förderstrom Q ist die wichtigste Kenngröße einer Pumpe. Er sagt dir, wie viel Wasser pro Stunde bewegt wird. Die Formel ist einfach: Q = V ÷ t. Volumen geteilt durch Zeit. Damit berechnest du auch die Umwaelzzeit — also wie lange es dauert, bis das ganze Beckenwasser einmal durch die Aufbereitung gelaufen ist.',
     motto: 'Q = V geteilt durch t — Volumen durch Zeit.',
     rules: [
-      'Die Grundformel lautet: Q = V ÷ t (Foerderstrom = Volumen geteilt durch Zeit).',
-      'Umgestellt: t = V ÷ Q (Zeit = Volumen geteilt durch Foerderstrom).',
-      'Umgestellt: V = Q × t (Volumen = Foerderstrom mal Zeit).',
-      'Die Einheiten muessen passen: Q in m³/h, V in m³, t in Stunden.',
-      'Die Umwaelzzeit ist die Zeit fuer eine komplette Umwaelzung: t = Beckenvolumen ÷ Foerderstrom.'
+      'Die Grundformel lautet: Q = V ÷ t (Förderstrom = Volumen geteilt durch Zeit).',
+      'Umgestellt: t = V ÷ Q (Zeit = Volumen geteilt durch Förderstrom).',
+      'Umgestellt: V = Q × t (Volumen = Förderstrom mal Zeit).',
+      'Die Einheiten müssen passen: Q in m³/h, V in m³, t in Stunden.',
+      'Die Umwaelzzeit ist die Zeit für eine komplette Umwaelzung: t = Beckenvolumen ÷ Förderstrom.'
     ],
     steps: [
       {
         title: '1. Werte aufschreiben',
-        text: 'Schreib auf was du kennst: Beckenvolumen V in m³ und entweder den Foerderstrom Q oder die gewuenschte Umwaelzzeit t.'
+        text: 'Schreib auf was du kennst: Beckenvolumen V in m³ und entweder den Förderstrom Q oder die gewuenschte Umwaelzzeit t.'
       },
       {
-        title: '2. Richtige Formel waehlen',
-        text: 'Foerderstrom gesucht? Q = V ÷ t. Zeit gesucht? t = V ÷ Q. Volumen gesucht? V = Q × t.'
+        title: '2. Richtige Formel wählen',
+        text: 'Förderstrom gesucht? Q = V ÷ t. Zeit gesucht? t = V ÷ Q. Volumen gesucht? V = Q × t.'
       },
       {
         title: '3. Einsetzen und rechnen',
         text: 'Setze die Werte ein und rechne. Achte darauf, dass die Einheiten stimmen — keine Minuten mit Stunden mischen!'
       },
       {
-        title: '4. Ergebnis pruefen',
+        title: '4. Ergebnis prüfen',
         text: 'Ein Schwimmerbecken sollte in 4-6 Stunden umgewaelzt werden. Wenn dein Ergebnis 20 Stunden sagt, stimmt etwas nicht.'
       }
     ],
     examples: [
       {
-        title: 'Foerderstrom berechnen',
+        title: 'Förderstrom berechnen',
         given: 'Ein Becken hat 300 m³ Wasser und soll in 6 Stunden einmal umgewaelzt werden.',
-        question: 'Welchen Foerderstrom braucht die Pumpe?',
+        question: 'Welchen Förderstrom braucht die Pumpe?',
         steps: [
           ['Formel', 'Q = V ÷ t'],
           ['Einsetzen', 'Q = 300 m³ ÷ 6 h'],
           ['Rechnung', 'Q = 50 m³/h'],
-          ['Ergebnis', 'Die Pumpe muss 50 m³/h foerdern']
+          ['Ergebnis', 'Die Pumpe muss 50 m³/h fördern']
         ]
       },
       {
         title: 'Umwaelzzeit berechnen',
-        given: 'Ein Lehrschwimmbecken hat 180 m³. Die Pumpe foerdert 60 m³/h.',
+        given: 'Ein Lehrschwimmbecken hat 180 m³. Die Pumpe fördert 60 m³/h.',
         question: 'Wie lange dauert eine Umwaelzung?',
         steps: [
           ['Formel', 't = V ÷ Q'],
@@ -130,25 +130,25 @@ const TABS = {
         ]
       },
       {
-        title: 'Gefoerdertes Volumen berechnen',
+        title: 'Gefördertes Volumen berechnen',
         given: 'Eine Pumpe laeuft mit 45 m³/h und ist 8 Stunden in Betrieb.',
-        question: 'Wie viel Wasser wurde insgesamt gefoerdert?',
+        question: 'Wie viel Wasser wurde insgesamt gefördert?',
         steps: [
           ['Formel', 'V = Q × t'],
           ['Einsetzen', 'V = 45 m³/h × 8 h'],
           ['Rechnung', 'V = 360 m³'],
-          ['Ergebnis', 'In 8 Stunden wurden 360 m³ gefoerdert']
+          ['Ergebnis', 'In 8 Stunden wurden 360 m³ gefördert']
         ]
       }
     ],
     pitfalls: [
       'Einheiten nicht mischen: Wenn Q in m³/h ist, muss t in Stunden sein — nicht in Minuten!',
       'Wenn die Zeit in Minuten gegeben ist, erst in Stunden umrechnen: 90 Minuten = 1,5 Stunden.',
-      'Die Umwaelzzeit ist NICHT die Betriebszeit der Pumpe — die Pumpe laeuft oft laenger als eine Umwaelzung.',
+      'Die Umwaelzzeit ist NICHT die Betriebszeit der Pumpe — die Pumpe laeuft oft länger als eine Umwaelzung.',
       'Bei mehreren Becken: Jedes Becken hat seinen eigenen Kreislauf und seine eigene Umwaelzzeit!'
     ],
     quiz: {
-      question: 'Ein Becken hat 240 m³. Die Umwaelzzeit soll 4 Stunden betragen. Welchen Foerderstrom Q braucht die Pumpe?',
+      question: 'Ein Becken hat 240 m³. Die Umwaelzzeit soll 4 Stunden betragen. Welchen Förderstrom Q braucht die Pumpe?',
       options: ['40 m³/h', '60 m³/h', '80 m³/h'],
       correctIndex: 1,
       explanation: 'Q = V ÷ t = 240 m³ ÷ 4 h = 60 m³/h.'
@@ -160,7 +160,7 @@ const TABS = {
     chip: 'Leistung',
     title: 'Pumpenleistung und Wirkungsgrad',
     intro:
-      'Eine Pumpe braucht Energie, um Wasser zu bewegen. Die Leistung sagt dir, wie viel Energie pro Sekunde noetig ist. Aber keine Pumpe ist perfekt — ein Teil der Energie geht als Waerme und Reibung verloren. Das Verhaeltnis von nutzbarer zu aufgenommener Leistung heisst Wirkungsgrad.',
+      'Eine Pumpe braucht Energie, um Wasser zu bewegen. Die Leistung sagt dir, wie viel Energie pro Sekunde nötig ist. Aber keine Pumpe ist perfekt — ein Teil der Energie geht als Wärme und Reibung verloren. Das Verhältnis von nutzbarer zu aufgenommener Leistung heisst Wirkungsgrad.',
     motto: 'Wirkungsgrad = Was rauskommt geteilt durch was reingesteckt wird.',
     rules: [
       'Die Nutzleistung (hydraulische Leistung) ist die Leistung, die tatsaechlich das Wasser bewegt.',
@@ -172,7 +172,7 @@ const TABS = {
     steps: [
       {
         title: '1. Unterscheide die Leistungsarten',
-        text: 'Nutzleistung P_nutz ist was die Pumpe an Wasserfoerderung leistet. Antriebsleistung P_an ist was der Motor an Strom verbraucht. P_an ist immer groesser als P_nutz!'
+        text: 'Nutzleistung P_nutz ist was die Pumpe an Wasserförderung leistet. Antriebsleistung P_an ist was der Motor an Strom verbraucht. P_an ist immer größer als P_nutz!'
       },
       {
         title: '2. Wirkungsgrad berechnen',
@@ -184,7 +184,7 @@ const TABS = {
       },
       {
         title: '4. Ergebnis einordnen',
-        text: 'Unter 60% Wirkungsgrad: Pumpe tauschen oder warten. 70-85%: normaler Bereich. Ueber 85%: sehr gut.'
+        text: 'Unter 60% Wirkungsgrad: Pumpe tauschen oder warten. 70-85%: normaler Bereich. Über 85%: sehr gut.'
       }
     ],
     examples: [
@@ -196,7 +196,7 @@ const TABS = {
           ['Formel', 'η = P_nutz ÷ P_an'],
           ['Einsetzen', 'η = 4,5 kW ÷ 6 kW'],
           ['Rechnung', 'η = 0,75 = 75%'],
-          ['Ergebnis', 'Der Wirkungsgrad betraegt 75%']
+          ['Ergebnis', 'Der Wirkungsgrad beträgt 75%']
         ]
       },
       {
@@ -223,8 +223,8 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Wirkungsgrad ist IMMER kleiner als 1 (bzw. kleiner als 100%) — wenn du mehr als 100% rausbekommst, hast du Zaehler und Nenner vertauscht!',
-      'Nutzleistung und Antriebsleistung nicht verwechseln: Die Antriebsleistung ist IMMER groesser.',
+      'Wirkungsgrad ist IMMER kleiner als 1 (bzw. kleiner als 100%) — wenn du mehr als 100% rausbekommst, hast du Zähler und Nenner vertauscht!',
+      'Nutzleistung und Antriebsleistung nicht verwechseln: Die Antriebsleistung ist IMMER größer.',
       'Prozent und Dezimalzahl nicht mischen: 75% = 0,75. In der Formel immer die Dezimalzahl nehmen!',
       'Der Wirkungsgrad aendert sich mit der Belastung — bei Teillast ist er oft schlechter.'
     ],
@@ -239,51 +239,51 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Pumpenberechnung im Baederalltag',
+    title: 'Pumpenberechnung im Bäderalltag',
     intro:
-      'Hier kommen alle Formeln zusammen: Umwaelzpumpen dimensionieren, Umwaelzzeiten nach DIN einhalten, mehrere Pumpen parallel betreiben und Reservepumpen einplanen. Diese Aufgaben kommen in der Pruefung und im Arbeitsalltag vor!',
-    motto: 'Die richtige Pumpe fuer das richtige Becken.',
+      'Hier kommen alle Formeln zusammen: Umwaelzpumpen dimensionieren, Umwaelzzeiten nach DIN einhalten, mehrere Pumpen parallel betreiben und Reservepumpen einplanen. Diese Aufgaben kommen in der Prüfung und im Arbeitsalltag vor!',
+    motto: 'Die richtige Pumpe für das richtige Becken.',
     rules: [
       'DIN 19643 schreibt Umwaelzzeiten vor: Schwimmerbecken max. 4-6 Stunden, Nichtschwimmer max. 2-3 Stunden, Planschbecken max. 0,5-1 Stunde.',
       'Faustregel: Je flacher das Becken und je juenger die Badegaeste, desto kuerzer die Umwaelzzeit.',
-      'Bei Parallelbetrieb zweier gleicher Pumpen addiert sich der Foerderstrom: Q_gesamt = Q_1 + Q_2.',
+      'Bei Parallelbetrieb zweier gleicher Pumpen addiert sich der Förderstrom: Q_gesamt = Q_1 + Q_2.',
       'Eine Reservepumpe (Redundanzpumpe) muss immer vorhanden sein — faellt die Hauptpumpe aus, springt sie ein.',
-      'Die Pumpe muss zum Rohrnetz passen — zu viel Foerderstrom erzeugt zu hohe Fliessgeschwindigkeiten.'
+      'Die Pumpe muss zum Rohrnetz passen — zu viel Förderstrom erzeugt zu hohe Fliessgeschwindigkeiten.'
     ],
     steps: [
       {
         title: '1. Beckenvolumen berechnen',
-        text: 'Laenge × Breite × mittlere Tiefe = Volumen in m³. Beispiel: 25 m × 12,5 m × 1,8 m = 562,5 m³.'
+        text: 'Länge × Breite × mittlere Tiefe = Volumen in m³. Beispiel: 25 m × 12,5 m × 1,8 m = 562,5 m³.'
       },
       {
-        title: '2. Umwaelzzeit nach DIN waehlen',
+        title: '2. Umwaelzzeit nach DIN wählen',
         text: 'Schwimmerbecken: 4-6 h. Nichtschwimmer: 2-3 h. Planschbecken: 0,5-1 h. Bei hoher Besucherzahl den kuerzeren Wert nehmen!'
       },
       {
-        title: '3. Foerderstrom berechnen',
-        text: 'Q = V ÷ t. Beispiel: 562,5 m³ ÷ 4,5 h = 125 m³/h. Das ist der minimale Foerderstrom.'
+        title: '3. Förderstrom berechnen',
+        text: 'Q = V ÷ t. Beispiel: 562,5 m³ ÷ 4,5 h = 125 m³/h. Das ist der minimale Förderstrom.'
       },
       {
-        title: '4. Pumpe auswaehlen und pruefen',
-        text: 'Die Pumpe muss den Foerderstrom bei der errechneten Foerderhoehe liefern koennen. Dazu kommt eine Reservepumpe gleicher Groesse.'
+        title: '4. Pumpe auswählen und prüfen',
+        text: 'Die Pumpe muss den Förderstrom bei der errechneten Förderhöhe liefern können. Dazu kommt eine Reservepumpe gleicher Größe.'
       }
     ],
     examples: [
       {
         title: 'Schwimmerbecken dimensionieren',
         given: 'Ein 25-m-Schwimmerbecken: 25 m × 12,5 m × 1,8 m = 562,5 m³. Geforderte Umwaelzzeit: 4,5 Stunden.',
-        question: 'Welchen Foerderstrom braucht die Umwaelzpumpe?',
+        question: 'Welchen Förderstrom braucht die Umwaelzpumpe?',
         steps: [
           ['Volumen', '25 × 12,5 × 1,8 = 562,5 m³'],
           ['Formel', 'Q = V ÷ t'],
           ['Rechnung', 'Q = 562,5 ÷ 4,5 = 125 m³/h'],
-          ['Ergebnis', 'Die Pumpe muss mindestens 125 m³/h foerdern']
+          ['Ergebnis', 'Die Pumpe muss mindestens 125 m³/h fördern']
         ]
       },
       {
         title: 'Planschbecken mit kurzer Umwaelzzeit',
         given: 'Ein Planschbecken hat 15 m³ Wasser. Die Umwaelzzeit muss nach DIN max. 30 Minuten betragen.',
-        question: 'Welchen Foerderstrom braucht die Pumpe?',
+        question: 'Welchen Förderstrom braucht die Pumpe?',
         steps: [
           ['Umrechnung', '30 Minuten = 0,5 Stunden'],
           ['Formel', 'Q = V ÷ t'],
@@ -296,7 +296,7 @@ const TABS = {
         given: 'Zwei gleiche Pumpen mit je 80 m³/h laufen parallel. Das Becken hat 400 m³.',
         question: 'Wie lange dauert eine Umwaelzung?',
         steps: [
-          ['Gesamtfoerderstrom', 'Q = 80 + 80 = 160 m³/h'],
+          ['Gesamtförderstrom', 'Q = 80 + 80 = 160 m³/h'],
           ['Formel', 't = V ÷ Q'],
           ['Rechnung', 't = 400 ÷ 160 = 2,5 Stunden'],
           ['Ergebnis', 'Mit zwei Pumpen dauert eine Umwaelzung 2,5 Stunden']
@@ -316,12 +316,12 @@ const TABS = {
     ],
     pitfalls: [
       'Minuten und Stunden nicht verwechseln! Planschbecken: 30 Minuten = 0,5 Stunden, nicht "30" in die Formel einsetzen.',
-      'Die DIN-Umwaelzzeiten sind Hoechstwerte — kuerzere Zeiten sind besser, laengere sind NICHT erlaubt.',
+      'Die DIN-Umwaelzzeiten sind Hoechstwerte — kuerzere Zeiten sind besser, längere sind NICHT erlaubt.',
       'Bei Parallelbetrieb: Zwei Pumpen liefern nicht immer exakt die doppelte Menge — der Rohrleitungswiderstand steigt.',
-      'Die Reservepumpe zaehlt NICHT zum regulaeren Foerderstrom — sie ist nur fuer den Notfall da!'
+      'Die Reservepumpe zählt NICHT zum regulaeren Förderstrom — sie ist nur für den Notfall da!'
     ],
     quiz: {
-      question: 'Ein Nichtschwimmerbecken hat 120 m³. Die Umwaelzzeit soll 3 Stunden betragen. Welchen Foerderstrom braucht die Pumpe?',
+      question: 'Ein Nichtschwimmerbecken hat 120 m³. Die Umwaelzzeit soll 3 Stunden betragen. Welchen Förderstrom braucht die Pumpe?',
       options: ['30 m³/h', '40 m³/h', '60 m³/h'],
       correctIndex: 1,
       explanation: 'Q = V ÷ t = 120 m³ ÷ 3 h = 40 m³/h.'
@@ -329,13 +329,13 @@ const TABS = {
   }
 };
 
-const TAB_ORDER = ['grundlagen', 'foerderstrom', 'leistung', 'praxis'];
+const TAB_ORDER = ['grundlagen', 'förderstrom', 'leistung', 'praxis'];
 
 /* ─── Key formulas comparison table ────────────────────────────────────────── */
 
 const FORMULAS = [
-  ['Groesse', 'Formel', 'Einheit'],
-  ['Foerderstrom Q', 'Q = V ÷ t', 'm³/h'],
+  ['Größe', 'Formel', 'Einheit'],
+  ['Förderstrom Q', 'Q = V ÷ t', 'm³/h'],
   ['Umwaelzzeit t', 't = V ÷ Q', 'Stunden (h)'],
   ['Volumen V', 'V = Q × t', 'm³'],
   ['Wirkungsgrad η', 'η = P_nutz ÷ P_an', '% oder Dezimal'],
@@ -507,7 +507,7 @@ export default function PumpenDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -535,8 +535,8 @@ export default function PumpenDeepDiveView() {
             </ul>
           </InfoCard>
 
-          {/* Formulas table (on foerderstrom and leistung tabs) */}
-          {(activeTab === 'foerderstrom' || activeTab === 'leistung') && (
+          {/* Formulas table (on förderstrom and leistung tabs) */}
+          {(activeTab === 'förderstrom' || activeTab === 'leistung') && (
             <InfoCard darkMode={darkMode} title="Alle Formeln im Ueberblick">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
@@ -550,10 +550,10 @@ export default function PumpenDeepDiveView() {
                     </tr>
                   </thead>
                   <tbody>
-                    {FORMULAS.slice(1).map(([groesse, formel, einheit]) => (
-                      <tr key={groesse} className={`${darkMode ? 'border-slate-800' : 'border-gray-200'} border-b last:border-b-0`}>
+                    {FORMULAS.slice(1).map(([größe, formel, einheit]) => (
+                      <tr key={größe} className={`${darkMode ? 'border-slate-800' : 'border-gray-200'} border-b last:border-b-0`}>
                         <td className={`px-3 py-2 font-semibold whitespace-nowrap ${darkMode ? 'bg-slate-950/50 text-white' : 'bg-gray-50 text-gray-900'}`}>
-                          {groesse}
+                          {größe}
                         </td>
                         <td className={`px-3 py-2 ${darkMode ? 'bg-slate-900/40 text-teal-300' : 'bg-white text-teal-700'}`}>
                           {formel}
@@ -640,7 +640,7 @@ export default function PumpenDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

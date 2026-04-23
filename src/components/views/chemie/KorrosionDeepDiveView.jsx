@@ -9,19 +9,19 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist Korrosion?',
     intro:
-      'Stell dir vor, du laesst ein Fahrrad im Regen stehen. Nach ein paar Wochen ist es rostig. Das ist Korrosion — das Metall wird durch eine chemische Reaktion mit Wasser und Sauerstoff langsam zerstoert. Im Schwimmbad passiert das viel schneller, weil Chlor, Waerme und staendige Feuchtigkeit alles beschleunigen. Korrosion ist einer der teuersten Schaeden im Badebetrieb!',
+      'Stell dir vor, du lässt ein Fahrrad im Regen stehen. Nach ein paar Wochen ist es rostig. Das ist Korrosion — das Metall wird durch eine chemische Reaktion mit Wasser und Sauerstoff langsam zerstoert. Im Schwimmbad passiert das viel schneller, weil Chlor, Wärme und ständige Feuchtigkeit alles beschleunigen. Korrosion ist einer der teuersten Schaeden im Badebetrieb!',
     motto: 'Korrosion = Metall wird chemisch zerstoert.',
     rules: [
       'Korrosion = Metall wird durch eine chemische Reaktion mit seiner Umgebung zerstoert (meistens durch Wasser, Sauerstoff oder Chlor).',
       'Rost ist die bekannteste Form: Eisen + Wasser + Sauerstoff ergibt Eisenoxid (Rost).',
       'Korrosion ist eine Redox-Reaktion — das Metall gibt Elektronen ab (Oxidation).',
-      'Das Schwimmbad ist ein Korrosions-Hotspot: Chlor, Feuchtigkeit, Waerme und Salze greifen Metalle staendig an.',
+      'Das Schwimmbad ist ein Korrosions-Hotspot: Chlor, Feuchtigkeit, Wärme und Salze greifen Metalle ständig an.',
       'Korrosionsschaeden sind extrem teuer — kaputte Rohre, Armaturen, Beckenteile und Lueftungsanlagen kosten tausende Euro.'
     ],
     steps: [
       {
         title: '1. Was passiert bei Korrosion?',
-        text: 'Metall reagiert mit seiner Umgebung — meistens mit Wasser und Sauerstoff. Dabei gibt das Metall Elektronen ab (Oxidation). Es bildet sich eine neue Verbindung, zum Beispiel Rost (Eisenoxid). Das Metall wird dabei Stueck fuer Stueck aufgeloest.'
+        text: 'Metall reagiert mit seiner Umgebung — meistens mit Wasser und Sauerstoff. Dabei gibt das Metall Elektronen ab (Oxidation). Es bildet sich eine neue Verbindung, zum Beispiel Rost (Eisenoxid). Das Metall wird dabei Stueck für Stueck aufgeloest.'
       },
       {
         title: '2. Warum rostet Eisen?',
@@ -29,11 +29,11 @@ const TABS = {
       },
       {
         title: '3. Warum ist das im Bad so schlimm?',
-        text: 'Im Schwimmbad kommen alle Korrosions-Beschleuniger zusammen: Chlor greift Metalle direkt an, die Luft ist staendig feucht, die Temperaturen sind hoch (28-34 Grad), und Chloramine in der Hallenluft sind besonders aggressiv.'
+        text: 'Im Schwimmbad kommen alle Korrosions-Beschleuniger zusammen: Chlor greift Metalle direkt an, die Luft ist ständig feucht, die Temperaturen sind hoch (28-34 Grad), und Chloramine in der Hallenluft sind besonders aggressiv.'
       },
       {
         title: '4. Was kostet Korrosion?',
-        text: 'Korrosionsschaeden im Bad sind sehr teuer: Rohrleitungen muessen ausgetauscht werden, Edelstahlgelaender bekommen Loecher, Lueftungsanlagen rosten durch. Ein einziges geplatztes Rohr kann einen Wasserschaden in tausender-Hoehe verursachen. Fruehzeitig erkennen spart viel Geld!'
+        text: 'Korrosionsschaeden im Bad sind sehr teuer: Rohrleitungen müssen ausgetauscht werden, Edelstahlgelaender bekommen Loecher, Lueftungsanlagen rosten durch. Ein einziges geplatztes Rohr kann einen Wasserschaden in tausender-Höhe verursachen. Fruehzeitig erkennen spart viel Geld!'
       }
     ],
     examples: [
@@ -53,10 +53,10 @@ const TABS = {
         given: 'Am Edelstahl-Beckenrand eines Hallenbades entstehen braune Flecken.',
         question: 'Was ist passiert?',
         steps: [
-          ['Ursache', 'Chlorhaltiges Wasser greift die Oberflaeche an'],
-          ['Problem', 'Eventuell falscher Edelstahl (V2A statt V4A) oder beschaedigte Oberflaeche'],
+          ['Ursache', 'Chlorhaltiges Wasser greift die Oberfläche an'],
+          ['Problem', 'Eventuell falscher Edelstahl (V2A statt V4A) oder beschaedigte Oberfläche'],
           ['Reaktion', 'Chlorid-Ionen zerstoeren die schuetzende Passivschicht des Edelstahls'],
-          ['Massnahme', 'Flecken reinigen, Ursache klaeren, bei Bedarf Material austauschen']
+          ['Maßnahme', 'Flecken reinigen, Ursache klaeren, bei Bedarf Material austauschen']
         ]
       },
       {
@@ -65,23 +65,23 @@ const TABS = {
         question: 'Warum so schnell?',
         steps: [
           ['Faktor 1', 'Chloramine verdunsten aus dem Wasser und greifen die Lueftung an'],
-          ['Faktor 2', 'Hohe Luftfeuchtigkeit (60-70%) — Metall ist staendig feucht'],
-          ['Faktor 3', 'Waerme (28-34 Grad) beschleunigt chemische Reaktionen'],
-          ['Loesung', 'Korrosionsbestaendige Materialien verwenden (Kunststoff, Edelstahl V4A, Beschichtungen)']
+          ['Faktor 2', 'Hohe Luftfeuchtigkeit (60-70%) — Metall ist ständig feucht'],
+          ['Faktor 3', 'Wärme (28-34 Grad) beschleunigt chemische Reaktionen'],
+          ['Lösung', 'Korrosionsbeständige Materialien verwenden (Kunststoff, Edelstahl V4A, Beschichtungen)']
         ]
       }
     ],
     pitfalls: [
-      'Korrosion ist NICHT nur Rost — auch Edelstahl, Kupfer und Aluminium koennen korrodieren, nur anders.',
-      'Trockene Metalle rosten NICHT — es braucht IMMER Feuchtigkeit fuer Korrosion.',
-      'Chlor beschleunigt Korrosion massiv — deshalb sind Schwimmbaeder besonders betroffen.',
+      'Korrosion ist NICHT nur Rost — auch Edelstahl, Kupfer und Aluminium können korrodieren, nur anders.',
+      'Trockene Metalle rosten NICHT — es braucht IMMER Feuchtigkeit für Korrosion.',
+      'Chlor beschleunigt Korrosion massiv — deshalb sind Schwimmbäder besonders betroffen.',
       'Korrosion passiert oft UNSICHTBAR im Inneren von Rohren — wenn man es sieht, ist es oft schon zu spaet.'
     ],
     quiz: {
       question: 'Warum korrodieren Metalle im Schwimmbad besonders schnell?',
-      options: ['Weil die Badegaeste die Metalle anfassen', 'Weil Chlor, Feuchtigkeit und Waerme zusammen die Korrosion stark beschleunigen', 'Weil im Schwimmbad nur billiges Metall verwendet wird'],
+      options: ['Weil die Badegaeste die Metalle anfassen', 'Weil Chlor, Feuchtigkeit und Wärme zusammen die Korrosion stark beschleunigen', 'Weil im Schwimmbad nur billiges Metall verwendet wird'],
       correctIndex: 1,
-      explanation: 'Im Schwimmbad kommen alle Korrosions-Beschleuniger zusammen: Chlor greift Metalle an, die Luft ist staendig feucht, und die hohen Temperaturen beschleunigen die chemischen Reaktionen. Das macht das Bad zum perfekten Ort fuer Korrosion.'
+      explanation: 'Im Schwimmbad kommen alle Korrosions-Beschleuniger zusammen: Chlor greift Metalle an, die Luft ist ständig feucht, und die hohen Temperaturen beschleunigen die chemischen Reaktionen. Das macht das Bad zum perfekten Ort für Korrosion.'
     }
   },
 
@@ -90,19 +90,19 @@ const TABS = {
     chip: 'Korrosionsarten',
     title: 'Welche Arten gibt es?',
     intro:
-      'Korrosion ist nicht gleich Korrosion. Es gibt verschiedene Arten, und jede sieht anders aus und ist unterschiedlich gefaehrlich. Im Schwimmbad begegnest du vor allem dem Lochfrass bei Edelstahl, der Spaltkorrosion an Dichtungen und der Kontaktkorrosion wenn verschiedene Metalle sich beruehren. Hier lernst du die wichtigsten Arten kennen.',
+      'Korrosion ist nicht gleich Korrosion. Es gibt verschiedene Arten, und jede sieht anders aus und ist unterschiedlich gefährlich. Im Schwimmbad begegnest du vor allem dem Lochfrass bei Edelstahl, der Spaltkorrosion an Dichtungen und der Kontaktkorrosion wenn verschiedene Metalle sich beruehren. Hier lernst du die wichtigsten Arten kennen.',
     motto: 'Nicht jede Korrosion ist Rost — kenne die verschiedenen Arten!',
     rules: [
-      'Flaechenkorrosion = gleichmaessiger Abtrag der Oberflaeche. Sieht man gut, ist aber berechenbar.',
-      'Lochfrass (Pitting) = kleine, tiefe Loecher in der Oberflaeche. Besonders tueckisch bei Edelstahl in Chlorwasser!',
+      'Flächenkorrosion = gleichmaessiger Abtrag der Oberfläche. Sieht man gut, ist aber berechenbar.',
+      'Lochfrass (Pitting) = kleine, tiefe Loecher in der Oberfläche. Besonders tueckisch bei Edelstahl in Chlorwasser!',
       'Spaltkorrosion = Korrosion in engen Spalten (Dichtungen, Flansche). Im Spalt fehlt Sauerstoff, das beschleunigt den Angriff.',
       'Kontaktkorrosion = zwei verschiedene Metalle beruehren sich, das unedlere Metall wird zerstoert.',
-      'Spannungsrisskorrosion = Risse durch Chloride im Edelstahl. Kann zu ploetzlichem Bruch fuehren — sehr gefaehrlich!'
+      'Spannungsrisskorrosion = Risse durch Chloride im Edelstahl. Kann zu ploetzlichem Bruch fuehren — sehr gefährlich!'
     ],
     steps: [
       {
-        title: '1. Flaechenkorrosion',
-        text: 'Die ganze Oberflaeche wird gleichmaessig abgetragen. Beispiel: ungestrichener Stahl wird ueberall rostig. Diese Art ist am wenigsten gefaehrlich, weil man sie sofort sieht und die Lebensdauer berechnen kann.'
+        title: '1. Flächenkorrosion',
+        text: 'Die ganze Oberfläche wird gleichmaessig abgetragen. Beispiel: ungestrichener Stahl wird überall rostig. Diese Art ist am wenigsten gefährlich, weil man sie sofort sieht und die Lebensdauer berechnen kann.'
       },
       {
         title: '2. Lochfrass (Pitting)',
@@ -114,7 +114,7 @@ const TABS = {
       },
       {
         title: '4. Spalt- und Spannungsrisskorrosion',
-        text: 'Spaltkorrosion entsteht in engen Spalten (z.B. unter Dichtungen), wo zu wenig Sauerstoff hinkommt. Spannungsrisskorrosion ist noch gefaehrlicher: Chloride verursachen feine Risse im Edelstahl, die ohne Vorwarnung zum Bruch fuehren koennen.'
+        text: 'Spaltkorrosion entsteht in engen Spalten (z.B. unter Dichtungen), wo zu wenig Sauerstoff hinkommt. Spannungsrisskorrosion ist noch gefährlicher: Chloride verursachen feine Risse im Edelstahl, die ohne Vorwarnung zum Bruch fuehren können.'
       }
     ],
     examples: [
@@ -123,10 +123,10 @@ const TABS = {
         given: 'An einem Edelstahl-Treppengelaender im Schwimmerbecken entstehen kleine braune Punkte.',
         question: 'Was ist das und warum passiert das?',
         steps: [
-          ['Diagnose', 'Lochfrass (Pitting) — typisch fuer Edelstahl in Chlorwasser'],
+          ['Diagnose', 'Lochfrass (Pitting) — typisch für Edelstahl in Chlorwasser'],
           ['Ursache', 'Chlorid-Ionen zerstoeren die Passivschicht an einzelnen Punkten'],
           ['Wahrscheinlich', 'Falscher Edelstahl verbaut — V2A (1.4301) statt V4A (1.4571)'],
-          ['Massnahme', 'Gelaender durch V4A-Edelstahl (1.4571) ersetzen']
+          ['Maßnahme', 'Gelaender durch V4A-Edelstahl (1.4571) ersetzen']
         ]
       },
       {
@@ -135,34 +135,34 @@ const TABS = {
         question: 'Was ist passiert?',
         steps: [
           ['Ursache', 'Kontaktkorrosion (galvanische Korrosion)'],
-          ['Erklaerung', 'Kupfer ist edler als Stahl — der Stahl "opfert" sich und wird zerstoert'],
+          ['Erklärung', 'Kupfer ist edler als Stahl — der Stahl "opfert" sich und wird zerstoert'],
           ['Feuchtigkeit', 'Wasser bildet den Elektrolyt — ohne Wasser wuerde es nicht passieren'],
-          ['Loesung', 'Gleiche Metalle verwenden oder Kunststoff-Isolierung dazwischen setzen']
+          ['Lösung', 'Gleiche Metalle verwenden oder Kunststoff-Isolierung dazwischen setzen']
         ]
       },
       {
         title: 'Gruene Kupferrohre',
         given: 'Die Kupfer-Wasserleitungen im Technikraum zeigen gruene Verfaerbungen.',
-        question: 'Ist das gefaehrlich?',
+        question: 'Ist das gefährlich?',
         steps: [
-          ['Was ist das', 'Gruenspan (Kupfercarbonat/Kupferchlorid) — Flaechenkorrosion von Kupfer'],
+          ['Was ist das', 'Gruenspan (Kupfercarbonat/Kupferchlorid) — Flächenkorrosion von Kupfer'],
           ['Bewertung', 'Die gruene Schicht schuetzt das Kupfer darunter (Patina)'],
           ['Aber Achtung', 'Bei aggressivem Wasser (pH <7, hohe Chloride) kann Lochfrass entstehen'],
-          ['Kontrolle', 'Wandstaerke der Rohre regelmaessig pruefen']
+          ['Kontrolle', 'Wandstärke der Rohre regelmäßig prüfen']
         ]
       }
     ],
     pitfalls: [
       'Edelstahl ist NICHT rostfrei — auch Edelstahl korrodiert, besonders in Chlorwasser!',
       'Lochfrass sieht harmlos aus (kleine Punkte), kann aber tief ins Material reichen und zu Leckagen fuehren.',
-      'Verschiedene Metalle duerfen NICHT direkt miteinander verbunden werden — sonst droht Kontaktkorrosion.',
+      'Verschiedene Metalle dürfen NICHT direkt miteinander verbunden werden — sonst droht Kontaktkorrosion.',
       'Spannungsrisskorrosion gibt KEINE Vorwarnung — das Teil kann ohne sichtbare Schaeden ploetzlich brechen.'
     ],
     quiz: {
-      question: 'Warum ist Lochfrass (Pitting) bei Edelstahl besonders gefaehrlich?',
-      options: ['Weil er gut sichtbar ist und haesslich aussieht', 'Weil kleine, tiefe Loecher von aussen kaum sichtbar sind, aber das Material durchdringen koennen', 'Weil er nur bei billigem Stahl vorkommt'],
+      question: 'Warum ist Lochfrass (Pitting) bei Edelstahl besonders gefährlich?',
+      options: ['Weil er gut sichtbar ist und haesslich aussieht', 'Weil kleine, tiefe Loecher von aussen kaum sichtbar sind, aber das Material durchdringen können', 'Weil er nur bei billigem Stahl vorkommt'],
       correctIndex: 1,
-      explanation: 'Lochfrass ist tueckisch, weil man von aussen kaum etwas sieht. Die kleinen Loecher fressen sich tief ins Material und koennen zu Leckagen fuehren, bevor man das Problem bemerkt. Besonders bei Edelstahl in Chlorwasser verbreitet.'
+      explanation: 'Lochfrass ist tueckisch, weil man von aussen kaum etwas sieht. Die kleinen Loecher fressen sich tief ins Material und können zu Leckagen fuehren, bevor man das Problem bemerkt. Besonders bei Edelstahl in Chlorwasser verbreitet.'
     }
   },
 
@@ -171,31 +171,31 @@ const TABS = {
     chip: 'Korrosionsschutz',
     title: 'Wie schuetzen wir Metalle?',
     intro:
-      'Korrosion laesst sich nicht komplett verhindern — aber man kann sie stark verlangsamen und kontrollieren. Das Wichtigste: den RICHTIGEN Werkstoff waehlen! Im Schwimmbad muss es V4A-Edelstahl (1.4571) sein, nicht der billigere V2A. Dazu kommen Beschichtungen, konstruktive Massnahmen und die richtige Wasserchemie.',
+      'Korrosion lässt sich nicht komplett verhindern — aber man kann sie stark verlangsamen und kontrollieren. Das Wichtigste: den RICHTIGEN Werkstoff wählen! Im Schwimmbad muss es V4A-Edelstahl (1.4571) sein, nicht der billigere V2A. Dazu kommen Beschichtungen, konstruktive Maßnahmen und die richtige Wasserchemie.',
     motto: 'Der richtige Werkstoff ist der beste Korrosionsschutz!',
     rules: [
       'Materialwahl ist das A und O: Im Chlorbereich immer V4A-Edelstahl (1.4571), NICHT V2A (1.4301)!',
       'Beschichtungen schuetzen: Lack, Pulverbeschichtung, Emaille oder Kunststoffueberzug bilden eine Barriere.',
       'Verzinkung schuetzt Stahl — aber NICHT in chlorhaltiger Atmosphaere (da loest sich das Zink auf).',
       'Kathodischer Schutz: Opferanoden aus Zink schuetzen edlere Metalle (das Zink "opfert" sich).',
-      'Wasserchemie beachten: pH unter 7,0 ist aggressiv fuer Metalle — Wasserhaerte und Chlorid-Gehalt kontrollieren.'
+      'Wasserchemie beachten: pH unter 7,0 ist aggressiv für Metalle — Wasserhärte und Chlorid-Gehalt kontrollieren.'
     ],
     steps: [
       {
-        title: '1. Richtigen Werkstoff waehlen',
-        text: 'Im Schwimmbad gilt: Alles was mit Chlorwasser oder Chlorluft in Kontakt kommt, muss aus V4A-Edelstahl (1.4571) oder besser sein. V2A (1.4301) reicht NICHT — es bekommt Lochfrass durch Chloride. Fuer extreme Belastung: Titan oder Kunststoff.'
+        title: '1. Richtigen Werkstoff wählen',
+        text: 'Im Schwimmbad gilt: Alles was mit Chlorwasser oder Chlorluft in Kontakt kommt, muss aus V4A-Edelstahl (1.4571) oder besser sein. V2A (1.4301) reicht NICHT — es bekommt Lochfrass durch Chloride. Für extreme Belastung: Titan oder Kunststoff.'
       },
       {
         title: '2. Beschichtungen aufbringen',
-        text: 'Eine Schutzschicht trennt das Metall von der aggressiven Umgebung. Moeglichkeiten: Speziallack, Pulverbeschichtung, Emaille, Kunststoffueberzug (z.B. PE, PP). Wichtig: Die Beschichtung muss lueckenlos sein — jede Beschaedigung ist eine Angriffsstelle!'
+        text: 'Eine Schutzschicht trennt das Metall von der aggressiven Umgebung. Möglichkeiten: Speziallack, Pulverbeschichtung, Emaille, Kunststoffueberzug (z.B. PE, PP). Wichtig: Die Beschichtung muss lueckenlos sein — jede Beschaedigung ist eine Angriffsstelle!'
       },
       {
         title: '3. Konstruktiv richtig bauen',
-        text: 'Keine Spalte konstruieren (verhindert Spaltkorrosion). Gute Entwaesserung vorsehen (stehendes Wasser vermeiden). KEINE verschiedenen Metalle direkt verbinden (verhindert Kontaktkorrosion). Alle Stellen muessen fuer Kontrolle zugaenglich sein.'
+        text: 'Keine Spalte konstruieren (verhindert Spaltkorrosion). Gute Entwaesserung vorsehen (stehendes Wasser vermeiden). KEINE verschiedenen Metalle direkt verbinden (verhindert Kontaktkorrosion). Alle Stellen müssen für Kontrolle zugaenglich sein.'
       },
       {
         title: '4. Wasserchemie kontrollieren',
-        text: 'Der pH-Wert darf nicht unter 7,0 fallen — saures Wasser greift Metalle stark an. Die Wasserhaerte sollte nicht zu niedrig sein (weiches Wasser ist aggressiver). Chlorid-Gehalt im Fuellwasser beachten. Bei der Desinfektion nicht ueberdosieren.'
+        text: 'Der pH-Wert darf nicht unter 7,0 fallen — saures Wasser greift Metalle stark an. Die Wasserhärte sollte nicht zu niedrig sein (weiches Wasser ist aggressiver). Chlorid-Gehalt im Fuellwasser beachten. Bei der Desinfektion nicht ueberdosieren.'
       }
     ],
     examples: [
@@ -206,8 +206,8 @@ const TABS = {
         steps: [
           ['Anforderung', 'Kontakt mit Chlorwasser (0,3–0,6 mg/L freies Chlor)'],
           ['V2A (1.4301)', 'NICHT geeignet — bekommt Lochfrass durch Chloride'],
-          ['V4A (1.4571)', 'Standard fuer Schwimmbad-Einbauteile — mit Molybdaen gegen Chloride'],
-          ['Merke', 'Im Zweifel IMMER V4A (1.4571) oder hoeher — V2A spart am falschen Ende']
+          ['V4A (1.4571)', 'Standard für Schwimmbad-Einbauteile — mit Molybdaen gegen Chloride'],
+          ['Merke', 'Im Zweifel IMMER V4A (1.4571) oder höher — V2A spart am falschen Ende']
         ]
       },
       {
@@ -217,8 +217,8 @@ const TABS = {
         steps: [
           ['Prinzip', 'Zink ist unedler als Stahl — es gibt seine Elektronen freiwillig ab'],
           ['Wirkung', 'Solange die Opferanode vorhanden ist, wird der Stahl NICHT angegriffen'],
-          ['Verschleiss', 'Die Anode loest sich langsam auf (sie "opfert" sich) und muss regelmaessig erneuert werden'],
-          ['Wartung', 'Opferanoden alle 1-2 Jahre pruefen und bei Bedarf austauschen']
+          ['Verschleiss', 'Die Anode loest sich langsam auf (sie "opfert" sich) und muss regelmäßig erneuert werden'],
+          ['Wartung', 'Opferanoden alle 1-2 Jahre prüfen und bei Bedarf austauschen']
         ]
       },
       {
@@ -226,57 +226,57 @@ const TABS = {
         given: 'Im Hallenbad ist der pH-Wert auf 6,5 gefallen. Die Kupferleitungen zeigen gruenliche Verfaerbungen.',
         question: 'Was passiert und was muss getan werden?',
         steps: [
-          ['Problem', 'pH 6,5 ist zu sauer — aggressiv fuer Kupfer und andere Metalle'],
+          ['Problem', 'pH 6,5 ist zu sauer — aggressiv für Kupfer und andere Metalle'],
           ['Wirkung', 'Kupfer loest sich und faerbt das Wasser/Rohre gruen'],
-          ['Massnahme', 'pH-Wert sofort auf 7,0-7,4 anheben (Natronlauge oder Soda)'],
+          ['Maßnahme', 'pH-Wert sofort auf 7,0-7,4 anheben (Natronlauge oder Soda)'],
           ['Merke', 'pH unter 7,0 greift nicht nur Metalle an, sondern auch Fugen und Beton']
         ]
       }
     ],
     pitfalls: [
-      'V2A und V4A NICHT verwechseln! V2A (1.4301) ist fuer Chlorwasser NICHT geeignet — immer V4A (1.4571) verwenden.',
+      'V2A und V4A NICHT verwechseln! V2A (1.4301) ist für Chlorwasser NICHT geeignet — immer V4A (1.4571) verwenden.',
       'Verzinkter Stahl haelt in Chloratmosphaere NICHT — das Zink loest sich schnell auf.',
-      'Beschichtungen muessen LUECKENLOS sein — eine kleine Beschaedigung reicht, damit Korrosion darunter beginnt.',
+      'Beschichtungen müssen LUECKENLOS sein — eine kleine Beschaedigung reicht, damit Korrosion darunter beginnt.',
       'Verschiedene Metalle NIEMALS direkt verbinden — immer Kunststoff-Isolierung dazwischen setzen.'
     ],
     quiz: {
-      question: 'Welcher Edelstahl ist fuer Schwimmbad-Einbauteile mit Chlorwasser-Kontakt geeignet?',
-      options: ['V2A (1.4301) — der reicht fuer Edelstahl immer aus', 'V4A (1.4571) — mit Molybdaen fuer Chlorid-Bestaendigkeit', 'Normaler Baustahl mit Rostschutzfarbe'],
+      question: 'Welcher Edelstahl ist für Schwimmbad-Einbauteile mit Chlorwasser-Kontakt geeignet?',
+      options: ['V2A (1.4301) — der reicht für Edelstahl immer aus', 'V4A (1.4571) — mit Molybdaen für Chlorid-Beständigkeit', 'Normaler Baustahl mit Rostschutzfarbe'],
       correctIndex: 1,
-      explanation: 'V4A-Edelstahl (1.4571) enthaelt Molybdaen, das die Bestaendigkeit gegen Chloride deutlich erhoeht. V2A (1.4301) bekommt in Chlorwasser Lochfrass und ist NICHT geeignet. Normaler Stahl wuerde in kuerzester Zeit durchrosten.'
+      explanation: 'V4A-Edelstahl (1.4571) enthaelt Molybdaen, das die Beständigkeit gegen Chloride deutlich erhoeht. V2A (1.4301) bekommt in Chlorwasser Lochfrass und ist NICHT geeignet. Normaler Stahl wuerde in kuerzester Zeit durchrosten.'
     }
   },
 
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Korrosionsschutz im Baederalltag',
+    title: 'Korrosionsschutz im Bäderalltag',
     intro:
-      'Als Fachangestellte/r fuer Baederbetriebe bist du taeglich dafuer verantwortlich, Korrosionsschaeden fruehzeitig zu erkennen und zu verhindern. Die Hallenbadluft mit ihren Chloraminen ist extrem aggressiv — nicht nur fuer Beckeneinbauteile, sondern auch fuer Lueftung, Gebaeudetechnik und sogar Beton. Hier lernst du die praktischen Massnahmen fuer den Alltag.',
+      'Als Fachangestellte/r für Bäderbetriebe bist du täglich dafür verantwortlich, Korrosionsschaeden frühzeitig zu erkennen und zu verhindern. Die Hallenbadluft mit ihren Chloraminen ist extrem aggressiv — nicht nur für Beckeneinbauteile, sondern auch für Lueftung, Gebäudetechnik und sogar Beton. Hier lernst du die praktischen Maßnahmen für den Alltag.',
     motto: 'Frueh erkennen, richtig handeln — Korrosion ist ein Dauerthema im Bad.',
     rules: [
       'Hallenbadluft ist extrem korrosiv — Chloramine (gebundenes Chlor) verdunsten und greifen alles an, was aus Metall ist.',
-      'Materialien im Schwimmbad: Edelstahl 1.4571 (V4A) fuer Wasserbereich, Titan fuer Waermetauscher, Kunststoff/GFK fuer aggressive Zonen.',
-      'Taegliche Kontrolle: Sichtpruefung auf Rostflecken, Verfaerbungen und Ablagerungen ist Pflicht!',
-      'Chlorablagerungen regelmaessig entfernen — sonst kann sich die Passivschicht vom Edelstahl nicht neu bilden.',
-      'Alle Korrosionsbefunde muessen ins Betriebstagebuch eingetragen werden — Dokumentation ist Pflicht.'
+      'Materialien im Schwimmbad: Edelstahl 1.4571 (V4A) für Wasserbereich, Titan für Wärmetauscher, Kunststoff/GFK für aggressive Zonen.',
+      'Tägliche Kontrolle: Sichtprüfung auf Rostflecken, Verfaerbungen und Ablagerungen ist Pflicht!',
+      'Chlorablagerungen regelmäßig entfernen — sonst kann sich die Passivschicht vom Edelstahl nicht neu bilden.',
+      'Alle Korrosionsbefunde müssen ins Betriebstagebuch eingetragen werden — Dokumentation ist Pflicht.'
     ],
     steps: [
       {
-        title: '1. Taegliche Sichtpruefung',
+        title: '1. Tägliche Sichtprüfung',
         text: 'Bei jedem Rundgang auf Korrosionszeichen achten: Rostflecken, braune oder gruene Verfaerbungen, weisse Ablagerungen, Blasenbildung an Beschichtungen. Besonders kritische Stellen: Beckeneinbauteile, Gelaender, Leitern, Lueftungsgitter, Schraubverbindungen.'
       },
       {
         title: '2. Richtige Reinigung',
-        text: 'Edelstahl regelmaessig reinigen — Chlor- und Kalkablagerungen entfernen, damit sich die schuetzende Passivschicht neu bilden kann. KEINE Stahlwolle oder aggressive Scheuermittel verwenden! Nur Edelstahlreiniger oder milde Mittel nehmen.'
+        text: 'Edelstahl regelmäßig reinigen — Chlor- und Kalkablagerungen entfernen, damit sich die schuetzende Passivschicht neu bilden kann. KEINE Stahlwolle oder aggressive Scheuermittel verwenden! Nur Edelstahlreiniger oder milde Mittel nehmen.'
       },
       {
         title: '3. Typische Fehler vermeiden',
-        text: 'Haeufigste Fehler: falsches Material verbaut (V2A statt V4A), verschiedene Metalle direkt verbunden (Kontaktkorrosion), pH-Wert zu niedrig, Chlorablagerungen nicht entfernt, beschaedigte Beschichtungen nicht repariert.'
+        text: 'Häufigste Fehler: falsches Material verbaut (V2A statt V4A), verschiedene Metalle direkt verbunden (Kontaktkorrosion), pH-Wert zu niedrig, Chlorablagerungen nicht entfernt, beschaedigte Beschichtungen nicht repariert.'
       },
       {
         title: '4. Wartungsplan einhalten',
-        text: 'Woechentlich: Sichtpruefung aller Metallteile. Monatlich: Reinigung der Edelstahlteile, Pruefen der Beschichtungen. Jaehrlich: Fachpruefung der Rohrleitungen, Wandstaerke-Messung bei kritischen Teilen, Opferanoden pruefen. Alles dokumentieren!'
+        text: 'Woechentlich: Sichtprüfung aller Metallteile. Monatlich: Reinigung der Edelstahlteile, Prüfen der Beschichtungen. Jaehrlich: Fachprüfung der Rohrleitungen, Wandstärke-Messung bei kritischen Teilen, Opferanoden prüfen. Alles dokumentieren!'
       }
     ],
     examples: [
@@ -286,20 +286,20 @@ const TABS = {
         question: 'Woran liegt das und was muss passieren?',
         steps: [
           ['Ursache', 'Chloramine in der Hallenluft greifen die verzinkten Lueftungskanaele an'],
-          ['Problem', 'Verzinkung ist in Chloratmosphaere NICHT ausreichend bestaendig'],
-          ['Sofortmassnahme', 'Betroffene Stellen dokumentieren, Beschichtung pruefen'],
+          ['Problem', 'Verzinkung ist in Chloratmosphaere NICHT ausreichend beständig'],
+          ['Sofortmaßnahme', 'Betroffene Stellen dokumentieren, Beschichtung prüfen'],
           ['Langfristig', 'Lueftungskanaele aus Kunststoff oder beschichtetem Edelstahl ersetzen']
         ]
       },
       {
-        title: 'Wartungsplan: Was wann pruefen',
-        given: 'Du erstellst einen Korrosions-Wartungsplan fuer dein Schwimmbad.',
+        title: 'Wartungsplan: Was wann prüfen',
+        given: 'Du erstellst einen Korrosions-Wartungsplan für dein Schwimmbad.',
         question: 'Welche Pruefroutine ist sinnvoll?',
         steps: [
-          ['Woechentlich', 'Sichtpruefung: Gelaender, Leitern, Duesen, Schrauben auf Verfaerbungen pruefen'],
-          ['Monatlich', 'Edelstahlteile reinigen, Beschichtungen auf Schaeden pruefen, pH-Wert-Verlauf auswerten'],
-          ['Halbjährlich', 'Rohrschellen und Flansche pruefen, Opferanoden kontrollieren'],
-          ['Jaehrlich', 'Wandstaerke-Messung an Rohren, Lueftungskanaele innen pruefen, Gesamtbericht erstellen']
+          ['Woechentlich', 'Sichtprüfung: Gelaender, Leitern, Duesen, Schrauben auf Verfaerbungen prüfen'],
+          ['Monatlich', 'Edelstahlteile reinigen, Beschichtungen auf Schaeden prüfen, pH-Wert-Verlauf auswerten'],
+          ['Halbjährlich', 'Rohrschellen und Flansche prüfen, Opferanoden kontrollieren'],
+          ['Jaehrlich', 'Wandstärke-Messung an Rohren, Lueftungskanaele innen prüfen, Gesamtbericht erstellen']
         ]
       },
       {
@@ -308,7 +308,7 @@ const TABS = {
         question: 'Was musst du sofort tun?',
         steps: [
           ['Sofort', 'Absperrschieber schliessen, Wasserzufuhr stoppen!'],
-          ['Sichern', 'Bereich absperren, Rutschgefahr! Elektrogeraete sichern'],
+          ['Sichern', 'Bereich absperren, Rutschgefahr! Elektrogeräte sichern'],
           ['Melden', 'Betriebsleitung informieren, Installateur rufen'],
           ['Dokumentieren', 'Schaden fotografieren, ins Betriebstagebuch eintragen, Ursache klaeren (falsches Material? Alter?)']
         ]
@@ -321,10 +321,10 @@ const TABS = {
       'Korrosionsbefunde IMMER dokumentieren — ohne Dokumentation kann man den Verlauf nicht beurteilen.'
     ],
     quiz: {
-      question: 'Die Lueftungskanaele im Hallenbad zeigen Rost. Woechentliche Sichtpruefung war unauffaellig. Was ist die wahrscheinlichste Ursache?',
+      question: 'Die Lueftungskanaele im Hallenbad zeigen Rost. Woechentliche Sichtprüfung war unauffaellig. Was ist die wahrscheinlichste Ursache?',
       options: ['Zu hoher Chlorwert im Beckenwasser', 'Chloramine in der Hallenluft greifen die verzinkten Kanaele an', 'Die Badegaeste haben die Kanaele beschaedigt'],
       correctIndex: 1,
-      explanation: 'Chloramine (gebundenes Chlor) verdunsten aus dem Beckenwasser und reichern sich in der Hallenluft an. Diese aggressive Luft greift verzinkte Lueftungskanaele an. Deshalb muessen Lueftungsanlagen in Hallenbadern aus besonders korrosionsbestaendigen Materialien gebaut werden.'
+      explanation: 'Chloramine (gebundenes Chlor) verdunsten aus dem Beckenwasser und reichern sich in der Hallenluft an. Diese aggressive Luft greift verzinkte Lueftungskanaele an. Deshalb müssen Lueftungsanlagen in Hallenbadern aus besonders korrosionsbeständigen Materialien gebaut werden.'
     }
   }
 };
@@ -334,17 +334,17 @@ const TAB_ORDER = ['grundlagen', 'arten', 'schutz', 'praxis'];
 /* --- Sidebar reference tables ------------------------------------------------ */
 
 const MATERIAL_VERGLEICH = [
-  ['Material', 'Einsatzbereich', 'Bestaendigkeit'],
-  ['V2A (1.4301)', 'Kueche, Aussen', 'NICHT fuer Chlor!'],
+  ['Material', 'Einsatzbereich', 'Beständigkeit'],
+  ['V2A (1.4301)', 'Kueche, Aussen', 'NICHT für Chlor!'],
   ['V4A (1.4571)', 'Becken, Wasser', 'Standard im Bad'],
-  ['Titan', 'Waermetauscher', 'Sehr hoch'],
+  ['Titan', 'Wärmetauscher', 'Sehr hoch'],
   ['Kunststoff/GFK', 'Rohre, Kanaele', 'Korrosionsfrei'],
   ['Kupfer', 'Leitungen', 'Gut, aber pH >7,0']
 ];
 
 const KORROSIONSARTEN_UEBERSICHT = [
   ['Art', 'Erkennungsmerkmal', 'Gefahr'],
-  ['Flaechenkorrosion', 'Gleichmaessiger Rost', 'Mittel'],
+  ['Flächenkorrosion', 'Gleichmaessiger Rost', 'Mittel'],
   ['Lochfrass', 'Kleine Punkte/Loecher', 'Hoch!'],
   ['Spaltkorrosion', 'In Spalten/Fugen', 'Hoch'],
   ['Kontaktkorrosion', 'An Verbindungsstellen', 'Mittel-Hoch'],
@@ -504,7 +504,7 @@ export default function KorrosionDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -547,7 +547,7 @@ export default function KorrosionDeepDiveView() {
                     </tr>
                   </thead>
                   <tbody>
-                    {MATERIAL_VERGLEICH.slice(1).map(([material, einsatz, bestaendigkeit]) => (
+                    {MATERIAL_VERGLEICH.slice(1).map(([material, einsatz, beständigkeit]) => (
                       <tr key={material} className={`${darkMode ? 'border-slate-800' : 'border-gray-200'} border-b last:border-b-0`}>
                         <td className={`px-3 py-2 font-semibold whitespace-nowrap ${darkMode ? 'bg-slate-950/50 text-white' : 'bg-gray-50 text-gray-900'}`}>
                           {material}
@@ -556,7 +556,7 @@ export default function KorrosionDeepDiveView() {
                           {einsatz}
                         </td>
                         <td className={`px-3 py-2 ${darkMode ? 'bg-slate-900/40 text-slate-300' : 'bg-white text-gray-700'}`}>
-                          {bestaendigkeit}
+                          {beständigkeit}
                         </td>
                       </tr>
                     ))}
@@ -568,7 +568,7 @@ export default function KorrosionDeepDiveView() {
 
           {/* Korrosionsarten overview (arten tab) */}
           {activeTab === 'arten' && (
-            <InfoCard darkMode={darkMode} title="Korrosionsarten-Uebersicht">
+            <InfoCard darkMode={darkMode} title="Korrosionsarten-Übersicht">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -609,7 +609,7 @@ export default function KorrosionDeepDiveView() {
                     Woechentlich
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Sichtpruefung aller Metallteile auf Verfaerbungen
+                    Sichtprüfung aller Metallteile auf Verfaerbungen
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-blue-500/30 bg-blue-500/10' : 'border-blue-200 bg-blue-50'}`}>
@@ -617,7 +617,7 @@ export default function KorrosionDeepDiveView() {
                     Monatlich
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Edelstahl reinigen, Beschichtungen pruefen
+                    Edelstahl reinigen, Beschichtungen prüfen
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
@@ -625,7 +625,7 @@ export default function KorrosionDeepDiveView() {
                     Jaehrlich
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Wandstaerke-Messung, Lueftung pruefen, Gesamtbericht
+                    Wandstärke-Messung, Lueftung prüfen, Gesamtbericht
                   </p>
                 </div>
               </div>
@@ -670,7 +670,7 @@ export default function KorrosionDeepDiveView() {
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
                   <div className={`text-sm font-semibold ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
-                    Feuchtigkeit & Waerme
+                    Feuchtigkeit & Wärme
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
                     60-70% Luftfeuchte + 28-34 Grad = perfekte Korrosionsbedingungen
@@ -747,7 +747,7 @@ export default function KorrosionDeepDiveView() {
                     : 'bg-blue-600 text-white hover:bg-blue-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

@@ -14,7 +14,7 @@ export const WATER_CYCLE_STATIONS = [
     functionPoints: [
       'Nutzwasser für Gäste und Kurse.',
       'Hydraulik verteilt Reinwasser über Einstroemdsen.',
-      'Ausgangspunkt für Oberflaechenabzug.'
+      'Ausgangspunkt für Oberflächenabzug.'
     ],
     targetValues: [
       { label: 'Freies Chlor', value: '0.3 bis 0.6 mg/L' },
@@ -22,12 +22,12 @@ export const WATER_CYCLE_STATIONS = [
       { label: 'Temperatur', value: 'nutzungsabhaengig 24 bis 34 C' }
     ],
     faultSignals: [
-      'Truebung, Geruch, Augenreizungen.',
+      'Trübung, Geruch, Augenreizungen.',
       'Totzonen durch schwache Umwälzung.',
       'Belastungsspitzen in Stoesszeiten.'
     ],
     practiceChecks: [
-      'Sichttiefe und Oberflaeche regelmaessig prüfen.',
+      'Sichttiefe und Oberfläche regelmäßig prüfen.',
       'Messwerte im Betriebstagebuch festhalten.',
       'Auffaelligkeiten direkt an Technik melden.'
     ]
@@ -38,9 +38,9 @@ export const WATER_CYCLE_STATIONS = [
     shortLabel: 'Überlauf',
     x: 345,
     y: 248,
-    summary: 'Nimmt Oberflaechenwasser auf und führt es in den Schwallwasserbehaelter.',
+    summary: 'Nimmt Oberflächenwasser auf und führt es in den Schwallwasserbehaelter.',
     functionPoints: [
-      'Entfernt Oberflaechenschmutz schnell.',
+      'Entfernt Oberflächenschmutz schnell.',
       'Stabilisiert den Wasserstand im Becken.',
       'Koppelt Badebetrieb mit der Aufbereitung.'
     ],
@@ -111,7 +111,7 @@ export const WATER_CYCLE_STATIONS = [
       'Abfallender Volumenstrom.'
     ],
     practiceChecks: [
-      'Sichtpruefung Vorfilter auf Luft und Schmutz.',
+      'Sichtprüfung Vorfilter auf Luft und Schmutz.',
       'Pumpenwerte mit Sollblatt vergleichen.',
       'Bei Auffaelligkeit Entlueftung und Dichtheit prüfen.'
     ]
@@ -134,7 +134,7 @@ export const WATER_CYCLE_STATIONS = [
       { label: 'Kontaktstrecke', value: 'ausreichend bis Filtereintritt' }
     ],
     faultSignals: [
-      'Unterdosierung: Truebung steigt.',
+      'Unterdosierung: Trübung steigt.',
       'Überdosierung: Filter belastet.',
       'Taktbetrieb statt gleichmaessiger Impfung.'
     ],
@@ -150,16 +150,16 @@ export const WATER_CYCLE_STATIONS = [
     shortLabel: 'Filter',
     x: 850,
     y: 430,
-    summary: 'Entfernt gebundene Partikel aus dem Wasser. Rückspuelung regeneriert das Filterbett.',
+    summary: 'Entfernt gebundene Partikel aus dem Wasser. Rückspülung regeneriert das Filterbett.',
     functionPoints: [
       'Mechanische Abscheidung im Filtermedium.',
       'Differenzdruck zeigt Belastungszustand.',
-      'Rückspuelung transportiert Schmutz in den Kanal.'
+      'Rückspülung transportiert Schmutz in den Kanal.'
     ],
     targetValues: [
       { label: 'Differenzdruck', value: 'im freigegebenen Sollfenster' },
       { label: 'Filterlaufzeit', value: 'nach Last und Anlagenplan' },
-      { label: 'Rückspuelkriterium', value: 'druck- und qualitaetsbasiert' }
+      { label: 'Rückspuelkriterium', value: 'druck- und qualitätsbasiert' }
     ],
     faultSignals: [
       'Steigender Differenzdruck.',
@@ -168,8 +168,8 @@ export const WATER_CYCLE_STATIONS = [
     ],
     practiceChecks: [
       'Differenzdruck trendbasiert auswerten.',
-      'Rückspuelung vollstaendig dokumentieren.',
-      'Bei Auffaelligkeit Filtermedium mitpruefen.'
+      'Rückspülung vollständig dokumentieren.',
+      'Bei Auffaelligkeit Filtermedium mitprüfen.'
     ]
   },
   {
@@ -195,7 +195,7 @@ export const WATER_CYCLE_STATIONS = [
       'Unruhige Nachregelung.'
     ],
     practiceChecks: [
-      'Onlinewert mit Handmessung gegenpruefen.',
+      'Onlinewert mit Handmessung gegenprüfen.',
       'Dosierstrecke auf Leckagen prüfen.',
       'Störungen nach Ursache statt nur nach Wert beheben.'
     ]
@@ -220,7 +220,7 @@ export const WATER_CYCLE_STATIONS = [
     faultSignals: [
       'Temperaturspruenge bei Regelproblemen.',
       'Zu hohe Rücklauftemperaturen.',
-      'Unverhaeltnismaessiger Energieeinsatz.'
+      'Unverhältnismäßiger Energieeinsatz.'
     ],
     practiceChecks: [
       'Soll-Ist-Vergleich pro Becken führen.',
@@ -251,7 +251,7 @@ export const WATER_CYCLE_STATIONS = [
       'Druckverluste durch Teilverblockung.'
     ],
     practiceChecks: [
-      'Oberflaechenbewegung regelmaessig beobachten.',
+      'Oberflächenbewegung regelmäßig beobachten.',
       'Hydraulik nach Umbauten neu validieren.',
       'Rückmeldungen aus Aufsicht und Technik abgleichen.'
     ]
@@ -361,17 +361,17 @@ export const WATER_CYCLE_PROFI_SPICKZETTEL = [
   {
     title: 'Betriebskontrolle',
     items: [
-      'Chlor und pH waehrend des Badebetriebs regelmaessig prüfen.',
+      'Chlor und pH während des Badebetriebs regelmäßig prüfen.',
       'Differenzdruck und Filterlaufzeiten trendbasiert bewerten.',
       'Abweichungen immer mit Ursache und Maßnahme dokumentieren.'
     ]
   },
   {
-    title: 'Rückspuelung',
+    title: 'Rückspülung',
     items: [
-      'Rückspuelung nach Druckanstieg oder Qualitätsanzeichen ausloesen.',
+      'Rückspülung nach Druckanstieg oder Qualitätsanzeichen ausloesen.',
       'Spülrichtung gegen Betriebsrichtung, mit klarem Schmutzaustrag.',
-      'Nachspuelen und Rückkehr in Normalbetrieb sauber absichern.'
+      'Nachspülen und Rückkehr in Normalbetrieb sauber absichern.'
     ]
   }
 ];

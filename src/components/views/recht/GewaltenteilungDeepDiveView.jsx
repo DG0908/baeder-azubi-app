@@ -89,7 +89,7 @@ const TABS = {
     },
   },
 
-  baeder: {
+  bäder: {
     id: 'baeder', chip: 'Recht im Bad',
     title: 'Staatliches Recht im Bäderbetrieb',
     intro: 'Im Schwimmbad treffen viele Rechtsbereiche aufeinander: Öffentliches Recht (Genehmigungen, Kontrollen), Privatrecht (Hausordnung, Haftung) und Strafrecht (Sorgfaltspflichten). Als FAB musst du wissen, welche Normen direkt für deine tägliche Arbeit gelten und wer kontrolliert.',

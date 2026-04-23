@@ -9,11 +9,11 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Kraft, Arbeit und Leistung — die Basics',
     intro:
-      'In der Physik beschreiben Kraft, Arbeit und Leistung, wie Dinge bewegt werden. Das brauchst du im Schwimmbad staendig: Pumpen druecken Wasser durch Filter, Motoren bewegen Beckenabdeckungen, und du selbst hebst schwere Kanister. Hier lernst du die drei Grundbegriffe kennen.',
+      'In der Physik beschreiben Kraft, Arbeit und Leistung, wie Dinge bewegt werden. Das brauchst du im Schwimmbad ständig: Pumpen druecken Wasser durch Filter, Motoren bewegen Beckenabdeckungen, und du selbst hebst schwere Kanister. Hier lernst du die drei Grundbegriffe kennen.',
     motto: 'Kraft bewegt, Arbeit misst den Aufwand, Leistung misst die Geschwindigkeit.',
     rules: [
       'Kraft wird in Newton (N) gemessen — benannt nach Isaac Newton.',
-      'Arbeit wird in Joule (J) gemessen — sie entsteht, wenn eine Kraft ueber eine Strecke wirkt.',
+      'Arbeit wird in Joule (J) gemessen — sie entsteht, wenn eine Kraft über eine Strecke wirkt.',
       'Leistung wird in Watt (W) gemessen — sie sagt, wie schnell Arbeit verrichtet wird.',
       'Die Erdanziehung erzeugt pro Kilogramm etwa 10 Newton Kraft (genau: 9,81 N).',
       'Merke: Kraft allein ist noch keine Arbeit — erst wenn sich etwas BEWEGT, wird Arbeit verrichtet.'
@@ -77,14 +77,14 @@ const TABS = {
     chip: 'Kraft & Arbeit',
     title: 'Kraft (F) und Arbeit (W) berechnen',
     intro:
-      'Kraft wird in Newton gemessen und Arbeit in Joule. Die Formel ist einfach: W = F × s (Arbeit = Kraft mal Weg). Im Schwimmbad brauchst du das, wenn du Abdeckungen schiebst, Geraete hebst oder berechnen musst, wie viel Energie eine Pumpe braucht.',
+      'Kraft wird in Newton gemessen und Arbeit in Joule. Die Formel ist einfach: W = F × s (Arbeit = Kraft mal Weg). Im Schwimmbad brauchst du das, wenn du Abdeckungen schiebst, Geräte hebst oder berechnen musst, wie viel Energie eine Pumpe braucht.',
     motto: 'W = F × s — Arbeit gleich Kraft mal Weg.',
     rules: [
       'Die Formel lautet: W = F × s (Arbeit = Kraft × Strecke).',
       'Kraft in Newton (N), Strecke in Metern (m), Arbeit in Joule (J).',
       'Gewichtskraft: F = m × g, wobei g ≈ 10 N/kg (Erdbeschleunigung).',
       '1 Newton ist ungefaehr die Kraft, die ein 100-g-Apfel auf deine Hand aususebt.',
-      'Umstellen: F = W ÷ s und s = W ÷ F — immer die gesuchte Groesse freistellen.'
+      'Umstellen: F = W ÷ s und s = W ÷ F — immer die gesuchte Größe freistellen.'
     ],
     steps: [
       {
@@ -100,14 +100,14 @@ const TABS = {
         text: 'Multipliziere Kraft mal Strecke: W = F × s. Einheit ist Joule (J). Beispiel: 300 N × 2 m = 600 J.'
       },
       {
-        title: '4. Ergebnis pruefen',
+        title: '4. Ergebnis prüfen',
         text: 'Ist die Zahl realistisch? Einen 30-kg-Sack 2 m hochheben ergibt 600 J. Zum Vergleich: Eine Tafel Schokolade liefert ca. 2 Millionen Joule Energie.'
       }
     ],
     examples: [
       {
         title: 'Beckenabdeckung schieben',
-        given: 'Die Beckenabdeckung wird mit 400 N ueber 12 m geschoben.',
+        given: 'Die Beckenabdeckung wird mit 400 N über 12 m geschoben.',
         question: 'Wie viel Arbeit wird verrichtet?',
         steps: [
           ['Kraft', 'F = 400 N (gegeben)'],
@@ -119,7 +119,7 @@ const TABS = {
       {
         title: 'pH-Senker-Sack hochheben',
         given: 'Ein Sack pH-Senker wiegt 20 kg. Er wird 1,5 m auf ein Regal gehoben.',
-        question: 'Wie viel Arbeit ist noetig?',
+        question: 'Wie viel Arbeit ist nötig?',
         steps: [
           ['Kraft berechnen', 'F = 20 kg × 10 = 200 N'],
           ['Strecke', 's = 1,5 m'],
@@ -134,14 +134,14 @@ const TABS = {
         steps: [
           ['Formel umstellen', 'F = W ÷ s'],
           ['Einsetzen', 'F = 900 J ÷ 15 m = 60 N'],
-          ['Ergebnis', 'Die Schiebekraft betraegt 60 Newton']
+          ['Ergebnis', 'Die Schiebekraft beträgt 60 Newton']
         ]
       }
     ],
     pitfalls: [
       'Strecke IMMER in Metern angeben — Zentimeter vorher umrechnen (÷ 100)!',
       'Gewichtskraft nicht vergessen: Masse ist NICHT gleich Kraft. Erst × 10 rechnen!',
-      'Wenn du schiebst, zaehlt nur die Kraft IN Bewegungsrichtung.',
+      'Wenn du schiebst, zählt nur die Kraft IN Bewegungsrichtung.',
       'Kilojoule (kJ) = 1.000 Joule. Bei grossen Zahlen umrechnen!'
     ],
     quiz: {
@@ -222,7 +222,7 @@ const TABS = {
     pitfalls: [
       'Zeit IMMER in Sekunden umrechnen — Minuten und Stunden vorher umwandeln!',
       'Watt (Leistung) nicht mit Wattstunde (Energie) verwechseln! kWh = kW × Stunden.',
-      'Auf Typenschildern steht oft kW — das muss fuer Formeln in W umgerechnet werden (× 1.000).',
+      'Auf Typenschildern steht oft kW — das muss für Formeln in W umgerechnet werden (× 1.000).',
       'Merke: 1 kWh = 3.600.000 J — das ist die Einheit auf deiner Stromrechnung.'
     ],
     quiz: {
@@ -236,16 +236,16 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Mechanik im Baederalltag',
+    title: 'Mechanik im Bäderalltag',
     intro:
-      'Im Schwimmbad begegnen dir Kraft, Arbeit und Leistung ueberall: Umwaelzpumpen mit Kilowatt-Angaben, Hubmotoren fuer Beckenabdeckungen, Heizkessel und Stromzaehler. Hier uebst du mit echten Aufgaben aus dem Baederalltag.',
+      'Im Schwimmbad begegnen dir Kraft, Arbeit und Leistung überall: Umwaelzpumpen mit Kilowatt-Angaben, Hubmotoren für Beckenabdeckungen, Heizkessel und Stromzähler. Hier uebst du mit echten Aufgaben aus dem Bäderalltag.',
     motto: 'Pumpen, Motoren, Energie — alles ist Mechanik.',
     rules: [
       'Umwaelzpumpen haben typisch 2 bis 7 kW Leistung.',
       'Energieverbrauch = Leistung × Laufzeit. Auf der Stromrechnung steht kWh.',
-      'Hebeanlagen und Beckenabdeckungen: Kraft = Gewicht × 10, dann Arbeit = Kraft × Hubhoehe.',
+      'Hebeanlagen und Beckenabdeckungen: Kraft = Gewicht × 10, dann Arbeit = Kraft × Hubhöhe.',
       'Stromkosten berechnen: kWh × Preis pro kWh (ca. 0,30 Euro).',
-      'Typenschilder an Geraeten zeigen immer die Nennleistung in Watt oder Kilowatt.'
+      'Typenschilder an Geräten zeigen immer die Nennleistung in Watt oder Kilowatt.'
     ],
     steps: [
       {
@@ -254,11 +254,11 @@ const TABS = {
       },
       {
         title: '2. Laufzeit bestimmen',
-        text: 'Wie lange laeuft das Geraet? Im Schwimmbad laufen Pumpen oft 8-16 Stunden am Tag.'
+        text: 'Wie lange laeuft das Gerät? Im Schwimmbad laufen Pumpen oft 8-16 Stunden am Tag.'
       },
       {
         title: '3. Energieverbrauch berechnen',
-        text: 'Leistung × Zeit = Energieverbrauch. Fuer kWh: kW × Stunden. Beispiel: 4 kW × 10 h = 40 kWh pro Tag.'
+        text: 'Leistung × Zeit = Energieverbrauch. Für kWh: kW × Stunden. Beispiel: 4 kW × 10 h = 40 kWh pro Tag.'
       },
       {
         title: '4. Kosten berechnen',
@@ -278,7 +278,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Hubmotor fuer Beckenabdeckung',
+        title: 'Hubmotor für Beckenabdeckung',
         given: 'Die Beckenabdeckung wiegt 800 kg und wird 1,2 m angehoben. Der Motor braucht 40 Sekunden.',
         question: 'Welche Leistung braucht der Motor mindestens?',
         steps: [
@@ -315,7 +315,7 @@ const TABS = {
       'Auf Typenschildern steht manchmal VA statt W — das ist bei Motoren NICHT dasselbe!',
       'Vergiss nicht: Pumpen haben einen Wirkungsgrad. Ein 5-kW-Motor gibt nicht 5 kW an das Wasser ab.',
       'kWh ist Energie (Arbeit), kW ist Leistung. Nicht verwechseln — besonders auf der Stromrechnung!',
-      'Bei Pruefungsaufgaben: Erst alle Werte in Grundeinheiten umrechnen (N, m, s, J, W).'
+      'Bei Prüfungsaufgaben: Erst alle Werte in Grundeinheiten umrechnen (N, m, s, J, W).'
     ],
     quiz: {
       question: 'Eine 3-kW-Pumpe laeuft 8 Stunden. Strom kostet 0,30 Euro/kWh. Was kostet das?',
@@ -331,7 +331,7 @@ const TAB_ORDER = ['grundlagen', 'kraftArbeit', 'leistung', 'praxis'];
 /* ─── Formulas overview table ──────────────────────────────────────────────── */
 
 const FORMULAS = [
-  ['Groesse', 'Formel', 'Einheit'],
+  ['Größe', 'Formel', 'Einheit'],
   ['Kraft', 'F = m × g', 'Newton (N)'],
   ['Arbeit', 'W = F × s', 'Joule (J)'],
   ['Leistung', 'P = W ÷ t', 'Watt (W)'],
@@ -491,7 +491,7 @@ export default function MechanikDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -534,10 +534,10 @@ export default function MechanikDeepDiveView() {
                     </tr>
                   </thead>
                   <tbody>
-                    {FORMULAS.slice(1).map(([groesse, formel, einheit]) => (
-                      <tr key={groesse} className={`${darkMode ? 'border-slate-800' : 'border-gray-200'} border-b last:border-b-0`}>
+                    {FORMULAS.slice(1).map(([größe, formel, einheit]) => (
+                      <tr key={größe} className={`${darkMode ? 'border-slate-800' : 'border-gray-200'} border-b last:border-b-0`}>
                         <td className={`px-3 py-2 font-semibold whitespace-nowrap ${darkMode ? 'bg-slate-950/50 text-white' : 'bg-gray-50 text-gray-900'}`}>
-                          {groesse}
+                          {größe}
                         </td>
                         <td className={`px-3 py-2 ${darkMode ? 'bg-slate-900/40 text-slate-300' : 'bg-white text-gray-700'}`}>
                           {formel}
@@ -573,7 +573,7 @@ export default function MechanikDeepDiveView() {
                     Arbeit
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    1 Joule = 1 Newton ueber 1 Meter
+                    1 Joule = 1 Newton über 1 Meter
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                     1.000 J = 1 kJ | 3.600.000 J = 1 kWh
@@ -634,7 +634,7 @@ export default function MechanikDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

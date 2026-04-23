@@ -27,7 +27,7 @@ const DETAIL_MODES = [
     detail: [
       'Die Magnetspule zieht den Magnethub impulsweise an.',
       'Magnetachse und Druckstueck leiten diese Bewegung in Richtung Membran weiter.',
-      'Aus Hubfrequenz und Hublaenge ergibt sich die resultierende Dosierleistung.',
+      'Aus Hubfrequenz und Hublänge ergibt sich die resultierende Dosierleistung.',
     ],
     caution: 'Thermische Überlast, Schwergang oder Fehlspannung stören die Hubbewegung.',
   },
@@ -37,9 +37,9 @@ const DETAIL_MODES = [
     accent: '#a070ff',
     focus: ['hubdeckel', 'hubverstellbolzen', 'hubeinstellachse', 'hubeinstellknopf', 'klarsichtabdeckung'],
     detail: [
-      'Über Hubeinstellknopf und Hubeinstellachse wird die Hublaenge angepasst.',
+      'Über Hubeinstellknopf und Hubeinstellachse wird die Hublänge angepasst.',
       'Der Hubverstellbolzen begrenzt mechanisch den Membranhub.',
-      'Die Klarsicht-Abdeckung schützt den Einstellbereich und laesst die Kontrolle zu.',
+      'Die Klarsicht-Abdeckung schützt den Einstellbereich und lässt die Kontrolle zu.',
     ],
     caution: 'Verstellung nur entsprechend Betriebsanleitung und nie mit Gewalt am Anschlag durchführen.',
   },
@@ -61,11 +61,11 @@ const DETAIL_MODES = [
     accent: '#ff7a7a',
     focus: ['dosierkopf', 'dosiermembran', 'kopfscheibe', 'klarsichtabdeckung', 'gehaeuse'],
     detail: [
-      'Dosiermembran ist Verschleissteil und muss regelmaessig kontrolliert werden.',
-      'Dosierkopf, Ventilsitze und Dichtflaechen duerfen keine Kristall- oder Belagsbildung zeigen.',
+      'Dosiermembran ist Verschleissteil und muss regelmäßig kontrolliert werden.',
+      'Dosierkopf, Ventilsitze und Dichtflächen dürfen keine Kristall- oder Belagsbildung zeigen.',
       'Klarsicht-Abdeckung und Gehaeusebereiche sauber halten, damit Verstellungen und Leckagen erkennbar bleiben.',
     ],
-    caution: 'Wartung nur drucklos, chemikalienfrei gespuelter Leitung und mit PSA.',
+    caution: 'Wartung nur drucklos, chemikalienfrei gespülter Leitung und mit PSA.',
   },
 ];
 
@@ -78,7 +78,7 @@ const DOSING_PUMP_SPOTS = [
     color: '#4a9eff',
     position: [0.7, -0.7, 1.15],
     items: [
-      'Traegt Antrieb, Elektronik und mechanische Einstellkomponenten.',
+      'Trägt Antrieb, Elektronik und mechanische Einstellkomponenten.',
       'Schützt Innenbauteile gegen Spritzwasser und chemische Umgebung.',
       'Risse, lose Verschraubungen oder Verzug beeinflussen die Betriebssicherheit.',
     ],
@@ -169,8 +169,8 @@ const DOSING_PUMP_SPOTS = [
     color: '#f38c8c',
     position: [1.05, -0.1, 0.14],
     items: [
-      'Übertraegt die Hubbewegung auf die nachfolgende Mechanik.',
-      'Ist zentral für reproduzierbare Kraftuebertragung.',
+      'Überträgt die Hubbewegung auf die nachfolgende Mechanik.',
+      'Ist zentral für reproduzierbare Kraftübertragung.',
       'Spiel oder Materialverschleiss verursachen ungenauen Dosierhub.',
     ],
   },
@@ -209,7 +209,7 @@ const DOSING_PUMP_SPOTS = [
     position: [2.3, -0.12, 0.22],
     items: [
       'Verbindet Einstellknopf und innere Verstellmechanik.',
-      'Übertraegt die Drehbewegung in eine axiale Hubanpassung.',
+      'Überträgt die Drehbewegung in eine axiale Hubanpassung.',
       'Axialspiel oder Beschädigung führen zu ungenauer Einstellung.',
     ],
   },
@@ -221,7 +221,7 @@ const DOSING_PUMP_SPOTS = [
     color: '#f5b7ff',
     position: [2.9, -0.12, 0.22],
     items: [
-      'Bedienelement für die Hublaengenverstellung.',
+      'Bedienelement für die Hublängenverstellung.',
       'Wird je nach Pumpentyp in Prozent oder Skalenwerten eingestellt.',
       'Muss gut ablesbar und gegen versehentliche Verstellung geschuetzt sein.',
     ],
@@ -284,7 +284,7 @@ const DOSIERPFAD = [
   '1 Rückhub: Medium wird links in den Dosierkopf eingesaugt',
   '2 Membranhub: Magnethub bewegt Druckstueck und Kopfscheibe',
   '3 Druckhub: Medium wird über das Druckventil ausgetragen',
-  '4 Hublaenge rechts einstellen, Dosiermenge damit kalibrieren',
+  '4 Hublänge rechts einstellen, Dosiermenge damit kalibrieren',
 ];
 
 function focusMatch(mode, ids) {
@@ -1162,7 +1162,7 @@ export default function MembrandosierpumpeDeepDiveView() {
               HUBVERSTELLUNG
             </p>
             <label htmlFor="dosing-hub-slider" className="text-xs block mb-2" style={{ color: '#8ab0c0' }}>
-              Hublaenge simulieren ({hubPercent}%)
+              Hublänge simulieren ({hubPercent}%)
             </label>
             <input
               id="dosing-hub-slider"
@@ -1175,7 +1175,7 @@ export default function MembrandosierpumpeDeepDiveView() {
               className="w-full accent-cyan-500"
             />
             <p className="text-[11px] mt-2 leading-relaxed" style={{ color: '#6d8ca9' }}>
-              Der Slider simuliert die mechanische Hubverstellung. Größere Hublaenge bedeutet größeres Dosiervolumen pro Hub.
+              Der Slider simuliert die mechanische Hubverstellung. Größere Hublänge bedeutet größeres Dosiervolumen pro Hub.
             </p>
           </div>
 
@@ -1266,14 +1266,14 @@ export default function MembrandosierpumpeDeepDiveView() {
               PRUEFUNGSFRAGE
             </p>
             <p className="text-sm font-semibold mb-2" style={{ color: '#c0d8f0' }}>
-              Warum muss bei einer Membrandosierpumpe die Hublaenge sauber zur Hubfrequenz und zum Messwertsignal passen?
+              Warum muss bei einer Membrandosierpumpe die Hublänge sauber zur Hubfrequenz und zum Messwertsignal passen?
             </p>
             <details>
               <summary className="text-xs cursor-pointer font-mono" style={{ color: '#4a9eff' }}>
                 Antwort einblenden
               </summary>
               <p className="text-sm mt-2 leading-relaxed" style={{ color: '#90b0d0' }}>
-                Die Dosiermenge ergibt sich aus dem Volumen pro Hub und der Anzahl der Huebe. Wenn Hublaenge, Hubfrequenz
+                Die Dosiermenge ergibt sich aus dem Volumen pro Hub und der Anzahl der Huebe. Wenn Hublänge, Hubfrequenz
                 und externe Ansteuerung nicht zusammenpassen, wird die Chemikalie systematisch zu hoch oder zu niedrig dosiert.
               </p>
             </details>

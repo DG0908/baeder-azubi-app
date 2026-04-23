@@ -186,32 +186,32 @@ export default function VerkehrssicherungDeepDiveView({ darkMode }) {
               {[
                 {
                   situation: 'Nassbereich rutschig nach Reinigung',
-                  massnahme: 'Absperren bis trocken, Warnschild aufstellen, Reinigung dokumentieren',
+                  maßnahme: 'Absperren bis trocken, Warnschild aufstellen, Reinigung dokumentieren',
                 },
                 {
                   situation: 'Gebrochene Fliese am Beckenrand',
-                  massnahme: 'Bereich sofort absperren, Meldung an Technik, Eintrag ins Betriebsbuch',
+                  maßnahme: 'Bereich sofort absperren, Meldung an Technik, Eintrag ins Betriebsbuch',
                 },
                 {
                   situation: 'Chlorgeruch auffällig stark',
-                  massnahme: 'Wasserqualität sofort messen, bei Grenzwertüberschreitung Badebetrieb einstellen',
+                  maßnahme: 'Wasserqualität sofort messen, bei Grenzwertüberschreitung Badebetrieb einstellen',
                 },
                 {
                   situation: 'Defektes Geländer an der Treppe',
-                  massnahme: 'Treppe sperren, Reparatur beauftragen, erst nach Abnahme wieder freigeben',
+                  maßnahme: 'Treppe sperren, Reparatur beauftragen, erst nach Abnahme wieder freigeben',
                 },
                 {
                   situation: 'AED zeigt Batteriefehler',
-                  massnahme: 'Sofort Ersatzbatterie einsetzen oder Ersatzgerät bereitstellen — nie ohne AED öffnen',
+                  maßnahme: 'Sofort Ersatzbatterie einsetzen oder Ersatzgerät bereitstellen — nie ohne AED öffnen',
                 },
                 {
                   situation: 'Glasscherbe im Becken entdeckt',
-                  massnahme: 'Becken sofort räumen und sperren, Scherbe entfernen, Protokoll',
+                  maßnahme: 'Becken sofort räumen und sperren, Scherbe entfernen, Protokoll',
                 },
-              ].map(({ situation, massnahme }, i) => (
+              ].map(({ situation, maßnahme }, i) => (
                 <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: i < 5 ? `1px solid ${accent}20` : 'none' }}>
                   <div style={{ fontWeight: 700, color: dark ? '#c4b5fd' : '#7c3aed', fontSize: 13, marginBottom: 3 }}>{situation}</div>
-                  <div style={{ color: dark ? '#cbd5e1' : '#475569', fontSize: 13 }}>→ {massnahme}</div>
+                  <div style={{ color: dark ? '#cbd5e1' : '#475569', fontSize: 13 }}>→ {maßnahme}</div>
                 </div>
               ))}
             </div>

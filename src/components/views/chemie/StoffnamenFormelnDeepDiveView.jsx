@@ -9,40 +9,40 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was sind Stoffnamen?',
     intro:
-      'Jeder Stoff im Schwimmbad hat zwei Namen: einen chemischen Namen und einen Alltagsnamen (Handelsname). Auf dem Kanister steht z.B. "Fluessigchlor" — aber der chemische Name ist "Natriumhypochlorit". Die chemische Formel NaClO ist nur eine Kurzschreibweise fuer den Namen. Wenn du verstehst, wie Namen und Formeln zusammenhaengen, kannst du sofort erkennen, was in einem Produkt steckt.',
+      'Jeder Stoff im Schwimmbad hat zwei Namen: einen chemischen Namen und einen Alltagsnamen (Handelsname). Auf dem Kanister steht z.B. "Flüssigchlor" — aber der chemische Name ist "Natriumhypochlorit". Die chemische Formel NaClO ist nur eine Kurzschreibweise für den Namen. Wenn du verstehst, wie Namen und Formeln zusammenhaengen, kannst du sofort erkennen, was in einem Produkt steckt.',
     motto: 'Jeder Stoff hat einen Namen UND eine Formel — beides sagt dir, was drin ist.',
     rules: [
-      'Jeder chemische Stoff hat einen systematischen Namen (z.B. Natriumhypochlorit) und oft auch einen Handelsnamen (z.B. Fluessigchlor).',
-      'Die chemische Formel ist eine Abkuerzung fuer den Namen: NaClO steht fuer Natrium (Na) + Chlor (Cl) + Sauerstoff (O).',
+      'Jeder chemische Stoff hat einen systematischen Namen (z.B. Natriumhypochlorit) und oft auch einen Handelsnamen (z.B. Flüssigchlor).',
+      'Die chemische Formel ist eine Abkuerzung für den Namen: NaClO steht für Natrium (Na) + Chlor (Cl) + Sauerstoff (O).',
       'Der Name verraet dir die Bestandteile: "Natrium-hypochlorit" = Natrium + Hypochlorit (eine Chlor-Sauerstoff-Verbindung).',
-      'Auf Produktetiketten und Sicherheitsdatenblaettern findest du IMMER den chemischen Namen — den musst du lesen koennen.',
+      'Auf Produktetiketten und Sicherheitsdatenblaettern findest du IMMER den chemischen Namen — den musst du lesen können.',
       'Die kleinen Zahlen in Formeln (z.B. H₂O) sagen dir, wie viele Atome von jedem Element dabei sind: H₂O = 2× Wasserstoff + 1× Sauerstoff.'
     ],
     steps: [
       {
         title: '1. Handelsname finden',
-        text: 'Auf dem Kanister steht oft ein einfacher Name wie "pH-Senker" oder "Fluessigchlor". Das ist der Handelsname — er sagt dir, wofuer das Produkt da ist, aber NICHT genau, was drin ist.'
+        text: 'Auf dem Kanister steht oft ein einfacher Name wie "pH-Senker" oder "Flüssigchlor". Das ist der Handelsname — er sagt dir, wofür das Produkt da ist, aber NICHT genau, was drin ist.'
       },
       {
         title: '2. Chemischen Namen lesen',
-        text: 'Im Kleingedruckten oder auf dem Sicherheitsdatenblatt steht der chemische Name, z.B. "Natriumhypochlorit-Loesung 13%". Diesen Namen musst du kennen, weil er dir genau sagt, welcher Stoff drin ist.'
+        text: 'Im Kleingedruckten oder auf dem Sicherheitsdatenblatt steht der chemische Name, z.B. "Natriumhypochlorit-Lösung 13%". Diesen Namen musst du kennen, weil er dir genau sagt, welcher Stoff drin ist.'
       },
       {
         title: '3. Formel verstehen',
-        text: 'Die Formel ist die Kurzform: NaClO. Jeder Buchstabe steht fuer ein Element: Na = Natrium, Cl = Chlor, O = Sauerstoff. Die Formel sagt dir also genau dasselbe wie der Name — nur kuerzer.'
+        text: 'Die Formel ist die Kurzform: NaClO. Jeder Buchstabe steht für ein Element: Na = Natrium, Cl = Chlor, O = Sauerstoff. Die Formel sagt dir also genau dasselbe wie der Name — nur kuerzer.'
       },
       {
         title: '4. Einsatz zuordnen',
-        text: 'Wenn du Name und Formel kennst, weisst du auch den Einsatzbereich. Natriumhypochlorit (NaClO) = Desinfektion. Salzsaeure (HCl) = pH-Senkung. So erkennst du sofort, welches Produkt wofuer ist.'
+        text: 'Wenn du Name und Formel kennst, weisst du auch den Einsatzbereich. Natriumhypochlorit (NaClO) = Desinfektion. Salzsäure (HCl) = pH-Senkung. So erkennst du sofort, welches Produkt wofür ist.'
       }
     ],
     examples: [
       {
         title: 'Vom Handelsnamen zum chemischen Namen',
-        given: 'Auf dem Kanister steht "Fluessigchlor zur Schwimmbaddesinfektion".',
+        given: 'Auf dem Kanister steht "Flüssigchlor zur Schwimmbaddesinfektion".',
         question: 'Was steckt wirklich drin?',
         steps: [
-          ['Handelsname', 'Fluessigchlor'],
+          ['Handelsname', 'Flüssigchlor'],
           ['Chemischer Name', 'Natriumhypochlorit (NaClO)'],
           ['Formel lesen', 'Na = Natrium, Cl = Chlor, O = Sauerstoff'],
           ['Einsatz', 'Desinfektion des Beckenwassers']
@@ -72,16 +72,16 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Handelsname und chemischer Name sind NICHT dasselbe! "Fluessigchlor" klingt nach reinem Chlor, ist aber Natriumhypochlorit-Loesung (nur 13% Wirkstoff).',
+      'Handelsname und chemischer Name sind NICHT dasselbe! "Flüssigchlor" klingt nach reinem Chlor, ist aber Natriumhypochlorit-Lösung (nur 13% Wirkstoff).',
       'Die kleinen Zahlen in Formeln NICHT vergessen: H₂SO₄ hat ZWEI Wasserstoff-Atome und VIER Sauerstoff-Atome.',
       'Klammern in Formeln bedeuten: Der Teil in der Klammer kommt mehrfach vor. Ca(OH)₂ hat ZWEI OH-Gruppen.',
       'Nicht alle Stoffe mit "Chlor" im Namen sind Desinfektionsmittel — Natriumchlorid (NaCl) ist einfach nur Kochsalz!'
     ],
     quiz: {
-      question: 'Was ist der chemische Name fuer "Fluessigchlor"?',
+      question: 'Was ist der chemische Name für "Flüssigchlor"?',
       options: ['Calciumhypochlorit', 'Natriumhypochlorit', 'Natriumchlorid'],
       correctIndex: 1,
-      explanation: 'Fluessigchlor ist der Handelsname fuer Natriumhypochlorit (NaClO). Calciumhypochlorit ist Granulat, und Natriumchlorid ist Kochsalz.'
+      explanation: 'Flüssigchlor ist der Handelsname für Natriumhypochlorit (NaClO). Calciumhypochlorit ist Granulat, und Natriumchlorid ist Kochsalz.'
     }
   },
 
@@ -90,19 +90,19 @@ const TABS = {
     chip: 'Zuordnung',
     title: 'Name, Formel und Einsatz verbinden',
     intro:
-      'Im Schwimmbad brauchst du etwa 12 Chemikalien regelmaessig. Fuer die Pruefung musst du zu jedem Stoff den Namen, die Formel UND den Einsatz kennen. Der Trick: Lerne die Elementkuerzel (Na = Natrium, Cl = Chlor, O = Sauerstoff) — dann kannst du jede Formel lesen wie ein Wort.',
+      'Im Schwimmbad brauchst du etwa 12 Chemikalien regelmäßig. Für die Prüfung musst du zu jedem Stoff den Namen, die Formel UND den Einsatz kennen. Der Trick: Lerne die Elementkuerzel (Na = Natrium, Cl = Chlor, O = Sauerstoff) — dann kannst du jede Formel lesen wie ein Wort.',
     motto: 'Kenne die Kuerzel, dann liest du jede Formel.',
     rules: [
       'Die wichtigsten Elementkuerzel: Na = Natrium, Ca = Calcium, Cl = Chlor, O = Sauerstoff, H = Wasserstoff, S = Schwefel, Al = Aluminium, C = Kohlenstoff.',
-      'NaClO = Natrium + Chlor + Sauerstoff = Natriumhypochlorit = Fluessigchlor zur Desinfektion.',
+      'NaClO = Natrium + Chlor + Sauerstoff = Natriumhypochlorit = Flüssigchlor zur Desinfektion.',
       'Ca(ClO)₂ = Calcium + 2× (Chlor + Sauerstoff) = Calciumhypochlorit = Chlorgranulat zur Desinfektion.',
-      'HCl = Wasserstoff + Chlor = Salzsaeure = pH-Senker.',
+      'HCl = Wasserstoff + Chlor = Salzsäure = pH-Senker.',
       'Wenn du die Formel lesen kannst, vergisst du den Namen nie wieder — weil der Name genau das Gleiche sagt!'
     ],
     steps: [
       {
         title: '1. Elementkuerzel lernen',
-        text: 'Fang mit den 8 wichtigsten an: Na (Natrium), Ca (Calcium), Cl (Chlor), O (Sauerstoff), H (Wasserstoff), S (Schwefel), Al (Aluminium), C (Kohlenstoff). Diese 8 reichen fuer fast alle Baedechemikalien.'
+        text: 'Fang mit den 8 wichtigsten an: Na (Natrium), Ca (Calcium), Cl (Chlor), O (Sauerstoff), H (Wasserstoff), S (Schwefel), Al (Aluminium), C (Kohlenstoff). Diese 8 reichen für fast alle Baedechemikalien.'
       },
       {
         title: '2. Formel in Kuerzel zerlegen',
@@ -110,7 +110,7 @@ const TABS = {
       },
       {
         title: '3. Einsatz merken',
-        text: 'Verbinde jeden Stoff mit seiner Aufgabe: Stoffe mit ClO → Desinfektion. Stoffe mit H am Anfang → Saeure → pH-Senkung. Stoffe mit OH → Lauge → pH-Hebung. Stoffe mit SO₄ und Al → Flockung.'
+        text: 'Verbinde jeden Stoff mit seiner Aufgabe: Stoffe mit ClO → Desinfektion. Stoffe mit H am Anfang → Säure → pH-Senkung. Stoffe mit OH → Lauge → pH-Hebung. Stoffe mit SO₄ und Al → Flockung.'
       },
       {
         title: '4. Eselsbruecken nutzen',
@@ -120,12 +120,12 @@ const TABS = {
     examples: [
       {
         title: 'Die 6 wichtigsten Baedechemikalien',
-        given: 'Diese Stoffe brauchst du fast taeglich im Schwimmbad.',
+        given: 'Diese Stoffe brauchst du fast täglich im Schwimmbad.',
         question: 'Ordne Name, Formel und Einsatz zu:',
         steps: [
-          ['Natriumhypochlorit', 'NaClO → Fluessige Desinfektion'],
+          ['Natriumhypochlorit', 'NaClO → Flüssige Desinfektion'],
           ['Calciumhypochlorit', 'Ca(ClO)₂ → Granulat-Desinfektion'],
-          ['Salzsaeure', 'HCl → pH-Senkung'],
+          ['Salzsäure', 'HCl → pH-Senkung'],
           ['Natriumhydrogensulfat', 'NaHSO₄ → pH-Senkung (Alternative)'],
           ['Natriumcarbonat (Soda)', 'Na₂CO₃ → pH-Hebung'],
           ['Aluminiumsulfat', 'Al₂(SO₄)₃ → Flockung']
@@ -138,18 +138,18 @@ const TABS = {
         steps: [
           ['Calciumhydroxid (Kalkhydrat)', 'Ca(OH)₂ → pH-Hebung'],
           ['Natriumhydroxid (Natronlauge)', 'NaOH → pH-Hebung'],
-          ['Schwefelsaeure', 'H₂SO₄ → pH-Senkung'],
+          ['Schwefelsäure', 'H₂SO₄ → pH-Senkung'],
           ['Natriumchlorid (Kochsalz)', 'NaCl → Sole / Elektrolyse'],
           ['Kohlendioxid', 'CO₂ → pH-Senkung (bei Whirlpools)'],
-          ['Calciumchlorid', 'CaCl₂ → Haerteeinstellung']
+          ['Calciumchlorid', 'CaCl₂ → Härteeinstellung']
         ]
       }
     ],
     pitfalls: [
-      'NaClO (Natriumhypochlorit) und NaCl (Natriumchlorid) sehen aehnlich aus — aber das O macht den Unterschied! NaClO desinfiziert, NaCl ist nur Salz.',
-      'Ca(ClO)₂ und CaCl₂ nicht verwechseln: Mit O ist es Chlorgranulat (Desinfektion), ohne O ist es Calciumchlorid (Haerteeinstellung).',
-      'H₂SO₄ (Schwefelsaeure) und NaHSO₄ (Natriumhydrogensulfat) sind BEIDE pH-Senker, aber Schwefelsaeure ist viel gefaehrlicher!',
-      'Na₂CO₃ (Soda) und NaHCO₃ (Natron/Backpulver) sind NICHT dasselbe — Soda ist staerker basisch.'
+      'NaClO (Natriumhypochlorit) und NaCl (Natriumchlorid) sehen ähnlich aus — aber das O macht den Unterschied! NaClO desinfiziert, NaCl ist nur Salz.',
+      'Ca(ClO)₂ und CaCl₂ nicht verwechseln: Mit O ist es Chlorgranulat (Desinfektion), ohne O ist es Calciumchlorid (Härteeinstellung).',
+      'H₂SO₄ (Schwefelsäure) und NaHSO₄ (Natriumhydrogensulfat) sind BEIDE pH-Senker, aber Schwefelsäure ist viel gefährlicher!',
+      'Na₂CO₃ (Soda) und NaHCO₃ (Natron/Backpulver) sind NICHT dasselbe — Soda ist stärker basisch.'
     ],
     quiz: {
       question: 'Welche Formel gehoert zu Calciumhypochlorit (Chlorgranulat)?',
@@ -164,14 +164,14 @@ const TABS = {
     chip: 'Stoffklassen',
     title: 'Welche Gruppen gibt es?',
     intro:
-      'Alle Chemikalien im Schwimmbad gehoeren zu einer von vier grossen Gruppen: Saeuren, Basen (Laugen), Salze oder Oxide. Wenn du weisst, zu welcher Gruppe ein Stoff gehoert, kennst du sofort seine Grundeigenschaften. Der Trick: Schau dir die Formel an — sie verraet die Gruppe!',
-    motto: 'H vorne = Saeure, OH drin = Base, Metall + Nichtmetall = Salz, O dabei = Oxid.',
+      'Alle Chemikalien im Schwimmbad gehoeren zu einer von vier grossen Gruppen: Säuren, Basen (Laugen), Salze oder Oxide. Wenn du weisst, zu welcher Gruppe ein Stoff gehoert, kennst du sofort seine Grundeigenschaften. Der Trick: Schau dir die Formel an — sie verraet die Gruppe!',
+    motto: 'H vorne = Säure, OH drin = Base, Metall + Nichtmetall = Salz, O dabei = Oxid.',
     rules: [
-      'Saeuren erkennst du am H (Wasserstoff) am Anfang der Formel: HCl, H₂SO₄, HNO₃ — sie senken den pH-Wert.',
+      'Säuren erkennst du am H (Wasserstoff) am Anfang der Formel: HCl, H₂SO₄, HNO₃ — sie senken den pH-Wert.',
       'Basen/Laugen erkennst du an der OH-Gruppe in der Formel: NaOH, Ca(OH)₂, KOH — sie heben den pH-Wert.',
       'Salze bestehen aus einem Metall und einem Nichtmetall-Rest: NaCl, CaCl₂, Na₂CO₃ — sie sind meistens neutral.',
       'Oxide erkennst du am O (Sauerstoff) in Verbindung mit einem anderen Element: CO₂, Al₂O₃ — sie entstehen bei Verbrennung.',
-      'Manche Stoffe passen in mehrere Kategorien — fuer die Pruefung reicht die Hauptgruppe.'
+      'Manche Stoffe passen in mehrere Kategorien — für die Prüfung reicht die Hauptgruppe.'
     ],
     steps: [
       {
@@ -179,28 +179,28 @@ const TABS = {
         text: 'Schreib die Formel auf oder lies sie vom Etikett ab. Zum Beispiel: HCl, NaOH, NaCl oder CO₂.'
       },
       {
-        title: '2. Auf H, OH oder O pruefen',
-        text: 'Beginnt die Formel mit H? → Saeure. Steht OH in der Formel? → Base/Lauge. Nur ein O mit anderem Element? → Eventuell Oxid. Metall + Nichtmetall ohne H und OH? → Salz.'
+        title: '2. Auf H, OH oder O prüfen',
+        text: 'Beginnt die Formel mit H? → Säure. Steht OH in der Formel? → Base/Lauge. Nur ein O mit anderem Element? → Eventuell Oxid. Metall + Nichtmetall ohne H und OH? → Salz.'
       },
       {
         title: '3. Eigenschaft ableiten',
-        text: 'Saeure → pH-Wert sinkt, aetzt. Base → pH-Wert steigt, aetzt. Salz → meistens neutral, loest sich in Wasser. Oxid → unterschiedlich, CO₂ macht Wasser sauer.'
+        text: 'Säure → pH-Wert sinkt, aetzt. Base → pH-Wert steigt, aetzt. Salz → meistens neutral, loest sich in Wasser. Oxid → unterschiedlich, CO₂ macht Wasser sauer.'
       },
       {
         title: '4. Im Baedekontext einordnen',
-        text: 'pH-Senker sind Saeuren (HCl, H₂SO₄). pH-Heber sind Basen (NaOH, Na₂CO₃). Desinfektionsmittel sind Salze der hypochlorigen Saeure (NaClO, Ca(ClO)₂). Flockungsmittel sind Salze (Al₂(SO₄)₃).'
+        text: 'pH-Senker sind Säuren (HCl, H₂SO₄). pH-Heber sind Basen (NaOH, Na₂CO₃). Desinfektionsmittel sind Salze der hypochlorigen Säure (NaClO, Ca(ClO)₂). Flockungsmittel sind Salze (Al₂(SO₄)₃).'
       }
     ],
     examples: [
       {
-        title: 'Saeuren im Schwimmbad',
-        given: 'Saeuren haben ein H am Anfang und senken den pH-Wert.',
-        question: 'Welche Saeuren kommen im Bad vor?',
+        title: 'Säuren im Schwimmbad',
+        given: 'Säuren haben ein H am Anfang und senken den pH-Wert.',
+        question: 'Welche Säuren kommen im Bad vor?',
         steps: [
-          ['HCl', 'Salzsaeure → haeufigster pH-Senker'],
-          ['H₂SO₄', 'Schwefelsaeure → starker pH-Senker (seltener verwendet)'],
-          ['NaHSO₄', 'Natriumhydrogensulfat → "saures Salz", wirkt wie eine Saeure'],
-          ['Merkmal', 'Alle haben H (Wasserstoff) — er macht die Saeure sauer']
+          ['HCl', 'Salzsäure → häufigster pH-Senker'],
+          ['H₂SO₄', 'Schwefelsäure → starker pH-Senker (seltener verwendet)'],
+          ['NaHSO₄', 'Natriumhydrogensulfat → "saures Salz", wirkt wie eine Säure'],
+          ['Merkmal', 'Alle haben H (Wasserstoff) — er macht die Säure sauer']
         ]
       },
       {
@@ -219,49 +219,49 @@ const TABS = {
         given: 'Salze sind Metall + Nichtmetall, Oxide enthalten Sauerstoff.',
         question: 'Welche kommen im Bad vor?',
         steps: [
-          ['NaCl', 'Kochsalz → fuer Sole und Elektrolyse'],
-          ['NaClO', 'Natriumhypochlorit → ein Salz der hypochlorigen Saeure (Desinfektion)'],
+          ['NaCl', 'Kochsalz → für Sole und Elektrolyse'],
+          ['NaClO', 'Natriumhypochlorit → ein Salz der hypochlorigen Säure (Desinfektion)'],
           ['Al₂(SO₄)₃', 'Aluminiumsulfat → ein Salz zur Flockung'],
           ['CO₂', 'Kohlendioxid → ein Oxid, kann pH senken (Whirlpools)']
         ]
       }
     ],
     pitfalls: [
-      'NaHSO₄ sieht aus wie ein Salz (Na am Anfang), wirkt aber wie eine Saeure (wegen dem H) — es ist ein "saures Salz".',
+      'NaHSO₄ sieht aus wie ein Salz (Na am Anfang), wirkt aber wie eine Säure (wegen dem H) — es ist ein "saures Salz".',
       'Na₂CO₃ (Soda) hat kein OH in der Formel, ist aber trotzdem basisch — weil Carbonat in Wasser OH freisetzt.',
       'NaClO ist technisch ein Salz, wird aber als Desinfektionsmittel genutzt — es kommt auf den EINSATZ an, nicht nur auf die Stoffklasse.',
-      'CO₂ ist ein Oxid, das in Wasser Kohlensaeure bildet (H₂CO₃) — es wirkt also wie eine Saeure, obwohl es ein Oxid ist.'
+      'CO₂ ist ein Oxid, das in Wasser Kohlensäure bildet (H₂CO₃) — es wirkt also wie eine Säure, obwohl es ein Oxid ist.'
     ],
     quiz: {
       question: 'Zu welcher Stoffklasse gehoert Ca(OH)₂ (Kalkhydrat)?',
-      options: ['Saeure', 'Base/Lauge', 'Salz'],
+      options: ['Säure', 'Base/Lauge', 'Salz'],
       correctIndex: 1,
-      explanation: 'Ca(OH)₂ enthaelt die OH-Gruppe — das ist das Erkennungszeichen fuer eine Base/Lauge. Kalkhydrat hebt den pH-Wert.'
+      explanation: 'Ca(OH)₂ enthaelt die OH-Gruppe — das ist das Erkennungszeichen für eine Base/Lauge. Kalkhydrat hebt den pH-Wert.'
     }
   },
 
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Stoffe im Baederalltag',
+    title: 'Stoffe im Bäderalltag',
     intro:
-      'Jetzt wird es praktisch! Du lernst, wie du die taeglichen Chemikalien anhand ihrer Namen erkennst, was das Sicherheitsdatenblatt dir verraet und wie du typische Pruefungsfragen zu Stoffnamen und Formeln loest. Im Alltag begegnest du den Stoffen auf Kanistern, Saecken und in der Dosieranlage.',
+      'Jetzt wird es praktisch! Du lernst, wie du die täglichen Chemikalien anhand ihrer Namen erkennst, was das Sicherheitsdatenblatt dir verraet und wie du typische Prüfungsfragen zu Stoffnamen und Formeln loest. Im Alltag begegnest du den Stoffen auf Kanistern, Saecken und in der Dosieranlage.',
     motto: 'Lies den Namen — und du weisst, was drin ist und was es tut.',
     rules: [
-      'pH-Senker: Salzsaeure (HCl) oder Natriumhydrogensulfat (NaHSO₄) — beide machen das Wasser saurer.',
+      'pH-Senker: Salzsäure (HCl) oder Natriumhydrogensulfat (NaHSO₄) — beide machen das Wasser saurer.',
       'pH-Heber: Natriumcarbonat/Soda (Na₂CO₃) oder Natronlauge (NaOH) — beide machen das Wasser basischer.',
-      'Desinfektion: Natriumhypochlorit (NaClO) als Fluessigkeit oder Calciumhypochlorit (Ca(ClO)₂) als Granulat.',
+      'Desinfektion: Natriumhypochlorit (NaClO) als Flüssigkeit oder Calciumhypochlorit (Ca(ClO)₂) als Granulat.',
       'Flockung: Aluminiumsulfat (Al₂(SO₄)₃) oder Polyaluminiumchlorid (PAC) — binden Truebstoffe im Wasser.',
-      'Das Sicherheitsdatenblatt (SDB) ist Pflicht fuer jeden Stoff — es nennt immer den chemischen Namen, Gefahren und Erste-Hilfe-Massnahmen.'
+      'Das Sicherheitsdatenblatt (SDB) ist Pflicht für jeden Stoff — es nennt immer den chemischen Namen, Gefahren und Erste-Hilfe-Maßnahmen.'
     ],
     steps: [
       {
         title: '1. Kanister oder Sack lesen',
-        text: 'Schau auf das Etikett: Oben steht der Handelsname (z.B. "Chloriliquid"), darunter der chemische Name (z.B. "Natriumhypochlorit-Loesung 13%"). Die Prozentangabe sagt dir die Konzentration.'
+        text: 'Schau auf das Etikett: Oben steht der Handelsname (z.B. "Chloriliquid"), darunter der chemische Name (z.B. "Natriumhypochlorit-Lösung 13%"). Die Prozentangabe sagt dir die Konzentration.'
       },
       {
         title: '2. Gefahrensymbole erkennen',
-        text: 'Die roten Rauten auf dem Etikett warnen dich: Aetzend (Saeure/Lauge), Umweltgefaehrlich (Chlorprodukte), Brandfoerdernd (starke Oxidationsmittel). Der chemische Name hilft dir, die Gefahr einzuordnen.'
+        text: 'Die roten Rauten auf dem Etikett warnen dich: Aetzend (Säure/Lauge), Umweltgefährlich (Chlorprodukte), Brandfördernd (starke Oxidationsmittel). Der chemische Name hilft dir, die Gefahr einzuordnen.'
       },
       {
         title: '3. Sicherheitsdatenblatt nutzen',
@@ -269,55 +269,55 @@ const TABS = {
       },
       {
         title: '4. Im Alltag anwenden',
-        text: 'Wenn du einen unbekannten Kanister findest: Lies den chemischen Namen, ordne ihn einer Stoffklasse zu (Saeure/Base/Salz), und du weisst sofort, ob er gefaehrlich ist und wofuer er verwendet wird.'
+        text: 'Wenn du einen unbekannten Kanister findest: Lies den chemischen Namen, ordne ihn einer Stoffklasse zu (Säure/Base/Salz), und du weisst sofort, ob er gefährlich ist und wofür er verwendet wird.'
       }
     ],
     examples: [
       {
         title: 'Kanister identifizieren: Natriumhypochlorit',
-        given: 'Du siehst einen gelben Kanister mit der Aufschrift "Natriumhypochlorit-Loesung 13%".',
-        question: 'Was steckt drin und wofuer ist es?',
+        given: 'Du siehst einen gelben Kanister mit der Aufschrift "Natriumhypochlorit-Lösung 13%".',
+        question: 'Was steckt drin und wofür ist es?',
         steps: [
           ['Chemischer Name', 'Natriumhypochlorit'],
           ['Formel', 'NaClO — Natrium + Chlor + Sauerstoff'],
-          ['Stoffklasse', 'Salz der hypochlorigen Saeure → Desinfektionsmittel'],
-          ['Einsatz', 'Fluessige Desinfektion, 13% Wirkstoff, Rest ist Wasser']
+          ['Stoffklasse', 'Salz der hypochlorigen Säure → Desinfektionsmittel'],
+          ['Einsatz', 'Flüssige Desinfektion, 13% Wirkstoff, Rest ist Wasser']
         ]
       },
       {
         title: 'Sack identifizieren: pH-Senker',
-        given: 'Ein weisser Sack traegt die Bezeichnung "Natriumhydrogensulfat".',
+        given: 'Ein weisser Sack trägt die Bezeichnung "Natriumhydrogensulfat".',
         question: 'Was ist das und was macht es?',
         steps: [
           ['Chemischer Name', 'Natriumhydrogensulfat'],
           ['Formel', 'NaHSO₄ — Na + H + S + O₄'],
-          ['Stoffklasse', 'Saures Salz → wirkt wie Saeure'],
-          ['Einsatz', 'pH-Senker — macht das Wasser saurer, Alternative zu Salzsaeure']
+          ['Stoffklasse', 'Saures Salz → wirkt wie Säure'],
+          ['Einsatz', 'pH-Senker — macht das Wasser saurer, Alternative zu Salzsäure']
         ]
       },
       {
-        title: 'Pruefungsszenario: Unbekannter Kanister',
-        given: 'Im Lager steht ein Kanister mit "Aluminiumsulfat-Loesung". Ein Kollege fragt: Was ist das?',
+        title: 'Prüfungsszenario: Unbekannter Kanister',
+        given: 'Im Lager steht ein Kanister mit "Aluminiumsulfat-Lösung". Ein Kollege fragt: Was ist das?',
         question: 'Erklaere dem Kollegen, was drin ist.',
         steps: [
           ['Name zerlegen', 'Aluminium + Sulfat (Schwefel-Sauerstoff-Verbindung)'],
           ['Formel', 'Al₂(SO₄)₃'],
-          ['Stoffklasse', 'Salz — Metall (Al) + Saeure-Rest (SO₄)'],
-          ['Einsatz', 'Flockungsmittel — bindet kleine Schmutzpartikel zu groesseren Flocken, die der Filter auffaengt']
+          ['Stoffklasse', 'Salz — Metall (Al) + Säure-Rest (SO₄)'],
+          ['Einsatz', 'Flockungsmittel — bindet kleine Schmutzpartikel zu größeren Flocken, die der Filter auffaengt']
         ]
       }
     ],
     pitfalls: [
-      'Niemals verschiedene Chemikalien mischen! Besonders Saeure + Chlorprodukt ergibt giftiges Chlorgas!',
+      'Niemals verschiedene Chemikalien mischen! Besonders Säure + Chlorprodukt ergibt giftiges Chlorgas!',
       'Die Prozentangabe auf dem Kanister ist NICHT die Dosierung — 13% NaClO heisst: 13% Wirkstoff, 87% Wasser.',
       'Wenn das Etikett fehlt oder unleserlich ist: NICHT raten! Sicherheitsdatenblatt suchen oder Vorgesetzten fragen.',
-      'Im Pruefungsfall immer den CHEMISCHEN Namen nennen, nicht den Handelsnamen — "Natriumhypochlorit" statt "Fluessigchlor".'
+      'Im Prüfungsfall immer den CHEMISCHEN Namen nennen, nicht den Handelsnamen — "Natriumhypochlorit" statt "Flüssigchlor".'
     ],
     quiz: {
-      question: 'Ein Kanister ist beschriftet mit "Natriumhypochlorit-Loesung 13%". Wofuer wird dieser Stoff verwendet?',
+      question: 'Ein Kanister ist beschriftet mit "Natriumhypochlorit-Lösung 13%". Wofür wird dieser Stoff verwendet?',
       options: ['pH-Senkung', 'Flockung', 'Desinfektion'],
       correctIndex: 2,
-      explanation: 'Natriumhypochlorit (NaClO) ist das Standard-Fluessigchlor zur Desinfektion des Beckenwassers. Die 13% geben den Wirkstoffanteil an.'
+      explanation: 'Natriumhypochlorit (NaClO) ist das Standard-Flüssigchlor zur Desinfektion des Beckenwassers. Die 13% geben den Wirkstoffanteil an.'
     }
   }
 };
@@ -327,9 +327,9 @@ const TAB_ORDER = ['grundlagen', 'zuordnung', 'klassen', 'praxis'];
 /* ─── Pool chemicals reference table ──────────────────────────────────────── */
 
 const CHEMICALS_REFERENCE = [
-  ['Natriumhypochlorit', 'NaClO', 'Desinfektion (fluessig)'],
+  ['Natriumhypochlorit', 'NaClO', 'Desinfektion (flüssig)'],
   ['Calciumhypochlorit', 'Ca(ClO)₂', 'Desinfektion (Granulat)'],
-  ['Salzsaeure', 'HCl', 'pH-Senkung'],
+  ['Salzsäure', 'HCl', 'pH-Senkung'],
   ['Natriumhydrogensulfat', 'NaHSO₄', 'pH-Senkung'],
   ['Natriumcarbonat (Soda)', 'Na₂CO₃', 'pH-Hebung'],
   ['Natronlauge', 'NaOH', 'pH-Hebung'],
@@ -353,7 +353,7 @@ const ELEMENT_SYMBOLS = [
 /* ─── Stoffklassen quick reference ────────────────────────────────────────── */
 
 const STOFFKLASSEN_REFERENCE = [
-  ['Saeuren', 'H am Anfang', 'HCl, H₂SO₄', 'senken pH'],
+  ['Säuren', 'H am Anfang', 'HCl, H₂SO₄', 'senken pH'],
   ['Basen/Laugen', 'OH in Formel', 'NaOH, Ca(OH)₂', 'heben pH'],
   ['Salze', 'Metall + Rest', 'NaCl, Na₂CO₃', 'meistens neutral'],
   ['Oxide', 'Element + O', 'CO₂, Al₂O₃', 'unterschiedlich']
@@ -512,7 +512,7 @@ export default function StoffnamenFormelnDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -683,7 +683,7 @@ export default function StoffnamenFormelnDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${

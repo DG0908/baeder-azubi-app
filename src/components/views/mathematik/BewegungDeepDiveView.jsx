@@ -9,14 +9,14 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist Geschwindigkeit?',
     intro:
-      'Geschwindigkeit beschreibt, wie schnell sich etwas bewegt. Ein Schwimmer im Becken, Wasser in einer Rohrleitung oder ein Kind auf der Rutsche — alles hat eine Geschwindigkeit. Die Formel ist einfach: Geschwindigkeit = Strecke geteilt durch Zeit. In der Ausbildung brauchst du das staendig.',
+      'Geschwindigkeit beschreibt, wie schnell sich etwas bewegt. Ein Schwimmer im Becken, Wasser in einer Rohrleitung oder ein Kind auf der Rutsche — alles hat eine Geschwindigkeit. Die Formel ist einfach: Geschwindigkeit = Strecke geteilt durch Zeit. In der Ausbildung brauchst du das ständig.',
     motto: 'v = s ÷ t — Strecke durch Zeit.',
     rules: [
       'Geschwindigkeit (v) = Strecke (s) geteilt durch Zeit (t). Kurzform: v = s ÷ t.',
-      'v steht fuer Geschwindigkeit (vom lateinischen "velocitas").',
-      's steht fuer die Strecke (der Weg in Metern oder Kilometern).',
-      't steht fuer die Zeit (in Sekunden, Minuten oder Stunden).',
-      'Die haeufigsten Einheiten sind m/s (Meter pro Sekunde) und km/h (Kilometer pro Stunde).'
+      'v steht für Geschwindigkeit (vom lateinischen "velocitas").',
+      's steht für die Strecke (der Weg in Metern oder Kilometern).',
+      't steht für die Zeit (in Sekunden, Minuten oder Stunden).',
+      'Die häufigsten Einheiten sind m/s (Meter pro Sekunde) und km/h (Kilometer pro Stunde).'
     ],
     steps: [
       {
@@ -63,7 +63,7 @@ const TABS = {
     pitfalls: [
       'v, s und t NICHT verwechseln! v = Geschwindigkeit, s = Strecke, t = Zeit.',
       'IMMER die Einheit dazuschreiben — "1,25" allein sagt nichts aus.',
-      'Strecke und Zeit muessen zusammenpassen: Meter mit Sekunden oder Kilometer mit Stunden.',
+      'Strecke und Zeit müssen zusammenpassen: Meter mit Sekunden oder Kilometer mit Stunden.',
       'Geschwindigkeit kann NICHT negativ sein (im Schwimmbad-Kontext).'
     ],
     quiz: {
@@ -110,7 +110,7 @@ const TABS = {
       {
         title: 'Strecke berechnen',
         given: 'Ein Schwimmer schwimmt mit 1,5 m/s. Er schwimmt 60 Sekunden lang.',
-        question: 'Welche Strecke legt er zurueck?',
+        question: 'Welche Strecke legt er zurück?',
         steps: [
           ['Gegeben', 'v = 1,5 m/s, t = 60 s'],
           ['Formel', 's = v × t'],
@@ -144,7 +144,7 @@ const TABS = {
     pitfalls: [
       'Das Formeldreieck falsch aufbauen — s steht IMMER oben, v und t stehen unten.',
       'Malnehmen und Teilen verwechseln: Nebeneinander = ×, uebereinander = ÷.',
-      'Die Einheiten muessen zusammenpassen! Nicht m/s mit km oder Minuten mischen.'
+      'Die Einheiten müssen zusammenpassen! Nicht m/s mit km oder Minuten mischen.'
     ],
     quiz: {
       question: 'Wasser fliesst mit 3 m/s durch ein Rohr. Wie weit kommt es in 20 Sekunden?',
@@ -159,13 +159,13 @@ const TABS = {
     chip: 'Umrechnung',
     title: 'm/s und km/h umrechnen',
     intro:
-      'Im Schwimmbad rechnest du meistens mit m/s (Meter pro Sekunde). Aber manchmal brauchst du km/h (Kilometer pro Stunde) — zum Beispiel fuer Wasserrutschen-Geschwindigkeiten oder wenn du Werte vergleichen willst. Die Umrechnung ist einfach, wenn du dir die Zahl 3,6 merkst.',
+      'Im Schwimmbad rechnest du meistens mit m/s (Meter pro Sekunde). Aber manchmal brauchst du km/h (Kilometer pro Stunde) — zum Beispiel für Wasserrutschen-Geschwindigkeiten oder wenn du Werte vergleichen willst. Die Umrechnung ist einfach, wenn du dir die Zahl 3,6 merkst.',
     motto: '× 3,6 = km/h. ÷ 3,6 = m/s.',
     rules: [
       'Von m/s nach km/h: MAL 3,6 rechnen.',
       'Von km/h nach m/s: DURCH 3,6 rechnen.',
       'Warum 3,6? Weil 1 km = 1000 m und 1 h = 3600 s. 1000 ÷ 3600 = 1 ÷ 3,6.',
-      'km/h ist IMMER die groessere Zahl (3,6-mal so gross wie m/s).',
+      'km/h ist IMMER die größere Zahl (3,6-mal so gross wie m/s).',
       'NIEMALS Einheiten mischen! Erst alles in die gleiche Einheit umrechnen, dann rechnen.'
     ],
     steps: [
@@ -182,8 +182,8 @@ const TABS = {
         text: 'Einfach den Wert mal 3,6 oder durch 3,6 nehmen. Taschenrechner ist erlaubt!'
       },
       {
-        title: '4. Ergebnis pruefen',
-        text: 'km/h muss IMMER groesser sein als m/s. Wenn nicht, hast du falsch herum gerechnet.'
+        title: '4. Ergebnis prüfen',
+        text: 'km/h muss IMMER größer sein als m/s. Wenn nicht, hast du falsch herum gerechnet.'
       }
     ],
     examples: [
@@ -222,10 +222,10 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Die haeufigste Falle: × und ÷ vertauschen. Merke: km/h ist die GROESSERE Zahl!',
+      'Die häufigste Falle: × und ÷ vertauschen. Merke: km/h ist die GROESSERE Zahl!',
       'Einheiten mischen: 50 m ÷ 2 km/h geht NICHT — erst km/h in m/s umrechnen!',
       'Die 3,6 vergessen und stattdessen mit 60 oder 1000 rechnen — das stimmt nicht.',
-      'Bei der Pruefung: Immer zuerst alle Werte in die GLEICHE Einheit bringen.'
+      'Bei der Prüfung: Immer zuerst alle Werte in die GLEICHE Einheit bringen.'
     ],
     quiz: {
       question: 'Ein Schwimmer schwimmt mit 2 m/s. Wie viel km/h sind das?',
@@ -238,15 +238,15 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Geschwindigkeit im Baederalltag',
+    title: 'Geschwindigkeit im Bäderalltag',
     intro:
-      'Im Schwimmbad begegnet dir Geschwindigkeit ueberall: Wie schnell schwimmt ein Gast? Wie schnell fliesst Wasser durch die Rohrleitung? Wie schnell ist die Rutsche? Hier uebst du mit echten Aufgaben aus dem Baederalltag. Genau solche Aufgaben kommen in der Pruefung dran!',
+      'Im Schwimmbad begegnet dir Geschwindigkeit überall: Wie schnell schwimmt ein Gast? Wie schnell fliesst Wasser durch die Rohrleitung? Wie schnell ist die Rutsche? Hier uebst du mit echten Aufgaben aus dem Bäderalltag. Genau solche Aufgaben kommen in der Prüfung dran!',
     motto: 'Geschwindigkeit steckt im ganzen Schwimmbad.',
     rules: [
       'Schwimmer-Geschwindigkeit im Sportschwimmen liegt zwischen 1 und 2 m/s.',
       'Wassergeschwindigkeit in Rohrleitungen liegt meistens zwischen 1 und 3 m/s.',
       'Rutschen-Geschwindigkeit kann bis zu 10 m/s (36 km/h) erreichen.',
-      'Bei Stroemungsaufgaben in der Pruefung: Immer erst v = s ÷ t anwenden.',
+      'Bei Stroemungsaufgaben in der Prüfung: Immer erst v = s ÷ t anwenden.',
       'Tipp: Wenn die Aufgabe Minuten angibt, erst in Sekunden umrechnen (× 60)!'
     ],
     steps: [
@@ -255,15 +255,15 @@ const TABS = {
         text: 'Was ist gegeben: Strecke, Zeit oder Geschwindigkeit? Was ist gesucht? Schreib alles mit Einheit auf.'
       },
       {
-        title: '2. Einheiten pruefen',
+        title: '2. Einheiten prüfen',
         text: 'Passen die Einheiten zusammen? Meter mit Sekunden? Oder musst du erst umrechnen (Minuten → Sekunden, km → m)?'
       },
       {
-        title: '3. Richtige Formel waehlen',
+        title: '3. Richtige Formel wählen',
         text: 'v = s ÷ t (Geschwindigkeit gesucht), s = v × t (Strecke gesucht), t = s ÷ v (Zeit gesucht). Im Zweifel: Formeldreieck!'
       },
       {
-        title: '4. Ergebnis auf Sinn pruefen',
+        title: '4. Ergebnis auf Sinn prüfen',
         text: 'Ist die Schwimmer-Geschwindigkeit realistisch (ca. 0,5 bis 2 m/s)? Ist die Rohrgeschwindigkeit im normalen Bereich (1-3 m/s)?'
       }
     ],
@@ -315,9 +315,9 @@ const TABS = {
     ],
     pitfalls: [
       'Minuten und Sekunden verwechseln! 5 Minuten sind 300 Sekunden, nicht 5.',
-      'In der Pruefung: Auf die gefragte Einheit achten — manchmal wird km/h verlangt, manchmal m/s.',
-      'Unrealistische Ergebnisse nicht einfach hinschreiben — ein Schwimmer mit 15 m/s ist unmoeglich.',
-      'Bei Rohraufgaben: Die Laenge des Rohrs ist die Strecke, nicht der Durchmesser!'
+      'In der Prüfung: Auf die gefragte Einheit achten — manchmal wird km/h verlangt, manchmal m/s.',
+      'Unrealistische Ergebnisse nicht einfach hinschreiben — ein Schwimmer mit 15 m/s ist unmöglich.',
+      'Bei Rohraufgaben: Die Länge des Rohrs ist die Strecke, nicht der Durchmesser!'
     ],
     quiz: {
       question: 'Wasser fliesst mit 1,5 m/s durch ein 90 Meter langes Rohr. Wie lange braucht es?',
@@ -502,7 +502,7 @@ export default function BewegungDeepDiveView() {
           </InfoCard>
 
           {/* Steps */}
-          <InfoCard darkMode={darkMode} title="Schritt fuer Schritt">
+          <InfoCard darkMode={darkMode} title="Schritt für Schritt">
             <StepCards steps={tab.steps} darkMode={darkMode} />
           </InfoCard>
 
@@ -532,7 +532,7 @@ export default function BewegungDeepDiveView() {
 
           {/* Formula overview (on grundlagen and berechnung tabs) */}
           {(activeTab === 'grundlagen' || activeTab === 'berechnung') && (
-            <InfoCard darkMode={darkMode} title="Formeluebersicht: v, s, t">
+            <InfoCard darkMode={darkMode} title="Formelübersicht: v, s, t">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -638,7 +638,7 @@ export default function BewegungDeepDiveView() {
                     : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
-              Antwort pruefen
+              Antwort prüfen
             </button>
             {revealedAnswer && (
               <div className={`mt-4 rounded-2xl border p-4 text-sm leading-7 ${
