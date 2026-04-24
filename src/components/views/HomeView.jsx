@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { DAILY_WISDOM, DID_YOU_KNOW_FACTS } from '../../data/content';
 import { getAvatarById, getLevel, getLevelProgress } from '../../data/constants';
+import { WORKSHEETS } from '../../data/worksheets';
 import { getTotalXpFromStats } from '../../lib/quizHelpers';
 import AvatarBadge from '../ui/AvatarBadge';
 
@@ -463,7 +464,7 @@ const HomeView = ({
             {[
               ...(user.permissions.canViewAllStats ? [{ icon: '\u{1F468}\u200D\u{1F3EB}', title: 'Azubi-Übersicht', sub: 'Trainer-Bereich', onClick: () => openView('trainer-dashboard') }] : []),
               { icon: '\u{1F3C5}', title: 'Statistiken', sub: userStats ? `${userStats.wins} Siege` : 'Ranglisten', onClick: () => openView('stats') },
-              { icon: '\u{1F4DA}', title: 'Materialien', sub: `${materials.length} Dateien`, onClick: () => openView('materials') },
+              { icon: '\u{1F4DA}', title: 'Lexikon', sub: `${WORKSHEETS.length} Arbeitsblätter`, onClick: () => openView('materials') },
               { icon: '\u{1F517}', title: 'Ressourcen', sub: `${resources.length} Links`, onClick: () => openView('resources') },
               { icon: '\u{1F4AC}', title: 'Chat', sub: `${messages.length} Nachrichten`, onClick: () => openView('chat') },
               { icon: '\u{1F4DD}', title: 'Forum', sub: 'Fragen & Diskussionen', onClick: () => openView('forum') },
