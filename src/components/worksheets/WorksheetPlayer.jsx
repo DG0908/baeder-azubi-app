@@ -94,6 +94,11 @@ const ReferencePage = ({ worksheet, darkMode }) => {
       {ref.sections?.map((section) => (
         <div key={section.heading} className="glass-card rounded-2xl p-5">
           <h3 className={`font-bold mb-3 ${darkMode ? 'text-cyan-300' : 'text-gray-800'}`}>{section.heading}</h3>
+          {section.image && (
+            <div className="rounded-xl overflow-hidden mb-4 border border-white/10 bg-black/20">
+              <img src={section.image} alt={section.imageAlt || section.heading} className="w-full h-auto block" />
+            </div>
+          )}
           <ul className="space-y-2">
             {section.items.map((item) => (
               <li key={item.label} className={darkMode ? 'text-gray-200' : 'text-gray-700'}>

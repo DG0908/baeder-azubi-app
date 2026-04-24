@@ -47,6 +47,42 @@ const dasOhr = {
           { label: 'Hörnerv (N. cochlearis)', body: 'Leitet Nervenimpulse zum Gehirn.' },
         ],
       },
+      {
+        heading: 'Druckausgleich beim Tauchen',
+        image: '/worksheets/das-ohr-druckausgleich.png',
+        imageAlt: 'Übersicht Druckausgleich beim Tauchen',
+        items: [
+          { label: 'Warum?', body: 'Mit zunehmender Tiefe steigt der Umgebungsdruck (0 m = 1 bar, 10 m = 2 bar, 20 m = 3 bar). Das Trommelfell wird nach innen gedrückt — ohne Druckausgleich entstehen Schmerzen bis hin zum Barotrauma.' },
+          { label: 'Luftweg', body: 'Luft strömt von Nase/Rachen durch die Ohrtrompete (Eustachische Röhre) ins Mittelohr und gleicht den Druck aus.' },
+          { label: 'Besonders kritisch', body: 'Schon in den ersten 5 Metern ist der Druckanstieg am stärksten spürbar.' },
+        ],
+      },
+      {
+        heading: 'So gelingt der Druckausgleich',
+        items: [
+          { label: '1. Früh beginnen', body: 'Schon an der Oberfläche oder direkt beim Abtauchen starten — nicht warten, bis es wehtut.' },
+          { label: '2. Oft wiederholen', body: 'Lieber häufig und sanft als selten und stark.' },
+          { label: '3. Valsalva-Manöver', body: 'Nase zuhalten und sanft Luft hineindrücken.' },
+          { label: '4. Alternativen', body: 'Schlucken, Gähnen, Kiefer bewegen oder Frenzel-Technik.' },
+        ],
+      },
+      {
+        heading: 'Warnzeichen & Regeln',
+        items: [
+          { label: 'Warnzeichen', body: 'Schmerzen oder starker Druck im Ohr, ausbleibendes Knacken, Schwindel, Nasenbluten.' },
+          { label: 'Stop-Regel', body: 'Niemals mit Gewalt weiter abtauchen. Bei Problemen etwas auftauchen und erneut versuchen.' },
+          { label: 'Nicht tauchen', body: 'Bei Erkältung oder verstopfter Nase — die Ohrtrompete schwillt zu, Druckausgleich wird unmöglich.' },
+        ],
+      },
+      {
+        heading: 'Mögliche Folgen ohne Druckausgleich',
+        items: [
+          { label: 'Ohrenschmerzen', body: 'Druckgefühl und Schmerzen im Ohr.' },
+          { label: 'Barotrauma', body: 'Gewebeverletzung durch Druckveränderung.' },
+          { label: 'Trommelfell-Verletzung', body: 'Riss oder Einblutung möglich.' },
+          { label: 'Nebenhöhlen-Probleme', body: 'Schmerzen, Druckgefühl oder Entzündungen.' },
+        ],
+      },
     ],
   },
   exercise: {
@@ -118,6 +154,13 @@ const dasOhr = {
             minMatches: 2,
             sampleAnswer:
               'Die Bogengänge erfassen Drehbewegungen des Kopfes und sind Teil des Gleichgewichtssystems. Sie helfen uns, das Gleichgewicht zu halten und uns im Raum zu orientieren.',
+          },
+          {
+            prompt: '3. Erkläre, warum Druckausgleich beim Tauchen wichtig ist und nenne eine Technik.',
+            keywords: ['druck', 'trommelfell', 'mittelohr', 'ohrtrompete', 'valsalva', 'frenzel', 'schlucken', 'gähnen', 'gaehnen', 'barotrauma', 'schmerzen', 'tiefe'],
+            minMatches: 3,
+            sampleAnswer:
+              'Mit zunehmender Wassertiefe steigt der Umgebungsdruck und drückt das Trommelfell nach innen. Ohne Druckausgleich entstehen Schmerzen oder ein Barotrauma. Techniken: Valsalva (Nase zuhalten und sanft drücken), Frenzel, Schlucken oder Gähnen — lieber früh und sanft als selten und stark.',
           },
         ],
       },
