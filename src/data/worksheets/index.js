@@ -7,7 +7,8 @@ import blutKreislauf from './blutKreislauf';
 import dasSkelett from './dasSkelett';
 import dieMuskulatur from './dieMuskulatur';
 import dieGelenke from './dieGelenke';
+import dasNervensystem from './dasNervensystem';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;
