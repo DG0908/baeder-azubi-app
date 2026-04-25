@@ -48,6 +48,18 @@ const dasOhr = {
         ],
       },
       {
+        heading: 'Gleichgewichtssinn (Vestibularapparat)',
+        items: [
+          { label: 'Aufbau', body: 'Drei Bogengänge in drei Raumebenen + zwei Vorhofsäckchen (Utriculus und Sacculus) — alle im Innenohr.' },
+          { label: 'Drehbewegungen', body: 'Die Bogengänge sind mit Flüssigkeit (Endolymphe) gefüllt; bei Drehbeschleunigungen bewegt sich die Flüssigkeit und reizt feine Sinneshärchen.' },
+          { label: 'Lagesinn & Linearbewegung', body: 'Die Otolithenorgane (Macula) in den Vorhofsäckchen registrieren Schwerkraft und geradlinige Beschleunigungen — z. B. Aufzug, Anfahren, Kopfneigung.' },
+          { label: 'Weiterleitung', body: 'Die Signale gelangen über den Gleichgewichtsnerv (N. vestibularis) zum Kleinhirn und Hirnstamm.' },
+          { label: 'Zusammenspiel', body: 'Augen, Gleichgewichtsorgan und Muskel-/Gelenksensoren arbeiten zusammen — erst alle drei zusammen ergeben ein stabiles Gleichgewicht.' },
+          { label: 'Störungen', body: 'Widersprüchliche Signale verursachen Schwindel (Vertigo), Übelkeit oder Kinetose (Reisekrankheit).' },
+          { label: 'Praxis Bäder', body: 'Mittelohrdruck (Erkältung, Tauchgänge) kann das Gleichgewicht beeinträchtigen — Drehschwindel beim Auftauchen ist ein klassisches Warnzeichen.' },
+        ],
+      },
+      {
         heading: 'Druckausgleich beim Tauchen',
         image: '/worksheets/das-ohr-druckausgleich.png',
         imageAlt: 'Übersicht Druckausgleich beim Tauchen',
