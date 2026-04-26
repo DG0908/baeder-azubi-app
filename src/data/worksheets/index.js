@@ -18,7 +18,8 @@ import schlaganfall from './schlaganfall';
 import hlwWiederbelebung from './hlwWiederbelebung';
 import krampfanfall from './krampfanfall';
 import stabileSeitenlage from './stabileSeitenlage';
+import schock from './schock';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;
