@@ -15,7 +15,8 @@ import sonnenHitze from './sonnenHitze';
 import wasserunfall from './wasserunfall';
 import herzinfarkt from './herzinfarkt';
 import schlaganfall from './schlaganfall';
+import hlwWiederbelebung from './hlwWiederbelebung';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;
