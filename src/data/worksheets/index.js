@@ -12,7 +12,8 @@ import waermehaushalt from './waermehaushalt';
 import dasImmunsystem from './dasImmunsystem';
 import hyperventilation from './hyperventilation';
 import sonnenHitze from './sonnenHitze';
+import wasserunfall from './wasserunfall';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;
