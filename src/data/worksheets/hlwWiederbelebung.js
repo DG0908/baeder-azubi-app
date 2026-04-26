@@ -145,14 +145,14 @@ const hlwWiederbelebung = {
       },
       {
         id: 'aed',
-        type: 'labels',
+        type: 'numbered-labels',
         title: 'Aufgabe 3: AED richtig anwenden',
-        prompt: 'Schreibe den passenden Begriff unter jedes Bild.',
+        prompt: 'Benenne die vier Schritte der AED-Anwendung in der richtigen Reihenfolge.',
         items: [
-          { hint: 'AED-Koffer geöffnet, Gerät bereit', accept: ['AED einschalten', 'AED öffnen', 'AED oeffnen', 'AED bereitstellen', 'Gerät einschalten', 'Geraet einschalten', 'AED aktivieren', 'AED', 'AED holen'] },
-          { hint: 'Elektroden auf den Brustkorb der Person aufgeklebt', accept: ['Elektroden aufkleben', 'Elektroden anbringen', 'Elektroden anlegen', 'Pads aufkleben', 'Klebeelektroden', 'Elektrodenposition', 'Elektroden auf Brust'] },
-          { hint: 'Helfer signalisiert mit Hand "Stop" — niemand berührt die Person', accept: ['Niemand berührt', 'Niemand beruehrt', 'Person nicht berühren', 'Person nicht beruehren', 'Sicherheitsabstand', 'Während Schock nicht berühren', 'Waehrend Schock nicht beruehren', 'Weg von der Person', 'Während Analyse nicht berühren', 'Waehrend Analyse nicht beruehren', 'Abstand halten'] },
-          { hint: 'Helfer setzt die Herzdruckmassage fort', accept: ['HLW fortsetzen', 'Wiederbelebung fortsetzen', 'Weitermachen', 'Druckmassage fortsetzen', 'Sofort HLW fortsetzen', 'CPR fortsetzen', 'HLW weiterführen', 'HLW weiterfuehren'] },
+          { number: 1, accept: ['AED einschalten', 'AED öffnen', 'AED oeffnen', 'AED bereitstellen', 'Gerät einschalten', 'Geraet einschalten', 'AED aktivieren', 'AED', 'AED holen'] },
+          { number: 2, accept: ['Elektroden aufkleben', 'Elektroden anbringen', 'Elektroden anlegen', 'Pads aufkleben', 'Klebeelektroden', 'Elektrodenposition', 'Elektroden auf Brust'] },
+          { number: 3, accept: ['Niemand berührt', 'Niemand beruehrt', 'Person nicht berühren', 'Person nicht beruehren', 'Sicherheitsabstand', 'Während Schock nicht berühren', 'Waehrend Schock nicht beruehren', 'Weg von der Person', 'Während Analyse nicht berühren', 'Waehrend Analyse nicht beruehren', 'Abstand halten'] },
+          { number: 4, accept: ['HLW fortsetzen', 'Wiederbelebung fortsetzen', 'Weitermachen', 'Druckmassage fortsetzen', 'Sofort HLW fortsetzen', 'CPR fortsetzen', 'HLW weiterführen', 'HLW weiterfuehren'] },
         ],
       },
       {
