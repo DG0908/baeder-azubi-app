@@ -11,7 +11,8 @@ import dasNervensystem from './dasNervensystem';
 import waermehaushalt from './waermehaushalt';
 import dasImmunsystem from './dasImmunsystem';
 import hyperventilation from './hyperventilation';
+import sonnenHitze from './sonnenHitze';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;
