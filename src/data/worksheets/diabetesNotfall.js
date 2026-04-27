@@ -192,8 +192,8 @@ const diabetesNotfall = {
         prompt: 'Bringe die vier Schritte in die richtige Reihenfolge.',
         items: [
           { number: 1, accept: ['Person beruhigen', 'Beruhigen', 'Ruhe bewahren', 'Person beruhigen / Ruhe bewahren'] },
-          { number: 2, accept: ['Sitzend betreuen', 'Hinsetzen', 'Sitzen lassen', 'Sitzposition', 'Sicher hinsetzen', 'Sitzend lagern', 'Sitzen'] },
-          { number: 3, accept: ['Zuckerhaltiges Getränk', 'Zuckerhaltiges Getraenk', 'Traubenzucker', 'Zuckerhaltiges Getränk oder Traubenzucker', 'Zuckerhaltiges Getraenk oder Traubenzucker', 'Zucker geben', 'Zuckerhaltiges Getränk geben', 'Zuckerhaltiges Getraenk geben', 'Apfelsaft', 'Cola', 'Saft', 'Traubenzucker geben'] },
+          { number: 2, accept: ['Sitzend betreuen', 'betreuen', 'Betreuen', 'Sitzend', 'Hinsetzen', 'Sitzen lassen', 'Sitzposition', 'Sicher hinsetzen', 'Sitzend lagern', 'Sitzen'] },
+          { number: 3, accept: ['Zuckerhaltiges Getränk', 'Zuckerhaltiges Getraenk', 'Getränk', 'Getraenk', 'Traubenzucker', 'Zuckerhaltiges Getränk oder Traubenzucker', 'Zuckerhaltiges Getraenk oder Traubenzucker', 'Zucker geben', 'Zuckerhaltiges Getränk geben', 'Zuckerhaltiges Getraenk geben', 'Apfelsaft', 'Cola', 'Saft', 'Traubenzucker geben'] },
           { number: 4, accept: ['Beobachten', 'Person beobachten', 'Zustand beobachten', 'Überwachen', 'Ueberwachen', 'Im Auge behalten', 'Nachkontrollieren'] },
         ],
       },
@@ -203,9 +203,9 @@ const diabetesNotfall = {
         title: 'Aufgabe 4: Was tun bei Bewusstseinsstörung oder Unsicherheit?',
         prompt: 'Ergänze die fünf Schritte.',
         items: [
-          { number: 1, accept: ['Nichts essen oder trinken geben', 'Nichts geben', 'Kein Essen oder Trinken', 'Nichts essen', 'Nichts trinken', 'Kein Essen', 'Kein Trinken', 'Weder essen noch trinken', 'Nichts in den Mund', 'Nichts oral'] },
+          { number: 1, accept: ['Nichts essen oder trinken geben', 'Nichts geben', 'essen oder trinken', 'essen', 'trinken', 'Essen', 'Trinken', 'Kein Essen oder Trinken', 'Nichts essen', 'Nichts trinken', 'Kein Essen', 'Kein Trinken', 'Weder essen noch trinken', 'Nichts in den Mund', 'Nichts oral'] },
           { number: 2, accept: ['Notruf 112', '112', '112 rufen', 'Notruf', 'Rettungsdienst rufen', '112 wählen', '112 waehlen', 'Hilfe rufen'] },
-          { number: 3, accept: ['Atmung kontrollieren', 'Atmung prüfen', 'Atmung pruefen', 'Atemwege prüfen', 'Atemwege pruefen', 'Atmung überprüfen', 'Atmung ueberpruefen', 'Atemkontrolle'] },
+          { number: 3, accept: ['Atmung kontrollieren', 'Atmung', 'Atmung prüfen', 'Atmung pruefen', 'Atemwege prüfen', 'Atemwege pruefen', 'Atmung überprüfen', 'Atmung ueberpruefen', 'Atemkontrolle'] },
           { number: 4, accept: ['Stabile Seitenlage', 'Seitenlage', 'In stabile Seitenlage', 'Bei normaler Atmung stabile Seitenlage', 'Stabile Seitenlage bringen'] },
           { number: 5, accept: ['HLW', 'Wiederbelebung', 'Reanimation', 'HLW / AED', 'HLW und AED', 'Herz-Lungen-Wiederbelebung', 'Wiederbelebung beginnen', 'Reanimation beginnen', 'CPR', 'HLW beginnen'] },
         ],

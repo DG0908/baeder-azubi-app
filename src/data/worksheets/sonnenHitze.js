@@ -59,7 +59,7 @@ const sonnenHitze = {
         items: [
           { label: '1. Aus Sonne / Hitze bringen', body: 'Sofortiger Wechsel weg von der Hitzequelle.' },
           { label: '2. In den Schatten / kühlen Raum', body: 'Schattiger Platz, ggf. klimatisierter Raum oder kühle Sanitätsstation.' },
-          { label: '3. Oberkörper lagern oder hinlegen', body: 'Bei Hitzeerschöpfung mit Beinen hoch (Schocklage), bei Sonnenstich mit erhöhtem Oberkörper. Bei Bewusstlosigkeit: stabile Seitenlage.' },
+          { label: '3. Oberkörper lagern oder hinlegen', body: 'Bei Hitzeerschöpfung flach lagern mit leicht erhöhten Beinen, bei Sonnenstich mit erhöhtem Oberkörper. Bei Bewusstlosigkeit: stabile Seitenlage.' },
           { label: '4. Enge Kleidung lockern', body: 'Kragen öffnen, Gürtel lockern — die Wärme muss raus.' },
           { label: '5. Kühlen mit feuchten Tüchern', body: 'Auf Stirn, Nacken, Achseln und Leisten — dort verlaufen große Gefäße. KEINE eiskalte Schockkühlung.' },
           { label: '6. Kleine Schlucke Wasser', body: 'Nur wenn die Person wach und ansprechbar ist — bei Bewusstseinsstörung NICHT trinken geben.' },

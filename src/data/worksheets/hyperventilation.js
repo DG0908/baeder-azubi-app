@@ -101,7 +101,7 @@ const hyperventilation = {
         title: 'Aufgabe 1: Typische Symptome erkennen',
         prompt: 'Beschrifte die 8 nummerierten Symptome.',
         items: [
-          { number: 1, accept: ['Schnelle Atmung', 'Angestrengte Atmung', 'Hyperventilation', 'Schnelle angestrengte Atmung', 'Atemnotgefühl', 'Atemnotgefuehl', 'Sichtbare Atembewegungen'] },
+          { number: 1, accept: ['Schnelle Atmung', 'Angestrengte Atmung', 'Schnelle angestrengte Atmung', 'Atemnotgefühl', 'Atemnotgefuehl', 'Sichtbare Atembewegungen', 'Beschleunigte Atmung'] },
           { number: 2, accept: ['Brustenge', 'Engegefühl', 'Engegefuehl', 'Druckgefühl', 'Druckgefuehl', 'Engegefühl in der Brust', 'Engegefuehl in der Brust', 'Hand auf Brust'] },
           { number: 3, accept: ['Schwindel', 'Benommenheit', 'Drehschwindel'] },
           { number: 4, accept: ['Ängstliche Mimik', 'Aengstliche Mimik', 'Angst', 'Unruhe', 'Panik', 'Angst und Unruhe'] },

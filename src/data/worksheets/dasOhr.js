@@ -43,7 +43,7 @@ const dasOhr = {
           { label: 'Trommelfell', body: 'Dünne Membran, die durch Schall in Schwingung versetzt wird.' },
           { label: 'Gehörknöchelchen', body: 'Hammer (Malleus), Amboss (Incus) und Steigbügel (Stapes) verstärken Schwingungen.' },
           { label: 'Schnecke (Cochlea)', body: 'Enthält Haarzellen, die Schwingungen in Nervenimpulse umwandeln.' },
-          { label: 'Bogengänge (Vestibularapparat)', body: 'Teil des Gleichgewichtssystems.' },
+          { label: 'Bogengänge', body: 'Teil des Vestibularapparats — registrieren Drehbeschleunigungen.' },
           { label: 'Hörnerv (N. cochlearis)', body: 'Leitet Nervenimpulse zum Gehirn.' },
         ],
       },
@@ -118,7 +118,7 @@ const dasOhr = {
           { number: 9, accept: ['Steigbügel', 'Stapes', 'Steigbuegel', 'Steigbügel (Stapes)'] },
           { number: 10, accept: ['Schnecke', 'Cochlea', 'Schnecke (Cochlea)'] },
           { number: 11, accept: ['Bogengänge', 'Bogengaenge', 'Vestibularapparat', 'Bogengänge (Vestibularapparat)'] },
-          { number: 12, accept: ['Hörnerv', 'Hoernerv', 'N. cochlearis', 'Hörnerv (N. cochlearis)'] },
+          { number: 12, accept: ['Hörnerv', 'Hoernerv', 'N. cochlearis', 'N. vestibulocochlearis', 'Nervus vestibulocochlearis', 'Hörnerv (N. cochlearis)'] },
         ],
       },
       {

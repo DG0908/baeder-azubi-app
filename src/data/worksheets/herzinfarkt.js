@@ -49,7 +49,7 @@ const herzinfarkt = {
           { label: '3. Oberkörperhochlagerung', body: 'In bequeme, halbsitzende Position bringen — das entlastet das Herz. Bei Schwindel/Schwäche eher flach mit erhöhtem Oberkörper.' },
           { label: '4. Enge Kleidung lockern', body: 'Krawatte, Kragen, Gürtel — alles was den Brustkorb einengt, lösen.' },
           { label: '5. Beruhigen und beobachten', body: 'Person beruhigen, Atmung und Bewusstsein laufend kontrollieren — bis der Rettungsdienst da ist.' },
-          { label: '6. Bei Bewusstlosigkeit', body: 'Atmung prüfen — bei keiner normalen Atmung sofort mit Wiederbelebung beginnen (Herzdruckmassage 30 : 2). AED einsetzen, wenn verfügbar.' },
+          { label: '6. Bei Bewusstlosigkeit', body: 'Atmung prüfen — bei keiner normalen Atmung sofort mit Wiederbelebung beginnen (30 Herzdruckmassagen : 2 Beatmungen). AED einsetzen, wenn verfügbar.' },
         ],
       },
       {
@@ -77,7 +77,7 @@ const herzinfarkt = {
           { label: 'Herzkranzgefäße (Koronararterien)', body: 'Kleine Arterien, die den Herzmuskel selbst mit Blut und Sauerstoff versorgen.' },
           { label: 'Angina pectoris', body: 'Vorübergehender Brustschmerz bei Sauerstoffmangel des Herzmuskels — Vorbote oder Begleiter eines Infarkts.' },
           { label: 'Vernichtungsangst', body: 'Typisches Angstgefühl beim Herzinfarkt — die Person hat das Gefühl, zu sterben.' },
-          { label: 'Wiederbelebung (HLW)', body: 'Herz-Lungen-Wiederbelebung mit Herzdruckmassage 30 : 2 (Druckmassage : Beatmung) — bei Bewusstlosigkeit ohne normale Atmung.' },
+          { label: 'Wiederbelebung (HLW)', body: 'Herz-Lungen-Wiederbelebung im Verhältnis 30 Herzdruckmassagen : 2 Beatmungen — bei Bewusstlosigkeit ohne normale Atmung.' },
           { label: 'AED', body: 'Automatisierter Externer Defibrillator — gibt im Notfall einen Stromstoß zur Wiederherstellung des Herzrhythmus.' },
         ],
       },

@@ -47,7 +47,7 @@ const kopfverletzungen = {
         items: [
           { label: '1. Ruhe bewahren', body: 'Sich selbst sammeln und überlegt handeln. Eigene Ruhe hilft der betroffenen Person.' },
           { label: '2. Person beruhigen und lagern', body: 'Beruhigend ansprechen, hinsetzen oder halbaufrecht lagern. Bewegungen vermeiden — bei Verdacht auf Halswirbelsäulenverletzung Kopf möglichst nicht bewegen.' },
-          { label: '3. Wunde abdecken / Schwellung kühlen', body: 'Platzwunde mit sauberem Tuch oder steriler Wundauflage abdecken. Bei Schwellung oder Beule: kühlen (NICHT direkt auf die Haut — Tuch dazwischen, Kühlpausen alle 20 Minuten).' },
+          { label: '3. Wunde abdecken / Schwellung kühlen', body: 'Platzwunde mit sauberem Tuch oder steriler Wundauflage abdecken. Bei Schwellung oder Beule: kühlen (NICHT direkt auf die Haut — Tuch dazwischen, max. 15–20 Min. am Stück, dann Pause).' },
           { label: '4. Bei Bewusstseinsstörung oder Atemproblemen: 112', body: 'Sofort Notruf wählen — bei Bewusstlosigkeit, Atemproblemen oder Verschlechterung jede Sekunde wichtig.' },
           { label: '5. Beobachten', body: 'Regelmäßig Zustand prüfen — Bewusstsein, Atmung, Pupillen, Symptome. Veränderungen an Rettungsdienst weitergeben.' },
           { label: '6. Nichts essen oder trinken geben', body: 'Besonders bei Übelkeit, Erbrechen oder Bewusstseinsstörung — Aspirationsgefahr und mögliche OP-Vorbereitung.' },

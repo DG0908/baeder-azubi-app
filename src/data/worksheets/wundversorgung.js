@@ -137,7 +137,7 @@ const wundversorgung = {
           { number: 2, accept: ['Schnittwunde', 'Schnittverletzung', 'Schnitt', 'Schnitt-Wunde', 'Schnittwunde / Schnittverletzung', 'Glatte Schnittwunde'] },
           { number: 3, accept: ['Platzwunde', 'Prellung', 'Beule', 'Hämatom', 'Haematom', 'Platzwunde / Prellung', 'Platzwunde / Beule', 'Prellwunde', 'Bluterguss', 'Quetschwunde', 'Platzwunde / Prellwunde', 'Platzwunde / Hämatom', 'Platzwunde / Haematom'] },
           { number: 4, accept: ['Kratzer', 'Kratzwunde', 'Kratzverletzung', 'Schramme', 'Ritzverletzung', 'Hautritzverletzung'] },
-          { number: 5, accept: ['Blase', 'Hautblase', 'Brandblase', 'Druckblase', 'Wundblase', 'Reibungsblase'] },
+          { number: 5, accept: ['Blase', 'Hautblase', 'Druckblase', 'Wundblase', 'Reibungsblase'] },
         ],
       },
       {

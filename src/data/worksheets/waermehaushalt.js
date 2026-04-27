@@ -109,7 +109,7 @@ const waermehaushalt = {
           { number: 9, accept: ['Gefäßerweiterung', 'Gefaesserweiterung', 'Vasodilatation', 'Erweiterung der Blutgefäße', 'Erweiterung der Blutgefaesse'] },
           { number: 10, accept: ['Gefäßverengung', 'Gefaessverengung', 'Vasokonstriktion', 'Verengung der Blutgefäße', 'Verengung der Blutgefaesse'] },
           { number: 11, accept: ['Zittern', 'Muskelzittern', 'Kältezittern', 'Kaeltezittern'] },
-          { number: 12, accept: ['Hautgefäße', 'Hautgefaesse', 'Blutgefäße der Beine', 'Blutgefaesse der Beine', 'Periphere Durchblutung', 'Beinvenen', 'Beingefäße', 'Beingefaesse'] },
+          { number: 12, accept: ['Beingefäße', 'Beingefaesse', 'Blutgefäße der Beine', 'Blutgefaesse der Beine', 'Periphere Durchblutung', 'Beinvenen', 'Periphere Gefäße', 'Periphere Gefaesse'] },
         ],
       },
       {

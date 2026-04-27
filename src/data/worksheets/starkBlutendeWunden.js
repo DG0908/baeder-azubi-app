@@ -81,7 +81,7 @@ const starkBlutendeWunden = {
           { label: 'Tiefe oder große Wunde', body: 'Schnitt-, Stich-, Pfählungs- oder Quetschwunden mit Tiefenwirkung — auch wenn Blutung erst gering wirkt, hohe innere Verletzungsgefahr.' },
           { label: 'Bewusstseinsstörung oder Ohnmacht', body: 'Hinweise auf hohen Blutverlust und Schock — sofort 112.' },
           { label: 'Zeichen eines Schocks', body: 'Blasse Haut, schneller Puls, kalter Schweiß, Schwindel — auch bei "kontrollierter" Blutung sofort 112.' },
-          { label: 'Amputationsnahe Verletzung', body: 'Abtrennung von Körperteilen oder Gliedmaßen — sofort 112. Abgetrennten Teil sauber, kühl (NICHT direkt auf Eis), trocken in einem zweiten Beutel zur Klinik.' },
+          { label: 'Amputationsnahe Verletzung', body: 'Abtrennung von Körperteilen oder Gliedmaßen — sofort 112. Abgetrennten Teil in sauberes Tuch wickeln und in einen trockenen Beutel — diesen Beutel in einen zweiten Beutel mit Eiswasser legen (NIE direkt auf Eis). Mit zur Klinik.' },
         ],
       },
       {
@@ -93,7 +93,7 @@ const starkBlutendeWunden = {
           { label: 'Kapilläre Blutung', body: 'Sickernde Blutung aus kleinen Hautgefäßen — meist harmlos und mit Pflaster zu versorgen.' },
           { label: 'Druckverband', body: 'Mehrlagiger Verband mit zusätzlichem Druckpolster — komprimiert die Wunde und stoppt die Blutung mechanisch.' },
           { label: 'Schock (hypovolämisch)', body: 'Volumenmangel-Schock durch Blutverlust — Organe werden nicht mehr ausreichend versorgt. Lebensbedrohlich.' },
-          { label: 'Aspiration / Schock', body: 'Bei Bewusstseinsstörung mit normaler Atmung: stabile Seitenlage. Bei keiner Atmung: HLW.' },
+          { label: 'Stabile Seitenlage / HLW', body: 'Bei Bewusstseinsstörung mit normaler Atmung: stabile Seitenlage (schützt vor Aspiration). Bei keiner Atmung: HLW.' },
         ],
       },
       {

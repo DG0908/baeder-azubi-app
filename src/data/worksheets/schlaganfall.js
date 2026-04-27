@@ -52,7 +52,7 @@ const schlaganfall = {
           { label: '6. Enge Kleidung lockern', body: 'Kragen, Krawatte, Gürtel — alles, was den Körper einengt, lösen.' },
           { label: '7. Bei Bewusstsein bequem lagern', body: 'Oberkörper leicht erhöht (ca. 30°), Person sicher und bequem lagern.' },
           { label: '8. Bei Bewusstlosigkeit', body: 'Atmung prüfen — bei vorhandener normaler Atmung: stabile Seitenlage.' },
-          { label: '9. Bei fehlender Atmung', body: 'Sofort mit Wiederbelebung beginnen (Herzdruckmassage 30 : 2). AED einsetzen, wenn verfügbar.' },
+          { label: '9. Bei fehlender Atmung', body: 'Sofort mit Wiederbelebung beginnen (30 Herzdruckmassagen : 2 Beatmungen). AED einsetzen, wenn verfügbar.' },
         ],
       },
       {
