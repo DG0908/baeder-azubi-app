@@ -24,7 +24,8 @@ import starkBlutendeWunden from './starkBlutendeWunden';
 import kopfverletzungen from './kopfverletzungen';
 import knochenbrueche from './knochenbrueche';
 import unterkuehlung from './unterkuehlung';
+import wundversorgung from './wundversorgung';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung, wundversorgung];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;
