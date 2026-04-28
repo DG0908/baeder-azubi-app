@@ -29,7 +29,8 @@ import ersticken from './ersticken';
 import asthma from './asthma';
 import diabetesNotfall from './diabetesNotfall';
 import wirbelsaeulenverletzung from './wirbelsaeulenverletzung';
+import augenverletzungen from './augenverletzungen';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung, wundversorgung, ersticken, asthma, diabetesNotfall, wirbelsaeulenverletzung];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung, wundversorgung, ersticken, asthma, diabetesNotfall, wirbelsaeulenverletzung, augenverletzungen];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;

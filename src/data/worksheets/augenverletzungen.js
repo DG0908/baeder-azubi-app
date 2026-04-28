@@ -1,0 +1,262 @@
+const augenverletzungen = {
+  id: 'augenverletzungen',
+  title: 'Augenverletzungen / Chemikalien im Auge',
+  subtitle: 'Erkennen, richtig handeln und Notfälle einschätzen',
+  category: 'first',
+  icon: '👁️',
+  estimatedMinutes: 22,
+  reference: {
+    image: '/worksheets/augenverletzungen-referenz.png',
+    alt: 'Lernblatt Augenverletzungen / Chemikalien im Auge — Anzeichen, richtige Spültechnik, Notfallkriterien',
+    intro:
+      'Im Bäderbetrieb können Chemikalien oder Fremdkörper ins Auge gelangen — z. B. durch Reinigungsmittel, Desinfektionsmittel, Chlorprodukte, Spritzer beim Umfüllen oder Staub. Das kann von einer einfachen Reizung bis hin zu schweren Verätzungen reichen. Wichtigste Sofortmaßnahme: SOFORT mindestens 15 Minuten mit viel sauberem Wasser spülen — Augenlider offen halten, vom inneren zum äußeren Augenwinkel leiten, NICHT reiben oder drücken. Kontaktlinsen entfernen wenn leicht möglich, aber nicht lange daran herumprobieren. Nach dem Spülen IMMER ärztlich abklären lassen, auch wenn es besser scheint. Bei starken Schmerzen, Sehverschlechterung oder Verätzung sofort 112. Merksatz: SOFORT SPÜLEN — NICHT REIBEN — ÄRZTLICH ABKLÄREN.',
+    sections: [
+      {
+        heading: 'Was ist passiert?',
+        items: [
+          { label: 'Chemikalien im Auge', body: 'Reinigungsmittel, Desinfektionsmittel, Chlorprodukte oder Säuren/Laugen aus der Wasseraufbereitung können beim Umfüllen, Dosieren oder durch Spritzer ins Auge gelangen.' },
+          { label: 'Fremdkörper', body: 'Staub, Sand, kleine Partikel, Splitter oder Insekten — können das Auge reizen, verkratzen oder verletzen.' },
+          { label: 'Was kann passieren?', body: 'Reizungen (Brennen, Tränen), Hornhautverletzungen, Verätzungen mit bleibender Sehminderung — schon kleine Mengen mancher Stoffe (Laugen!) können das Auge schwer schädigen.' },
+          { label: 'Wichtigste Regel', body: 'Jede Sekunde zählt — sofort spülen rettet Augen. Erst spülen, dann erklären, dann zum Arzt.' },
+        ],
+      },
+      {
+        heading: 'Anzeichen erkennen',
+        items: [
+          { label: 'Rötung', body: 'Bindehaut wird rot, Auge wirkt blutunterlaufen — Reaktion auf Reizung oder Verletzung.' },
+          { label: 'Schmerzen', body: 'Stechende, brennende oder krampfartige Schmerzen — typisch bei Verätzungen oder Hornhautverletzungen.' },
+          { label: 'Brennen', body: 'Akutes Brennen im Auge — fast immer Hinweis auf Reizung oder Verätzung.' },
+          { label: 'Tränenfluss', body: 'Reflexartig vermehrte Tränenproduktion — Versuch des Körpers, das Auge zu spülen.' },
+          { label: 'Lichtempfindlichkeit', body: 'Person verträgt kein helles Licht, kneift Augen zu — typisch nach Hornhautreizung.' },
+          { label: 'Verschwommenes Sehen', body: 'Sehschärfe lässt nach, Person sieht trüb — Hinweis auf Hornhautbeteiligung.' },
+          { label: 'Fremdkörpergefühl', body: 'Person spürt etwas im Auge — kann tatsächlich ein Fremdkörper sein, aber auch eine Hornhauterosion verursacht das Gefühl.' },
+          { label: 'Krampfartiges Zukneifen', body: 'Lidkrampf (Blepharospasmus) — Auge ist so gereizt, dass die Person es nicht offen halten kann.' },
+        ],
+      },
+      {
+        heading: 'Erste Hilfe — Richtig handeln',
+        items: [
+          { label: '1. Sofort mit viel Wasser spülen', body: 'Mindestens 15 Minuten — bei Chemikalien lieber länger. Augendusche, Spülflasche oder sauberes lauwarmes Wasser am Wasserhahn.' },
+          { label: '2. Augenlider offen halten', body: 'Mit Daumen und Zeigefinger Lid sanft offen halten — nicht reiben, nicht drücken. Person dabei beruhigen, da Spülen unangenehm ist.' },
+          { label: '3. Kontaktlinsen entfernen, wenn möglich', body: 'Wenn leicht und ohne Gewalt möglich — sonst weiter spülen, Linse später vom Arzt entfernen lassen. Nicht wieder einsetzen.' },
+          { label: '4. Nach dem Spülen ärztlich abklären', body: 'IMMER zum Augenarzt oder Notaufnahme — auch wenn es besser scheint. Verätzungen können zeitverzögert Schäden zeigen.' },
+        ],
+      },
+      {
+        heading: 'Spülen — so geht\'s richtig',
+        items: [
+          { label: 'Mit was spülen?', body: 'Augendusche (in jedem Bad Pflicht!), Augenspülflasche, sauberes lauwarmes Leitungswasser. KEIN Salzwasser, KEINE Hausmittel.' },
+          { label: 'Wassertemperatur', body: 'Lauwarm — kalt nur wenn nichts anderes da. Heißes Wasser NIE.' },
+          { label: 'Spülrichtung', body: 'Vom INNEREN zum ÄUSSEREN Augenwinkel (von der Nase weg) — damit der Stoff nicht ins andere Auge oder zurück ins Auge läuft.' },
+          { label: 'Dauer', body: 'Bei Chemikalien mindestens 15 Minuten — bei Laugen (Reiniger, Desinfektionsmittel) tendenziell länger. Lieber zu lang als zu kurz.' },
+          { label: 'Beide Augen?', body: 'Wenn unklar ist welches Auge betroffen ist oder bei großflächigem Spritzer: BEIDE Augen spülen — sicher ist sicher.' },
+          { label: 'Position der Person', body: 'Kopf zur betroffenen Seite neigen, damit Wasser nach außen abläuft. Bei Augendusche: nach vorne beugen, beide Augen unter Strahl halten.' },
+          { label: 'Augendusche im Bäderbereich', body: 'Pflichtausstattung in der Wasseraufbereitung — muss leicht erreichbar, frei zugänglich und funktionsfähig sein. Standort allen Mitarbeitern bekannt.' },
+        ],
+      },
+      {
+        heading: 'Besonderheiten beachten',
+        items: [
+          { label: 'Kontaktlinsen', body: 'Möglichst entfernen, wenn leicht machbar — danach weiter spülen. NICHT wieder einsetzen. Wenn Linse festklebt: nicht zerren, sondern weiter spülen und Arzt.' },
+          { label: 'Chemikalien gründlich spülen', body: 'Auch bei schwacher Konzentration länger spülen — Laugen (Chlor-Reiniger, Desinfektion) wirken tiefer und länger als Säuren.' },
+          { label: 'Sicherheitsdatenblatt mitnehmen', body: 'Produktinformation oder Verpackung des Stoffs zur Klinik mitnehmen — hilft dem Arzt bei der Behandlung.' },
+          { label: 'Auch bei Besserung zum Arzt', body: 'Verätzungen oder Hornhauterosionen können sich zeitverzögert verschlechtern — IMMER ärztliche Abklärung.' },
+          { label: 'Mehrere Personen betroffen?', body: 'Bei Spritzern oder Aerosol-Belastung: alle Anwesenden prüfen, gemeinsam zur Klinik. Bei Atembeschwerden zusätzlich 112.' },
+        ],
+      },
+      {
+        heading: 'Wann ist es ein Notfall? — Sofort 112',
+        items: [
+          { label: 'Starke Schmerzen', body: 'Heftige, anhaltende Schmerzen trotz Spülen — Hinweis auf tiefere Verletzung oder Verätzung.' },
+          { label: 'Sehverschlechterung', body: 'Verschwommenes Sehen, Doppelbilder, Sehverlust — sofort 112 oder direkt in die Augenklinik.' },
+          { label: 'Verätzungen', body: 'Bei Kontakt mit Chlor, Säuren, Laugen oder unbekannten Chemikalien — auch nach Spülen sofort ärztliche Versorgung.' },
+          { label: 'Großflächige Verunreinigung', body: 'Spritzer im ganzen Gesicht, beide Augen betroffen, zusätzlich Haut/Atemwege betroffen — 112.' },
+          { label: 'Keine Besserung nach Spülen', body: 'Wenn Symptome trotz 15 Minuten Spülen nicht nachlassen — sofort 112.' },
+          { label: 'Atemprobleme durch Dämpfe', body: 'Wenn die Chemikalie auch eingeatmet wurde (Aerosole, Gase) — zusätzlich Atemwegsbeschwerden, sofort 112.' },
+          { label: 'Bewusstseins- oder Kreislaufprobleme', body: 'Person wird benommen, panisch nicht ansprechbar, Schockzeichen — sofort 112.' },
+          { label: 'Mehrere Betroffene', body: 'Bei Unfällen mit mehreren Verletzten — 112 unabhängig von Schweregrad.' },
+        ],
+      },
+      {
+        heading: 'Was nicht tun!',
+        items: [
+          { label: 'Nicht reiben', body: 'Reiben verschlimmert die Verletzung — Hornhaut und Bindehaut werden zusätzlich beschädigt, Fremdkörper kann sich einbohren.' },
+          { label: 'Keine Hausmittel oder Salben', body: 'Keine Augentropfen, Cremes, Tee, Milch, Honig — können die Verletzung verschlimmern und die ärztliche Beurteilung erschweren.' },
+          { label: 'Keine neutralisierenden Mittel', body: 'NIEMALS Säure mit Lauge oder umgekehrt zu „neutralisieren" versuchen — chemische Reaktion erzeugt Wärme und zusätzliche Schäden.' },
+          { label: 'Nicht aufs Auge drücken', body: 'Druck verstärkt Verletzungen — bei Verdacht auf perforierende Verletzung besonders gefährlich.' },
+          { label: 'Kontaktlinsen nicht festkleben lassen', body: 'Wenn leicht entfernbar: raus damit. Aber nicht mit Gewalt — bei festsitzender Linse weiter spülen, Arzt entfernt sie.' },
+          { label: 'Nicht warten — sofort spülen', body: 'Auch nicht „erst noch das Sicherheitsdatenblatt holen" — spülen hat oberste Priorität, alles andere parallel.' },
+        ],
+      },
+      {
+        heading: 'Wichtige Begriffe',
+        items: [
+          { label: 'Verätzung', body: 'Schädigung des Gewebes durch Säure oder Lauge — Laugenverätzungen sind oft schlimmer als Säureverätzungen, weil sie tiefer eindringen.' },
+          { label: 'Lauge (alkalisch)', body: 'pH > 7 — z. B. Chlorreiniger, Geschirrspülmittel, Desinfektionsmittel, Zement. Dringt schnell tief ins Gewebe ein.' },
+          { label: 'Säure', body: 'pH < 7 — z. B. Batteriesäure, Reinigungssäuren. Verursacht meist oberflächliche Verätzungen, da Eiweiß sie „verklumpen" lässt.' },
+          { label: 'Hornhaut (Cornea)', body: 'Vordere durchsichtige Augenschicht — wichtig fürs Sehen. Verletzungen heilen oft, aber Narben können das Sehen dauerhaft mindern.' },
+          { label: 'Bindehaut (Konjunktiva)', body: 'Schleimhaut über dem Augweiß und unter dem Lid — leicht reizbar, blutet schnell, bei Reizung sehr rot.' },
+          { label: 'Hornhauterosion', body: 'Oberflächliche Verletzung der Hornhaut — verursacht starkes Fremdkörpergefühl, Tränen, Lichtempfindlichkeit. Heilt meist in 24–48 h.' },
+          { label: 'Augendusche / Notdusche', body: 'Pflichtausstattung an Arbeitsplätzen mit Chemikalien — fest installiert, mind. 15 Min. konstanter Wasserstrahl, alle 6 Monate prüfen.' },
+          { label: 'Sicherheitsdatenblatt', body: 'Pflichtdokument zu jeder verwendeten Chemikalie — enthält Erste-Hilfe-Hinweise und ist im Notfall mitzunehmen.' },
+        ],
+      },
+      {
+        heading: 'Praxisbezug — im Bäderbetrieb',
+        items: [
+          { label: 'Wasseraufbereitung', body: 'Beim Umfüllen, Dosieren, Wechseln von Chlor, Säuren, Flockungsmitteln — IMMER Schutzbrille! Augendusche in der Nähe muss bekannt und frei zugänglich sein.' },
+          { label: 'Reinigungsarbeiten', body: 'Beim Putzen mit Sanitärreiniger, Desinfektionsmittel — Schutzbrille, nicht über Kopfhöhe sprühen, Spritzschutz beachten.' },
+          { label: 'Chlor-Notfall', body: 'Bei Chlorgas-Austritt (Dosier-Defekt, Mischen verschiedener Reiniger): sofort Bereich verlassen, Lüftung, 112. Augen und Atemwege gleich behandeln.' },
+          { label: 'Augendusche-Standort', body: 'Jede Aufsichtskraft und jeder Techniker muss wissen, wo die Augendusche steht — Schild deutlich sichtbar, Weg frei.' },
+          { label: 'Augendusche-Wartung', body: 'Mindestens monatlich kurz spülen lassen (sonst Verkeimung des stehenden Wassers), Funktion prüfen, im Wartungsplan dokumentieren.' },
+          { label: 'Schulung', body: 'Erste-Hilfe bei Augenverletzungen mindestens jährlich auffrischen — vor allem für Wartungs- und Reinigungspersonal.' },
+          { label: 'Sicherheitsdatenblätter griffbereit', body: 'Aktuelle Datenblätter aller verwendeten Chemikalien an zentraler Stelle (Werkstatt, Büro) — schnell auffindbar im Notfall.' },
+          { label: 'Kommunikation mit dem Rettungsdienst', body: 'Beim Notruf den genauen Stoffnamen, Konzentration und Mengeneinwirkung angeben — entscheidend für die Klinikbehandlung.' },
+        ],
+      },
+      {
+        heading: 'Merksatz',
+        items: [
+          { label: 'SOFORT SPÜLEN — NICHT REIBEN — ÄRZTLICH ABKLÄREN', body: 'Drei Schritte. Sofort und gründlich mit Wasser spülen (mind. 15 Min), niemals reiben oder drücken, danach immer zum Arzt — auch bei Besserung.' },
+          { label: 'SCHNELLES SPÜLEN KANN DAS AUGE RETTEN', body: 'Jede Sekunde zählt. Im Zweifel immer zum Schutz des Auges handeln — lieber einmal zu lang gespült als zu kurz.' },
+        ],
+      },
+    ],
+  },
+  exercise: {
+    image: '/worksheets/augenverletzungen-arbeitsblatt.png',
+    alt: 'Arbeitsblatt Augenverletzungen / Chemikalien im Auge zum Ausfüllen',
+    tasks: [
+      {
+        id: 'beispiele',
+        type: 'open-list',
+        title: 'Aufgabe 1: Wie können Chemikalien oder Fremdkörper ins Auge gelangen?',
+        prompt: 'Nenne mindestens vier Beispiele.',
+        expectedCount: 4,
+        pool: [
+          { accept: ['Spritzer von Reinigungsmitteln', 'Reinigungsmittel', 'Reinigungsmittelspritzer', 'Putzmittel-Spritzer', 'Reinigungsmittel-Spritzer'] },
+          { accept: ['Spritzer von Desinfektionsmitteln', 'Desinfektionsmittel', 'Desinfektionsspritzer', 'Desinfektionsmittel-Spritzer'] },
+          { accept: ['Chlorprodukte', 'Chlor', 'Chemikalien aus der Wasseraufbereitung', 'Chlor-Reiniger', 'Chlorgas', 'Chemikalien beim Chloren'] },
+          { accept: ['Staub', 'Schmutz', 'Staub oder Schmutz', 'Reinigungsstaub', 'Technikbereich Staub', 'Schmutzpartikel'] },
+          { accept: ['Spritzer beim Umfüllen', 'Spritzer beim Dosieren', 'Umfüllen', 'Umfuellen', 'Dosieren', 'Spritzer beim Umfüllen oder Dosieren', 'Spritzer beim Umfuellen oder Dosieren', 'Beim Umfüllen von Gefahrstoffen', 'Beim Umfuellen von Gefahrstoffen'] },
+          { accept: ['Aerosole', 'Dämpfe', 'Daempfe', 'Aerosole / Dämpfe', 'Aerosole / Daempfe', 'Reizende Dämpfe', 'Reizende Daempfe', 'Gase'] },
+          { accept: ['Sand', 'Kleine Partikel', 'Fremdkörper aus dem Außenbereich', 'Fremdkoerper aus dem Aussenbereich', 'Sand und Partikel', 'Sandkörner', 'Sandkoerner'] },
+          { accept: ['Säuren', 'Saeuren', 'Laugen', 'Säuren oder Laugen', 'Saeuren oder Laugen', 'pH-Senker', 'pH-Heber'] },
+          { accept: ['Splitter', 'Insekten', 'Wespen', 'Mücken', 'Muecken', 'Holzsplitter', 'Glassplitter', 'Metallsplitter'] },
+        ],
+      },
+      {
+        id: 'anzeichen',
+        type: 'open-list',
+        title: 'Aufgabe 2: Welche Anzeichen können auf eine Augenverletzung oder Verätzung hinweisen?',
+        prompt: 'Nenne mindestens fünf Anzeichen.',
+        expectedCount: 5,
+        pool: [
+          { accept: ['Rötung', 'Roetung', 'Rotes Auge', 'Bindehautrötung', 'Bindehautroetung'] },
+          { accept: ['Schmerzen', 'Augenschmerzen', 'Starke Schmerzen', 'Stechen', 'Stechende Schmerzen'] },
+          { accept: ['Brennen', 'Brennendes Gefühl', 'Brennendes Gefuehl', 'Brennen im Auge'] },
+          { accept: ['Tränenfluss', 'Traenenfluss', 'Tränen', 'Traenen', 'Vermehrtes Tränen', 'Vermehrtes Traenen', 'Tränenausbruch', 'Traenenausbruch'] },
+          { accept: ['Lichtempfindlichkeit', 'Photophobie', 'Lichtscheu', 'Verträgt kein Licht', 'Vertraegt kein Licht'] },
+          { accept: ['Verschwommenes Sehen', 'Sehverschlechterung', 'Unscharfes Sehen', 'Sehstörung', 'Sehstoerung', 'Verschwommen sehen'] },
+          { accept: ['Fremdkörpergefühl', 'Fremdkoerpergefuehl', 'Etwas im Auge', 'Sandkorn-Gefühl', 'Sandkorn-Gefuehl', 'Druckgefühl', 'Druckgefuehl'] },
+          { accept: ['Schwellung', 'Geschwollenes Auge', 'Lidschwellung', 'Augenschwellung', 'Geschwollenes Lid'] },
+          { accept: ['Krampfartiges Zukneifen', 'Lidkrampf', 'Auge zukneifen', 'Blepharospasmus', 'Person kneift Auge zu'] },
+          { accept: ['Starke Reizung', 'Reizung', 'Sehverschlechterung', 'Verschlechterung des Sehens'] },
+        ],
+      },
+      {
+        id: 'spuelen',
+        type: 'keyword-text',
+        title: 'Aufgabe 3: Beschreibe in eigenen Worten, wie man richtig spült',
+        items: [
+          {
+            prompt: 'Beschreibe das richtige Spülen — gehe dabei auf Dauer, Wasser und Durchführung ein.',
+            keywords: ['sofort', 'viel wasser', 'sauber', 'lauwarm', 'augendusche', 'spülflasche', 'spuelflasche', '15', 'minuten', 'lider', 'augenlider', 'offen', 'innen', 'außen', 'aussen', 'augenwinkel', 'beide', 'reiben', 'drücken', 'druecken', 'gründlich', 'gruendlich'],
+            minMatches: 5,
+            sampleAnswer:
+              'Das Auge muss sofort und gründlich mit viel sauberem, möglichst lauwarmem Wasser gespült werden — am besten mit Augendusche oder Spülflasche, sonst auch am Wasserhahn. Die Augenlider werden dabei vorsichtig offen gehalten, damit das Wasser tatsächlich an das Auge gelangt. Gespült wird vom inneren zum äußeren Augenwinkel, damit der Stoff nicht ins andere Auge oder zurück ins Auge läuft. Bei Chemikalien mindestens 15 Minuten spülen, bei Laugen tendenziell länger. Wenn unklar ist, welches Auge betroffen ist, beide Augen spülen. Niemals reiben oder aufs Auge drücken.',
+          },
+        ],
+      },
+      {
+        id: 'kontaktlinsen',
+        type: 'keyword-text',
+        title: 'Aufgabe 4: Warum ist es wichtig, Kontaktlinsen zu entfernen?',
+        items: [
+          {
+            prompt: 'Warum sollten Kontaktlinsen entfernt werden — und was ist danach zu beachten?',
+            keywords: ['kontaktlinse', 'entfernen', 'leicht', 'gewalt', 'chemikalien', 'fremdstoff', 'festhalten', 'spülen', 'spuelen', 'behindert', 'weiter spülen', 'weiter spuelen', 'nicht wieder', 'einsetzen', 'arzt', 'ärztlich', 'aerztlich', 'auge'],
+            minMatches: 4,
+            sampleAnswer:
+              'Kontaktlinsen sollten möglichst entfernt werden, wenn das leicht und ohne Gewalt möglich ist. Sie können Chemikalien oder Fremdstoffe direkt am Auge festhalten und das Spülen behindern — die Reizstoffe wirken dadurch länger und tiefer auf die Hornhaut ein. Nach dem Entfernen muss weiter gespült werden (mindestens 15 Minuten gesamt). Die Linsen werden nicht wieder eingesetzt, da sie kontaminiert sein können. Wenn sich die Linse nicht leicht entfernen lässt, sollte man nicht lange daran herumprobieren, sondern weiter spülen und die Linse später vom Augenarzt entfernen lassen.',
+          },
+        ],
+      },
+      {
+        id: 'nach-spuelen',
+        type: 'keyword-text',
+        title: 'Aufgabe 5: Was musst du nach dem Spülen unbedingt tun?',
+        items: [
+          {
+            prompt: 'Was ist nach dem Spülen wichtig — und warum ist eine ärztliche Abklärung so wichtig?',
+            keywords: ['ärztlich', 'aerztlich', 'arzt', 'augenarzt', 'klinik', 'abklär', 'abklaer', 'auch wenn', 'besser', 'schein', 'verätz', 'veraetz', 'hornhaut', 'schaden', 'verzögert', 'verzoegert', 'sehverlust', 'sicherheitsdatenblatt', 'chemikalie'],
+            minMatches: 4,
+            sampleAnswer:
+              'Nach dem Spülen muss IMMER eine ärztliche Abklärung erfolgen — am besten beim Augenarzt oder in der Augenklinik. Auch wenn es nach dem Spülen besser scheint, können Verätzungen und Hornhautschäden zeitverzögert sichtbar werden und im schlimmsten Fall zu bleibender Sehminderung führen. Wichtig ist außerdem, die betroffene Chemikalie genau zu benennen und das Sicherheitsdatenblatt mit zur Klinik zu nehmen — das hilft dem Arzt bei der Behandlung. Auch eine weitere Gefährdung durch denselben Stoff im Betrieb sollte sofort beseitigt werden.',
+          },
+        ],
+      },
+      {
+        id: 'notruf',
+        type: 'open-list',
+        title: 'Aufgabe 6: Wann rufst du den Notruf 112?',
+        prompt: 'Nenne mindestens drei Gründe.',
+        expectedCount: 4,
+        pool: [
+          { accept: ['Starke Schmerzen', 'Heftige Schmerzen', 'Anhaltende Schmerzen', 'Sehr starke Schmerzen', 'Unerträgliche Schmerzen', 'Unertraegliche Schmerzen'] },
+          { accept: ['Sehverschlechterung', 'Sehverlust', 'Verschwommenes Sehen', 'Sehstörung', 'Sehstoerung', 'Sehprobleme', 'Doppelbilder'] },
+          { accept: ['Verätzung', 'Veraetzung', 'Verätzungen', 'Veraetzungen', 'Chlor', 'Säuren', 'Saeuren', 'Laugen', 'Chemikalien', 'Verätzung durch Chemikalien', 'Veraetzung durch Chemikalien', 'Verätzung durch Chlor', 'Veraetzung durch Chlor'] },
+          { accept: ['Großflächige Verunreinigung', 'Grossflaechige Verunreinigung', 'Großflächiger Spritzer', 'Grossflaechiger Spritzer', 'Beide Augen betroffen', 'Gesicht großflächig', 'Gesicht grossflaechig'] },
+          { accept: ['Keine Besserung', 'Keine Besserung nach Spülen', 'Keine Besserung nach Spuelen', 'Symptome bleiben', 'Verschlechterung trotz Spülen', 'Verschlechterung trotz Spuelen'] },
+          { accept: ['Atemprobleme', 'Atemnot', 'Atembeschwerden', 'Atemprobleme durch Dämpfe', 'Atemprobleme durch Daempfe', 'Atembeschwerden durch Gase'] },
+          { accept: ['Bewusstseinsstörung', 'Bewusstseinsstoerung', 'Benommenheit', 'Panik', 'Person nicht ansprechbar', 'Schockzeichen', 'Schock'] },
+          { accept: ['Mehrere Personen betroffen', 'Mehrere Betroffene', 'Mehrere Verletzte', 'Mehrere Personen', 'Großschadenslage', 'Grossschadenslage'] },
+          { accept: ['Unbekannte Chemikalie', 'Unbekannter Stoff', 'Unbekannte Substanz'] },
+        ],
+      },
+      {
+        id: 'nicht-tun',
+        type: 'open-list',
+        title: 'Aufgabe 7: Was darfst du bei einer Augenverletzung NICHT tun?',
+        prompt: 'Nenne mindestens vier Dinge, die man bei einer Augenverletzung nicht tun darf.',
+        expectedCount: 4,
+        pool: [
+          { accept: ['Nicht reiben', 'Reiben vermeiden', 'Auge nicht reiben', 'Reiben'] },
+          { accept: ['Keine Hausmittel', 'Keine Salben', 'Keine Hausmittel oder Salben', 'Keine Augentropfen', 'Keine Cremes', 'Keine Tee-Umschläge', 'Keine Tee-Umschlaege'] },
+          { accept: ['Keine neutralisierenden Mittel', 'Nicht neutralisieren', 'Säure nicht mit Lauge neutralisieren', 'Saeure nicht mit Lauge neutralisieren', 'Keine chemische Neutralisation', 'Keine Neutralisationsversuche'] },
+          { accept: ['Nicht aufs Auge drücken', 'Nicht aufs Auge druecken', 'Kein Druck', 'Auge nicht drücken', 'Auge nicht druecken', 'Nicht drücken', 'Nicht druecken'] },
+          { accept: ['Kontaktlinsen nicht festkleben lassen', 'Kontaktlinsen nicht fest am Auge lassen', 'Linsen nicht festsitzen lassen', 'Kontaktlinsen entfernen wenn leicht möglich', 'Kontaktlinsen entfernen wenn leicht moeglich'] },
+          { accept: ['Nicht warten', 'Nicht abwarten', 'Sofort spülen', 'Sofort spuelen', 'Nicht zögern', 'Nicht zoegern', 'Keine Zeit verlieren'] },
+          { accept: ['Nicht alleine lassen', 'Person nicht alleine lassen', 'Person nicht allein lassen', 'Bei der Person bleiben'] },
+          { accept: ['Nicht selbst behandeln', 'Nicht eigenmächtig behandeln', 'Nicht eigenmaechtig behandeln', 'Keine eigenen Tropfen geben'] },
+        ],
+      },
+      {
+        id: 'fallbeispiel',
+        type: 'numbered-labels',
+        title: 'Aufgabe 8: Fallbeispiel — Chlor-Reiniger ins Auge',
+        prompt: 'Beim Reinigen mit einem Chlor-Reiniger spritzt etwas ins Auge. Bringe die sechs Schritte in die richtige Reihenfolge.',
+        items: [
+          { number: 1, accept: ['Eigenschutz', 'Eigenschutz beachten', 'Person beruhigen', 'Eigenschutz und Person beruhigen', 'Beruhigen', 'Eigenschutz / Person beruhigen', 'Sicherheit prüfen', 'Sicherheit pruefen', 'Eigenschutz beachten und Person beruhigen'] },
+          { number: 2, accept: ['Sofort spülen', 'Sofort spuelen', 'Mit Wasser spülen', 'Mit Wasser spuelen', 'Augendusche', 'Augenspülung', 'Augenspuelung', 'Sofort mit viel Wasser spülen', 'Sofort mit viel Wasser spuelen', 'Mit Augendusche spülen', 'Mit Augendusche spuelen'] },
+          { number: 3, accept: ['Augenlider offen halten', 'Lider offen halten', 'Augenlider offenhalten', 'Lider offenhalten', 'Augenlider vorsichtig offen halten', 'Lider aufhalten'] },
+          { number: 4, accept: ['15 Minuten spülen', '15 Minuten spuelen', 'Mindestens 15 Minuten', 'Gründlich spülen', 'Gruendlich spuelen', '15 Min spülen', '15 Min spuelen', 'Mindestens 15 Minuten gründlich spülen', 'Mindestens 15 Minuten gruendlich spuelen'] },
+          { number: 5, accept: ['Kontaktlinsen entfernen', 'Linsen entfernen', 'Kontaktlinsen rausnehmen', 'Kontaktlinsen entfernen wenn möglich', 'Kontaktlinsen entfernen wenn moeglich', 'Linsen herausnehmen', 'Kontaktlinsen entfernen und weiter spülen', 'Kontaktlinsen entfernen und weiter spuelen'] },
+          { number: 6, accept: ['Notruf 112', '112', 'Notruf', '112 rufen', '112 wählen', '112 waehlen', 'Rettungsdienst rufen', 'Notruf absetzen', 'Ärztlich abklären', 'Aerztlich abklaeren', 'Augenarzt', 'Notruf 112 oder Augenarzt'] },
+        ],
+      },
+    ],
+  },
+};
+
+export default augenverletzungen;
