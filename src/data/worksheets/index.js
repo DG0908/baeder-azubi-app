@@ -34,7 +34,8 @@ import veraetzungen from './veraetzungen';
 import kraulschwimmen from './kraulschwimmen';
 import brustschwimmen from './brustschwimmen';
 import delphinschwimmen from './delphinschwimmen';
+import rueckenschwimmen from './rueckenschwimmen';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung, wundversorgung, ersticken, asthma, diabetesNotfall, wirbelsaeulenverletzung, augenverletzungen, veraetzungen, kraulschwimmen, brustschwimmen, delphinschwimmen];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung, wundversorgung, ersticken, asthma, diabetesNotfall, wirbelsaeulenverletzung, augenverletzungen, veraetzungen, kraulschwimmen, brustschwimmen, delphinschwimmen, rueckenschwimmen];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;
