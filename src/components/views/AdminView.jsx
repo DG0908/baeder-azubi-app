@@ -66,7 +66,7 @@ const sortQuestionReportsNewestFirst = (reports = []) => (
 
 // ─── Betriebe & Einladungscodes Verwaltung (nur Owner) ───
 const OrganizationManager = () => {
-  const { showToast } = useApp();
+  const { darkMode, showToast } = useApp();
   const queryClient = useQueryClient();
   const [showNewOrg, setShowNewOrg] = React.useState(false);
   const [showNewCode, setShowNewCode] = React.useState(false);
@@ -247,17 +247,28 @@ const OrganizationManager = () => {
 
         <div className="space-y-3">
           {orgs.map(org => (
-            <div key={org.id} className={`border rounded-xl p-4 ${org.is_active ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+            <div
+              key={org.id}
+              className={`border rounded-xl p-4 ${
+                org.is_active
+                  ? darkMode ? 'border-green-700/60 bg-green-900/20' : 'border-green-200 bg-green-50'
+                  : darkMode ? 'border-slate-700 bg-slate-800/40' : 'border-gray-200 bg-gray-50'
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-lg">{org.name}</div>
-                  <div className="text-sm text-gray-600">
-                    Kürzel: <span className="font-mono bg-gray-200 px-1 rounded">{org.slug}</span>
+                  <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{org.name}</div>
+                  <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                    Kürzel: <span className={`font-mono px-1 rounded ${darkMode ? 'bg-slate-700 text-gray-100' : 'bg-gray-200 text-gray-800'}`}>{org.slug}</span>
                     {org.contact_name && <> · Kontakt: {org.contact_name}</>}
                     {org.contact_email && <> · {org.contact_email}</>}
                   </div>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-xs font-bold ${org.is_active ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-600'}`}>
+                <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  org.is_active
+                    ? darkMode ? 'bg-green-800 text-green-100' : 'bg-green-200 text-green-800'
+                    : darkMode ? 'bg-slate-700 text-gray-300' : 'bg-gray-200 text-gray-600'
+                }`}>
                   {org.is_active ? 'Aktiv' : 'Inaktiv'}
                 </div>
               </div>
@@ -330,30 +341,37 @@ const OrganizationManager = () => {
         )}
 
         {codes.filter(c => c.is_active).length === 0 ? (
-          <p className="text-gray-500 text-sm">Noch keine Einladungscodes vorhanden.</p>
+          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Noch keine Einladungscodes vorhanden.</p>
         ) : (
           <div className="space-y-2">
             {codes.filter(c => c.is_active).map(c => (
-              <div key={c.id} className={`flex items-center justify-between border rounded-lg p-3 ${c.is_active ? 'border-emerald-200' : 'border-gray-200 opacity-60'}`}>
+              <div
+                key={c.id}
+                className={`flex items-center justify-between border rounded-lg p-3 ${
+                  c.is_active
+                    ? darkMode ? 'border-emerald-700/60 bg-slate-800/40' : 'border-emerald-200'
+                    : darkMode ? 'border-slate-700 opacity-60' : 'border-gray-200 opacity-60'
+                }`}
+              >
                 <div className="flex items-center gap-3">
-                  <span className="font-mono font-bold text-lg bg-gray-100 px-3 py-1 rounded-lg">{c.code}</span>
+                  <span className={`font-mono font-bold text-lg px-3 py-1 rounded-lg ${darkMode ? 'bg-slate-700 text-gray-100' : 'bg-gray-100 text-gray-900'}`}>{c.code}</span>
                   <div className="text-sm">
-                    <div className="font-medium">{c.organizations?.name || '?'}</div>
-                    <div className="text-gray-500">
+                    <div className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{c.organizations?.name || '?'}</div>
+                    <div className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
                       {c.role === 'azubi' ? 'Azubi' : 'Ausbilder'} · {c.used_count}/{c.max_uses || '\u221e'} genutzt
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span
-                    className="p-2 bg-gray-50 text-gray-300 rounded-lg cursor-not-allowed"
+                    className={`p-2 rounded-lg cursor-not-allowed ${darkMode ? 'bg-slate-700/50 text-gray-500' : 'bg-gray-50 text-gray-300'}`}
                     title="Code wurde bei Erstellung angezeigt und ist nicht mehr abrufbar"
                   >
                     <Copy size={16} />
                   </span>
                   <button
                     onClick={() => deleteCode(c.id, c.code)}
-                    className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg"
+                    className={`p-2 rounded-lg ${darkMode ? 'bg-red-900/40 hover:bg-red-900/60 text-red-300' : 'bg-red-100 hover:bg-red-200 text-red-600'}`}
                     title="Code widerrufen"
                   >
                     <Trash2 size={16} />
