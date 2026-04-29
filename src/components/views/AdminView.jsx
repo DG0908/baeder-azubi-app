@@ -184,7 +184,7 @@ const OrganizationManager = () => {
       {/* Betriebe */}
       <div className="glass-card rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold flex items-center">
+          <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             <Building2 className="mr-2 text-indigo-500" />
             Betriebe ({orgs.length})
           </h3>
@@ -280,7 +280,7 @@ const OrganizationManager = () => {
       {/* Einladungscodes */}
       <div className="glass-card rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold flex items-center">
+          <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
             <Ticket className="mr-2 text-emerald-500" />
             Einladungscodes ({codes.length})
           </h3>
@@ -914,8 +914,8 @@ const AdminView = ({
                   <Users className="text-blue-500" size={32} />
                   <span className="text-3xl font-bold text-blue-600">{stats.totalUsers}</span>
                 </div>
-                <p className="text-sm text-gray-600">Aktive Nutzer</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Aktive Nutzer</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {stats.azubis} Azubis • {stats.trainers} Ausbilder
                 </p>
               </div>
@@ -925,7 +925,7 @@ const AdminView = ({
                   <AlertTriangle className="text-yellow-500" size={32} />
                   <span className="text-3xl font-bold text-yellow-600">{stats.pendingApprovals}</span>
                 </div>
-                <p className="text-sm text-gray-600">Ausstehende Freischaltungen</p>
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Ausstehende Freischaltungen</p>
               </div>
 
               <div className="glass-card glass-card-hover rounded-xl p-6">
@@ -933,8 +933,8 @@ const AdminView = ({
                   <Trophy className="text-green-500" size={32} />
                   <span className="text-3xl font-bold text-green-600">{stats.totalGames}</span>
                 </div>
-                <p className="text-sm text-gray-600">Laufende Spiele</p>
-                <p className="text-xs text-gray-500 mt-1">{stats.activeGamesCount} aktiv</p>
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Laufende Spiele</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{stats.activeGamesCount} aktiv</p>
               </div>
 
               <div className="glass-card glass-card-hover rounded-xl p-6">
@@ -942,8 +942,8 @@ const AdminView = ({
                   <Brain className="text-purple-500" size={32} />
                   <span className="text-3xl font-bold text-purple-600">{stats.totalQuestions}</span>
                 </div>
-                <p className="text-sm text-gray-600">Eingereichte Fragen</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Eingereichte Fragen</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   {stats.approvedQuestions} genehmigt • {stats.pendingQuestions} offen
                 </p>
               </div>
@@ -953,7 +953,7 @@ const AdminView = ({
                   <BookOpen className="text-blue-500" size={32} />
                   <span className="text-3xl font-bold text-blue-600">{stats.totalMaterials}</span>
                 </div>
-                <p className="text-sm text-gray-600">Lernmaterialien</p>
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Lernmaterialien</p>
               </div>
 
               <div className="glass-card glass-card-hover rounded-xl p-6">
@@ -961,7 +961,7 @@ const AdminView = ({
                   <MessageCircle className="text-green-500" size={32} />
                   <span className="text-3xl font-bold text-green-600">{stats.totalMessages}</span>
                 </div>
-                <p className="text-sm text-gray-600">Chat-Nachrichten</p>
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Chat-Nachrichten</p>
               </div>
 
               <div className={`glass-card glass-card-hover rounded-xl p-6 ${
@@ -973,8 +973,8 @@ const AdminView = ({
                     stats.usersToDeleteSoon > 0 ? 'text-red-600' : 'text-gray-400'
                   }`}>{stats.usersToDeleteSoon}</span>
                 </div>
-                <p className="text-sm text-gray-600">Löschung bald fällig</p>
-                <p className="text-xs text-gray-500 mt-1">Innerhalb 30 Tage</p>
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Löschung bald fällig</p>
+                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Innerhalb 30 Tage</p>
               </div>
 
               <div className="glass-card glass-card-hover rounded-xl p-6">
@@ -982,7 +982,7 @@ const AdminView = ({
                   <Shield className="text-indigo-500" size={32} />
                   <span className="text-3xl font-bold text-indigo-600">{stats.admins}</span>
                 </div>
-                <p className="text-sm text-gray-600">Administratoren</p>
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Administratoren</p>
               </div>
             </>
           );
@@ -992,11 +992,11 @@ const AdminView = ({
       <div className="glass-card rounded-xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div>
-            <h3 className="text-xl font-bold flex items-center">
+            <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               <RefreshCw className="mr-2 text-cyan-500" />
               Quiz-Statistiken reparieren
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               Stellt Siege, Niederlagen und Unentschieden aus beendeten Quizduellen wieder her, ohne vorhandene höhere Werte zu senken.
             </p>
           </div>
@@ -1014,7 +1014,7 @@ const AdminView = ({
         </div>
 
         {lastQuizRepairResult && (
-          <div className="mt-4 rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-cyan-900">
+          <div className={`mt-4 rounded-xl border p-4 text-sm ${darkMode ? 'border-cyan-700/60 bg-cyan-900/20 text-cyan-100' : 'border-cyan-200 bg-cyan-50 text-cyan-900'}`}>
             <div className="font-bold mb-2">Letzter Repair-Lauf</div>
             <div>{lastQuizRepairResult.updatedUsers || 0} Nutzer aktualisiert</div>
             <div>{lastQuizRepairResult.scannedFinishedGames || 0} beendete Spiele geprüft</div>
@@ -1033,11 +1033,11 @@ const AdminView = ({
       <div className="glass-card rounded-xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div>
-            <h3 className="text-xl font-bold flex items-center">
+            <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               <MessageCircle className="mr-2 text-indigo-500" />
               Hintergrund-Push testen
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               Plant einen Test-Push in 15 Sekunden an dich selbst oder an alle Nutzer deiner Organisation. Danach die App direkt schliessen.
             </p>
           </div>
@@ -1045,7 +1045,7 @@ const AdminView = ({
             <select
               value={testPushTargetScope}
               onChange={(event) => setTestPushTargetScope(event.target.value)}
-              className="px-3 py-2 border border-indigo-200 rounded-lg text-sm bg-indigo-50"
+              className={`px-3 py-2 border rounded-lg text-sm ${darkMode ? 'border-indigo-700 bg-slate-800 text-white' : 'border-indigo-200 bg-indigo-50'}`}
             >
               <option value="self">An mich</option>
               <option value="organization">An meine Organisation</option>
@@ -1064,12 +1064,12 @@ const AdminView = ({
           </div>
         </div>
 
-        <div className="text-xs text-gray-500">
+        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
           News nutzen denselben Push-Kanal. Wenn dieser Test bei geschlossener App ankommt, kommen auch News-Pushs im Hintergrund an.
         </div>
 
         {lastTestPushResult && (
-          <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+          <div className={`mt-4 rounded-xl border p-4 text-sm ${darkMode ? 'border-indigo-700/60 bg-indigo-900/20 text-indigo-100' : 'border-indigo-200 bg-indigo-50 text-indigo-900'}`}>
             <div className="font-bold mb-2">Letzter Test</div>
             <div>Nutzer: {lastTestPushResult.userName || 'Unbekannt'}</div>
             <div>Ziel: {lastTestPushResult.targetScope === 'organization' ? 'Organisation' : 'Ich selbst'}</div>
@@ -1087,18 +1087,18 @@ const AdminView = ({
       <div className="glass-card rounded-xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
-            <h3 className="text-xl font-bold flex items-center">
+            <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               <AlertTriangle className="mr-2 text-amber-500" />
               Fragen-Feedback
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className={`text-sm mt-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               {openQuestionReports.length} offen · {resolvedQuestionReports.length} erledigt · {sortedQuestionReports.length} gesamt
             </p>
           </div>
           {sortedQuestionReports.length > 0 && (
             <button
               onClick={() => setShowQuestionReports((current) => !current)}
-              className="inline-flex items-center gap-2 rounded-lg bg-amber-100 px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-200"
+              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold ${darkMode ? 'bg-amber-900/30 text-amber-200 hover:bg-amber-900/50' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}`}
             >
               {showQuestionReports ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
               {showQuestionReports ? 'Feedback ausblenden' : 'Feedback anzeigen'}
@@ -1176,7 +1176,7 @@ const AdminView = ({
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-bold">{acc.name}</p>
-                    <p className="text-sm text-gray-600">{acc.email} • {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}</p>
+                    <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{acc.email} • {(PERMISSIONS[acc.role] || PERMISSIONS.azubi).label}</p>
                     {acc.role === 'azubi' && acc.trainingEnd && (
                       <p className="text-xs text-gray-500">Ausbildungsende: {new Date(acc.trainingEnd).toLocaleDateString()}</p>
                     )}
@@ -1247,7 +1247,7 @@ const AdminView = ({
       <div className="glass-card rounded-xl p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="text-xl font-bold flex items-center">
+            <h3 className={`text-xl font-bold flex items-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
               <Users className="mr-2 text-blue-500" />
               Aktive Nutzer ({allUsers.length})
             </h3>
