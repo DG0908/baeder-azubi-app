@@ -39,7 +39,8 @@ import startkommando from './startkommando';
 import wendetechniken from './wendetechniken';
 import tauchzugBrustarmzug from './tauchzugBrustarmzug';
 import startsprungRueckenstart from './startsprungRueckenstart';
+import lagenschwimmenLagenstaffel from './lagenschwimmenLagenstaffel';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung, wundversorgung, ersticken, asthma, diabetesNotfall, wirbelsaeulenverletzung, augenverletzungen, veraetzungen, kraulschwimmen, brustschwimmen, delphinschwimmen, rueckenschwimmen, startkommando, wendetechniken, tauchzugBrustarmzug, startsprungRueckenstart];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung, wundversorgung, ersticken, asthma, diabetesNotfall, wirbelsaeulenverletzung, augenverletzungen, veraetzungen, kraulschwimmen, brustschwimmen, delphinschwimmen, rueckenschwimmen, startkommando, wendetechniken, tauchzugBrustarmzug, startsprungRueckenstart, lagenschwimmenLagenstaffel];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;
