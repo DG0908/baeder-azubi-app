@@ -45,7 +45,9 @@ import druckausgleich from './druckausgleich';
 import wettkampfschwimmen from './wettkampfschwimmen';
 import rettungstechniken from './rettungstechniken';
 import didaktikMethodikRettung from './didaktikMethodikRettung';
+import wasserwiderstand from './wasserwiderstand';
+import auftrieb from './auftrieb';
 
-export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung, wundversorgung, ersticken, asthma, diabetesNotfall, wirbelsaeulenverletzung, augenverletzungen, veraetzungen, kraulschwimmen, brustschwimmen, delphinschwimmen, rueckenschwimmen, startkommando, wendetechniken, tauchzugBrustarmzug, startsprungRueckenstart, lagenschwimmenLagenstaffel, tauchen, druckausgleich, wettkampfschwimmen, rettungstechniken, didaktikMethodikRettung];
+export const WORKSHEETS = [dieHaut, dasOhr, dasAuge, lungeAtmung, dasHerz, blutKreislauf, dasSkelett, dieMuskulatur, dieGelenke, dasNervensystem, waermehaushalt, dasImmunsystem, hyperventilation, sonnenHitze, wasserunfall, herzinfarkt, schlaganfall, hlwWiederbelebung, krampfanfall, stabileSeitenlage, schock, anaphylaktischerSchock, starkBlutendeWunden, kopfverletzungen, knochenbrueche, unterkuehlung, wundversorgung, ersticken, asthma, diabetesNotfall, wirbelsaeulenverletzung, augenverletzungen, veraetzungen, kraulschwimmen, brustschwimmen, delphinschwimmen, rueckenschwimmen, startkommando, wendetechniken, tauchzugBrustarmzug, startsprungRueckenstart, lagenschwimmenLagenstaffel, tauchen, druckausgleich, wettkampfschwimmen, rettungstechniken, didaktikMethodikRettung, wasserwiderstand, auftrieb];
 
 export const getWorksheet = (id) => WORKSHEETS.find((w) => w.id === id) || null;
