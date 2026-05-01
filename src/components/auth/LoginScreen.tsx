@@ -7,7 +7,7 @@ import {
   requestPasswordReset as dsRequestPasswordReset,
   confirmPasswordReset as dsConfirmPasswordReset
 } from '../../lib/dataService';
-import { LegalImprintContent, LegalPrivacyContent } from '../legal/LegalContent';
+import { LegalImprintContent, LegalPrivacyContent, LegalTermsContent } from '../legal/LegalContent';
 import TotpInputView from '../views/TotpInputView';
 
 interface PasswordStrength {
@@ -79,6 +79,10 @@ const LoginScreen: React.FC = () => {
   const [codeStatus, setCodeStatus] = useState<CodeStatus>(null);
   const codeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Pflicht-Akzeptanz von Datenschutzerklaerung + Nutzungsbedingungen
+  // bei Registrierung (Art. 13 DSGVO + Vertragsschluss)
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
   useEffect(() => {
     const code = registerData.invitationCode?.trim();
     if (!code || code.length < 4) {
@@ -102,6 +106,10 @@ const LoginScreen: React.FC = () => {
 
   const handleRegisterSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    if (!acceptedTerms) {
+      toast.error('Bitte Datenschutzerklärung und Nutzungsbedingungen akzeptieren.');
+      return;
+    }
     handleRegister();
   };
 
@@ -172,6 +180,31 @@ const LoginScreen: React.FC = () => {
             Datenschutzerklärung
           </h2>
           <LegalPrivacyContent />
+        </div>
+      </div>
+    );
+  }
+  // Nutzungsbedingungen
+  if (authView === 'terms') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{
+        background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 25%, #0891b2 50%, #0e7490 75%, #155e75 100%)'
+      }}>
+        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/60 p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 rounded-t-2xl" />
+          <button
+            onClick={() => setAuthView('login')}
+            className="mb-6 inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold bg-white/70 hover:bg-white text-cyan-700 border border-cyan-200 transition-all"
+          >
+            <ArrowLeft size={16} />
+            Zurück zum Login
+          </button>
+
+          <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+            <FileText size={22} className="text-cyan-600" />
+            Nutzungsbedingungen
+          </h2>
+          <LegalTermsContent />
         </div>
       </div>
     );
@@ -714,9 +747,44 @@ const LoginScreen: React.FC = () => {
               </p>
             </div>
 
+            <div className="flex items-start gap-3 bg-cyan-50/60 backdrop-blur border border-cyan-200 rounded-xl p-3">
+              <input
+                id="accept-terms"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                aria-required="true"
+                className="mt-1 h-4 w-4 rounded border-cyan-300 text-cyan-600 focus:ring-cyan-400 cursor-pointer flex-shrink-0"
+              />
+              <label htmlFor="accept-terms" className="text-sm text-gray-700 cursor-pointer leading-relaxed">
+                Ich habe die{' '}
+                <button
+                  type="button"
+                  onClick={() => setAuthView('datenschutz')}
+                  className="text-cyan-700 underline hover:text-cyan-900 font-medium"
+                >
+                  Datenschutzerklärung
+                </button>
+                {' '}und die{' '}
+                <button
+                  type="button"
+                  onClick={() => setAuthView('terms')}
+                  className="text-cyan-700 underline hover:text-cyan-900 font-medium"
+                >
+                  Nutzungsbedingungen
+                </button>
+                {' '}gelesen und akzeptiere sie.
+              </label>
+            </div>
+
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2"
+              disabled={!acceptedTerms}
+              className={`w-full font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 ${
+                acceptedTerms
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-md shadow-emerald-500/20 cursor-pointer'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               <Shield size={18} />
               Registrierung beantragen
@@ -729,7 +797,7 @@ const LoginScreen: React.FC = () => {
         )}
 
         <div className="mt-6 pt-6 border-t border-cyan-100">
-          <div className="flex justify-center gap-4 text-xs">
+          <div className="flex justify-center gap-4 text-xs flex-wrap">
             <button
               onClick={() => setAuthView('impressum')}
               className="inline-flex items-center gap-1 text-cyan-600 hover:text-cyan-800 transition-colors font-medium"
@@ -744,6 +812,14 @@ const LoginScreen: React.FC = () => {
             >
               <ShieldCheck size={12} />
               Datenschutz
+            </button>
+            <span className="text-gray-300">|</span>
+            <button
+              onClick={() => setAuthView('terms')}
+              className="inline-flex items-center gap-1 text-cyan-600 hover:text-cyan-800 transition-colors font-medium"
+            >
+              <FileText size={12} />
+              Nutzungsbedingungen
             </button>
           </div>
         </div>
