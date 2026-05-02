@@ -8,11 +8,16 @@
 
 ## Marken-Briefing
 
-### Schreibweise
+> Vollständige Regeln: siehe [`docs/marketing/markenrichtlinie.md`](markenrichtlinie.md).
+> Hier nur die für die Webseite relevanten Auszüge.
 
-**Markenname:** `smartbaden` — durchgängig kleingeschrieben, ein Wort, kein Bindestrich.
+### Schreibweise (Doppelregel)
 
-Auch in Headlines, in Logos und am Satzanfang. Die einzige Ausnahme: ein Punkt davor (z. B. „Wir bei smartbaden") setzt **kein** großes „S" — Eigenname bleibt klein.
+**Im Fließtext:** `smartbaden` — kleingeschrieben, ein Wort, kein Bindestrich.
+
+**Im Logo / Banner / Hero:** `SMARTBADEN` — Versalien, „SMART" weiß bzw. dunkelblau, „BADEN" in Cyan.
+
+Diese Doppel-Schreibweise ist bewusste Markenrichtlinie (vergleichbar mit IBM oder dm). Versalien geben dem Logo Wucht, kleinschreibung im Fließtext bleibt zugänglich.
 
 ### Tonalität
 
@@ -210,6 +215,132 @@ Bullshit-Bingo.
 
 ---
 
+## Sektion 4 — Sicher gebaut (neue Sektion, direkt nach „Warum smartbaden")
+
+### Sektions-Headline
+
+```
+Sicher gebaut. Nicht „Vibe Coded".
+```
+
+### Subline
+
+```
+Was Sie aus aktuellen Berichten zu Datenlecks bei KI-zusammen-
+geklickten Apps kennen, kann bei smartbaden strukturell nicht
+passieren.
+```
+
+### Hauptaussage (kurzer Block, lesefreundlich)
+
+```
+Viele moderne Apps lassen den Browser direkt mit der Datenbank
+sprechen — bequem, aber gefährlich. Eine vergessene Berechtigungs-
+regel, und plötzlich liegen Kundendaten, Passwörter, Gesundheits-
+daten offen im Netz. Genau diese Architektur-Falle ist 2025/2026
+in mehreren Schlagzeilen gelandet (siehe DIE ZEIT zum Thema
+„Vibe Coding und Supabase-Datenlecks").
+
+smartbaden hat von Anfang an darauf verzichtet. Die Bäder-Azubi-App
+läuft auf einer klassischen, geprüften Drei-Schichten-Architektur —
+Browser, API-Server, Datenbank. Der Browser sieht die Datenbank
+nie direkt. Jede Anfrage wird serverseitig auf Berechtigung,
+Eingabe und Schutzbedarf geprüft.
+```
+
+### Drei kompakte Sicherheits-Punkte (mit Icons)
+
+#### Punkt 1: Drei-Schichten-Architektur
+
+**Icon:** 🏛️ oder Schichten-Symbol
+**Headline:**
+```
+Datenbank ist nicht im Internet
+```
+**Text:**
+```
+Browser → Nginx → NestJS-API → PostgreSQL.
+Der Datenbank-Port ist nicht öffentlich erreichbar,
+nur das interne Docker-Netzwerk kommt heran.
+Klassisch, geprüft, kein „Direkt-an-die-DB"-Shortcut.
+```
+
+#### Punkt 2: Default-Deny-Sicherheit
+
+**Icon:** 🛡️ oder Schloss-Symbol
+**Headline:**
+```
+Jeder Endpunkt explizit abgesichert
+```
+**Text:**
+```
+119 API-Endpunkte, jeder einzelne mit ausdrücklicher
+Rollenfreigabe. Was nicht freigegeben ist, ist gesperrt —
+nicht umgekehrt. Plus CSRF-Schutz, Rate-Limiting, 2FA für
+Administratoren, Argon2id-Passwort-Hashing.
+```
+
+#### Punkt 3: Audit und Nachvollziehbarkeit
+
+**Icon:** 📋 oder Lupen-Symbol
+**Headline:**
+```
+Alles bleibt nachvollziehbar
+```
+**Text:**
+```
+Sicherheitsrelevante Aktionen — Login, Passwort-Reset,
+Rollenwechsel, Account-Freigabe — landen im Audit-Log.
+Bei DSGVO-Anfragen oder einer Beschwerde ist der Verlauf
+in Sekunden auffindbar.
+```
+
+### Optional: Verweis-Block für skeptische DSBs
+
+Direkt unter den drei Punkten, in einer eigenen Box:
+
+```
+Technische Tiefe? Gerne.
+Auf Anfrage senden wir Ihnen die vollständigen Technischen
+und Organisatorischen Maßnahmen (TOMs) gemäß Art. 32 DSGVO,
+unsere AVV-Vorlage gemäß Art. 28 DSGVO sowie auf Wunsch
+einen Kurz-Auszug aus dem Verzeichnis von Verarbeitungs-
+tätigkeiten (Art. 30 DSGVO).
+```
+
+**Button:**
+```
+[ Sicherheits-Dokumente anfordern → ]
+```
+*(Link auf Kontaktformular oder direkter Mailto an `kontakt@smartbaden.de` mit vorgefülltem Betreff „Sicherheits-Dokumente")*
+
+### Visualisierungs-Idee
+
+Ein einfaches **Schichten-Diagramm** als Bild oder Schema:
+
+```
+   ┌──────────────────────────────┐
+   │   Browser des Nutzers        │
+   └────────────┬─────────────────┘
+                │ HTTPS / TLS
+   ┌────────────▼─────────────────┐
+   │   Nginx (Sicherheits-Filter) │
+   └────────────┬─────────────────┘
+                │ Interne Verbindung
+   ┌────────────▼─────────────────┐
+   │   NestJS API (Berechtigungen,│
+   │   Validierung, Audit-Log)    │
+   └────────────┬─────────────────┘
+                │ Nur intern
+   ┌────────────▼─────────────────┐
+   │   PostgreSQL (verschlossen)  │
+   └──────────────────────────────┘
+```
+
+Hostinger Builder hat dafür einen „Diagramm"- oder „Liste mit Icons"-Block. Alternativ als einfache SVG-Grafik selbst gezeichnet (cyan, dunkelblau, weiß) — vier Ebenen mit Pfeilen dazwischen, Beschriftung wie oben.
+
+---
+
 ## Was du als Nächstes vorbereiten solltest
 
 | # | Aufgabe | Aufwand | Wofür |
@@ -229,13 +360,13 @@ Wenn du die ersten **3 Punkte (Copyright, TikTok, App-Screenshots)** in den näc
 
 | Sektion | Inhalt |
 |---|---|
-| 4. **Bäder-Azubi-App Detail** | Hauptfeatures mit Screenshots, Preise (Klein/Mittel/Groß), Pilot-Rabatt-Hinweis |
-| 5. **InfoCenter Detail** | Wie es funktioniert (Schlagwörter, Tabs, lokal), wofür es eingesetzt wird, Foto im Einsatz |
-| 6. **Datenschutz-Dienstleistungen Detail** | Konkrete Leistungen (DSFA, AVV, Beratung Videoüberwachung), Preisrahmen, Kontakt |
-| 7. **Über mich** | Persönliche Vorstellung („Ich, Dennie, …"), Werdegang, Motivation |
-| 8. **Kontakt** | Pilotanfrage-Formular (Felder: Betrieb, Anzahl Azubis, Anliegen, Telefon/Mail), separater Newsletter-Eintrag |
-| 9. **FAQ** | Häufige Fragen (Datenschutz? Preise? Wie kommt der Betrieb an die App? Kann man testen?) — wichtig für SEO |
-| 10. **Footer** | Impressum-Link, Datenschutzerklärung, AGB-Download, Social-Links (LinkedIn, ggf. Facebook) |
+| 5. **Bäder-Azubi-App Detail** | Hauptfeatures mit Screenshots, Preise (Klein/Mittel/Groß), Pilot-Rabatt-Hinweis |
+| 6. **InfoCenter Detail** | Wie es funktioniert (Schlagwörter, Tabs, lokal), wofür es eingesetzt wird, Foto im Einsatz |
+| 7. **Datenschutz-Dienstleistungen Detail** | Konkrete Leistungen (DSFA, AVV, Beratung Videoüberwachung), Preisrahmen, Kontakt |
+| 8. **Über mich** | Persönliche Vorstellung („Ich, Dennie, …"), Werdegang, Motivation |
+| 9. **Kontakt** | Pilotanfrage-Formular (Felder: Betrieb, Anzahl Azubis, Anliegen, Telefon/Mail), separater Newsletter-Eintrag |
+| 10. **FAQ** | Häufige Fragen (Datenschutz? Preise? Wie kommt der Betrieb an die App? Kann man testen?) — wichtig für SEO |
+| 11. **Footer** | Impressum-Link, Datenschutzerklärung, AGB-Download, Social-Links (LinkedIn, ggf. Facebook) |
 
 ---
 
@@ -250,4 +381,4 @@ Da der Builder Drag-and-Drop ist:
 
 ---
 
-*Dokument wird mit jeder Iteration erweitert. Stand: Hero + Portfolio + Warum-Sektion (Iteration 1 von ~3).*
+*Dokument wird mit jeder Iteration erweitert. Stand: Hero + Portfolio + Warum-Sektion + Sicher gebaut (Iteration 1.5 von ~3).*
