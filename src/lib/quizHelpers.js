@@ -602,9 +602,12 @@ export const matchesKeywordTerm = (normalizedAnswer, answerVariantTokens, term) 
     return tokenVariants.some((variant) => {
       if (!variant) return false;
       if (answerVariantTokens.has(variant)) return true;
-      return Array.from(answerVariantTokens).some((answerToken) =>
-        answerToken.startsWith(variant) || variant.startsWith(answerToken)
-      );
+      return Array.from(answerVariantTokens).some((answerToken) => {
+        if (answerToken.startsWith(variant)) return true;
+        return answerToken.length >= 4
+          && answerToken.length >= variant.length - 2
+          && variant.startsWith(answerToken);
+      });
     });
   });
 };
