@@ -3,8 +3,8 @@
 
 **Verarbeitungstätigkeit:** Bäder-Azubi App / smartbaden — Lern- und Ausbildungsplattform für Auszubildende im Bäderbereich
 **Verantwortlicher:** Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg
-**Datenschutzbeauftragter:** Dennie Gulbinski (freiwillig bestellt, an LDI NRW gemeldet)
-**Stand:** 03.05.2026
+**Datenschutzkontakt:** Dennie Gulbinski (Verantwortlicher mit Weiterbildung zum DSB; keine formelle Benennung nach Art. 37 DSGVO, da keine Pflicht nach § 38 BDSG)
+**Stand:** 03.05.2026 (rev. 2)
 **Nächste planmäßige Überprüfung:** November 2026 (halbjährlich oder bei wesentlichen Architektur-Änderungen)
 
 Dieses Dokument ist die **Vorabprüfung** im Sinne von Art. 35 DSGVO. Sie dient der internen Einschätzung, ob für die Verarbeitungstätigkeit eine vollständige Datenschutz-Folgenabschätzung erforderlich ist. Sie wird **nicht veröffentlicht**, sondern auf Anfrage der Aufsichtsbehörde vorgelegt.
@@ -150,7 +150,7 @@ Eine erneute Vorabprüfung wird durchgeführt bei:
 ## 6. Verantwortlich für diese Vorabprüfung
 
 **Dennie Gulbinski**
-Datenschutzbeauftragter (freiwillig bestellt, an LDI NRW gemeldet)
+Verantwortlicher mit datenschutzrechtlicher Fachkunde (Weiterbildung zum DSB)
 E-Mail: kontakt@smartbaden.de (Betreff: „Datenschutz")
 
 ---
@@ -160,6 +160,7 @@ E-Mail: kontakt@smartbaden.de (Betreff: „Datenschutz")
 | Datum | Änderung | Autor |
 |-------|----------|-------|
 | 03.05.2026 | Initialfassung der Vorabprüfung | Dennie Gulbinski |
+| 03.05.2026 (rev. 2) | DSB-Konzept zurückgenommen, Datenschutzkontakt mit Fachkunde dokumentiert | Dennie Gulbinski |
 
 ---
 

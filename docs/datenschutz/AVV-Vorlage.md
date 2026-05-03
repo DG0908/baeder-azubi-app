@@ -72,7 +72,7 @@ E-Mail: kontakt@smartbaden.de
 
 (7) **Nachweis der Einhaltung.** Der Auftragsverarbeiter stellt dem Verantwortlichen alle erforderlichen Informationen zum Nachweis der Einhaltung der in Art. 28 DSGVO niedergelegten Pflichten zur Verfügung und ermöglicht Überprüfungen einschließlich Inspektionen, die vom Verantwortlichen oder einem von diesem beauftragten Prüfer durchgeführt werden, und trägt zu diesen bei (siehe § 6 Kontrollrechte).
 
-(8) **Datenschutzbeauftragter.** Der Auftragsverarbeiter hat sich freiwillig als Datenschutzbeauftragten bestellt. Die Bestellung ist zulässig, weil der Betreiber als Solo-Selbstständiger ohne weitere Beschäftigte tätig ist und über die fachliche Qualifikation als ausgebildeter Datenschutzbeauftragter verfügt. Die Bestellung ist der zuständigen Aufsichtsbehörde (LDI NRW) gemeldet. Anfragen zum Datenschutz erreichen den DSB über `kontakt@smartbaden.de` mit dem Betreff „Datenschutz".
+(8) **Datenschutzkontakt und Fachkunde.** Datenschutzanfragen werden durch den Auftragsverarbeiter mit datenschutzrechtlicher Fachkunde bearbeitet. Der Auftragsverarbeiter verfügt über eine Weiterbildung zum Datenschutzbeauftragten (Zertifikat auf Anfrage einsehbar). Eine formelle Benennung als Datenschutzbeauftragter im Sinne von Art. 37 DSGVO erfolgt derzeit nicht, da keine gesetzliche Benennungspflicht nach § 38 BDSG besteht. Bei Bedarf — insbesondere bei einer gesetzlichen Benennungspflicht oder entsprechenden Anforderungen von Auftraggebern — wird ein externer Datenschutzbeauftragter eingebunden. Anfragen zum Datenschutz erreichen den Auftragsverarbeiter über `kontakt@smartbaden.de` mit dem Betreff „Datenschutz".
 
 ---
 
@@ -185,4 +185,4 @@ Die Inhalte werden mit dem **VAPID-Verfahren Ende-zu-Ende verschlüsselt**; die 
 
 ---
 
-*Stand der Vorlage: 03.05.2026. Diese Vorlage wurde nach bestem Wissen und in Anlehnung an die DSGVO erstellt, ersetzt jedoch keine individuelle Rechtsberatung im Einzelfall.*
+*Stand der Vorlage: 03.05.2026 (rev. 2). Diese Vorlage wurde nach bestem Wissen und in Anlehnung an die DSGVO erstellt, ersetzt jedoch keine individuelle Rechtsberatung im Einzelfall.*

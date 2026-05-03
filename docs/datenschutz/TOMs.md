@@ -3,7 +3,7 @@
 
 **Plattform:** Bäder-Azubi App / smartbaden (`azubi.smartbaden.de`, `api.smartbaden.de`)
 **Betreiber:** Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg
-**Stand:** 03.05.2026
+**Stand:** 03.05.2026 (rev. 2)
 **Nächste planmäßige Überprüfung:** November 2026 (halbjährlich)
 
 Diese TOMs dokumentieren die technischen und organisatorischen Maßnahmen gemäß Art. 32 DSGVO und sind **Anlage 1 zum Auftragsverarbeitungsvertrag (AVV)**.
@@ -151,15 +151,15 @@ Ein vollautomatisches, PC-unabhängiges Cloud-Off-Site-Backup (z. B. Hetzner Sto
 
 ---
 
-## 12. Verantwortlicher Ansprechpartner
+## 12. Datenschutzkontakt
 
-**Datenschutzbeauftragter (freiwillig bestellt, der Aufsichtsbehörde gemeldet):**
+**Verantwortlicher mit datenschutzrechtlicher Fachkunde:**
 Dennie Gulbinski
 Zeitstraße 108
 53721 Siegburg
 E-Mail: kontakt@smartbaden.de (Betreff: „Datenschutz")
 
-Die Bestellung ist zulässig, weil der Betreiber als Solo-Selbstständiger ohne weitere Beschäftigte tätig ist (kein Interessenkonflikt nach Art. 38 Abs. 6 DSGVO) und über die fachliche Qualifikation als ausgebildeter DSB verfügt.
+Der Verantwortliche verfügt über eine Weiterbildung zum Datenschutzbeauftragten (Zertifikat auf Anfrage einsehbar) und bearbeitet Datenschutzanfragen intern fachkundig. Eine formelle Benennung als Datenschutzbeauftragter im Sinne von Art. 37 DSGVO erfolgt derzeit nicht, da keine gesetzliche Benennungspflicht nach § 38 BDSG besteht. Bei Bedarf wird ein externer Datenschutzbeauftragter eingebunden.
 
 ---
 
@@ -181,5 +181,5 @@ Inhalt der Push-Benachrichtigungen wird mittels VAPID Ende-zu-Ende verschlüssel
 
 ---
 
-*Letzte Aktualisierung: 03.05.2026*
+*Letzte Aktualisierung: 03.05.2026 (rev. 2)*
 *Diese TOMs werden überprüft und bei wesentlichen Änderungen der technischen oder organisatorischen Verhältnisse aktualisiert. Halbjährliche Routineprüfung.*

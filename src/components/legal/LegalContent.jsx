@@ -8,7 +8,7 @@ const OPERATOR = {
   taxNumber: '[folgt nach Gewerbeanmeldung]'
 };
 
-const LAST_UPDATED = '03.05.2026';
+const LAST_UPDATED = '03.05.2026 (rev. 2)';
 const listClassName = 'list-disc list-inside ml-2 space-y-1';
 
 export function LegalImprintContent({
@@ -145,25 +145,24 @@ export function LegalPrivacyContent({
         </section>
 
         <section>
-          <h3 className={headingClassName}>2. Datenschutzbeauftragter</h3>
+          <h3 className={headingClassName}>2. Datenschutzkontakt</h3>
           <p className={textClassName}>
-            Der Betreiber hat sich freiwillig als Datenschutzbeauftragten bestellt. Die Bestellung
-            ist zulässig, weil der Betreiber als Solo-Selbstständiger ohne weitere Beschäftigte tätig
-            ist und über die fachliche Qualifikation als ausgebildeter Datenschutzbeauftragter
-            verfügt (Zertifikat auf Anfrage einsehbar). Die Kontaktaufnahme zum
-            Datenschutzbeauftragten erfolgt über:
+            Für Fragen zum Datenschutz erreichen Sie den Verantwortlichen unter:
           </p>
           <p className={`${textClassName} mt-2`}>
             <strong>{OPERATOR.name}</strong>
             <br />
-            {OPERATOR.street}
-            <br />
-            {OPERATOR.city}
-            <br />
             E-Mail: {OPERATOR.email} (Betreff: &bdquo;Datenschutz&ldquo;)
           </p>
           <p className={`${textClassName} mt-2`}>
-            Die Bestellung ist der zuständigen Aufsichtsbehörde (LDI NRW) gemeldet.
+            Der Verantwortliche verfügt über eine <strong>Weiterbildung zum Datenschutzbeauftragten</strong>{' '}
+            und bearbeitet Datenschutzanfragen intern fachkundig (Zertifikat auf Anfrage einsehbar).
+            Ein Datenschutzbeauftragter im Sinne von Art. 37 DSGVO ist derzeit <strong>nicht
+            benannt</strong>, da nach aktueller Prüfung keine gesetzliche Benennungspflicht nach
+            § 38 BDSG besteht. Die Erforderlichkeit einer Benennung wird regelmäßig überprüft —
+            insbesondere bei wesentlichen Änderungen der App, der Datenverarbeitung, der Kundenzahl
+            oder der Unternehmensstruktur. Bei Eintritt einer Benennungspflicht oder entsprechender
+            Anforderung von Auftraggebern wird ein externer Datenschutzbeauftragter eingebunden.
           </p>
         </section>
 
@@ -559,7 +558,8 @@ export function LegalPrivacyContent({
           <p className={noteClassName}>
             Diese Hinweise werden aktualisiert, wenn sich Architektur, Dienstleister oder Datenflüsse
             wesentlich ändern. Letzte Aktualisierung: {LAST_UPDATED} (B2B-Rollenmodell mit zwei
-            Szenarien getrennt; DSB-Funktion formell und kontaktfähig benannt; Rechtsgrundlagen je
+            Szenarien getrennt; Datenschutzkontakt mit Weiterbildung statt formeller DSB-Benennung,
+            um Interessenkonflikt nach Art. 38 Abs. 6 DSGVO zu vermeiden; Rechtsgrundlagen je
             Verarbeitung als Matrix; Push-Verschlüsselung nach RFC 8291/8292 korrekt beschrieben,
             Drittlandtransfer auf EU-U.S. DPF und SCC gestützt; Art. 9-Hinweis als Disclaimer für
             Freitextfelder; Soft-Deletion klar von Anonymisierung und Hard-Deletion abgegrenzt;

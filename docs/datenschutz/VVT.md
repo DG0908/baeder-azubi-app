@@ -2,8 +2,8 @@
 ## gemäß Art. 30 DSGVO
 
 **Verantwortlicher:** Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg
-**Datenschutzbeauftragter (freiwillig bestellt, an LDI NRW gemeldet):** Dennie Gulbinski (kontakt@smartbaden.de, Betreff: „Datenschutz") — Bestellung zulässig, da Solo-Selbstständigkeit ohne weitere Beschäftigte und ausgebildete DSB-Qualifikation
-**Stand:** 03.05.2026
+**Datenschutzkontakt:** Dennie Gulbinski (kontakt@smartbaden.de, Betreff: „Datenschutz") — bearbeitet Anfragen mit datenschutzrechtlicher Fachkunde (Weiterbildung zum DSB, Zertifikat auf Anfrage). Eine formelle Benennung nach Art. 37 DSGVO erfolgt nicht, da keine Benennungspflicht nach § 38 BDSG besteht.
+**Stand:** 03.05.2026 (rev. 2)
 **Nächste planmäßige Überprüfung:** November 2026 (halbjährlich)
 
 Dieses Verzeichnis dokumentiert die Verarbeitungstätigkeiten des Betreibers gemäß Art. 30 DSGVO und ist auf Anforderung der Aufsichtsbehörde zur Verfügung zu stellen (Art. 30 Abs. 4 DSGVO).
@@ -135,13 +135,13 @@ Zeitstraße 108
 53721 Siegburg
 E-Mail: kontakt@smartbaden.de
 
-## Datenschutzbeauftragter
+## Datenschutzkontakt
 
-**Dennie Gulbinski**
+**Dennie Gulbinski** (Verantwortlicher mit datenschutzrechtlicher Fachkunde)
 Zeitstraße 108, 53721 Siegburg
 E-Mail: kontakt@smartbaden.de (Betreff: „Datenschutz")
 
-Freiwillig bestellt; Bestellung der LDI NRW gemeldet. Die Bestellung ist zulässig, weil der Betreiber als Solo-Selbstständiger ohne weitere Beschäftigte tätig ist und über die fachliche Qualifikation als ausgebildeter Datenschutzbeauftragter verfügt — kein Interessenkonflikt nach Art. 38 Abs. 6 DSGVO.
+Der Verantwortliche verfügt über eine Weiterbildung zum Datenschutzbeauftragten (Zertifikat auf Anfrage einsehbar) und bearbeitet Datenschutzanfragen intern fachkundig. Eine formelle Benennung als DSB im Sinne von Art. 37 DSGVO erfolgt derzeit nicht, da keine gesetzliche Benennungspflicht nach § 38 BDSG besteht. Bei Bedarf wird ein externer Datenschutzbeauftragter eingebunden.
 
 ## Zuständige Aufsichtsbehörde
 
@@ -160,6 +160,7 @@ Dieses Verzeichnis wird zentral durch den Verantwortlichen geführt und bei wese
 |-------|----------|-------|
 | 26.04.2026 | Initialfassung | Dennie Gulbinski |
 | 03.05.2026 | DSB-Bestellung formell dokumentiert; Verzahnung mit § 26 BDSG bei B2B-Nutzung präzisiert | Dennie Gulbinski |
+| 03.05.2026 (rev. 2) | DSB-Konzept zurückgenommen: nicht formell bestellt, sondern Datenschutzkontakt mit Weiterbildung zum DSB. Externer DSB bei Bedarf | Dennie Gulbinski |
 
 ---
 
