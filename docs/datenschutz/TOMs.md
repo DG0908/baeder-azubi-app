@@ -1,10 +1,10 @@
 # Technische und Organisatorische Maßnahmen (TOMs)
 ## gemäß Art. 32 DSGVO
 
-**Plattform:** Bäder-Azubi App / SmartBaden (`azubi.smartbaden.de`, `api.smartbaden.de`)
+**Plattform:** Bäder-Azubi App / smartbaden (`azubi.smartbaden.de`, `api.smartbaden.de`)
 **Betreiber:** Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg
-**Stand:** 26.04.2026
-**Nächste planmäßige Überprüfung:** Oktober 2026 (halbjährlich)
+**Stand:** 03.05.2026
+**Nächste planmäßige Überprüfung:** November 2026 (halbjährlich)
 
 Diese TOMs dokumentieren die technischen und organisatorischen Maßnahmen gemäß Art. 32 DSGVO und sind **Anlage 1 zum Auftragsverarbeitungsvertrag (AVV)**.
 
@@ -153,9 +153,13 @@ Ein vollautomatisches, PC-unabhängiges Cloud-Off-Site-Backup (z. B. Hetzner Sto
 
 ## 12. Verantwortlicher Ansprechpartner
 
-**Datenschutzbeauftragter (DSB):**
-Dennie Gulbinski (Betreiber, ausgebildeter DSB mit Berufserfahrung in der Bäderbranche)
+**Datenschutzbeauftragter (freiwillig bestellt, der Aufsichtsbehörde gemeldet):**
+Dennie Gulbinski
+Zeitstraße 108
+53721 Siegburg
 E-Mail: kontakt@smartbaden.de (Betreff: „Datenschutz")
+
+Die Bestellung ist zulässig, weil der Betreiber als Solo-Selbstständiger ohne weitere Beschäftigte tätig ist (kein Interessenkonflikt nach Art. 38 Abs. 6 DSGVO) und über die fachliche Qualifikation als ausgebildeter DSB verfügt.
 
 ---
 
@@ -177,5 +181,5 @@ Inhalt der Push-Benachrichtigungen wird mittels VAPID Ende-zu-Ende verschlüssel
 
 ---
 
-*Letzte Aktualisierung: 26.04.2026*
+*Letzte Aktualisierung: 03.05.2026*
 *Diese TOMs werden überprüft und bei wesentlichen Änderungen der technischen oder organisatorischen Verhältnisse aktualisiert. Halbjährliche Routineprüfung.*

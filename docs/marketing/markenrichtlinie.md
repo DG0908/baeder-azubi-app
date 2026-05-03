@@ -1,7 +1,7 @@
 # Markenrichtlinie smartbaden
 
 > Verbindliche Regeln für Schreibweise, Logo, Farben, Bilder und Tonalität der Marke smartbaden.
-> Stand: 26.04.2026
+> Stand: 03.05.2026
 
 ---
 

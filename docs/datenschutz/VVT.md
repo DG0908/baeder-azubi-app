@@ -2,9 +2,9 @@
 ## gemäß Art. 30 DSGVO
 
 **Verantwortlicher:** Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg
-**Datenschutzbeauftragter (DSB):** Dennie Gulbinski (kontakt@smartbaden.de, Betreff: „Datenschutz")
-**Stand:** 26.04.2026
-**Nächste planmäßige Überprüfung:** Oktober 2026 (halbjährlich)
+**Datenschutzbeauftragter (freiwillig bestellt, an LDI NRW gemeldet):** Dennie Gulbinski (kontakt@smartbaden.de, Betreff: „Datenschutz") — Bestellung zulässig, da Solo-Selbstständigkeit ohne weitere Beschäftigte und ausgebildete DSB-Qualifikation
+**Stand:** 03.05.2026
+**Nächste planmäßige Überprüfung:** November 2026 (halbjährlich)
 
 Dieses Verzeichnis dokumentiert die Verarbeitungstätigkeiten des Betreibers gemäß Art. 30 DSGVO und ist auf Anforderung der Aufsichtsbehörde zur Verfügung zu stellen (Art. 30 Abs. 4 DSGVO).
 
@@ -138,8 +138,10 @@ E-Mail: kontakt@smartbaden.de
 ## Datenschutzbeauftragter
 
 **Dennie Gulbinski**
-(ausgebildeter DSB mit umfangreicher Berufserfahrung in der Bäderbranche)
+Zeitstraße 108, 53721 Siegburg
 E-Mail: kontakt@smartbaden.de (Betreff: „Datenschutz")
+
+Freiwillig bestellt; Bestellung der LDI NRW gemeldet. Die Bestellung ist zulässig, weil der Betreiber als Solo-Selbstständiger ohne weitere Beschäftigte tätig ist und über die fachliche Qualifikation als ausgebildeter Datenschutzbeauftragter verfügt — kein Interessenkonflikt nach Art. 38 Abs. 6 DSGVO.
 
 ## Zuständige Aufsichtsbehörde
 
@@ -157,6 +159,7 @@ Dieses Verzeichnis wird zentral durch den Verantwortlichen geführt und bei wese
 | Datum | Änderung | Autor |
 |-------|----------|-------|
 | 26.04.2026 | Initialfassung | Dennie Gulbinski |
+| 03.05.2026 | DSB-Bestellung formell dokumentiert; Verzahnung mit § 26 BDSG bei B2B-Nutzung präzisiert | Dennie Gulbinski |
 
 ---
 

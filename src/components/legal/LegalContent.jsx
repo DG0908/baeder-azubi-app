@@ -8,7 +8,7 @@ const OPERATOR = {
   taxNumber: '[folgt nach Gewerbeanmeldung]'
 };
 
-const LAST_UPDATED = '26.04.2026';
+const LAST_UPDATED = '03.05.2026';
 const listClassName = 'list-disc list-inside ml-2 space-y-1';
 
 export function LegalImprintContent({
@@ -104,10 +104,18 @@ export function LegalPrivacyContent({
 
       <div className={containerClassName}>
         <section>
-          <h3 className={headingClassName}>1. Verantwortlicher</h3>
+          <h3 className={headingClassName}>1. Verantwortlicher und Nutzungsszenarien</h3>
           <p className={textClassName}>
-            Verantwortlicher im Sinne der DSGVO für die Bereitstellung und den Betrieb der App ist:
-            <br />
+            Diese Datenschutzhinweise unterscheiden zwei Nutzungsszenarien, in denen die App
+            betrieben wird:
+          </p>
+
+          <p className={`${textClassName} mt-3`}>
+            <strong>Szenario A — Direktnutzung:</strong> Bei eigenständiger Anmeldung und Nutzung
+            ohne Zuordnung zu einem Ausbildungsbetrieb ist Verantwortlicher im Sinne von Art. 4
+            Nr. 7 DSGVO:
+          </p>
+          <p className={textClassName}>
             {OPERATOR.name}
             <br />
             {OPERATOR.street}
@@ -116,25 +124,46 @@ export function LegalPrivacyContent({
             <br />
             E-Mail: {OPERATOR.email}
           </p>
+
+          <p className={`${textClassName} mt-3`}>
+            <strong>Szenario B — Nutzung über einen Ausbildungsbetrieb:</strong> Wenn die App von
+            einem Ausbildungsbetrieb (z.B. Stadtwerk, kommunales Bad, Zweckverband) für die eigenen
+            Auszubildenden und Ausbilder eingesetzt wird, ist <strong>der jeweilige Betrieb
+            Verantwortlicher</strong> für sämtliche Konto-, Lern-, Ausbildungs- und
+            Kommunikationsdaten der zugeordneten Personen. Der App-Betreiber verarbeitet diese
+            Daten in diesem Fall ausschließlich auf dokumentierte Weisung des Betriebs als
+            <strong> Auftragsverarbeiter</strong> nach Art. 28 DSGVO; Grundlage ist ein
+            Auftragsverarbeitungsvertrag (AVV) zwischen Betrieb und Betreiber.
+          </p>
           <p className={`${textClassName} mt-2`}>
-            <strong>Nutzung durch Ausbildungsbetriebe (B2B):</strong> Wenn die App von einem
-            Ausbildungsbetrieb (z.B. Stadtwerk, kommunales Bad, Zweckverband) für die eigenen
-            Auszubildenden eingesetzt wird, ist der jeweilige Betrieb datenschutzrechtlich
-            <strong> Verantwortlicher</strong> für die im Rahmen der Ausbildung verarbeiteten
-            Konto-, Lern- und Ausbildungsdaten seiner Azubis und Ausbilder. Der Betreiber dieser
-            App verarbeitet diese Daten in diesem Fall <strong>im Auftrag</strong> des Betriebs auf
-            Grundlage eines Auftragsverarbeitungsvertrags (AVV) gemäß Art. 28 DSGVO. Anfragen von
-            Azubis sind in solchen Fällen vorrangig an den eigenen Ausbildungsbetrieb zu richten;
-            der Betreiber unterstützt den Betrieb auf Anforderung.
+            In Szenario B sind die <strong>primären Informationen nach Art. 13 DSGVO</strong> vom
+            jeweiligen Ausbildungsbetrieb bereitzustellen. Diese Datenschutzerklärung dient in
+            diesem Fall als ergänzende Transparenzinformation des Betreibers. Anfragen zur
+            Verarbeitung im Ausbildungskontext richten Sie bitte zunächst an Ihren
+            Ausbildungsbetrieb; der Betreiber unterstützt auf Anforderung des Betriebs.
           </p>
         </section>
 
         <section>
           <h3 className={headingClassName}>2. Datenschutzbeauftragter</h3>
           <p className={textClassName}>
-            Der Betreiber verfügt über einen ausgebildeten Datenschutzbeauftragten (DSB) und
-            umfangreiche Berufserfahrung in der Bäderbranche. Anfragen zum Datenschutz richten Sie
-            bitte an {OPERATOR.email} mit dem Betreff &bdquo;Datenschutz&ldquo;.
+            Der Betreiber hat sich freiwillig als Datenschutzbeauftragten bestellt. Die Bestellung
+            ist zulässig, weil der Betreiber als Solo-Selbstständiger ohne weitere Beschäftigte tätig
+            ist und über die fachliche Qualifikation als ausgebildeter Datenschutzbeauftragter
+            verfügt (Zertifikat auf Anfrage einsehbar). Die Kontaktaufnahme zum
+            Datenschutzbeauftragten erfolgt über:
+          </p>
+          <p className={`${textClassName} mt-2`}>
+            <strong>{OPERATOR.name}</strong>
+            <br />
+            {OPERATOR.street}
+            <br />
+            {OPERATOR.city}
+            <br />
+            E-Mail: {OPERATOR.email} (Betreff: &bdquo;Datenschutz&ldquo;)
+          </p>
+          <p className={`${textClassName} mt-2`}>
+            Die Bestellung ist der zuständigen Aufsichtsbehörde (LDI NRW) gemeldet.
           </p>
         </section>
 
@@ -152,25 +181,75 @@ export function LegalPrivacyContent({
         <section>
           <h3 className={headingClassName}>4. Verarbeitete Datenarten</h3>
           <ul className={`${listClassName} ${textClassName}`}>
-            <li><strong>Kontodaten:</strong> Anzeigename, E-Mail-Adresse, Rolle, Status, Avatar, optional Geburtsdatum (für Altersprüfung gemäß Art. 8 DSGVO)</li>
+            <li><strong>Kontodaten:</strong> Anzeigename, E-Mail-Adresse, Rolle, Status, Avatar; bei Bedarf Bestätigung der Volljährigkeit (16. Lebensjahr)</li>
             <li><strong>Organisationsdaten:</strong> Zugeordneter Ausbildungsbetrieb, Einladungscode-Bezug, Berechtigungen</li>
             <li><strong>Lern- und Ausbildungsdaten:</strong> Lernfortschritte, Quiz- und Duell-Ergebnisse, Prüfungssimulator-Sitzungen, Klausurnoten, Berichtsheft-Einträge, Schwimm-Daten, Karteikarten</li>
             <li><strong>Kommunikationsdaten:</strong> Chatnachrichten, Forenbeiträge, Benachrichtigungen, Push-Subscriptions</li>
             <li><strong>Technische und Sicherheitsdaten:</strong> Login-Zeitpunkte, IP-Adresse, User-Agent, Audit-Logs sicherheitsrelevanter Aktionen, Geräte-Trust-Status</li>
-            <li>Es werden <strong>keine besonderen Kategorien personenbezogener Daten</strong> gemäß Art. 9 DSGVO (Gesundheitsdaten, Religion, ethnische Herkunft o.ä.) verarbeitet.</li>
           </ul>
+          <p className={`${textClassName} mt-2`}>
+            <strong>Hinweis zu besonderen Kategorien (Art. 9 DSGVO):</strong> Die App ist nicht
+            darauf ausgelegt, besondere Kategorien personenbezogener Daten (z.B. Gesundheitsdaten,
+            Religionszugehörigkeit, Gewerkschaftszugehörigkeit) zu erheben. Nutzer werden gebeten,
+            keine derartigen Angaben in Freitextfelder, Chats, Foren oder Berichtshefte
+            einzutragen. Sollte dies im Einzelfall dennoch geschehen, erfolgt keine gezielte
+            Auswertung dieser Angaben durch den Betreiber.
+          </p>
         </section>
 
         <section>
-          <h3 className={headingClassName}>5. Rechtsgrundlagen</h3>
-          <ul className={`${listClassName} ${textClassName}`}>
-            <li><strong>Art. 6 Abs. 1 lit. b DSGVO</strong> für Vertragsdurchführung (Bereitstellung der App, Ausbildungsbezug)</li>
-            <li><strong>Art. 6 Abs. 1 lit. c DSGVO</strong> für gesetzliche Pflichten (z.B. Aufbewahrung von Audit-Logs)</li>
-            <li><strong>Art. 6 Abs. 1 lit. f DSGVO</strong> für berechtigte Interessen an sicherem Betrieb, Missbrauchsschutz und Administration</li>
-            <li><strong>Art. 6 Abs. 1 lit. a DSGVO</strong> für Einwilligungs-basierte Funktionen (Push-Benachrichtigungen, optionale Geburtsdatum-Angabe)</li>
-            <li><strong>Art. 8 DSGVO</strong> i.V.m. nationalem Recht für die Altersprüfung Minderjähriger</li>
-            <li><strong>Art. 28 DSGVO</strong> für die Auftragsverarbeitung gegenüber Ausbildungsbetrieben</li>
-          </ul>
+          <h3 className={headingClassName}>5. Rechtsgrundlagen je Verarbeitung</h3>
+          <p className={textClassName}>
+            Die nachfolgende Übersicht ordnet die wesentlichen Verarbeitungstätigkeiten den
+            jeweiligen Rechtsgrundlagen zu. Bei Nutzung über einen Ausbildungsbetrieb (Szenario B)
+            ist der Betrieb für die rechtliche Grundlage zuständig; die Spalte „Rechtsgrundlage"
+            verweist auf die übliche Konstellation.
+          </p>
+          <div className="overflow-x-auto mt-3">
+            <table className={`w-full ${textClassName} border border-gray-300 rounded-lg`}>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="border border-gray-300 px-3 py-2 text-left">Verarbeitung</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left">Rechtsgrundlage</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2">Konto, Login, Rollen, Organisationszuordnung</td>
+                  <td className="border border-gray-300 px-3 py-2">Art. 6 Abs. 1 lit. b DSGVO; bei B2B Weisung des Betriebs</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2">Lernstände, Klausurnoten, Berichtsheft, Prüfungssimulator</td>
+                  <td className="border border-gray-300 px-3 py-2">Bei B2B verantwortet vom Ausbildungsbetrieb, üblicherweise Art. 6 Abs. 1 lit. b/c DSGVO bzw. § 26 BDSG</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2">Chat, Forum, In-App-Benachrichtigungen</td>
+                  <td className="border border-gray-300 px-3 py-2">Art. 6 Abs. 1 lit. b DSGVO oder berechtigtes Interesse an Kommunikation, Art. 6 Abs. 1 lit. f DSGVO</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2">Sicherheitslogs, Rate-Limits, Missbrauchsschutz</td>
+                  <td className="border border-gray-300 px-3 py-2">Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse: IT-Sicherheit, Nachvollziehbarkeit)</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2">Push-Benachrichtigungen</td>
+                  <td className="border border-gray-300 px-3 py-2">Einwilligung, Art. 6 Abs. 1 lit. a DSGVO i.V.m. § 25 TDDDG</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2">Altersbestätigung (16+)</td>
+                  <td className="border border-gray-300 px-3 py-2">Art. 8 DSGVO i.V.m. nationalem Recht, soweit Direktnutzung; bei B2B im Rahmen des Ausbildungsverhältnisses</td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-3 py-2">Auftragsverarbeitung gegenüber Betrieben</td>
+                  <td className="border border-gray-300 px-3 py-2">Art. 28 DSGVO i.V.m. AVV</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className={`${textClassName} mt-2`}>
+            Auszubildende sind nach § 26 Abs. 8 BDSG ausdrücklich vom Beschäftigtendatenschutz
+            erfasst. Bei B2B-Nutzung prüft der Ausbildungsbetrieb als Verantwortlicher, ob § 26
+            BDSG bzw. ausbildungs- oder arbeitsrechtliche Grundlagen einschlägig sind.
+          </p>
         </section>
 
         <section>
@@ -223,32 +302,55 @@ export function LegalPrivacyContent({
           <p className={textClassName}>
             Push-Benachrichtigungen sind ein <strong>optionaler Dienst</strong> und nur nach
             ausdrücklicher Einwilligung im Browser oder Betriebssystem aktiv. Rechtsgrundlage:
-            Art. 6 Abs. 1 lit. a DSGVO. Die Einwilligung kann jederzeit in den Browser- oder
-            Geräte-Einstellungen sowie im Profil der App widerrufen werden.
+            Art. 6 Abs. 1 lit. a DSGVO i.V.m. § 25 TDDDG (Speichern auf Endgeräten). Die
+            Einwilligung kann jederzeit in den Browser- oder Geräte-Einstellungen sowie im Profil
+            der App widerrufen werden.
           </p>
           <p className={`${textClassName} mt-2`}>
-            Technisch bedingt erfolgt die Auslieferung über die Push-Dienste der jeweiligen
-            Browser- bzw. Betriebssystem-Hersteller:
+            Technisch bedingt erfolgt die Zustellung über die Push-Dienste der jeweiligen Browser-
+            bzw. Betriebssystem-Hersteller:
           </p>
           <ul className={`${listClassName} ${textClassName} mt-1`}>
-            <li><strong>Google Firebase Cloud Messaging (FCM)</strong> — für Chrome, Edge und Android</li>
-            <li><strong>Apple Push Notification service (APNs)</strong> — für Safari, iOS und macOS</li>
-            <li><strong>Mozilla Push Service</strong> — für Firefox</li>
+            <li><strong>Google Firebase Cloud Messaging (FCM)</strong> — für Chrome, Edge und Android (Anbieter: Google LLC, USA)</li>
+            <li><strong>Apple Push Notification service (APNs)</strong> — für Safari, iOS und macOS (Anbieter: Apple Inc., USA)</li>
+            <li><strong>Mozilla Push Service</strong> — für Firefox (Anbieter: Mozilla Foundation, USA)</li>
           </ul>
           <p className={`${textClassName} mt-2`}>
-            Die Push-Inhalte werden mit dem VAPID-Verfahren <strong>Ende-zu-Ende verschlüsselt</strong>
-            ausgeliefert; die Push-Dienste sehen ausschließlich verschlüsselte Nachrichten und
-            technische Metadaten (Subscription-ID, Zeitstempel, Größe), nicht aber den Inhalt der
-            Benachrichtigung. Eine Übermittlung in Drittländer (insbesondere USA) durch diese
-            Dienste ist möglich; Rechtsgrundlage hierfür ist die Einwilligung gemäß Art. 49 Abs. 1
-            lit. a DSGVO. Wer keine Übermittlung an diese Dienste wünscht, aktiviert Push schlicht
-            nicht — alle App-Funktionen bleiben auch ohne Push voll nutzbar.
+            <strong>Verschlüsselung:</strong> Web-Push-Nachrichten werden nach dem Web-Push-Standard
+            verschlüsselt übertragen (RFC 8291). Das VAPID-Verfahren (RFC 8292) dient zusätzlich der
+            Identifikation des App-Servers gegenüber dem jeweiligen Push-Dienst. Push-Dienste
+            verarbeiten technisch erforderliche Metadaten (Push-Endpunkt, Zeitstempel, Größe,
+            Zustellinformationen).
+          </p>
+          <p className={`${textClassName} mt-2`}>
+            <strong>Drittlandtransfer USA:</strong> Die genannten Push-Dienste können
+            personenbezogene Metadaten in den USA verarbeiten. Geeignete Garantien nach Kapitel V
+            DSGVO bestehen je nach Anbieter über das EU-U.S. Data Privacy Framework (DPF) sowie
+            EU-Standardvertragsklauseln (SCC) gemäß Art. 46 Abs. 2 lit. c DSGVO. Die Übermittlung
+            erfolgt zusätzlich auf Grundlage Ihrer ausdrücklichen Einwilligung (Art. 6 Abs. 1
+            lit. a DSGVO).
+          </p>
+          <p className={`${textClassName} mt-2`}>
+            <strong>Datenminimierung im Push-Inhalt:</strong> Der Betreiber hält Push-Inhalte
+            möglichst neutral (z.B. „Sie haben eine neue Benachrichtigung"). Konkrete Inhalte wie
+            Klausurnoten, Lernstände oder Chatnachrichten werden nicht in der Push-Nachricht selbst
+            übertragen, sondern erst nach Login in der App angezeigt.
+          </p>
+          <p className={`${textClassName} mt-2`}>
+            Wer keine Übermittlung an diese Dienste wünscht, aktiviert Push schlicht nicht — alle
+            App-Funktionen bleiben auch ohne Push voll nutzbar.
           </p>
         </section>
 
         <section>
-          <h3 className={headingClassName}>9. Speicherdauer und Löschung</h3>
-          <ul className={`${listClassName} ${textClassName}`}>
+          <h3 className={headingClassName}>9. Speicherdauer, Deaktivierung und Löschung</h3>
+          <p className={textClassName}>
+            Die App unterscheidet zwischen drei Stufen: <strong>Deaktivierung</strong> (Konto-Login
+            wird gesperrt, Daten bleiben), <strong>Anonymisierung</strong> (personenbezogene
+            Identifikatoren werden entfernt, aggregierte Datensätze bleiben) und{' '}
+            <strong>Hard-Deletion</strong> (vollständige physische Löschung aller Daten).
+          </p>
+          <ul className={`${listClassName} ${textClassName} mt-2`}>
             <li>
               <strong>Aktive Konten:</strong> Daten werden gespeichert, solange das Konto besteht
               und die Ausbildungs- bzw. Vertragsbeziehung andauert.
@@ -256,37 +358,47 @@ export function LegalPrivacyContent({
             <li>
               <strong>Inaktivitätsroutine:</strong> Nach <strong>22 Monaten ohne Login</strong>{' '}
               erhält der Nutzer eine Erinnerungs-E-Mail. Bleibt das Konto weitere 2 Monate inaktiv,
-              wird es automatisch nach <strong>insgesamt 24 Monaten Inaktivität</strong> deaktiviert
-              und aus der aktiven Nutzerverwaltung entfernt (vgl. Abschnitt &bdquo;Soft-Deletion&ldquo;).
+              wird es automatisch nach <strong>insgesamt 24 Monaten Inaktivität deaktiviert</strong>.
             </li>
             <li>
-              <strong>Eigene Konto-Löschung:</strong> Im Profil unter &bdquo;Konto löschen&ldquo;
-              kann das Konto jederzeit selbst deaktiviert werden.
+              <strong>Konto-Deaktivierung durch den Nutzer:</strong> Im Profil unter
+              &bdquo;Konto deaktivieren und Anonymisierung anfordern&ldquo; kann der Nutzer
+              jederzeit selbst die Deaktivierung auslösen.
             </li>
             <li>
-              <strong>Soft-Deletion und ihre Bedeutung:</strong> Bei Löschung wird das Konto
-              technisch deaktiviert (Login nicht mehr möglich, Sitzungs-Token entfernt, Status
-              &bdquo;deaktiviert&ldquo;, Kennzeichnung als gelöscht). <strong>Verknüpfte
-              Datensätze</strong> wie Audit-Logs, Forum-Beiträge anderer Nutzer oder aggregierte
-              Statistiken bleiben erhalten, soweit sie für gesetzliche Nachweispflichten,
-              Sicherheitsprotokolle, fortlaufende Diskussionsfäden im Forum oder die Integrität der
-              Lernhistorie der Organisation erforderlich sind. Eine vollständige physische
-              Hard-Deletion aller verknüpften Daten erfolgt nach Ablauf der jeweiligen
-              Aufbewahrungs- und Verjährungsfristen oder auf ausdrückliche Anforderung des
-              Betroffenen, soweit keine entgegenstehende Aufbewahrungspflicht besteht.
+              <strong>Was bei Deaktivierung passiert:</strong> Login wird gesperrt, Sitzungs-Token
+              entfernt, Anzeigename und Avatar in Forum- und Quizduell-Ansichten anonymisiert
+              („deaktivierter Nutzer"). E-Mail und Geburtsstatus bleiben in den Konto-Stammdaten,
+              um doppelte Anmeldungen und ausbildungsrechtliche Nachweispflichten zu unterstützen.
             </li>
             <li>
-              <strong>Audit-Logs</strong> sicherheitsrelevanter Aktionen werden bis zu 3 Jahre
-              aufbewahrt (berechtigtes Interesse Sicherheit, Art. 6 Abs. 1 lit. f DSGVO).
+              <strong>Hard-Deletion (vollständige physische Löschung):</strong> Erfolgt nach Ablauf
+              der jeweiligen Aufbewahrungs- und Verjährungsfristen — oder vorzeitig auf
+              ausdrückliche Anforderung des Betroffenen nach Art. 17 DSGVO, soweit keine
+              entgegenstehende gesetzliche Aufbewahrungspflicht besteht. Die Hard-Deletion umfasst
+              Konto-Stammdaten, Lernstände, Klausurnoten, Berichtshefte, Schwimm-Daten und alle
+              eindeutig zuordenbaren Inhalte.
+            </li>
+            <li>
+              <strong>Audit-Logs</strong> sicherheitsrelevanter Aktionen werden{' '}
+              <strong>bis zu 3 Jahre</strong> aufbewahrt (berechtigtes Interesse: IT-Sicherheit,
+              Nachweispflichten, Verjährungsfrist nach § 195 BGB). Sie werden in pseudonymisierter
+              Form geführt (technische User-ID statt Klarname).
+            </li>
+            <li>
+              <strong>Forum- und Chat-Beiträge:</strong> Bleiben für die Integrität der
+              Diskussionsfäden erhalten, der Anzeigename des deaktivierten Nutzers wird jedoch
+              durch &bdquo;deaktivierter Nutzer&ldquo; ersetzt. Auf Anforderung können einzelne
+              Beiträge nach Art. 17 DSGVO gelöscht werden.
             </li>
             <li>
               <strong>Datenbank-Backups</strong> werden täglich erstellt und nach 14 Tagen
-              automatisch überschrieben.
+              automatisch überschrieben. Eine bereits erfolgte Hard-Deletion wirkt auch in den
+              Backups innerhalb dieser Frist.
             </li>
             <li>
               <strong>LocalStorage und IndexedDB</strong> auf dem Gerät bleiben bis zur Löschung
-              durch den Nutzer oder den Browser auf dem Gerät und liegen außerhalb des Zugriffs des
-              Servers.
+              durch den Nutzer oder den Browser bestehen.
             </li>
           </ul>
         </section>
@@ -301,7 +413,9 @@ export function LegalPrivacyContent({
           <ul className={`${listClassName} ${textClassName} mt-2`}>
             <li>
               <strong>Refresh-Token-Cookie</strong> (HttpOnly, Secure, SameSite=None): Verschlüsselter
-              Token zur sicheren Sitzungsfortführung nach Anmeldung.{' '}
+              Token zur sicheren Sitzungsfortführung nach Anmeldung. SameSite=None ist erforderlich,
+              weil Frontend (azubi.smartbaden.de) und Backend (api.smartbaden.de) auf unterschiedlichen
+              Subdomains laufen und der Token bei Cross-Site-Requests mitgesendet werden muss.{' '}
               <em>Speicherdauer ca. 7 Tage.</em> Notwendig für die Anmeldung.
             </li>
             <li>
@@ -314,12 +428,14 @@ export function LegalPrivacyContent({
             <li>
               <strong>LocalStorage</strong> auf dem Gerät: Anzeigeeinstellungen (z.B. Dark Mode),
               lokale Berichtsheft-Entwürfe, Lernstände einzelner Module, Hinweis-Status (z.B.
-              ausgeblendete Hinweise). Kein Server-Zugriff.
+              ausgeblendete Hinweise). Der Server hat keinen unmittelbaren Zugriff auf diesen
+              Speicherbereich; die App selbst kann gespeicherte Werte jedoch verarbeiten und an den
+              Server senden, soweit dies für die jeweilige Funktion erforderlich ist.
             </li>
             <li>
               <strong>IndexedDB / Service-Worker-Cache</strong>: Offline-Verfügbarkeit der App
               (Progressive Web App). Lehrinhalte, statische Assets und temporäre API-Antworten zur
-              Beschleunigung. Kein Server-Zugriff.
+              Beschleunigung. Gleicher Zugriffsstatus wie LocalStorage.
             </li>
             <li>
               <strong>Push-Subscription-Daten</strong>: Werden nur nach Einwilligung gesetzt und
@@ -350,17 +466,30 @@ export function LegalPrivacyContent({
           <h3 className={headingClassName}>12. Minderjährige (Art. 8 DSGVO)</h3>
           <p className={textClassName}>
             Die App richtet sich an Auszubildende und kann auch von Personen unter 16 Jahren genutzt
-            werden. Bei der Registrierung kann optional ein Geburtsdatum angegeben werden. Wenn
-            daraus hervorgeht, dass der Nutzer das 16. Lebensjahr noch nicht vollendet hat, wird
-            der Status <strong>&bdquo;elterliche Einwilligung erforderlich&ldquo;</strong> gesetzt
-            und der Account bleibt eingeschränkt nutzbar, bis die elterliche bzw. sorgeberechtigte
-            Zustimmung dem Ausbildungsbetrieb oder dem Betreiber gegenüber bestätigt wurde.
+            werden. Im Datenschutzkonzept der App wird zwischen den beiden Nutzungsszenarien
+            unterschieden:
           </p>
           <p className={`${textClassName} mt-2`}>
-            Die Verifikation erfolgt durch einen Administrator des Ausbildungsbetriebs anhand einer
-            schriftlichen oder elektronischen Erklärung der Sorgeberechtigten. Der Status und
-            etwaige Vermerke werden im Konto dokumentiert. Sorgeberechtigte können die Einwilligung
-            jederzeit widerrufen; das Konto wird dann deaktiviert.
+            <strong>Direktnutzung (Szenario A):</strong> Bei der Registrierung wird abgefragt, ob
+            die nutzende Person das 16. Lebensjahr vollendet hat. Es wird <strong>kein konkretes
+            Geburtsdatum gespeichert</strong>; die Angabe beschränkt sich auf die Bestätigung der
+            Volljährigkeit im Sinne von Art. 8 DSGVO. Wird die Frage verneint, ist die Nutzung nur
+            zulässig, wenn die Einwilligung der Sorgeberechtigten dem Betreiber gegenüber
+            schriftlich oder elektronisch nachgewiesen wird (Art. 8 Abs. 1 Satz 1 DSGVO).
+          </p>
+          <p className={`${textClassName} mt-2`}>
+            <strong>Nutzung über einen Ausbildungsbetrieb (Szenario B):</strong> Im
+            Ausbildungskontext erfolgt die Verarbeitung personenbezogener Daten der Auszubildenden
+            primär auf Grundlage von § 26 BDSG (Beschäftigtendatenschutz, der ausdrücklich auch
+            Auszubildende erfasst) bzw. ausbildungs- oder arbeitsrechtlicher Vorschriften — und
+            damit unabhängig von Art. 8 DSGVO. Eine Einwilligung der Sorgeberechtigten ist in
+            diesem Fall regelmäßig nicht die maßgebliche Rechtsgrundlage; der Ausbildungsbetrieb
+            prüft die einschlägige Rechtsgrundlage als Verantwortlicher.
+          </p>
+          <p className={`${textClassName} mt-2`}>
+            <strong>Bestätigungs-Status</strong> (Volljährigkeitsbestätigung erforderlich, erteilt
+            oder noch nicht erteilt) wird im Konto dokumentiert. Sorgeberechtigte können eine
+            erteilte Einwilligung jederzeit widerrufen; das Konto wird dann deaktiviert.
           </p>
         </section>
 
@@ -429,10 +558,12 @@ export function LegalPrivacyContent({
         <section className={dividerClassName}>
           <p className={noteClassName}>
             Diese Hinweise werden aktualisiert, wenn sich Architektur, Dienstleister oder Datenflüsse
-            wesentlich ändern. Letzte Aktualisierung: {LAST_UPDATED} (Auftragsverarbeiter-Konstrukt
-            für B2B-Nutzung ergänzt; Push-Dienste, Soft-Deletion-Mechanik, Inaktivitätsroutine,
-            <code> trusted_device</code>-Cookie und Beschwerderecht bei der LDI NRW konkretisiert;
-            Hinweis zu Art. 22 DSGVO aufgenommen).
+            wesentlich ändern. Letzte Aktualisierung: {LAST_UPDATED} (B2B-Rollenmodell mit zwei
+            Szenarien getrennt; DSB-Funktion formell und kontaktfähig benannt; Rechtsgrundlagen je
+            Verarbeitung als Matrix; Push-Verschlüsselung nach RFC 8291/8292 korrekt beschrieben,
+            Drittlandtransfer auf EU-U.S. DPF und SCC gestützt; Art. 9-Hinweis als Disclaimer für
+            Freitextfelder; Soft-Deletion klar von Anonymisierung und Hard-Deletion abgegrenzt;
+            LocalStorage-Aussage präzisiert; Minderjährige-Regelung mit § 26 BDSG verzahnt).
           </p>
         </section>
       </div>
