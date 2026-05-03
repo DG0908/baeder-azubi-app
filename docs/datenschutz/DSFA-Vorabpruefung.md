@@ -4,7 +4,7 @@
 **Verarbeitungstätigkeit:** Bäder-Azubi App / smartbaden — Lern- und Ausbildungsplattform für Auszubildende im Bäderbereich
 **Verantwortlicher:** Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg
 **Datenschutzkontakt:** Dennie Gulbinski (Verantwortlicher mit Weiterbildung zum DSB; keine formelle Benennung nach Art. 37 DSGVO, da keine Pflicht nach § 38 BDSG)
-**Stand:** 03.05.2026 (rev. 2)
+**Stand:** 03.05.2026 (rev. 3)
 **Nächste planmäßige Überprüfung:** November 2026 (halbjährlich oder bei wesentlichen Architektur-Änderungen)
 
 Dieses Dokument ist die **Vorabprüfung** im Sinne von Art. 35 DSGVO. Sie dient der internen Einschätzung, ob für die Verarbeitungstätigkeit eine vollständige Datenschutz-Folgenabschätzung erforderlich ist. Sie wird **nicht veröffentlicht**, sondern auf Anfrage der Aufsichtsbehörde vorgelegt.
@@ -120,13 +120,13 @@ Nach LDI-NRW-Maßstab ist eine **vollständige Datenschutz-Folgenabschätzung er
 In dieser Vorabprüfung sind **zwei Kriterien teilweise erfüllt** (Profiling-light und schutzbedürftige Personen), beide jedoch durch organisatorische und technische Maßnahmen entschärft:
 
 - **Profiling-light:** Keine Rechtswirkung, ausdrücklicher Ausschluss von Art. 22 DSGVO in der Datenschutzerklärung.
-- **Schutzbedürftige Personen:** Im B2B-Kontext liegt die Hauptverantwortung beim Ausbildungsbetrieb. Schutzkonzept Minderjährige (Art. 8 DSGVO) ist in der Datenschutzerklärung dokumentiert. Bestätigung der Volljährigkeit (16+) statt Speicherung des Geburtsdatums (Datenminimierung).
+- **Schutzbedürftige Personen:** Im B2B-Kontext liegt die Hauptverantwortung beim Ausbildungsbetrieb. Schutzkonzept Minderjährige (Art. 8 DSGVO) ist in der Datenschutzerklärung dokumentiert. Bei Direktnutzung wird die Bestätigung erhoben, dass das 16. Lebensjahr vollendet wurde; eine Geburtsdatum-Angabe ist nur freiwillig möglich (verwendet zur Altersprüfung sowie für das altersabhängige Schwimm-Handicap).
 
 **Ergebnis:** Eine vollständige DSFA nach Art. 35 DSGVO ist **derzeit nicht erforderlich**.
 
 **Begleitende Schutzmaßnahmen** (technisch und organisatorisch) sind in den TOMs (`docs/datenschutz/TOMs.md`) dokumentiert und decken die identifizierten Restrisiken ab:
 
-- Datenminimierung (kein Geburtsdatum, neutrale Push-Inhalte, keine Tracking-Cookies)
+- Datenminimierung (Geburtsdatum nur freiwillig und zweckgebunden, neutrale Push-Inhalte, keine Tracking-Cookies)
 - Pseudonymisierung der Audit-Logs
 - Default-Deny RBAC, 2FA für Administratoren
 - Klare Trennung zwischen Verantwortlichem (B2B-Betrieb) und Auftragsverarbeiter
@@ -161,6 +161,7 @@ E-Mail: kontakt@smartbaden.de (Betreff: „Datenschutz")
 |-------|----------|-------|
 | 03.05.2026 | Initialfassung der Vorabprüfung | Dennie Gulbinski |
 | 03.05.2026 (rev. 2) | DSB-Konzept zurückgenommen, Datenschutzkontakt mit Fachkunde dokumentiert | Dennie Gulbinski |
+| 03.05.2026 (rev. 3) | „Volljährigkeit"-Begriff durch „Vollendung des 16. Lebensjahres" ersetzt; Geburtsdatum-Angabe transparent als freiwillig (inkl. Schwimm-Handicap-Zweck) dokumentiert | Dennie Gulbinski |
 
 ---
 

@@ -8,7 +8,7 @@ const OPERATOR = {
   taxNumber: '[folgt nach Gewerbeanmeldung]'
 };
 
-const LAST_UPDATED = '03.05.2026 (rev. 2)';
+const LAST_UPDATED = '03.05.2026 (rev. 3)';
 const listClassName = 'list-disc list-inside ml-2 space-y-1';
 
 export function LegalImprintContent({
@@ -155,13 +155,13 @@ export function LegalPrivacyContent({
             E-Mail: {OPERATOR.email} (Betreff: &bdquo;Datenschutz&ldquo;)
           </p>
           <p className={`${textClassName} mt-2`}>
-            Der Verantwortliche verfügt über eine <strong>Weiterbildung zum Datenschutzbeauftragten</strong>{' '}
-            und bearbeitet Datenschutzanfragen intern fachkundig (Zertifikat auf Anfrage einsehbar).
-            Ein Datenschutzbeauftragter im Sinne von Art. 37 DSGVO ist derzeit <strong>nicht
-            benannt</strong>, da nach aktueller Prüfung keine gesetzliche Benennungspflicht nach
-            § 38 BDSG besteht. Die Erforderlichkeit einer Benennung wird regelmäßig überprüft —
-            insbesondere bei wesentlichen Änderungen der App, der Datenverarbeitung, der Kundenzahl
-            oder der Unternehmensstruktur. Bei Eintritt einer Benennungspflicht oder entsprechender
+            Der Verantwortliche verfügt über eine datenschutzrechtliche Weiterbildung, unter anderem
+            im Bereich Datenschutzbeauftragter, und bearbeitet Datenschutzanfragen intern fachkundig.
+            Ein formell benannter Datenschutzbeauftragter im Sinne von Art. 37 DSGVO besteht derzeit
+            <strong> nicht</strong>. Die Erforderlichkeit einer Benennung wird regelmäßig überprüft;
+            die Prüfung umfasst insbesondere die Schwellenwerte nach § 38 BDSG sowie die Frage, ob
+            eine Verarbeitung vorliegt, die eine Datenschutz-Folgenabschätzung nach Art. 35 DSGVO
+            erforderlich macht. Bei Eintritt einer Benennungspflicht oder auf entsprechende
             Anforderung von Auftraggebern wird ein externer Datenschutzbeauftragter eingebunden.
           </p>
         </section>
@@ -180,7 +180,8 @@ export function LegalPrivacyContent({
         <section>
           <h3 className={headingClassName}>4. Verarbeitete Datenarten</h3>
           <ul className={`${listClassName} ${textClassName}`}>
-            <li><strong>Kontodaten:</strong> Anzeigename, E-Mail-Adresse, Rolle, Status, Avatar; bei Bedarf Bestätigung der Volljährigkeit (16. Lebensjahr)</li>
+            <li><strong>Kontodaten:</strong> Anzeigename, E-Mail-Adresse, Rolle, Status, Avatar; bei Bedarf Bestätigung, dass das 16. Lebensjahr vollendet wurde (Altersbestätigung nach Art. 8 DSGVO)</li>
+            <li><strong>Optionale Profilangaben:</strong> Geburtsdatum (freiwillig). Wird verwendet zur Altersprüfung im Sinne von Art. 8 DSGVO sowie — sofern der Nutzer das Schwimm-Trainingsmodul verwendet — zur Berechnung eines altersbedingten Zeitbonus (Handicap) bei Schwimm-Auswertungen. Die Angabe ist nicht erforderlich für die übrige Nutzung der App.</li>
             <li><strong>Organisationsdaten:</strong> Zugeordneter Ausbildungsbetrieb, Einladungscode-Bezug, Berechtigungen</li>
             <li><strong>Lern- und Ausbildungsdaten:</strong> Lernfortschritte, Quiz- und Duell-Ergebnisse, Prüfungssimulator-Sitzungen, Klausurnoten, Berichtsheft-Einträge, Schwimm-Daten, Karteikarten</li>
             <li><strong>Kommunikationsdaten:</strong> Chatnachrichten, Forenbeiträge, Benachrichtigungen, Push-Subscriptions</li>
@@ -234,8 +235,8 @@ export function LegalPrivacyContent({
                   <td className="border border-gray-300 px-3 py-2">Einwilligung, Art. 6 Abs. 1 lit. a DSGVO i.V.m. § 25 TDDDG</td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 px-3 py-2">Altersbestätigung (16+)</td>
-                  <td className="border border-gray-300 px-3 py-2">Art. 8 DSGVO i.V.m. nationalem Recht, soweit Direktnutzung; bei B2B im Rahmen des Ausbildungsverhältnisses</td>
+                  <td className="border border-gray-300 px-3 py-2">Altersbestätigung / Nachweis der Zustimmung bei Direktnutzung</td>
+                  <td className="border border-gray-300 px-3 py-2">Art. 6 Abs. 1 lit. c DSGVO i.V.m. Art. 8 DSGVO, soweit die Verarbeitung zur Prüfung und Dokumentation einer wirksamen Einwilligung erforderlich ist; bei B2B im Rahmen des Ausbildungsverhältnisses</td>
                 </tr>
                 <tr>
                   <td className="border border-gray-300 px-3 py-2">Auftragsverarbeitung gegenüber Betrieben</td>
@@ -322,12 +323,15 @@ export function LegalPrivacyContent({
             Zustellinformationen).
           </p>
           <p className={`${textClassName} mt-2`}>
-            <strong>Drittlandtransfer USA:</strong> Die genannten Push-Dienste können
-            personenbezogene Metadaten in den USA verarbeiten. Geeignete Garantien nach Kapitel V
-            DSGVO bestehen je nach Anbieter über das EU-U.S. Data Privacy Framework (DPF) sowie
-            EU-Standardvertragsklauseln (SCC) gemäß Art. 46 Abs. 2 lit. c DSGVO. Die Übermittlung
-            erfolgt zusätzlich auf Grundlage Ihrer ausdrücklichen Einwilligung (Art. 6 Abs. 1
-            lit. a DSGVO).
+            <strong>Drittlandtransfer USA:</strong> Bei der Nutzung von Push-Diensten können
+            technische Metadaten durch Anbieter in den USA verarbeitet werden. Soweit der jeweilige
+            Anbieter unter dem EU-U.S. Data Privacy Framework zertifiziert ist, erfolgt die
+            Übermittlung auf Grundlage des Angemessenheitsbeschlusses nach Art. 45 DSGVO. Soweit
+            erforderlich, werden ergänzend EU-Standardvertragsklauseln nach Art. 46 Abs. 2 lit. c
+            DSGVO zugrunde gelegt. Die konkreten Transfermechanismen werden anhand der jeweils
+            aktuellen Anbieterinformationen geprüft und dokumentiert. Die Nutzung von
+            Push-Benachrichtigungen selbst ist freiwillig und erfolgt nur nach Einwilligung
+            (Art. 6 Abs. 1 lit. a DSGVO).
           </p>
           <p className={`${textClassName} mt-2`}>
             <strong>Datenminimierung im Push-Inhalt:</strong> Der Betreiber hält Push-Inhalte
@@ -411,18 +415,18 @@ export function LegalPrivacyContent({
           </p>
           <ul className={`${listClassName} ${textClassName} mt-2`}>
             <li>
-              <strong>Refresh-Token-Cookie</strong> (HttpOnly, Secure, SameSite=None): Verschlüsselter
-              Token zur sicheren Sitzungsfortführung nach Anmeldung. SameSite=None ist erforderlich,
-              weil Frontend (azubi.smartbaden.de) und Backend (api.smartbaden.de) auf unterschiedlichen
-              Subdomains laufen und der Token bei Cross-Site-Requests mitgesendet werden muss.{' '}
-              <em>Speicherdauer ca. 7 Tage.</em> Notwendig für die Anmeldung.
+              <strong>Refresh-Token-Cookie</strong> (HttpOnly, Secure): Verschlüsselter Token zur
+              sicheren Sitzungsfortführung nach Anmeldung. Das Cookie wird nur an die API-Domain
+              übermittelt und ist für JavaScript nicht auslesbar. Die SameSite-Konfiguration wird
+              technisch so restriktiv wie für den jeweiligen Bereitstellungsweg möglich gewählt und
+              regelmäßig überprüft. <em>Speicherdauer ca. 7 Tage.</em> Notwendig für die Anmeldung.
             </li>
             <li>
-              <strong><code>trusted_device</code>-Cookie</strong> (HttpOnly, Secure, SameSite=None):
-              Wird nur gesetzt, wenn der Nutzer beim Login &bdquo;Gerät vertrauen&ldquo; auswählt.
-              Erlaubt das Überspringen der Zwei-Faktor-Authentifizierung auf diesem Gerät.{' '}
-              <em>Speicherdauer 30 Tage.</em> Wird bei Logout, Passwortänderung, Geräte-Verwaltung
-              im Profil oder nach Ablauf automatisch entfernt.
+              <strong><code>trusted_device</code>-Cookie</strong> (HttpOnly, Secure): Wird nur
+              gesetzt, wenn der Nutzer beim Login &bdquo;Gerät vertrauen&ldquo; auswählt, und erlaubt
+              das Überspringen der Zwei-Faktor-Authentifizierung auf diesem Gerät. Konfiguration
+              analog zum Refresh-Token-Cookie. <em>Speicherdauer 30 Tage.</em> Wird bei Logout,
+              Passwortänderung, Geräte-Verwaltung im Profil oder nach Ablauf automatisch entfernt.
             </li>
             <li>
               <strong>LocalStorage</strong> auf dem Gerät: Anzeigeeinstellungen (z.B. Dark Mode),
@@ -470,11 +474,18 @@ export function LegalPrivacyContent({
           </p>
           <p className={`${textClassName} mt-2`}>
             <strong>Direktnutzung (Szenario A):</strong> Bei der Registrierung wird abgefragt, ob
-            die nutzende Person das 16. Lebensjahr vollendet hat. Es wird <strong>kein konkretes
-            Geburtsdatum gespeichert</strong>; die Angabe beschränkt sich auf die Bestätigung der
-            Volljährigkeit im Sinne von Art. 8 DSGVO. Wird die Frage verneint, ist die Nutzung nur
-            zulässig, wenn die Einwilligung der Sorgeberechtigten dem Betreiber gegenüber
-            schriftlich oder elektronisch nachgewiesen wird (Art. 8 Abs. 1 Satz 1 DSGVO).
+            die nutzende Person das 16. Lebensjahr vollendet hat. Diese Angabe dient als
+            Voraussetzung für eine eigene Einwilligung nach Art. 8 DSGVO. Wird die Frage verneint,
+            ist die Nutzung nur zulässig, wenn die Einwilligung der Sorgeberechtigten dem Betreiber
+            gegenüber schriftlich oder elektronisch nachgewiesen wird (Art. 8 Abs. 1 Satz 1 DSGVO).
+          </p>
+          <p className={`${textClassName} mt-2`}>
+            <strong>Geburtsdatum-Angabe (freiwillig):</strong> Im Profil kann zusätzlich ein
+            konkretes Geburtsdatum hinterlegt werden. Diese Angabe ist <strong>freiwillig</strong>
+            und wird zur Altersprüfung im Sinne von Art. 8 DSGVO sowie — sofern der Nutzer das
+            Schwimm-Trainingsmodul aktiv verwendet — zur Berechnung eines altersbedingten Zeitbonus
+            (Handicap) bei Schwimm-Auswertungen verarbeitet. Die übrige Nutzung der App ist ohne
+            Geburtsdatum-Angabe möglich.
           </p>
           <p className={`${textClassName} mt-2`}>
             <strong>Nutzung über einen Ausbildungsbetrieb (Szenario B):</strong> Im
@@ -486,9 +497,9 @@ export function LegalPrivacyContent({
             prüft die einschlägige Rechtsgrundlage als Verantwortlicher.
           </p>
           <p className={`${textClassName} mt-2`}>
-            <strong>Bestätigungs-Status</strong> (Volljährigkeitsbestätigung erforderlich, erteilt
-            oder noch nicht erteilt) wird im Konto dokumentiert. Sorgeberechtigte können eine
-            erteilte Einwilligung jederzeit widerrufen; das Konto wird dann deaktiviert.
+            Der Status der Altersbestätigung bzw. der erforderlichen Zustimmung wird im Konto
+            dokumentiert. Sorgeberechtigte können eine erteilte Einwilligung jederzeit widerrufen;
+            das Konto wird dann deaktiviert.
           </p>
         </section>
 

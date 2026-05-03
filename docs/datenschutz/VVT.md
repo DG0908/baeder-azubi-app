@@ -2,8 +2,8 @@
 ## gemäß Art. 30 DSGVO
 
 **Verantwortlicher:** Dennie Gulbinski, Zeitstraße 108, 53721 Siegburg
-**Datenschutzkontakt:** Dennie Gulbinski (kontakt@smartbaden.de, Betreff: „Datenschutz") — bearbeitet Anfragen mit datenschutzrechtlicher Fachkunde (Weiterbildung zum DSB, Zertifikat auf Anfrage). Eine formelle Benennung nach Art. 37 DSGVO erfolgt nicht, da keine Benennungspflicht nach § 38 BDSG besteht.
-**Stand:** 03.05.2026 (rev. 2)
+**Datenschutzkontakt:** Dennie Gulbinski (kontakt@smartbaden.de, Betreff: „Datenschutz") — bearbeitet Anfragen intern mit datenschutzrechtlicher Fachkunde (Weiterbildung u.a. im Bereich Datenschutzbeauftragter). Eine formelle Benennung nach Art. 37 DSGVO erfolgt derzeit nicht; die Erforderlichkeit wird regelmäßig anhand § 38 BDSG sowie Art. 35 DSGVO überprüft.
+**Stand:** 03.05.2026 (rev. 3)
 **Nächste planmäßige Überprüfung:** November 2026 (halbjährlich)
 
 Dieses Verzeichnis dokumentiert die Verarbeitungstätigkeiten des Betreibers gemäß Art. 30 DSGVO und ist auf Anforderung der Aufsichtsbehörde zur Verfügung zu stellen (Art. 30 Abs. 4 DSGVO).
@@ -96,10 +96,10 @@ Das Verzeichnis ist zweigeteilt:
 | **Zweck** | Erfüllung der Einwilligungsanforderung gemäß Art. 8 DSGVO bei Minderjährigen unter 16 Jahren |
 | **Rechtsgrundlage** | Art. 8 DSGVO i.V.m. Art. 6 Abs. 1 lit. a DSGVO; Art. 6 Abs. 1 lit. c DSGVO (rechtliche Pflicht zur Altersprüfung) |
 | **Kategorien betroffener Personen** | Auszubildende unter 16 Jahren und deren Sorgeberechtigte |
-| **Kategorien personenbezogener Daten** | Geburtsdatum (optional, zur Altersprüfung), Status der elterlichen Einwilligung (`NOT_REQUIRED`, `PENDING`, `VERIFIED`, `REJECTED`), Vermerk zur Verifikation, ID des verifizierenden Administrators, Verifikations-Zeitpunkt |
+| **Kategorien personenbezogener Daten** | Geburtsdatum (optional; verwendet zur Altersprüfung sowie — sofern der Nutzer das Schwimm-Trainingsmodul aktiv verwendet — zur Berechnung eines altersbedingten Zeitbonus), Status der elterlichen Einwilligung (`NOT_REQUIRED`, `PENDING`, `VERIFIED`, `REJECTED`), Vermerk zur Verifikation, ID des verifizierenden Administrators, Verifikations-Zeitpunkt |
 | **Empfänger** | Administratoren der zuordnenden Organisation; technisch Hostinger (Hosting) |
 | **Drittlandtransfer** | Nein |
-| **Löschfristen** | Bei Volljährigkeit oder Konto-Löschung: Status auf `NOT_REQUIRED` gesetzt, Verifikationsvermerk bleibt für Nachweispflichten erhalten |
+| **Löschfristen** | Bei Vollendung des 16. Lebensjahres oder Konto-Löschung: Status auf `NOT_REQUIRED` gesetzt, Verifikationsvermerk bleibt für Nachweispflichten erhalten |
 | **TOMs** | Siehe `docs/datenschutz/TOMs.md` |
 
 ---
@@ -141,7 +141,7 @@ E-Mail: kontakt@smartbaden.de
 Zeitstraße 108, 53721 Siegburg
 E-Mail: kontakt@smartbaden.de (Betreff: „Datenschutz")
 
-Der Verantwortliche verfügt über eine Weiterbildung zum Datenschutzbeauftragten (Zertifikat auf Anfrage einsehbar) und bearbeitet Datenschutzanfragen intern fachkundig. Eine formelle Benennung als DSB im Sinne von Art. 37 DSGVO erfolgt derzeit nicht, da keine gesetzliche Benennungspflicht nach § 38 BDSG besteht. Bei Bedarf wird ein externer Datenschutzbeauftragter eingebunden.
+Der Verantwortliche verfügt über eine datenschutzrechtliche Weiterbildung, unter anderem im Bereich Datenschutzbeauftragter, und bearbeitet Datenschutzanfragen intern fachkundig. Eine formelle Benennung als Datenschutzbeauftragter im Sinne von Art. 37 DSGVO besteht derzeit nicht. Die Erforderlichkeit einer Benennung wird regelmäßig anhand der Schwellenwerte nach § 38 BDSG sowie der Frage geprüft, ob eine Verarbeitung vorliegt, die eine Datenschutz-Folgenabschätzung nach Art. 35 DSGVO erforderlich macht. Bei Bedarf wird ein externer Datenschutzbeauftragter eingebunden.
 
 ## Zuständige Aufsichtsbehörde
 
@@ -161,6 +161,7 @@ Dieses Verzeichnis wird zentral durch den Verantwortlichen geführt und bei wese
 | 26.04.2026 | Initialfassung | Dennie Gulbinski |
 | 03.05.2026 | DSB-Bestellung formell dokumentiert; Verzahnung mit § 26 BDSG bei B2B-Nutzung präzisiert | Dennie Gulbinski |
 | 03.05.2026 (rev. 2) | DSB-Konzept zurückgenommen: nicht formell bestellt, sondern Datenschutzkontakt mit Weiterbildung zum DSB. Externer DSB bei Bedarf | Dennie Gulbinski |
+| 03.05.2026 (rev. 3) | „Volljährigkeit"-Begriff durch „Vollendung des 16. Lebensjahres" ersetzt; Geburtsdatum-Zweck (Schwimm-Handicap) transparent ergänzt; Datenschutzkontakt-Beschreibung an Datenschutzerklärung rev. 3 angeglichen | Dennie Gulbinski |
 
 ---
 
