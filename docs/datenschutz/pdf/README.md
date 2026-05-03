@@ -9,6 +9,7 @@ Diese PDFs werden aus den Markdown-Quellen in `docs/datenschutz/` automatisiert 
 | `TOMs.pdf` | `../TOMs.md` | Technische und organisatorische Maßnahmen (Anlage 1 zum AVV) |
 | `VVT.pdf` | `../VVT.md` | Verzeichnis von Verarbeitungstätigkeiten (Art. 30 DSGVO, intern) |
 | `DSFA-Vorabpruefung.pdf` | `../DSFA-Vorabpruefung.md` | Schwellenwertanalyse nach Art. 35 DSGVO (intern) |
+| `DSB-Bestellungsurkunde.pdf` | `../DSB-Bestellungsurkunde.md` | Formelle Bestellung des Datenschutzbeauftragten nach Art. 37 DSGVO (intern) |
 
 ## Bei Markdown-Updates: PDFs neu erzeugen
 
@@ -21,11 +22,11 @@ node md-to-pdf-puppeteer.js \
   "/c/Users/User/baeder-azubi-app/docs/datenschutz/pdf/AGB-B2B.pdf"
 ```
 
-Oder alle fünf auf einmal:
+Oder alle sechs auf einmal:
 
 ```bash
 cd /c/Users/User/tmp-scripts
-for f in AGB-B2B AVV-Vorlage TOMs VVT DSFA-Vorabpruefung; do
+for f in AGB-B2B AVV-Vorlage TOMs VVT DSFA-Vorabpruefung DSB-Bestellungsurkunde; do
   node md-to-pdf-puppeteer.js \
     "/c/Users/User/baeder-azubi-app/docs/datenschutz/$f.md" \
     "/c/Users/User/baeder-azubi-app/docs/datenschutz/pdf/$f.pdf"
