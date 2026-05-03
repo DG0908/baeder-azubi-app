@@ -30,6 +30,7 @@ const VIEW_TO_PATH: Record<string, string> = {
   datenschutz: '/datenschutz',
   agb: '/agb',
   'exam-grades': '/noten',
+  help: '/hilfe',
 };
 
 const PATH_TO_VIEW: Record<string, string> = Object.fromEntries(

@@ -54,7 +54,19 @@ export function DesktopSidebar({
           );
         })}
       </nav>
-      <div className={`shrink-0 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} ${sidebarCollapsed ? 'p-2' : 'p-3'}`}>
+      <div className={`shrink-0 border-t ${darkMode ? 'border-slate-700' : 'border-gray-200'} ${sidebarCollapsed ? 'p-2 space-y-1' : 'p-3 space-y-1'}`}>
+        <button
+          onClick={() => { setCurrentView('help'); playSound('splash'); }}
+          className={`w-full flex items-center gap-3 ${sidebarCollapsed ? 'justify-center py-2' : 'px-3 py-2'} rounded-lg transition-colors ${
+            currentView === 'help'
+              ? darkMode ? 'text-cyan-400 bg-cyan-400/10' : 'text-cyan-600 bg-cyan-50'
+              : darkMode ? 'text-gray-400 hover:text-cyan-300 hover:bg-slate-800' : 'text-gray-500 hover:text-cyan-600 hover:bg-cyan-50'
+          }`}
+          title={sidebarCollapsed ? 'Hilfe & Anleitung' : undefined}
+        >
+          <span className="text-lg">❓</span>
+          {!sidebarCollapsed && <span className="text-sm font-medium">Hilfe & Anleitung</span>}
+        </button>
         <button
           onClick={handleLogout}
           className={`w-full flex items-center gap-3 ${sidebarCollapsed ? 'justify-center py-2' : 'px-3 py-2'} rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:text-red-400 hover:bg-slate-800' : 'text-gray-500 hover:text-red-500 hover:bg-red-50'}`}

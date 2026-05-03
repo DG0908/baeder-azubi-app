@@ -65,6 +65,14 @@ export function AppHeader({
           <button onClick={() => { setSoundEnabled(!soundEnabled); if (!soundEnabled) playSound('splash'); }} className="bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors hidden sm:block" title={soundEnabled ? 'Sound aus' : 'Sound an'}>
             {soundEnabled ? '🔊' : '🔇'}
           </button>
+          <button
+            onClick={() => { setCurrentView('help'); playSound('splash'); }}
+            className="bg-white/20 hover:bg-white/30 p-1.5 rounded-lg transition-colors hidden sm:flex items-center justify-center w-8 h-8 font-bold"
+            title="Hilfe & Anleitung"
+            aria-label="Hilfe und Anleitung öffnen"
+          >
+            ?
+          </button>
           {(updateAvailable || updatingApp) && (
             <button onClick={() => { void applyPwaUpdate(); }} disabled={updatingApp} className={`px-2 py-1.5 rounded-lg transition-colors flex items-center gap-1 bg-emerald-500/90 hover:bg-emerald-600/90 text-sm ${updatingApp ? 'opacity-70 cursor-not-allowed' : ''}`} title="Neue Version installieren">
               <span>{updatingApp ? '⏳' : '⬆️'}</span>

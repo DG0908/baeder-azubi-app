@@ -47,6 +47,7 @@ const DatenschutzView = lazy(() => import('./views/DatenschutzView'));
 const AGBView = lazy(() => import('./views/AGBView'));
 const InteractiveLearningView = lazy(() => import('./views/InteractiveLearningView'));
 const NotfallTrainerView = lazy(() => import('./views/NotfallTrainerView'));
+const HelpView = lazy(() => import('./views/HelpView'));
 
 export function AppRouter({
   currentView, setCurrentView,
@@ -299,6 +300,7 @@ export function AppRouter({
       {currentView === 'impressum' && <ImpressumView setCurrentView={setCurrentView} />}
       {currentView === 'datenschutz' && <DatenschutzView setCurrentView={setCurrentView} />}
       {currentView === 'agb' && <AGBView setCurrentView={setCurrentView} />}
+      {currentView === 'help' && <HelpView setCurrentView={setCurrentView} user={user} />}
     </Suspense>
   );
 }

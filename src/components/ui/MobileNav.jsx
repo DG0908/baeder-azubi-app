@@ -1,4 +1,4 @@
-import { Home, FileCheck, Gamepad2, BookOpen, Menu, X, LogOut } from 'lucide-react';
+import { Home, FileCheck, Gamepad2, BookOpen, Menu, X, LogOut, HelpCircle } from 'lucide-react';
 import { MENU_GROUP_LABELS } from '../../data/constants';
 import { useFeatureContext } from '../../context/FeatureContext';
 
@@ -160,7 +160,22 @@ export function MobileNav({
                     </div>
                   );
                 })}
-              <div className={`pt-3 border-t ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+              <div className={`pt-3 border-t space-y-2 ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                <button
+                  onClick={() => {
+                    setCurrentView('help');
+                    playSound('splash');
+                    setShowMehrDrawer(false);
+                  }}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border transition-colors ${
+                    darkMode
+                      ? 'bg-cyan-500/10 border-cyan-400/30 text-cyan-200 hover:bg-cyan-500/20'
+                      : 'bg-cyan-50 border-cyan-200 text-cyan-700 hover:bg-cyan-100'
+                  }`}
+                >
+                  <HelpCircle size={18} />
+                  <span className="font-semibold">Hilfe & Anleitung</span>
+                </button>
                 <button
                   onClick={() => {
                     setShowMehrDrawer(false);
