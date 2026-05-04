@@ -9,13 +9,14 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was macht der Filter im Schwimmbad?',
     intro:
-      'Der Filter ist das Herzstück der Wasseraufbereitung. Er reinigt das Beckenwasser, indem er Schmutzpartikel zurückhaelt. Damit der Filter gut arbeitet, muss das Wasser mit der richtigen Geschwindigkeit durchfliessen. Zu schnell = schlechte Reinigung. Zu langsam = Verschwendung. Die wichtigste Formel: Filtergeschwindigkeit = Durchfluss geteilt durch Filterfläche.',
+      'Der Filter ist das Herzstück der Wasseraufbereitung. Er reinigt das Beckenwasser, indem er Schmutzpartikel zurückhält. Damit der Filter gut arbeitet, muss das Wasser mit der richtigen Geschwindigkeit durchfließen. Zu schnell = schlechte Reinigung. Zu langsam = Verschwendung. Die wichtigste Formel: Filtergeschwindigkeit = Durchfluss geteilt durch Filterfläche.',
     motto: 'Ohne Filter kein sauberes Wasser.',
     rules: [
-      'Der Filter reinigt das Beckenwasser von Schmutzpartikeln, Truebstoffen und Keimen.',
-      'Die Filtergeschwindigkeit (vF) sagt dir, wie schnell das Wasser durch den Filter fliesst.',
+      'Der Filter reinigt das Beckenwasser von Schmutzpartikeln, Trübstoffen und Keimen.',
+      'Die Filtergeschwindigkeit (vF) sagt dir, wie schnell das Wasser durch den Filter fließt.',
       'Die Formel lautet: vF = Q ÷ A (Durchfluss geteilt durch Filterfläche).',
       'Die Filtergeschwindigkeit wird in Metern pro Stunde (m/h) angegeben.',
+      'Maximalwerte nach DIN 19643-2: Mehrschichtfilter 30 m/h · Einschichtfilter 30 m/h · Aktivkohlefilter 50 m/h. Untergrenze ist nicht normiert (technisch sinnvoll meist ≥ 15 m/h).',
       'Ist die Filtergeschwindigkeit zu hoch, wird das Wasser nicht richtig sauber — der Schmutz rutscht durch.'
     ],
     steps: [
@@ -33,7 +34,7 @@ const TABS = {
       },
       {
         title: '4. Ergebnis bewerten',
-        text: 'Liegt die Filtergeschwindigkeit zwischen 20 und 30 m/h? Dann ist alles im gruenen Bereich. Über 30 m/h ist zu schnell, unter 20 m/h ist unnötig langsam.'
+        text: 'Mehrschicht-/Einschichtfilter ≤ 30 m/h, Aktivkohlefilter ≤ 50 m/h (DIN 19643-2). Praxisbereich Mehrschicht meist 20–30 m/h. Über dem Maximum: Filter ist überlastet, Wasser nicht ausreichend gereinigt.'
       }
     ],
     examples: [
@@ -61,7 +62,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Filterfläche ist NICHT die Aussenfläche des Kessels, sondern die Querschnittsfläche von oben!',
+      'Filterfläche ist NICHT die Außenfläche des Kessels, sondern die Querschnittsfläche von oben!',
       'Durchfluss (m³/h) und Filtergeschwindigkeit (m/h) sind NICHT dasselbe — nicht verwechseln!',
       'Einheiten müssen stimmen: Q in m³/h und A in m², dann kommt vF in m/h raus.',
       'Eine hohe Filtergeschwindigkeit klingt gut, ist aber schlecht — das Wasser wird nicht sauber.'
@@ -79,7 +80,7 @@ const TABS = {
     chip: 'Geschwindigkeit',
     title: 'Filtergeschwindigkeit berechnen — vF = Q ÷ A',
     intro:
-      'Die Filtergeschwindigkeit zeigt, wie schnell das Wasser durch die Filterschicht fliesst. Sie wird in Metern pro Stunde (m/h) gemessen. In der Praxis sollte sie zwischen 20 und 30 m/h liegen. Ist sie höher, wird das Wasser nicht richtig gereinigt. Ist sie niedriger, ist die Anlage ueberdimensioniert.',
+      'Die Filtergeschwindigkeit zeigt, wie schnell das Wasser durch die Filterschicht fliesst. Sie wird in Metern pro Stunde (m/h) gemessen. In der Praxis sollte sie zwischen 20 und 30 m/h liegen. Ist sie höher, wird das Wasser nicht richtig gereinigt. Ist sie niedriger, ist die Anlage überdimensioniert.',
     motto: 'vF = Q ÷ A — das musst du im Schlaf können.',
     rules: [
       'Die Formel ist: vF = Q ÷ A (Filtergeschwindigkeit = Durchfluss geteilt durch Filterfläche).',
@@ -103,7 +104,7 @@ const TABS = {
       },
       {
         title: '4. Bewerten',
-        text: 'Liegt das Ergebnis zwischen 20 und 30 m/h? Gut! Darüber? Maßnahmen nötig. Darunter? Filter ist grosszuegig dimensioniert.'
+        text: 'Liegt das Ergebnis zwischen 20 und 30 m/h? Gut! Darüber? Maßnahmen nötig. Darunter? Filter ist großzügig dimensioniert.'
       }
     ],
     examples: [
@@ -143,7 +144,7 @@ const TABS = {
     ],
     pitfalls: [
       'Durchmesser und Radius verwechseln! Radius ist die HAELFTE vom Durchmesser.',
-      'Vergiss nicht: r² heisst r × r, nicht r × 2!',
+      'Vergiss nicht: r² heißt r × r, nicht r × 2!',
       'Wenn die Pumpenleistung in Litern angegeben ist, erst in m³ umrechnen (÷ 1.000).'
     ],
     quiz: {
@@ -163,15 +164,15 @@ const TABS = {
     motto: 'Erst die Fläche, dann den Filter auswählen.',
     rules: [
       'Umgestellte Formel: A = Q ÷ vF (Filterfläche = Durchfluss geteilt durch Filtergeschwindigkeit).',
-      'Du brauchst den Durchfluss (Q in m³/h) und die gewuenschte Filtergeschwindigkeit (vF in m/h).',
+      'Du brauchst den Durchfluss (Q in m³/h) und die gewünschte Filtergeschwindigkeit (vF in m/h).',
       'Die meisten Schwimmbadfilter sind rund — da gilt: A = π × r².',
-      'Wenn du die Fläche hast, rechnest du rueckwaerts: r = √(A ÷ π) und Durchmesser = 2 × r.',
-      'Waehle im Zweifelsfall den naechstgrößeren Standardfilter — lieber etwas zu gross als zu klein.'
+      'Wenn du die Fläche hast, rechnest du rückwärts: r = √(A ÷ π) und Durchmesser = 2 × r.',
+      'Wähle im Zweifelsfall den nächstgrößeren Standardfilter — lieber etwas zu gross als zu klein.'
     ],
     steps: [
       {
         title: '1. Durchfluss (Q) bestimmen',
-        text: 'Wie viel Wasser muss pro Stunde gefiltert werden? Das haengt von der Umwaelzzeit und dem Beckenvolumen ab. Q = Beckenvolumen ÷ Umwaelzzeit.'
+        text: 'Wie viel Wasser muss pro Stunde gefiltert werden? Das hängt von der Umwälzzeit und dem Beckenvolumen ab. Q = Beckenvolumen ÷ Umwälzzeit.'
       },
       {
         title: '2. Filtergeschwindigkeit (vF) festlegen',
@@ -183,7 +184,7 @@ const TABS = {
       },
       {
         title: '4. Filterdurchmesser bestimmen',
-        text: 'Bei runden Filtern: r = √(A ÷ π). Dann Durchmesser = 2 × r. Waehle den nächsten verfuegbaren Standarddurchmesser.'
+        text: 'Bei runden Filtern: r = √(A ÷ π). Dann Durchmesser = 2 × r. Wähle den nächsten verfügbaren Standarddurchmesser.'
       }
     ],
     examples: [
@@ -211,7 +212,7 @@ const TABS = {
       },
       {
         title: 'Beckenvolumen → Filtergröße',
-        given: 'Becken mit 600 m³ Wasser, Umwaelzzeit 4 Stunden, vF max. 30 m/h.',
+        given: 'Becken mit 600 m³ Wasser, Umwälzzeit 4 Stunden, vF max. 30 m/h.',
         question: 'Welche Filterfläche wird benötigt?',
         steps: [
           ['Durchfluss', 'Q = 600 m³ ÷ 4 h = 150 m³/h'],
@@ -222,7 +223,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Vergiss nicht, zuerst den Durchfluss (Q) zu berechnen, wenn nur Beckenvolumen und Umwaelzzeit gegeben sind!',
+      'Vergiss nicht, zuerst den Durchfluss (Q) zu berechnen, wenn nur Beckenvolumen und Umwälzzeit gegeben sind!',
       'Beim Wurzelziehen den Taschenrechner benutzen — Kopfrechnen geht da meistens schief.',
       'Standardfiltergrößen beachten: Es gibt nicht jeden Durchmesser zu kaufen.',
       'Immer aufrunden! Ein zu kleiner Filter ist ein echtes Problem, ein etwas größerer nicht.'
@@ -240,19 +241,19 @@ const TABS = {
     chip: 'Praxis',
     title: 'Filtration im Bäderalltag',
     intro:
-      'Hier uebst du mit echten Aufgaben aus dem Schwimmbadbetrieb. Filteranlage dimensionieren, vorhandene Filter prüfen, mehrere Filter berechnen und Spuelwassermengen abschaetzen — das kommt in der Prüfung dran und brauchst du im Alltag.',
+      'Hier übst du mit echten Aufgaben aus dem Schwimmbadbetrieb. Filteranlage dimensionieren, vorhandene Filter prüfen, mehrere Filter berechnen und Spülwassermengen abschätzen — das kommt in der Prüfung dran und brauchst du im Alltag.',
     motto: 'Wer den Filter versteht, versteht die Wasseraufbereitung.',
     rules: [
-      'Umwaelzzeit im Hallenbad: meistens 4–6 Stunden (je nach Beckenart laut DIN 19643).',
-      'Freibad-Schwimmerbecken: Umwaelzzeit bis 8 Stunden, Nichtschwimmerbecken kuerzer.',
+      'Umwälzzeit im Hallenbad: meistens 4–6 Stunden (je nach Beckenart laut DIN 19643).',
+      'Freibad-Schwimmerbecken: Umwälzzeit bis 8 Stunden, Nichtschwimmerbecken kürzer.',
       'Bei mehreren Filtern: Gesamtfläche = Fläche pro Filter × Anzahl Filter.',
       'Spülung (Rückspülung): Filtergeschwindigkeit dabei ca. 40–60 m/h — absichtlich höher, um den Schmutz rauszuwaschen.',
-      'Nach der Spülung laeuft der Filter kurz im Vorlauf — das Wasser geht nicht ins Becken, bis es sauber ist.'
+      'Nach der Spülung läuft der Filter kurz im Vorlauf — das Wasser geht nicht ins Becken, bis es sauber ist.'
     ],
     steps: [
       {
-        title: '1. Beckenvolumen und Umwaelzzeit klären',
-        text: 'Lies aus der Aufgabe: Wie gross ist das Becken (m³)? Welche Umwaelzzeit ist vorgeschrieben (h)? Daraus ergibt sich der Durchfluss: Q = V ÷ t.'
+        title: '1. Beckenvolumen und Umwälzzeit klären',
+        text: 'Lies aus der Aufgabe: Wie gross ist das Becken (m³)? Welche Umwälzzeit ist vorgeschrieben (h)? Daraus ergibt sich der Durchfluss: Q = V ÷ t.'
       },
       {
         title: '2. Filtergeschwindigkeit beachten',
@@ -260,17 +261,17 @@ const TABS = {
       },
       {
         title: '3. Filter auswählen oder prüfen',
-        text: 'Neuer Filter: Waehle den naechstgrößeren Standarddurchmesser. Vorhandener Filter: Berechne vF und pruefe, ob sie im erlaubten Bereich liegt.'
+        text: 'Neuer Filter: Wähle den nächstgrößeren Standarddurchmesser. Vorhandener Filter: Berechne vF und prüfe, ob sie im erlaubten Bereich liegt.'
       },
       {
-        title: '4. Sonderfaelle beachten',
-        text: 'Mehrere Filter? Flächen addieren. Spülung? Spueldurchfluss und Spuelwassermenge berechnen. Ein Filter faellt aus? Restkapazität prüfen.'
+        title: '4. Sonderfälle beachten',
+        text: 'Mehrere Filter? Flächen addieren. Spülung? Spüldurchfluss und Spülwassermenge berechnen. Ein Filter fällt aus? Restkapazität prüfen.'
       }
     ],
     examples: [
       {
         title: 'Filterdimensionierung für ein Sportbecken',
-        given: 'Sportbecken 25 × 12,5 × 2 m = 625 m³. Umwaelzzeit 4,5 Stunden. vF max. 30 m/h.',
+        given: 'Sportbecken 25 × 12,5 × 2 m = 625 m³. Umwälzzeit 4,5 Stunden. vF max. 30 m/h.',
         question: 'Welche Filterfläche wird benötigt?',
         steps: [
           ['Durchfluss', 'Q = 625 ÷ 4,5 = 138,9 m³/h'],
@@ -291,7 +292,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Ein Filter faellt aus',
+        title: 'Ein Filter fällt aus',
         given: 'Normalerweise laufen 3 Filter mit je 2 m² Fläche bei Q = 150 m³/h. Ein Filter muss zur Wartung.',
         question: 'Wie hoch ist die Filtergeschwindigkeit mit nur 2 Filtern?',
         steps: [
@@ -302,22 +303,22 @@ const TABS = {
         ]
       },
       {
-        title: 'Spuelwassermenge berechnen',
-        given: 'Filter mit 2,5 m² Fläche. Spuelgeschwindigkeit 50 m/h. Spueldauer 5 Minuten.',
-        question: 'Wie viel Spuelwasser wird verbraucht?',
+        title: 'Spülwassermenge berechnen',
+        given: 'Filter mit 2,5 m² Fläche. Spülgeschwindigkeit 50 m/h. Spüldauer 5 Minuten.',
+        question: 'Wie viel Spülwasser wird verbraucht?',
         steps: [
-          ['Spueldurchfluss', 'Q_spuel = vF_spuel × A = 50 × 2,5 = 125 m³/h'],
+          ['Spüldurchfluss', 'Q_spuel = vF_spuel × A = 50 × 2,5 = 125 m³/h'],
           ['Umrechnen', '5 Minuten = 5/60 Stunden = 0,0833 h'],
-          ['Spuelwassermenge', '125 × 0,0833 = 10,4 m³'],
+          ['Spülwassermenge', '125 × 0,0833 = 10,4 m³'],
           ['Ergebnis', 'Pro Spülung werden ca. 10,4 m³ Wasser verbraucht']
         ]
       }
     ],
     pitfalls: [
-      'Umwaelzzeit nicht mit Filtergeschwindigkeit verwechseln — das sind voellig verschiedene Dinge!',
+      'Umwälzzeit nicht mit Filtergeschwindigkeit verwechseln — das sind völlig verschiedene Dinge!',
       'Bei mehreren Filtern: Die Flächen ADDIEREN, nicht den Durchmesser!',
-      'Spuelwasser geht in den Kanal — das muss mit Frischwasser ersetzt werden. Kosten beachten!',
-      'Wenn ein Filter ausfaellt, steigt die Geschwindigkeit in den anderen Filtern — immer nachrechnen!'
+      'Spülwasser geht in den Kanal — das muss mit Frischwasser ersetzt werden. Kosten beachten!',
+      'Wenn ein Filter ausfällt, steigt die Geschwindigkeit in den anderen Filtern — immer nachrechnen!'
     ],
     quiz: {
       question: '2 Rundfilter mit je 1,2 m Durchmesser. Q = 50 m³/h. Wie hoch ist vF? (π ≈ 3,14)',
@@ -569,7 +570,7 @@ export default function FiltrationDeepDiveView() {
                     vF unter 20 m/h
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Filter ist grosszuegig dimensioniert. Kein Problem, aber eventuell unnötig teuer.
+                    Filter ist großzügig dimensioniert. Kein Problem, aber eventuell unnötig teuer.
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-teal-500/30 bg-teal-500/10' : 'border-teal-200 bg-teal-50'}`}>

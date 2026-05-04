@@ -97,7 +97,7 @@ const TABS = {
       'Quadrat ist ein Sonderfall: A = a × a (beide Seiten gleich lang).',
       'Dreieck-Formel: A = a × h ÷ 2 (Grundseite mal Höhe geteilt durch 2).',
       'Die Höhe beim Dreieck steht IMMER senkrecht (im rechten Winkel) auf der Grundseite.',
-      'Warum ÷ 2? Weil ein Dreieck genau die Haelfte eines Rechtecks mit gleicher Grundseite und Höhe ist.'
+      'Warum ÷ 2? Weil ein Dreieck genau die Hälfte eines Rechtecks mit gleicher Grundseite und Höhe ist.'
     ],
     steps: [
       {
@@ -148,7 +148,7 @@ const TABS = {
           ['Rechteck-Fläche', 'A = 8 × 5 = 40 m²'],
           ['Diagonale teilt in 2 Dreiecke', 'Jedes Dreieck = 40 ÷ 2 = 20 m²'],
           ['Probe mit Formel', 'A = 8 × 5 ÷ 2 = 20 m² — stimmt!'],
-          ['Merke', 'Jedes Dreieck ist genau die Haelfte des Rechtecks']
+          ['Merke', 'Jedes Dreieck ist genau die Hälfte des Rechtecks']
         ]
       }
     ],
@@ -175,7 +175,7 @@ const TABS = {
     motto: 'A = π × r² — Pi mal Radius zum Quadrat.',
     rules: [
       'Die Kreisformel lautet: A = π × r² (Pi mal Radius hoch 2).',
-      'π (Pi) ist ungefaehr 3,14 — für die Prüfung reicht 3,14 meistens aus.',
+      'π (Pi) ist ungefähr 3,14 — für die Prüfung reicht 3,14 meistens aus.',
       'Der Radius (r) ist der Abstand vom Mittelpunkt zum Rand — also der HALBE Durchmesser.',
       'Der Durchmesser (d) geht von Rand zu Rand durch den Mittelpunkt — also das DOPPELTE vom Radius.',
       'r² bedeutet r × r — also den Radius mit sich selbst malnehmen (nicht mal 2!).'
@@ -235,7 +235,7 @@ const TABS = {
     ],
     pitfalls: [
       'Radius und Durchmesser verwechseln — der Durchmesser ist DOPPELT so gross wie der Radius! Wenn du den Durchmesser statt den Radius einsetzt, ist die Fläche 4-mal zu gross.',
-      'r² heisst r × r, NICHT r × 2! Das ist der häufigste Fehler: 5² = 25, nicht 10!',
+      'r² heißt r × r, NICHT r × 2! Das ist der häufigste Fehler: 5² = 25, nicht 10!',
       'Pi (π) nicht vergessen — ohne π ist es kein Kreis, sondern ein Quadrat.',
       'Bei Durchmesser-Angaben: ERST durch 2 teilen, DANN quadrieren. Nicht umgekehrt!'
     ],
@@ -252,8 +252,8 @@ const TABS = {
     chip: 'Praxis',
     title: 'Flächenberechnung im Bäderalltag',
     intro:
-      'Im Schwimmbad brauchst du Flächenberechnung ständig: Beckenwasserfläche für die Abdeckung, Bodenfläche für Fliesen, Rasenfläche für Duenger, Filterplatten-Größe. Hier uebst du mit echten Aufgaben aus dem Bäderalltag.',
-    motto: 'Fläche berechnen gehoert zum Bäder-Alltag.',
+      'Im Schwimmbad brauchst du Flächenberechnung ständig: Beckenwasserfläche für die Abdeckung, Bodenfläche für Fliesen, Rasenfläche für Dünger, Filterplatten-Größe. Hier übst du mit echten Aufgaben aus dem Bäderalltag.',
+    motto: 'Fläche berechnen gehört zum Bäder-Alltag.',
     rules: [
       'Im Schwimmbad sind die meisten Becken rechteckig — also A = Länge × Breite.',
       'Runde Becken (Whirlpool, Planschbecken) brauchen die Kreisformel A = π × r².',
@@ -292,14 +292,14 @@ const TABS = {
         ]
       },
       {
-        title: 'Liegewiese duengen',
-        given: 'Die Liegewiese ist 40 m lang und 25 m breit. Pro 100 m² braucht man 3 kg Duenger.',
-        question: 'Wie viel Duenger wird benötigt?',
+        title: 'Liegewiese düngen',
+        given: 'Die Liegewiese ist 40 m lang und 25 m breit. Pro 100 m² braucht man 3 kg Dünger.',
+        question: 'Wie viel Dünger wird benötigt?',
         steps: [
           ['Fläche berechnen', 'A = 40 × 25 = 1.000 m²'],
-          ['Duenger berechnen', '1.000 ÷ 100 = 10 Einheiten à 3 kg'],
-          ['Ergebnis', '10 × 3 = 30 kg Duenger'],
-          ['Kontrolle', '1.000 m² ist 10-mal so viel wie 100 m², also 10-mal so viel Duenger']
+          ['Dünger berechnen', '1.000 ÷ 100 = 10 Einheiten à 3 kg'],
+          ['Ergebnis', '10 × 3 = 30 kg Dünger'],
+          ['Kontrolle', '1.000 m² ist 10-mal so viel wie 100 m², also 10-mal so viel Dünger']
         ]
       },
       {
@@ -590,7 +590,7 @@ export default function FlächenDeepDiveView() {
                     A = a × h ÷ 2 — wie Rechteck, aber halbiert.
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                    Schneide ein Rechteck diagonal durch — jede Haelfte ist ein Dreieck.
+                    Schneide ein Rechteck diagonal durch — jede Hälfte ist ein Dreieck.
                   </p>
                 </div>
               </div>

@@ -9,7 +9,7 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Kraft, Arbeit und Leistung — die Basics',
     intro:
-      'In der Physik beschreiben Kraft, Arbeit und Leistung, wie Dinge bewegt werden. Das brauchst du im Schwimmbad ständig: Pumpen druecken Wasser durch Filter, Motoren bewegen Beckenabdeckungen, und du selbst hebst schwere Kanister. Hier lernst du die drei Grundbegriffe kennen.',
+      'In der Physik beschreiben Kraft, Arbeit und Leistung, wie Dinge bewegt werden. Das brauchst du im Schwimmbad ständig: Pumpen drücken Wasser durch Filter, Motoren bewegen Beckenabdeckungen, und du selbst hebst schwere Kanister. Hier lernst du die drei Grundbegriffe kennen.',
     motto: 'Kraft bewegt, Arbeit misst den Aufwand, Leistung misst die Geschwindigkeit.',
     rules: [
       'Kraft wird in Newton (N) gemessen — benannt nach Isaac Newton.',
@@ -33,7 +33,7 @@ const TABS = {
       },
       {
         title: '4. Alltags-Vergleich',
-        text: 'Eine normale Gluehbirne hat 60 Watt. Das heisst, sie verbraucht 60 Joule pro Sekunde. Ein Foehntrocknerhaar hat ca. 2.000 Watt — der zieht richtig Strom!'
+        text: 'Eine normale Glühbirne hat 60 Watt. Das heißt, sie verbraucht 60 Joule pro Sekunde. Ein Föhntrocknerhaar hat ca. 2.000 Watt — der zieht richtig Strom!'
       }
     ],
     examples: [
@@ -83,7 +83,7 @@ const TABS = {
       'Die Formel lautet: W = F × s (Arbeit = Kraft × Strecke).',
       'Kraft in Newton (N), Strecke in Metern (m), Arbeit in Joule (J).',
       'Gewichtskraft: F = m × g, wobei g ≈ 10 N/kg (Erdbeschleunigung).',
-      '1 Newton ist ungefaehr die Kraft, die ein 100-g-Apfel auf deine Hand aususebt.',
+      '1 Newton ist ungefähr die Kraft, die ein 100-g-Apfel auf deine Hand aususebt.',
       'Umstellen: F = W ÷ s und s = W ÷ F — immer die gesuchte Größe freistellen.'
     ],
     steps: [
@@ -142,10 +142,10 @@ const TABS = {
       'Strecke IMMER in Metern angeben — Zentimeter vorher umrechnen (÷ 100)!',
       'Gewichtskraft nicht vergessen: Masse ist NICHT gleich Kraft. Erst × 10 rechnen!',
       'Wenn du schiebst, zählt nur die Kraft IN Bewegungsrichtung.',
-      'Kilojoule (kJ) = 1.000 Joule. Bei grossen Zahlen umrechnen!'
+      'Kilojoule (kJ) = 1.000 Joule. Bei großen Zahlen umrechnen!'
     ],
     quiz: {
-      question: 'Eine Pumpe drueckt mit 500 N Kraft Wasser durch eine 3 m lange Leitung. Wie viel Arbeit?',
+      question: 'Eine Pumpe drückt mit 500 N Kraft Wasser durch eine 3 m lange Leitung. Wie viel Arbeit?',
       options: ['1.500 Joule', '1.000 Joule', '500 Joule'],
       correctIndex: 0,
       explanation: 'W = F × s = 500 N × 3 m = 1.500 J.'
@@ -157,7 +157,7 @@ const TABS = {
     chip: 'Leistung',
     title: 'Leistung (P) — wie schnell wird gearbeitet?',
     intro:
-      'Leistung sagt dir, wie schnell Arbeit erledigt wird. Die Einheit ist Watt (W). Ein starker Motor hat viel Watt, weil er in kurzer Zeit viel Arbeit schafft. Im Schwimmbad siehst du Watt-Angaben auf jeder Pumpe, jedem Foehr und jeder Heizung.',
+      'Leistung sagt dir, wie schnell Arbeit erledigt wird. Die Einheit ist Watt (W). Ein starker Motor hat viel Watt, weil er in kurzer Zeit viel Arbeit schafft. Im Schwimmbad siehst du Watt-Angaben auf jeder Pumpe, jedem Föhr und jeder Heizung.',
     motto: 'P = W ÷ t — Leistung gleich Arbeit durch Zeit.',
     rules: [
       'Die Formel lautet: P = W ÷ t (Leistung = Arbeit ÷ Zeit).',
@@ -181,7 +181,7 @@ const TABS = {
       },
       {
         title: '4. In kW umrechnen',
-        text: 'Bei grossen Zahlen: Watt ÷ 1.000 = Kilowatt. Beispiel: 2.500 W = 2,5 kW. Auf Pumpen steht oft kW.'
+        text: 'Bei großen Zahlen: Watt ÷ 1.000 = Kilowatt. Beispiel: 2.500 W = 2,5 kW. Auf Pumpen steht oft kW.'
       }
     ],
     examples: [
@@ -197,8 +197,8 @@ const TABS = {
         ]
       },
       {
-        title: 'Umwaelzpumpe — Arbeit berechnen',
-        given: 'Eine Pumpe hat 3 kW Leistung und laeuft 2 Stunden.',
+        title: 'Umwälzpumpe — Arbeit berechnen',
+        given: 'Eine Pumpe hat 3 kW Leistung und läuft 2 Stunden.',
         question: 'Wie viel Arbeit verrichtet sie?',
         steps: [
           ['Leistung umrechnen', '3 kW = 3.000 W'],
@@ -208,14 +208,14 @@ const TABS = {
         ]
       },
       {
-        title: 'Gluehbirne vs. LED',
-        given: 'Eine Gluehbirne hat 60 W, eine LED hat 8 W. Beide leuchten 5 Stunden.',
+        title: 'Glühbirne vs. LED',
+        given: 'Eine Glühbirne hat 60 W, eine LED hat 8 W. Beide leuchten 5 Stunden.',
         question: 'Wie viel Arbeit (Energie) verbraucht jede?',
         steps: [
           ['Zeit umrechnen', '5 h = 18.000 s'],
-          ['Gluehbirne', 'W = 60 × 18.000 = 1.080.000 J = 0,3 kWh'],
+          ['Glühbirne', 'W = 60 × 18.000 = 1.080.000 J = 0,3 kWh'],
           ['LED', 'W = 8 × 18.000 = 144.000 J = 0,04 kWh'],
-          ['Ergebnis', 'Die Gluehbirne braucht fast 8-mal so viel Energie!']
+          ['Ergebnis', 'Die Glühbirne braucht fast 8-mal so viel Energie!']
         ]
       }
     ],
@@ -238,10 +238,10 @@ const TABS = {
     chip: 'Praxis',
     title: 'Mechanik im Bäderalltag',
     intro:
-      'Im Schwimmbad begegnen dir Kraft, Arbeit und Leistung überall: Umwaelzpumpen mit Kilowatt-Angaben, Hubmotoren für Beckenabdeckungen, Heizkessel und Stromzähler. Hier uebst du mit echten Aufgaben aus dem Bäderalltag.',
+      'Im Schwimmbad begegnen dir Kraft, Arbeit und Leistung überall: Umwälzpumpen mit Kilowatt-Angaben, Hubmotoren für Beckenabdeckungen, Heizkessel und Stromzähler. Hier übst du mit echten Aufgaben aus dem Bäderalltag.',
     motto: 'Pumpen, Motoren, Energie — alles ist Mechanik.',
     rules: [
-      'Umwaelzpumpen haben typisch 2 bis 7 kW Leistung.',
+      'Umwälzpumpen haben typisch 2 bis 7 kW Leistung.',
       'Energieverbrauch = Leistung × Laufzeit. Auf der Stromrechnung steht kWh.',
       'Hebeanlagen und Beckenabdeckungen: Kraft = Gewicht × 10, dann Arbeit = Kraft × Hubhöhe.',
       'Stromkosten berechnen: kWh × Preis pro kWh (ca. 0,30 Euro).',
@@ -254,7 +254,7 @@ const TABS = {
       },
       {
         title: '2. Laufzeit bestimmen',
-        text: 'Wie lange laeuft das Gerät? Im Schwimmbad laufen Pumpen oft 8-16 Stunden am Tag.'
+        text: 'Wie lange läuft das Gerät? Im Schwimmbad laufen Pumpen oft 8-16 Stunden am Tag.'
       },
       {
         title: '3. Energieverbrauch berechnen',
@@ -267,8 +267,8 @@ const TABS = {
     ],
     examples: [
       {
-        title: 'Umwaelzpumpe — Tagesverbrauch',
-        given: 'Die Umwaelzpumpe hat 5,5 kW und laeuft 14 Stunden am Tag.',
+        title: 'Umwälzpumpe — Tagesverbrauch',
+        given: 'Die Umwälzpumpe hat 5,5 kW und läuft 14 Stunden am Tag.',
         question: 'Wie viel Energie verbraucht sie pro Tag und was kostet das?',
         steps: [
           ['Energie', '5,5 kW × 14 h = 77 kWh pro Tag'],
@@ -318,7 +318,7 @@ const TABS = {
       'Bei Prüfungsaufgaben: Erst alle Werte in Grundeinheiten umrechnen (N, m, s, J, W).'
     ],
     quiz: {
-      question: 'Eine 3-kW-Pumpe laeuft 8 Stunden. Strom kostet 0,30 Euro/kWh. Was kostet das?',
+      question: 'Eine 3-kW-Pumpe läuft 8 Stunden. Strom kostet 0,30 Euro/kWh. Was kostet das?',
       options: ['7,20 Euro', '24,00 Euro', '2,40 Euro'],
       correctIndex: 0,
       explanation: '3 kW × 8 h = 24 kWh. 24 kWh × 0,30 Euro = 7,20 Euro.'

@@ -9,7 +9,7 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist Volumen?',
     intro:
-      'Das Volumen sagt dir, wie viel Platz in einem Körper ist — also wie viel Wasser in ein Becken passt. Für deine Ausbildung als Fachangestellte/r für Bäderbetriebe ist das die wichtigste Größe ueberhaupt: Du brauchst das Volumen für jede Chlor-Dosierung, jede Filterberechnung und jede Wasseraufbereitung.',
+      'Das Volumen sagt dir, wie viel Platz in einem Körper ist — also wie viel Wasser in ein Becken passt. Für deine Ausbildung als Fachangestellte/r für Bäderbetriebe ist das die wichtigste Größe überhaupt: Du brauchst das Volumen für jede Chlor-Dosierung, jede Filterberechnung und jede Wasseraufbereitung.',
     motto: 'Länge × Breite × Tiefe = Volumen.',
     rules: [
       'Volumen = Länge × Breite × Tiefe (bei rechteckigen Becken).',
@@ -90,27 +90,27 @@ const TABS = {
     chip: 'Berechnung',
     title: 'Volumen Schritt für Schritt berechnen',
     intro:
-      'Hier lernst du, wie du das Volumen verschiedener Beckenformen berechnest. Rechteckige Becken sind einfach, aber was machst du, wenn die Tiefe nicht überall gleich ist? Das kommt oft vor — zum Beispiel bei Nichtschwimmerbecken mit schraegstem Boden.',
+      'Hier lernst du, wie du das Volumen verschiedener Beckenformen berechnest. Rechteckige Becken sind einfach, aber was machst du, wenn die Tiefe nicht überall gleich ist? Das kommt oft vor — zum Beispiel bei Nichtschwimmerbecken mit schrägstem Boden.',
     motto: 'Erst die Fläche, dann die Tiefe dazu.',
     rules: [
-      'Bei gleichmaessiger Tiefe: Volumen = Länge × Breite × Tiefe.',
+      'Bei gleichmäßiger Tiefe: Volumen = Länge × Breite × Tiefe.',
       'Bei unterschiedlicher Tiefe: Nimm die DURCHSCHNITTSTIEFE (tiefste Stelle + flachste Stelle geteilt durch 2).',
       'Durchschnittstiefe = (tiefste Stelle + flachste Stelle) ÷ 2.',
       'Die Grundfläche (Länge × Breite) ist immer der erste Rechenschritt.',
-      'Pruefe dein Ergebnis: Ein 25-m-Becken hat meistens zwischen 400 und 700 m³.'
+      'Prüfe dein Ergebnis: Ein 25-m-Becken hat meistens zwischen 400 und 700 m³.'
     ],
     steps: [
       {
         title: '1. Beckenform erkennen',
-        text: 'Ist die Tiefe überall gleich? Dann einfach rechnen. Hat das Becken einen schraegen Boden? Dann brauchst du die Durchschnittstiefe.'
+        text: 'Ist die Tiefe überall gleich? Dann einfach rechnen. Hat das Becken einen schrägen Boden? Dann brauchst du die Durchschnittstiefe.'
       },
       {
         title: '2. Durchschnittstiefe berechnen',
-        text: 'Bei schraegstem Boden: (tiefste + flachste Stelle) ÷ 2. Beispiel: (2,0 m + 1,0 m) ÷ 2 = 1,5 m Durchschnittstiefe.'
+        text: 'Bei schrägstem Boden: (tiefste + flachste Stelle) ÷ 2. Beispiel: (2,0 m + 1,0 m) ÷ 2 = 1,5 m Durchschnittstiefe.'
       },
       {
         title: '3. Grundfläche berechnen',
-        text: 'Länge × Breite ergibt die Grundfläche in m². Das ist immer gleich, egal ob der Boden schraeg ist oder nicht.'
+        text: 'Länge × Breite ergibt die Grundfläche in m². Das ist immer gleich, egal ob der Boden schräg ist oder nicht.'
       },
       {
         title: '4. Volumen = Fläche × Tiefe',
@@ -119,7 +119,7 @@ const TABS = {
     ],
     examples: [
       {
-        title: 'Becken mit gleichmaessiger Tiefe',
+        title: 'Becken mit gleichmäßiger Tiefe',
         given: 'Ein Becken ist 20 m lang, 10 m breit und überall 1,35 m tief.',
         question: 'Wie gross ist das Volumen?',
         steps: [
@@ -130,7 +130,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Becken mit schraegstem Boden',
+        title: 'Becken mit schrägstem Boden',
         given: 'Ein Nichtschwimmerbecken ist 16,67 m lang, 8 m breit. Tiefe von 0,60 m bis 1,35 m.',
         question: 'Wie gross ist das Volumen?',
         steps: [
@@ -153,7 +153,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Die Durchschnittstiefe gilt NUR bei einem gleichmaessig schraegen Boden (keine Stufen!).',
+      'Die Durchschnittstiefe gilt NUR bei einem gleichmäßig schrägen Boden (keine Stufen!).',
       'Bei Becken mit Stufen musst du ZWEI getrennte Bereiche berechnen und dann addieren.',
       'Verwechsle nicht Becken-Tiefe und Wassertiefe — der Wasserstand ist oft niedriger als der Beckenrand.'
     ],
@@ -251,12 +251,12 @@ const TABS = {
     chip: 'Praxis',
     title: 'Beckenvolumen im Bäderalltag',
     intro:
-      'Hier uebst du mit echten Beckengrößen aus dem Schwimmbadbetrieb. Schwimmerbecken, Lehrschwimmbecken, Nichtschwimmerbecken, Planschbecken — jedes hat andere Masse. Und das Volumen brauchst du, um die richtige Menge Chlor zu dosieren!',
+      'Hier übst du mit echten Beckengrößen aus dem Schwimmbadbetrieb. Schwimmerbecken, Lehrschwimmbecken, Nichtschwimmerbecken, Planschbecken — jedes hat andere Masse. Und das Volumen brauchst du, um die richtige Menge Chlor zu dosieren!',
     motto: 'Ohne Volumen keine Dosierung.',
     rules: [
       'Schwimmerbecken (25 m): typisch 400–700 m³ je nach Breite und Tiefe.',
       'Lehrschwimmbecken: typisch 60–150 m³ (kleiner und flacher).',
-      'Nichtschwimmerbecken: typisch 100–300 m³ (oft mit schraegstem Boden).',
+      'Nichtschwimmerbecken: typisch 100–300 m³ (oft mit schrägstem Boden).',
       'Planschbecken: typisch 3–15 m³ (sehr flach, oft unter 0,40 m Tiefe).',
       'Für die Chlor-Dosierung brauchst du IMMER das aktuelle Wasservolumen, nicht das Beckenvolumen!'
     ],
@@ -267,7 +267,7 @@ const TABS = {
       },
       {
         title: '2. Volumen berechnen',
-        text: 'Länge × Breite × (Durchschnitts-)Tiefe = Volumen in m³. Bei schraegstem Boden die Durchschnittstiefe nehmen!'
+        text: 'Länge × Breite × (Durchschnitts-)Tiefe = Volumen in m³. Bei schrägstem Boden die Durchschnittstiefe nehmen!'
       },
       {
         title: '3. In Liter umrechnen',
@@ -275,7 +275,7 @@ const TABS = {
       },
       {
         title: '4. Chlor-Menge berechnen',
-        text: 'Volumen in m³ × gewuenschte Dosierung in g/m³ = benötigte Chlormenge in Gramm. Beispiel: 500 m³ × 0,3 g/m³ = 150 g.'
+        text: 'Volumen in m³ × gewünschte Dosierung in g/m³ = benötigte Chlormenge in Gramm. Beispiel: 500 m³ × 0,3 g/m³ = 150 g.'
       }
     ],
     examples: [
@@ -302,7 +302,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Nichtschwimmerbecken mit schraegstem Boden',
+        title: 'Nichtschwimmerbecken mit schrägstem Boden',
         given: 'Ein Nichtschwimmerbecken ist 16,67 m lang, 10 m breit. Tiefe von 0,60 m bis 1,35 m.',
         question: 'Wie gross ist das Volumen?',
         steps: [
@@ -313,7 +313,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Planschbecken — kleine Menge, grosse Wirkung',
+        title: 'Planschbecken — kleine Menge, große Wirkung',
         given: 'Ein Planschbecken ist 6 m lang, 4 m breit und 0,30 m tief. Dosierung: 0,5 g/m³.',
         question: 'Wie viel Chlor brauchst du?',
         steps: [

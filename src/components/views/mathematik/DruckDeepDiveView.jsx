@@ -9,7 +9,7 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist Druck?',
     intro:
-      'Druck begegnet dir im Schwimmbad überall: am Manometer der Pumpe, im Filterkessel, beim Tauchen im Becken. Druck ist nichts anderes als eine Kraft, die auf eine bestimmte Fläche drueckt. Je kleiner die Fläche, desto größer der Druck — wie bei einem Nagel: Die Spitze ist winzig, deshalb dringt er ins Holz.',
+      'Druck begegnet dir im Schwimmbad überall: am Manometer der Pumpe, im Filterkessel, beim Tauchen im Becken. Druck ist nichts anderes als eine Kraft, die auf eine bestimmte Fläche drückt. Je kleiner die Fläche, desto größer der Druck — wie bei einem Nagel: Die Spitze ist winzig, deshalb dringt er ins Holz.',
     motto: 'Druck = Kraft geteilt durch Fläche.',
     rules: [
       'Druck entsteht, wenn eine Kraft auf eine Fläche wirkt.',
@@ -20,8 +20,8 @@ const TABS = {
     ],
     steps: [
       {
-        title: '1. Was drueckt wohin?',
-        text: 'Finde heraus, welche Kraft wirkt und auf welche Fläche sie drueckt. Beispiel: 500 N druecken auf eine Fläche von 0,1 m².'
+        title: '1. Was drückt wohin?',
+        text: 'Finde heraus, welche Kraft wirkt und auf welche Fläche sie drückt. Beispiel: 500 N drücken auf eine Fläche von 0,1 m².'
       },
       {
         title: '2. Formel aufschreiben',
@@ -33,7 +33,7 @@ const TABS = {
       },
       {
         title: '4. Ergebnis prüfen',
-        text: 'Macht das Ergebnis Sinn? Kleine Fläche und grosse Kraft = hoher Druck. Passt!'
+        text: 'Macht das Ergebnis Sinn? Kleine Fläche und große Kraft = hoher Druck. Passt!'
       }
     ],
     examples: [
@@ -50,7 +50,7 @@ const TABS = {
       },
       {
         title: 'Bäder-Beispiel: Wasserstrahl',
-        given: 'Eine Reinigungsduese drueckt mit 60 N auf eine Fläche von 0,0002 m².',
+        given: 'Eine Reinigungsdüse drückt mit 60 N auf eine Fläche von 0,0002 m².',
         question: 'Wie hoch ist der Druck am Auftreffpunkt?',
         steps: [
           ['Formel', 'p = F ÷ A'],
@@ -78,7 +78,7 @@ const TABS = {
       'Gewicht in kg ist KEINE Kraft! Erst mit 10 malnehmen (oder genauer 9,81) für Newton.'
     ],
     quiz: {
-      question: 'Eine Kraft von 1.000 N drueckt auf 0,05 m². Wie gross ist der Druck?',
+      question: 'Eine Kraft von 1.000 N drückt auf 0,05 m². Wie gross ist der Druck?',
       options: ['0,2 bar', '0,5 bar', '2 bar'],
       correctIndex: 0,
       explanation: 'p = 1.000 N ÷ 0,05 m² = 20.000 Pa = 0,2 bar.'
@@ -90,14 +90,14 @@ const TABS = {
     chip: 'Wasserdruck',
     title: 'Druck unter Wasser — Hydrostatischer Druck',
     intro:
-      'Jeder, der schon mal getaucht ist, kennt das: Je tiefer man taucht, desto mehr Druck spuert man auf den Ohren. Das liegt am Gewicht des Wassers über dir. Pro Meter Wassertiefe steigt der Druck um ungefaehr 0,1 bar. Diese Faustregel brauchst du im Schwimmbad ständig!',
+      'Jeder, der schon mal getaucht ist, kennt das: Je tiefer man taucht, desto mehr Druck spürt man auf den Ohren. Das liegt am Gewicht des Wassers über dir. Pro Meter Wassertiefe steigt der Druck um ungefähr 0,1 bar. Diese Faustregel brauchst du im Schwimmbad ständig!',
     motto: '1 Meter Tiefe ≈ 0,1 bar Wasserdruck.',
     rules: [
       'Wasser hat ein Gewicht — und dieses Gewicht erzeugt Druck.',
       'Faustregel: Pro 1 Meter Wassertiefe steigt der Druck um ca. 0,1 bar.',
       'Bei 10 Meter Tiefe herrscht ca. 1 bar Wasserdruck (plus Luftdruck).',
       'Der Druck wirkt von ALLEN Seiten — nicht nur von oben.',
-      'Hydrostatischer Druck haengt NUR von der Tiefe ab, nicht von der Beckengröße.'
+      'Hydrostatischer Druck hängt NUR von der Tiefe ab, nicht von der Beckengröße.'
     ],
     steps: [
       {
@@ -110,11 +110,11 @@ const TABS = {
       },
       {
         title: '3. Luftdruck beachten',
-        text: 'Auf der Wasseroberfläche drueckt schon die Luft mit ca. 1 bar. Gesamtdruck am Boden: 1 bar + 0,2 bar = 1,2 bar.'
+        text: 'Auf der Wasseroberfläche drückt schon die Luft mit ca. 1 bar. Gesamtdruck am Boden: 1 bar + 0,2 bar = 1,2 bar.'
       },
       {
         title: '4. Was bedeutet das praktisch?',
-        text: 'Beim Tauchen spuerst du den Wasserdruck auf den Ohren. Für Rohre und Beckenwaende muss der Druck beruecksichtigt werden.'
+        text: 'Beim Tauchen spürst du den Wasserdruck auf den Ohren. Für Rohre und Beckenwände muss der Druck berücksichtigt werden.'
       }
     ],
     examples: [
@@ -147,16 +147,16 @@ const TABS = {
         steps: [
           ['Faustregel', '1 m Tiefe ≈ 0,1 bar'],
           ['Rechnung', '1,35 m × 0,1 bar/m = 0,135 bar'],
-          ['Bedeutung', '0,135 bar auf dem Trommelfell — das spuert man!'],
-          ['Ergebnis', 'Schon bei 1,35 m drueckt es merkbar auf die Ohren']
+          ['Bedeutung', '0,135 bar auf dem Trommelfell — das spürt man!'],
+          ['Ergebnis', 'Schon bei 1,35 m drückt es merkbar auf die Ohren']
         ]
       }
     ],
     pitfalls: [
-      'Wasserdruck haengt NUR von der Tiefe ab — ein schmales Rohr hat den gleichen Druck wie ein riesiges Becken!',
+      'Wasserdruck hängt NUR von der Tiefe ab — ein schmales Rohr hat den gleichen Druck wie ein riesiges Becken!',
       'Nicht vergessen: Der Luftdruck (ca. 1 bar) kommt IMMER noch dazu.',
       'Beim Tauchen: Druck-Ausgleich machen (Nase zuhalten und pusten), sonst kann das Trommelfell Schaden nehmen.',
-      'Die Faustregel 0,1 bar pro Meter gilt für Suesswasser — Salzwasser ist etwas schwerer.'
+      'Die Faustregel 0,1 bar pro Meter gilt für Süßwasser — Salzwasser ist etwas schwerer.'
     ],
     quiz: {
       question: 'Wie hoch ist der reine Wasserdruck in 4 Meter Tiefe (ohne Luftdruck)?',
@@ -183,7 +183,7 @@ const TABS = {
     steps: [
       {
         title: '1. Was ist gesucht?',
-        text: 'Lies die Aufgabe genau: Ist der Druck, die Kraft oder die Fläche gesucht? Davon haengt ab, welche Formel du brauchst.'
+        text: 'Lies die Aufgabe genau: Ist der Druck, die Kraft oder die Fläche gesucht? Davon hängt ab, welche Formel du brauchst.'
       },
       {
         title: '2. Einheiten umrechnen',
@@ -201,7 +201,7 @@ const TABS = {
     examples: [
       {
         title: 'Druck berechnen',
-        given: 'Eine Pumpe drueckt mit 5.000 N auf einen Kolben mit 0,01 m² Fläche.',
+        given: 'Eine Pumpe drückt mit 5.000 N auf einen Kolben mit 0,01 m² Fläche.',
         question: 'Wie hoch ist der Druck in bar?',
         steps: [
           ['Formel', 'p = F ÷ A'],
@@ -213,12 +213,12 @@ const TABS = {
       {
         title: 'Kraft berechnen (Formel umgestellt)',
         given: 'Im Filterkessel herrschen 2 bar Druck. Der Deckeldurchmesser ist so, dass die Deckelfläche 0,2 m² beträgt.',
-        question: 'Welche Kraft drueckt auf den Deckel?',
+        question: 'Welche Kraft drückt auf den Deckel?',
         steps: [
           ['Formel', 'F = p × A'],
           ['Umrechnen', '2 bar = 200.000 Pa'],
           ['Einsetzen', 'F = 200.000 Pa × 0,2 m² = 40.000 N'],
-          ['Ergebnis', '40.000 N (≈ 4 Tonnen!) druecken auf den Deckel']
+          ['Ergebnis', '40.000 N (≈ 4 Tonnen!) drücken auf den Deckel']
         ]
       },
       {
@@ -252,7 +252,7 @@ const TABS = {
     chip: 'Praxis',
     title: 'Druck im Bäderalltag',
     intro:
-      'Im Schwimmbad begegnet dir Druck bei jeder Schicht: Der Filterdruck auf dem Manometer, der Pumpendruck in der Leitung, der Wasserdruck am Beckenboden. Hier uebst du mit echten Beispielen aus der Praxis, damit du für die Prüfung und den Alltag fit bist.',
+      'Im Schwimmbad begegnet dir Druck bei jeder Schicht: Der Filterdruck auf dem Manometer, der Pumpendruck in der Leitung, der Wasserdruck am Beckenboden. Hier übst du mit echten Beispielen aus der Praxis, damit du für die Prüfung und den Alltag fit bist.',
     motto: 'Manometer lesen, Druck verstehen, sicher arbeiten.',
     rules: [
       'Der Filterdruck zeigt an, ob der Filter sauber ist — steigender Druck = Filter verschmutzt.',
@@ -276,7 +276,7 @@ const TABS = {
       },
       {
         title: '4. Sicherheit beachten',
-        text: 'Druckbehaelter (Filterkessel) NIEMALS oeffnen, solange Druck drauf ist! Erst Anlage abschalten und Druck ablassen.'
+        text: 'Druckbehälter (Filterkessel) NIEMALS öffnen, solange Druck drauf ist! Erst Anlage abschalten und Druck ablassen.'
       }
     ],
     examples: [
@@ -294,23 +294,23 @@ const TABS = {
       {
         title: 'Wasserdruck auf Beckenfolie',
         given: 'Ein Edelstahl-Becken ist 2,5 m tief. Die Bodenfläche beträgt 250 m².',
-        question: 'Welche Gesamtkraft drueckt auf den Beckenboden?',
+        question: 'Welche Gesamtkraft drückt auf den Beckenboden?',
         steps: [
           ['Wasserdruck', '2,5 m × 0,1 bar/m = 0,25 bar = 25.000 Pa'],
           ['Formel', 'F = p × A'],
           ['Einsetzen', 'F = 25.000 Pa × 250 m² = 6.250.000 N'],
-          ['Ergebnis', 'Ca. 6.250 kN (≈ 625 Tonnen!) druecken auf den Boden']
+          ['Ergebnis', 'Ca. 6.250 kN (≈ 625 Tonnen!) drücken auf den Boden']
         ]
       },
       {
         title: 'Pumpendruck und Leitungsverlust',
-        given: 'Die Umwaelzpumpe liefert 2,5 bar. Am Einlauf ins Becken kommen nur noch 1,8 bar an.',
+        given: 'Die Umwälzpumpe liefert 2,5 bar. Am Einlauf ins Becken kommen nur noch 1,8 bar an.',
         question: 'Wie gross ist der Druckverlust in der Leitung?',
         steps: [
           ['Pumpe liefert', '2,5 bar'],
           ['Am Einlauf', '1,8 bar'],
           ['Druckverlust', '2,5 − 1,8 = 0,7 bar'],
-          ['Ergebnis', '0,7 bar gehen in der Leitung verloren (Reibung, Boegen, Filter)']
+          ['Ergebnis', '0,7 bar gehen in der Leitung verloren (Reibung, Bögen, Filter)']
         ]
       },
       {
@@ -326,16 +326,16 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'NIEMALS einen Druckbehaelter oeffnen, solange das Manometer Druck anzeigt!',
+      'NIEMALS einen Druckbehälter öffnen, solange das Manometer Druck anzeigt!',
       'Filterdruck steigt langsam an — das ist normal. Erst wenn er deutlich über dem Sauberwert liegt, wird rueckgespült.',
-      'Druckverlust in der Leitung ist normal (Reibung). Aber ploetzlicher Druckverlust kann auf ein Leck hindeuten!',
+      'Druckverlust in der Leitung ist normal (Reibung). Aber plötzlicher Druckverlust kann auf ein Leck hindeuten!',
       'Manometer können kaputt sein — bei unlogischen Werten ein zweites Manometer gegenprüfen.'
     ],
     quiz: {
       question: 'Der Filterdruck nach Rückspülung war 0,7 bar. Jetzt zeigt er 1,1 bar. Wie viel bar Druckanstieg?',
       options: ['0,3 bar', '0,4 bar', '0,7 bar'],
       correctIndex: 1,
-      explanation: '1,1 bar − 0,7 bar = 0,4 bar Druckanstieg. Rückspülung wird bald faellig!'
+      explanation: '1,1 bar − 0,7 bar = 0,4 bar Druckanstieg. Rückspülung wird bald fällig!'
     }
   }
 };
@@ -345,12 +345,12 @@ const TAB_ORDER = ['grundlagen', 'wasserdruck', 'berechnung', 'praxis'];
 /* ─── Reference table: unit conversions ────────────────────────────────────── */
 
 const UNIT_TABLE = [
-  ['Einheit', 'Abkuerzung', 'Umrechnung'],
+  ['Einheit', 'Abkürzung', 'Umrechnung'],
   ['Pascal', 'Pa', '1 Pa = 1 N/m²'],
   ['Kilopascal', 'kPa', '1 kPa = 1.000 Pa'],
   ['Bar', 'bar', '1 bar = 100.000 Pa'],
   ['Millibar', 'mbar', '1 mbar = 0,001 bar = 100 Pa'],
-  ['Atmosphaere', 'atm', '1 atm ≈ 1,013 bar']
+  ['Atmosphäre', 'atm', '1 atm ≈ 1,013 bar']
 ];
 
 /* ─── Shared components ─────────────────────────────────────────────────────── */
@@ -545,7 +545,7 @@ export default function DruckDeepDiveView() {
                         Einheit
                       </th>
                       <th className={`px-3 py-2 text-left font-semibold ${darkMode ? 'bg-teal-900/30 text-teal-300' : 'bg-teal-50 text-teal-700'}`}>
-                        Kuerzel
+                        Kürzel
                       </th>
                       <th className={`px-3 py-2 text-left font-semibold ${darkMode ? 'bg-teal-900/30 text-teal-300' : 'bg-teal-50 text-teal-700'}`}>
                         Umrechnung

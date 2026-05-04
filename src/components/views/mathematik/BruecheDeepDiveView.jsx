@@ -5,13 +5,13 @@ const TABS = {
   grundlagen: {
     id: 'grundlagen',
     chip: 'Grundlagen',
-    title: 'Was sind Brueche?',
+    title: 'Was sind Brüche?',
     intro:
-      'Ein Bruch ist ein Teil von einem Ganzen. Stell dir eine Pizza vor: Du schneidest sie in 4 Stuecke und isst 3 davon — das sind 3/4. Der Bruch sagt dir: Wie viele Teile hast du von wie vielen insgesamt?',
+      'Ein Bruch ist ein Teil von einem Ganzen. Stell dir eine Pizza vor: Du schneidest sie in 4 Stücke und isst 3 davon — das sind 3/4. Der Bruch sagt dir: Wie viele Teile hast du von wie vielen insgesamt?',
     motto: 'Oben = was du hast, unten = wie viele Teile es insgesamt gibt.',
     rules: [
       'Oben steht der Zähler — das ist die Anzahl der Teile, die du hast.',
-      'Unten steht der Nenner — das sagt, in wie viele Stuecke das Ganze geteilt ist.',
+      'Unten steht der Nenner — das sagt, in wie viele Stücke das Ganze geteilt ist.',
       'Der Bruchstrich bedeutet "geteilt durch": 3/4 = 3 ÷ 4 = 0,75.',
       'Wenn Zähler und Nenner gleich sind (z.B. 4/4), ist das genau 1 Ganzes.',
       'Wenn der Zähler größer ist als der Nenner (z.B. 5/4), hast du mehr als 1 Ganzes.'
@@ -23,67 +23,67 @@ const TABS = {
       },
       {
         title: '2. Bedeutung verstehen',
-        text: '3/4 heisst: Das Ganze wurde in 4 Teile geteilt, du hast 3 davon.'
+        text: '3/4 heißt: Das Ganze wurde in 4 Teile geteilt, du hast 3 davon.'
       },
       {
         title: '3. Als Dezimalzahl',
         text: 'Zähler durch Nenner teilen: 3 ÷ 4 = 0,75. Das ist derselbe Wert.'
       },
       {
-        title: '4. Alltags-Brueche merken',
-        text: '1/2 = 0,5 (Haelfte), 1/4 = 0,25 (Viertel), 3/4 = 0,75 (Dreiviertel).'
+        title: '4. Alltags-Brüche merken',
+        text: '1/2 = 0,5 (Hälfte), 1/4 = 0,25 (Viertel), 3/4 = 0,75 (Dreiviertel).'
       }
     ],
     examples: [
       {
         title: 'Pizza-Beispiel',
-        given: 'Eine Pizza hat 8 Stuecke. Du isst 3 davon.',
+        given: 'Eine Pizza hat 8 Stücke. Du isst 3 davon.',
         question: 'Welcher Bruch beschreibt deinen Anteil?',
         steps: [
-          ['Ganze Stuecke', '8 (= Nenner)'],
-          ['Deine Stuecke', '3 (= Zähler)'],
+          ['Ganze Stücke', '8 (= Nenner)'],
+          ['Deine Stücke', '3 (= Zähler)'],
           ['Bruch', '3/8'],
           ['Als Dezimalzahl', '3 ÷ 8 = 0,375']
         ]
       },
       {
         title: 'Schwimmbad-Beispiel',
-        given: 'Ein Becken ist zu 3/4 gefuellt.',
+        given: 'Ein Becken ist zu 3/4 gefüllt.',
         question: 'Wie viel Prozent ist das?',
         steps: [
           ['Bruch', '3/4'],
           ['Dezimal', '3 ÷ 4 = 0,75'],
           ['Prozent', '0,75 × 100 = 75 %'],
-          ['Ergebnis', 'Das Becken ist zu 75 % gefuellt']
+          ['Ergebnis', 'Das Becken ist zu 75 % gefüllt']
         ]
       }
     ],
     pitfalls: [
       'Der Nenner (unten) darf NIE 0 sein — durch 0 teilen geht nicht.',
       '1/2 ist NICHT dasselbe wie 1 und 2 — es ist eine halbe Einheit.',
-      'Größerer Nenner = kleinere Stuecke: 1/8 ist kleiner als 1/4.'
+      'Größerer Nenner = kleinere Stücke: 1/8 ist kleiner als 1/4.'
     ],
     quiz: {
       question: 'Was ist größer: 1/3 oder 1/5?',
       options: ['1/5', '1/3', 'Beide gleich'],
       correctIndex: 1,
-      explanation: 'Je kleiner der Nenner, desto größer das Stueck. 1/3 > 1/5.'
+      explanation: 'Je kleiner der Nenner, desto größer das Stück. 1/3 > 1/5.'
     }
   },
 
   rechnen: {
     id: 'rechnen',
     chip: 'Rechnen',
-    title: 'Mit Bruechen rechnen',
+    title: 'Mit Brüchen rechnen',
     intro:
-      'Brueche addieren, subtrahieren, malnehmen und teilen — das klingt kompliziert, folgt aber klaren Regeln. Das Wichtigste: Zum Addieren und Subtrahieren müssen die Nenner gleich sein!',
+      'Brüche addieren, subtrahieren, malnehmen und teilen — das klingt kompliziert, folgt aber klaren Regeln. Das Wichtigste: Zum Addieren und Subtrahieren müssen die Nenner gleich sein!',
     motto: 'Gleicher Nenner = einfach rechnen. Verschiedene Nenner = erst angleichen!',
     rules: [
       'Addition/Subtraktion: Nur bei gleichem Nenner! Dann rechnest du nur die Zähler.',
       'Verschiedene Nenner? Erst gleichnamig machen (gemeinsamen Nenner finden).',
       'Multiplikation: Zähler × Zähler und Nenner × Nenner. Ganz einfach!',
       'Division: Den zweiten Bruch umdrehen (Kehrwert) und dann malnehmen.',
-      'Nach dem Rechnen immer prüfen: Kann man das Ergebnis kuerzen?'
+      'Nach dem Rechnen immer prüfen: Kann man das Ergebnis kürzen?'
     ],
     steps: [
       {
@@ -132,7 +132,7 @@ const TABS = {
         steps: [
           ['Zähler × Zähler', '3 × 2 = 6'],
           ['Nenner × Nenner', '4 × 3 = 12'],
-          ['Ergebnis', '6/12 = 1/2 (gekuerzt)']
+          ['Ergebnis', '6/12 = 1/2 (gekürzt)']
         ]
       }
     ],
@@ -149,19 +149,19 @@ const TABS = {
     }
   },
 
-  kuerzen: {
-    id: 'kuerzen',
-    chip: 'Kuerzen & Erweitern',
-    title: 'Brueche kuerzen und erweitern',
+  kürzen: {
+    id: 'kürzen',
+    chip: 'Kürzen & Erweitern',
+    title: 'Brüche kürzen und erweitern',
     intro:
-      'Kuerzen macht Brueche einfacher, Erweitern macht sie gleichnamig. Beim Kuerzen teilst du oben und unten durch dieselbe Zahl. Beim Erweitern nimmst du oben und unten mal dieselbe Zahl. Der Wert des Bruchs aendert sich dabei NIE.',
-    motto: 'Kuerzen = einfacher machen. Erweitern = Nenner angleichen.',
+      'Kürzen macht Brüche einfacher, Erweitern macht sie gleichnamig. Beim Kürzen teilst du oben und unten durch dieselbe Zahl. Beim Erweitern nimmst du oben und unten mal dieselbe Zahl. Der Wert des Bruchs ändert sich dabei NIE.',
+    motto: 'Kürzen = einfacher machen. Erweitern = Nenner angleichen.',
     rules: [
-      'Kuerzen: Zähler und Nenner durch dieselbe Zahl teilen. 6/8 ÷ 2 = 3/4.',
+      'Kürzen: Zähler und Nenner durch dieselbe Zahl teilen. 6/8 ÷ 2 = 3/4.',
       'Erweitern: Zähler und Nenner mit derselben Zahl malnehmen. 1/2 × 3 = 3/6.',
-      'Kuerzen aendert den Wert NICHT: 6/8 = 3/4 = 0,75.',
-      'Erweitern aendert den Wert NICHT: 1/2 = 3/6 = 0,5.',
-      'Ein Bruch ist vollständig gekuerzt, wenn man nicht mehr weiter teilen kann.'
+      'Kürzen ändert den Wert NICHT: 6/8 = 3/4 = 0,75.',
+      'Erweitern ändert den Wert NICHT: 1/2 = 3/6 = 0,5.',
+      'Ein Bruch ist vollständig gekürzt, wenn man nicht mehr weiter teilen kann.'
     ],
     steps: [
       {
@@ -173,8 +173,8 @@ const TABS = {
         text: '12 ÷ 6 = 2 und 18 ÷ 6 = 3. Also 12/18 = 2/3.'
       },
       {
-        title: '3. Prüfen: Kann man weiter kuerzen?',
-        text: '2 und 3 haben keinen gemeinsamen Teiler mehr. Der Bruch ist fertig gekuerzt.'
+        title: '3. Prüfen: Kann man weiter kürzen?',
+        text: '2 und 3 haben keinen gemeinsamen Teiler mehr. Der Bruch ist fertig gekürzt.'
       },
       {
         title: '4. Zum Erweitern: Mit derselben Zahl malnehmen',
@@ -183,13 +183,13 @@ const TABS = {
     ],
     examples: [
       {
-        title: 'Kuerzen',
-        given: 'Der Bruch 15/20 soll gekuerzt werden.',
+        title: 'Kürzen',
+        given: 'Der Bruch 15/20 soll gekürzt werden.',
         question: 'Was ist das Ergebnis?',
         steps: [
           ['Gemeinsamer Teiler', '5 (beide durch 5 teilbar)'],
-          ['Zähler kuerzen', '15 ÷ 5 = 3'],
-          ['Nenner kuerzen', '20 ÷ 5 = 4'],
+          ['Zähler kürzen', '15 ÷ 5 = 3'],
+          ['Nenner kürzen', '20 ÷ 5 = 4'],
           ['Ergebnis', '15/20 = 3/4']
         ]
       },
@@ -207,11 +207,11 @@ const TABS = {
     ],
     pitfalls: [
       'IMMER Zähler und Nenner durch die GLEICHE Zahl teilen!',
-      'Nur mit einer Zahl kuerzen, nicht mit verschiedenen Zahlen oben und unten.',
-      'Tipp: Durch 2 kuerzen, wenn beide Zahlen gerade sind. Durch 5, wenn beide auf 0 oder 5 enden.'
+      'Nur mit einer Zahl kürzen, nicht mit verschiedenen Zahlen oben und unten.',
+      'Tipp: Durch 2 kürzen, wenn beide Zahlen gerade sind. Durch 5, wenn beide auf 0 oder 5 enden.'
     ],
     quiz: {
-      question: 'Was ist 24/36 vollständig gekuerzt?',
+      question: 'Was ist 24/36 vollständig gekürzt?',
       options: ['4/6', '2/3', '12/18'],
       correctIndex: 1,
       explanation: '24 und 36 durch 12 teilen: 24÷12 = 2, 36÷12 = 3. Ergebnis: 2/3.'
@@ -221,21 +221,21 @@ const TABS = {
   praxis: {
     id: 'praxis',
     chip: 'Praxis',
-    title: 'Brueche im Bäderalltag',
+    title: 'Brüche im Bäderalltag',
     intro:
-      'Im Schwimmbad begegnest du Bruechen oefter als du denkst: Becken halb voll, Dreiviertel der Schicht rum, ein Drittel der Chemikalie verbraucht. Hier uebst du mit echten Situationen.',
-    motto: 'Brueche sind Alltag — auch im Schwimmbad.',
+      'Im Schwimmbad begegnest du Brüchen öfter als du denkst: Becken halb voll, Dreiviertel der Schicht rum, ein Drittel der Chemikalie verbraucht. Hier übst du mit echten Situationen.',
+    motto: 'Brüche sind Alltag — auch im Schwimmbad.',
     rules: [
-      'Fuellstaende werden oft als Bruch angegeben: 3/4 voll, 1/2 leer.',
-      'Mischungsverhältnisse sind Brueche: 1 Teil Chemikalie auf 3 Teile Wasser = 1/4 Anteil.',
+      'Füllstände werden oft als Bruch angegeben: 3/4 voll, 1/2 leer.',
+      'Mischungsverhältnisse sind Brüche: 1 Teil Chemikalie auf 3 Teile Wasser = 1/4 Anteil.',
       'Schichtanteile: 1/3 der Schicht = ein Drittel der Arbeitszeit.',
-      'Prozent und Brueche sind das Gleiche: 50 % = 1/2, 25 % = 1/4, 75 % = 3/4.',
+      'Prozent und Brüche sind das Gleiche: 50 % = 1/2, 25 % = 1/4, 75 % = 3/4.',
       'Tipp: Im Kopf mit Halben und Vierteln rechnen ist schneller als mit dem Taschenrechner.'
     ],
     steps: [
       {
         title: '1. Situation als Bruch aufschreiben',
-        text: '"Zwei Drittel des Beckens sind gefuellt" → 2/3. Schreib den Bruch hin.'
+        text: '"Zwei Drittel des Beckens sind gefüllt" → 2/3. Schreib den Bruch hin.'
       },
       {
         title: '2. Wenn nötig in Dezimal umwandeln',
@@ -252,8 +252,8 @@ const TABS = {
     ],
     examples: [
       {
-        title: 'Becken-Fuellung',
-        given: 'Ein 600 m³ Becken ist zu 3/4 gefuellt.',
+        title: 'Becken-Füllung',
+        given: 'Ein 600 m³ Becken ist zu 3/4 gefüllt.',
         question: 'Wie viel Wasser ist drin?',
         steps: [
           ['Bruch', '3/4 von 600 m³'],
@@ -264,23 +264,23 @@ const TABS = {
       },
       {
         title: 'Chemikalien-Vorrat',
-        given: 'Von 30 Litern Flockungsmittel ist noch 2/5 uebrig.',
+        given: 'Von 30 Litern Flockungsmittel ist noch 2/5 übrig.',
         question: 'Wie viel Liter sind noch da?',
         steps: [
           ['Bruch', '2/5 von 30 Litern'],
           ['Rechnung', '30 × 2 ÷ 5'],
           ['Ausrechnen', '60 ÷ 5 = 12'],
-          ['Ergebnis', '12 Liter sind noch uebrig']
+          ['Ergebnis', '12 Liter sind noch übrig']
         ]
       }
     ],
     pitfalls: [
-      '"Drei Viertel" heisst 3/4, nicht 3 und 4!',
+      '"Drei Viertel" heißt 3/4, nicht 3 und 4!',
       'Wenn ein Becken zu 3/4 voll ist, fehlt noch 1/4 bis ganz voll.',
-      'Bei Mischverhältnissen: 1:3 heisst 1 Teil von insgesamt 4 Teilen = 1/4.'
+      'Bei Mischverhältnissen: 1:3 heißt 1 Teil von insgesamt 4 Teilen = 1/4.'
     ],
     quiz: {
-      question: 'Ein 200 m³ Becken ist zu 3/5 gefuellt. Wie viel fehlt bis ganz voll?',
+      question: 'Ein 200 m³ Becken ist zu 3/5 gefüllt. Wie viel fehlt bis ganz voll?',
       options: ['80 m³', '120 m³', '60 m³'],
       correctIndex: 0,
       explanation: '3/5 sind drin, also fehlen 2/5. 200 × 2/5 = 80 m³.'
@@ -288,7 +288,7 @@ const TABS = {
   }
 };
 
-const TAB_ORDER = ['grundlagen', 'rechnen', 'kuerzen', 'praxis'];
+const TAB_ORDER = ['grundlagen', 'rechnen', 'kürzen', 'praxis'];
 
 function InfoCard({ darkMode, title, children }) {
   return (
@@ -299,7 +299,7 @@ function InfoCard({ darkMode, title, children }) {
   );
 }
 
-export default function BruecheDeepDiveView() {
+export default function BrücheDeepDiveView() {
   const { darkMode } = useApp();
   const [activeTab, setActiveTab] = useState('grundlagen');
   const [selectedAnswer, setSelectedAnswer] = useState(null);

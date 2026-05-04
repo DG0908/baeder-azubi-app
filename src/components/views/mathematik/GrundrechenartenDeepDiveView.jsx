@@ -7,7 +7,7 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Die vier Grundrechenarten',
     intro:
-      'Plus, Minus, Mal und Geteilt — das sind die vier Grundrechenarten. Alles in Mathe baut darauf auf. Ob du Badegaeste zaehlst, Eintrittsgelder zusammenrechnest oder Material bestellst: Ohne die Grundrechenarten geht nichts.',
+      'Plus, Minus, Mal und Geteilt — das sind die vier Grundrechenarten. Alles in Mathe baut darauf auf. Ob du Badegäste zählst, Eintrittsgelder zusammenrechnest oder Material bestellst: Ohne die Grundrechenarten geht nichts.',
     motto: 'Klammern zuerst, dann Punkt vor Strich.',
     rules: [
       'Es gibt vier Grundrechenarten: Addition (+), Subtraktion (-), Multiplikation (×) und Division (÷).',
@@ -27,11 +27,11 @@ const TABS = {
       },
       {
         title: '3. Punkt vor Strich',
-        text: 'Jetzt alle Mal- und Geteilt-Rechnungen loesen. Erst danach Plus und Minus.'
+        text: 'Jetzt alle Mal- und Geteilt-Rechnungen lösen. Erst danach Plus und Minus.'
       },
       {
         title: '4. Von links nach rechts',
-        text: 'Wenn nur noch gleiche Rechenzeichen uebrig sind (z.B. nur Plus), rechnest du einfach von links nach rechts.'
+        text: 'Wenn nur noch gleiche Rechenzeichen übrig sind (z.B. nur Plus), rechnest du einfach von links nach rechts.'
       }
     ],
     examples: [
@@ -58,7 +58,7 @@ const TABS = {
     ],
     pitfalls: [
       'NICHT einfach von links nach rechts rechnen — erst Punkt, dann Strich!',
-      'Klammern nie uebersehen — die gehen VOR allem anderen.',
+      'Klammern nie übersehen — die gehen VOR allem anderen.',
       '18 + 6 × 3 ist NICHT 72, sondern 36 (erst 6 × 3, dann + 18).'
     ],
     quiz: {
@@ -74,19 +74,19 @@ const TABS = {
     chip: 'Plus & Minus',
     title: 'Addition und Subtraktion',
     intro:
-      'Addition (Plus) und Subtraktion (Minus) sind die einfachsten Rechenarten. Du zaehlst dazu oder ziehst ab. Im Bad brauchst du das ständig: Gaeste zählen, Kassenabrechnung, Bestaende prüfen.',
+      'Addition (Plus) und Subtraktion (Minus) sind die einfachsten Rechenarten. Du zählst dazu oder ziehst ab. Im Bad brauchst du das ständig: Gäste zählen, Kassenabrechnung, Bestände prüfen.',
     motto: 'Plus zählt dazu, Minus zieht ab.',
     rules: [
       'Addition (+): Zwei oder mehr Zahlen zusammenzählen.',
       'Subtraktion (-): Eine Zahl von einer anderen abziehen.',
       'Die Reihenfolge beim Addieren ist egal: 3 + 5 = 5 + 3.',
       'Beim Subtrahieren ist die Reihenfolge WICHTIG: 8 - 3 ist nicht dasselbe wie 3 - 8.',
-      'Tipp: Grosse Zahlen in Schritten rechnen: 148 + 67 = 148 + 60 + 7 = 215.'
+      'Tipp: Große Zahlen in Schritten rechnen: 148 + 67 = 148 + 60 + 7 = 215.'
     ],
     steps: [
       {
         title: '1. Zahlen untereinander schreiben',
-        text: 'Einer unter Einer, Zehner unter Zehner. Das hilft bei grossen Zahlen enorm.'
+        text: 'Einer unter Einer, Zehner unter Zehner. Das hilft bei großen Zahlen enorm.'
       },
       {
         title: '2. Von rechts nach links rechnen',
@@ -103,15 +103,15 @@ const TABS = {
     ],
     examples: [
       {
-        title: 'Badegaeste zählen',
-        given: 'Vormittags kommen 148 Gaeste, nachmittags 67 Gaeste.',
-        question: 'Wie viele Gaeste waren es insgesamt?',
+        title: 'Badegäste zählen',
+        given: 'Vormittags kommen 148 Gäste, nachmittags 67 Gäste.',
+        question: 'Wie viele Gäste waren es insgesamt?',
         steps: [
           ['Aufgabe', '148 + 67'],
           ['Einer', '8 + 7 = 15 → 5 hinschreiben, 1 Uebertrag'],
           ['Zehner', '4 + 6 + 1 = 11 → 1 hinschreiben, 1 Uebertrag'],
           ['Hunderter', '1 + 0 + 1 = 2'],
-          ['Ergebnis', '215 Gaeste']
+          ['Ergebnis', '215 Gäste']
         ]
       },
       {
@@ -130,13 +130,13 @@ const TABS = {
     pitfalls: [
       'Uebertrag nicht vergessen — das ist der häufigste Fehler!',
       'Bei Subtraktion: Die größere Zahl muss oben stehen.',
-      'Einheiten immer mitschreiben: 148 Gaeste + 67 Gaeste = 215 Gaeste.'
+      'Einheiten immer mitschreiben: 148 Gäste + 67 Gäste = 215 Gäste.'
     ],
     quiz: {
-      question: 'Am Montag kamen 234 Gaeste, am Dienstag 189. Wie viele insgesamt?',
+      question: 'Am Montag kamen 234 Gäste, am Dienstag 189. Wie viele insgesamt?',
       options: ['413', '423', '433'],
       correctIndex: 1,
-      explanation: '234 + 189 = 423 Gaeste.'
+      explanation: '234 + 189 = 423 Gäste.'
     }
   },
 
@@ -145,14 +145,14 @@ const TABS = {
     chip: 'Mal & Geteilt',
     title: 'Multiplikation und Division',
     intro:
-      'Mal-Rechnen ist schnelles Zusammenzählen: 4 × 5 heisst "5 mal die 4" = 20. Teilen ist das Gegenteil: 20 ÷ 4 = 5. Im Bad brauchst du das für Materialbestellungen, Umrechnungen und Flächenberechnungen.',
+      'Mal-Rechnen ist schnelles Zusammenzählen: 4 × 5 heißt "5 mal die 4" = 20. Teilen ist das Gegenteil: 20 ÷ 4 = 5. Im Bad brauchst du das für Materialbestellungen, Umrechnungen und Flächenberechnungen.',
     motto: 'Mal ist schnelles Plus, Geteilt ist gerechtes Aufteilen.',
     rules: [
       'Multiplikation (×): Eine Zahl wird mehrfach genommen. 4 × 5 = 4 + 4 + 4 + 4 + 4 = 20.',
-      'Division (÷): Eine Zahl wird gleichmaessig aufgeteilt. 20 ÷ 4 = 5.',
+      'Division (÷): Eine Zahl wird gleichmäßig aufgeteilt. 20 ÷ 4 = 5.',
       'Die Reihenfolge beim Malnehmen ist egal: 4 × 5 = 5 × 4.',
       'Durch 0 teilen ist VERBOTEN — das geht nicht!',
-      'Trick: Mal 10 = eine Null anhaengen. Mal 100 = zwei Nullen anhaengen.'
+      'Trick: Mal 10 = eine Null anhängen. Mal 100 = zwei Nullen anhängen.'
     ],
     steps: [
       {
@@ -160,7 +160,7 @@ const TABS = {
         text: 'Die Reihen bis 10 × 10 solltest du auswendig können. Das spart enorm viel Zeit.'
       },
       {
-        title: '2. Grosse Zahlen zerlegen',
+        title: '2. Große Zahlen zerlegen',
         text: '23 × 4 = (20 × 4) + (3 × 4) = 80 + 12 = 92. Zerlege in einfache Teile!'
       },
       {
@@ -169,7 +169,7 @@ const TABS = {
       },
       {
         title: '4. Gegenrechnung machen',
-        text: 'Wenn 23 × 4 = 92, dann muss 92 ÷ 4 = 23 sein. So pruefst du dich selbst.'
+        text: 'Wenn 23 × 4 = 92, dann muss 92 ÷ 4 = 23 sein. So prüfst du dich selbst.'
       }
     ],
     examples: [
@@ -186,22 +186,22 @@ const TABS = {
       },
       {
         title: 'Gerecht aufteilen',
-        given: '156 Handtuecher sollen auf 12 Schraenke verteilt werden.',
+        given: '156 Handtücher sollen auf 12 Schränke verteilt werden.',
         question: 'Wie viele pro Schrank?',
         steps: [
           ['Aufgabe', '156 ÷ 12'],
           ['Ueberlegen', '12 × 10 = 120, 12 × 13 = 156'],
-          ['Ergebnis', '13 Handtuecher pro Schrank']
+          ['Ergebnis', '13 Handtücher pro Schrank']
         ]
       }
     ],
     pitfalls: [
       'Durch 0 teilen geht NICHT — wenn das in einer Aufgabe vorkommt, stimmt etwas nicht.',
       'Beim Zerlegen: Nicht die Teile vergessen zusammenzuzählen.',
-      'Einheiten beachten: Euro × Stueck ergibt keinen Sinn. Stueck × Euro pro Stueck = Euro.'
+      'Einheiten beachten: Euro × Stück ergibt keinen Sinn. Stück × Euro pro Stück = Euro.'
     ],
     quiz: {
-      question: '15 Gaeste kaufen je 3 Getraenke für 2 Euro. Wie viel wird eingenommen?',
+      question: '15 Gäste kaufen je 3 Getränke für 2 Euro. Wie viel wird eingenommen?',
       options: ['60 Euro', '90 Euro', '45 Euro'],
       correctIndex: 1,
       explanation: '15 × 3 × 2 = 90 Euro.'
@@ -213,23 +213,23 @@ const TABS = {
     chip: 'Praxis',
     title: 'Grundrechenarten im Bäderalltag',
     intro:
-      'Im Schwimmbad rechnest du jeden Tag: Gaeste zählen, Kasse abrechnen, Material bestellen, Schichtplaene prüfen. Hier uebst du mit echten Aufgaben aus dem Arbeitsalltag.',
+      'Im Schwimmbad rechnest du jeden Tag: Gäste zählen, Kasse abrechnen, Material bestellen, Schichtpläne prüfen. Hier übst du mit echten Aufgaben aus dem Arbeitsalltag.',
     motto: 'Jeden Tag rechnen — mit den Grundrechenarten kein Problem.',
     rules: [
       'Bei Textaufgaben: Erst lesen, dann die Zahlen und Rechenzeichen rausschreiben.',
-      'Einheiten immer mitfuehren (Euro, Stueck, Liter, Gaeste).',
-      'Ergebnis immer auf Plausibilitaet prüfen: Macht die Zahl Sinn?',
+      'Einheiten immer mitführen (Euro, Stück, Liter, Gäste).',
+      'Ergebnis immer auf Plausibilität prüfen: Macht die Zahl Sinn?',
       'Taschenrechner ist erlaubt — aber du musst wissen, welche Rechnung du eingibst!',
       'Zwischenergebnisse aufschreiben, nicht im Kopf behalten.'
     ],
     steps: [
       {
         title: '1. Aufgabe lesen und verstehen',
-        text: 'Was ist gegeben? Was wird gefragt? Unterstreiche die wichtigen Zahlen und Woerter.'
+        text: 'Was ist gegeben? Was wird gefragt? Unterstreiche die wichtigen Zahlen und Wörter.'
       },
       {
         title: '2. Rechenweg aufschreiben',
-        text: 'Schreib die Rechnung auf, BEVOR du anfaengst zu rechnen. So machst du weniger Fehler.'
+        text: 'Schreib die Rechnung auf, BEVOR du anfängst zu rechnen. So machst du weniger Fehler.'
       },
       {
         title: '3. Schritt für Schritt rechnen',
@@ -237,7 +237,7 @@ const TABS = {
       },
       {
         title: '4. Antwortsatz schreiben',
-        text: 'In der Prüfung: "Es werden 215 Badegaeste erwartet." Nicht nur die nackte Zahl hinschreiben.'
+        text: 'In der Prüfung: "Es werden 215 Badegäste erwartet." Nicht nur die nackte Zahl hinschreiben.'
       }
     ],
     examples: [

@@ -14,14 +14,14 @@ const TABS = {
     rules: [
       'Pumpen fördern Wasser von einem Ort zum anderen — das nennt man den Förderstrom Q.',
       'Der Förderstrom Q wird in m³/h (Kubikmeter pro Stunde) angegeben.',
-      'Die Förderhöhe H beschreibt, wie hoch die Pumpe das Wasser druecken kann (in Metern).',
+      'Die Förderhöhe H beschreibt, wie hoch die Pumpe das Wasser drücken kann (in Metern).',
       'Jede Pumpe hat eine Pumpenkennlinie — sie zeigt, wie viel Wasser bei welcher Höhe fliesst.',
-      'Im Schwimmbad laufen Umwaelzpumpen rund um die Uhr — sie müssen zuverlaessig und sparsam sein.'
+      'Im Schwimmbad laufen Umwälzpumpen rund um die Uhr — sie müssen zuverlässig und sparsam sein.'
     ],
     steps: [
       {
         title: '1. Aufgabe der Pumpe verstehen',
-        text: 'Die Pumpe saugt Wasser aus dem Becken an, drueckt es durch den Filter und die Aufbereitung und bringt es zurück ins Becken. Dieser Kreislauf heisst Umwaelzung.'
+        text: 'Die Pumpe saugt Wasser aus dem Becken an, drückt es durch den Filter und die Aufbereitung und bringt es zurück ins Becken. Dieser Kreislauf heißt Umwälzung.'
       },
       {
         title: '2. Förderstrom kennen',
@@ -29,23 +29,23 @@ const TABS = {
       },
       {
         title: '3. Förderhöhe verstehen',
-        text: 'Die Förderhöhe H ist der Widerstand, den die Pumpe ueberwinden muss. Dazu gehoeren: Höhenunterschied, Rohrreibung und Filterwiderstand. Alles zusammen ergibt die Gesamtförderhöhe.'
+        text: 'Die Förderhöhe H ist der Widerstand, den die Pumpe überwinden muss. Dazu gehören: Höhenunterschied, Rohrreibung und Filterwiderstand. Alles zusammen ergibt die Gesamtförderhöhe.'
       },
       {
-        title: '4. Umwaelzzeit beachten',
-        text: 'Die Umwaelzzeit sagt dir, wie lange es dauert, bis das gesamte Beckenwasser einmal durch die Aufbereitung gelaufen ist. Je kuerzer, desto besser die Wasserqualität.'
+        title: '4. Umwälzzeit beachten',
+        text: 'Die Umwälzzeit sagt dir, wie lange es dauert, bis das gesamte Beckenwasser einmal durch die Aufbereitung gelaufen ist. Je kürzer, desto besser die Wasserqualität.'
       }
     ],
     examples: [
       {
         title: 'Einfaches Beispiel: Förderstrom ablesen',
         given: 'Eine Pumpe fördert 30 m³/h. Das Becken hat 150 m³ Wasser.',
-        question: 'Wie oft pro Tag wird das Wasser umgewaelzt?',
+        question: 'Wie oft pro Tag wird das Wasser umgewälzt?',
         steps: [
           ['Bekannt', 'Q = 30 m³/h, Beckenvolumen = 150 m³'],
-          ['Umwaelzzeit berechnen', '150 m³ ÷ 30 m³/h = 5 Stunden'],
-          ['Umwaelzungen pro Tag', '24 h ÷ 5 h = 4,8 Umwaelzungen'],
-          ['Ergebnis', 'Das Wasser wird knapp 5 Mal pro Tag umgewaelzt']
+          ['Umwälzzeit berechnen', '150 m³ ÷ 30 m³/h = 5 Stunden'],
+          ['Umwälzungen pro Tag', '24 h ÷ 5 h = 4,8 Umwälzungen'],
+          ['Ergebnis', 'Das Wasser wird knapp 5 Mal pro Tag umgewälzt']
         ]
       },
       {
@@ -63,35 +63,35 @@ const TABS = {
     pitfalls: [
       'Förderstrom und Förderhöhe nicht verwechseln — Q ist Menge (m³/h), H ist Druck (m).',
       'Die Förderhöhe ist NICHT nur der Höhenunterschied — Rohrverluste und Filterwiderstand kommen dazu!',
-      'Eine größere Pumpe ist nicht immer besser — sie verbraucht mehr Strom und kann die Rohre ueberlasten.',
+      'Eine größere Pumpe ist nicht immer besser — sie verbraucht mehr Strom und kann die Rohre überlasten.',
       'Pumpen können nicht beliebig hoch fördern — bei zu viel Förderhöhe sinkt der Förderstrom auf null.'
     ],
     quiz: {
-      question: 'Eine Pumpe fördert 40 m³/h. Das Becken fasst 200 m³. Wie lange dauert eine Umwaelzung?',
+      question: 'Eine Pumpe fördert 40 m³/h. Das Becken fasst 200 m³. Wie lange dauert eine Umwälzung?',
       options: ['4 Stunden', '5 Stunden', '8 Stunden'],
       correctIndex: 1,
-      explanation: '200 m³ ÷ 40 m³/h = 5 Stunden für eine komplette Umwaelzung.'
+      explanation: '200 m³ ÷ 40 m³/h = 5 Stunden für eine komplette Umwälzung.'
     }
   },
 
   förderstrom: {
-    id: 'foerderstrom',
+    id: 'förderstrom',
     chip: 'Förderstrom',
-    title: 'Förderstrom Q und Umwaelzzeit berechnen',
+    title: 'Förderstrom Q und Umwälzzeit berechnen',
     intro:
-      'Der Förderstrom Q ist die wichtigste Kenngröße einer Pumpe. Er sagt dir, wie viel Wasser pro Stunde bewegt wird. Die Formel ist einfach: Q = V ÷ t. Volumen geteilt durch Zeit. Damit berechnest du auch die Umwaelzzeit — also wie lange es dauert, bis das ganze Beckenwasser einmal durch die Aufbereitung gelaufen ist.',
+      'Der Förderstrom Q ist die wichtigste Kenngröße einer Pumpe. Er sagt dir, wie viel Wasser pro Stunde bewegt wird. Die Formel ist einfach: Q = V ÷ t. Volumen geteilt durch Zeit. Damit berechnest du auch die Umwälzzeit — also wie lange es dauert, bis das ganze Beckenwasser einmal durch die Aufbereitung gelaufen ist.',
     motto: 'Q = V geteilt durch t — Volumen durch Zeit.',
     rules: [
       'Die Grundformel lautet: Q = V ÷ t (Förderstrom = Volumen geteilt durch Zeit).',
       'Umgestellt: t = V ÷ Q (Zeit = Volumen geteilt durch Förderstrom).',
       'Umgestellt: V = Q × t (Volumen = Förderstrom mal Zeit).',
       'Die Einheiten müssen passen: Q in m³/h, V in m³, t in Stunden.',
-      'Die Umwaelzzeit ist die Zeit für eine komplette Umwaelzung: t = Beckenvolumen ÷ Förderstrom.'
+      'Die Umwälzzeit ist die Zeit für eine komplette Umwälzung: t = Beckenvolumen ÷ Förderstrom.'
     ],
     steps: [
       {
         title: '1. Werte aufschreiben',
-        text: 'Schreib auf was du kennst: Beckenvolumen V in m³ und entweder den Förderstrom Q oder die gewuenschte Umwaelzzeit t.'
+        text: 'Schreib auf was du kennst: Beckenvolumen V in m³ und entweder den Förderstrom Q oder die gewünschte Umwälzzeit t.'
       },
       {
         title: '2. Richtige Formel wählen',
@@ -103,13 +103,13 @@ const TABS = {
       },
       {
         title: '4. Ergebnis prüfen',
-        text: 'Ein Schwimmerbecken sollte in 4-6 Stunden umgewaelzt werden. Wenn dein Ergebnis 20 Stunden sagt, stimmt etwas nicht.'
+        text: 'Nennumwälzzeiten nach DIN 19643-1 je Beckenart: Schwimmer-/Sportbecken bis 6 h, Lehrschwimm- und Nichtschwimmerbecken 3–4 h, Kinderplanschbecken 0,5 h, Whirlpool ca. 0,5 h, Wellenbecken bis 4 h. Liegt dein Ergebnis fern davon, stimmt etwas nicht.'
       }
     ],
     examples: [
       {
         title: 'Förderstrom berechnen',
-        given: 'Ein Becken hat 300 m³ Wasser und soll in 6 Stunden einmal umgewaelzt werden.',
+        given: 'Ein Becken hat 300 m³ Wasser und soll in 6 Stunden einmal umgewälzt werden.',
         question: 'Welchen Förderstrom braucht die Pumpe?',
         steps: [
           ['Formel', 'Q = V ÷ t'],
@@ -119,19 +119,19 @@ const TABS = {
         ]
       },
       {
-        title: 'Umwaelzzeit berechnen',
+        title: 'Umwälzzeit berechnen',
         given: 'Ein Lehrschwimmbecken hat 180 m³. Die Pumpe fördert 60 m³/h.',
-        question: 'Wie lange dauert eine Umwaelzung?',
+        question: 'Wie lange dauert eine Umwälzung?',
         steps: [
           ['Formel', 't = V ÷ Q'],
           ['Einsetzen', 't = 180 m³ ÷ 60 m³/h'],
           ['Rechnung', 't = 3 Stunden'],
-          ['Ergebnis', 'Die Umwaelzung dauert 3 Stunden']
+          ['Ergebnis', 'Die Umwälzung dauert 3 Stunden']
         ]
       },
       {
         title: 'Gefördertes Volumen berechnen',
-        given: 'Eine Pumpe laeuft mit 45 m³/h und ist 8 Stunden in Betrieb.',
+        given: 'Eine Pumpe läuft mit 45 m³/h und ist 8 Stunden in Betrieb.',
         question: 'Wie viel Wasser wurde insgesamt gefördert?',
         steps: [
           ['Formel', 'V = Q × t'],
@@ -144,11 +144,11 @@ const TABS = {
     pitfalls: [
       'Einheiten nicht mischen: Wenn Q in m³/h ist, muss t in Stunden sein — nicht in Minuten!',
       'Wenn die Zeit in Minuten gegeben ist, erst in Stunden umrechnen: 90 Minuten = 1,5 Stunden.',
-      'Die Umwaelzzeit ist NICHT die Betriebszeit der Pumpe — die Pumpe laeuft oft länger als eine Umwaelzung.',
-      'Bei mehreren Becken: Jedes Becken hat seinen eigenen Kreislauf und seine eigene Umwaelzzeit!'
+      'Die Umwälzzeit ist NICHT die Betriebszeit der Pumpe — die Pumpe läuft oft länger als eine Umwälzung.',
+      'Bei mehreren Becken: Jedes Becken hat seinen eigenen Kreislauf und seine eigene Umwälzzeit!'
     ],
     quiz: {
-      question: 'Ein Becken hat 240 m³. Die Umwaelzzeit soll 4 Stunden betragen. Welchen Förderstrom Q braucht die Pumpe?',
+      question: 'Ein Becken hat 240 m³. Die Umwälzzeit soll 4 Stunden betragen. Welchen Förderstrom Q braucht die Pumpe?',
       options: ['40 m³/h', '60 m³/h', '80 m³/h'],
       correctIndex: 1,
       explanation: 'Q = V ÷ t = 240 m³ ÷ 4 h = 60 m³/h.'
@@ -160,10 +160,10 @@ const TABS = {
     chip: 'Leistung',
     title: 'Pumpenleistung und Wirkungsgrad',
     intro:
-      'Eine Pumpe braucht Energie, um Wasser zu bewegen. Die Leistung sagt dir, wie viel Energie pro Sekunde nötig ist. Aber keine Pumpe ist perfekt — ein Teil der Energie geht als Wärme und Reibung verloren. Das Verhältnis von nutzbarer zu aufgenommener Leistung heisst Wirkungsgrad.',
+      'Eine Pumpe braucht Energie, um Wasser zu bewegen. Die Leistung sagt dir, wie viel Energie pro Sekunde nötig ist. Aber keine Pumpe ist perfekt — ein Teil der Energie geht als Wärme und Reibung verloren. Das Verhältnis von nutzbarer zu aufgenommener Leistung heißt Wirkungsgrad.',
     motto: 'Wirkungsgrad = Was rauskommt geteilt durch was reingesteckt wird.',
     rules: [
-      'Die Nutzleistung (hydraulische Leistung) ist die Leistung, die tatsaechlich das Wasser bewegt.',
+      'Die Nutzleistung (hydraulische Leistung) ist die Leistung, die tatsächlich das Wasser bewegt.',
       'Die Antriebsleistung (elektrische Leistung) ist die Leistung, die der Motor aus dem Stromnetz zieht.',
       'Wirkungsgrad η (eta) = Nutzleistung ÷ Antriebsleistung (Ergebnis als Dezimalzahl oder Prozent).',
       'Ein Wirkungsgrad von 0,75 bedeutet: 75% der Energie wird genutzt, 25% gehen verloren.',
@@ -226,7 +226,7 @@ const TABS = {
       'Wirkungsgrad ist IMMER kleiner als 1 (bzw. kleiner als 100%) — wenn du mehr als 100% rausbekommst, hast du Zähler und Nenner vertauscht!',
       'Nutzleistung und Antriebsleistung nicht verwechseln: Die Antriebsleistung ist IMMER größer.',
       'Prozent und Dezimalzahl nicht mischen: 75% = 0,75. In der Formel immer die Dezimalzahl nehmen!',
-      'Der Wirkungsgrad aendert sich mit der Belastung — bei Teillast ist er oft schlechter.'
+      'Der Wirkungsgrad ändert sich mit der Belastung — bei Teillast ist er oft schlechter.'
     ],
     quiz: {
       question: 'Eine Pumpe hat 2,8 kW Nutzleistung bei einem Wirkungsgrad von 70%. Wie hoch ist die Antriebsleistung?',
@@ -241,13 +241,13 @@ const TABS = {
     chip: 'Praxis',
     title: 'Pumpenberechnung im Bäderalltag',
     intro:
-      'Hier kommen alle Formeln zusammen: Umwaelzpumpen dimensionieren, Umwaelzzeiten nach DIN einhalten, mehrere Pumpen parallel betreiben und Reservepumpen einplanen. Diese Aufgaben kommen in der Prüfung und im Arbeitsalltag vor!',
+      'Hier kommen alle Formeln zusammen: Umwälzpumpen dimensionieren, Umwälzzeiten nach DIN einhalten, mehrere Pumpen parallel betreiben und Reservepumpen einplanen. Diese Aufgaben kommen in der Prüfung und im Arbeitsalltag vor!',
     motto: 'Die richtige Pumpe für das richtige Becken.',
     rules: [
-      'DIN 19643 schreibt Umwaelzzeiten vor: Schwimmerbecken max. 4-6 Stunden, Nichtschwimmer max. 2-3 Stunden, Planschbecken max. 0,5-1 Stunde.',
-      'Faustregel: Je flacher das Becken und je juenger die Badegaeste, desto kuerzer die Umwaelzzeit.',
+      'DIN 19643 schreibt Umwälzzeiten vor: Schwimmer-/Sportbecken bis 6 h, Nichtschwimmer-/Lehrschwimmbecken 3–4 h, Planschbecken/Whirlpool ca. 0,5 h.',
+      'Faustregel: Je flacher das Becken und je jünger die Badegäste, desto kürzer die Umwälzzeit.',
       'Bei Parallelbetrieb zweier gleicher Pumpen addiert sich der Förderstrom: Q_gesamt = Q_1 + Q_2.',
-      'Eine Reservepumpe (Redundanzpumpe) muss immer vorhanden sein — faellt die Hauptpumpe aus, springt sie ein.',
+      'Eine Reservepumpe (Redundanzpumpe) muss immer vorhanden sein — fällt die Hauptpumpe aus, springt sie ein.',
       'Die Pumpe muss zum Rohrnetz passen — zu viel Förderstrom erzeugt zu hohe Fliessgeschwindigkeiten.'
     ],
     steps: [
@@ -256,8 +256,8 @@ const TABS = {
         text: 'Länge × Breite × mittlere Tiefe = Volumen in m³. Beispiel: 25 m × 12,5 m × 1,8 m = 562,5 m³.'
       },
       {
-        title: '2. Umwaelzzeit nach DIN wählen',
-        text: 'Schwimmerbecken: 4-6 h. Nichtschwimmer: 2-3 h. Planschbecken: 0,5-1 h. Bei hoher Besucherzahl den kuerzeren Wert nehmen!'
+        title: '2. Umwälzzeit nach DIN wählen',
+        text: 'Schwimmerbecken: 4-6 h. Nichtschwimmer: 2-3 h. Planschbecken: 0,5-1 h. Bei hoher Besucherzahl den kürzeren Wert nehmen!'
       },
       {
         title: '3. Förderstrom berechnen',
@@ -271,8 +271,8 @@ const TABS = {
     examples: [
       {
         title: 'Schwimmerbecken dimensionieren',
-        given: 'Ein 25-m-Schwimmerbecken: 25 m × 12,5 m × 1,8 m = 562,5 m³. Geforderte Umwaelzzeit: 4,5 Stunden.',
-        question: 'Welchen Förderstrom braucht die Umwaelzpumpe?',
+        given: 'Ein 25-m-Schwimmerbecken: 25 m × 12,5 m × 1,8 m = 562,5 m³. Geforderte Umwälzzeit: 4,5 Stunden.',
+        question: 'Welchen Förderstrom braucht die Umwälzpumpe?',
         steps: [
           ['Volumen', '25 × 12,5 × 1,8 = 562,5 m³'],
           ['Formel', 'Q = V ÷ t'],
@@ -281,8 +281,8 @@ const TABS = {
         ]
       },
       {
-        title: 'Planschbecken mit kurzer Umwaelzzeit',
-        given: 'Ein Planschbecken hat 15 m³ Wasser. Die Umwaelzzeit muss nach DIN max. 30 Minuten betragen.',
+        title: 'Planschbecken mit kurzer Umwälzzeit',
+        given: 'Ein Planschbecken hat 15 m³ Wasser. Die Umwälzzeit muss nach DIN max. 30 Minuten betragen.',
         question: 'Welchen Förderstrom braucht die Pumpe?',
         steps: [
           ['Umrechnung', '30 Minuten = 0,5 Stunden'],
@@ -294,34 +294,34 @@ const TABS = {
       {
         title: 'Zwei Pumpen im Parallelbetrieb',
         given: 'Zwei gleiche Pumpen mit je 80 m³/h laufen parallel. Das Becken hat 400 m³.',
-        question: 'Wie lange dauert eine Umwaelzung?',
+        question: 'Wie lange dauert eine Umwälzung?',
         steps: [
           ['Gesamtförderstrom', 'Q = 80 + 80 = 160 m³/h'],
           ['Formel', 't = V ÷ Q'],
           ['Rechnung', 't = 400 ÷ 160 = 2,5 Stunden'],
-          ['Ergebnis', 'Mit zwei Pumpen dauert eine Umwaelzung 2,5 Stunden']
+          ['Ergebnis', 'Mit zwei Pumpen dauert eine Umwälzung 2,5 Stunden']
         ]
       },
       {
         title: 'Reservepumpe: Was passiert bei Ausfall?',
-        given: 'Ein Becken mit 300 m³ wird von 2 Pumpen (je 75 m³/h) versorgt. Eine Pumpe faellt aus.',
-        question: 'Wie lange dauert die Umwaelzung jetzt?',
+        given: 'Ein Becken mit 300 m³ wird von 2 Pumpen (je 75 m³/h) versorgt. Eine Pumpe fällt aus.',
+        question: 'Wie lange dauert die Umwälzung jetzt?',
         steps: [
           ['Normalbetrieb', 'Q = 75 + 75 = 150 m³/h → t = 300 ÷ 150 = 2 h'],
           ['Pumpenausfall', 'Q = 75 m³/h (nur noch eine Pumpe)'],
-          ['Neue Umwaelzzeit', 't = 300 ÷ 75 = 4 Stunden'],
-          ['Ergebnis', 'Die Umwaelzzeit verdoppelt sich auf 4 Stunden — Reservepumpe muss schnell anlaufen!']
+          ['Neue Umwälzzeit', 't = 300 ÷ 75 = 4 Stunden'],
+          ['Ergebnis', 'Die Umwälzzeit verdoppelt sich auf 4 Stunden — Reservepumpe muss schnell anlaufen!']
         ]
       }
     ],
     pitfalls: [
       'Minuten und Stunden nicht verwechseln! Planschbecken: 30 Minuten = 0,5 Stunden, nicht "30" in die Formel einsetzen.',
-      'Die DIN-Umwaelzzeiten sind Hoechstwerte — kuerzere Zeiten sind besser, längere sind NICHT erlaubt.',
+      'Die DIN-Umwälzzeiten sind Höchstwerte — kürzere Zeiten sind besser, längere sind NICHT erlaubt.',
       'Bei Parallelbetrieb: Zwei Pumpen liefern nicht immer exakt die doppelte Menge — der Rohrleitungswiderstand steigt.',
-      'Die Reservepumpe zählt NICHT zum regulaeren Förderstrom — sie ist nur für den Notfall da!'
+      'Die Reservepumpe zählt NICHT zum regulären Förderstrom — sie ist nur für den Notfall da!'
     ],
     quiz: {
-      question: 'Ein Nichtschwimmerbecken hat 120 m³. Die Umwaelzzeit soll 3 Stunden betragen. Welchen Förderstrom braucht die Pumpe?',
+      question: 'Ein Nichtschwimmerbecken hat 120 m³. Die Umwälzzeit soll 3 Stunden betragen. Welchen Förderstrom braucht die Pumpe?',
       options: ['30 m³/h', '40 m³/h', '60 m³/h'],
       correctIndex: 1,
       explanation: 'Q = V ÷ t = 120 m³ ÷ 3 h = 40 m³/h.'
@@ -336,7 +336,7 @@ const TAB_ORDER = ['grundlagen', 'förderstrom', 'leistung', 'praxis'];
 const FORMULAS = [
   ['Größe', 'Formel', 'Einheit'],
   ['Förderstrom Q', 'Q = V ÷ t', 'm³/h'],
-  ['Umwaelzzeit t', 't = V ÷ Q', 'Stunden (h)'],
+  ['Umwälzzeit t', 't = V ÷ Q', 'Stunden (h)'],
   ['Volumen V', 'V = Q × t', 'm³'],
   ['Wirkungsgrad η', 'η = P_nutz ÷ P_an', '% oder Dezimal'],
   ['Antriebsleistung', 'P_an = P_nutz ÷ η', 'kW']
@@ -345,7 +345,7 @@ const FORMULAS = [
 /* ─── DIN reference table ──────────────────────────────────────────────────── */
 
 const DIN_TABLE = [
-  ['Beckenart', 'Umwaelzzeit'],
+  ['Beckenart', 'Umwälzzeit'],
   ['Schwimmerbecken', '4 – 6 Stunden'],
   ['Nichtschwimmerbecken', '2 – 3 Stunden'],
   ['Springerbecken', '4 – 6 Stunden'],
@@ -537,7 +537,7 @@ export default function PumpenDeepDiveView() {
 
           {/* Formulas table (on förderstrom and leistung tabs) */}
           {(activeTab === 'förderstrom' || activeTab === 'leistung') && (
-            <InfoCard darkMode={darkMode} title="Alle Formeln im Ueberblick">
+            <InfoCard darkMode={darkMode} title="Alle Formeln im Überblick">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -571,7 +571,7 @@ export default function PumpenDeepDiveView() {
 
           {/* DIN table (on grundlagen and praxis tabs) */}
           {(activeTab === 'grundlagen' || activeTab === 'praxis') && (
-            <InfoCard darkMode={darkMode} title="DIN 19643 — Umwaelzzeiten">
+            <InfoCard darkMode={darkMode} title="DIN 19643 — Umwälzzeiten">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>

@@ -95,7 +95,7 @@ const TABS = {
       },
       {
         title: '2. Formeldreieck nutzen',
-        text: 'Deck im Dreieck den gesuchten Buchstaben ab. Was uebrig bleibt, ist die Formel. s abgedeckt → v × t. v abgedeckt → s ÷ t. t abgedeckt → s ÷ v.'
+        text: 'Deck im Dreieck den gesuchten Buchstaben ab. Was übrig bleibt, ist die Formel. s abgedeckt → v × t. v abgedeckt → s ÷ t. t abgedeckt → s ÷ v.'
       },
       {
         title: '3. Werte einsetzen',
@@ -103,7 +103,7 @@ const TABS = {
       },
       {
         title: '4. Ergebnis mit Einheit',
-        text: 'Rechne aus und schreib die passende Einheit dazu. Pruefe: Macht das Ergebnis Sinn?'
+        text: 'Rechne aus und schreib die passende Einheit dazu. Prüfe: Macht das Ergebnis Sinn?'
       }
     ],
     examples: [
@@ -143,7 +143,7 @@ const TABS = {
     ],
     pitfalls: [
       'Das Formeldreieck falsch aufbauen — s steht IMMER oben, v und t stehen unten.',
-      'Malnehmen und Teilen verwechseln: Nebeneinander = ×, uebereinander = ÷.',
+      'Malnehmen und Teilen verwechseln: Nebeneinander = ×, übereinander = ÷.',
       'Die Einheiten müssen zusammenpassen! Nicht m/s mit km oder Minuten mischen.'
     ],
     quiz: {
@@ -240,13 +240,13 @@ const TABS = {
     chip: 'Praxis',
     title: 'Geschwindigkeit im Bäderalltag',
     intro:
-      'Im Schwimmbad begegnet dir Geschwindigkeit überall: Wie schnell schwimmt ein Gast? Wie schnell fliesst Wasser durch die Rohrleitung? Wie schnell ist die Rutsche? Hier uebst du mit echten Aufgaben aus dem Bäderalltag. Genau solche Aufgaben kommen in der Prüfung dran!',
+      'Im Schwimmbad begegnet dir Geschwindigkeit überall: Wie schnell schwimmt ein Gast? Wie schnell fliesst Wasser durch die Rohrleitung? Wie schnell ist die Rutsche? Hier übst du mit echten Aufgaben aus dem Bäderalltag. Genau solche Aufgaben kommen in der Prüfung dran!',
     motto: 'Geschwindigkeit steckt im ganzen Schwimmbad.',
     rules: [
       'Schwimmer-Geschwindigkeit im Sportschwimmen liegt zwischen 1 und 2 m/s.',
       'Wassergeschwindigkeit in Rohrleitungen liegt meistens zwischen 1 und 3 m/s.',
       'Rutschen-Geschwindigkeit kann bis zu 10 m/s (36 km/h) erreichen.',
-      'Bei Stroemungsaufgaben in der Prüfung: Immer erst v = s ÷ t anwenden.',
+      'Bei Strömungsaufgaben in der Prüfung: Immer erst v = s ÷ t anwenden.',
       'Tipp: Wenn die Aufgabe Minuten angibt, erst in Sekunden umrechnen (× 60)!'
     ],
     steps: [

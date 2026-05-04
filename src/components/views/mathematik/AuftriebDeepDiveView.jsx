@@ -9,31 +9,31 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Warum schwimmen Dinge?',
     intro:
-      'Auftrieb ist die Kraft, mit der Wasser nach oben drueckt. Wenn du einen Ball unter Wasser drueckst, spuerst du wie das Wasser ihn zurückdrueckt. Je mehr Wasser ein Gegenstand verdraengt, desto stärker drueckt das Wasser nach oben. Einfache Regel: 1 Liter verdraengtes Wasser erzeugt etwa 1 kg Auftrieb.',
-    motto: 'Wasser drueckt immer nach oben.',
+      'Auftrieb ist die Kraft, mit der Wasser nach oben drückt. Wenn du einen Ball unter Wasser drückst, spürst du wie das Wasser ihn zurückdrückt. Je mehr Wasser ein Gegenstand verdrängt, desto stärker drückt das Wasser nach oben. Einfache Regel: 1 Liter verdrängtes Wasser erzeugt etwa 1 kg Auftrieb.',
+    motto: 'Wasser drückt immer nach oben.',
     rules: [
-      'Auftrieb ist die Kraft, mit der Wasser einen Gegenstand nach oben drueckt.',
-      'Je mehr Wasser verdraengt wird, desto größer ist der Auftrieb.',
-      'Einfache Merkhilfe: 1 Liter verdraengtes Wasser ≈ 1 kg Auftriebskraft.',
-      'Jeder Gegenstand im Wasser verdraengt genau so viel Wasser, wie er selbst Platz braucht.',
+      'Auftrieb ist die Kraft, mit der Wasser einen Gegenstand nach oben drückt.',
+      'Je mehr Wasser verdrängt wird, desto größer ist der Auftrieb.',
+      'Einfache Merkhilfe: 1 Liter verdrängtes Wasser ≈ 1 kg Auftriebskraft.',
+      'Jeder Gegenstand im Wasser verdrängt genau so viel Wasser, wie er selbst Platz braucht.',
       'Die Auftriebskraft wirkt IMMER nach oben — egal wie schwer der Gegenstand ist.'
     ],
     steps: [
       {
         title: '1. Gegenstand ins Wasser',
-        text: 'Wenn du einen Gegenstand ins Wasser tauchst, muss das Wasser Platz machen. Der Gegenstand verdraengt das Wasser — es weicht zur Seite und nach oben aus.'
+        text: 'Wenn du einen Gegenstand ins Wasser tauchst, muss das Wasser Platz machen. Der Gegenstand verdrängt das Wasser — es weicht zur Seite und nach oben aus.'
       },
       {
-        title: '2. Wasser drueckt zurück',
-        text: 'Das verdraengte Wasser erzeugt eine Gegenkraft — den Auftrieb. Diese Kraft drueckt den Gegenstand nach oben. Du spuerst das, wenn du einen Ball unter Wasser drueckst.'
+        title: '2. Wasser drückt zurück',
+        text: 'Das verdrängte Wasser erzeugt eine Gegenkraft — den Auftrieb. Diese Kraft drückt den Gegenstand nach oben. Du spürst das, wenn du einen Ball unter Wasser drückst.'
       },
       {
-        title: '3. Verdraengtes Volumen zählt',
-        text: 'Je größer der Gegenstand, desto mehr Wasser verdraengt er. Mehr verdraengtes Wasser = mehr Auftrieb. Ein grosser Ball hat mehr Auftrieb als ein kleiner.'
+        title: '3. Verdrängtes Volumen zählt',
+        text: 'Je größer der Gegenstand, desto mehr Wasser verdrängt er. Mehr verdrängtes Wasser = mehr Auftrieb. Ein großer Ball hat mehr Auftrieb als ein kleiner.'
       },
       {
         title: '4. Faustregel merken',
-        text: '1 Liter verdraengtes Wasser gibt etwa 1 kg Auftrieb. Ein Gegenstand mit 5 Liter Volumen bekommt also etwa 5 kg Auftrieb. So einfach ist das!'
+        text: '1 Liter verdrängtes Wasser gibt etwa 1 kg Auftrieb. Ein Gegenstand mit 5 Liter Volumen bekommt also etwa 5 kg Auftrieb. So einfach ist das!'
       }
     ],
     examples: [
@@ -42,7 +42,7 @@ const TABS = {
         given: 'Ein Wasserball hat ein Volumen von 10 Litern und wiegt 0,2 kg.',
         question: 'Wie viel Auftrieb bekommt der Ball?',
         steps: [
-          ['Volumen', '10 Liter werden verdraengt'],
+          ['Volumen', '10 Liter werden verdrängt'],
           ['Faustregel', '1 Liter ≈ 1 kg Auftrieb'],
           ['Auftrieb', '10 Liter × 1 kg = 10 kg Auftrieb'],
           ['Ergebnis', '10 kg Auftrieb für einen 0,2 kg Ball — er schwimmt leicht!']
@@ -53,7 +53,7 @@ const TABS = {
         given: 'Ein Stein hat ein Volumen von 0,5 Litern und wiegt 1,3 kg.',
         question: 'Wie viel Auftrieb bekommt der Stein?',
         steps: [
-          ['Volumen', '0,5 Liter werden verdraengt'],
+          ['Volumen', '0,5 Liter werden verdrängt'],
           ['Faustregel', '1 Liter ≈ 1 kg Auftrieb'],
           ['Auftrieb', '0,5 Liter × 1 kg = 0,5 kg Auftrieb'],
           ['Ergebnis', 'Nur 0,5 kg Auftrieb für 1,3 kg Gewicht — der Stein sinkt']
@@ -64,7 +64,7 @@ const TABS = {
         given: 'Ein Schwimmbrett hat ein Volumen von 3 Litern und wiegt 0,3 kg.',
         question: 'Wie viel Auftrieb hat das Brett?',
         steps: [
-          ['Volumen', '3 Liter werden verdraengt'],
+          ['Volumen', '3 Liter werden verdrängt'],
           ['Faustregel', '1 Liter ≈ 1 kg Auftrieb'],
           ['Auftrieb', '3 Liter × 1 kg = 3 kg Auftrieb'],
           ['Ergebnis', '3 kg Auftrieb für 0,3 kg — das Brett schwimmt sehr gut']
@@ -72,16 +72,16 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Auftrieb haengt NICHT vom Gewicht ab, sondern vom verdraengten Volumen!',
-      'Ein grosser leichter Gegenstand hat MEHR Auftrieb als ein kleiner schwerer.',
-      'Wasser drueckt nicht nur von unten — es drueckt von allen Seiten. Aber unten ist der Druck größer, deshalb geht die Kraft nach oben.',
+      'Auftrieb hängt NICHT vom Gewicht ab, sondern vom verdrängten Volumen!',
+      'Ein großer leichter Gegenstand hat MEHR Auftrieb als ein kleiner schwerer.',
+      'Wasser drückt nicht nur von unten — es drückt von allen Seiten. Aber unten ist der Druck größer, deshalb geht die Kraft nach oben.',
       'Auftrieb gibt es nicht nur in Wasser, auch in Salzwasser, Sole und anderen Flüssigkeiten.'
     ],
     quiz: {
-      question: 'Ein Gegenstand verdraengt 8 Liter Wasser. Wie viel Auftrieb bekommt er ungefaehr?',
+      question: 'Ein Gegenstand verdrängt 8 Liter Wasser. Wie viel Auftrieb bekommt er ungefähr?',
       options: ['4 kg', '8 kg', '16 kg'],
       correctIndex: 1,
-      explanation: 'Faustregel: 1 Liter verdraengtes Wasser ≈ 1 kg Auftrieb. 8 Liter = 8 kg Auftrieb.'
+      explanation: 'Faustregel: 1 Liter verdrängtes Wasser ≈ 1 kg Auftrieb. 8 Liter = 8 kg Auftrieb.'
     }
   },
 
@@ -90,14 +90,14 @@ const TABS = {
     chip: 'Schwimmen & Sinken',
     title: 'Wann schwimmt etwas, wann sinkt es?',
     intro:
-      'Ob etwas schwimmt oder sinkt, haengt von einem einfachen Vergleich ab: Ist der Auftrieb größer als das Gewicht, schwimmt es. Ist das Gewicht größer als der Auftrieb, sinkt es. Ein Schiff aus Stahl schwimmt, weil es durch seine Form so viel Wasser verdraengt, dass der Auftrieb größer ist als das Gewicht.',
+      'Ob etwas schwimmt oder sinkt, hängt von einem einfachen Vergleich ab: Ist der Auftrieb größer als das Gewicht, schwimmt es. Ist das Gewicht größer als der Auftrieb, sinkt es. Ein Schiff aus Stahl schwimmt, weil es durch seine Form so viel Wasser verdrängt, dass der Auftrieb größer ist als das Gewicht.',
     motto: 'Auftrieb größer als Gewicht = schwimmt.',
     rules: [
       'Schwimmen: Auftrieb ist GROESSER als das Gewicht — der Gegenstand bleibt oben.',
       'Sinken: Gewicht ist GROESSER als der Auftrieb — der Gegenstand geht unter.',
       'Schweben: Auftrieb ist GLEICH dem Gewicht — der Gegenstand bleibt in der Schwebe.',
       'Entscheidend ist die Dichte: Ist der Gegenstand leichter als gleich viel Wasser, schwimmt er.',
-      'Die Form spielt eine grosse Rolle: Ein Stahlschiff schwimmt, ein Stahlklotz sinkt.'
+      'Die Form spielt eine große Rolle: Ein Stahlschiff schwimmt, ein Stahlklotz sinkt.'
     ],
     steps: [
       {
@@ -106,7 +106,7 @@ const TABS = {
       },
       {
         title: '2. Auftrieb berechnen',
-        text: 'Wie viel Wasser verdraengt der Gegenstand? Volumen in Litern × 1 kg = Auftrieb. Zum Beispiel: Der Rettungsring verdraengt 12 Liter = 12 kg Auftrieb.'
+        text: 'Wie viel Wasser verdrängt der Gegenstand? Volumen in Litern × 1 kg = Auftrieb. Zum Beispiel: Der Rettungsring verdrängt 12 Liter = 12 kg Auftrieb.'
       },
       {
         title: '3. Vergleichen',
@@ -120,22 +120,22 @@ const TABS = {
     examples: [
       {
         title: 'Warum schwimmt ein Schiff?',
-        given: 'Ein Modellboot aus Stahl wiegt 5 kg. Durch seine Hohlform verdraengt es 20 Liter Wasser.',
+        given: 'Ein Modellboot aus Stahl wiegt 5 kg. Durch seine Hohlform verdrängt es 20 Liter Wasser.',
         question: 'Schwimmt das Boot?',
         steps: [
           ['Gewicht', '5 kg zieht nach unten'],
-          ['Auftrieb', '20 Liter × 1 kg = 20 kg drueckt nach oben'],
+          ['Auftrieb', '20 Liter × 1 kg = 20 kg drückt nach oben'],
           ['Vergleich', '20 kg Auftrieb > 5 kg Gewicht'],
           ['Ergebnis', 'Das Boot schwimmt! Es kann sogar noch 15 kg zusätzlich tragen.']
         ]
       },
       {
         title: 'Warum sinkt ein Stein?',
-        given: 'Ein Stein wiegt 3 kg und verdraengt 1,2 Liter Wasser.',
+        given: 'Ein Stein wiegt 3 kg und verdrängt 1,2 Liter Wasser.',
         question: 'Schwimmt der Stein?',
         steps: [
           ['Gewicht', '3 kg zieht nach unten'],
-          ['Auftrieb', '1,2 Liter × 1 kg = 1,2 kg drueckt nach oben'],
+          ['Auftrieb', '1,2 Liter × 1 kg = 1,2 kg drückt nach oben'],
           ['Vergleich', '1,2 kg Auftrieb < 3 kg Gewicht'],
           ['Ergebnis', 'Der Stein sinkt — er ist zu schwer für seinen Auftrieb.']
         ]
@@ -148,17 +148,17 @@ const TABS = {
           ['Gewicht', '4 kg zieht nach unten'],
           ['Maximaler Auftrieb', '8 Liter × 1 kg = 8 kg (wenn ganz unter Wasser)'],
           ['Gleichgewicht', 'Es taucht so tief ein, bis Auftrieb = Gewicht: 4 Liter'],
-          ['Ergebnis', 'Das Brett taucht zur Haelfte ein (4 von 8 Litern unter Wasser)']
+          ['Ergebnis', 'Das Brett taucht zur Hälfte ein (4 von 8 Litern unter Wasser)']
         ]
       }
     ],
     pitfalls: [
-      'Schwer heisst NICHT automatisch sinken! Es kommt auf das Verhältnis von Gewicht zu Volumen an.',
-      'Ein grosses Schiff ist schwerer als ein kleiner Stein — aber das Schiff schwimmt weil es mehr Wasser verdraengt.',
-      'Luft zählt mit! Hohle Gegenstaende verdraengen viel Wasser bei wenig Gewicht — deshalb schwimmen sie.'
+      'Schwer heißt NICHT automatisch sinken! Es kommt auf das Verhältnis von Gewicht zu Volumen an.',
+      'Ein grosses Schiff ist schwerer als ein kleiner Stein — aber das Schiff schwimmt weil es mehr Wasser verdrängt.',
+      'Luft zählt mit! Hohle Gegenstände verdrängen viel Wasser bei wenig Gewicht — deshalb schwimmen sie.'
     ],
     quiz: {
-      question: 'Ein Gegenstand wiegt 6 kg und verdraengt 4 Liter Wasser. Was passiert?',
+      question: 'Ein Gegenstand wiegt 6 kg und verdrängt 4 Liter Wasser. Was passiert?',
       options: ['Er schwimmt', 'Er sinkt', 'Er schwebt'],
       correctIndex: 1,
       explanation: '4 Liter = 4 kg Auftrieb. 4 kg Auftrieb < 6 kg Gewicht — er sinkt.'
@@ -170,19 +170,19 @@ const TABS = {
     chip: 'Berechnung',
     title: 'Auftrieb berechnen — Archimedes ganz einfach',
     intro:
-      'Archimedes hat vor über 2000 Jahren entdeckt: Der Auftrieb ist genau so gross wie das Gewicht des verdraengten Wassers. Die Formel ist einfach: Volumen × Dichte des Wassers = Auftrieb. Bei normalem Wasser ist die Dichte etwa 1 kg pro Liter. Bei Salzwasser etwas mehr.',
-    motto: 'Auftrieb = verdraengtes Volumen × Wasserdichte.',
+      'Archimedes hat vor über 2000 Jahren entdeckt: Der Auftrieb ist genau so gross wie das Gewicht des verdrängten Wassers. Die Formel ist einfach: Volumen × Dichte des Wassers = Auftrieb. Bei normalem Wasser ist die Dichte etwa 1 kg pro Liter. Bei Salzwasser etwas mehr.',
+    motto: 'Auftrieb = verdrängtes Volumen × Wasserdichte.',
     rules: [
       'Formel: Auftrieb (in kg) = Volumen (in Litern) × Dichte (in kg/L).',
       'Dichte von normalem Wasser: ca. 1 kg pro Liter (genauer: 0,998 kg/L bei 20°C).',
       'Dichte von Salzwasser/Sole: höher als 1 kg/L — deshalb schwimmt man in Sole besser!',
-      'Das verdraengte Volumen ist der Teil des Gegenstands, der UNTER Wasser ist.',
+      'Das verdrängte Volumen ist der Teil des Gegenstands, der UNTER Wasser ist.',
       'Wichtig: Volumen in Litern ODER m³ rechnen — aber nicht mischen! 1 m³ = 1.000 Liter.'
     ],
     steps: [
       {
         title: '1. Volumen bestimmen',
-        text: 'Wie gross ist der Gegenstand unter Wasser? Das ist das verdraengte Volumen. Bei regelmäßigen Formen: Länge × Breite × Höhe. Beispiel: 0,5 m × 0,3 m × 0,2 m = 0,03 m³ = 30 Liter.'
+        text: 'Wie gross ist der Gegenstand unter Wasser? Das ist das verdrängte Volumen. Bei regelmäßigen Formen: Länge × Breite × Höhe. Beispiel: 0,5 m × 0,3 m × 0,2 m = 0,03 m³ = 30 Liter.'
       },
       {
         title: '2. Dichte des Wassers',
@@ -211,7 +211,7 @@ const TABS = {
       },
       {
         title: 'Rettungsring im Solebecken',
-        given: 'Ein Rettungsring verdraengt 15 Liter. Im Solebecken hat das Wasser eine Dichte von 1,05 kg/L.',
+        given: 'Ein Rettungsring verdrängt 15 Liter. Im Solebecken hat das Wasser eine Dichte von 1,05 kg/L.',
         question: 'Wie viel Auftrieb gibt es im Solebecken vs. normales Wasser?',
         steps: [
           ['Normales Wasser', '15 L × 1,00 kg/L = 15,0 kg Auftrieb'],
@@ -235,7 +235,7 @@ const TABS = {
     pitfalls: [
       'Einheiten nicht mischen! Entweder alles in Litern und kg oder alles in m³ und Tonnen.',
       'Die Dichte von Wasser ist nur UNGEFAEHR 1 kg/L. Bei warmen Wasser etwas weniger, bei Salzwasser mehr.',
-      'Das verdraengte Volumen ist NICHT immer das ganze Volumen — nur der Teil unter Wasser zählt!',
+      'Das verdrängte Volumen ist NICHT immer das ganze Volumen — nur der Teil unter Wasser zählt!',
       'Bei Prüfungsaufgaben: Auf die Einheiten achten! Manchmal wird in cm³ gefragt (1 Liter = 1.000 cm³).'
     ],
     quiz: {
@@ -251,7 +251,7 @@ const TABS = {
     chip: 'Praxis',
     title: 'Auftrieb im Schwimmbadalltag',
     intro:
-      'Auftrieb begegnet dir im Schwimmbad überall: Rettungsringe, Schwimmhilfen, Poolnudeln, aufblasbare Tiere — alles funktioniert mit Auftrieb. Auch warum Menschen schwimmen oder untergehen, hat mit Auftrieb zu tun. Hier uebst du mit echten Beispielen aus dem Bad.',
+      'Auftrieb begegnet dir im Schwimmbad überall: Rettungsringe, Schwimmhilfen, Poolnudeln, aufblasbare Tiere — alles funktioniert mit Auftrieb. Auch warum Menschen schwimmen oder untergehen, hat mit Auftrieb zu tun. Hier übst du mit echten Beispielen aus dem Bad.',
     motto: 'Im Schwimmbad ist Auftrieb überall.',
     rules: [
       'Rettungsgeräte müssen genug Auftrieb haben, um eine Person über Wasser zu halten (mind. 8-10 kg Auftrieb).',
@@ -267,7 +267,7 @@ const TABS = {
       },
       {
         title: '2. Schwimmhilfen richtig einsetzen',
-        text: 'Schwimmfluegel, Bretter und Nudeln geben Auftrieb. Ein Schwimmbrett mit 3 Litern Volumen gibt ca. 3 kg Auftrieb — genug, um den Oberkörper eines Kindes zu stuetzen.'
+        text: 'Schwimmflügel, Bretter und Nudeln geben Auftrieb. Ein Schwimmbrett mit 3 Litern Volumen gibt ca. 3 kg Auftrieb — genug, um den Oberkörper eines Kindes zu stützen.'
       },
       {
         title: '3. Warum Menschen schwimmen',
@@ -275,14 +275,14 @@ const TABS = {
       },
       {
         title: '4. Beckenreinigung und Auftrieb',
-        text: 'Saugroboter am Beckenboden brauchen Gewicht, das größer ist als ihr Auftrieb, sonst schwimmen sie hoch. Schlaeuche werden oft mit Gewichten beschwert.'
+        text: 'Saugroboter am Beckenboden brauchen Gewicht, das größer ist als ihr Auftrieb, sonst schwimmen sie hoch. Schläuche werden oft mit Gewichten beschwert.'
       }
     ],
     examples: [
       {
         title: 'Rettungsring prüfen',
         given: 'Ein Rettungsring hat 18 Liter Volumen und wiegt 2,5 kg. Eine Person wiegt 80 kg.',
-        question: 'Reicht der Auftrieb, um die Person zu stuetzen?',
+        question: 'Reicht der Auftrieb, um die Person zu stützen?',
         steps: [
           ['Auftrieb', '18 L × 1 kg/L = 18 kg'],
           ['Minus Eigengewicht', '18 - 2,5 = 15,5 kg nutzbar'],
@@ -298,7 +298,7 @@ const TABS = {
           ['Auftrieb', '3 L × 1 kg/L = 3 kg'],
           ['Minus Eigengewicht', '3 - 0,1 = 2,9 kg nutzbar'],
           ['Einordnung', 'Für ein kleines Kind (15-20 kg) reicht EINE Nudel nicht als alleinige Schwimmhilfe'],
-          ['Ergebnis', '2,9 kg nutzbarer Auftrieb — gut als Stuetze, nicht als Rettungsmittel']
+          ['Ergebnis', '2,9 kg nutzbarer Auftrieb — gut als Stütze, nicht als Rettungsmittel']
         ]
       },
       {
@@ -326,9 +326,9 @@ const TABS = {
     ],
     pitfalls: [
       'Aufblasbare Spielzeuge sind KEINE Rettungsmittel — sie können Luft verlieren!',
-      'Schwimmhilfen ersetzen NICHT die Aufsicht — ein Kind mit Schwimmfluegeln kann trotzdem in Gefahr sein.',
-      'Die Körperdichte aendert sich: Mit Luft in der Lunge schwimmt man, ohne sinkt man. Das ist wichtig bei der Rettung!',
-      'Salzwasser gibt mehr Auftrieb — aber Vorsicht: Badegaeste unterschaetzen oft die Stroemung in Solebecken.'
+      'Schwimmhilfen ersetzen NICHT die Aufsicht — ein Kind mit Schwimmflügeln kann trotzdem in Gefahr sein.',
+      'Die Körperdichte ändert sich: Mit Luft in der Lunge schwimmt man, ohne sinkt man. Das ist wichtig bei der Rettung!',
+      'Salzwasser gibt mehr Auftrieb — aber Vorsicht: Badegäste unterschätzen oft die Strömung in Solebecken.'
     ],
     quiz: {
       question: 'Eine Schwimmhilfe hat 6 Liter Volumen und wiegt 0,5 kg. Wie viel nutzbarer Auftrieb bleibt?',

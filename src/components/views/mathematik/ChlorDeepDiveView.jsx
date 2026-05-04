@@ -9,23 +9,23 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist Chlor-Dosierung?',
     intro:
-      'Chlor toetet Keime im Beckenwasser ab. Damit das funktioniert, muss immer genug Chlor im Wasser sein — aber nicht zu viel! Als Fachangestellte/r musst du berechnen können, wie viel Chlor du ins Becken geben musst. Der wichtigste Trick dabei: 1 mg/L ist dasselbe wie 1 g/m³.',
-    motto: '1 mg/L = 1 g/m³ — das ist dein Schluessel.',
+      'Chlor tötet Keime im Beckenwasser ab. Damit das funktioniert, muss immer genug Chlor im Wasser sein — aber nicht zu viel! Als Fachangestellte/r musst du berechnen können, wie viel Chlor du ins Becken geben musst. Der wichtigste Trick dabei: 1 mg/L ist dasselbe wie 1 g/m³.',
+    motto: '1 mg/L = 1 g/m³ — das ist dein Schlüssel.',
     rules: [
-      'Chlor desinfiziert das Wasser — es toetet Bakterien, Viren und Pilze ab.',
+      'Chlor desinfiziert das Wasser — es tötet Bakterien, Viren und Pilze ab.',
       'Der Chlorgehalt wird in mg/L (Milligramm pro Liter) gemessen.',
       'Der magische Umrechnungstrick: 1 mg/L ist GENAU dasselbe wie 1 g/m³.',
-      'Gemessen wird mit der DPD-Methode (Tablette loest sich auf und faerbt das Wasser rosa).',
+      'Gemessen wird mit der DPD-Methode (Tablette löst sich auf und färbt das Wasser rosa).',
       'Es gibt freies Chlor (wirkt noch) und gebundenes Chlor (verbraucht) — zusammen ergibt das Gesamtchlor.'
     ],
     steps: [
       {
         title: '1. Was ist Aktivchlor?',
-        text: 'Aktivchlor ist der Anteil im Chlorprodukt, der tatsaechlich desinfiziert. Nicht jedes Produkt ist 100% Aktivchlor — dazu später mehr. Wenn wir "Chlor dosieren" sagen, meinen wir erstmal Aktivchlor.'
+        text: 'Aktivchlor ist der Anteil im Chlorprodukt, der tatsächlich desinfiziert. Nicht jedes Produkt ist 100% Aktivchlor — dazu später mehr. Wenn wir "Chlor dosieren" sagen, meinen wir erstmal Aktivchlor.'
       },
       {
         title: '2. Die magische Umrechnung',
-        text: '1 mg/L = 1 g/m³. Das heisst: Wenn du den Chlorgehalt um 1 mg/L anheben willst, brauchst du pro Kubikmeter Wasser genau 1 Gramm Aktivchlor. Diesen Trick brauchst du bei JEDER Berechnung!'
+        text: '1 mg/L = 1 g/m³. Das heißt: Wenn du den Chlorgehalt um 1 mg/L anheben willst, brauchst du pro Kubikmeter Wasser genau 1 Gramm Aktivchlor. Diesen Trick brauchst du bei JEDER Berechnung!'
       },
       {
         title: '3. Wie misst man Chlor?',
@@ -33,7 +33,7 @@ const TABS = {
       },
       {
         title: '4. Warum ist die Dosierung so wichtig?',
-        text: 'Zu wenig Chlor = Keime ueberleben = Gesundheitsgefahr. Zu viel Chlor = Augenreizung, Chlorgeruch, Beschwerden. Die richtige Menge schuetzt die Gaeste und haelt die Wasserqualität.'
+        text: 'Zu wenig Chlor = Keime überleben = Gesundheitsgefahr. Zu viel Chlor = Augenreizung, Chlorgeruch, Beschwerden. Die richtige Menge schützt die Gäste und hält die Wasserqualität.'
       }
     ],
     examples: [
@@ -72,7 +72,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'mg/L und g/m³ NICHT verwechseln — sie sind zum Glueck gleich viel! 1 mg/L = 1 g/m³.',
+      'mg/L und g/m³ NICHT verwechseln — sie sind zum Glück gleich viel! 1 mg/L = 1 g/m³.',
       'Freies Chlor und Gesamtchlor sind NICHT dasselbe — dosiert wird nach freiem Chlor.',
       'DPD1 = freies Chlor, DPD3 = Gesamtchlor. Nicht durcheinanderbringen!',
       'Der Chlorbedarf im Becken ist NICHT gleich der Produktmenge — Produkte haben weniger als 100% Wirkstoff.'
@@ -90,7 +90,7 @@ const TABS = {
     chip: 'Dosierung',
     title: 'Aktivchlor-Menge berechnen',
     intro:
-      'Die Grundformel ist ganz einfach: Aktivchlor in Gramm = Anhebung in mg/L × Beckenvolumen in m³. Weil 1 mg/L = 1 g/m³ ist, multiplizierst du einfach die gewuenschte Anhebung mit dem Volumen. Fertig!',
+      'Die Grundformel ist ganz einfach: Aktivchlor in Gramm = Anhebung in mg/L × Beckenvolumen in m³. Weil 1 mg/L = 1 g/m³ ist, multiplizierst du einfach die gewünschte Anhebung mit dem Volumen. Fertig!',
     motto: 'Aktivchlor (g) = Anhebung (mg/L) × Volumen (m³)',
     rules: [
       'Die Formel lautet: Aktivchlor (g) = Anhebung (mg/L) × Beckenvolumen (m³).',
@@ -252,10 +252,10 @@ const TABS = {
     chip: 'Praxis',
     title: 'Chlor-Dosierung im Bäderalltag',
     intro:
-      'Hier uebst du die komplette Berechnung von Anfang bis Ende: Chlorwert messen, Anhebung bestimmen, Aktivchlor berechnen, Produktmenge ermitteln. Genau so, wie du es jeden Tag im Bad und in der Prüfung brauchst!',
+      'Hier übst du die komplette Berechnung von Anfang bis Ende: Chlorwert messen, Anhebung bestimmen, Aktivchlor berechnen, Produktmenge ermitteln. Genau so, wie du es jeden Tag im Bad und in der Prüfung brauchst!',
     motto: 'Messen → Rechnen → Dosieren → Kontrollieren.',
     rules: [
-      'Im Alltag laeuft die Dosierung meistens automatisch über die Messanlage.',
+      'Im Alltag läuft die Dosierung meistens automatisch über die Messanlage.',
       'Manuelle Nachdosierung ist nötig bei Störungen, hoher Belastung oder nach der Revision.',
       'Stosschlorung (Schockchlorung) bedeutet: Chlorgehalt auf 1,0–2,0 mg/L anheben.',
       'Nach der Stosschlorung darf NIEMAND ins Wasser, bis der Wert wieder unter 0,6 mg/L ist!',
@@ -276,7 +276,7 @@ const TABS = {
       },
       {
         title: '4. Dosieren und kontrollieren',
-        text: 'Produkt abwiegen, dem Wasser zugeben (Dosierschleuse oder Anlage). Nach 30 Minuten Umwaelzung nochmal messen. Liegt der Wert im Soll? Fertig!'
+        text: 'Produkt abwiegen, dem Wasser zugeben (Dosierschleuse oder Anlage). Nach 30 Minuten Umwälzung nochmal messen. Liegt der Wert im Soll? Fertig!'
       }
     ],
     examples: [
@@ -326,9 +326,9 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Bei der Stosschlorung: IMMER das Becken sperren! Badegaeste dürfen erst wieder rein, wenn der Wert unter 0,6 mg/L liegt.',
+      'Bei der Stosschlorung: IMMER das Becken sperren! Badegäste dürfen erst wieder rein, wenn der Wert unter 0,6 mg/L liegt.',
       'In der Prüfung werden oft ALLE drei Schritte abgefragt (Anhebung, Aktivchlor, Produktmenge) — keinen vergessen!',
-      'Nicht einfach "nach Gefuehl" dosieren — immer rechnen und messen. Zu viel Chlor ist genauso schlimm wie zu wenig.',
+      'Nicht einfach "nach Gefühl" dosieren — immer rechnen und messen. Zu viel Chlor ist genauso schlimm wie zu wenig.',
       'Nach dem Dosieren mindestens 30 Minuten warten und dann nachmessen — der Wert braucht Zeit zum Verteilen.'
     ],
     quiz: {
@@ -350,7 +350,7 @@ const PRODUCT_COMPARISON = [
   ['Handelsform', 'Granulat / Tabletten', 'Flüssigkeit'],
   ['Wirkstoffanteil', 'ca. 65%', 'ca. 13%'],
   ['Dezimalzahl', '0,65', '0,13'],
-  ['Lagerung', 'Trocken, kuehle Lagerung', 'Dunkel, kuehle Lagerung']
+  ['Lagerung', 'Trocken, kühle Lagerung', 'Dunkel, kühle Lagerung']
 ];
 
 /* ─── Shared components ─────────────────────────────────────────────────────── */

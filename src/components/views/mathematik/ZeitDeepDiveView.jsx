@@ -73,7 +73,7 @@ const TABS = {
     ],
     pitfalls: [
       'NIEMALS 1:30 als 1,30 Stunden lesen! 1:30 = 1,50 Industriestunden (30 Minuten = halbe Stunde).',
-      'Beim Addieren vergessen, dass ab 60 Minuten eine neue Stunde anfaengt.',
+      'Beim Addieren vergessen, dass ab 60 Minuten eine neue Stunde anfängt.',
       'Beim Subtrahieren vergessen, eine Stunde zu borgen, wenn die Minuten nicht reichen.',
       'Uhrzeit und Dauer verwechseln: 14:30 Uhr ist eine Uhrzeit, 2:30 ist eine Dauer.'
     ],
@@ -97,7 +97,7 @@ const TABS = {
       'Um Dezimalstunden in Minuten umzurechnen: Dezimalzahl × 60.',
       'Die vier wichtigsten Werte: 15 min = 0,25 h | 30 min = 0,50 h | 45 min = 0,75 h | 60 min = 1,00 h.',
       'Dezimalstunden haben IMMER ein Komma, nie einen Doppelpunkt.',
-      'Merkregel Viertelstunden: 15 min = ein Viertel = 0,25 | 30 min = die Haelfte = 0,50 | 45 min = drei Viertel = 0,75.'
+      'Merkregel Viertelstunden: 15 min = ein Viertel = 0,25 | 30 min = die Hälfte = 0,50 | 45 min = drei Viertel = 0,75.'
     ],
     steps: [
       {
@@ -113,7 +113,7 @@ const TABS = {
         text: 'Stunden + Dezimalanteil = Dezimalstunden. 6 + 0,33 = 6,33 Stunden.'
       },
       {
-        title: '4. Rueckrechnung prüfen',
+        title: '4. Rückrechnung prüfen',
         text: 'Zur Kontrolle: 0,33 × 60 = 19,8 ≈ 20 Minuten. Passt!'
       }
     ],
@@ -141,7 +141,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Rueckrechnung: Dezimal zu Minuten',
+        title: 'Rückrechnung: Dezimal zu Minuten',
         given: 'Auf dem Stundenzettel steht 6,75 Stunden.',
         question: 'Wie viel Stunden und Minuten sind das?',
         steps: [
@@ -156,7 +156,7 @@ const TABS = {
       '0,50 Stunden sind 30 Minuten, NICHT 50 Minuten! Das ist der häufigste Fehler.',
       '0,75 Stunden sind 45 Minuten, NICHT 75 Minuten!',
       'Immer auf zwei Nachkommastellen runden, sonst wird der Stundenzettel ungenau.',
-      'Nicht vergessen: Bei der Rueckrechnung mit 60 MALNEHMEN, nicht durch 60 teilen.'
+      'Nicht vergessen: Bei der Rückrechnung mit 60 MALNEHMEN, nicht durch 60 teilen.'
     ],
     quiz: {
       question: 'Wie viel sind 5 Stunden und 50 Minuten in Dezimalstunden?',
@@ -171,7 +171,7 @@ const TABS = {
     chip: 'Industriestunden',
     title: 'Industriestunden im Arbeitsalltag',
     intro:
-      'Industriestunden (auch Dezimalstunden genannt) sind das Zeitformat für Stundenzettel, Gehaltsabrechnung und Zeiterfassung. Statt 7:45 schreibst du 7,75. Das macht das Rechnen viel einfacher, weil du normal addieren und subtrahieren kannst — ohne das laestige 60er-System.',
+      'Industriestunden (auch Dezimalstunden genannt) sind das Zeitformat für Stundenzettel, Gehaltsabrechnung und Zeiterfassung. Statt 7:45 schreibst du 7,75. Das macht das Rechnen viel einfacher, weil du normal addieren und subtrahieren kannst — ohne das lästige 60er-System.',
     motto: 'Industriezeit = dezimal = einfacher rechnen.',
     rules: [
       'Industriestunden nutzen das 100er-System (Dezimalsystem) statt des 60er-Systems.',
@@ -200,7 +200,7 @@ const TABS = {
     ],
     examples: [
       {
-        title: 'Tages-Stundenzettel ausfuellen',
+        title: 'Tages-Stundenzettel ausfüllen',
         given: 'Schicht von 7:00 bis 15:30 Uhr, 30 Minuten Pause.',
         question: 'Was kommt auf den Stundenzettel?',
         steps: [
@@ -223,7 +223,7 @@ const TABS = {
       },
       {
         title: 'Ueberstunden berechnen',
-        given: 'Soll-Arbeitszeit: 38,50 Industriestunden. Tatsaechlich gearbeitet: 41,25 Industriestunden.',
+        given: 'Soll-Arbeitszeit: 38,50 Industriestunden. Tatsächlich gearbeitet: 41,25 Industriestunden.',
         question: 'Wie viele Ueberstunden hast du?',
         steps: [
           ['Ist minus Soll', '41,25 - 38,50'],
@@ -234,7 +234,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Stundenzettel in Normalzeit (7:45) statt Industriezeit (7,75) ausfuellen — das gibt Aerger bei der Abrechnung!',
+      'Stundenzettel in Normalzeit (7:45) statt Industriezeit (7,75) ausfüllen — das gibt Aerger bei der Abrechnung!',
       'Industriestunden einfach addieren und dabei vergessen, dass das Ergebnis NICHT in Stunden:Minuten ist.',
       'Pause vergessen abzuziehen — passiert besonders bei langen Schichten.',
       'Den Doppelpunkt (:) statt des Kommas (,) verwenden — 7:75 gibt es nicht!'
@@ -252,12 +252,12 @@ const TABS = {
     chip: 'Praxis',
     title: 'Zeit im Bäderalltag',
     intro:
-      'Im Schwimmbad brauchst du Zeitrechnung überall: Schichtplanung, Stundenzettel, Umwaelzzeiten berechnen, Ueberstunden ermitteln. Hier uebst du mit echten Aufgaben aus dem Bäderalltag. Diese Aufgaben kommen in der Prüfung dran!',
-    motto: 'Vom Stundenzettel bis zur Umwaelzzeit — Zeit ist überall.',
+      'Im Schwimmbad brauchst du Zeitrechnung überall: Schichtplanung, Stundenzettel, Umwälzzeiten berechnen, Ueberstunden ermitteln. Hier übst du mit echten Aufgaben aus dem Bäderalltag. Diese Aufgaben kommen in der Prüfung dran!',
+    motto: 'Vom Stundenzettel bis zur Umwälzzeit — Zeit ist überall.',
     rules: [
       'Schichtlänge = Endzeit - Startzeit - Pause. IMMER die Pause abziehen!',
       'Auf dem Stundenzettel stehen IMMER Industriestunden (Dezimalformat).',
-      'Umwaelzzeit = Beckenvolumen ÷ Umwaelzleistung. Das Ergebnis ist in Stunden (Dezimal).',
+      'Umwälzzeit = Beckenvolumen ÷ Umwälzleistung. Das Ergebnis ist in Stunden (Dezimal).',
       'Ueberstunden = Ist-Stunden - Soll-Stunden. Beides in Industriestunden rechnen!',
       'Bei der Prüfung: Achte darauf, ob die Aufgabe Normalzeit oder Industriezeit verlangt.'
     ],
@@ -271,7 +271,7 @@ const TABS = {
         text: 'Wenn du rechnen musst, bring alles in das gleiche Format. Am einfachsten: Alles in Industriezeit umrechnen, dann normal rechnen.'
       },
       {
-        title: '3. Rechnung durchfuehren',
+        title: '3. Rechnung durchführen',
         text: 'In Industriezeit kannst du ganz normal addieren, subtrahieren und multiplizieren. Kein 60er-System mehr!'
       },
       {
@@ -282,7 +282,7 @@ const TABS = {
     examples: [
       {
         title: 'Schichtlänge mit Pause',
-        given: 'Fruehschicht: 5:45 bis 13:30 Uhr, 30 Minuten Pause.',
+        given: 'Frühschicht: 5:45 bis 13:30 Uhr, 30 Minuten Pause.',
         question: 'Wie lang ist die Netto-Arbeitszeit in Industriestunden?',
         steps: [
           ['Gesamtzeit', '13:30 - 5:45 = 7:45 (12:90 - 5:45 = 7:45)'],
@@ -292,19 +292,19 @@ const TABS = {
         ]
       },
       {
-        title: 'Umwaelzzeit berechnen',
-        given: 'Schwimmerbecken: 600 m³ Volumen. Umwaelzpumpe: 150 m³/h Leistung.',
-        question: 'Wie lange dauert eine komplette Umwaelzung?',
+        title: 'Umwälzzeit berechnen',
+        given: 'Schwimmerbecken: 600 m³ Volumen. Umwälzpumpe: 150 m³/h Leistung.',
+        question: 'Wie lange dauert eine komplette Umwälzung?',
         steps: [
-          ['Formel', 'Umwaelzzeit = Volumen ÷ Leistung'],
+          ['Formel', 'Umwälzzeit = Volumen ÷ Leistung'],
           ['Einsetzen', '600 m³ ÷ 150 m³/h = 4,0 Stunden'],
           ['In Normalzeit', '4,0 Stunden = 4 Stunden 0 Minuten'],
-          ['Ergebnis', 'Eine Umwaelzung dauert 4 Stunden']
+          ['Ergebnis', 'Eine Umwälzung dauert 4 Stunden']
         ]
       },
       {
         title: 'Wochenarbeitszeit und Ueberstunden',
-        given: 'Soll: 39,00 h/Woche. Tatsaechlich: Mo 8,25 | Di 8,50 | Mi 8,75 | Do 8,25 | Fr 7,50.',
+        given: 'Soll: 39,00 h/Woche. Tatsächlich: Mo 8,25 | Di 8,50 | Mi 8,75 | Do 8,25 | Fr 7,50.',
         question: 'Gibt es Ueberstunden?',
         steps: [
           ['Ist-Stunden addieren', '8,25 + 8,50 + 8,75 + 8,25 + 7,50 = 41,25'],
@@ -314,11 +314,11 @@ const TABS = {
         ]
       },
       {
-        title: 'Umwaelzzeit Nichtschwimmerbecken',
-        given: 'Nichtschwimmerbecken: 180 m³. Pumpe: 80 m³/h. Vorschrift: max. 2,5 Stunden Umwaelzzeit.',
+        title: 'Umwälzzeit Nichtschwimmerbecken',
+        given: 'Nichtschwimmerbecken: 180 m³. Pumpe: 80 m³/h. Vorschrift: max. 2,5 Stunden Umwälzzeit.',
         question: 'Wird die Vorschrift eingehalten?',
         steps: [
-          ['Umwaelzzeit berechnen', '180 ÷ 80 = 2,25 Stunden'],
+          ['Umwälzzeit berechnen', '180 ÷ 80 = 2,25 Stunden'],
           ['In Normalzeit', '0,25 × 60 = 15 Min → 2 Stunden 15 Minuten'],
           ['Vergleich', '2,25 h < 2,50 h (Vorschrift)'],
           ['Ergebnis', 'Ja! 2,25 h ist unter der Grenze von 2,50 h. Vorschrift eingehalten.']
@@ -326,13 +326,13 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Bei Schichtberechnung die Pause vergessen — das verfaelscht den ganzen Stundenzettel!',
+      'Bei Schichtberechnung die Pause vergessen — das verfälscht den ganzen Stundenzettel!',
       'Normalzeit und Industriezeit in einer Rechnung mischen — IMMER erst alles umrechnen.',
-      'Bei der Umwaelzzeit: Einheiten prüfen! Volumen in m³ und Leistung in m³/h ergibt Stunden.',
+      'Bei der Umwälzzeit: Einheiten prüfen! Volumen in m³ und Leistung in m³/h ergibt Stunden.',
       'Ergebnis im falschen Format angeben: Aufgabe fragt Industriestunden, du gibst Stunden:Minuten an.'
     ],
     quiz: {
-      question: 'Beckenvolumen 450 m³, Pumpenleistung 100 m³/h. Wie lange dauert die Umwaelzung?',
+      question: 'Beckenvolumen 450 m³, Pumpenleistung 100 m³/h. Wie lange dauert die Umwälzung?',
       options: ['4,00 Stunden', '4,50 Stunden', '5,00 Stunden'],
       correctIndex: 1,
       explanation: '450 ÷ 100 = 4,50 Stunden. In Normalzeit: 4 Stunden 30 Minuten.'

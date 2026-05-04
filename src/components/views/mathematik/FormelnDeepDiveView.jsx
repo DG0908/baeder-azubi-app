@@ -21,7 +21,7 @@ const TABS = {
     steps: [
       {
         title: '1. Die Formel lesen',
-        text: 'Schau dir die Formel an und ueberlege, wofür jeder Buchstabe steht. Bei v = s ÷ t ist v die Geschwindigkeit, s die Strecke und t die Zeit.'
+        text: 'Schau dir die Formel an und überlege, wofür jeder Buchstabe steht. Bei v = s ÷ t ist v die Geschwindigkeit, s die Strecke und t die Zeit.'
       },
       {
         title: '2. Das Waage-Prinzip verstehen',
@@ -74,7 +74,7 @@ const TABS = {
     pitfalls: [
       'Buchstaben NICHT verwechseln — "v" ist Geschwindigkeit, "V" (gross) ist Volumen!',
       'Einheiten IMMER mitschreiben, sonst weisst du nicht was die Zahl bedeutet.',
-      'Das Gleichheitszeichen heisst: Links und rechts ist der gleiche Wert — nicht "dann kommt"!',
+      'Das Gleichheitszeichen heißt: Links und rechts ist der gleiche Wert — nicht "dann kommt"!',
       'Formeln auswendig lernen bringt nichts, wenn du nicht verstehst was die Buchstaben bedeuten.'
     ],
     quiz: {
@@ -90,7 +90,7 @@ const TABS = {
     chip: 'Umstellen',
     title: 'Formeln umstellen — die Gegenoperation',
     intro:
-      'Manchmal kennst du das Ergebnis, aber dir fehlt ein anderer Wert. Dann musst du die Formel umstellen. Das heisst: Du bringst den gesuchten Buchstaben alleine auf eine Seite. Dafür nutzt du die Gegenoperation — was auf der einen Seite malgenommen wird, wird auf der anderen geteilt. Wie bei einer Waage: Was du auf einer Seite wegnimmst, musst du auf der anderen auch wegnehmen.',
+      'Manchmal kennst du das Ergebnis, aber dir fehlt ein anderer Wert. Dann musst du die Formel umstellen. Das heißt: Du bringst den gesuchten Buchstaben alleine auf eine Seite. Dafür nutzt du die Gegenoperation — was auf der einen Seite malgenommen wird, wird auf der anderen geteilt. Wie bei einer Waage: Was du auf einer Seite wegnimmst, musst du auf der anderen auch wegnehmen.',
     motto: 'Gegenoperation = den Buchstaben befreien.',
     rules: [
       'Ziel: Den gesuchten Buchstaben ALLEINE auf eine Seite bringen.',
@@ -113,7 +113,7 @@ const TABS = {
         text: 'Ueberlege: Wie ist der gesuchte Buchstabe "gefangen"? Bei v = s ÷ t ist s durch t geteilt. Gegenoperation: Beide Seiten × t. Ergebnis: v × t = s.'
       },
       {
-        title: '4. Aufgeraeumte Formel hinschreiben',
+        title: '4. Aufgeräumte Formel hinschreiben',
         text: 'Schreib die neue Formel sauber auf: s = v × t. Jetzt steht s alleine — fertig umgestellt!'
       }
     ],
@@ -153,7 +153,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'NIEMALS Zahlen einsetzen bevor die Formel umgestellt ist — das fuehrt zu Fehlern!',
+      'NIEMALS Zahlen einsetzen bevor die Formel umgestellt ist — das führt zu Fehlern!',
       'Nicht vergessen: Was du links tust, musst du auch rechts tun. IMMER beide Seiten!',
       'Verwechsle nicht × und ÷ — wenn der Buchstabe malgenommen ist, musst du teilen (und umgekehrt).',
       'Tipp: Schreib dir eine "Umstell-Tabelle" — für jede Formel alle drei Varianten.'
@@ -195,7 +195,7 @@ const TABS = {
       },
       {
         title: '4. Ausrechnen und Einheit prüfen',
-        text: 'Rechne aus: t = 50 s. Pruefe: m geteilt durch m/s gibt Sekunden — passt!'
+        text: 'Rechne aus: t = 50 s. Prüfe: m geteilt durch m/s gibt Sekunden — passt!'
       }
     ],
     examples: [
@@ -223,7 +223,7 @@ const TABS = {
       },
       {
         title: 'Volumen berechnen bei Förderstrom',
-        given: 'Die Pumpe hat Q = 30 m³/h Förderstrom. Sie laeuft t = 8 Stunden.',
+        given: 'Die Pumpe hat Q = 30 m³/h Förderstrom. Sie läuft t = 8 Stunden.',
         question: 'Wie viel Wasser wird gefördert?',
         steps: [
           ['Formel umstellen', 'V = Q × t'],
@@ -252,14 +252,14 @@ const TABS = {
     chip: 'Praxis',
     title: 'Formeln im Bäderalltag',
     intro:
-      'Im Schwimmbad brauchst du vier Formeln ständig: Geschwindigkeit (v = s ÷ t), Förderstrom (Q = V ÷ t), Fläche (A = l × b) und Filtergeschwindigkeit (vF = Q ÷ A). Hier uebst du alle vier mit echten Aufgaben aus dem Badalltag. Diese Formeln kommen garantiert in der Prüfung!',
+      'Im Schwimmbad brauchst du vier Formeln ständig: Geschwindigkeit (v = s ÷ t), Förderstrom (Q = V ÷ t), Fläche (A = l × b) und Filtergeschwindigkeit (vF = Q ÷ A). Hier übst du alle vier mit echten Aufgaben aus dem Badalltag. Diese Formeln kommen garantiert in der Prüfung!',
     motto: 'Vier Formeln — das ganze Bad berechnen.',
     rules: [
-      'v = s ÷ t → Geschwindigkeit = Strecke geteilt durch Zeit (z.B. Wasserstroemung).',
+      'v = s ÷ t → Geschwindigkeit = Strecke geteilt durch Zeit (z.B. Wasserströmung).',
       'Q = V ÷ t → Förderstrom = Volumen geteilt durch Zeit (z.B. Pumpenleistung in m³/h).',
       'A = l × b → Fläche = Länge mal Breite (z.B. Beckenwasserfläche).',
       'vF = Q ÷ A → Filtergeschwindigkeit = Förderstrom geteilt durch Filterfläche (Richtwert: ca. 30 m/h).',
-      'Jede dieser Formeln kann nach jedem Buchstaben umgestellt werden — uebe alle Varianten!'
+      'Jede dieser Formeln kann nach jedem Buchstaben umgestellt werden — übe alle Varianten!'
     ],
     steps: [
       {
@@ -276,12 +276,12 @@ const TABS = {
       },
       {
         title: '4. Ergebnis prüfen',
-        text: 'Pruefe: Stimmt die Einheit? Macht der Wert Sinn? Filtergeschwindigkeit sollte ca. 20-40 m/h betragen, Förderstrom oft zwischen 20-100 m³/h.'
+        text: 'Prüfe: Stimmt die Einheit? Macht der Wert Sinn? Filtergeschwindigkeit sollte ca. 20-40 m/h betragen, Förderstrom oft zwischen 20-100 m³/h.'
       }
     ],
     examples: [
       {
-        title: 'Förderstrom einer Umwaelzpumpe',
+        title: 'Förderstrom einer Umwälzpumpe',
         given: 'Die Pumpe fördert V = 480 m³ Wasser in t = 8 Stunden.',
         question: 'Wie gross ist der Förderstrom Q?',
         steps: [
@@ -314,14 +314,14 @@ const TABS = {
         ]
       },
       {
-        title: 'Umwaelzzeit eines Beckens',
+        title: 'Umwälzzeit eines Beckens',
         given: 'Beckenvolumen V = 450 m³, Förderstrom Q = 75 m³/h.',
-        question: 'Wie lange dauert eine komplette Umwaelzung?',
+        question: 'Wie lange dauert eine komplette Umwälzung?',
         steps: [
           ['Formel umstellen', 't = V ÷ Q'],
           ['Einsetzen', 't = 450 m³ ÷ 75 m³/h'],
           ['Ausrechnen', 't = 6 h'],
-          ['Ergebnis', 'Eine Umwaelzung dauert 6 Stunden']
+          ['Ergebnis', 'Eine Umwälzung dauert 6 Stunden']
         ]
       }
     ],
@@ -329,7 +329,7 @@ const TABS = {
       'v (klein) ist Geschwindigkeit, V (gross) ist Volumen — nicht verwechseln!',
       'Filtergeschwindigkeit hat die Einheit m/h (Meter pro Stunde), NICHT m³/h!',
       'Immer zuerst umstellen, dann einsetzen — auch wenn die Prüfung stresst.',
-      'Richtwerte kennen: Filtergeschwindigkeit ca. 20-40 m/h, Umwaelzzeit Hallenbad ca. 4-6 h.'
+      'Richtwerte kennen: Filtergeschwindigkeit ca. 20-40 m/h, Umwälzzeit Hallenbad ca. 4-6 h.'
     ],
     quiz: {
       question: 'Q = 80 m³/h, Filterfläche A = 2,5 m². Wie gross ist die Filtergeschwindigkeit vF?',
@@ -345,7 +345,7 @@ const TAB_ORDER = ['grundlagen', 'umstellen', 'einsetzen', 'praxis'];
 /* ─── Formula overview table (shown on grundlagen and praxis tabs) ─────────── */
 
 const FORMULA_OVERVIEW = [
-  ['Geschwindigkeit', 'v = s ÷ t', 'm/s oder km/h', 'Stroemung, Schwimmer'],
+  ['Geschwindigkeit', 'v = s ÷ t', 'm/s oder km/h', 'Strömung, Schwimmer'],
   ['Förderstrom', 'Q = V ÷ t', 'm³/h', 'Pumpenleistung'],
   ['Fläche', 'A = l × b', 'm²', 'Beckenfläche'],
   ['Filtergeschwindigkeit', 'vF = Q ÷ A', 'm/h', 'Filteranlage']

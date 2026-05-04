@@ -9,14 +9,14 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Wie benutzt man eine Formelsammlung?',
     intro:
-      'Eine Formelsammlung ist dein wichtigstes Werkzeug in der Prüfung. Sie enthaelt alle Formeln, die du brauchst — du musst sie nicht auswendig lernen, aber du musst sie LESEN und ANWENDEN können. Hier lernst du, wie du jede Formel richtig einsetzt.',
+      'Eine Formelsammlung ist dein wichtigstes Werkzeug in der Prüfung. Sie enthält alle Formeln, die du brauchst — du musst sie nicht auswendig lernen, aber du musst sie LESEN und ANWENDEN können. Hier lernst du, wie du jede Formel richtig einsetzt.',
     motto: 'Nicht auswendig lernen — verstehen und anwenden.',
     rules: [
       'Jede Formel besteht aus Buchstaben (Variablen) und Rechenzeichen — die Buchstaben stehen für Zahlen mit Einheiten.',
       'Lies eine Formel immer MIT den Einheiten: V = L × B × T bedeutet Volumen in m³ = Länge in m × Breite in m × Tiefe in m.',
-      'Bevor du rechnest: Pruefe ob alle Einheiten zusammenpassen (z.B. alles in Metern, nicht Meter und Zentimeter mischen).',
+      'Bevor du rechnest: Prüfe ob alle Einheiten zusammenpassen (z.B. alles in Metern, nicht Meter und Zentimeter mischen).',
       'Stelle die Formel IMMER zuerst nach der gesuchten Größe um, bevor du Zahlen einsetzt.',
-      'In der Prüfung darfst du die Formelsammlung benutzen — uebe vorher damit, damit du schnell findest was du brauchst.'
+      'In der Prüfung darfst du die Formelsammlung benutzen — übe vorher damit, damit du schnell findest was du brauchst.'
     ],
     steps: [
       {
@@ -90,8 +90,8 @@ const TABS = {
     chip: 'Geometrie & Hydraulik',
     title: 'Geometrie- und Hydraulik-Formeln',
     intro:
-      'Diese Formeln brauchst du für Beckenberechnungen, Flächenberechnung und Wasserstroemungen. Ob Beckenvolumen, Rohrquerschnitt oder Durchflussmenge — hier findest du alle wichtigen Formeln auf einen Blick.',
-    motto: 'Fläche, Volumen, Durchfluss — die drei Sauelen der Badtechnik.',
+      'Diese Formeln brauchst du für Beckenberechnungen, Flächenberechnung und Wasserströmungen. Ob Beckenvolumen, Rohrquerschnitt oder Durchflussmenge — hier findest du alle wichtigen Formeln auf einen Blick.',
+    motto: 'Fläche, Volumen, Durchfluss — die drei Säulen der Badtechnik.',
     rules: [
       'Fläche Rechteck: A = l × b (Länge mal Breite, Ergebnis in m²).',
       'Fläche Kreis: A = π × r² (Pi mal Radius zum Quadrat, π ≈ 3,14).',
@@ -142,7 +142,7 @@ const TABS = {
       },
       {
         title: 'Volumenstrom einer Filteranlage',
-        given: 'Die Filteranlage waelzt 600 m³ Wasser in 4 Stunden um.',
+        given: 'Die Filteranlage wälzt 600 m³ Wasser in 4 Stunden um.',
         question: 'Wie gross ist der Volumenstrom Q?',
         steps: [
           ['Formel', 'Q = V ÷ t'],
@@ -156,7 +156,7 @@ const TABS = {
       'Durchmesser und Radius verwechseln! Der Radius ist die HAELFTE des Durchmessers: r = d ÷ 2.',
       'Bei r² den Radius ZUERST quadrieren, DANN mit π multiplizieren (Punkt vor Strich).',
       'Volumenstrom Q: Einheiten müssen zueinander passen — m³ mit Stunden ODER Liter mit Sekunden.',
-      'Pythagoras (a² + b² = c²) wird bei schraegen Beckenboeden gebraucht — c ist immer die laengste Seite!'
+      'Pythagoras (a² + b² = c²) wird bei schrägen Beckenböden gebraucht — c ist immer die längste Seite!'
     ],
     quiz: {
       question: 'Eine Pumpe fördert 240 m³ in 6 Stunden. Wie gross ist der Volumenstrom Q?',
@@ -172,7 +172,7 @@ const TABS = {
     title: 'Physik- und Chemie-Formeln',
     intro:
       'Geschwindigkeit, Druck, Arbeit, Leistung und Wärme — diese Formeln brauchst du für Wasseraufbereitung, Heizung und Technik im Schwimmbad. Dazu kommen die wichtigsten Chemie-Formeln für Chlorung und Dosierung.',
-    motto: 'Physik erklaert die Technik — Chemie schuetzt das Wasser.',
+    motto: 'Physik erklärt die Technik — Chemie schützt das Wasser.',
     rules: [
       'Geschwindigkeit: v = s ÷ t (Strecke geteilt durch Zeit, z.B. m/s).',
       'Druck: p = F ÷ A (Kraft geteilt durch Fläche, Einheit: Pascal oder bar). Wasserdruck: ca. 0,1 bar pro Meter Tiefe.',
@@ -195,7 +195,7 @@ const TABS = {
       },
       {
         title: '4. Ergebnis prüfen',
-        text: 'Ist das Ergebnis realistisch? Wasserdruck in 3 m Tiefe ≈ 0,3 bar. Beckenwasser erwärmen braucht viele kWh. Plausibilitaets-Check!'
+        text: 'Ist das Ergebnis realistisch? Wasserdruck in 3 m Tiefe ≈ 0,3 bar. Beckenwasser erwärmen braucht viele kWh. Plausibilitäts-Check!'
       }
     ],
     examples: [
@@ -212,7 +212,7 @@ const TABS = {
       },
       {
         title: 'Beckenwasser erwärmen',
-        given: 'Ein Becken hat 400 m³ Wasser. Es soll von 22°C auf 28°C erwaermt werden.',
+        given: 'Ein Becken hat 400 m³ Wasser. Es soll von 22°C auf 28°C erwärmt werden.',
         question: 'Wie viel Wärmeenergie wird benötigt?',
         steps: [
           ['Temperaturdifferenz', 'ΔT = 28 - 22 = 6°C'],
@@ -255,7 +255,7 @@ const TABS = {
       'Hier findest du die wichtigsten Umrechnungen, häufig gebrauchte Werte und eine Einheiten-Übersicht auf einen Blick. Diese Tabelle solltest du in der Prüfung sofort finden können — sie spart dir viel Zeit!',
     motto: 'Nachschlagen statt nachdenken — aber wissen wo es steht!',
     rules: [
-      'Volumen: 1 m³ = 1.000 Liter. Ein Kubikmeter ist ein Wuerfel mit 1 m Kantenlänge.',
+      'Volumen: 1 m³ = 1.000 Liter. Ein Kubikmeter ist ein Würfel mit 1 m Kantenlänge.',
       'Konzentration: 1 mg/L = 1 g/m³. Diese Umrechnung brauchst du bei JEDER Chlor-Aufgabe!',
       'Geschwindigkeit: m/s × 3,6 = km/h. Von m/s auf km/h multiplizierst du mit 3,6.',
       'Zeit: Minuten ÷ 60 = Stunden. 90 Minuten = 1,5 Stunden (nicht 1,9!).',
@@ -271,11 +271,11 @@ const TABS = {
         text: 'Suche in der Tabelle den passenden Faktor: Liter → m³ bedeutet ÷ 1.000. Also: 5.000 L ÷ 1.000 = 5 m³.'
       },
       {
-        title: '3. Umrechnung durchfuehren',
+        title: '3. Umrechnung durchführen',
         text: 'Multipliziere oder dividiere mit dem Faktor. Merke: Von klein nach gross → teilen. Von gross nach klein → malnehmen.'
       },
       {
-        title: '4. Ergebnis auf Plausibilitaet prüfen',
+        title: '4. Ergebnis auf Plausibilität prüfen',
         text: 'Kubikmeter sind "größer" als Liter, also muss die Zahl in m³ KLEINER sein als in Litern. 5 m³ < 5.000 L — passt!'
       }
     ],
@@ -304,7 +304,7 @@ const TABS = {
       },
       {
         title: 'Minuten in Stunden umrechnen',
-        given: 'Die Umwaelzzeit beträgt 270 Minuten.',
+        given: 'Die Umwälzzeit beträgt 270 Minuten.',
         question: 'Wie viel Stunden sind das?',
         steps: [
           ['Umrechnung', 'Minuten ÷ 60 = Stunden'],
@@ -549,7 +549,7 @@ export default function FormelsammlungDeepDiveView() {
 
           {/* Formula overview table (on grundlagen and geometrie tabs) */}
           {(activeTab === 'grundlagen' || activeTab === 'geometrie') && (
-            <InfoCard darkMode={darkMode} title="Alle Formeln im Ueberblick">
+            <InfoCard darkMode={darkMode} title="Alle Formeln im Überblick">
               <div className="overflow-hidden rounded-xl border border-transparent">
                 <table className="min-w-full text-sm">
                   <thead>

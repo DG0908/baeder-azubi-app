@@ -9,12 +9,12 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist Wärmeenergie?',
     intro:
-      'Wenn du ein Schwimmbecken aufheizen willst, brauchst du Energie. Diese Energie heisst Wärmeenergie. Je mehr Wasser du aufheizen willst und je größer der Temperaturunterschied ist, desto mehr Energie brauchst du. Das ist logisch — aber wie rechnet man das genau aus?',
+      'Wenn du ein Schwimmbecken aufheizen willst, brauchst du Energie. Diese Energie heißt Wärmeenergie. Je mehr Wasser du aufheizen willst und je größer der Temperaturunterschied ist, desto mehr Energie brauchst du. Das ist logisch — aber wie rechnet man das genau aus?',
     motto: 'Wärme ist Energie, die Wasser wärmer macht.',
     rules: [
       'Temperatur und Wärme sind NICHT das gleiche — Temperatur misst man in °C, Wärme ist Energie in kWh.',
       'Um Wasser aufzuheizen, braucht man immer Energie — die kommt aus Gas, Strom, Sonne oder Fernwärme.',
-      'Je MEHR Wasser du hast, desto mehr Energie brauchst du für die gleiche Erwaermung.',
+      'Je MEHR Wasser du hast, desto mehr Energie brauchst du für die gleiche Erwärmung.',
       'Je GROESSER der Temperaturunterschied, desto mehr Energie brauchst du.',
       'Die Einheit für Wärmeenergie im Schwimmbad ist die Kilowattstunde (kWh).'
     ],
@@ -33,7 +33,7 @@ const TABS = {
       },
       {
         title: '4. Die Einheit kWh',
-        text: 'kWh steht für Kilowattstunde. Das ist die gaengige Einheit für Energie im Schwimmbad. Deine Gasrechnung oder Stromrechnung wird auch in kWh abgerechnet.'
+        text: 'kWh steht für Kilowattstunde. Das ist die gängige Einheit für Energie im Schwimmbad. Deine Gasrechnung oder Stromrechnung wird auch in kWh abgerechnet.'
       }
     ],
     examples: [
@@ -56,12 +56,12 @@ const TABS = {
           ['Zieltemperatur', '28 °C'],
           ['Starttemperatur', '10 °C'],
           ['Rechnung', '28 °C - 10 °C = 18 K'],
-          ['Ergebnis', 'Das Wasser muss um 18 K (Kelvin) erwaermt werden']
+          ['Ergebnis', 'Das Wasser muss um 18 K (Kelvin) erwärmt werden']
         ]
       }
     ],
     pitfalls: [
-      'Temperatur und Wärme verwechseln — heisses Wasser im Eimer hat hohe Temperatur aber wenig Wärmeenergie!',
+      'Temperatur und Wärme verwechseln — heißes Wasser im Eimer hat hohe Temperatur aber wenig Wärmeenergie!',
       'Die Temperaturdifferenz wird in Kelvin (K) angegeben, nicht in °C — aber 1 K = 1 °C Unterschied.',
       'Vergiss nicht: Auch das Becken verliert Wärme (an die Luft, an den Boden) — du musst also mehr heizen als nur die Differenz.',
       'kWh ist NICHT das gleiche wie kW. kW ist Leistung (wie schnell), kWh ist Energie (wie viel).'
@@ -83,7 +83,7 @@ const TABS = {
     motto: '1,16 ist die magische Zahl für Wasser.',
     rules: [
       'Die Formel lautet: Q = 1,16 × m³ × ΔT — das Ergebnis ist in kWh.',
-      '1,16 ist ein fester Wert speziell für Wasser — er aendert sich nie.',
+      '1,16 ist ein fester Wert speziell für Wasser — er ändert sich nie.',
       'm³ ist die Wassermenge in Kubikmetern (1 m³ = 1.000 Liter).',
       'ΔT ist die Temperaturdifferenz in Kelvin (Zieltemperatur minus Starttemperatur).',
       'Einfach merken: Drei Zahlen multiplizieren — fertig!'
@@ -103,13 +103,13 @@ const TABS = {
       },
       {
         title: '4. Ergebnis prüfen',
-        text: 'Macht das Ergebnis Sinn? Grosses Becken + grosser Temperaturunterschied = viel Energie. Kleines Becken + kleiner Unterschied = wenig Energie.'
+        text: 'Macht das Ergebnis Sinn? Grosses Becken + großer Temperaturunterschied = viel Energie. Kleines Becken + kleiner Unterschied = wenig Energie.'
       }
     ],
     examples: [
       {
         title: 'Kleines Becken aufheizen',
-        given: 'Ein Lehrschwimmbecken hat 100 m³ Wasser mit 20 °C. Es soll auf 30 °C erwaermt werden.',
+        given: 'Ein Lehrschwimmbecken hat 100 m³ Wasser mit 20 °C. Es soll auf 30 °C erwärmt werden.',
         question: 'Wie viel Energie wird benötigt?',
         steps: [
           ['Wassermenge', '100 m³'],
@@ -148,7 +148,7 @@ const TABS = {
       'Die Formel gilt nur für Wasser — andere Stoffe haben andere Faktoren.'
     ],
     quiz: {
-      question: 'Ein Becken hat 200 m³ Wasser. Es soll von 18 °C auf 26 °C erwaermt werden. Wie viel Energie?',
+      question: 'Ein Becken hat 200 m³ Wasser. Es soll von 18 °C auf 26 °C erwärmt werden. Wie viel Energie?',
       options: ['1.392 kWh', '1.856 kWh', '2.320 kWh'],
       correctIndex: 1,
       explanation: 'ΔT = 26 - 18 = 8 K. Q = 1,16 × 200 × 8 = 1.856 kWh.'
@@ -160,14 +160,14 @@ const TABS = {
     chip: 'Temperaturdifferenz',
     title: 'ΔT — der Unterschied machts',
     intro:
-      'Die Temperaturdifferenz (ΔT, sprich: "Delta T") ist der Unterschied zwischen zwei Temperaturen. Das ist NICHT die Temperatur selbst, sondern wie viel wärmer oder kaelter etwas werden soll. Im Schwimmbad brauchst du ΔT ständig: beim Aufheizen, beim Nachheizen, bei der Energieberechnung.',
+      'Die Temperaturdifferenz (ΔT, sprich: "Delta T") ist der Unterschied zwischen zwei Temperaturen. Das ist NICHT die Temperatur selbst, sondern wie viel wärmer oder kälter etwas werden soll. Im Schwimmbad brauchst du ΔT ständig: beim Aufheizen, beim Nachheizen, bei der Energieberechnung.',
     motto: 'ΔT ist der Unterschied, nicht die Temperatur.',
     rules: [
       'ΔT = Zieltemperatur minus Starttemperatur — IMMER in dieser Reihenfolge.',
       'ΔT wird in Kelvin (K) angegeben — aber 1 K ist genauso gross wie 1 °C.',
       'ΔT ist NICHT die Temperatur selbst — es ist die DIFFERENZ (der Unterschied).',
       'Je größer ΔT, desto mehr Energie brauchst du zum Aufheizen.',
-      'ΔT kann auch negativ sein (beim Abkuehlen), aber im Schwimmbad heizen wir meistens auf.'
+      'ΔT kann auch negativ sein (beim Abkühlen), aber im Schwimmbad heizen wir meistens auf.'
     ],
     steps: [
       {
@@ -180,7 +180,7 @@ const TABS = {
       },
       {
         title: '3. Differenz berechnen',
-        text: 'Ziel minus Start: 26 °C - 10 °C = 16 K. Das Wasser muss um 16 Kelvin erwaermt werden.'
+        text: 'Ziel minus Start: 26 °C - 10 °C = 16 K. Das Wasser muss um 16 Kelvin erwärmt werden.'
       },
       {
         title: '4. Einheit beachten',
@@ -201,7 +201,7 @@ const TABS = {
       },
       {
         title: 'Beckenwasser nachheizen',
-        given: 'Über Nacht ist das Wasser von 28 °C auf 25 °C abgekuehlt. Es soll wieder auf 28 °C.',
+        given: 'Über Nacht ist das Wasser von 28 °C auf 25 °C abgekühlt. Es soll wieder auf 28 °C.',
         question: 'Wie gross ist ΔT?',
         steps: [
           ['Zieltemperatur', '28 °C'],
@@ -241,7 +241,7 @@ const TABS = {
     chip: 'Praxis',
     title: 'Wärme im Bäderalltag',
     intro:
-      'Hier uebst du die Wärmeberechnung mit echten Aufgaben aus dem Schwimmbad. Becken aufheizen nach Wasserwechsel, Energiekosten berechnen, Heizarten vergleichen — das alles kommt in der Prüfung dran und brauchst du im Arbeitsalltag!',
+      'Hier übst du die Wärmeberechnung mit echten Aufgaben aus dem Schwimmbad. Becken aufheizen nach Wasserwechsel, Energiekosten berechnen, Heizarten vergleichen — das alles kommt in der Prüfung dran und brauchst du im Arbeitsalltag!',
     motto: 'Im Bad dreht sich alles um warmes Wasser.',
     rules: [
       'Ein Lehrschwimmbecken (ca. 100–200 m³) bei 30 °C braucht deutlich mehr Heizenergie als man denkt.',
@@ -282,7 +282,7 @@ const TABS = {
       },
       {
         title: 'Energiekosten mit Gas',
-        given: 'Ein Sportbecken (600 m³) soll von 22 °C auf 27 °C erwaermt werden. Gaspreis: 0,10 Euro/kWh.',
+        given: 'Ein Sportbecken (600 m³) soll von 22 °C auf 27 °C erwärmt werden. Gaspreis: 0,10 Euro/kWh.',
         question: 'Was kostet die Aufheizung?',
         steps: [
           ['ΔT', '27 - 22 = 5 K'],
@@ -292,7 +292,7 @@ const TABS = {
         ]
       },
       {
-        title: 'Freibad-Becken im Fruehling',
+        title: 'Freibad-Becken im Frühling',
         given: 'Das Freibadbecken hat 1.200 m³. Im Mai hat das Wasser 14 °C. Ziel: 24 °C. Gaspreis: 0,10 Euro/kWh.',
         question: 'Wie viel kostet das Aufheizen?',
         steps: [
@@ -316,7 +316,7 @@ const TABS = {
     ],
     pitfalls: [
       'Die Formel gibt nur die REINE Aufheizenergie — Wärmeverluste durch Verdunstung, Abstrahlung und Beckenwand kommen noch dazu!',
-      'Im Winter ist das Frischwasser kaelter (ca. 5–8 °C), im Sommer wärmer (ca. 12–18 °C) — ΔT aendert sich mit der Jahreszeit.',
+      'Im Winter ist das Frischwasser kälter (ca. 5–8 °C), im Sommer wärmer (ca. 12–18 °C) — ΔT ändert sich mit der Jahreszeit.',
       'Nicht vergessen: Nach dem Aufheizen muss das Becken auch WARM GEHALTEN werden — das kostet täglich Energie.',
       'Bei der Prüfung genau lesen: Wird nach kWh oder nach Euro gefragt? Das sind zwei verschiedene Dinge!'
     ],

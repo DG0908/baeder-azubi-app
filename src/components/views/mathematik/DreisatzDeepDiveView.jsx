@@ -13,7 +13,7 @@ const TABS = {
     motto: 'Drei Schritte, ein Ergebnis.',
     rules: [
       'Der Dreisatz besteht IMMER aus genau 3 Schritten — daher der Name.',
-      'Du brauchst immer ein Wertepaar das zusammengehoert (z.B. 3 Stueck kosten 6 Euro).',
+      'Du brauchst immer ein Wertepaar das zusammengehört (z.B. 3 Stück kosten 6 Euro).',
       'Im zweiten Schritt rechnest du auf 1 Einheit runter.',
       'Im dritten Schritt rechnest du auf die Zielmenge hoch.',
       'Es gibt zwei Arten: proportional (gerader) und antiproportional (umgekehrter) Dreisatz.'
@@ -21,7 +21,7 @@ const TABS = {
     steps: [
       {
         title: '1. Aufschreiben was du weisst',
-        text: 'Schreib die zwei Werte auf, die zusammengehoeren. Zum Beispiel: 5 Packungen kosten 20 Euro. Das ist dein Startpunkt.'
+        text: 'Schreib die zwei Werte auf, die zusammengehören. Zum Beispiel: 5 Packungen kosten 20 Euro. Das ist dein Startpunkt.'
       },
       {
         title: '2. Auf 1 runterrechnen',
@@ -29,7 +29,7 @@ const TABS = {
       },
       {
         title: '3. Auf den Zielwert hochrechnen',
-        text: 'Nimm den Einzelwert mal die gewuenschte Menge: 4 Euro mal 8 Packungen = 32 Euro. Fertig!'
+        text: 'Nimm den Einzelwert mal die gewünschte Menge: 4 Euro mal 8 Packungen = 32 Euro. Fertig!'
       },
       {
         title: '4. Ergebnis prüfen',
@@ -67,7 +67,7 @@ const TABS = {
       'Ueberlege VOR dem Rechnen: Muss das Ergebnis größer oder kleiner werden?'
     ],
     quiz: {
-      question: '4 Sack Filtersand wiegen 100 kg. Wie viel wiegen 7 Saecke?',
+      question: '4 Sack Filtersand wiegen 100 kg. Wie viel wiegen 7 Säcke?',
       options: ['150 kg', '175 kg', '200 kg'],
       correctIndex: 1,
       explanation: '100 ÷ 4 = 25 kg pro Sack. 25 × 7 = 175 kg.'
@@ -82,7 +82,7 @@ const TABS = {
       'Beim proportionalen (geraden) Dreisatz gilt: Wenn die eine Größe größer wird, wird die andere auch größer. Mehr Chlortabletten = mehr Kosten. Mehr Stunden = mehr Wasserverbrauch. Das ist der häufigste Fall im Alltag.',
     motto: 'Mehr von dem einen = mehr von dem anderen.',
     rules: [
-      'Proportional heisst: Beide Werte aendern sich in die GLEICHE Richtung.',
+      'Proportional heißt: Beide Werte ändern sich in die GLEICHE Richtung.',
       'Doppelte Menge = doppelter Preis. Dreifache Menge = dreifacher Preis.',
       'Erkennungsmerkmal: "Je mehr ... desto mehr" oder "je weniger ... desto weniger".',
       'Beim Rechnen: Erst teilen (auf 1), dann malnehmen (auf Ziel).',
@@ -91,11 +91,11 @@ const TABS = {
     steps: [
       {
         title: '1. Ist es proportional?',
-        text: 'Frage dich: Wenn ich mehr davon nehme, wird das Ergebnis dann auch mehr? Beispiel: Mehr Badegaeste = mehr Einnahmen? Ja! Also proportional.'
+        text: 'Frage dich: Wenn ich mehr davon nehme, wird das Ergebnis dann auch mehr? Beispiel: Mehr Badegäste = mehr Einnahmen? Ja! Also proportional.'
       },
       {
         title: '2. Wertepaar aufschreiben',
-        text: 'Links die Menge, rechts den zugehoerigen Wert. Z.B.: 6 Stunden → 180 m³ Wasser.'
+        text: 'Links die Menge, rechts den zugehörigen Wert. Z.B.: 6 Stunden → 180 m³ Wasser.'
       },
       {
         title: '3. Auf 1 Einheit teilen',
@@ -142,7 +142,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Pruefe IMMER zuerst ob es wirklich proportional ist — nicht alles ist "je mehr desto mehr"!',
+      'Prüfe IMMER zuerst ob es wirklich proportional ist — nicht alles ist "je mehr desto mehr"!',
       'Typischer Fehler: Die Aufgabe ist eigentlich antiproportional, wird aber proportional gerechnet.',
       'Wenn das Ergebnis unlogisch wirkt (z.B. weniger Chlor für ein größeres Becken), hast du wahrscheinlich die falsche Art gewählt.',
       'Beim Teilen und Malnehmen immer BEIDE Seiten gleich behandeln.'
@@ -163,7 +163,7 @@ const TABS = {
       'Manchmal ist es umgekehrt: Mehr Arbeiter brauchen WENIGER Zeit. Mehr Pumpen = schneller fertig. Das ist der antiproportionale (umgekehrte) Dreisatz. Hier musst du anders rechnen!',
     motto: 'Mehr von dem einen = weniger von dem anderen.',
     rules: [
-      'Antiproportional heisst: Wenn eine Größe steigt, sinkt die andere.',
+      'Antiproportional heißt: Wenn eine Größe steigt, sinkt die andere.',
       'Erkennungsmerkmal: "Je mehr ... desto weniger" oder "je weniger ... desto mehr".',
       'Beispiel: 2 Pumpen brauchen 6 Stunden. 3 Pumpen brauchen WENIGER als 6 Stunden!',
       'Trick: Du rechnest auf 1, aber dann TEILST du statt zu malnehmen.',
@@ -184,13 +184,13 @@ const TABS = {
       },
       {
         title: '4. Ergebnis prüfen',
-        text: 'Mehr Arbeiter als vorher? Dann MUSS die Zeit kuerzer sein. 4 < 6 — passt!'
+        text: 'Mehr Arbeiter als vorher? Dann MUSS die Zeit kürzer sein. 4 < 6 — passt!'
       }
     ],
     examples: [
       {
         title: 'Arbeiter und Zeit',
-        given: '4 Mitarbeiter brauchen 6 Stunden für die Beckensaeuberung.',
+        given: '4 Mitarbeiter brauchen 6 Stunden für die Beckensäuberung.',
         question: 'Wie lange brauchen 8 Mitarbeiter?',
         steps: [
           ['Bekannt', '4 Mitarbeiter → 6 Stunden'],
@@ -200,8 +200,8 @@ const TABS = {
         ]
       },
       {
-        title: 'Pumpen und Umwaelzzeit',
-        given: '2 Pumpen brauchen 8 Stunden, um das Becken einmal umzuwaelzen.',
+        title: 'Pumpen und Umwälzzeit',
+        given: '2 Pumpen brauchen 8 Stunden, um das Becken einmal umzuwälzen.',
         question: 'Wie lange brauchen 4 Pumpen?',
         steps: [
           ['Bekannt', '2 Pumpen → 8 Stunden'],
@@ -241,7 +241,7 @@ const TABS = {
     chip: 'Praxis',
     title: 'Dreisatz im Bäderalltag',
     intro:
-      'Hier uebst du den Dreisatz mit echten Aufgaben aus dem Schwimmbad. Chlor dosieren, Wassermengen berechnen, Kosten kalkulieren — alles mit dem Dreisatz. Diese Aufgaben kommen in der Prüfung dran!',
+      'Hier übst du den Dreisatz mit echten Aufgaben aus dem Schwimmbad. Chlor dosieren, Wassermengen berechnen, Kosten kalkulieren — alles mit dem Dreisatz. Diese Aufgaben kommen in der Prüfung dran!',
     motto: 'Im Bad brauchst du den Dreisatz jeden Tag.',
     rules: [
       'Im Bäderalltag sind die meisten Aufgaben proportional (mehr Wasser = mehr Chlor).',
@@ -257,14 +257,14 @@ const TABS = {
       },
       {
         title: '2. Tabelle anlegen',
-        text: 'Schreib links die Mengenangabe, rechts den zugehoerigen Wert. Beispiel: Links m³, rechts Gramm Chlor.'
+        text: 'Schreib links die Mengenangabe, rechts den zugehörigen Wert. Beispiel: Links m³, rechts Gramm Chlor.'
       },
       {
         title: '3. Dreisatz durchrechnen',
         text: 'Proportional: ÷ auf 1, dann × auf Ziel. Antiproportional: × den Gesamtaufwand, dann ÷ durch neue Menge.'
       },
       {
-        title: '4. Plausibilitaets-Check',
+        title: '4. Plausibilitäts-Check',
         text: 'Größeres Becken = mehr Chlor? Mehr Mitarbeiter = weniger Zeit? Stimmt die Richtung, stimmt meistens auch die Rechnung.'
       }
     ],
@@ -318,10 +318,10 @@ const TABS = {
       'In der Prüfung: Lies GENAU was gefragt ist — manchmal wird nach dem Preis gefragt, manchmal nach der Menge.',
       'Bei Chlor: Nicht vergessen, dass das Produkt weniger als 100% Wirkstoff hat!',
       'Taschenrechner-Tipp: Zwischenergebnisse aufschreiben, nicht im Kopf behalten.',
-      'Antiproportionale Aufgaben erkennt man oft an Woertern wie "Arbeiter", "Maschinen", "gemeinsam".'
+      'Antiproportionale Aufgaben erkennt man oft an Wörtern wie "Arbeiter", "Maschinen", "gemeinsam".'
     ],
     quiz: {
-      question: '5 Schwimmmeister ueberwachen eine Veranstaltung in 4 Stunden. Wie viele Stunden brauchen 10 Schwimmmeister?',
+      question: '5 Schwimmmeister überwachen eine Veranstaltung in 4 Stunden. Wie viele Stunden brauchen 10 Schwimmmeister?',
       options: ['2 Stunden', '8 Stunden', '20 Stunden'],
       correctIndex: 0,
       explanation: 'Antiproportional! 5 × 4 = 20 Gesamtstunden. 20 ÷ 10 = 2 Stunden.'
