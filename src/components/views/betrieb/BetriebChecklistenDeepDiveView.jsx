@@ -66,7 +66,7 @@ export default function BetriebChecklistenDeepDiveView({ darkMode }) {
                 'Filteranlage läuft, Betriebsparameter prüfen (Druck, Durchfluss)',
                 'Umwälzpumpen in Betrieb',
                 'Dosierpumpen aktiv — Chlor- und Flockungsmittelbehälter gefüllt',
-                'pH-Wert messen und dokumentieren (Sollwert 6,5–7,6)',
+                'pH-Wert messen und dokumentieren (Sollwert 6,5–7,8 nach DIN 19643-1; Praxis oft 6,8–7,4)',
                 'Redoxpotenzial / freies Chlor messen (Sollwert ≥ 200 mV / 0,3–0,6 mg/L)',
                 'Wassertemperatur prüfen und notieren',
                 'Sichttiefe kontrollieren — Beckenboden muss vollständig sichtbar sein',
@@ -212,7 +212,7 @@ export default function BetriebChecklistenDeepDiveView({ darkMode }) {
                 </thead>
                 <tbody>
                   {[
-                    ['pH-Wert', '6,5 – 7,6', 'mind. 2× täglich', 'pH-Minus / pH-Plus dosieren'],
+                    ['pH-Wert', '6,5 – 7,8 (DIN 19643-1)', 'mind. 2× täglich', 'pH-Minus / pH-Plus dosieren'],
                     ['Freies Chlor', '0,3 – 0,6 mg/L', 'mind. 2× täglich', 'Chlordosierung anpassen'],
                     ['Redoxpotenzial', '≥ 750 mV', 'Kontinuierlich (Mess.)', 'Chlorung erhöhen'],
                     ['Gebundenes Chlor', '< 0,2 mg/L', '1× täglich', 'Stoßchlorung / Superchlorung'],

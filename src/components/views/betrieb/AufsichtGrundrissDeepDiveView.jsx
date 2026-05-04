@@ -210,27 +210,29 @@ export default function AufsichtGrundrissDeepDiveView({ darkMode }) {
         {tab === 'dguv' && (
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#c4b5fd' : '#7c3aed', marginBottom: 14 }}>DGUV 107-004 & Mindestbesetzung</h2>
-            <p style={{ color: text, fontSize: 14, marginBottom: 16 }}>Die DGUV Information 107-004 (früher BGR/GUV-I 8681) regelt Sicherheit und Aufsicht in Bädern. Sie ist die wichtigste Rechtsgrundlage für den Aufsichtsdienst.</p>
+            <p style={{ color: text, fontSize: 14, marginBottom: 16 }}>Die DGUV Information 107-004 „Sicherheit beim Betrieb von Bädern" regelt Sicherheit und Aufsicht in Bädern (Vorgängerregelungen u. a. BGR 165, GUV-R 1/111, GUV-I 8527). Sie ist gemeinsam mit der DGfdB-Empfehlung die wichtigste Grundlage für den Aufsichtsdienst.</p>
 
             <div style={{ background: dark ? '#1e1040' : '#faf5ff', border: `2px solid ${accent}40`, borderRadius: 14, padding: 16, marginBottom: 14 }}>
-              <div style={{ fontWeight: 700, color: accent, marginBottom: 10 }}>Mindestbesetzung nach DGUV 107-004</div>
+              <div style={{ fontWeight: 700, color: accent, marginBottom: 10 }}>Aufsichtsbesetzung — Bewertungsgrundlage</div>
+              <p style={{ color: text, fontSize: 13, marginBottom: 10 }}>
+                Die DGUV Information 107-004 nennt KEINE festen Quadratmeterwerte. Sie verlangt „ständige Beobachtung der Wasserfläche" und überlässt die konkrete Personalstärke einer Risikobewertung des Betreibers (Wasserfläche, Sichtverhältnisse, Beckenarten, Besucherzahl, Attraktionen). Praxisorientierte Anhaltswerte gibt die DGfdB (Deutsche Gesellschaft für das Badewesen) — diese sind <strong>Empfehlungen</strong>, keine starren Vorschriften.
+              </p>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                   <thead>
                     <tr style={{ background: accent }}>
-                      <th style={{ padding: '7px 10px', color: '#fff', textAlign: 'left' }}>Beckentyp / Situation</th>
-                      <th style={{ padding: '7px 10px', color: '#fff', textAlign: 'left' }}>Mindestbesetzung</th>
+                      <th style={{ padding: '7px 10px', color: '#fff', textAlign: 'left' }}>Situation</th>
+                      <th style={{ padding: '7px 10px', color: '#fff', textAlign: 'left' }}>Anhaltswert</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
-                      ['Hallenbad bis 400 m² Wasserfläche', '1 Aufsichtsperson'],
-                      ['Hallenbad über 400 m² Wasserfläche', '2+ Aufsichtspersonen'],
-                      ['Freibad bis 800 m² Wasserfläche', '1 Aufsichtsperson'],
-                      ['Freibad über 800 m² Wasserfläche', '2+ Aufsichtspersonen'],
+                      ['Übersichtliches Becken, normale Last', 'Mind. 1 qualifizierte Aufsicht (DRSA Silber)'],
+                      ['Mehrere Becken / Sichtbehinderungen', '2+ Aufsichtspersonen, klare Verantwortungsbereiche'],
                       ['Sprunganlage in Betrieb', 'Separate Aufsicht am Sprungbereich'],
-                      ['Wellenbetrieb / Attraktion', 'Erhöhter Bedarf — trägerspezifisch'],
-                      ['Kursbetrieb (Nichtschwimmer)', 'Mind. 1 ausgebildete Aufsicht'],
+                      ['Wellen-/Attraktionsbetrieb', 'Erhöhter Aufsichtsbedarf — Risikobewertung'],
+                      ['Kursbetrieb (Nichtschwimmer)', 'Mind. 1 ausgebildete Aufsicht zusätzlich zum Kursleiter'],
+                      ['Schulklassen', 'Bademeister + Lehrer (eigene Aufsichtspflicht)'],
                     ].map(([b, m], i) => (
                       <tr key={i} style={{ background: i % 2 === 0 ? (dark ? '#1e293b' : '#faf5ff') : (dark ? '#0f172a' : '#fff') }}>
                         <td style={{ padding: '6px 10px', color: text }}>{b}</td>
@@ -240,14 +242,15 @@ export default function AufsichtGrundrissDeepDiveView({ darkMode }) {
                   </tbody>
                 </table>
               </div>
-              <div style={{ fontSize: 12, color: sub, marginTop: 8 }}>* Mindestbesetzung = Untergrenze. Betreiber kann und soll bei Bedarf mehr einsetzen.</div>
+              <div style={{ fontSize: 12, color: sub, marginTop: 8 }}>* Konkrete Vorgaben können im Bundesland, Träger oder in der Hausordnung festgelegt sein — die jeweils strengste Regel gilt.</div>
             </div>
 
             <InfoBox title="Qualifikationsanforderungen" dark={dark} color={accent} items={[
-              'Aufsichtsperson: mind. Deutsches Rettungsschwimmabzeichen (DRSA) Bronze',
-              'Fachangestellte für Bäderbetriebe: Ausbildung umfasst alle Anforderungen',
-              'Auffrischung: DRSA muss regelmäßig erneuert werden (alle 2 Jahre)',
-              'Erste Hilfe: aktueller Kurs Pflicht (max. 2 Jahre alt)',
+              'Aufsichtsperson für die Beckenaufsicht: mind. Deutsches Rettungsschwimmabzeichen (DRSA) SILBER',
+              'DRSA Bronze ist NICHT ausreichend für die Beckenaufsicht in öffentlichen Bädern',
+              'Fachangestellte für Bäderbetriebe (FAB): Ausbildung umfasst alle Anforderungen',
+              'Auffrischung: DRSA muss alle 2 Jahre erneuert werden',
+              'Erste Hilfe: aktueller Kurs Pflicht (max. 2 Jahre alt, 9 Unterrichtseinheiten)',
               'Ungeeignete Personen (Alkohol, Krankheit) dürfen keine Aufsicht übernehmen',
             ]} />
 
