@@ -1,9 +1,34 @@
 /** @type {import('tailwindcss').Config} */
+// Hinweis zur safelist:
+// Mehrere DeepDive-Module bauen Tailwind-Klassen dynamisch zusammen
+// (z. B. `bg-${color}-50`, `border-${color}-300`, `text-${color}-800`).
+// Tailwind kann solche Template-Strings beim Build nicht erkennen — die
+// betroffenen Klassen müssen daher explizit als safelist eingetragen werden,
+// sonst fehlen sie im finalen CSS und Hintergründe / Borders werden nicht angezeigt.
+const SAFELIST_COLORS = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose', 'slate', 'gray', 'zinc', 'neutral', 'stone'];
+const SAFELIST_SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+const SAFELIST = SAFELIST_COLORS.flatMap((c) =>
+  SAFELIST_SHADES.flatMap((s) => [
+    `bg-${c}-${s}`,
+    `text-${c}-${s}`,
+    `border-${c}-${s}`,
+    `ring-${c}-${s}`,
+    `from-${c}-${s}`,
+    `to-${c}-${s}`,
+    `via-${c}-${s}`,
+    `hover:bg-${c}-${s}`,
+    `dark:bg-${c}-${s}`,
+    `dark:text-${c}-${s}`,
+    `dark:border-${c}-${s}`,
+  ])
+);
+
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: SAFELIST,
   theme: {
     extend: {
       colors: {
