@@ -165,7 +165,9 @@ export default function HlwAedDeepDiveView({ darkMode }) {
           </Section>
           <Section title="AED-Standort im Bad" color="blue">
             <p className="text-sm text-gray-700 mb-2">
-              Schwimmbäder sind zur AED-Vorhaltung verpflichtet (je nach Bundesland). Der AED muss:
+              Eine bundesweite gesetzliche AED-Pflicht für Schwimmbäder gibt es nicht — die DGUV V 107
+              empfiehlt einen AED, manche Träger und einzelne Bundesländer machen ihn verbindlich.
+              Wenn vorhanden, muss der AED:
             </p>
             {['Gut sichtbar und zugänglich angebracht sein', 'Regelmäßig geprüft werden (Elektroden, Akku)', 'Dem Personal bekannt sein — Standort schulen!'].map((item, i) => (
               <div key={i} className="flex gap-2 items-start">

@@ -153,12 +153,13 @@ export default function StabileSeitenlageDeepDiveView({ darkMode }) {
         <div className="space-y-4">
           <Section title="Schwangere">
             <p className="text-sm text-gray-700 mb-2">
-              Schwangere (ab ca. 5. Monat) immer auf die <strong>linke Seite</strong> lagern!
+              Schwangere ab dem <strong>4. Monat (ca. 16. SSW)</strong> immer auf die <strong>linke Seite</strong> lagern!
             </p>
             <div className="p-3 rounded-lg bg-pink-50 border border-pink-300">
               <p className="text-xs text-pink-700">
-                Auf der rechten Seite drückt der Uterus auf die Hohlvene (Vena cava inferior) → Blutrückfluss
-                zum Herz wird unterbrochen → Schock. Links lagern entlastet die Vene.
+                In Rückenlage oder rechter Seitenlage drückt der Uterus auf die untere Hohlvene
+                (Vena cava inferior) → Blutrückfluss zum Herz wird gedrosselt → Vena-cava-Kompressionssyndrom
+                mit Blutdruckabfall und Schock. Linke Seite entlastet die Vene.
               </p>
             </div>
           </Section>

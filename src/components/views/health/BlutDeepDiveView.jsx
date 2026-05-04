@@ -117,8 +117,8 @@ export default function BlutDeepDiveView({ darkMode }) {
                   {[
                     ['A', 'A', 'Anti-B', '43 %'],
                     ['B', 'B', 'Anti-A', '11 %'],
-                    ['AB', 'A + B', 'Keine', '5 % — Universalempfänger'],
-                    ['0', 'Keine', 'Anti-A + Anti-B', '41 % — Universalspender'],
+                    ['AB', 'A + B', 'Keine', '5 % — AB Rh+ ist Universalempfänger'],
+                    ['0', 'Keine', 'Anti-A + Anti-B', '41 % — 0 Rh− ist Universalspender'],
                   ].map(([bg, ag, ak, h], i) => (
                     <tr key={i} className={`border-t ${darkMode ? 'border-slate-700 text-slate-300' : 'border-gray-100 text-gray-700'}`}>
                       <td className={`p-2 font-black text-lg ${darkMode ? 'text-red-400' : 'text-red-600'}`}>{bg}</td>
@@ -230,11 +230,11 @@ export default function BlutDeepDiveView({ darkMode }) {
         <div>
           <S title="Blut & Kreislauf im Badebetrieb" darkMode={darkMode}>
             {[
-              { titel: '🩸 Blutungsversorgung im Bad', text: 'Druckverband aus dem Erste-Hilfe-Koffer. Hansaplast für kleine Wunden. Kein Betreten des Beckens mit offenen Wunden (Infektionsschutz, Poolhygiene §37 IfSG).' },
+              { titel: '🩸 Blutungsversorgung im Bad', text: 'Druckverband aus dem Erste-Hilfe-Koffer. Pflaster für kleine Wunden. Kein Betreten des Beckens mit offenen Wunden (Infektionsschutz, Poolhygiene §37 IfSG).' },
               { titel: '💉 Blutverdünner-Patienten', text: 'Marcumar, Eliquis, Xarelto → stärkere Blutung. Länger Druck halten. Bei Sturz mit Kopfverletzung immer 112 — innere Blutung möglich.' },
               { titel: '😵 Schock erkennen', text: 'Hypovolämischer Schock (Blutverlust): Blässe, Kaltschweiss, Tachykardie, Blutdruckabfall, Bewusstseinseintrübung. Beine hoch, warm halten, 112.' },
               { titel: '🌡️ Hitzeschlag & Blutverteilung', text: 'Bei starker Hitze: Blut wird zur Haut umverteilt (Kühlung) → Gehirn und Herz werden schlechter versorgt → Kollaps/Hitzschlag. Sofort kühlen + 112.' },
-              { titel: '🦠 Blut im Wasser', text: 'Geringe Mengen: kein sofortiges Schließen nötig (Chlor desinfiziert). Größere Blutmengen: Badebetrieb unterbrechen, Wasser hygieniisch aufbereiten. Protokollpflicht!' },
+              { titel: '🦠 Blut im Wasser', text: 'Geringe Mengen: kein sofortiges Schließen nötig (Chlor desinfiziert). Größere Blutmengen: Badebetrieb unterbrechen, Wasser hygienisch aufbereiten. Protokollpflicht!' },
             ].map(({ titel, text }) => (
               <div key={titel} className={`rounded-lg p-3 mb-2 ${darkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
                 <div className={`text-xs font-semibold mb-1 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>{titel}</div>
