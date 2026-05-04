@@ -8,11 +8,13 @@ const LazyRettungsriffeDeepDiveView = lazy(() => import('../swim/RettungsriffeDe
 const LazyRettungsgeraeteDeepDiveView = lazy(() => import('../swim/RettungsgeraeteDeepDiveView'));
 const LazyRettungsketteDeepDiveView = lazy(() => import('../swim/RettungsketteDeepDiveView'));
 const LazyWettkampfDeepDiveView = lazy(() => import('../swim/WettkampfDeepDiveView'));
+const LazyRettungspruefungFabDeepDiveView = lazy(() => import('../swim/RettungspruefungFabDeepDiveView'));
 const LazyAufsichtGrundrissDeepDiveView = lazy(() => import('../betrieb/AufsichtGrundrissDeepDiveView'));
 const LazyVerkehrssicherungDeepDiveView = lazy(() => import('../betrieb/VerkehrssicherungDeepDiveView'));
 const LazyBetriebChecklistenDeepDiveView = lazy(() => import('../betrieb/BetriebChecklistenDeepDiveView'));
 const LazyGaestekommunikationDeepDiveView = lazy(() => import('../betrieb/GaestekommunikationDeepDiveView'));
 const LazyBerufsrechtBasisDeepDiveView = lazy(() => import('../recht/BerufsrechtBasisDeepDiveView'));
+const LazyPflichtenAGANAusbilderDeepDiveView = lazy(() => import('../recht/PflichtenAGANAusbilderDeepDiveView'));
 const LazyDienstplanungArbeitszeitDeepDiveView = lazy(() => import('../recht/DienstplanungArbeitszeitDeepDiveView'));
 const LazyKasseAbrechnungDeepDiveView = lazy(() => import('../recht/KasseAbrechnungDeepDiveView'));
 const LazyDatenschutzOeaDeepDiveView = lazy(() => import('../recht/DatenschutzOeaDeepDiveView'));
@@ -41,6 +43,9 @@ const LazyPumpenDeepDiveView = lazy(() => import('../mathematik/PumpenDeepDiveVi
 const LazyFiltrationDeepDiveView = lazy(() => import('../mathematik/FiltrationDeepDiveView'));
 const LazyChlorDeepDiveView = lazy(() => import('../mathematik/ChlorDeepDiveView'));
 const LazyFormelsammlungDeepDiveView = lazy(() => import('../mathematik/FormelsammlungDeepDiveView'));
+const LazyMischrechnungDeepDiveView = lazy(() => import('../mathematik/MischrechnungDeepDiveView'));
+const LazyVerdunstungDeepDiveView = lazy(() => import('../mathematik/VerdunstungDeepDiveView'));
+const LazySchwallwasserDeepDiveView = lazy(() => import('../mathematik/SchwallwasserDeepDiveView'));
 const LazyChemicalFormulasDeepDiveView = lazy(() => import('../chemie/ChemicalFormulasDeepDiveView'));
 const LazyStoffnamenFormelnDeepDiveView = lazy(() => import('../chemie/StoffnamenFormelnDeepDiveView'));
 const LazySaeurenBasenDeepDiveView = lazy(() => import('../chemie/SaeurenBasenDeepDiveView'));
@@ -59,12 +64,22 @@ const LazyHlwAedDeepDiveView = lazy(() => import('../health/HlwAedDeepDiveView')
 const LazyBewusstseinAtmungDeepDiveView = lazy(() => import('../health/BewusstseinAtmungDeepDiveView'));
 const LazyStabileSeitenlageDeepDiveView = lazy(() => import('../health/StabileSeitenlageDeepDiveView'));
 const LazyBadeunfallDeepDiveView = lazy(() => import('../health/BadeunfallDeepDiveView'));
+const LazyAnaphylaxieDeepDiveView = lazy(() => import('../health/AnaphylaxieDeepDiveView'));
+const LazyHypoglykaemieDeepDiveView = lazy(() => import('../health/HypoglykaemieDeepDiveView'));
+const LazySchockDeepDiveView = lazy(() => import('../health/SchockDeepDiveView'));
+const LazyVerbrennungenDeepDiveView = lazy(() => import('../health/VerbrennungenDeepDiveView'));
+const LazyVergiftungenDeepDiveView = lazy(() => import('../health/VergiftungenDeepDiveView'));
+const LazyWundversorgungDeepDiveView = lazy(() => import('../health/WundversorgungDeepDiveView'));
 const LazyHyperventilationDeepDiveView = lazy(() => import('../health/HyperventilationDeepDiveView'));
 const LazyHautDeepDiveView = lazy(() => import('../health/HautDeepDiveView'));
 const LazySinnesorganeDeepDiveView = lazy(() => import('../health/SinnesorganeDeepDiveView'));
 const LazyBeschilderungDeepDiveView = lazy(() => import('../hygiene/BeschilderungDeepDiveView'));
 const LazyReinigungDesinfektionDeepDiveView = lazy(() => import('../hygiene/ReinigungDesinfektionDeepDiveView'));
 const LazyGefahrstoffeDeepDiveView = lazy(() => import('../hygiene/GefahrstoffeDeepDiveView'));
+const LazyLegionellenDeepDiveView = lazy(() => import('../hygiene/LegionellenDeepDiveView'));
+const LazyPersonalhygieneDeepDiveView = lazy(() => import('../hygiene/PersonalhygieneDeepDiveView'));
+const LazyLebensmittelhygieneDeepDiveView = lazy(() => import('../hygiene/LebensmittelhygieneDeepDiveView'));
+const LazyStosschlorungDeepDiveView = lazy(() => import('../hygiene/StosschlorungDeepDiveView'));
 const LazyStrafrechtBadVertieftDeepDiveView = lazy(() => import('../recht/StrafrechtBadVertieftDeepDiveView'));
 const LazyNotwehrNothilfeDeepDiveView = lazy(() => import('../recht/NotwehrNothilfeDeepDiveView'));
 const LazyPersonalfuehrungDeepDiveView = lazy(() => import('../recht/PersonalfuehrungDeepDiveView'));
@@ -130,8 +145,10 @@ export const MODULE_REGISTRY = {
   'rettungsgeraete': { Component: LazyRettungsgeraeteDeepDiveView, backLabel: BACK.schwimmen, loadingLabel: 'Rettungsgeräte' },
   'rettungskette': { Component: LazyRettungsketteDeepDiveView, backLabel: BACK.schwimmen, loadingLabel: 'Rettungskette' },
   'wettkampf': { Component: LazyWettkampfDeepDiveView, backLabel: BACK.schwimmen, loadingLabel: 'Wettkampfschwimmen' },
+  'rettungspruefung-fab': { Component: LazyRettungspruefungFabDeepDiveView, backLabel: BACK.schwimmen, loadingLabel: 'Rettungsschwimmer-Prüfung (FAB)', passDarkMode: true },
 
   'berufsrecht-basis': { Component: LazyBerufsrechtBasisDeepDiveView, backLabel: BACK.verwaltung, loadingLabel: 'Berufsrecht-Basis' },
+  'pflichten-ag-an-ausbilder': { Component: LazyPflichtenAGANAusbilderDeepDiveView, backLabel: BACK.verwaltung, loadingLabel: 'AG/AN/Ausbilder-Pflichten', passDarkMode: true },
   'dienstplanung-arbeitszeit': { Component: LazyDienstplanungArbeitszeitDeepDiveView, backLabel: BACK.verwaltung, loadingLabel: 'Dienstplanung & Arbeitszeit' },
   'kasse-abrechnung': { Component: LazyKasseAbrechnungDeepDiveView, backLabel: BACK.verwaltung, loadingLabel: 'Kasse & Abrechnung' },
   'datenschutz-oea': { Component: LazyDatenschutzOeaDeepDiveView, backLabel: BACK.verwaltung, loadingLabel: 'Datenschutz & Öffentlichkeitsarbeit' },
@@ -175,6 +192,9 @@ export const MODULE_REGISTRY = {
   'mathe-filtration': { Component: LazyFiltrationDeepDiveView, backLabel: BACK.mathematik, loadingLabel: 'Mathematik-Modul' },
   'mathe-chlor': { Component: LazyChlorDeepDiveView, backLabel: BACK.mathematik, loadingLabel: 'Mathematik-Modul' },
   'mathe-formelsammlung': { Component: LazyFormelsammlungDeepDiveView, backLabel: BACK.mathematik, loadingLabel: 'Mathematik-Modul' },
+  'mathe-mischrechnung': { Component: LazyMischrechnungDeepDiveView, backLabel: BACK.mathematik, loadingLabel: 'Mischrechnung & Frischwasser', passDarkMode: true },
+  'mathe-verdunstung': { Component: LazyVerdunstungDeepDiveView, backLabel: BACK.mathematik, loadingLabel: 'Verdunstung', passDarkMode: true },
+  'mathe-schwallwasser': { Component: LazySchwallwasserDeepDiveView, backLabel: BACK.mathematik, loadingLabel: 'Schwallwasser & Zirkulation', passDarkMode: true },
 
   'chemische-formeln': { Component: LazyChemicalFormulasDeepDiveView, backLabel: BACK.chemie, loadingLabel: 'Chemie-Modul' },
   'stoffnamen-formeln': { Component: LazyStoffnamenFormelnDeepDiveView, backLabel: BACK.chemie, loadingLabel: 'Chemie-Modul' },
@@ -197,6 +217,12 @@ export const MODULE_REGISTRY = {
   'bewusstsein-atmung': { Component: LazyBewusstseinAtmungDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Bewusstsein & Atmung', passDarkMode: true },
   'stabile-seitenlage': { Component: LazyStabileSeitenlageDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Stabile Seitenlage', passDarkMode: true },
   'badeunfall-erstversorgung': { Component: LazyBadeunfallDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Badeunfall-Erstversorgung', passDarkMode: true },
+  'anaphylaxie': { Component: LazyAnaphylaxieDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Anaphylaxie', passDarkMode: true },
+  'hypoglykaemie': { Component: LazyHypoglykaemieDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Hypoglykämie', passDarkMode: true },
+  'schock': { Component: LazySchockDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Schock-Lagerung', passDarkMode: true },
+  'verbrennungen': { Component: LazyVerbrennungenDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Verbrennungen', passDarkMode: true },
+  'vergiftungen': { Component: LazyVergiftungenDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Vergiftungen', passDarkMode: true },
+  'wundversorgung': { Component: LazyWundversorgungDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Wundversorgung & Druckverband', passDarkMode: true },
   'hyperventilation': { Component: LazyHyperventilationDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Hyperventilation', passDarkMode: true },
   'haut': { Component: LazyHautDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Die Haut', passDarkMode: true },
   'sinnesorgane': { Component: LazySinnesorganeDeepDiveView, backLabel: BACK.gesundheit, loadingLabel: 'Sinnesorgane', passDarkMode: true },
@@ -204,11 +230,21 @@ export const MODULE_REGISTRY = {
   'beschilderung-kennzeichnungen': { Component: LazyBeschilderungDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Beschilderung & Kennzeichnungen' },
   'reinigung-desinfektion': { Component: LazyReinigungDesinfektionDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Reinigung & Desinfektion' },
   'gefahrstoffe': { Component: LazyGefahrstoffeDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Gefahrstoffe' },
+  'legionellen-trinkwv': { Component: LazyLegionellenDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Legionellen & TrinkwV', passDarkMode: true },
+  'personalhygiene': { Component: LazyPersonalhygieneDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Personalhygiene', passDarkMode: true },
+  'lebensmittelhygiene': { Component: LazyLebensmittelhygieneDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Lebensmittelhygiene', passDarkMode: true },
+  'stosschlorung': { Component: LazyStosschlorungDeepDiveView, backLabel: BACK.hygiene, loadingLabel: 'Stoßchlorung', passDarkMode: true },
 
   'english-a1-alphabet': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
   'english-a1-numbers-time': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
   'english-a1-greetings': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
   'english-a1-pool-basics': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
+  'english-a2-guests': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
+  'english-a2-directions': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
+  'english-a2-rules': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
+  'english-b1-first-aid': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
+  'english-b1-complaints': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
+  'english-b1-tech-chemistry': { Component: LazyEnglishLessonView, backLabel: BACK.english, loadingLabel: 'English Lesson', passDarkMode: true, buildProps: englishLessonProps },
 };
 
 // Math basics module is referenced from the "mathe-grundrechenarten" fallback; keep for future use
