@@ -23,7 +23,7 @@ const Section = ({ title, children, color = 'emerald' }) => (
   </div>
 );
 
-export default function PersonalfuehrungDeepDiveView({ darkMode }) {
+export default function PersonalführungDeepDiveView({ darkMode }) {
   const [activeTab, setActiveTab] = useState('organisation');
 
   return (

@@ -84,14 +84,17 @@ export default function BerufsrechtBasisDeepDiveView({ darkMode }) {
             </div>
 
             <div style={{ background: cardBg, border: `1px solid ${accent}40`, borderRadius: 12, padding: 16, marginBottom: 14 }}>
-              <div style={{ fontWeight: 700, color: dark ? '#6ee7b7' : '#065f46', marginBottom: 10 }}>Mindestausbildungsvergütung (MAV) ab 2024</div>
+              <div style={{ fontWeight: 700, color: dark ? '#6ee7b7' : '#065f46', marginBottom: 10 }}>Mindestausbildungsvergütung (MAV) — gesetzlich</div>
+              <p style={{ fontSize: 13, color: dark ? '#cbd5e1' : '#475569', marginBottom: 8 }}>
+                § 17 BBiG schreibt eine gesetzliche Mindestvergütung vor. Sie wird jährlich durch das Bundesministerium für Bildung und Forschung (BMBF) angepasst und in der Regel zum 1. Januar veröffentlicht.
+              </p>
               {[
-                ['1. Ausbildungsjahr', 'Mind. 649 €/Monat (gesetzl. Mindest)'],
-                ['2. Ausbildungsjahr', 'Mind. 766 € (+18%)'],
-                ['3. Ausbildungsjahr', 'Mind. 876 € (+35%)'],
-                ['4. Ausbildungsjahr (falls vorh.)', 'Mind. 909 € (+40%)'],
+                ['1. Ausbildungsjahr', 'Aktuelle Werte: BMBF / BIBB-Datenbank'],
+                ['2. Ausbildungsjahr', '+ ca. 18 % gegenüber 1. Jahr'],
+                ['3. Ausbildungsjahr', '+ ca. 35 % gegenüber 1. Jahr'],
+                ['4. Ausbildungsjahr', '+ ca. 40 % gegenüber 1. Jahr (falls verlängert)'],
               ].map(([k, v], i) => <Row key={i} k={k} v={v} dark={dark} />)}
-              <div style={{ fontSize: 12, color: sub, marginTop: 4 }}>* Bei TVöD gilt in der Regel ein höherer Satz — Tarifvertrag hat Vorrang.</div>
+              <div style={{ fontSize: 12, color: sub, marginTop: 8, fontStyle: 'italic' }}>* Tarifvertrag (TVöD-V / TV-AVH etc.) hat Vorrang und liegt typischerweise deutlich höher. Aktuelle MAV-Werte unter <strong>bmbf.de</strong> oder <strong>bibb.de</strong> nachschlagen.</div>
             </div>
 
             <InfoBox title="Ausbildungsnachweis (Berichtsheft)" dark={dark} items={[
@@ -227,7 +230,7 @@ export default function BerufsrechtBasisDeepDiveView({ darkMode }) {
                 ['Leistungsentgelt', 'Leistungsbezogenes Entgelt zusätzlich möglich'],
                 ['Urlaub', '30 Arbeitstage bei 5-Tage-Woche'],
                 ['Arbeitszeit', '39 h/Woche West, 40 h/Woche Ost (kommunal)'],
-                ['Zuschläge', 'Nacht (20%), Sonntag (25%), Feiertag (135%)'],
+                ['Zuschläge', 'Nacht 20 %, Sonntag 25 %, Feiertag 135 % (ohne Freizeitausgleich) bzw. 35 % (mit Freizeitausgleich) nach TVöD-V'],
               ].map(([k, v], i) => <Row key={i} k={k} v={v} dark={dark} />)}
             </div>
 
