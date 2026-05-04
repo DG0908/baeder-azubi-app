@@ -125,7 +125,7 @@ export default function PflichtenAGANAusbilderDeepDiveView({ darkMode }) {
 
       {tab === 'ausbilder' && (
         <div>
-          <S title="Wer ist „Ausbilder"? — Person ≠ Betrieb" darkMode={darkMode}>
+          <S title={'Wer ist „Ausbilder"? — Person ≠ Betrieb'} darkMode={darkMode}>
             <p className={`text-xs mb-3 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
               <strong>BBiG unterscheidet zwei Rollen:</strong>
             </p>

@@ -65,7 +65,7 @@ const DETAIL_MODES = [
       'Die H₂-Entlüftung darf niemals blockiert oder verschlossen sein.',
       'Gasdetektion und Ueberdrucksicherung schützen vor Knallgasbildung.',
     ],
-    caution: 'Bei H₂-Alarm sofort Anlage abschalten, Raum lüften, keine ZüZündquellen!',
+    caution: 'Bei H₂-Alarm sofort Anlage abschalten, Raum lüften, keine Zündquellen!',
   },
 ];
 
