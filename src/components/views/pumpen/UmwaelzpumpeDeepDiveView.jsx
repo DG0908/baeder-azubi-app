@@ -11,10 +11,10 @@ const DETAIL_MODES = [
     id: 'schnittbild',
     label: 'Schnittbild',
     accent: '#4a9eff',
-    focus: ['beschichtung', 'filtergehaeuse', 'filterdeckel', 'filterkorb', 'laufrad', 'umfuehrungskanal'],
+    focus: ['beschichtung', 'filtergehäuse', 'filterdeckel', 'filterkorb', 'laufrad', 'umfuehrungskanal'],
     detail: [
       'Das Schnittbild trennt Nass- und Trockenteil der Pumpe sichtbar auf.',
-      'Filtergehaeuse, Filterdeckel und Filterkorb bilden die erste Schutzstrecke vor dem Laufrad.',
+      'Filtergehäuse, Filterdeckel und Filterkorb bilden die erste Schutzstrecke vor dem Laufrad.',
       'Umfuehrungskanal und Pumpenkammer leiten das Wasser gezielt zur Druckseite.',
     ],
     caution: 'Bei zugesetztem Vorfilter sinkt der Zulauf, Kavitation und Wirkungsgradverlust folgen.',
@@ -25,11 +25,11 @@ const DETAIL_MODES = [
     accent: '#34c090',
     focus: ['filterkorb', 'laufradprotektor', 'laufrad', 'motorwelle', 'umfuehrungskanal'],
     detail: [
-      'Das Wasser stroemt über Filterkorb und Saugseite in die Laufradzone.',
+      'Das Wasser strömt über Filterkorb und Saugseite in die Laufradzone.',
       'Das Laufrad beschleunigt das Wasser radial und erzeugt Förderhöhe und Volumenstrom.',
       'Der Umfuehrungskanal sammelt die Energie und führt zur Druckseite weiter.',
     ],
-    caution: 'Luft, Verstopfungen oder verschlissene Laufradspalte veraendern die Pumpenkennlinie sofort.',
+    caution: 'Luft, Verstopfungen oder verschlissene Laufradspalte verändern die Pumpenkennlinie sofort.',
   },
   {
     id: 'abdichtung',
@@ -41,7 +41,7 @@ const DETAIL_MODES = [
       'Der Gleitringdichtungsprotektor schützt die sensible Dichtungszone gegen Störstoffe.',
       'Seal-Guard überwacht Leckage im Dichtungsbereich und meldet frühe Schäden.',
     ],
-    caution: 'Schon kleine Leckagen an der Gleitringdichtung können Lager und Motorraum nachfolgend beschaedigen.',
+    caution: 'Schon kleine Leckagen an der Gleitringdichtung können Lager und Motorraum nachfolgend beschädigen.',
   },
   {
     id: 'service',
@@ -78,7 +78,7 @@ const PUMP_SPOTS = [
     color: '#4a9eff',
     position: [-1.1, 0.15, 1.1],
     items: [
-      'Schützt das Gehaeuse gegen Korrosion und chemische Belastung.',
+      'Schützt das Gehäuse gegen Korrosion und chemische Belastung.',
       'Glatte Oberflächen reduzieren Anhaftung und hydraulische Verluste.',
       'Abplatzungen oder Unterrostung frühzeitig dokumentieren.',
     ],
@@ -117,16 +117,16 @@ const PUMP_SPOTS = [
     color: '#ffaa40',
     position: [-2.55, -0.05, 1.15],
     items: [
-      'Wartungspunkt für schnellen Zugang zu Vorfilter und Gehaeuse.',
-      'Nur im drucklosen Zustand und nach Absperrung oeffnen.',
+      'Wartungspunkt für schnellen Zugang zu Vorfilter und Gehäuse.',
+      'Nur im drucklosen Zustand und nach Absperrung öffnen.',
       'Dichtungssitz, Schrauben und Deckelaufnahmen regelmäßig prüfen.',
     ],
   },
   {
-    id: 'filtergehaeuse',
+    id: 'filtergehäuse',
     number: '5',
     short: 'FG',
-    label: 'Filtergehaeuse',
+    label: 'Filtergehäuse',
     color: '#34c090',
     position: [-1.95, 0.05, 0.95],
     items: [
@@ -143,7 +143,7 @@ const PUMP_SPOTS = [
     color: '#47d0a4',
     position: [-2.72, 0.06, 1.18],
     items: [
-      'Verschliesst das Filtergehaeuse und haelt den Vorfilter dicht.',
+      'Verschliesst das Filtergehäuse und hält den Vorfilter dicht.',
       'Deckeldichtung muss sauber, elastisch und plan aufliegen.',
       'Unsachgemaesses Oeffnen führt oft zu Undichtigkeiten am Vorfilter.',
     ],
@@ -169,7 +169,7 @@ const PUMP_SPOTS = [
     color: '#a070ff',
     position: [1.7, 1.4, 1.0],
     items: [
-      'Optionale Leckageueberwachung im Dichtungsbereich.',
+      'Optionale Leckageüberwachung im Dichtungsbereich.',
       'Erkennt frühzeitig ansteigende Flüssigkeit im Überwachungsraum.',
       'Hilft, Dichtungsschaeden vor Motorfolgeschaeden zu erkennen.',
     ],
@@ -182,8 +182,8 @@ const PUMP_SPOTS = [
     color: '#d04040',
     position: [0.02, 0.22, 0.02],
     items: [
-      'Das Laufrad wandelt mechanische Antriebsleistung in Stroemungsenergie um.',
-      'Schaufelform und Spaltmass bestimmen Wirkungsgrad und Kennlinie.',
+      'Das Laufrad wandelt mechanische Antriebsleistung in Strömungsenergie um.',
+      'Schaufelform und Spaltmaß bestimmen Wirkungsgrad und Kennlinie.',
       'Abrasion, Biofilm oder Störstoffe reduzieren die Förderleistung.',
     ],
   },
@@ -221,7 +221,7 @@ const PUMP_SPOTS = [
     color: '#d8a240',
     position: [0.92, 0.56, 0.74],
     items: [
-      'Führt das vom Laufrad beschleunigte Wasser im Gehaeuse weiter.',
+      'Führt das vom Laufrad beschleunigte Wasser im Gehäuse weiter.',
       'Wandelt Geschwindigkeit in Druck um und reduziert Turbulenzverluste.',
       'Ablagerungen oder Beschichtungsfehler verschlechtern die Hydraulik.',
     ],
@@ -246,7 +246,7 @@ const PUMP_CALLOUTS = {
   laufradprotektor: [-2.1, -0.42, 0.82],
   gleitringdichtungsprotektor: [2.15, 1.15, 0.92],
   service: [-3.5, -0.92, 1.18],
-  filtergehaeuse: [-3.05, 0.18, 0.95],
+  filtergehäuse: [-3.05, 0.18, 0.95],
   filterdeckel: [-3.88, 0.36, 1.18],
   filterkorb: [-2.45, -1.25, 0.22],
   sealguard: [2.82, 1.98, 1.04],
@@ -275,15 +275,15 @@ const BETRIEBSCHECKS = [
 
 const ABBILDUNGSLESART = [
   { label: 'Motor oben', value: 'Der Rippenmotor steht senkrecht über der Hydraulik, wie in deiner Vorlage.' },
-  { label: 'Saugseite links', value: 'Der Vorfilter und das Filtergehaeuse liegen links vor dem Laufrad.' },
-  { label: 'Druckseite rechts', value: 'Der Druckaustritt sitzt rechts am roten Gehaeusestutzen.' },
+  { label: 'Saugseite links', value: 'Der Vorfilter und das Filtergehäuse liegen links vor dem Laufrad.' },
+  { label: 'Druckseite rechts', value: 'Der Druckaustritt sitzt rechts am roten Gehäusestutzen.' },
   { label: 'Dichtungszone mittig', value: 'Welle, Dichtung und Lager liegen zwischen Motor und Nassraum.' },
 ];
 
 const HYDRAULIKPFAD = [
   '1 Zulauf links durch Vorfilter und Filterkorb',
   '2 Eintritt in die Laufradzone',
-  '3 Energieuebergabe im Laufrad',
+  '3 Energieübergabe im Laufrad',
   '4 Druckaufbau im Umfuehrungskanal nach rechts',
 ];
 
@@ -580,7 +580,7 @@ function PumpPartFocusModel({ spot, xrayMode }) {
           })}
         </group>
       );
-    case 'filtergehaeuse':
+    case 'filtergehäuse':
       return (
         <group rotation={[0.16, -0.52, 0]}>
           <mesh>
@@ -888,7 +888,7 @@ function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, show
       </mesh>
       <mesh position={[-1.42, 0.2, 0]} rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[0.55, 0.55, 0.34, 40]} />
-        <meshStandardMaterial {...shellMaterial('#22486f', ['filtergehaeuse'], 0.86)} />
+        <meshStandardMaterial {...shellMaterial('#22486f', ['filtergehäuse'], 0.86)} />
       </mesh>
       <mesh position={[1.12, 0.82, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.42, 0.42, 1.75, 36]} />
@@ -897,7 +897,7 @@ function PumpAssembly({ running, xrayMode, activeSpot, setActiveSpot, mode, show
 
       <mesh position={[-2.0, 0.2, 0.78]}>
         <boxGeometry args={[1.55, 2.0, 0.78]} />
-        <meshStandardMaterial {...shellMaterial('#1d4a5d', ['filtergehaeuse', 'filterkorb'], 0.76)} />
+        <meshStandardMaterial {...shellMaterial('#1d4a5d', ['filtergehäuse', 'filterkorb'], 0.76)} />
       </mesh>
       <mesh position={[-2.78, 0.2, 0.82]} rotation={[0, Math.PI / 2, 0]}>
         <cylinderGeometry args={[0.98, 0.98, 0.2, 32]} />
@@ -1037,7 +1037,7 @@ export default function UmwälzpumpeDeepDiveView() {
               border: '1px solid #1a3a5a',
             }}
           >
-            {xrayMode ? 'Roentgen an' : 'Roentgen aus'}
+            {xrayMode ? 'Röntgen an' : 'Röntgen aus'}
           </button>
           <button
             type="button"
@@ -1315,7 +1315,7 @@ export default function UmwälzpumpeDeepDiveView() {
                 Antwort einblenden
               </summary>
               <p className="text-sm mt-2 leading-relaxed" style={{ color: '#90b0d0' }}>
-                Ein zugesetzter Vorfilter veraendert die Hydraulik, fördert Luft- und Kavitationsprobleme und belastet
+                Ein zugesetzter Vorfilter verändert die Hydraulik, fördert Luft- und Kavitationsprobleme und belastet
                 damit Dichtung und Lager indirekt mit. Die Bauteile bilden betrieblich ein zusammenhängendes System.
               </p>
             </details>

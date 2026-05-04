@@ -8,13 +8,13 @@ const toPolyPoints = (pts) => pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(
 
 const HOTSPOTS = [
   { id: 'steuerung', shortLabel: 'CTRL', label: 'Mikroprozessor-Steuerung', color: '#4a9eff', pos: [-115, -72, -8] },
-  { id: 'vorratsbehaelter', shortLabel: 'VORRAT', label: 'Vorratsbehaelter', color: '#8cbeff', pos: [8, -58, 8] },
+  { id: 'vorratsbehälter', shortLabel: 'VORRAT', label: 'Vorratsbehälter', color: '#8cbeff', pos: [8, -58, 8] },
   { id: 'düsensystem', shortLabel: 'DUESE', label: 'Düsensystem', color: '#34c090', pos: [54, -34, 2] },
   { id: 'loesetank', shortLabel: 'LOESE', label: 'Loese-/Sedimentationstank', color: '#a070ff', pos: [8, 20, 42] },
   { id: 'sorptionseinheit', shortLabel: 'SORP', label: 'Sorptionseinheit', color: '#d8a240', pos: [100, 16, 5] },
   { id: 'schwenkantrieb', shortLabel: 'SWENK', label: 'Schwenkantrieb', color: '#ff7a7a', pos: [18, 78, 10] },
   { id: 'tauchdruckpumpe', shortLabel: 'PUMP', label: 'Tauchdruckpumpe', color: '#34b9ff', pos: [-88, 90, 30] },
-  { id: 'produktbehaelter', shortLabel: 'PROD', label: 'Produktbehaelter', color: '#4ad097', pos: [100, 80, 44] },
+  { id: 'produktbehälter', shortLabel: 'PROD', label: 'Produktbehälter', color: '#4ad097', pos: [100, 80, 44] },
   { id: 'schwimmerschalter', shortLabel: 'LEVEL', label: 'Schwimmerschalter', color: '#f2b15b', pos: [-116, 36, 38] },
 ];
 
@@ -29,12 +29,12 @@ const HOTSPOT_DATA = {
       'Verriegelt die Produktabgabe bei Störungen oder Fehlfuellstand.',
     ],
   },
-  vorratsbehaelter: {
-    title: 'Vorratsbehaelter',
+  vorratsbehälter: {
+    title: 'Vorratsbehälter',
     short: 'VORRAT',
     color: '#8cbeff',
     items: [
-      'Behaelter für Calciumhypochlorit-Feststoff im trockenen Bereich.',
+      'Behälter für Calciumhypochlorit-Feststoff im trockenen Bereich.',
       'Anwaesserung erfolgt nur getaktet über Düsensystem und nie im Dauerstrahl.',
       'Schützt vor Klumpenbildung und unkontrollierten Konzentrationsspitzen.',
     ],
@@ -44,7 +44,7 @@ const HOTSPOT_DATA = {
     short: 'DUESE',
     color: '#34c090',
     items: [
-      'Bespraeht den Feststoff gleichmaessig für kontrollierte Anwasserung.',
+      'Bespraeht den Feststoff gleichmäßig für kontrollierte Anwasserung.',
       'Definierte Tropfen-/Spruehcharakteristik verhindert Aufhaertungen.',
       'Bei unruhigem Düsenbild: Druck und Vorfilter sofort prüfen.',
     ],
@@ -55,7 +55,7 @@ const HOTSPOT_DATA = {
     color: '#a070ff',
     items: [
       'Hier entsteht die Produktlösung aus angewassertem Feststoff.',
-      'Unloesliche Nebenbestandteile setzen sich im Sedimentbereich ab.',
+      'Unlösliche Nebenbestandteile setzen sich im Sedimentbereich ab.',
       'Abgabe erfolgt erst nach Beruhigungs-/Überlaufphase.',
     ],
   },
@@ -74,7 +74,7 @@ const HOTSPOT_DATA = {
     short: 'SWENK',
     color: '#ff7a7a',
     items: [
-      'Loest Feststoffbruecken durch mechanische Bewegung.',
+      'Löst Feststoffbruecken durch mechanische Bewegung.',
       'Verbessert Benetzung aller Feststoffzonen während der Anwasserung.',
       'Wird zyklisch von der Steuerung gestartet und gestoppt.',
     ],
@@ -85,18 +85,18 @@ const HOTSPOT_DATA = {
     color: '#34b9ff',
     items: [
       'Entnimmt Wasser für Düsensystem und Loeseprozess.',
-      'Stellt den benötigten Betriebsdruck für gleichmaessige Anwasserung.',
+      'Stellt den benötigten Betriebsdruck für gleichmäßige Anwasserung.',
       'Trockenlaufschutz über Schwimmerschalter zwingend.',
     ],
   },
-  produktbehaelter: {
-    title: 'Produktbehaelter',
+  produktbehälter: {
+    title: 'Produktbehälter',
     short: 'PROD',
     color: '#4ad097',
     items: [
       'Puffer für rückstandsarme Calciumhypochlorit-Produktlösung.',
       'Membrandosierpumpe entnimmt von hier in Richtung Impfstelle.',
-      'Fuellstand und Konzentration regelmäßig dokumentieren.',
+      'Füllstand und Konzentration regelmäßig dokumentieren.',
     ],
   },
   schwimmerschalter: {
@@ -124,9 +124,9 @@ const PROCESS_PHASES = [
     id: 'anwaessern',
     label: '1 Anwaessern',
     accent: '#34b9ff',
-    focus: ['tauchdruckpumpe', 'düsensystem', 'vorratsbehaelter'],
+    focus: ['tauchdruckpumpe', 'düsensystem', 'vorratsbehälter'],
     detail: [
-      'Pumpe entnimmt Wasser und baut gleichmaessigen Druck auf.',
+      'Pumpe entnimmt Wasser und baut gleichmäßigen Druck auf.',
       'Düsen benetzen den Feststoff in kurzen, definierten Pulsen.',
       'Ziel: vollständige Benetzung ohne Überflutung des Vorrats.',
     ],
@@ -136,7 +136,7 @@ const PROCESS_PHASES = [
     id: 'lösen',
     label: '2 Lösen',
     accent: '#7a8fff',
-    focus: ['vorratsbehaelter', 'schwenkantrieb', 'loesetank'],
+    focus: ['vorratsbehälter', 'schwenkantrieb', 'loesetank'],
     detail: [
       'Angewasserter Feststoff wird durch Schwenkimpulse gelockert.',
       'Loesliche Anteile gehen in den Loesetank über.',
@@ -148,23 +148,23 @@ const PROCESS_PHASES = [
     id: 'sedimentieren',
     label: '3 Sedimentieren',
     accent: '#b779ff',
-    focus: ['loesetank', 'sorptionseinheit', 'produktbehaelter'],
+    focus: ['loesetank', 'sorptionseinheit', 'produktbehälter'],
     detail: [
-      'Im Loesetank setzen sich unloesliche Bestandteile ab.',
+      'Im Loesetank setzen sich unlösliche Bestandteile ab.',
       'Klare Phase wird über Überlauf/Abgang weitergeführt.',
       'Optionale Sorption stabilisiert die Produktqualität.',
     ],
-    caution: 'Bei zu kurzer Beruhigungszeit gelangen Rückstaende in die Produktstrecke.',
+    caution: 'Bei zu kurzer Beruhigungszeit gelangen Rückstände in die Produktstrecke.',
   },
   {
     id: 'dosieren',
     label: '4 Dosieren',
     accent: '#34c090',
-    focus: ['produktbehaelter', 'steuerung', 'schwimmerschalter'],
+    focus: ['produktbehälter', 'steuerung', 'schwimmerschalter'],
     detail: [
-      'Produktlösung wird aus dem Produktbehaelter bedarfsgerecht entnommen.',
+      'Produktlösung wird aus dem Produktbehälter bedarfsgerecht entnommen.',
       'Steuerung koppelt Dosierung an Messwerte und Betriebsvorgaben.',
-      'Fuellstandssignale sichern Nachspeisung und Störabschaltung.',
+      'Füllstandssignale sichern Nachspeisung und Störabschaltung.',
     ],
     caution: 'Dosierung nur bei stabilem pH-Fenster und freigegebenem Anlagenstatus.',
   },
@@ -200,7 +200,7 @@ const BETRIEBSCHECKS = [
   { label: 'Freies Chlor (Becken)', value: '0,3 - 0,6 mg/L', ok: true },
   { label: 'pH-Fenster', value: '7,0 - 7,4', ok: true },
   { label: 'Anwasserung', value: 'pulsierend, nicht kontinuierlich', ok: true },
-  { label: 'Produktstrecke', value: 'klar, ohne sichtbare Rückstaende', ok: true },
+  { label: 'Produktstrecke', value: 'klar, ohne sichtbare Rückstände', ok: true },
 ];
 
 function renderCuboidFaces(project, config, xrayMode) {
@@ -619,7 +619,7 @@ export default function CalciumHypochloriteDeepDiveView() {
               border: '1px solid #1a3a5a',
             }}
           >
-            {xrayMode ? 'Roentgen an' : 'Roentgen aus'}
+            {xrayMode ? 'Röntgen an' : 'Röntgen aus'}
           </button>
           <button
             type="button"

@@ -14,7 +14,7 @@ const VALVES = [
     lx: -120,
     ly: -34,
     items: [
-      'Fuehrt Rohwasser bzw. Filterzulauf von der Pumpe in den oberen Kesselraum.',
+      'Führt Rohwasser bzw. Filterzulauf von der Pumpe in den oberen Kesselraum.',
       'Im Spuelbetrieb bleibt sie geschlossen, damit kein Schmutzwasser in den Normalstrom gelangt.',
       'Bei der Inbetriebnahme wird sie langsam geöffnet, damit der Filter kontrolliert fuellt.',
     ],
@@ -29,7 +29,7 @@ const VALVES = [
     lx: -132,
     ly: -6,
     items: [
-      'Fuehrt das filtrierte Wasser im Normalbetrieb in Richtung Reinwasserstrecke bzw. Becken.',
+      'Führt das filtrierte Wasser im Normalbetrieb in Richtung Reinwasserstrecke bzw. Becken.',
       'Bleibt bei Spülung und Anfahrphase zunächst geschlossen.',
       'Wird erst geöffnet, wenn der Filter entlueftet ist und das Filtrat wieder klar austritt.',
     ],
@@ -59,28 +59,28 @@ const VALVES = [
     lx: 26,
     ly: -34,
     items: [
-      'Leitet Schmutz- und Spuelwasser aus dem oberen Kesselbereich drucklos zum Kanal ab.',
+      'Leitet Schmutz- und Spülwasser aus dem oberen Kesselbereich drucklos zum Kanal ab.',
       'Muss für die Rückspülung geöffnet sein, damit kein Ueberstau entsteht.',
       'Im normalen Filterbetrieb und bei der Inbetriebnahme bleibt sie geschlossen.',
     ],
   },
   {
-    id: 'spuelwasser',
+    id: 'spülwasser',
     short: 'SW',
-    label: 'Spuelwasserklappe',
+    label: 'Spülwasserklappe',
     color: '#34b9ff',
     x: 654,
     y: 338,
     lx: 26,
     ly: -6,
     items: [
-      'Fuehrt Spuelwasser in den Unterboden des Filters ein.',
+      'Führt Spülwasser in den Unterboden des Filters ein.',
       'Im Rueckspuelbetrieb wird über sie die Wasserfuehrung von unten nach oben aufgebaut.',
       'Im Normal- und Stillstandsmodus bleibt sie geschlossen.',
     ],
   },
   {
-    id: 'luftspuelung',
+    id: 'luftspülung',
     short: 'LS',
     label: 'Luftspuelklappe',
     color: '#ff7a7a',
@@ -89,23 +89,23 @@ const VALVES = [
     lx: 26,
     ly: 18,
     items: [
-      'Gibt Spuelluft auf den Duesenboden und lockert das Filterbett auf.',
+      'Gibt Spülluft auf den Düsenboden und lockert das Filterbett auf.',
       'Ist vor allem in der Luft- oder Luft-Wasser-Spuelphase geöffnet.',
       'Nach der Luftspuelphase wird sie für das reine Wassernachspülen wieder geschlossen.',
     ],
   },
   {
-    id: 'belueftung',
+    id: 'belüftung',
     short: 'BEL',
-    label: 'Belueftung / Entlueftung',
+    label: 'Belüftung / Entlüftung',
     color: '#7ac8ff',
     x: 430,
     y: 56,
     lx: 22,
     ly: -26,
     items: [
-      'Erlaubt Luftaustritt bzw. Belueftung des Kesselraums.',
-      'Bei Außerbetriebnahme und Inbetriebnahme ist sie wichtig für druckloses Arbeiten und vollständige Entlueftung.',
+      'Erlaubt Luftaustritt bzw. Belüftung des Kesselraums.',
+      'Bei Außerbetriebnahme und Inbetriebnahme ist sie wichtig für druckloses Arbeiten und vollständige Entlüftung.',
       'Im Rueckspuelbetrieb bleibt sie geöffnet, damit kein Ueberstau entsteht.',
     ],
   },
@@ -120,7 +120,7 @@ const VALVES = [
     ly: 12,
     items: [
       'Dient zum vollständigen Entleeren des Filters für Wartung, Frostschutz oder Stillstand.',
-      'Bei Außerbetriebnahme wird sie mit geöffneter Belueftung geöffnet.',
+      'Bei Außerbetriebnahme wird sie mit geöffneter Belüftung geöffnet.',
       'Im Rueckspuel- und Anfahrbetrieb bleibt sie geschlossen.',
     ],
   },
@@ -128,40 +128,40 @@ const VALVES = [
 
 const MODES = [
   {
-    id: 'filterspuelung',
+    id: 'filterspülung',
     label: 'Filterspülung',
     accent: '#a070ff',
-    focus: ['spuelwasser', 'spuelabwasser', 'luftspülung', 'belueftung'],
+    focus: ['spülwasser', 'spuelabwasser', 'luftspülung', 'belüftung'],
     detail: [
       'Rohwasser und Filtrat zum Becken bleiben geschlossen.',
-      'Spuelwasser stroemt von unten nach oben durch das Filterbett.',
+      'Spülwasser strömt von unten nach oben durch das Filterbett.',
       'Spuelabwasser verlässt den Filter oben drucklos zum Kanal.',
-      'Die Luftspülung lockert das Bett und loest anhaftende Schmutzflocken.',
+      'Die Luftspülung lockert das Bett und löst anhaftende Schmutzflocken.',
     ],
-    caution: 'Freier Ablauf und offene Belueftung sind Pflicht, damit kein Ueberstau und kein unkontrollierter Druckaufbau entstehen.',
+    caution: 'Freier Ablauf und offene Belüftung sind Pflicht, damit kein Ueberstau und kein unkontrollierter Druckaufbau entstehen.',
     steps: [
       '1. Rohwasserklappe und Filtratklappe zum Becken schliessen.',
-      '2. Spuelabwasserklappe und Belueftung oeffnen.',
-      '3. Spuelwasserklappe oeffnen und je nach Programm Luftspuelklappe zuschalten.',
+      '2. Spuelabwasserklappe und Belüftung öffnen.',
+      '3. Spülwasserklappe öffnen und je nach Programm Luftspuelklappe zuschalten.',
       '4. Nachspülen, bis das Abwasser klar austritt.',
     ],
     checks: [
       { label: 'Spuelabwasser', value: 'offen, freier Ablauf zum Kanal', ok: true },
-      { label: 'Belueftung', value: 'offen, kein Ueberstau', ok: true },
-      { label: 'Bettverhalten', value: 'gleichmaessig aufgelockert', ok: true },
+      { label: 'Belüftung', value: 'offen, kein Ueberstau', ok: true },
+      { label: 'Bettverhalten', value: 'gleichmäßig aufgelockert', ok: true },
       { label: 'Beckenweg', value: 'gesperrt', ok: true },
     ],
     question: 'Warum müssen Rohwasserklappe und Filtratklappe zum Becken während der Filterspülung geschlossen bleiben?',
     answer:
-      'Damit kein Schmutz- oder Spuelwasser in den normalen Aufbereitungsweg und ins Becken gelangt. Die Spuelhydraulik soll ausschließlich durch den Rueckspuelweg laufen.',
+      'Damit kein Schmutz- oder Spülwasser in den normalen Aufbereitungsweg und ins Becken gelangt. Die Spuelhydraulik soll ausschließlich durch den Rueckspuelweg laufen.',
     states: {
       rohwasser: 'closed',
       filtrat: 'closed',
       erstfiltrat: 'closed',
       spuelabwasser: 'open',
-      spuelwasser: 'open',
+      spülwasser: 'open',
       luftspülung: 'open',
-      belueftung: 'open',
+      belüftung: 'open',
       entleerung: 'closed',
     },
   },
@@ -169,37 +169,37 @@ const MODES = [
     id: 'ausserbetriebnahme',
     label: 'Außerbetriebnahme',
     accent: '#f0b26d',
-    focus: ['rohwasser', 'filtrat', 'belueftung', 'entleerung'],
+    focus: ['rohwasser', 'filtrat', 'belüftung', 'entleerung'],
     detail: [
       'Der Filter wird vom Betriebsstrom getrennt und drucklos gemacht.',
-      'Rohwasser, Filtrat, Spuelwasser und Spuelabwasser bleiben geschlossen.',
-      'Belueftung und Entleerung werden geöffnet, damit der Kessel leer und sicher bearbeitbar wird.',
+      'Rohwasser, Filtrat, Spülwasser und Spuelabwasser bleiben geschlossen.',
+      'Belüftung und Entleerung werden geöffnet, damit der Kessel leer und sicher bearbeitbar wird.',
       'Das ist die dargestellte Wartungs- bzw. Frostschutzstellung.',
     ],
     caution: 'Vor Arbeiten am Filter immer hydraulisch absperren, drucklos schalten und gegen Wiedereinschalten sichern.',
     steps: [
-      '1. Rohwasser-, Filtrat-, Spuelwasser- und Spuelabwasserklappe schliessen.',
-      '2. Belueftung oeffnen und Druck abbauen.',
-      '3. Entleerung oeffnen und den Kessel vollständig ablassen.',
+      '1. Rohwasser-, Filtrat-, Spülwasser- und Spuelabwasserklappe schliessen.',
+      '2. Belüftung öffnen und Druck abbauen.',
+      '3. Entleerung öffnen und den Kessel vollständig ablassen.',
       '4. Anlage für Wartung oder Frostschutz sichern.',
     ],
     checks: [
       { label: 'Druckzustand', value: 'drucklos', ok: true },
-      { label: 'Belueftung', value: 'offen', ok: true },
+      { label: 'Belüftung', value: 'offen', ok: true },
       { label: 'Entleerung', value: 'offen', ok: true },
       { label: 'Alle Betriebswege', value: 'geschlossen', ok: true },
     ],
-    question: 'Warum wird bei der Außerbetriebnahme die Belueftung zusammen mit der Entleerung geöffnet?',
+    question: 'Warum wird bei der Außerbetriebnahme die Belüftung zusammen mit der Entleerung geöffnet?',
     answer:
-      'Weil der Filter nur dann sicher und vollständig entleert werden kann. Die geöffnete Belueftung verhindert Unterdruck und ermöglicht einen sauberen Ablauf über den Bodenablass.',
+      'Weil der Filter nur dann sicher und vollständig entleert werden kann. Die geöffnete Belüftung verhindert Unterdruck und ermöglicht einen sauberen Ablauf über den Bodenablass.',
     states: {
       rohwasser: 'closed',
       filtrat: 'closed',
       erstfiltrat: 'closed',
       spuelabwasser: 'closed',
-      spuelwasser: 'closed',
+      spülwasser: 'closed',
       luftspülung: 'closed',
-      belueftung: 'open',
+      belüftung: 'open',
       entleerung: 'open',
     },
   },
@@ -207,23 +207,23 @@ const MODES = [
     id: 'inbetriebnahme',
     label: 'Inbetriebnahme',
     accent: '#34c090',
-    focus: ['rohwasser', 'erstfiltrat', 'belueftung', 'filtrat'],
+    focus: ['rohwasser', 'erstfiltrat', 'belüftung', 'filtrat'],
     detail: [
-      'Der Filter wird langsam gefuellt und gleichzeitig entlueftet.',
+      'Der Filter wird langsam gefüllt und gleichzeitig entlueftet.',
       'Das erste Filtrat geht zunächst zum Kanal und nicht ins Becken.',
       'Die Filtratklappe zum Becken bleibt anfangs geschlossen.',
       'Erst nach klarem, luftfreiem Austrag wird auf normalen Filterbetrieb umgeschaltet.',
     ],
     caution: 'Filtrat nie sofort wieder zum Becken geben. Erstfiltrat und Restluft müssen zuvor sicher ausgeschleust werden.',
     steps: [
-      '1. Entleerung geschlossen halten und Belueftung oeffnen.',
-      '2. Rohwasserklappe langsam oeffnen und den Filter kontrolliert fuellen.',
-      '3. Erstfiltratklappe zum Kanal oeffnen; Filtrat zum Becken bleibt zu.',
-      '4. Wenn Wasser klar und luftfrei austritt: Belueftung und Erstfiltrat schliessen, danach Filtrat zum Becken oeffnen.',
+      '1. Entleerung geschlossen halten und Belüftung öffnen.',
+      '2. Rohwasserklappe langsam öffnen und den Filter kontrolliert füllen.',
+      '3. Erstfiltratklappe zum Kanal öffnen; Filtrat zum Becken bleibt zu.',
+      '4. Wenn Wasser klar und luftfrei austritt: Belüftung und Erstfiltrat schliessen, danach Filtrat zum Becken öffnen.',
     ],
     checks: [
       { label: 'Rohwasser', value: 'langsam geöffnet', ok: true },
-      { label: 'Belueftung', value: 'offen bis luftfrei', ok: true },
+      { label: 'Belüftung', value: 'offen bis luftfrei', ok: true },
       { label: 'Erstfiltrat', value: 'zum Kanal', ok: true },
       { label: 'Beckenweg', value: 'noch gesperrt', ok: true },
     ],
@@ -235,9 +235,9 @@ const MODES = [
       filtrat: 'closed',
       erstfiltrat: 'open',
       spuelabwasser: 'closed',
-      spuelwasser: 'closed',
+      spülwasser: 'closed',
       luftspülung: 'closed',
-      belueftung: 'open',
+      belüftung: 'open',
       entleerung: 'closed',
     },
   },
@@ -248,7 +248,7 @@ const KENNDATEN = [
   { label: 'Klappenbild', value: 'RW, FB, EF, SA, SW, LS, BEL, ENT' },
   { label: 'Rückspülung', value: 'unten nach oben, Kanal offen' },
   { label: 'Außerbetriebnahme', value: 'drucklos + entleert' },
-  { label: 'Inbetriebnahme', value: 'langsam fuellen + Erstfiltrat zum Kanal' },
+  { label: 'Inbetriebnahme', value: 'langsam füllen + Erstfiltrat zum Kanal' },
 ];
 
 const STATIC_PIPE_SEGMENTS = [
@@ -393,10 +393,10 @@ function FilterSpülungSchematic({ activeValve, setActiveValve, activeMode, show
         <text x="84" y="460" fontSize="11" fill="#7597b2">zum Kanal</text>
         <text x="688" y="140" fontSize="11" fontWeight="700" fill="#8eb3ce">Spuelabwasser</text>
         <text x="688" y="154" fontSize="11" fill="#7597b2">zum Kanal</text>
-        <text x="688" y="324" fontSize="11" fontWeight="700" fill="#8eb3ce">Spuelwasser</text>
+        <text x="688" y="324" fontSize="11" fontWeight="700" fill="#8eb3ce">Spülwasser</text>
         <text x="688" y="338" fontSize="11" fill="#7597b2">von Reinwasserseite</text>
         <text x="688" y="372" fontSize="11" fontWeight="700" fill="#8eb3ce">Luftspülung</text>
-        <text x="454" y="20" fontSize="11" fontWeight="700" fill="#8eb3ce">Belueftung / Entlueftung</text>
+        <text x="454" y="20" fontSize="11" fontWeight="700" fill="#8eb3ce">Belüftung / Entlüftung</text>
         <text x="454" y="502" fontSize="11" fontWeight="700" fill="#8eb3ce">Entleerung / Bodenablass</text>
 
         {showFlow && (FLOW_SEGMENTS[activeMode] || []).map((segment, index) => (
@@ -488,7 +488,7 @@ function FilterSpülungSchematic({ activeValve, setActiveValve, activeMode, show
 
 export default function FilterSpülungDeepDiveView() {
   const [activeMode, setActiveMode] = useState('filterspülung');
-  const [activeValve, setActiveValve] = useState('spuelwasser');
+  const [activeValve, setActiveValve] = useState('spülwasser');
   const [showLabels, setShowLabels] = useState(true);
   const [showFlow, setShowFlow] = useState(true);
 
@@ -689,7 +689,7 @@ export default function FilterSpülungDeepDiveView() {
               </>
             ) : (
               <p className="text-xs" style={{ color: '#8ab0c0' }}>
-                Waehle eine Klappe im Schaltbild aus.
+                Wähle eine Klappe im Schaltbild aus.
               </p>
             )}
           </div>

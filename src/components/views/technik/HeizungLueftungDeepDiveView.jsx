@@ -20,7 +20,7 @@ const HOTSPOT_DATA = {
 
 const MODES = [
   { id: 'heizung', label: 'Heizung', color: '#ff7a7a', focus: ['waermetauscher', 'lufterhitzer', 'beckenwasser'] },
-  { id: 'lueftung', label: 'Lüftung', color: '#34c090', focus: ['zuluft', 'abluft', 'entfeuchtung'] },
+  { id: 'lüftung', label: 'Lüftung', color: '#34c090', focus: ['zuluft', 'abluft', 'entfeuchtung'] },
   { id: 'klima', label: 'Hallenklima', color: '#a070ff', focus: ['entfeuchtung', 'zuluft', 'lufterhitzer'] },
 ];
 
@@ -130,7 +130,7 @@ function Diagram({ activeSpot, setActiveSpot, activeMode }) {
   );
 }
 
-export default function HeizungLueftungDeepDiveView({ darkMode }) {
+export default function HeizungLüftungDeepDiveView({ darkMode }) {
   const [activeSpot, setActiveSpot] = useState(null);
   const [activeMode, setActiveMode] = useState('heizung');
   const spot = activeSpot ? HOTSPOT_DATA[activeSpot] : null;

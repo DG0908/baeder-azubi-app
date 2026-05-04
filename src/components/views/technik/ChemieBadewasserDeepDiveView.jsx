@@ -14,14 +14,14 @@ const TAB_DATA = {
     color: '#4a9eff',
     sections: [
       { heading: 'Wasser als Lösungsmittel', items: ['Wasser (H₂O) ist ein polares Molekül — löst Ionen, Gase, organische Stoffe', 'Im Beckenwasser: Chlorverbindungen, Salze, Körpersekrete, Pflegemittel', 'Leitfähigkeit: Maß für Ionengehalt (µS/cm) — steigt mit Nutzungsdauer', 'Sättigungsindex (SI): Kalk-Kohlensäure-Gleichgewicht — korrosiv oder kalkablagernd?', 'Süßwasser: weiches Wasser < 8,4 °dH; hartes Wasser > 14 °dH'] },
-      { heading: 'Wichtige Parameter im Überblick', items: ['pH-Wert: 6,5–7,6 (DIN 19643)', 'Freies Chlor: 0,3–0,6 mg/L (Hallenbd.) / 0,3–1,0 mg/L (Freibad)', 'Gebundenes Chlor: max. 0,2 mg/L (Richtwert)', 'Redox-Spannung: ≥ 750 mV', 'KS4,3 (Säurekapazität): 0,7–2,0 mol/m³', 'Oxidierbarkeit (KMnO₄): ≤ 30 mg/L nach DIN 19643 Tabelle'] },
+      { heading: 'Wichtige Parameter im Überblick', items: ['pH-Wert: 6,5–7,8 (DIN 19643-1, Praxis 6,8–7,4)', 'Freies Chlor: 0,3–0,6 mg/L (Hallenbd.) / 0,3–1,0 mg/L (Freibad)', 'Gebundenes Chlor: max. 0,2 mg/L (Richtwert)', 'Redox-Spannung: ≥ 750 mV', 'KS4,3 (Säurekapazität): 0,7–2,0 mol/m³', 'Oxidierbarkeit (KMnO₄): ≤ 30 mg/L nach DIN 19643 Tabelle'] },
     ],
   },
   ph: {
     title: 'pH-Wert — Bedeutung und Steuerung',
     color: '#34c090',
     sections: [
-      { heading: 'Was ist der pH-Wert?', items: ['pH = negativer dekadischer Logarithmus der H⁺-Konzentration', 'Skala: 0–14; pH 7 = neutral; < 7 = sauer; > 7 = basisch / alkalisch', 'Beckenwasser-Sollbereich: 6,5–7,6 (DIN 19643)', 'Optimaler Bereich für Chlorwirkung: pH 6,8–7,2', 'Zu hoher pH (> 7,8): Chlor verliert Desinfektionswirkung (Hypochloritform dominiert)', 'Zu niedriger pH (< 6,5): Schleimhautreizung, Materialkorrosion'] },
+      { heading: 'Was ist der pH-Wert?', items: ['pH = negativer dekadischer Logarithmus der H⁺-Konzentration', 'Skala: 0–14; pH 7 = neutral; < 7 = sauer; > 7 = basisch / alkalisch', 'Beckenwasser-Sollbereich: 6,5–7,8 (DIN 19643-1)', 'Optimaler Bereich für Chlorwirkung: pH 6,8–7,2', 'Zu hoher pH (> 7,8): Chlor verliert Desinfektionswirkung (Hypochloritform dominiert)', 'Zu niedriger pH (< 6,5): Schleimhautreizung, Materialkorrosion'] },
       { heading: 'pH-Steuerung im Bad', items: ['pH-Absenkung: Salzsäure (HCl) oder Kohlensäure (CO₂)', 'pH-Erhöhung: Natronlauge (NaOH) oder Soda (Na₂CO₃)', 'Dosierung: automatisch über pH-Regler und Dosierpumpen', 'Messung: kontinuierlich mit pH-Elektrode (amperometrisch)', 'Kalibrierung Elektrode: täglich mit Pufferlösung prüfen', 'CO₂-Anlage: besonders schonend — nur H₂CO₃ entsteht'] },
       { heading: 'Zusammenhang pH und Chlorwirkung', items: ['Bei pH 7,0: ca. 75 % Hypochlorsäure (HOCl) — bakterizid wirksam', 'Bei pH 8,0: nur ca. 20 % HOCl — drastisch reduzierte Wirkung', 'Hypochlorit-Ion (OCl⁻): kaum desinfizierend', 'Fazit: niedrigerer pH = bessere Chlorwirkung (im erlaubten Bereich!)', 'DIN 19643 Empfehlung: pH 6,8–7,2 für optimales Chlor-pH-Verhältnis'] },
     ],
@@ -78,7 +78,7 @@ export default function ChemieBadewasserDeepDiveView({ darkMode }) {
             ))}
             <text x="390" y="55" textAnchor="middle" fill="#4a7a9a" fontSize="9">sauer ← · → alkalisch / basisch</text>
             <rect x="358" y="8" width="104" height="32" rx="3" fill="none" stroke="#34c090" strokeWidth="2" />
-            <text x="410" y="56" textAnchor="middle" fill="#34c090" fontSize="9" fontWeight="700">Sollbereich 6,5–7,6</text>
+            <text x="410" y="56" textAnchor="middle" fill="#34c090" fontSize="9" fontWeight="700">Sollbereich 6,5–7,8</text>
           </svg>
         </div>
 

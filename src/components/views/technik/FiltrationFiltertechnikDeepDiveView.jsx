@@ -6,7 +6,7 @@ const HOTSPOTS = [
   { id: 'quarzsand', label: 'Quarzsand-Schicht', short: 'QRZ', color: '#ffd166', x: 155, y: 245 },
   { id: 'kies', label: 'Kies-Trägerschicht', short: 'KIS', color: '#34c090', x: 155, y: 305 },
   { id: 'ablauf', label: 'Filtrat-Ablauf', short: 'ABL', color: '#5ad0ff', x: 155, y: 360 },
-  { id: 'rueckspuelung', label: 'Rückspülung', short: 'RSP', color: '#ff7a7a', x: 520, y: 200 },
+  { id: 'rueckspülung', label: 'Rückspülung', short: 'RSP', color: '#ff7a7a', x: 520, y: 200 },
 ];
 
 const HOTSPOT_DATA = {
@@ -20,7 +20,7 @@ const HOTSPOT_DATA = {
 
 const MODES = [
   { id: 'aufbau', label: 'Filteraufbau', color: '#4a9eff', focus: ['einlauf', 'anthrazit', 'quarzsand', 'kies', 'ablauf'] },
-  { id: 'rueckspuelung', label: 'Rückspülung', color: '#ff7a7a', focus: ['rueckspuelung', 'einlauf', 'ablauf'] },
+  { id: 'rueckspülung', label: 'Rückspülung', color: '#ff7a7a', focus: ['rueckspülung', 'einlauf', 'ablauf'] },
   { id: 'schichten', label: 'Schichtmaterialien', color: '#ffd166', focus: ['anthrazit', 'quarzsand', 'kies'] },
 ];
 

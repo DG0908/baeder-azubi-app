@@ -14,7 +14,7 @@ const HOTSPOT_DATA = {
   transmitter: { title: 'Messumformer / Transmitter', color: '#5ad0ff', items: ['Wandelt Messgröße in Einheitssignal um (4–20 mA / 0–10 V)', 'Verstärkt schwaches Sensorsignal', 'Digitale Ausgabe: Modbus, Profibus möglich', 'Display: zeigt Istwert, Alarmstatus, Fehlercodes', 'Kalibrierung: direkt am Gerät oder per Software', 'Temperaturkompensation: korrigiert pH/Redox automatisch'] },
   regler: { title: 'Regler (SPS / MSR-Technik)', color: '#a070ff', items: ['Vergleicht Istwert mit Sollwert → Regelabweichung', 'PI- oder PID-Regler: schnelle, präzise Reaktion', 'Ausgang: Steuersignal an Dosierpumpe (Hub/Frequenz)', 'Speicherprogrammierbare Steuerung (SPS): mehrere Kanäle', 'Grenzwert-Überwachung: Alarm bei Über-/Unterschreitung', 'Datenspeicherung: Trend, Protokoll, Störmeldungen'] },
   dosierpumpe: { title: 'Stellglied: Dosierpumpe', color: '#34c090', items: ['Empfängt Stellsignal vom Regler', 'Membrandosierpumpe: präzise Hubvolumen-Dosierung', 'Peristaltikpumpe: für aggressive Chemikalien', 'Dosierrate: 0–100 % einstellbar (Hub × Frequenz)', 'Saugventil + Druckventil: verhindern Rückfluss', 'Durchflussmessung nach Pumpe: Sicherheitscheck'] },
-  sollwerte: { title: 'Sollwerte nach DIN 19643', color: '#ffd166', items: ['pH: 6,5–7,6 (optimal 6,8–7,2)', 'Freies Chlor: 0,3–0,6 mg/L (Halle) / bis 1,0 mg/L (Freibad)', 'Gebundenes Chlor: ≤ 0,2 mg/L', 'Redox-Spannung: ≥ 750 mV', 'Wassertemperatur Hallen: 26–28 °C', 'KS4,3 (Säurekapazität): 0,7–2,0 mol/m³'] },
+  sollwerte: { title: 'Sollwerte nach DIN 19643', color: '#ffd166', items: ['pH: 6,5–7,8 nach DIN 19643-1 (optimal 6,8–7,2)', 'Freies Chlor: 0,3–0,6 mg/L (Halle) / bis 1,0 mg/L (Freibad)', 'Gebundenes Chlor: ≤ 0,2 mg/L', 'Redox-Spannung: ≥ 750 mV', 'Wassertemperatur Hallen: 26–28 °C', 'KS4,3 (Säurekapazität): 0,7–2,0 mol/m³'] },
   alarm: { title: 'Alarm & Notabschaltung', color: '#ff7a7a', items: ['Grenzwertalarm: optisch + akustisch (Hupton)', 'Untergrenze Redox < 700 mV: automatische Sperrung (Badebetrieb)', 'Überchlorung: > 1,5 mg/L freies Chlor → Alarm', 'Leckage-Detektion: Chemikalien-Raum', 'Notabschaltung Chlorgasanlage: bei Gasdetektion sofort', 'Fernüberwachung: Alarm per Mobilfunk / Netzwerk möglich'] },
 };
 
@@ -96,7 +96,7 @@ function Diagram({ activeSpot, setActiveSpot, activeMode }) {
         {/* Sollwerte Box */}
         <rect x="310" y="295" width="180" height="70" rx="6" fill="#1a1500" stroke="#ffd16650" strokeWidth="1.5" />
         <text x="400" y="315" textAnchor="middle" fill="#ffd166" fontSize="10" fontWeight="700">Sollwerte (DIN 19643)</text>
-        <text x="400" y="330" textAnchor="middle" fill="#a09030" fontSize="9">pH 6,5–7,6 | Cl 0,3–0,6 mg/L</text>
+        <text x="400" y="330" textAnchor="middle" fill="#a09030" fontSize="9">pH 6,5–7,8 | Cl 0,3–0,6 mg/L</text>
         <text x="400" y="343" textAnchor="middle" fill="#a09030" fontSize="9">Redox ≥ 750 mV | T 26–28 °C</text>
         <line x1="400" y1="295" x2="400" y2="193" stroke="#ffd166" strokeWidth="1" strokeDasharray="3,4" opacity="0.5" />
 
@@ -158,7 +158,7 @@ export default function MessRegeltechnikDeepDiveView({ darkMode }) {
           <div style={{ fontWeight: 700, color: '#4a9eff', marginBottom: 10, fontSize: 13 }}>Regelgrößen im Überblick</div>
           {[
             ['Regelgröße', 'Sensor', 'Sollwert', 'Stellglied'],
-            ['pH-Wert', 'Glaselektrode', '6,5–7,6', 'HCl- oder CO₂-Pumpe'],
+            ['pH-Wert', 'Glaselektrode', '6,5–7,8', 'HCl- oder CO₂-Pumpe'],
             ['Freies Chlor', 'Membran-Elektrode', '0,3–0,6 mg/L', 'Chlor-Dosierpumpe'],
             ['Redox-Spannung', 'Pt-Elektrode', '≥ 750 mV', 'Chlor-Dosierpumpe'],
             ['Temperatur', 'Pt100 / NTC', '26–28 °C', 'Wärmetauscher'],

@@ -17,7 +17,7 @@ const DETAIL_MODES = [
       'Beim Rückhub saugt die Pumpe Chemikalie an, beim Druckhub wird sie ausgetragen.',
       'Kopfscheibe und Druckstueck übertragen den Hub reproduzierbar auf die Membran.',
     ],
-    caution: 'Luftblasen oder verklebte Ventile veraendern die Dosiermenge sofort.',
+    caution: 'Luftblasen oder verklebte Ventile verändern die Dosiermenge sofort.',
   },
   {
     id: 'magnetantrieb',
@@ -47,23 +47,23 @@ const DETAIL_MODES = [
     id: 'steuerung',
     label: 'Steuerung',
     accent: '#ffaa40',
-    focus: ['gehaeuse', 'magnetspule', 'hubeinstellknopf', 'klarsichtabdeckung'],
+    focus: ['gehäuse', 'magnetspule', 'hubeinstellknopf', 'klarsichtabdeckung'],
     detail: [
       'Die Pumpe kann intern takten oder extern über potentialfreie Kontakte angesteuert werden.',
-      'Typische Anwendung ist die messwertabhaengige Chemikaliendosierung in der Badewasseraufbereitung.',
-      'Ein zweistufiger Niveauschalter zur Vorratsueberwachung kann zugaenglich eingebunden werden.',
+      'Typische Anwendung ist die messwertabhängige Chemikaliendosierung in der Badewasseraufbereitung.',
+      'Ein zweistufiger Niveauschalter zur Vorratsüberwachung kann zugänglich eingebunden werden.',
     ],
-    caution: 'Falsche Signalzuordnung oder fehlende Niveauueberwachung führen schnell zu Unter- oder Überdosierung.',
+    caution: 'Falsche Signalzuordnung oder fehlende Niveauüberwachung führen schnell zu Unter- oder Überdosierung.',
   },
   {
     id: 'wartung',
     label: 'Wartung',
     accent: '#ff7a7a',
-    focus: ['dosierkopf', 'dosiermembran', 'kopfscheibe', 'klarsichtabdeckung', 'gehaeuse'],
+    focus: ['dosierkopf', 'dosiermembran', 'kopfscheibe', 'klarsichtabdeckung', 'gehäuse'],
     detail: [
       'Dosiermembran ist Verschleissteil und muss regelmäßig kontrolliert werden.',
       'Dosierkopf, Ventilsitze und Dichtflächen dürfen keine Kristall- oder Belagsbildung zeigen.',
-      'Klarsicht-Abdeckung und Gehaeusebereiche sauber halten, damit Verstellungen und Leckagen erkennbar bleiben.',
+      'Klarsicht-Abdeckung und Gehäusebereiche sauber halten, damit Verstellungen und Leckagen erkennbar bleiben.',
     ],
     caution: 'Wartung nur drucklos, chemikalienfrei gespülter Leitung und mit PSA.',
   },
@@ -71,10 +71,10 @@ const DETAIL_MODES = [
 
 const DOSING_PUMP_SPOTS = [
   {
-    id: 'gehaeuse',
+    id: 'gehäuse',
     number: '1',
     short: 'GH',
-    label: 'Gehaeuse',
+    label: 'Gehäuse',
     color: '#4a9eff',
     position: [0.7, -0.7, 1.15],
     items: [
@@ -93,7 +93,7 @@ const DOSING_PUMP_SPOTS = [
     items: [
       'Hier befinden sich Dosierkammer sowie Saug- und Druckventile.',
       'Werkstoffauswahl richtet sich nach der eingesetzten Chemikalie.',
-      'Kristallbildung oder Gasblasen im Kopf veraendern die Dosiergenauigkeit.',
+      'Kristallbildung oder Gasblasen im Kopf verändern die Dosiergenauigkeit.',
     ],
   },
   {
@@ -183,7 +183,7 @@ const DOSING_PUMP_SPOTS = [
     position: [1.7, 0.18, 0.92],
     items: [
       'Deckelt den Hub- und Einstellbereich mechanisch ab.',
-      'Stabilisiert den rechten Gehaeuseteil rund um die Verstellung.',
+      'Stabilisiert den rechten Gehäuseteil rund um die Verstellung.',
       'Muss dicht und spannungsfrei sitzen.',
     ],
   },
@@ -197,7 +197,7 @@ const DOSING_PUMP_SPOTS = [
     items: [
       'Begrenzt den maximalen Hub mechanisch.',
       'Verstellt den wirksamen Weg des Antriebs und damit die Dosiermenge.',
-      'Gleichmaessige, definierte Verstellung ist wichtig für Reproduzierbarkeit.',
+      'Gleichmäßige, definierte Verstellung ist wichtig für Reproduzierbarkeit.',
     ],
   },
   {
@@ -223,7 +223,7 @@ const DOSING_PUMP_SPOTS = [
     items: [
       'Bedienelement für die Hublängenverstellung.',
       'Wird je nach Pumpentyp in Prozent oder Skalenwerten eingestellt.',
-      'Muss gut ablesbar und gegen versehentliche Verstellung geschuetzt sein.',
+      'Muss gut ablesbar und gegen versehentliche Verstellung geschützt sein.',
     ],
   },
   {
@@ -242,7 +242,7 @@ const DOSING_PUMP_SPOTS = [
 ];
 
 const DOSING_PUMP_CALLOUTS = {
-  gehaeuse: [3.48, -1.48, 1.14],
+  gehäuse: [3.48, -1.48, 1.14],
   dosierkopf: [-4.18, 0.05, 0.96],
   dosiermembran: [-3.22, -0.78, 0.84],
   kopfscheibe: [-2.42, 0.52, 0.84],
@@ -263,7 +263,7 @@ const KENNDATEN = [
   { label: 'Antrieb', value: 'Magnetspule + Magnethub' },
   { label: 'Hubverstellung', value: 'mechanisch über Knopf/Achse/Bolzen' },
   { label: 'Betriebsart', value: 'intern oder extern ansteuerbar' },
-  { label: 'Option', value: 'Niveauueberwachung am Vorratsbehaelter' },
+  { label: 'Option', value: 'Niveauüberwachung am Vorratsbehälter' },
 ];
 
 const BETRIEBSCHECKS = [
@@ -554,7 +554,7 @@ function DosingPumpPartFocusModel({ spot, xrayMode }) {
   };
 
   switch (spot.id) {
-    case 'gehaeuse':
+    case 'gehäuse':
       return (
         <group rotation={[0.18, -0.4, 0]}>
           <mesh>
@@ -822,7 +822,7 @@ function MembrandosierpumpeAssembly({ running, xrayMode, activeSpot, setActiveSp
       </mesh>
       <mesh position={[0.68, -0.72, 0.2]}>
         <boxGeometry args={[5.0, 2.1, 2.2]} />
-        <meshStandardMaterial {...shellMaterial('#162f4b', ['gehaeuse'], 0.92)} />
+        <meshStandardMaterial {...shellMaterial('#162f4b', ['gehäuse'], 0.92)} />
       </mesh>
 
       <mesh position={[0.12, -0.12, 0.16]} rotation={[0, 0, Math.PI / 2]}>
@@ -972,7 +972,7 @@ export default function MembrandosierpumpeDeepDiveView() {
               border: '1px solid #1a3a5a',
             }}
           >
-            {xrayMode ? 'Roentgen an' : 'Roentgen aus'}
+            {xrayMode ? 'Röntgen an' : 'Röntgen aus'}
           </button>
           <button
             type="button"
@@ -1273,7 +1273,7 @@ export default function MembrandosierpumpeDeepDiveView() {
                 Antwort einblenden
               </summary>
               <p className="text-sm mt-2 leading-relaxed" style={{ color: '#90b0d0' }}>
-                Die Dosiermenge ergibt sich aus dem Volumen pro Hub und der Anzahl der Huebe. Wenn Hublänge, Hubfrequenz
+                Die Dosiermenge ergibt sich aus dem Volumen pro Hub und der Anzahl der Hübe. Wenn Hublänge, Hubfrequenz
                 und externe Ansteuerung nicht zusammenpassen, wird die Chemikalie systematisch zu hoch oder zu niedrig dosiert.
               </p>
             </details>

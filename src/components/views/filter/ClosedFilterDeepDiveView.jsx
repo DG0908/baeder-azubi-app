@@ -4,25 +4,25 @@ const MODEL_HEIGHT = 'clamp(380px, 64vh, 840px)';
 const VESSEL_PATH = 'M 260 110 Q 260 78 410 78 Q 560 78 560 110 L 560 360 Q 560 392 410 392 Q 260 392 260 360 Z';
 
 const HOTSPOTS = [
-  { id: 'belueftung', shortLabel: 'ENTL', label: 'Belueftung / Entluefter', color: '#4a9eff', x: 410, y: 66, lx: 18, ly: -24 },
+  { id: 'belüftung', shortLabel: 'ENTL', label: 'Belüftung / Entluefter', color: '#4a9eff', x: 410, y: 66, lx: 18, ly: -24 },
   { id: 'freierAblauf', shortLabel: 'KANAL', label: 'Freier Ablauf zum Kanal', color: '#7ac8ff', x: 188, y: 184, lx: -152, ly: -26 },
   { id: 'filterschicht', shortLabel: 'BETT', label: 'Filterschicht / Mehrschichtbett', color: '#34c090', x: 350, y: 250, lx: -140, ly: -18 },
   { id: 'ablaufrichter', shortLabel: 'TRICH', label: 'Ablaufrichter / Absenkung', color: '#a070ff', x: 452, y: 154, lx: 24, ly: -30 },
   { id: 'filterbettAufweitung', shortLabel: '10%', label: 'Filterbett-Aufweitung', color: '#f0b26d', x: 490, y: 236, lx: 28, ly: -18 },
   { id: 'wasserumkehr', shortLabel: 'QSP', label: 'Rueckspuelstrom 60 - 65 m/h', color: '#34b9ff', x: 494, y: 316, lx: 34, ly: -2 },
-  { id: 'luftspuelung', shortLabel: 'LUFT', label: 'Auflockerung durch Luftspuelung', color: '#ff7a7a', x: 546, y: 352, lx: 40, ly: 16 },
+  { id: 'luftspülung', shortLabel: 'LUFT', label: 'Auflockerung durch Luftspülung', color: '#ff7a7a', x: 546, y: 352, lx: 40, ly: 16 },
   { id: 'erstfiltrat', shortLabel: 'EF', label: 'Erstfiltrat zum Kanal', color: '#ffd166', x: 268, y: 372, lx: -154, ly: 10 },
-  { id: 'duesenboden', shortLabel: 'DUES', label: 'Stuetz- und Duesenboden', color: '#5ad0ff', x: 410, y: 338, lx: 22, ly: 28 },
+  { id: 'duesenboden', shortLabel: 'DUES', label: 'Stuetz- und Düsenboden', color: '#5ad0ff', x: 410, y: 338, lx: 22, ly: 28 },
 ];
 
 const HOTSPOT_DATA = {
-  belueftung: {
-    title: 'Belueftung / Entluefter',
+  belüftung: {
+    title: 'Belüftung / Entluefter',
     short: 'ENTL',
     color: '#4a9eff',
     items: [
-      'Luft aus dem oberen Kesselraum muss beim Fuellen und nach der Spülung sicher entweichen.',
-      'Ein Luftpolster verkleinert die wirksame Filterfläche und stoert die Gleichverteilung.',
+      'Luft aus dem oberen Kesselraum muss beim Füllen und nach der Spülung sicher entweichen.',
+      'Ein Luftpolster verkleinert die wirksame Filterfläche und stört die Gleichverteilung.',
       'Vor Rueckkehr in den Filtrationsbetrieb muss das Filterbett entlueftet sein.',
     ],
   },
@@ -31,8 +31,8 @@ const HOTSPOT_DATA = {
     short: 'KANAL',
     color: '#7ac8ff',
     items: [
-      'Rueckspuelwasser wird drucklos und sichtbar in den Kanal abgeführt.',
-      'Freier Auslauf verhindert Rueckstau und unkontrollierten Ueberstau im Filterkessel.',
+      'Rueckspülwasser wird drucklos und sichtbar in den Kanal abgeführt.',
+      'Freier Auslauf verhindert Rückstau und unkontrollierten Ueberstau im Filterkessel.',
       'Gerade im Spuelbetrieb muss der Ablauf frei, sauber und hydraulisch sicher sein.',
     ],
   },
@@ -52,7 +52,7 @@ const HOTSPOT_DATA = {
     color: '#a070ff',
     items: [
       'Während des Spuelvorgangs wird der Wasserstand zum Ablaufrichter abgesenkt.',
-      'Die Absenkung schafft freien Austrag für Schmutz, Luft und Spuelwasser.',
+      'Die Absenkung schafft freien Austrag für Schmutz, Luft und Spülwasser.',
       'Kein Ueberstau: Oberwasserraum bleibt hydraulisch entlastet und beobachtbar.',
     ],
   },
@@ -72,8 +72,8 @@ const HOTSPOT_DATA = {
     color: '#34b9ff',
     items: [
       'Die Wasserfuehrung wird im Spuelbetrieb umgekehrt: von unten nach oben durch das Bett.',
-      'Die dargestellte Spuelgeschwindigkeit liegt bei etwa 60 bis 65 m/h.',
-      'Spuelgeschwindigkeit immer material-, temperatur- und anlagenspezifisch abgleichen.',
+      'Die dargestellte Spülgeschwindigkeit liegt bei etwa 60 bis 65 m/h.',
+      'Spülgeschwindigkeit immer material-, temperatur- und anlagenspezifisch abgleichen.',
     ],
   },
   luftspülung: {
@@ -81,9 +81,9 @@ const HOTSPOT_DATA = {
     short: 'LUFT',
     color: '#ff7a7a',
     items: [
-      'Luft lockert das Filterbett auf und loest anhaftende Schmutzflocken.',
+      'Luft lockert das Filterbett auf und löst anhaftende Schmutzflocken.',
       'Sie wirkt vor oder kombiniert mit Wasser, um Verblockungen im Bett zu brechen.',
-      'Ungleichmaessige Luftverteilung deutet auf Probleme am Duesenboden oder Luftnetz hin.',
+      'Ungleichmäßige Luftverteilung deutet auf Probleme am Düsenboden oder Luftnetz hin.',
     ],
   },
   erstfiltrat: {
@@ -97,13 +97,13 @@ const HOTSPOT_DATA = {
     ],
   },
   duesenboden: {
-    title: 'Stuetz- und Duesenboden',
+    title: 'Stuetz- und Düsenboden',
     short: 'DUES',
     color: '#5ad0ff',
     items: [
-      'Stuetzt das Filtermaterial mechanisch und verteilt Wasser sowie Luft gleichmaessig.',
+      'Stuetzt das Filtermaterial mechanisch und verteilt Wasser sowie Luft gleichmäßig.',
       'Verhindert Materialaustrag in die Unterbodenzone und in die Spuelleitungen.',
-      'Beschaedigte oder verstopfte Duesen fuehren sofort zu Schiefspülung und Totzonen.',
+      'Beschädigte oder verstopfte Düsen führen sofort zu Schiefspülung und Totzonen.',
     ],
   },
 };
@@ -113,13 +113,13 @@ const DETAIL_MODES = [
     id: 'aufbau',
     label: 'Aufbau',
     accent: '#4a9eff',
-    focus: ['belueftung', 'filterschicht', 'duesenboden'],
+    focus: ['belüftung', 'filterschicht', 'duesenboden'],
     detail: [
       'Geschlossener Filter arbeitet als druckfester Kessel mit Oberwasserraum, Bett und Unterbau.',
-      'Belueftung, Filterschicht und Duesenboden müssen hydraulisch zusammenpassen.',
+      'Belüftung, Filterschicht und Düsenboden müssen hydraulisch zusammenpassen.',
       'Die Kesselgeometrie schafft einen definierten Weg für Filtration und Später für die Spülung.',
     ],
-    caution: 'Schon kleine Schaeden an Entlueftung oder Duesenboden wirken sich direkt auf die Filterwirkung aus.',
+    caution: 'Schon kleine Schäden an Entlüftung oder Düsenboden wirken sich direkt auf die Filterwirkung aus.',
   },
   {
     id: 'mehrschichtbetrieb',
@@ -134,26 +134,26 @@ const DETAIL_MODES = [
     caution: 'Ein verformtes oder verschobenes Mehrschichtbett verschlechtert die Filtration sofort.',
   },
   {
-    id: 'luftspuelung',
+    id: 'luftspülung',
     label: 'Luftspülung',
     accent: '#ff7a7a',
     focus: ['luftspülung', 'filterbettAufweitung', 'duesenboden'],
     detail: [
-      'Luftspülung lockert das Festbett und loest eingelagerten Schmutz aus den Kornzwischenräumen.',
-      'Der Duesenboden verteilt die Luft gleichmaessig, damit keine Totzonen entstehen.',
-      'Die Später folgende Bettaufweitung kann nur sauber arbeiten, wenn das Bett zuerst geloest wurde.',
+      'Luftspülung lockert das Festbett und löst eingelagerten Schmutz aus den Kornzwischenräumen.',
+      'Der Düsenboden verteilt die Luft gleichmäßig, damit keine Totzonen entstehen.',
+      'Die Später folgende Bettaufweitung kann nur sauber arbeiten, wenn das Bett zuerst gelöst wurde.',
     ],
-    caution: 'Zu harte oder zu ungleichmaessige Luftspülung kann das Bett aufreissen oder Duesen ueberlasten.',
+    caution: 'Zu harte oder zu ungleichmäßige Luftspülung kann das Bett aufreissen oder Düsen überlasten.',
   },
   {
-    id: 'rueckspuelung',
+    id: 'rueckspülung',
     label: 'Rückspülung',
     accent: '#a070ff',
     focus: ['ablaufrichter', 'wasserumkehr', 'freierAblauf'],
     detail: [
       'Im Rueckspuelbetrieb wird die Wasserfuehrung von unten nach oben umgekehrt.',
       'Der Wasserstand wird zum Ablaufrichter abgesenkt, damit kein Ueberstau entsteht.',
-      'Schmutz und Spuelwasser verlassen den Filter drucklos über den freien Ablauf zum Kanal.',
+      'Schmutz und Spülwasser verlassen den Filter drucklos über den freien Ablauf zum Kanal.',
     ],
     caution: 'Rückspülung ohne freien Ablauf oder mit falscher Geschwindigkeit reinigt schlecht und belastet das Bett.',
   },
@@ -161,13 +161,13 @@ const DETAIL_MODES = [
     id: 'wiederanfahren',
     label: 'Wiederanfahren',
     accent: '#ffd166',
-    focus: ['belueftung', 'erstfiltrat', 'filterschicht'],
+    focus: ['belüftung', 'erstfiltrat', 'filterschicht'],
     detail: [
       'Nach der Spülung wird das Bett wieder gesetzt, entlueftet und hydraulisch beruhigt.',
       'Erstfiltrat geht zum Kanal, bis Trubstoffe und Restluft ausgetragen sind.',
       'Erst danach wird der Filter sauber auf den normalen Filtrationsbetrieb zurückgestellt.',
     ],
-    caution: 'Zu frühes Umschalten ins Becken fuehrt zu Trübung, Luftaustrag und Hygieneproblemen.',
+    caution: 'Zu frühes Umschalten ins Becken führt zu Trübung, Luftaustrag und Hygieneproblemen.',
   },
 ];
 
@@ -176,16 +176,16 @@ const KENNDATEN = [
   { label: 'Filtertyp', value: 'Mehrschichtfilter möglich' },
   { label: 'Normalbetrieb', value: 'Filtration unter Druck durch das Bett' },
   { label: 'Rückspülung', value: 'Wasserfuehrung umgekehrt, unten nach oben' },
-  { label: 'Spuelgeschwindigkeit', value: 'ca. 60 - 65 m/h' },
+  { label: 'Spülgeschwindigkeit', value: 'ca. 60 - 65 m/h' },
   { label: 'Bettaufweitung', value: 'ca. 10 % dargestellt' },
 ];
 
 const BETRIEBSCHECKS = [
-  { label: 'Freier Ablauf', value: 'sichtbar, drucklos, ohne Rueckstau', ok: true },
+  { label: 'Freier Ablauf', value: 'sichtbar, drucklos, ohne Rückstau', ok: true },
   { label: 'Filterbett', value: 'nach Spülung eben und sauber gesetzt', ok: true },
-  { label: 'Entlueftung', value: 'Bett und Oberraum luftfrei', ok: true },
+  { label: 'Entlüftung', value: 'Bett und Oberraum luftfrei', ok: true },
   { label: 'Erstfiltrat', value: 'zunächst zum Kanal, nicht ins Becken', ok: true },
-  { label: 'Spuelhydraulik', value: 'Luft + Wasser gleichmaessig verteilt', ok: true },
+  { label: 'Spuelhydraulik', value: 'Luft + Wasser gleichmäßig verteilt', ok: true },
 ];
 
 const STATIC_FLOW_SEGMENTS = [
@@ -523,7 +523,7 @@ export default function ClosedFilterDeepDiveView() {
               border: '1px solid #1a3a5a',
             }}
           >
-            {xrayMode ? 'Roentgen an' : 'Roentgen aus'}
+            {xrayMode ? 'Röntgen an' : 'Röntgen aus'}
           </button>
           <button
             type="button"
@@ -669,8 +669,8 @@ export default function ClosedFilterDeepDiveView() {
                 Antwort einblenden
               </summary>
               <p className="text-sm mt-2 leading-relaxed" style={{ color: '#90b0d0' }}>
-                Weil Schmutz, Luft und Spuelwasser nur bei abgesenktem Wasserstand und freiem Ablauf sicher ausgetragen werden.
-                Ueberstau erzeugt Rueckdruck, verschlechtert die Bettreinigung und kann zu unkontrolliertem Material- oder Schmutztransport fuehren.
+                Weil Schmutz, Luft und Spülwasser nur bei abgesenktem Wasserstand und freiem Ablauf sicher ausgetragen werden.
+                Ueberstau erzeugt Rueckdruck, verschlechtert die Bettreinigung und kann zu unkontrolliertem Material- oder Schmutztransport führen.
               </p>
             </details>
           </div>

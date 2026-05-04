@@ -66,7 +66,7 @@ const HOTSPOT_DATA = {
     items: [
       'Sichtbarer Kontrast für Wende und Anschlag am Bahnende.',
       'Definierte Fläche als Orientierung für Schwimmer.',
-      'Bei Wettkampfbetrieb regelmäßig auf Beschaedigung prüfen.',
+      'Bei Wettkampfbetrieb regelmäßig auf Beschädigung prüfen.',
     ],
   },
   startwand: {
@@ -75,7 +75,7 @@ const HOTSPOT_DATA = {
     color: '#f2b15b',
     items: [
       'Tragende Geometrie für Startblock und Anschlagbereich.',
-      'Gleichmaessige Fliesenfläche für visuelle Orientierung.',
+      'Gleichmäßige Fliesenfläche für visuelle Orientierung.',
       'Anschluss an Rinne und Beckenkante muss dicht und formstabil sein.',
     ],
   },
@@ -652,7 +652,7 @@ export default function StartblockDeepDiveView() {
               border: '1px solid #1a3a5a',
             }}
           >
-            {xrayMode ? 'Roentgen an' : 'Roentgen aus'}
+            {xrayMode ? 'Röntgen an' : 'Röntgen aus'}
           </button>
           <button
             type="button"
