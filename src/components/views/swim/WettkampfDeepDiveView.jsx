@@ -129,7 +129,7 @@ export default function WettkampfDeepDiveView({ darkMode }) {
                 'Armbewegung: symmetrisch, gleichzeitig, nie rückwärts',
                 'Beinbewegung: Froschbeine — nie auf und ab (Delphin = DQ)',
                 'Anschlag: beidhändig, gleichzeitig, auf gleicher Höhe',
-                'Unterwasserphase: 1 Armstoß + 1 Beinstoß nach Start/Wende',
+                'Unterwasserphase: 1 voller Armzug bis zu den Beinen + 1 Delphinkick + 1 Brust-Beinschlag (seit 2005)',
               ]}
               disziplinen={['50 m', '100 m', '200 m']}
               dq="Delphinbeinschlag, asymmetrischer Anschlag, Drehung auf Rücken"
@@ -169,7 +169,7 @@ export default function WettkampfDeepDiveView({ darkMode }) {
                     <div key={i} style={{ background: '#5b21b6', color: '#fff', borderRadius: 20, padding: '4px 12px', fontSize: 13, fontWeight: 700 }}>{l}</div>
                   ))}
                 </div>
-                <div style={{ fontSize: 12, color: sub, marginTop: 6 }}>Merkhilfe Einzel: <strong>„Schrei Rüben Bitte Kraul"</strong> | Staffel: <strong>„Rücken Brust Schmetterling Kraul"</strong></div>
+                <div style={{ fontSize: 12, color: sub, marginTop: 6 }}>Merkhilfe Einzellagen: <strong>S–R–B–K</strong> (Schmetterling, Rücken, Brust, Kraul) | Staffel: <strong>R–B–S–K</strong> (Rücken zuerst, weil Wasserstart)</div>
               </div>
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function WettkampfDeepDiveView({ darkMode }) {
                 ['Meldung', 'Schwimmer melden Disziplin und Nennzeit beim Veranstalter'],
                 ['Bahneinteilung', 'Schnellste in Mitte (Bahn 4/5), langsamer zu den Seiten'],
                 ['Vorlauf / Finale', 'Vorlauf → Halbfinale → Finale (je nach Niveau)'],
-                ['Erwärmung', 'Einschwinmen im vorgesehenen Zeitfenster vor Start'],
+                ['Erwärmung', 'Einschwimmen im vorgesehenen Zeitfenster vor Start'],
                 ['Einlauf', 'Schwimmer kommen vom Einlaufraum ans Startnummernschild'],
                 ['Start', 'Auf Starterkommando — Frühstart = DQ oder Neustart'],
                 ['Siegerehrung', 'Nach Finalläufen — Pokale, Urkunden, Zeitlisten'],
@@ -320,24 +320,27 @@ export default function WettkampfDeepDiveView({ darkMode }) {
             </div>
 
             <div style={{ background: dark ? '#0c1a2e' : '#eff6ff', border: '2px solid #3b82f640', borderRadius: 14, padding: 16, marginBottom: 14 }}>
-              <div style={{ fontWeight: 700, color: '#3b82f6', marginBottom: 10, fontSize: 15 }}>Rückenstartleine — Details</div>
-              <p style={{ color: text, fontSize: 13, marginBottom: 12 }}>Die Rückenstartleine (engl. <em>backstroke ledge</em> oder <em>backstroke bar</em>) ist fester Bestandteil des Wettkampfstartblocks nach World Aquatics-Norm.</p>
+              <div style={{ fontWeight: 700, color: '#3b82f6', marginBottom: 10, fontSize: 15 }}>Rückenstart-Vorrichtungen — Details</div>
+              <p style={{ color: text, fontSize: 13, marginBottom: 12 }}>Beim Rückenstart hängt sich der Schwimmer an Griffe direkt am Startblock. Seit 2014 ist zusätzlich die <em>Backstroke Ledge</em> zugelassen — ein einklappbares Brett am Block, auf das die Füße gestellt werden.</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {[
-                  ['Position', '30 cm hinter + 30 cm über Beckenwand'],
-                  ['Ausklappbar', 'Beim modernen Startblock einklappbar'],
+                  ['Rückenstartgriffe', 'Horizontale/vertikale Griffe direkt am Startblock — kein Element im Wasser'],
+                  ['Backstroke Ledge', 'Ausklappbares Brett am Block, max. 4 cm über Wasseroberfläche'],
                   ['Griffweite', 'Mind. Schulterbreite, Hände nebeneinander'],
                   ['Daumen', 'Von unten — fester Halt'],
-                  ['Füße', 'Beide Füße auf Startblockplatte (NEU seit 2009)'],
-                  ['Früher', 'Füße mussten an der Wand sein — heute Block'],
-                  ['Fußposition', 'Können über oder unter Wasser sein (Regelung: mind. 1 Fuß auf Platte)'],
-                  ['Pflicht', 'Muss bei Rückenstart-Wettkämpfen vorhanden sein'],
+                  ['Füße mit Ledge', 'Beide Füße auf dem Brett — auch über Wasser erlaubt'],
+                  ['Füße ohne Ledge', 'Flach an die Wand, dürfen bis kurz unter Wasser stehen — nicht auf Wasserabweiser/Rinnenrand'],
+                  ['Eingeführt', 'Backstroke Ledge: World Aquatics-Zulassung 2014, ab Olympia 2016 sichtbar'],
+                  ['Pflicht', 'Bei allen offiziellen Rückenstart-Wettkämpfen Griffe vorhanden'],
                 ].map(([k, v], i) => (
                   <div key={i} style={{ fontSize: 13 }}>
                     <span style={{ color: '#3b82f6', fontWeight: 700 }}>{k}: </span>
                     <span style={{ color: dark ? '#cbd5e1' : '#475569' }}>{v}</span>
                   </div>
                 ))}
+              </div>
+              <div style={{ marginTop: 12, padding: 10, background: dark ? '#1a2438' : '#dbeafe', borderRadius: 8, fontSize: 12, color: dark ? '#cbd5e1' : '#1e40af' }}>
+                <strong>Nicht verwechseln:</strong> Rücken-Wendefahnen (engl. <em>backstroke flags</em>) sind 5 m vor jeder Wand quer übers Becken gespannt, ca. 1,8 m über Wasser. Sie dienen nur der Orientierung beim Anschwimmen, sind keine Startvorrichtung.
               </div>
             </div>
 
@@ -421,12 +424,13 @@ export default function WettkampfDeepDiveView({ darkMode }) {
             ]} />
 
             <InfoBox title="Wichtige Zahlenwerte für die Prüfung" dark={dark} color="#059669" items={[
-              'Unterwasserphase max. 15 m (alle Lagen, Kraul/Rücken/Schmetterling)',
-              'Brust: 1 Armstoß + 1 Beinstoß nach Start/Wende (unter Wasser)',
+              'Unterwasserphase max. 15 m (alle Lagen außer Brust)',
+              'Brust nach Start/Wende: 1 voller Armzug + 1 Delphinkick + 1 Brust-Beinschlag erlaubt',
               'Startblock-Höhe: 50–75 cm über Wasseroberfläche',
-              'Rückenstartleine: 30 cm hinter, 30 cm über Beckenwand',
-              'Bahnbreite Wettkampf: mind. 2,0 m (50-m-Bahn)',
-              'HLW-Rhythmus im Bäderbetrieb: 30:2 (wie allgemein)',
+              'Backstroke Ledge: max. 4 cm über Wasseroberfläche',
+              'Rücken-Wendefahnen: 5 m vor der Wand, ca. 1,8 m über Wasser',
+              'Bahnbreite Wettkampf: mind. 2,5 m (Olympische Norm), 2,0 m als Mindestmaß',
+              'HLW-Rhythmus im Bäderbetrieb: 30:2',
             ]} />
           </div>
         )}

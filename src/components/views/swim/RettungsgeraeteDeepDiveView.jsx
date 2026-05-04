@@ -86,12 +86,12 @@ export default function RettungsgeräteDeepDiveView({ darkMode }) {
                 </thead>
                 <tbody>
                   {[
-                    ['Rettungsstange', '3–5 m', 'Sofort einsetzbar, kein Wurf', 'Ja, DIN EN 13138'],
-                    ['Rettungsring', '< 20 m', 'Auftriebshilfe auf Distanz', 'Ja'],
+                    ['Rettungsstange', '3–5 m', 'Sofort einsetzbar, kein Wurf', 'Ja (DGUV V 107)'],
+                    ['Rettungsring', '< 20 m', 'Auftriebshilfe auf Distanz', 'Ja (DGUV V 107)'],
                     ['Gurtretter', '< 30 m', 'Mit Seil, zieht Person ran', 'Empfohlen'],
                     ['Wurfleine', '< 30 m', 'Dünn, leicht, schnell', 'Ja, Freibäder'],
                     ['Spineboard', 'k.A.', 'HWS-Immobilisierung', 'Empfohlen'],
-                    ['Sauerstoff', 'k.A.', 'Erste Hilfe Atemstörungen', 'Ja (DLRG-Richtwert)'],
+                    ['Sauerstoff', 'k.A.', 'Erste Hilfe Atemstörungen', 'Ja (DGUV-Empfehlung)'],
                     ['AED', 'k.A.', 'Frühdefibrillation', 'Gesetzl. Empfehlung'],
                   ].map(([g, r, v, p], i) => (
                     <tr key={i} style={{ background: i % 2 === 0 ? (dark ? '#1e293b' : '#f0f9ff') : (dark ? '#0f172a' : '#fff') }}>
@@ -168,10 +168,11 @@ export default function RettungsgeräteDeepDiveView({ darkMode }) {
               name="Rettungsring"
               desc="Ringförmiger Auftriebskörper aus Schaumstoff oder Kork. Wird zur Person geworfen — gibt ihr Auftrieb. Meist mit Wurfleine verbunden. Person hält sich fest bis Rettung kommt."
               specs={[
-                ['Außendurchmesser', 'ca. 76 cm'],
-                ['Tragkraft', 'mind. 14,5 kg nach DIN EN 13138'],
-                ['Farbe', 'Orange oder Rot (gut sichtbar)'],
-                ['Befestigung', 'Immer mit Wurfleine gesichert'],
+                ['Außendurchmesser', 'ca. 65–75 cm (DGUV V 107: ≥ 60 cm)'],
+                ['Tragkraft', 'mind. 14,5 kg Auftriebskraft (Anlehnung an SOLAS)'],
+                ['Farbe', 'Orange oder Rot mit Reflexstreifen (gut sichtbar)'],
+                ['Befestigung', 'Immer mit Wurfleine (mind. 25 m) gesichert'],
+                ['Rechtsgrundlage', 'DGUV Vorschrift 107 + Regel 107-001 (Bäderbetrieb)'],
               ]}
               einsatz="Bewusstseinsklare Person auf Distanz"
               dark={dark}

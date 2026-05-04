@@ -198,7 +198,7 @@ const BRUST = [
     svg: (dm) => <TopSVG darkMode={dm}
       arms={["128,36 133,53 138,62", "152,36 147,53 142,62"]}
       legs={["128,96 110,106 96,120 102,130", "152,96 170,106 184,120 178,130"]} />,
-    punkte: ['Fersen zur Gesäß anziehen (Knie nur leicht spreizen!)', 'Füße drehen nach außen (dorsalflektiert)', 'Beine peitschen kreisförmig zusammen → Grätschstoß', 'Arme kommen gleichzeitig nach vorn'],
+    punkte: ['Fersen zum Gesäß anziehen (Knie nur leicht spreizen!)', 'Füße drehen nach außen (dorsalflektiert)', 'Beine peitschen kreisförmig zusammen → Grätschstoß', 'Arme kommen gleichzeitig nach vorn'],
     fehler: 'Knie zu weit auseinander → hoher Wasserwiderstand',
     tipp: '„Frosch-Kick" — Füße wie ein Frosch drehen und Wasser nach hinten drücken.',
   },
@@ -258,7 +258,7 @@ const RUECKEN = [
     tipp: '„Tunnelzug" — der Arm zieht direkt unter dem Körper durch.',
   },
   {
-    name: 'Druckphase & Umlauf', sub: 'Druck bis zur Hüfte, dann Rückholung über Wasser',
+    name: 'Druckphase', sub: 'Arm drückt bis zum Oberschenkel — letzter Schub',
     svg: (dm) => <SideSVG darkMode={dm} label="Rückenschwimmen"
       head={[245, 45, 10]}
       bodyPts="82,65 232,63"
@@ -267,16 +267,30 @@ const RUECKEN = [
         { pts: "92,65 112,58 132,53", above: false },
       ]}
       legs={["90,65 62,71 40,77", "86,65 58,60 36,56"]} />,
-    punkte: ['Druck bis zum Oberschenkel — Daumen zeigt nach außen beim Austauchen', 'Arm tritt senkrecht aus dem Wasser (kleiner Finger zuerst)', 'Rückholung: Arm gestreckt und entspannt (im Rücken möglich)'],
-    fehler: 'Druck zu früh abgebrochen, Arm biegt beim Austauchpunkt ab',
-    tipp: 'Beim Auftauchen: Daumen zeigt nach oben → automatische Innenrotation für sauberes Eintauchen.',
+    punkte: ['Druck bis zum Oberschenkel — Daumen zeigt nach außen beim Austauchen', 'Arm tritt senkrecht aus dem Wasser (kleiner Finger zuerst)', 'Schulter dreht zurück in die Ausgangslage'],
+    fehler: 'Druck zu früh abgebrochen → verlorener Vortrieb',
+    tipp: '„Daumen kitzelt den Oberschenkel" — erst dann ist der Schub vollständig.',
+  },
+  {
+    name: 'Umlaufphase', sub: 'Gestreckte Rückholung über dem Wasser',
+    svg: (dm) => <SideSVG darkMode={dm} label="Rückenschwimmen"
+      head={[245, 45, 10]}
+      bodyPts="82,65 232,63"
+      arms={[
+        { pts: "228,63 220,49 212,38", above: true },
+        { pts: "92,65 117,63 142,65", above: false },
+      ]}
+      legs={["90,65 62,71 40,77", "86,65 58,60 36,56"]} />,
+    punkte: ['Arm gestreckt und entspannt über das Wasser zurückführen', 'Daumen zeigt beim Austauchen nach oben → automatische Innenrotation', 'Hand führt durch die 12-Uhr-Position senkrecht nach oben'],
+    fehler: 'Arm biegt beim Austauchpunkt ab → unsauberer Eintauchwinkel',
+    tipp: 'Beim Auftauchen Daumen oben — beim Eintauchen kleiner Finger zuerst. Der Arm dreht sich auf dem Weg.',
   },
 ];
 
 // Delphin: Körperwelle ist das Kernmerkmal
 const DELPHIN = [
   {
-    name: '1. Welle (Eintauchen)', sub: 'Arme einstechen, Hüfte steigt, erster Delfinkick',
+    name: 'Eintauchen', sub: 'Beide Arme gleichzeitig einstechen, 1. Delfinkick',
     svg: (dm) => <SideSVG darkMode={dm} label="Delphinschwimmen"
       head={[245, 54, 10]}
       bodyPts="82,70 115,66 160,60 200,64 232,70"
@@ -285,9 +299,22 @@ const DELPHIN = [
         { pts: "232,70 215,63 202,58", above: false },
       ]}
       legs={["82,70 56,78 38,85"]} />,
-    punkte: ['Beide Arme gleichzeitig einstechen (schmal, vor der Schulter)', 'Kopf taucht nach dem Eintauchen ab', 'Hüfte steigt → erster Kick aus den Hüften', 'Knie leicht gebeugt, Fußgelenke locker'],
+    punkte: ['Beide Arme gleichzeitig einstechen (schulterbreit, vor der Schulter)', 'Kopf taucht nach dem Eintauchen ab', 'Hüfte steigt → erster Delfinkick aus den Hüften', 'Knie leicht gebeugt, Fußgelenke locker'],
     fehler: 'Kick aus den Knien statt der Hüfte → ineffizient',
     tipp: '„Delfin-Welle von der Brust bis zu den Zehen" — der Impuls kommt von oben.',
+  },
+  {
+    name: 'Wasserfassen', sub: 'High-Elbow-Catch: Ellbogen hoch, Unterarm als Paddel',
+    svg: (dm) => <SideSVG darkMode={dm} label="Delphinschwimmen"
+      head={[245, 52, 10]}
+      bodyPts="82,68 130,64 180,62 220,64 232,64"
+      arms={[
+        { pts: "232,64 248,76 256,90", above: false },
+      ]}
+      legs={["82,68 56,73 38,77"]} />,
+    punkte: ['Ellbogen bleibt hoch, Unterarm kippt nach unten („Wasser fassen")', 'Beide Arme symmetrisch — kein Versatz wie beim Kraul', 'Erste Welle vom Eintauchen läuft den Körper hinunter'],
+    fehler: 'Ellbogen sinkt (dropped elbow) → Unterarm rutscht durchs Wasser, kaum Vortrieb',
+    tipp: '„Ellbogen über die unsichtbare Stange hängen" — er bleibt oben, beide Seiten gleich.',
   },
   {
     name: 'Zugphase', sub: 'Keyhole-Zug: Arme nach außen, dann unter dem Körper',

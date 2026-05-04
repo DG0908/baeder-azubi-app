@@ -250,9 +250,9 @@ export default function RettungsriffeDeepDiveView({ darkMode }) {
             <div style={{ background: cardBg, border: '1px solid #0891b240', borderRadius: 12, padding: 16 }}>
               <div style={{ fontWeight: 700, color: dark ? '#7dd3fc' : '#0369a1', marginBottom: 8 }}>Entscheidungsbaum: Springe ich?</div>
               {[
-                ['Person außerhalb Reichweite?', 'Nein → Stange/Leine einsetzen'],
+                ['Person in Reichweite einer Stange/Leine?', 'Ja → Stange/Leine einsetzen, nicht ins Wasser springen'],
                 ['Geeignetes Rettungsgerät verfügbar?', 'Ja → immer zuerst benutzen'],
-                ['Bin ich allein?', 'Ja → erst Notruf, dann einspringen'],
+                ['Bin ich allein?', 'Ja → erst Notruf absetzen lassen, dann einspringen'],
                 ['Kann ich die Person sicher transportieren?', 'Ggf. nein → im Wasser sichern, Hilfe abwarten'],
               ].map(([q, a], i) => (
                 <div key={i} style={{ marginBottom: 8, fontSize: 13 }}>

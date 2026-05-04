@@ -8,13 +8,6 @@ const TABS = {
   taktik: 'Taktik & Unterwasser',
 };
 
-const Row = ({ label, val, dark }) => (
-  <tr style={{ background: dark ? '#1e293b' : '#f8fafc' }}>
-    <td style={{ padding: '6px 10px', fontWeight: 600, color: dark ? '#93c5fd' : '#1d4ed8', whiteSpace: 'nowrap' }}>{label}</td>
-    <td style={{ padding: '6px 10px', color: dark ? '#e2e8f0' : '#1e293b' }}>{val}</td>
-  </tr>
-);
-
 const InfoBox = ({ title, items, dark, color = '#0891b2' }) => (
   <div style={{ background: dark ? '#0f172a' : '#f0f9ff', border: `1px solid ${color}40`, borderRadius: 10, padding: 14, marginBottom: 12 }}>
     <div style={{ fontWeight: 700, color: color, marginBottom: 8 }}>{title}</div>
@@ -72,7 +65,7 @@ export default function StartsWendenDeepDiveView({ darkMode }) {
             <div style={{ background: cardBg, border: '1px solid #0891b240', borderRadius: 12, padding: 16, marginBottom: 16 }}>
               <div style={{ fontWeight: 700, color: dark ? '#7dd3fc' : '#0369a1', marginBottom: 12 }}>Phasen des Kippstarts</div>
               <Phase nr={1} name="Startposition" desc='Füße schulterbreit, Zehen über Startklotz-Kante. Beim Griff-Start: Hände greifen Startklotz-Vorderkante. Körper leicht nach vorne geneigt.' dark={dark} />
-              <Phase nr={2} name="Startsignal & Abdruckphase" desc='Auf „Los": Kraftvoller Abzug mit Armen, gleichzeitiger Beinabdruck. Körper streckt sich diagonal nach vorne-unten.' dark={dark} />
+              <Phase nr={2} name="Startsignal & Abdruckphase" desc='Beim akustischen Startsignal (Pfiff/Ton): Kraftvoller Abzug mit Armen, gleichzeitiger Beinabdruck. Körper streckt sich diagonal nach vorne-unten.' dark={dark} />
               <Phase nr={3} name="Flugphase" desc='Körper gestreckt, Arme vorne, Kopf zwischen den Armen. Flacher Winkel anstreben (ca. 15°–25°).' dark={dark} />
               <Phase nr={4} name="Eintauchen" desc='Hände zuerst, Körper wie ein Pfeil. Beine in Verlängerung. Tiefe: ca. 40–60 cm unterhalb Wasseroberfläche.' dark={dark} />
               <Phase nr={5} name="Unterwasserphase" desc='Delphinschläge bis ca. 15 m (Wettkampf-Limit). Dann auftauchen und ersten Armzug einleiten.' dark={dark} />
@@ -116,20 +109,21 @@ export default function StartsWendenDeepDiveView({ darkMode }) {
             </div>
 
             <div style={{ background: dark ? '#0c1a2e' : '#eff6ff', border: '1px solid #3b82f640', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-              <div style={{ fontWeight: 700, color: '#3b82f6', marginBottom: 10 }}>Rückenstartleine</div>
+              <div style={{ fontWeight: 700, color: '#3b82f6', marginBottom: 10 }}>Rückenstart-Vorrichtungen am Startblock</div>
               <div style={{ color: text, fontSize: 14, lineHeight: 1.6 }}>
-                Die Rückenstartleine (auch: <strong>Rückenstartbügel</strong>) ist eine horizontale Stange oder Seil, die 30 cm über der Wasseroberfläche und 30 cm von der Beckenwand montiert ist.
+                Es gibt zwei Bauteile: <strong>Rückenstartgriffe</strong> direkt am Startblock (in mehreren Höhen) und seit 2014 zusätzlich die <strong>Backstroke Ledge</strong> — ein einklappbares Brett am Startblock, max. 4&nbsp;cm über/unter Wasseroberfläche.
               </div>
               <div style={{ marginTop: 10 }}>
                 {[
-                  ['Zweck', 'Gibt dem Schwimmer beim Rückenstart Halt'],
-                  ['Montage', '30 cm über WO, 30 cm von der Wand'],
+                  ['Rückenstartgriffe', 'Horizontale/vertikale Griffe am Startblock — fester Halt für die Hände'],
+                  ['Backstroke Ledge', 'Ausklappbare Standfläche am Block, max. 4 cm über WO (seit 2014/15)'],
+                  ['Handposition', 'Schulterbreit, Daumen von unten — Hände an den Griffen'],
+                  ['Fußposition', 'Mit Ledge: beide Füße auf dem Brett. Ohne Ledge: Füße flach an die Wand, dürfen bis kurz unter Wasser stehen — Zehen nicht auf dem Wasserabweiser/Rinnenrand'],
                   ['Pflicht', 'Bei allen offiziellen Wettkämpfen vorgeschrieben'],
-                  ['Handgriff', 'Breiter als schulterbreit, Daumen von unten'],
-                  ['Fußposition', 'Beide Füße unter der Wasseroberfläche, nicht auf dem Wasserabweiser'],
+                  ['Nicht verwechseln', 'Die Rücken-Wendefahnen (5 m vor der Wand, ca. 1,8 m über Wasser) sind etwas anderes — sie dienen nur der Orientierung beim Anschwimmen.'],
                 ].map(([k, v], i) => (
                   <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 4, fontSize: 13 }}>
-                    <span style={{ color: '#3b82f6', fontWeight: 700, minWidth: 100 }}>{k}</span>
+                    <span style={{ color: '#3b82f6', fontWeight: 700, minWidth: 130 }}>{k}</span>
                     <span style={{ color: dark ? '#cbd5e1' : '#475569' }}>{v}</span>
                   </div>
                 ))}
@@ -152,7 +146,7 @@ export default function StartsWendenDeepDiveView({ darkMode }) {
 
             <div style={{ background: cardBg, border: '1px solid #0891b240', borderRadius: 12, padding: 16, marginBottom: 14 }}>
               <div style={{ fontWeight: 700, color: dark ? '#7dd3fc' : '#0369a1', marginBottom: 10 }}>Rollwende (Kraul & Rücken)</div>
-              <Phase nr={1} name="Einrollen" desc='Letzte Armbewegung führt in Rollbewegung — Kinn zur Brust, Rollkickstart.' dark={dark} />
+              <Phase nr={1} name="Einrollen" desc='Letzte Armbewegung leitet die Rolle (Salto vorwärts) ein — Kinn zur Brust, Beine angezogen.' dark={dark} />
               <Phase nr={2} name="Fußaufsatz" desc='Beide Füße gleichzeitig an der Wand, Knie ca. 90° gebeugt.' dark={dark} />
               <Phase nr={3} name="Abstoß" desc='Kraftvoller Beinabdruck, Arme vorne gestreckt, Körper in Rückenlage (Rücken) bzw. Bauchlage (Kraul) drehen.' dark={dark} />
               <Phase nr={4} name="Gleit & Delphin" desc='Gestreckt gleiten, Delphinschläge bis ca. 15 m, dann erster Armzug.' dark={dark} />
@@ -163,7 +157,7 @@ export default function StartsWendenDeepDiveView({ darkMode }) {
               <Phase nr={1} name="Anschlag" desc='Beide Hände gleichzeitig, in Schulterhöhe, an der Wand (Pflicht! sonst DQ).' dark={dark} />
               <Phase nr={2} name="Drehen" desc='Eine Hand loslassen, Körper zur Seite drehen, Knie anziehen.' dark={dark} />
               <Phase nr={3} name="Fußaufsatz" desc='Beide Füße flach an der Wand.' dark={dark} />
-              <Phase nr={4} name="Abstoß" desc='Kräftiger Beinabdruck, in Bauchlage drehen, Gleit, dann Unterwasserbrust-Zug (1x erlaubt) und 1 Delphinschlag.' dark={dark} />
+              <Phase nr={4} name="Abstoß" desc='Kräftiger Beinabdruck, in Bauchlage drehen, Gleit. Erlaubt: 1 voller Armzug bis zu den Beinen + 1 Delphinkick + 1 Brust-Beinschlag (seit 2005 World Aquatics).' dark={dark} />
             </div>
 
             <div style={{ background: cardBg, border: '1px solid #0891b240', borderRadius: 12, padding: 16, marginBottom: 14 }}>
@@ -220,10 +214,10 @@ export default function StartsWendenDeepDiveView({ darkMode }) {
               </table>
             </div>
 
-            <InfoBox title="Lagenstaffel — Reihenfolge" dark={dark} color="#7c3aed" items={[
-              '1. Schmetterling → 2. Rücken → 3. Brust → 4. Freistil (Kraul)',
-              'Einzellagen: Schm → Rü → Br → Kr (gleiche Reihenfolge)',
-              'Merkhilfe: "Schrei Rüben Bitte Klar"',
+            <InfoBox title="Reihenfolge der Lagen" dark={dark} color="#7c3aed" items={[
+              'Einzellagen (200 m / 400 m Lagen): 1. Schmetterling → 2. Rücken → 3. Brust → 4. Freistil',
+              'Lagenstaffel (4 × 100 m): 1. Rücken → 2. Brust → 3. Schmetterling → 4. Freistil (Rücken zuerst, weil Wasserstart)',
+              'Merkhilfe Einzellagen: S–R–B–K (Schmetterling, Rücken, Brust, Kraul)',
             ]} />
           </div>
         )}
@@ -237,7 +231,7 @@ export default function StartsWendenDeepDiveView({ darkMode }) {
               'Unter Wasser entsteht weniger Wellenreibung → höhere Geschwindigkeit als an der Oberfläche',
               'Delphinschläge sind nach Start und Wende oft schneller als Armzüge',
               'Limit: 15 Meter nach Start und nach jeder Wende (World Aquatics Regel)',
-              'Ausnahme Brust: nur 1 Armstoß + 1 Beinstoß unter Wasser erlaubt',
+              'Ausnahme Brust: 1 voller Armzug bis zu den Beinen + 1 Delphinkick + 1 Brust-Beinschlag erlaubt',
             ]} />
 
             <div style={{ background: cardBg, border: '1px solid #0891b240', borderRadius: 12, padding: 16, marginBottom: 14 }}>
@@ -274,7 +268,7 @@ export default function StartsWendenDeepDiveView({ darkMode }) {
             <InfoBox title="Prüfungsfragen" dark={dark} color="#059669" items={[
               'Warum ist die Unterwasserphase schneller? → Weniger Wellenreibung',
               'Wie lang darf die Unterwasserphase maximal sein? → 15 Meter',
-              'Welche Ausnahme gilt beim Brustschwimmen? → 1 Armstoß + 1 Beinstoß',
+              'Welche Ausnahme gilt beim Brustschwimmen? → 1 voller Armzug + 1 Delphinkick + 1 Brust-Beinschlag',
               'Was ist der Unterschied Rollwende/Brustwende? → Brust braucht beidhändigen Anschlag',
             ]} />
           </div>

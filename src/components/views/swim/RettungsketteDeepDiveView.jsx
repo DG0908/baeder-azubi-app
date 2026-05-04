@@ -194,14 +194,15 @@ export default function RettungsketteDeepDiveView({ darkMode }) {
             <h2 style={{ fontSize: 17, fontWeight: 700, color: dark ? '#7dd3fc' : '#0369a1', marginBottom: 14 }}>HLW bis Übergabe an den Rettungsdienst</h2>
 
             <div style={{ background: dark ? '#2d1515' : '#fef2f2', border: '1px solid #dc262640', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-              <div style={{ fontWeight: 700, color: '#dc2626', marginBottom: 10, fontSize: 15 }}>Algorithmus: Kein Bewusstsein, keine Atmung</div>
+              <div style={{ fontWeight: 700, color: '#dc2626', marginBottom: 4, fontSize: 15 }}>Algorithmus: Kein Bewusstsein, keine Atmung</div>
+              <div style={{ fontSize: 11, color: dark ? '#94a3b8' : '#64748b', marginBottom: 10, fontStyle: 'italic' }}>Lernhilfe nach den ERC-Leitlinien (European Resuscitation Council 2021). Offizieller ERC-Algorithmus: <strong>Prüfen → Rufen → Drücken</strong>.</div>
               {[
-                { step: 'A', label: 'Ansprechen', desc: 'Keine Reaktion?' },
-                { step: 'B', label: 'Beatmung prüfen', desc: 'Atemwege freimachen (Kopf überstrecken), 10 Sek. auf Atmung achten' },
-                { step: 'C', label: 'Call 112', desc: 'Notruf absetzen (oder abgesetzt lassen)' },
+                { step: 'A', label: 'Ansprechen & Anfassen', desc: 'Laut ansprechen, Schulter schütteln. Keine Reaktion?' },
+                { step: 'B', label: 'Beatmung prüfen', desc: 'Atemwege freimachen (Kopf überstrecken, Kinn anheben), max. 10 Sek. auf Atmung achten' },
+                { step: 'C', label: 'Call 112', desc: 'Notruf absetzen (lassen) — AED holen lassen' },
                 { step: 'D', label: 'Drücken 30×', desc: 'Herzdruckmassage: 30× mit beiden Händen, 5–6 cm tief, 100–120/min' },
-                { step: 'E', label: 'Einblasen 2×', desc: 'Mund-zu-Mund: 2 Atemstöße, ca. 1 Sek. pro Stoß' },
-                { step: 'F', label: 'Fortführen', desc: 'Rhythm 30:2 weiterführen bis AED da oder RD übernimmt' },
+                { step: 'E', label: 'Einblasen 2×', desc: 'Beatmung: 2 Atemstöße, ca. 1 Sek. pro Stoß' },
+                { step: 'F', label: 'Fortführen', desc: 'Rhythmus 30:2 weiterführen bis AED da oder RD übernimmt' },
               ].map(({ step, label, desc }, i) => (
                 <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 8 }}>
                   <div style={{ background: '#dc2626', color: '#fff', borderRadius: '50%', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0, fontSize: 12 }}>{step}</div>
