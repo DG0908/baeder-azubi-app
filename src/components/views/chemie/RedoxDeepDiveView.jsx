@@ -9,11 +9,11 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was sind Redox-Reaktionen?',
     intro:
-      'Stell dir einen Staffellauf vor: Ein Laeufer gibt den Stab ab, ein anderer nimmt ihn auf. Genau so funktionieren Redox-Reaktionen — nur dass statt Staffelstaeben winzige Teilchen (Elektronen) uebergeben werden. Einer gibt Elektronen ab, ein anderer nimmt sie auf. Das passiert IMMER gleichzeitig. Und das Beste: Die Desinfektion im Schwimmbad IST eine Redox-Reaktion!',
+      'Stell dir einen Staffellauf vor: Ein Läufer gibt den Stab ab, ein anderer nimmt ihn auf. Genau so funktionieren Redox-Reaktionen — nur dass statt Staffelstäben winzige Teilchen (Elektronen) übergeben werden. Einer gibt Elektronen ab, ein anderer nimmt sie auf. Das passiert IMMER gleichzeitig. Und das Beste: Die Desinfektion im Schwimmbad IST eine Redox-Reaktion!',
     motto: 'Einer gibt ab, einer nimmt auf — immer gleichzeitig.',
     rules: [
       'Redox-Reaktion = eine Reaktion, bei der Elektronen von einem Stoff zum anderen wandern.',
-      'Oxidation = Elektronen ABGEBEN. Eselsbruecke: OxidAtion = Abgabe.',
+      'Oxidation = Elektronen ABGEBEN. Eselsbrücke: OxidAtion = Abgabe.',
       'Reduktion = Elektronen AUFNEHMEN. Der Stoff wird dadurch "reduziert".',
       'Oxidation und Reduktion passieren IMMER gleichzeitig — nie eins ohne das andere.',
       'Im Schwimmbad messen wir die Redox-Spannung in Millivolt (mV) — sie zeigt, wie gut das Wasser desinfiziert.'
@@ -21,7 +21,7 @@ const TABS = {
     steps: [
       {
         title: '1. Was sind Elektronen?',
-        text: 'Elektronen sind winzig kleine Teilchen mit negativer Ladung. Sie gehoeren zu jedem Atom dazu. Bei einer Redox-Reaktion wechseln sie den Besitzer — wie beim Tauschen auf dem Schulhof.'
+        text: 'Elektronen sind winzig kleine Teilchen mit negativer Ladung. Sie gehören zu jedem Atom dazu. Bei einer Redox-Reaktion wechseln sie den Besitzer — wie beim Tauschen auf dem Schulhof.'
       },
       {
         title: '2. Oxidation = Abgeben',
@@ -33,13 +33,13 @@ const TABS = {
       },
       {
         title: '4. Warum ist das im Bad wichtig?',
-        text: 'Chlor OXIDIERT Bakterien und Keime — es nimmt ihnen Elektronen weg und zerstoert sie dadurch. Die ganze Desinfektion im Schwimmbad basiert auf Redox-Reaktionen! Die Redox-Spannung (mV) zeigt dir, ob genug Desinfektionskraft im Wasser ist.'
+        text: 'Chlor OXIDIERT Bakterien und Keime — es nimmt ihnen Elektronen weg und zerstört sie dadurch. Die ganze Desinfektion im Schwimmbad basiert auf Redox-Reaktionen! Die Redox-Spannung (mV) zeigt dir, ob genug Desinfektionskraft im Wasser ist.'
       }
     ],
     examples: [
       {
         title: 'Redox im Alltag: Rost',
-        given: 'Ein Eisengelaender steht draussen im Regen.',
+        given: 'Ein Eisengeländer steht draußen im Regen.',
         question: 'Was passiert bei der Rostbildung?',
         steps: [
           ['Oxidation', 'Eisen (Fe) gibt Elektronen ab: Fe -> Fe2+ + 2e-'],
@@ -54,8 +54,8 @@ const TABS = {
         question: 'Warum sterben die Bakterien ab?',
         steps: [
           ['Oxidationsmittel', 'Chlor (HOCl) ist ein starkes Oxidationsmittel'],
-          ['Was passiert', 'Chlor OXIDIERT die Zellwaende der Bakterien'],
-          ['Wirkung', 'Die Bakterien werden zerstoert (desinfiziert)'],
+          ['Was passiert', 'Chlor OXIDIERT die Zellwände der Bakterien'],
+          ['Wirkung', 'Die Bakterien werden zerstört (desinfiziert)'],
           ['Messung', 'Die Redox-Spannung zeigt die Desinfektionskraft: Soll >750 mV']
         ]
       },
@@ -81,7 +81,7 @@ const TABS = {
       question: 'Was passiert bei einer Oxidation?',
       options: ['Ein Stoff nimmt Elektronen auf', 'Ein Stoff gibt Elektronen ab', 'Es werden keine Elektronen uebertragen'],
       correctIndex: 1,
-      explanation: 'Oxidation = Elektronen ABGEBEN. Eselsbruecke: OxidAtion — das A steht für Abgabe.'
+      explanation: 'Oxidation = Elektronen ABGEBEN. Eselsbrücke: OxidAtion — das A steht für Abgabe.'
     }
   },
 
@@ -90,7 +90,7 @@ const TABS = {
     chip: 'Oxidation',
     title: 'Wenn Stoffe Elektronen abgeben',
     intro:
-      'Oxidation begegnet dir überall: Ein Apfel wird braun, Eisen rostet, Silber laeuft an. Im Schwimmbad ist die Oxidation dein bester Freund — denn Chlor OXIDIERT Keime und macht das Wasser sicher. Die Oxidierbarkeit nach DIN 19643 zeigt dir, wie viel organische Verschmutzung im Wasser ist.',
+      'Oxidation begegnet dir überall: Ein Apfel wird braun, Eisen rostet, Silber läuft an. Im Schwimmbad ist die Oxidation dein bester Freund — denn Chlor OXIDIERT Keime und macht das Wasser sicher. Die Oxidierbarkeit nach DIN 19643 zeigt dir, wie viel organische Verschmutzung im Wasser ist.',
     motto: 'Chlor oxidiert Keime — das IST die Desinfektion.',
     rules: [
       'Oxidation = ein Stoff gibt Elektronen ab. Der Stoff wird dabei "oxidiert".',
@@ -102,7 +102,7 @@ const TABS = {
     steps: [
       {
         title: '1. Was ist ein Oxidationsmittel?',
-        text: 'Ein Oxidationsmittel ist ein Stoff, der ANDERE Stoffe oxidiert — also ihnen Elektronen wegnimmt. Chlor ist ein starkes Oxidationsmittel. Es zerstoert Keime, indem es ihre Zellwaende oxidiert.'
+        text: 'Ein Oxidationsmittel ist ein Stoff, der ANDERE Stoffe oxidiert — also ihnen Elektronen wegnimmt. Chlor ist ein starkes Oxidationsmittel. Es zerstört Keime, indem es ihre Zellwände oxidiert.'
       },
       {
         title: '2. Oxidation im Bad: Desinfektion',
@@ -137,7 +137,7 @@ const TABS = {
           ['Grenzwert', 'Max. 5 mg/L nach DIN 19643'],
           ['Ist-Wert', '7,5 mg/L — deutlich zu hoch!'],
           ['Bedeutung', 'Zu viel organische Verschmutzung im Wasser (Schweiss, Hautschuppen, Urin)'],
-          ['Maßnahme', 'Mehr Frischwasser zugeben, Filterleistung prüfen, ggf. Badegaeste zum Duschen anhalten']
+          ['Maßnahme', 'Mehr Frischwasser zugeben, Filterleistung prüfen, ggf. Badegäste zum Duschen anhalten']
         ]
       },
       {
@@ -154,7 +154,7 @@ const TABS = {
     ],
     pitfalls: [
       'Oxidierbarkeit ist NICHT dasselbe wie der Chlorwert — sie misst die organische Verschmutzung, nicht das Chlor.',
-      'Gebundenes Chlor riecht unangenehm — viele denken faelschlicherweise, es sei "zu viel Chlor". In Wahrheit ist es verbrauchtes Chlor.',
+      'Gebundenes Chlor riecht unangenehm — viele denken fälschlicherweise, es sei "zu viel Chlor". In Wahrheit ist es verbrauchtes Chlor.',
       'Die Oxidierbarkeit wird im LABOR gemessen, nicht vor Ort mit dem Photometer.',
       'Hohe Oxidierbarkeit bedeutet: Das Chlor wird schnell verbraucht — du brauchst MEHR Chlor, nicht weniger.'
     ],
@@ -171,7 +171,7 @@ const TABS = {
     chip: 'Reduktion',
     title: 'Wenn Stoffe Elektronen aufnehmen',
     intro:
-      'Die Reduktion ist das Gegenstueck zur Oxidation. Im Schwimmbad brauchst du sie zum Beispiel, wenn du ueberschuessiges Chlor wieder entfernen willst. Das Zaubermittel heisst Natriumthiosulfat — es REDUZIERT das Chlor und macht es unschaedlich. Das nennt man Entchlorung oder Dechlorierung.',
+      'Die Reduktion ist das Gegenstück zur Oxidation. Im Schwimmbad brauchst du sie zum Beispiel, wenn du ueberschuessiges Chlor wieder entfernen willst. Das Zaubermittel heißt Natriumthiosulfat — es REDUZIERT das Chlor und macht es unschaedlich. Das nennt man Entchlorung oder Dechlorierung.',
     motto: 'Reduktion = Elektronen aufnehmen = das Gegenteil von Oxidation.',
     rules: [
       'Reduktion = ein Stoff nimmt Elektronen AUF. Er wird dabei "reduziert".',
@@ -191,28 +191,28 @@ const TABS = {
       },
       {
         title: '3. Wie funktioniert Entchlorung?',
-        text: 'Natriumthiosulfat gibt Elektronen an das Chlor ab. Das Chlor wird dadurch reduziert und verliert seine Desinfektionswirkung. Es wird quasi "entschaerft". Man sagt auch: Das Chlor wird "neutralisiert".'
+        text: 'Natriumthiosulfat gibt Elektronen an das Chlor ab. Das Chlor wird dadurch reduziert und verliert seine Desinfektionswirkung. Es wird quasi "entschärft". Man sagt auch: Das Chlor wird "neutralisiert".'
       },
       {
         title: '4. Oxidation vs. Reduktion',
-        text: 'Chlor = Oxidationsmittel (nimmt Elektronen, toetet Keime). Thiosulfat = Reduktionsmittel (gibt Elektronen, entschaerft Chlor). Die beiden sind wie Gegenspieler in einem Team — jeder hat seine Aufgabe.'
+        text: 'Chlor = Oxidationsmittel (nimmt Elektronen, tötet Keime). Thiosulfat = Reduktionsmittel (gibt Elektronen, entschärft Chlor). Die beiden sind wie Gegenspieler in einem Team — jeder hat seine Aufgabe.'
       }
     ],
     examples: [
       {
         title: 'Entchlorung nach Stosschlorung',
-        given: 'Nach einer Stosschlorung ist der Chlorwert bei 1,8 mg/L. Das Bad soll aber oeffnen.',
+        given: 'Nach einer Stosschlorung ist der Chlorwert bei 1,8 mg/L. Das Bad soll aber öffnen.',
         question: 'Was musst du tun?',
         steps: [
-          ['Problem', 'Chlorwert 1,8 mg/L — Badegaeste dürfen erst ab <0,6 mg/L ins Wasser'],
+          ['Problem', 'Chlorwert 1,8 mg/L — Badegäste dürfen erst ab <0,6 mg/L ins Wasser'],
           ['Lösung', 'Natriumthiosulfat dosieren — es REDUZIERT das ueberschuessige Chlor'],
           ['Wirkung', 'Thiosulfat gibt Elektronen an Chlor ab, Chlor wird unschaedlich'],
-          ['Danach', 'Chlorwert messen — erst oeffnen wenn Wert im Sollbereich']
+          ['Danach', 'Chlorwert messen — erst öffnen wenn Wert im Sollbereich']
         ]
       },
       {
         title: 'Abwasser in den Kanal leiten',
-        given: 'Das Becken wird entleert. Das Wasser enthaelt noch 0,5 mg/L Chlor.',
+        given: 'Das Becken wird entleert. Das Wasser enthält noch 0,5 mg/L Chlor.',
         question: 'Darf das Wasser so in den Kanal?',
         steps: [
           ['Vorschrift', 'Chlorhaltiges Wasser darf NICHT direkt in die Kanalisation'],
@@ -236,8 +236,8 @@ const TABS = {
     pitfalls: [
       'Ein Reduktionsmittel wird SELBST oxidiert — es gibt ja seine Elektronen ab. Das verwirrt am Anfang.',
       'Natriumthiosulfat NICHT ueberdosieren — sonst ist gar kein Chlor mehr im Wasser und Keime können sich vermehren.',
-      'Nach der Entchlorung IMMER den Chlorwert nachmessen, bevor Badegaeste ins Wasser dürfen.',
-      'Reduktion heisst NICHT, dass etwas weniger wird — es heisst, dass Elektronen AUFGENOMMEN werden.'
+      'Nach der Entchlorung IMMER den Chlorwert nachmessen, bevor Badegäste ins Wasser dürfen.',
+      'Reduktion heißt NICHT, dass etwas weniger wird — es heißt, dass Elektronen AUFGENOMMEN werden.'
     ],
     quiz: {
       question: 'Welches Mittel wird im Schwimmbad zur Entchlorung (Reduktion von Chlor) eingesetzt?',
@@ -259,7 +259,7 @@ const TABS = {
       'Zu niedrige Redox-Spannung (<750 mV) = zu wenig Desinfektionskraft — sofort handeln!',
       'Der pH-Wert beeinflusst die Redox-Spannung: Bei hohem pH sinkt die Redox-Spannung.',
       'Die Redox-Spannung muss regelmäßig abgelesen und im Betriebsbuch dokumentiert werden.',
-      'Bei der Breakpoint-Chlorung wird so viel Chlor dosiert, dass alles gebundene Chlor zerstoert wird.'
+      'Bei der Breakpoint-Chlorung wird so viel Chlor dosiert, dass alles gebundene Chlor zerstört wird.'
     ],
     steps: [
       {
@@ -268,7 +268,7 @@ const TABS = {
       },
       {
         title: '2. Bei zu niedriger Redox-Spannung',
-        text: 'Liegt die Spannung unter 750 mV, ist die Desinfektionskraft zu gering. Maßnahmen: Chlor-Dosierung erhöhen, pH-Wert prüfen (optimal 6,5–7,2), bei starkem Abfall evtl. Stosschlorung durchfuehren.'
+        text: 'Liegt die Spannung unter 750 mV, ist die Desinfektionskraft zu gering. Maßnahmen: Chlor-Dosierung erhöhen, pH-Wert prüfen (optimal 6,5–7,2), bei starkem Abfall evtl. Stosschlorung durchführen.'
       },
       {
         title: '3. Bei zu hoher Redox-Spannung',
@@ -276,13 +276,13 @@ const TABS = {
       },
       {
         title: '4. Breakpoint-Chlorung verstehen',
-        text: 'Bei der Breakpoint-Chlorung wird so viel Chlor auf einmal dosiert, dass ALLES gebundene Chlor (Chloramine) zerstoert wird. Der "Breakpoint" ist der Punkt, ab dem nur noch freies Chlor steigt. Danach steigt auch die Redox-Spannung wieder deutlich.'
+        text: 'Bei der Breakpoint-Chlorung wird so viel Chlor auf einmal dosiert, dass ALLES gebundene Chlor (Chloramine) zerstört wird. Der "Breakpoint" ist der Punkt, ab dem nur noch freies Chlor steigt. Danach steigt auch die Redox-Spannung wieder deutlich.'
       }
     ],
     examples: [
       {
         title: 'Tagesroutine: Morgendliche Kontrolle',
-        given: 'Du beginnst deine Fruehschicht. Die Messanlage zeigt: Redox 720 mV, Chlor frei 0,2 mg/L, pH 7,4.',
+        given: 'Du beginnst deine Frühschicht. Die Messanlage zeigt: Redox 720 mV, Chlor frei 0,2 mg/L, pH 7,4.',
         question: 'Was musst du tun?',
         steps: [
           ['Redox-Spannung', '720 mV — unter dem Sollwert von 750 mV'],
@@ -293,7 +293,7 @@ const TABS = {
       },
       {
         title: 'Redox-Spannung und pH-Wert Zusammenhang',
-        given: 'Die Redox-Spannung faellt ploetzlich von 780 mV auf 710 mV, obwohl der Chlorwert gleich geblieben ist.',
+        given: 'Die Redox-Spannung fällt plötzlich von 780 mV auf 710 mV, obwohl der Chlorwert gleich geblieben ist.',
         question: 'Woran kann das liegen?',
         steps: [
           ['Chlorwert prüfen', 'Chlor frei: 0,4 mg/L — normal'],
@@ -309,8 +309,8 @@ const TABS = {
         steps: [
           ['Sofortmaßnahme', 'Becken räumen und sperren!'],
           ['Stosschlorung', 'Chlorwert auf 1,0–2,0 mg/L anheben (Breakpoint-Chlorung)'],
-          ['Abwarten', 'Mindestens 30 Minuten Umwaelzung, dann Chlor und Redox messen'],
-          ['Freigabe', 'Erst wieder oeffnen wenn: Chlor frei 0,3–0,6 mg/L, Redox >750 mV, kein Befund mehr']
+          ['Abwarten', 'Mindestens 30 Minuten Umwälzung, dann Chlor und Redox messen'],
+          ['Freigabe', 'Erst wieder öffnen wenn: Chlor frei 0,3–0,6 mg/L, Redox >750 mV, kein Befund mehr']
         ]
       }
     ],
@@ -318,11 +318,11 @@ const TABS = {
       'Die Redox-Spannung NICHT als einzigen Wert betrachten — immer zusammen mit Chlor frei und pH-Wert beurteilen.',
       'Bei Fakalverunreinigung reicht normales Nachchloren NICHT — es muss eine Stosschlorung mit Beckensperrung sein!',
       'Die Redox-Sonde muss regelmäßig kalibriert werden — eine falsche Messung ist gefährlich.',
-      'Nach der Stosschlorung Becken NICHT oeffnen, bis der Chlorwert unter 0,6 mg/L UND Redox >750 mV ist.'
+      'Nach der Stosschlorung Becken NICHT öffnen, bis der Chlorwert unter 0,6 mg/L UND Redox >750 mV ist.'
     ],
     quiz: {
       question: 'Die Messanlage zeigt: Redox 710 mV, Chlor frei 0,2 mg/L, pH 7,5. Was ist die wichtigste Maßnahme?',
-      options: ['Becken sofort sperren und Stosschlorung durchfuehren', 'Chlor-Dosierung erhöhen und pH-Wert senken', 'Natriumthiosulfat dosieren um den Chlorwert zu senken'],
+      options: ['Becken sofort sperren und Stosschlorung durchführen', 'Chlor-Dosierung erhöhen und pH-Wert senken', 'Natriumthiosulfat dosieren um den Chlorwert zu senken'],
       correctIndex: 1,
       explanation: 'Redox 710 mV ist unter dem Sollwert (750 mV), Chlor ist zu niedrig und der pH-Wert zu hoch. Lösung: Mehr Chlor dosieren und pH-Wert senken (Salzsäure). Beides zusammen hebt die Redox-Spannung.'
     }
@@ -346,7 +346,7 @@ const OXIDATION_VS_REDUKTION = [
   ['Elektronen', 'Abgabe', 'Aufnahme'],
   ['Beispiel Bad', 'Chlor desinfiziert', 'Thiosulfat entchlort'],
   ['Stoff wird...', '...oxidiert', '...reduziert'],
-  ['Mittel heisst...', 'Oxidationsmittel', 'Reduktionsmittel']
+  ['Mittel heißt...', 'Oxidationsmittel', 'Reduktionsmittel']
 ];
 
 /* --- Shared components ------------------------------------------------------- */
@@ -674,7 +674,7 @@ export default function RedoxDeepDiveView() {
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
                   <div className={`text-sm font-semibold ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
-                    Einsatzfaelle
+                    Einsatzfälle
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
                     Nach Stosschlorung, bei Dosierpanne, vor Abwasserableitung

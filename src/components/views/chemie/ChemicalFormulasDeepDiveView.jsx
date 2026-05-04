@@ -77,7 +77,7 @@ const FORMULA_LIBRARY = {
     use: CHEMICAL_USE_BY_FORMULA.get('NaClO') || 'Flüssigchlor zur Desinfektion.'
   },
   salzsäure: {
-    id: 'salzsaeure',
+    id: 'Salzsäure',
     formula: 'HCl',
     name: 'Salzsäure',
     atoms: [
@@ -88,7 +88,7 @@ const FORMULA_LIBRARY = {
     use: CHEMICAL_USE_BY_FORMULA.get('HCl') || 'Starker pH-Senker.'
   },
   schwefelsäure: {
-    id: 'schwefelsaeure',
+    id: 'Schwefelsäure',
     formula: 'H2SO4',
     name: 'Schwefelsäure',
     atoms: [
@@ -96,7 +96,7 @@ const FORMULA_LIBRARY = {
       ['S', 'Schwefel', 1],
       ['O', 'Sauerstoff', 4]
     ],
-    note: 'Mehrere Zahlen können in einer Formel vorkommen. Jede Zahl gehoert nur zu dem Symbol direkt davor.',
+    note: 'Mehrere Zahlen können in einer Formel vorkommen. Jede Zahl gehört nur zu dem Symbol direkt davor.',
     use: CHEMICAL_USE_BY_FORMULA.get('H2SO4') || 'Starker pH-Senker in technischen Anwendungen.'
   },
   calciumhypochlorit: {
@@ -134,7 +134,7 @@ const TOPICS = {
     motto: 'Grossbuchstabe = neues Element. Zahl = Anzahl. Klammer = Gruppe.',
     formulaRules: [
       'Ein Grossbuchstabe startet immer ein neues Elementsymbol.',
-      'Ein Kleinbuchstabe gehoert zum selben Symbol, zum Beispiel Na oder Cl.',
+      'Ein Kleinbuchstabe gehört zum selben Symbol, zum Beispiel Na oder Cl.',
       'Steht keine Zahl hinter einem Symbol, ist die Anzahl automatisch 1.'
     ],
     steps: [
@@ -144,10 +144,10 @@ const TOPICS = {
       },
       {
         title: '2. Achte auf Kleinbuchstaben',
-        text: 'Na ist etwas anderes als N und a. Kleinbuchstaben gehoeren immer zum Symbol davor.'
+        text: 'Na ist etwas anderes als N und a. Kleinbuchstaben gehören immer zum Symbol davor.'
       },
       {
-        title: '3. Pruefe, ob eine Zahl folgt',
+        title: '3. Prüfe, ob eine Zahl folgt',
         text: 'Wenn direkt hinter einem Symbol eine Zahl steht, sagt sie dir die Anzahl der Atome.'
       },
       {
@@ -184,7 +184,7 @@ const TOPICS = {
     steps: [
       {
         title: '1. Lies die Formel von links nach rechts',
-        text: 'So erkennst du, an welchem Symbol eine Zahl haengt.'
+        text: 'So erkennst du, an welchem Symbol eine Zahl hängt.'
       },
       {
         title: '2. Merke dir: keine Zahl = 1',
@@ -192,7 +192,7 @@ const TOPICS = {
       },
       {
         title: '3. Schreibe die Anzahl je Element auf',
-        text: 'So verlierst du bei mehreren Symbolen nicht den Ueberblick.'
+        text: 'So verlierst du bei mehreren Symbolen nicht den Überblick.'
       },
       {
         title: '4. Kontrolliere die Einheit am Ende',
@@ -266,10 +266,10 @@ const TOPICS = {
     }
   },
   bäderbetrieb: {
-    id: 'baederbetrieb',
+    id: 'Bäderbetrieb',
     chip: 'Praxis',
     title: 'Formeln aus dem Bäderbetrieb lesen',
-    intro: 'Im Schwimmbad begegnen dir Formeln nicht nur im Unterricht, sondern auf Gebinden, Sicherheitsdatenblaettern und Dosieranlagen. Wer die Formel lesen kann, versteht den Stoff schneller.',
+    intro: 'Im Schwimmbad begegnen dir Formeln nicht nur im Unterricht, sondern auf Gebinden, Sicherheitsdatenblättern und Dosieranlagen. Wer die Formel lesen kann, versteht den Stoff schneller.',
     motto: 'Erst Formel lesen, dann Stoff und Einsatz einordnen.',
     formulaRules: [
       'Die Formel zeigt, welche Elemente im Stoff enthalten sind.',

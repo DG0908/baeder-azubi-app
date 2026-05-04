@@ -11,13 +11,13 @@ const DETAIL_MODES = [
     id: 'schnittbild',
     label: 'Schnittbild',
     accent: '#4a9eff',
-    focus: ['gehaeuse', 'anode', 'kathode', 'membran', 'gleichrichter', 'solezulauf', 'chlorablauf', 'h2_entlueftung', 'steuerung', 'soletank'],
+    focus: ['gehäuse', 'anode', 'kathode', 'membran', 'gleichrichter', 'solezulauf', 'chlorablauf', 'h2_entlüftung', 'steuerung', 'soletank'],
     detail: [
       'Das Schnittbild zeigt die komplette Elektrolysezelle mit Anoden- und Kathodenkammer.',
       'Membran, Elektroden und Anschlüsse sind in ihrer Einbaulage sichtbar.',
-      'Soletank, Gleichrichter und Steuereinheit bilden die aeussere Peripherie.',
+      'Soletank, Gleichrichter und Steuereinheit bilden die äußere Peripherie.',
     ],
-    caution: 'Elektrolysezelle nie oeffnen, solange Spannung anliegt oder Gasdruck im System ist.',
+    caution: 'Elektrolysezelle nie öffnen, solange Spannung anliegt oder Gasdruck im System ist.',
   },
   {
     id: 'prozess',
@@ -25,7 +25,7 @@ const DETAIL_MODES = [
     accent: '#34c090',
     focus: ['anode', 'kathode', 'membran', 'solezulauf', 'chlorablauf'],
     detail: [
-      'Sole (NaCl-Lösung) stroemt in die Zelle und wird elektrochemisch zerlegt.',
+      'Sole (NaCl-Lösung) strömt in die Zelle und wird elektrochemisch zerlegt.',
       'An der Anode entsteht Chlor (Cl₂), an der Kathode Wasserstoff (H₂) und Natronlauge (NaOH).',
       'Die Membran lässt nur Na⁺-Ionen durch und trennt die Reaktionsprodukte sauber.',
     ],
@@ -35,11 +35,11 @@ const DETAIL_MODES = [
     id: 'membran',
     label: 'Membrantechnik',
     accent: '#a070ff',
-    focus: ['membran', 'anode', 'kathode', 'gehaeuse'],
+    focus: ['membran', 'anode', 'kathode', 'gehäuse'],
     detail: [
       'Die Ionentauschermembran (z.B. Nafion) ist das Herzstück der Membranzellenelektrolyse.',
-      'Sie lässt Na⁺-Ionen passieren, blockiert aber Cl⁻ und OH⁻ zuverlaessig.',
-      'Beschaedigung oder Verschmutzung der Membran fuehrt zu unreinem Produkt und Leistungsverlust.',
+      'Sie lässt Na⁺-Ionen passieren, blockiert aber Cl⁻ und OH⁻ zuverlässig.',
+      'Beschädigung oder Verschmutzung der Membran führt zu unreinem Produkt und Leistungsverlust.',
     ],
     caution: 'Membran nie mechanisch berühren oder mit sauren/basischen Lösungen unkontrolliert spülen.',
   },
@@ -47,40 +47,40 @@ const DETAIL_MODES = [
     id: 'wartung',
     label: 'Wartung',
     accent: '#ffaa40',
-    focus: ['anode', 'kathode', 'soletank', 'steuerung', 'gehaeuse'],
+    focus: ['anode', 'kathode', 'soletank', 'steuerung', 'gehäuse'],
     detail: [
-      'Regelmäßige Entkalkung der Elektroden sichert gleichmaessige Chlorproduktion.',
-      'Salzstand im Soletank täglich kontrollieren und rechtzeitig auffuellen.',
+      'Regelmäßige Entkalkung der Elektroden sichert gleichmäßige Chlorproduktion.',
+      'Salzstand im Soletank täglich kontrollieren und rechtzeitig auffüllen.',
       'Zellenspannung und Stromaufnahme am Display der Steuereinheit ablesen.',
     ],
-    caution: 'Wartung nur bei abgeschalteter Stromversorgung und entlüftetem System durchfuehren.',
+    caution: 'Wartung nur bei abgeschalteter Stromversorgung und entlüftetem System durchführen.',
   },
   {
     id: 'sicherheit',
     label: 'Sicherheit',
     accent: '#ff7a7a',
-    focus: ['h2_entlueftung', 'gleichrichter', 'steuerung', 'gehaeuse'],
+    focus: ['h2_entlüftung', 'gleichrichter', 'steuerung', 'gehäuse'],
     detail: [
-      'Wasserstoff (H₂) ist hochentzuendlich und muss zuverlaessig abgeführt werden.',
-      'Die H₂-Entlueftung darf niemals blockiert oder verschlossen sein.',
-      'Gasdetektion und Ueberdrucksicherung schuetzen vor Knallgasbildung.',
+      'Wasserstoff (H₂) ist hochentzündlich und muss zuverlässig abgeführt werden.',
+      'Die H₂-Entlüftung darf niemals blockiert oder verschlossen sein.',
+      'Gasdetektion und Ueberdrucksicherung schützen vor Knallgasbildung.',
     ],
-    caution: 'Bei H₂-Alarm sofort Anlage abschalten, Raum lueften, keine Zuendquellen!',
+    caution: 'Bei H₂-Alarm sofort Anlage abschalten, Raum lüften, keine ZüZündquellen!',
   },
 ];
 
 const SPOTS = [
   {
-    id: 'gehaeuse',
+    id: 'gehäuse',
     number: '1',
     short: 'Geh',
-    label: 'Zellengehaeuse',
+    label: 'Zellengehäuse',
     color: '#4a9eff',
     position: [0.0, 0.0, 1.4],
     items: [
-      'Das Gehaeuse umschliesst Anoden- und Kathodenkammer druckdicht.',
+      'Das Gehäuse umschliesst Anoden- und Kathodenkammer druckdicht.',
       'Material muss chemikalienbeständig und elektrisch isolierend sein.',
-      'Risse oder Undichtigkeiten fuehren zu Chloraustritt und Kurzschluss.',
+      'Risse oder Undichtigkeiten führen zu Chloraustritt und Kurzschluss.',
     ],
   },
   {
@@ -106,7 +106,7 @@ const SPOTS = [
     items: [
       'Stahl- oder Nickelelektrode für die Reduktionsreaktion.',
       'Hier entsteht Wasserstoff und Natronlauge: 2 H₂O + 2 e⁻ → H₂ + 2 OH⁻.',
-      'Korrosion an der Kathode erhoet den Widerstand und senkt die Effizienz.',
+      'Korrosion an der Kathode erhöht den Widerstand und senkt die Effizienz.',
     ],
   },
   {
@@ -119,7 +119,7 @@ const SPOTS = [
     items: [
       'Ionentauschermembran (z.B. Nafion) trennt Anoden- und Kathodenraum.',
       'Lässt selektiv Na⁺-Ionen passieren, blockiert Cl⁻ und OH⁻.',
-      'Lebensdauer haengt stark von Wasserqualität und Betriebsbedingungen ab.',
+      'Lebensdauer hängt stark von Wasserqualität und Betriebsbedingungen ab.',
     ],
   },
   {
@@ -132,7 +132,7 @@ const SPOTS = [
     items: [
       'Wandelt Wechselstrom (AC) in Gleichstrom (DC) für die Elektrolyse.',
       'Typische Zellenspannung: 3-4 V bei hoher Stromstärke.',
-      'Ueberhitzung oder Spannungsspitzen können die Elektroden beschaedigen.',
+      'Ueberhitzung oder Spannungsspitzen können die Elektroden beschädigen.',
     ],
   },
   {
@@ -143,9 +143,9 @@ const SPOTS = [
     color: '#34c090',
     position: [-1.6, -0.8, 0.0],
     items: [
-      'Fuehrt gesaettigte Salzlösung (ca. 26% NaCl) in die Anodenkammer.',
+      'Führt gesättigte Salzlösung (ca. 26% NaCl) in die Anodenkammer.',
       'Durchflussrate bestimmt die Chlorproduktionsmenge.',
-      'Verstopfung oder Lufteintrag stoert den Elektrolyseprozess sofort.',
+      'Verstopfung oder Lufteintrag stört den Elektrolyseprozess sofort.',
     ],
   },
   {
@@ -158,20 +158,20 @@ const SPOTS = [
     items: [
       'Natriumhypochlorit-Lösung (NaClO) wird ins Schwimmbecken dosiert.',
       'Konzentration und pH-Wert müssen ständig ueberwacht werden.',
-      'Undichte Verbindungen fuehren zu unkontrolliertem Chloraustritt.',
+      'Undichte Verbindungen führen zu unkontrolliertem Chloraustritt.',
     ],
   },
   {
-    id: 'h2_entlueftung',
+    id: 'h2_entlüftung',
     number: '8',
     short: 'H₂',
-    label: 'H₂-Entlueftung',
+    label: 'H₂-Entlüftung',
     color: '#ffaa40',
     position: [0.8, 1.8, 0.6],
     items: [
-      'Wasserstoff ist leichter als Luft und hochentzuendlich (Knallgas!).',
-      'Die Entlueftung muss ständig frei und nach aussen geführt sein.',
-      'Blockierte H₂-Abfuhr kann zu gefährlichem Ueberdruck fuehren.',
+      'Wasserstoff ist leichter als Luft und hochentzündlich (Knallgas!).',
+      'Die Entlüftung muss ständig frei und nach außen geführt sein.',
+      'Blockierte H₂-Abfuhr kann zu gefährlichem Ueberdruck führen.',
     ],
   },
   {
@@ -184,7 +184,7 @@ const SPOTS = [
     items: [
       'Regelt Stromstärke, ueberwacht Zellenspannung und Sole-Durchfluss.',
       'Display zeigt Betriebsparameter und Fehlermeldungen an.',
-      'Automatische Abschaltung bei Grenzwertueberschreitung.',
+      'Automatische Abschaltung bei Grenzwertüberschreitung.',
     ],
   },
   {
@@ -195,22 +195,22 @@ const SPOTS = [
     color: '#47d0a4',
     position: [-2.2, -1.0, 0.0],
     items: [
-      'Loest Salztabletten oder Steinsalz in Wasser zu gesaettigter Sole.',
-      'Fuellstand täglich prüfen, Nachfuellung rechtzeitig sicherstellen.',
-      'Verunreinigtes Salz fuehrt zu Ablagerungen und verkuerzt die Zellenlebensdauer.',
+      'Löst Salztabletten oder Steinsalz in Wasser zu gesättigter Sole.',
+      'Füllstand täglich prüfen, Nachfüllung rechtzeitig sicherstellen.',
+      'Verunreinigtes Salz führt zu Ablagerungen und verkürzt die Zellenlebensdauer.',
     ],
   },
 ];
 
 const CALLOUTS = {
-  gehaeuse: [0.0, 2.4, 2.2],
+  gehäuse: [0.0, 2.4, 2.2],
   anode: [-2.4, 1.6, 0.8],
   kathode: [2.4, 1.6, 0.8],
   membran: [0.0, -2.0, 1.2],
   gleichrichter: [0.0, 3.4, -1.2],
   solezulauf: [-3.2, -1.2, 0.0],
   chlorablauf: [3.2, -1.2, 0.0],
-  h2_entlueftung: [1.8, 3.2, 0.8],
+  h2_entlüftung: [1.8, 3.2, 0.8],
   steuerung: [3.6, 2.0, 0.0],
   soletank: [-3.6, -1.6, 0.0],
 };
@@ -225,9 +225,9 @@ const KENNDATEN = [
 ];
 
 const BETRIEBSCHECKS = [
-  { label: 'Salzgehalt Sole', value: 'ausreichend, Nachfuellung prüfen', ok: true },
+  { label: 'Salzgehalt Sole', value: 'ausreichend, Nachfüllung prüfen', ok: true },
   { label: 'Elektrodenoberfläche', value: 'kalkfrei, keine Ablagerungen', ok: true },
-  { label: 'H₂-Entlueftung', value: 'frei, kein Rueckstau', ok: true },
+  { label: 'H₂-Entlüftung', value: 'frei, kein Rückstau', ok: true },
   { label: 'Chlorproduktion', value: 'stabil, Sollwert erreicht', ok: true },
   { label: 'Zellenspannung', value: 'im Normalbereich 3-4 V', ok: true },
 ];
@@ -474,7 +474,7 @@ function CellPartFocusModel({ spot, xrayMode }) {
   };
 
   switch (spot.id) {
-    case 'gehaeuse':
+    case 'gehäuse':
       return (
         <group rotation={[0.2, -0.35, 0]}>
           <mesh>
@@ -597,7 +597,7 @@ function CellPartFocusModel({ spot, xrayMode }) {
           </mesh>
         </group>
       );
-    case 'h2_entlueftung':
+    case 'h2_entlüftung':
       return (
         <group rotation={[0, 0, 0]}>
           <mesh>
@@ -790,10 +790,10 @@ function ElektrolyseAssembly({ running, xrayMode, activeSpot, setActiveSpot, mod
         <meshStandardMaterial color="#081523" emissive="#07111d" emissiveIntensity={0.12} transparent opacity={0.95} />
       </mesh>
 
-      {/* ===== MAIN CELL BODY (Gehaeuse) ===== */}
+      {/* ===== MAIN CELL BODY (Gehäuse) ===== */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[2.4, 1.8, 1.2]} />
-        <meshStandardMaterial {...shellMaterial('#1a3a5a', ['gehaeuse'], 0.55)} />
+        <meshStandardMaterial {...shellMaterial('#1a3a5a', ['gehäuse'], 0.55)} />
       </mesh>
 
       {/* Anode chamber (left, reddish tint) */}
@@ -907,11 +907,11 @@ function ElektrolyseAssembly({ running, xrayMode, activeSpot, setActiveSpot, mod
       {/* ===== H2-ENTLUEFTUNG (vertical pipe, top right) ===== */}
       <mesh position={[0.7, 1.4, 0.5]}>
         <cylinderGeometry args={[0.1, 0.1, 1.6, 14]} />
-        <meshStandardMaterial {...shellMaterial('#6a5020', ['h2_entlueftung'], 0.88)} />
+        <meshStandardMaterial {...shellMaterial('#6a5020', ['h2_entlüftung'], 0.88)} />
       </mesh>
       <mesh position={[0.7, 2.1, 0.5]}>
         <cylinderGeometry args={[0.18, 0.1, 0.25, 14]} />
-        <meshStandardMaterial {...shellMaterial('#ffaa40', ['h2_entlueftung'], 0.9)} />
+        <meshStandardMaterial {...shellMaterial('#ffaa40', ['h2_entlüftung'], 0.9)} />
       </mesh>
 
       {/* ===== STEUEREINHEIT (control box, right side) ===== */}
@@ -1041,7 +1041,7 @@ export default function ElektrolyseAnlageDeepDiveView() {
               border: '1px solid #1a3a5a',
             }}
           >
-            {xrayMode ? 'Roentgen an' : 'Roentgen aus'}
+            {xrayMode ? 'Röntgen an' : 'Röntgen aus'}
           </button>
           <button
             type="button"

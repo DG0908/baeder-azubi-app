@@ -9,14 +9,14 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Warum desinfizieren wir Beckenwasser?',
     intro:
-      'Jeden Tag bringen hunderte Badegaeste Schmutz ins Wasser: Schweiss, Hautschuppen, Sonnencreme, Urin und vieles mehr. In diesem warmen, feuchten Wasser fuehlen sich Keime pudelwohl. Desinfektion bedeutet: Wir toeten diese Keime ab oder machen sie unschaedlich. Die DIN 19643 schreibt vor, dass Beckenwasser hygienisch einwandfrei sein muss. Dafür brauchen wir Desinfektionsmittel — und das wichtigste ist Chlor.',
-    motto: 'Desinfektion = Keime abtoeten, damit niemand krank wird.',
+      'Jeden Tag bringen hunderte Badegäste Schmutz ins Wasser: Schweiss, Hautschuppen, Sonnencreme, Urin und vieles mehr. In diesem warmen, feuchten Wasser fühlen sich Keime pudelwohl. Desinfektion bedeutet: Wir töten diese Keime ab oder machen sie unschaedlich. Die DIN 19643 schreibt vor, dass Beckenwasser hygienisch einwandfrei sein muss. Dafür brauchen wir Desinfektionsmittel — und das wichtigste ist Chlor.',
+    motto: 'Desinfektion = Keime abtöten, damit niemand krank wird.',
     rules: [
-      'Badegaeste bringen Verschmutzungen ins Wasser: Schweiss, Hautschuppen, Sonnencreme, Urin, Bakterien und Viren.',
+      'Badegäste bringen Verschmutzungen ins Wasser: Schweiss, Hautschuppen, Sonnencreme, Urin, Bakterien und Viren.',
       'DIN 19643 ist DIE Norm für Schwimmbadwasser — sie sagt, wie das Wasser aufbereitet werden muss.',
-      'Desinfektion heisst: Keime abtoeten oder unschaedlich machen. Das Wasser muss NICHT steril sein (= komplett keimfrei), aber hygienisch einwandfrei.',
-      'Freies Chlor = das Chlor, das noch Keime toeten kann. Gebundenes Chlor = Chlor, das schon mit Schmutz reagiert hat (Chloramine). Gesamtchlor = freies + gebundenes Chlor.',
-      'Der Unterschied: Sterilisation toetet ALLE Keime (braucht man im OP). Desinfektion reicht fuers Schwimmbad — es müssen nur die krankmachenden Keime weg.'
+      'Desinfektion heißt: Keime abtöten oder unschaedlich machen. Das Wasser muss NICHT steril sein (= komplett keimfrei), aber hygienisch einwandfrei.',
+      'Freies Chlor = das Chlor, das noch Keime töten kann. Gebundenes Chlor = Chlor, das schon mit Schmutz reagiert hat (Chloramine). Gesamtchlor = freies + gebundenes Chlor.',
+      'Der Unterschied: Sterilisation tötet ALLE Keime (braucht man im OP). Desinfektion reicht fürs Schwimmbad — es müssen nur die krankmachenden Keime weg.'
     ],
     steps: [
       {
@@ -25,11 +25,11 @@ const TABS = {
       },
       {
         title: '2. Keime kennen',
-        text: 'Bakterien (z.B. E. coli, Pseudomonas), Viren (z.B. Norovirus) und Pilze können im Wasser sein. Manche machen Durchfall, andere Hautausschlag oder Ohrenentzuendungen.'
+        text: 'Bakterien (z.B. E. coli, Pseudomonas), Viren (z.B. Norovirus) und Pilze können im Wasser sein. Manche machen Durchfall, andere Hautausschlag oder Ohrenentzündungen.'
       },
       {
         title: '3. Chlorarten unterscheiden',
-        text: 'Freies Chlor (HOCl + OCl⁻) ist der Held — es toetet Keime. Gebundenes Chlor (Chloramine) stinkt und reizt die Augen. Gesamtchlor = freies + gebundenes Chlor.'
+        text: 'Freies Chlor (HOCl + OCl⁻) ist der Held — es tötet Keime. Gebundenes Chlor (Chloramine) stinkt und reizt die Augen. Gesamtchlor = freies + gebundenes Chlor.'
       },
       {
         title: '4. Messwerte kennen',
@@ -38,15 +38,15 @@ const TABS = {
     ],
     examples: [
       {
-        title: 'Was Badegaeste ins Wasser bringen',
+        title: 'Was Badegäste ins Wasser bringen',
         given: 'Ein Hallenbad hat 500 Besucher am Tag. Jeder bringt im Schnitt verschiedene Verschmutzungen mit.',
         question: 'Welche Stoffe müssen durch Desinfektion unschaedlich gemacht werden?',
         steps: [
-          ['Schweiss', 'Ca. 0,5–1 Liter pro Person pro Stunde — enthaelt Harnstoff und Ammoniak'],
-          ['Hautschuppen', 'Ca. 50.000 Stueck pro Person — Nahrung für Bakterien'],
-          ['Sonnencreme', 'Reagiert mit Chlor und verbraucht es — weniger Chlor für Keime uebrig'],
+          ['Schweiss', 'Ca. 0,5–1 Liter pro Person pro Stunde — enthält Harnstoff und Ammoniak'],
+          ['Hautschuppen', 'Ca. 50.000 Stück pro Person — Nahrung für Bakterien'],
+          ['Sonnencreme', 'Reagiert mit Chlor und verbraucht es — weniger Chlor für Keime übrig'],
           ['Urin', 'Leider Realität — Harnstoff reagiert mit Chlor zu stinkenden Chloraminen'],
-          ['Keime', 'Bakterien, Viren, Pilze — müssen abgetoetet werden']
+          ['Keime', 'Bakterien, Viren, Pilze — müssen abgetötet werden']
         ]
       },
       {
@@ -65,10 +65,10 @@ const TABS = {
         given: 'Im OP muss alles steril sein. Im Schwimmbad reicht Desinfektion.',
         question: 'Was ist der Unterschied?',
         steps: [
-          ['Sterilisation', 'Toetet ALLE Keime ab — auch harmlose. Braucht extreme Hitze oder Chemie.'],
-          ['Desinfektion', 'Reduziert Keime auf ein ungefährliches Mass. Reicht fuers Schwimmbad.'],
+          ['Sterilisation', 'Tötet ALLE Keime ab — auch harmlose. Braucht extreme Hitze oder Chemie.'],
+          ['Desinfektion', 'Reduziert Keime auf ein ungefährliches Maß. Reicht fürs Schwimmbad.'],
           ['Im Bad', 'Chlor desinfiziert — es müssen nicht alle Keime weg, nur die gefährlichen.'],
-          ['Merke', 'Schwimmbadwasser ist desinfiziert, aber nicht steril. Das ist voellig OK!']
+          ['Merke', 'Schwimmbadwasser ist desinfiziert, aber nicht steril. Das ist völlig OK!']
         ]
       }
     ],
@@ -82,11 +82,11 @@ const TABS = {
       question: 'Was ist der Unterschied zwischen freiem und gebundenem Chlor?',
       options: [
         'Freies Chlor stinkt, gebundenes Chlor ist geruchlos',
-        'Freies Chlor kann noch Keime toeten, gebundenes Chlor hat schon mit Schmutz reagiert',
+        'Freies Chlor kann noch Keime töten, gebundenes Chlor hat schon mit Schmutz reagiert',
         'Freies Chlor ist flüssig, gebundenes Chlor ist fest'
       ],
       correctIndex: 1,
-      explanation: 'Freies Chlor (HOCl) ist das wirksame Desinfektionsmittel. Gebundenes Chlor (Chloramine) hat bereits mit Verschmutzungen reagiert und kann keine Keime mehr toeten — es stinkt nur noch.'
+      explanation: 'Freies Chlor (HOCl) ist das wirksame Desinfektionsmittel. Gebundenes Chlor (Chloramine) hat bereits mit Verschmutzungen reagiert und kann keine Keime mehr töten — es stinkt nur noch.'
     }
   },
 
@@ -95,13 +95,13 @@ const TABS = {
     chip: 'Chlorung',
     title: 'Chlor — der Standard im Schwimmbad',
     intro:
-      'Chlor ist seit über 100 Jahren DAS Desinfektionsmittel im Schwimmbad. Wenn Chlor ins Wasser kommt, bildet sich Hypochlorsäure (HOCl) — und die toetet Keime. Aber Chlor wirkt nur richtig, wenn der pH-Wert stimmt! Bei pH 7,0 sind 75 % des Chlors als wirksame HOCl vorhanden. Bei pH 8,0 nur noch 25 %. Deshalb ist der pH-Wert so wichtig.',
+      'Chlor ist seit über 100 Jahren DAS Desinfektionsmittel im Schwimmbad. Wenn Chlor ins Wasser kommt, bildet sich Hypochlorsäure (HOCl) — und die tötet Keime. Aber Chlor wirkt nur richtig, wenn der pH-Wert stimmt! Bei pH 7,0 sind 75 % des Chlors als wirksame HOCl vorhanden. Bei pH 8,0 nur noch 25 %. Deshalb ist der pH-Wert so wichtig.',
     motto: 'Chlor wirkt nur bei richtigem pH-Wert!',
     rules: [
-      'Hypochlorsäure (HOCl) ist das eigentliche Desinfektionsmittel — sie entsteht, wenn Chlor sich in Wasser loest.',
-      'Drei Chlorarten im Bad: Natriumhypochlorit (NaClO, flüssig), Calciumhypochlorit (Ca(ClO)₂, Granulat), Chlorgas (Cl₂, nur grosse Bäder).',
+      'Hypochlorsäure (HOCl) ist das eigentliche Desinfektionsmittel — sie entsteht, wenn Chlor sich in Wasser löst.',
+      'Drei Chlorarten im Bad: Natriumhypochlorit (NaClO, flüssig), Calciumhypochlorit (Ca(ClO)₂, Granulat), Chlorgas (Cl₂, nur große Bäder).',
       'Sollwerte nach DIN 19643: Freies Chlor 0,3–0,6 mg/L (Hallenbad), bis 1,2 mg/L (Freibad). Gebundenes Chlor IMMER unter 0,2 mg/L.',
-      'pH-Abhaengigkeit: Bei pH 7,0 → 75 % HOCl (wirksam). Bei pH 7,5 → 50 %. Bei pH 8,0 → nur 25 %! Deshalb IMMER erst pH korrigieren.',
+      'pH-Abhängigkeit: Bei pH 7,0 → 75 % HOCl (wirksam). Bei pH 7,5 → 50 %. Bei pH 8,0 → nur 25 %! Deshalb IMMER erst pH korrigieren.',
       'Stosschlorung (Breakpoint-Chlorung): Man gibt extra viel Chlor rein, um gebundenes Chlor (Chloramine) abzubauen. Nötig wenn gebundenes Chlor über 0,2 mg/L liegt.'
     ],
     steps: [
@@ -111,7 +111,7 @@ const TABS = {
       },
       {
         title: '2. pH-Wert prüfen',
-        text: 'BEVOR du Chlor dosierst: Ist der pH-Wert zwischen 6,5 und 7,6? Falls nicht, ERST den pH korrigieren! Chlor bei falschem pH ist Verschwendung.'
+        text: 'BEVOR du Chlor dosierst: Ist der pH-Wert zwischen 6,5 und 7,8? Falls nicht, ERST den pH korrigieren! Chlor bei falschem pH ist Verschwendung.'
       },
       {
         title: '3. Chlorwert messen',
@@ -119,7 +119,7 @@ const TABS = {
       },
       {
         title: '4. Stosschlorung bei Bedarf',
-        text: 'Gebundenes Chlor über 0,2 mg/L? Dann Stosschlorung: Freies Chlor auf ca. 2 mg/L erhöhen. Die Chloramine werden dabei zerstoert. Danach abwarten, bis freies Chlor wieder im Sollbereich ist.'
+        text: 'Gebundenes Chlor über 0,2 mg/L? Dann Stosschlorung: Freies Chlor auf ca. 2 mg/L erhöhen. Die Chloramine werden dabei zerstört. Danach abwarten, bis freies Chlor wieder im Sollbereich ist.'
       }
     ],
     examples: [
@@ -130,14 +130,14 @@ const TABS = {
         steps: [
           ['Natriumhypochlorit (NaClO)', 'Flüssig, 12–15 % Aktivchlor — Standard in den meisten Bädern, einfach zu dosieren'],
           ['Calciumhypochlorit Ca(ClO)₂', 'Granulat/Tabletten, 65–70 % Aktivchlor — für kleinere Becken, länger haltbar'],
-          ['Chlorgas (Cl₂)', '100 % Aktivchlor — nur in grossen Bädern, sehr gefährlich, braucht spezielle Anlage'],
+          ['Chlorgas (Cl₂)', '100 % Aktivchlor — nur in großen Bädern, sehr gefährlich, braucht spezielle Anlage'],
           ['Wichtig', 'Alle drei bilden im Wasser HOCl — das ist immer der gleiche Wirkstoff!']
         ]
       },
       {
         title: 'Warum der pH-Wert so wichtig ist',
-        given: 'Du hast 0,5 mg/L freies Chlor im Becken. Aber wie viel davon WIRKT tatsaechlich?',
-        question: 'Wie veraendert der pH-Wert die Wirksamkeit?',
+        given: 'Du hast 0,5 mg/L freies Chlor im Becken. Aber wie viel davon WIRKT tatsächlich?',
+        question: 'Wie verändert der pH-Wert die Wirksamkeit?',
         steps: [
           ['Bei pH 7,0', '75 % als HOCl = 0,38 mg/L wirksames Chlor — OPTIMAL'],
           ['Bei pH 7,5', '50 % als HOCl = 0,25 mg/L wirksames Chlor — noch OK'],
@@ -153,21 +153,21 @@ const TABS = {
           ['Gebundenes Chlor', '0,9 − 0,4 = 0,5 mg/L — deutlich über 0,2 mg/L!'],
           ['Bedeutung', 'Viel Chlor hat mit Schmutz reagiert → Chloramine → es stinkt'],
           ['Maßnahme', 'Stosschlorung: Freies Chlor auf ca. 2 mg/L erhöhen (Breakpoint)'],
-          ['Ergebnis', 'Chloramine werden zerstoert, gebundenes Chlor sinkt unter 0,2 mg/L']
+          ['Ergebnis', 'Chloramine werden zerstört, gebundenes Chlor sinkt unter 0,2 mg/L']
         ]
       }
     ],
     pitfalls: [
       'Chlor NIEMALS bei falschem pH-Wert dosieren — erst pH korrigieren, sonst verpufft das Chlor wirkungslos!',
-      'Natriumhypochlorit (NaClO) verliert bei Hitze und Licht an Wirkung — kuehl und dunkel lagern!',
-      'Stosschlorung heisst NICHT einfach \"mehr Chlor rein\". Man muss den Breakpoint ueberschreiten, sonst wird es schlimmer statt besser.',
+      'Natriumhypochlorit (NaClO) verliert bei Hitze und Licht an Wirkung — kühl und dunkel lagern!',
+      'Stosschlorung heißt NICHT einfach \"mehr Chlor rein\". Man muss den Breakpoint ueberschreiten, sonst wird es schlimmer statt besser.',
       'Chlorgas ist extrem giftig — nur geschultes Personal darf damit arbeiten. Bei Leckage sofort räumen!'
     ],
     quiz: {
       question: 'Wie viel Prozent des Chlors wirkt als HOCl bei pH 8,0?',
       options: [
         'Ca. 75 % — fast alles wirkt',
-        'Ca. 50 % — die Haelfte wirkt',
+        'Ca. 50 % — die Hälfte wirkt',
         'Ca. 25 % — nur ein Viertel wirkt'
       ],
       correctIndex: 2,
@@ -180,11 +180,11 @@ const TABS = {
     chip: 'Alternativen',
     title: 'UV, Ozon und weitere Verfahren',
     intro:
-      'Chlor allein reicht manchmal nicht. UV-Licht und Ozon sind zusätzliche Verfahren, die die Wasserqualität verbessern. UV-Strahlung zerstoert die DNA von Keimen und baut sogar gebundenes Chlor ab. Ozon ist ein starkes Oxidationsmittel, das viele Schadstoffe zersetzt. Aber beide haben einen Nachteil: Sie wirken nur im Moment — danach ist die Wirkung weg. Deshalb braucht man IMMER noch Chlor als \"Backup\" im Becken.',
+      'Chlor allein reicht manchmal nicht. UV-Licht und Ozon sind zusätzliche Verfahren, die die Wasserqualität verbessern. UV-Strahlung zerstört die DNA von Keimen und baut sogar gebundenes Chlor ab. Ozon ist ein starkes Oxidationsmittel, das viele Schadstoffe zersetzt. Aber beide haben einen Nachteil: Sie wirken nur im Moment — danach ist die Wirkung weg. Deshalb braucht man IMMER noch Chlor als \"Backup\" im Becken.',
     motto: 'UV und Ozon unterstützen — aber Chlor bleibt Pflicht.',
     rules: [
-      'UV-Desinfektion nutzt UV-C Licht mit 254 nm Wellenlänge. Das zerstoert die DNA der Keime — sie können sich nicht mehr vermehren.',
-      'Grosser Vorteil von UV: Es baut gebundenes Chlor (Chloramine) ab! Weniger Gestank, weniger Augenreizung.',
+      'UV-Desinfektion nutzt UV-C Licht mit 254 nm Wellenlänge. Das zerstört die DNA der Keime — sie können sich nicht mehr vermehren.',
+      'Großer Vorteil von UV: Es baut gebundenes Chlor (Chloramine) ab! Weniger Gestank, weniger Augenreizung.',
       'Nachteil UV: Keine Depotwirkung. Im Becken selbst wirkt kein UV — deshalb braucht man TROTZDEM freies Chlor.',
       'Ozon (O₃) ist ein sehr starkes Oxidationsmittel. Es baut Trihalomethane (THM) und andere Schadstoffe ab.',
       'Nachteil Ozon: Es ist giftig! Ozon muss KOMPLETT entfernt werden, BEVOR das Wasser ins Becken zurückfliesst. Ausserdem ist es teuer.'
@@ -192,11 +192,11 @@ const TABS = {
     steps: [
       {
         title: '1. UV-Anlage verstehen',
-        text: 'Das Wasser fliesst an UV-Lampen vorbei. Die UV-C Strahlung (254 nm) durchdringt die Zellwand der Keime und zerstoert ihre DNA. Die Keime können sich nicht mehr teilen = tot.'
+        text: 'Das Wasser fliesst an UV-Lampen vorbei. Die UV-C Strahlung (254 nm) durchdringt die Zellwand der Keime und zerstört ihre DNA. Die Keime können sich nicht mehr teilen = tot.'
       },
       {
         title: '2. Ozon-Anlage verstehen',
-        text: 'Ozon wird vor Ort aus Sauerstoff erzeugt (O₂ → O₃). Es wird ins Wasser eingeleitet, reagiert mit Schadstoffen und zerfaellt dann wieder zu Sauerstoff. Aktivkohle entfernt Restozon.'
+        text: 'Ozon wird vor Ort aus Sauerstoff erzeugt (O₂ → O₃). Es wird ins Wasser eingeleitet, reagiert mit Schadstoffen und zerfällt dann wieder zu Sauerstoff. Aktivkohle entfernt Restozon.'
       },
       {
         title: '3. Elektrolyse kennen',
@@ -204,41 +204,41 @@ const TABS = {
       },
       {
         title: '4. Kombination ist King',
-        text: 'Das beste Ergebnis: Chlor + UV als Kombination. Chlor desinfiziert im Becken (Depotwirkung), UV baut gebundenes Chlor ab und toetet resistente Keime. Win-win!'
+        text: 'Das beste Ergebnis: Chlor + UV als Kombination. Chlor desinfiziert im Becken (Depotwirkung), UV baut gebundenes Chlor ab und tötet resistente Keime. Win-win!'
       }
     ],
     examples: [
       {
         title: 'UV-Desinfektion im Detail',
-        given: 'Ein Hallenbad ruested auf UV-Desinfektion um. Das Wasser fliesst nach der Filterung durch eine UV-Kammer.',
+        given: 'Ein Hallenbad rüstet auf UV-Desinfektion um. Das Wasser fliesst nach der Filterung durch eine UV-Kammer.',
         question: 'Was bewirkt die UV-Anlage?',
         steps: [
-          ['UV-C bei 254 nm', 'Diese Wellenlänge zerstoert die DNA von Bakterien und Viren am effektivsten'],
+          ['UV-C bei 254 nm', 'Diese Wellenlänge zerstört die DNA von Bakterien und Viren am effektivsten'],
           ['Chloramine abbauen', 'UV zersetzt gebundenes Chlor — weniger Hallenbadgeruch!'],
-          ['Legionellen', 'UV toetet auch Legionellen, die im Wasser sein können'],
+          ['Legionellen', 'UV tötet auch Legionellen, die im Wasser sein können'],
           ['ABER', 'Sobald das Wasser die UV-Kammer verlässt, wirkt kein UV mehr — Chlor muss weiter desinfizieren']
         ]
       },
       {
         title: 'Ozon als Oxidationsmittel',
-        given: 'In grossen Bädern wird oft Ozon eingesetzt, um die Wasserqualität zu verbessern.',
+        given: 'In großen Bädern wird oft Ozon eingesetzt, um die Wasserqualität zu verbessern.',
         question: 'Wie funktioniert Ozonierung und was sind die Risiken?',
         steps: [
           ['Erzeugung', 'Ozon (O₃) wird aus Sauerstoff erzeugt — braucht viel Energie'],
-          ['Wirkung', 'Ozon oxidiert organische Stoffe, baut THM ab, toetet Keime'],
+          ['Wirkung', 'Ozon oxidiert organische Stoffe, baut THM ab, tötet Keime'],
           ['Gefahr', 'Ozon ist giftig! Grenzwert in der Luft: 0,1 mg/m³. Muss vor dem Becken entfernt werden!'],
           ['Entfernung', 'Aktivkohlefilter entfernt Restozon. Erst dann darf das Wasser ins Becken']
         ]
       },
       {
         title: 'Kombination Chlor + UV: Praxisbeispiel',
-        given: 'Ein Bad hatte Probleme: Gebundenes Chlor immer über 0,3 mg/L, Gaeste beschweren sich über Geruch.',
-        question: 'Was bringt die Nachruestung mit UV?',
+        given: 'Ein Bad hatte Probleme: Gebundenes Chlor immer über 0,3 mg/L, Gäste beschweren sich über Geruch.',
+        question: 'Was bringt die Nachrüstung mit UV?',
         steps: [
-          ['Vorher', 'Gebundenes Chlor: 0,35 mg/L, starker Chlorgeruch, Augenbrennen bei Gaesten'],
-          ['Nachruestung', 'UV-Anlage im Wasserkreislauf eingebaut'],
+          ['Vorher', 'Gebundenes Chlor: 0,35 mg/L, starker Chlorgeruch, Augenbrennen bei Gästen'],
+          ['Nachrüstung', 'UV-Anlage im Wasserkreislauf eingebaut'],
           ['Nachher', 'Gebundenes Chlor: 0,08 mg/L — deutlich unter dem Grenzwert!'],
-          ['Ergebnis', 'Kein Geruch mehr, keine Augenbeschwerden, zufriedene Gaeste']
+          ['Ergebnis', 'Kein Geruch mehr, keine Augenbeschwerden, zufriedene Gäste']
         ]
       }
     ],
@@ -256,7 +256,7 @@ const TABS = {
         'Weil UV nur gegen Viren wirkt, nicht gegen Bakterien'
       ],
       correctIndex: 1,
-      explanation: 'UV-Licht wirkt nur im Moment des Kontakts. Im Becken selbst gibt es kein UV — dort muss freies Chlor die Desinfektion uebernehmen (Depotwirkung).'
+      explanation: 'UV-Licht wirkt nur im Moment des Kontakts. Im Becken selbst gibt es kein UV — dort muss freies Chlor die Desinfektion übernehmen (Depotwirkung).'
     }
   },
 
@@ -270,9 +270,9 @@ const TABS = {
     rules: [
       'Täglich messen: DPD1-Tablette = freies Chlor, DPD3-Tablette = Gesamtchlor. Gebundenes Chlor = Gesamtchlor minus freies Chlor.',
       'Zu wenig freies Chlor? Dosierung erhöhen UND pH-Wert prüfen — bei falschem pH wirkt Chlor nicht!',
-      'Zu viel gebundenes Chlor (über 0,2 mg/L)? Stosschlorung durchfuehren ODER UV-Anlage kontrollieren.',
+      'Zu viel gebundenes Chlor (über 0,2 mg/L)? Stosschlorung durchführen ODER UV-Anlage kontrollieren.',
       'Chlorgeruch ≠ zu viel Chlor! Der typische \"Hallenbadgeruch\" kommt von Chloraminen (= gebundenes Chlor). Das bedeutet: Es ist zu WENIG freies Chlor da!',
-      'Trihalomethane (THM) müssen unter 20 Mikrogramm/L bleiben. Sie entstehen, wenn Chlor mit organischen Stoffen reagiert. THM sind krebsverdaechtig!'
+      'Trihalomethane (THM) müssen unter 20 Mikrogramm/L bleiben. Sie entstehen, wenn Chlor mit organischen Stoffen reagiert. THM sind krebsverdächtig!'
     ],
     steps: [
       {
@@ -281,7 +281,7 @@ const TABS = {
       },
       {
         title: '2. Werte bewerten',
-        text: 'Freies Chlor 0,3–0,6 mg/L? Gebundenes Chlor unter 0,2 mg/L? pH zwischen 6,5 und 7,6? Alles OK → normaler Betrieb. Abweichung → Maßnahme ergreifen.'
+        text: 'Freies Chlor 0,3–0,6 mg/L? Gebundenes Chlor unter 0,2 mg/L? pH zwischen 6,5 und 7,8? Alles OK → normaler Betrieb. Abweichung → Maßnahme ergreifen.'
       },
       {
         title: '3. Bei Problemen handeln',
@@ -289,13 +289,13 @@ const TABS = {
       },
       {
         title: '4. Dokumentation',
-        text: 'Betriebstagebuch fuehren: Datum, Uhrzeit, alle Messwerte, durchgeführte Maßnahmen. Das ist gesetzliche Pflicht und wird bei Kontrollen geprüft!'
+        text: 'Betriebstagebuch führen: Datum, Uhrzeit, alle Messwerte, durchgeführte Maßnahmen. Das ist gesetzliche Pflicht und wird bei Kontrollen geprüft!'
       }
     ],
     examples: [
       {
-        title: 'Praxis-Szenario: Gaeste beschweren sich über Geruch',
-        given: 'Mittwochnachmittag, viel Betrieb. Gaeste klagen über \"zu viel Chlor\" — Augen brennen, es stinkt.',
+        title: 'Praxis-Szenario: Gäste beschweren sich über Geruch',
+        given: 'Mittwochnachmittag, viel Betrieb. Gäste klagen über \"zu viel Chlor\" — Augen brennen, es stinkt.',
         question: 'Was ist wirklich los und was tust du?',
         steps: [
           ['Messung', 'Freies Chlor: 0,2 mg/L (zu wenig!), Gesamtchlor: 0,7 mg/L'],
@@ -310,14 +310,14 @@ const TABS = {
         question: 'Was sind THM und was kannst du tun?',
         steps: [
           ['Was sind THM?', 'Trihalomethane entstehen, wenn Chlor mit organischen Stoffen (Schweiss, Urin) reagiert'],
-          ['Warum schlimm?', 'THM sind krebsverdaechtig. Der Grenzwert von 20 Mikrogramm/L darf nicht ueberschritten werden'],
-          ['Maßnahmen', 'Mehr Frischwasser zufuehren, Aktivkohle einsetzen, UV oder Ozon nachreusten'],
-          ['Vorbeugung', 'Gaeste zum Duschen vor dem Schwimmen auffordern — das reduziert organische Belastung!']
+          ['Warum schlimm?', 'THM sind krebsverdächtig. Der Grenzwert von 20 Mikrogramm/L darf nicht ueberschritten werden'],
+          ['Maßnahmen', 'Mehr Frischwasser zuführen, Aktivkohle einsetzen, UV oder Ozon nachreusten'],
+          ['Vorbeugung', 'Gäste zum Duschen vor dem Schwimmen auffordern — das reduziert organische Belastung!']
         ]
       },
       {
         title: 'Was ins Betriebstagebuch muss',
-        given: 'Du fuehrst das Betriebstagebuch für das Hallenbad. Was wird dokumentiert?',
+        given: 'Du führst das Betriebstagebuch für das Hallenbad. Was wird dokumentiert?',
         question: 'Welche Eintraege sind Pflicht?',
         steps: [
           ['Messwerte', 'Freies Chlor, Gesamtchlor, pH-Wert, Temperatur — mindestens 2x täglich'],
@@ -329,16 +329,16 @@ const TABS = {
     ],
     pitfalls: [
       '\"Es riecht nach Chlor, also ist genug drin\" — FALSCH! Der Geruch kommt von Chloraminen = zu wenig freies Chlor. Sofort messen!',
-      'Wasserprobe NIEMALS am Einlauf nehmen — dort ist das Wasser frisch dosiert und nicht repraesentativ für das ganze Becken.',
+      'Wasserprobe NIEMALS am Einlauf nehmen — dort ist das Wasser frisch dosiert und nicht repräsentativ für das ganze Becken.',
       'Betriebstagebuch vergessen = Ordnungswidrigkeit! Bei Kontrollen durch das Gesundheitsamt wird es IMMER geprüft.',
       'THM-Werte ignorieren ist gefährlich. Wenn der Grenzwert dauerhaft ueberschritten wird, kann das Gesundheitsamt das Bad schliessen!'
     ],
     quiz: {
-      question: 'Gaeste beschweren sich über starken \"Chlorgeruch\". Was bedeutet das meistens?',
+      question: 'Gäste beschweren sich über starken \"Chlorgeruch\". Was bedeutet das meistens?',
       options: [
         'Es ist zu viel freies Chlor im Wasser — Dosierung runterdrehen',
         'Es ist zu wenig freies Chlor — der Geruch kommt von gebundenem Chlor (Chloraminen)',
-        'Der Geruch ist normal und gehoert zum Schwimmbad dazu'
+        'Der Geruch ist normal und gehört zum Schwimmbad dazu'
       ],
       correctIndex: 1,
       explanation: 'Der typische \"Chlorgeruch\" kommt nicht von freiem Chlor, sondern von Chloraminen (gebundenes Chlor). Das bedeutet: Es ist zu WENIG wirksames Chlor vorhanden! Maßnahme: Stosschlorung und pH prüfen.'
@@ -355,7 +355,7 @@ const SOLLWERTE_TABLE = [
   ['Freies Chlor (Hallenbad)', '0,3–0,6 mg/L', 'DIN 19643'],
   ['Freies Chlor (Freibad)', '0,3–1,2 mg/L', 'DIN 19643'],
   ['Gebundenes Chlor', '<0,2 mg/L', 'DIN 19643'],
-  ['pH-Wert', '6,5–7,6', 'DIN 19643'],
+  ['pH-Wert', '6,5–7,8', 'DIN 19643'],
   ['Trihalomethane (THM)', '<20 µg/L', 'TrinkwV/DIN'],
   ['Redox-Spannung', '>750 mV', 'DIN 19643']
 ];
@@ -364,7 +364,7 @@ const CHLOR_VERGLEICH_TABLE = [
   ['Eigenschaft', 'NaClO (flüssig)', 'Ca(ClO)₂ (Granulat)', 'Cl₂ (Gas)'],
   ['Aktivchlor', '12–15 %', '65–70 %', '100 %'],
   ['Handhabung', 'Einfach', 'Mittel', 'Schwierig'],
-  ['Lagerung', 'Kuehl, dunkel', 'Trocken', 'Druckflaschen'],
+  ['Lagerung', 'Kühl, dunkel', 'Trocken', 'Druckflaschen'],
   ['Kosten', 'Mittel', 'Höher', 'Niedrig'],
   ['Gefahr', 'Aetzend', 'Brandfördernd', 'Sehr giftig']
 ];
@@ -623,7 +623,7 @@ export default function BeckenwasserdesinfektionDeepDiveView() {
 
           {/* Quick reference for praxis tab */}
           {activeTab === 'praxis' && (
-            <InfoCard darkMode={darkMode} title="Schnell-Check: Probleme loesen">
+            <InfoCard darkMode={darkMode} title="Schnell-Check: Probleme lösen">
               <div className="space-y-3">
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-red-500/30 bg-red-500/10' : 'border-red-200 bg-red-50'}`}>
                   <div className={`text-sm font-semibold ${darkMode ? 'text-red-300' : 'text-red-700'}`}>
@@ -641,7 +641,7 @@ export default function BeckenwasserdesinfektionDeepDiveView() {
                     Gebundenes Chlor zu hoch (&gt;0,2 mg/L)
                   </div>
                   <p className={`text-sm mt-1 leading-6 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-                    Stosschlorung durchfuehren oder UV-Anlage prüfen
+                    Stosschlorung durchführen oder UV-Anlage prüfen
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
                     Breakpoint-Chlorung: freies Chlor auf ca. 2 mg/L erhöhen

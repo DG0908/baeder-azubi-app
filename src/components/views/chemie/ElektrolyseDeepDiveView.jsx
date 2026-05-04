@@ -9,7 +9,7 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was ist Elektrolyse?',
     intro:
-      'Stell dir vor, du könntest Chlor einfach selbst herstellen — direkt in deinem Schwimmbad, aus ganz normalem Salz und Strom. Genau das macht die Elektrolyse! Du brauchst keine gefährlichen Chemikalien mehr anliefern zu lassen. Strom fliesst durch Salzwasser, und an den Elektroden entsteht Chlor. Kein LKW mit Gefahrgut, kein Lager für aetzende Stoffe — einfach Salz, Wasser und Strom.',
+      'Stell dir vor, du könntest Chlor einfach selbst herstellen — direkt in deinem Schwimmbad, aus ganz normalem Salz und Strom. Genau das macht die Elektrolyse! Du brauchst keine gefährlichen Chemikalien mehr anliefern zu lassen. Strom fliesst durch Salzwasser, und an den Elektroden entsteht Chlor. Kein LKW mit Gefahrgut, kein Lager für ätzende Stoffe — einfach Salz, Wasser und Strom.',
     motto: 'Aus Salz und Strom wird Chlor — direkt vor Ort.',
     rules: [
       'Elektrolyse = mit elektrischem Strom wird eine chemische Reaktion erzwungen.',
@@ -21,7 +21,7 @@ const TABS = {
     steps: [
       {
         title: '1. Was ist Elektrolyse ueberhaupt?',
-        text: 'Elektrolyse bedeutet: Man zwingt eine chemische Reaktion mit Strom. Normalerweise wuerde Salz im Wasser einfach geloest bleiben. Aber wenn du Strom durchschickst, wird das Salz in seine Bestandteile zerlegt — und dabei entsteht unter anderem Chlor.'
+        text: 'Elektrolyse bedeutet: Man zwingt eine chemische Reaktion mit Strom. Normalerweise wuerde Salz im Wasser einfach gelöst bleiben. Aber wenn du Strom durchschickst, wird das Salz in seine Bestandteile zerlegt — und dabei entsteht unter anderem Chlor.'
       },
       {
         title: '2. Anode und Kathode',
@@ -29,7 +29,7 @@ const TABS = {
       },
       {
         title: '3. Warum ist das für Schwimmbäder super?',
-        text: 'Chlorgas ist extrem gefährlich beim Transport. Natriumhypochlorit (flüssiges Chlor) ist aetzend und muss gelagert werden. Mit Elektrolyse stellst du das Chlor direkt vor Ort her — kein Gefahrguttransport, kein grosses Chemikalienlager, mehr Sicherheit für alle.'
+        text: 'Chlorgas ist extrem gefährlich beim Transport. Natriumhypochlorit (flüssiges Chlor) ist ätzend und muss gelagert werden. Mit Elektrolyse stellst du das Chlor direkt vor Ort her — kein Gefahrguttransport, kein grosses Chemikalienlager, mehr Sicherheit für alle.'
       },
       {
         title: '4. Die chemische Reaktion',
@@ -43,7 +43,7 @@ const TABS = {
         question: 'Was sind die Unterschiede zwischen Kauf und Elektrolyse?',
         steps: [
           ['Kauf (NaClO)', 'Kanister werden per LKW geliefert — Gefahrguttransport'],
-          ['Lagerung', 'Grosse Kanister müssen in speziellen Räumen gelagert werden'],
+          ['Lagerung', 'Große Kanister müssen in speziellen Räumen gelagert werden'],
           ['Elektrolyse', 'Nur Salz wird geliefert — kein Gefahrgut, einfache Lagerung'],
           ['Ergebnis', 'Elektrolyse = sicherer, aber höherer Stromverbrauch']
         ]
@@ -62,9 +62,9 @@ const TABS = {
       {
         title: 'Nebenprodukt Natronlauge',
         given: 'Bei der Elektrolyse entsteht neben Chlor auch NaOH (Natronlauge).',
-        question: 'Warum ist das wichtig für den Baedbetrieb?',
+        question: 'Warum ist das wichtig für den Bäderbetrieb?',
         steps: [
-          ['Was ist NaOH?', 'Natronlauge — eine Base (Lauge), die den pH-Wert erhoeht'],
+          ['Was ist NaOH?', 'Natronlauge — eine Base (Lauge), die den pH-Wert erhöht'],
           ['Auswirkung', 'Der pH-Wert im Becken steigt langsam an'],
           ['Problem', 'Zu hoher pH = Chlor wirkt schlechter (weniger HOCl)'],
           ['Lösung', 'Mehr pH-Senker (Salzsäure oder CO2) dosieren']
@@ -73,7 +73,7 @@ const TABS = {
     ],
     pitfalls: [
       'Elektrolyse erzeugt NICHT nur Chlor — auch Natronlauge (NaOH) und Wasserstoff (H2) entstehen als Nebenprodukte!',
-      'Wasserstoff ist brennbar und explosiv — bei geschlossenen Anlagen muss die Entlueftung stimmen.',
+      'Wasserstoff ist brennbar und explosiv — bei geschlossenen Anlagen muss die Entlüftung stimmen.',
       'Der pH-Wert steigt durch die Natronlauge-Bildung — das musst du ständig ausgleichen.',
       'Elektrolyse braucht GLEICHSTROM (DC), nicht den normalen Wechselstrom aus der Steckdose.'
     ],
@@ -91,18 +91,18 @@ const TABS = {
     title: 'Wie funktioniert Chlorelektrolyse?',
     intro:
       'Es gibt verschiedene Arten, wie die Elektrolyse im Schwimmbad eingesetzt wird. Bei der Inline-Elektrolyse wird Salz direkt ins Beckenwasser gegeben. Bei der Side-Stream-Elektrolyse wird eine konzentrierte Salzlösung separat aufbereitet. Und die modernste Variante ist die Membranzellenelektrolyse. Jede hat ihre Vor- und Nachteile.',
-    motto: 'Salz loesen, Strom durchschicken, Chlor entsteht.',
+    motto: 'Salz lösen, Strom durchschicken, Chlor entsteht.',
     rules: [
       'Inline-Elektrolyse: Salz wird direkt ins Beckenwasser gegeben (Salzgehalt ca. 3-5 g/L).',
       'Side-Stream-Elektrolyse: Eine konzentrierte Sole (ca. 20-30 g/L) wird separat elektrolysiert.',
       'Membranzellenelektrolyse: Modernste Technik — erzeugt direkt Natriumhypochlorit (NaClO).',
       'Salzverbrauch: Ca. 3-4 kg Kochsalz (NaCl) pro kg erzeugtem Chlor.',
-      'Der Prozess laeuft automatisch — die Steuerung regelt die Chlorproduktion nach Bedarf.'
+      'Der Prozess läuft automatisch — die Steuerung regelt die Chlorproduktion nach Bedarf.'
     ],
     steps: [
       {
-        title: '1. Salz loesen',
-        text: 'Kochsalz (NaCl) wird in Wasser aufgeloest. Bei Inline-Systemen direkt im Becken (3-5 g/L), bei Side-Stream-Anlagen wird eine konzentrierte Sole (20-30 g/L) in einem separaten Behaelter angesetzt.'
+        title: '1. Salz lösen',
+        text: 'Kochsalz (NaCl) wird in Wasser aufgelöst. Bei Inline-Systemen direkt im Becken (3-5 g/L), bei Side-Stream-Anlagen wird eine konzentrierte Sole (20-30 g/L) in einem separaten Behälter angesetzt.'
       },
       {
         title: '2. Durch die Zelle leiten',
@@ -124,7 +124,7 @@ const TABS = {
         question: 'Wie viel Salz ist im Becken und wie funktioniert die Desinfektion?',
         steps: [
           ['Salzmenge', '500 m3 x 4 g/L = 2.000 kg = 2 Tonnen Salz im Becken'],
-          ['Funktionsweise', 'Beckenwasser fliesst durch die Elektrolysezelle im Umwaelzkreislauf'],
+          ['Funktionsweise', 'Beckenwasser fliesst durch die Elektrolysezelle im Umwälzkreislauf'],
           ['Chlorerzeugung', 'Die Zelle erzeugt Chlor direkt aus dem salzigen Beckenwasser'],
           ['Vorteil', 'Einfaches System, keine separate Sole nötig']
         ]
@@ -153,7 +153,7 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Inline-Systeme machen das Beckenwasser salzig — manche Badegaeste stoert das, besonders ab 4-5 g/L.',
+      'Inline-Systeme machen das Beckenwasser salzig — manche Badegäste stört das, besonders ab 4-5 g/L.',
       'Side-Stream braucht einen separaten Soletank und eine Dosierpumpe — mehr Technik, aber kein Salz im Becken.',
       'Der Salzverbrauch ist NICHT gleich dem Chlorverbrauch — man braucht ca. 3-4 mal mehr Salz als Chlor.',
       'Bei zu niedrigem Salzgehalt produziert die Zelle weniger Chlor — regelmäßig messen!'
@@ -171,10 +171,10 @@ const TABS = {
     chip: 'Anlage',
     title: 'Aufbau einer Elektrolyseanlage',
     intro:
-      'Eine Elektrolyseanlage besteht aus mehreren Komponenten, die zusammenarbeiten. Das Herzstueck ist die Elektrolysezelle mit ihren Titanelektroden. Dazu kommen Salztank, Dosierpumpe, Gleichrichter und die Steuerung. Hier lernst du jedes Teil kennen — und vor allem, wie du die Anlage wartest und am Laufen haeltst.',
+      'Eine Elektrolyseanlage besteht aus mehreren Komponenten, die zusammenarbeiten. Das Herzstück ist die Elektrolysezelle mit ihren Titanelektroden. Dazu kommen Salztank, Dosierpumpe, Gleichrichter und die Steuerung. Hier lernst du jedes Teil kennen — und vor allem, wie du die Anlage wartest und am Laufen hältst.',
     motto: 'Titanelektroden, Gleichstrom, Sole — das sind die drei Grundzutaten.',
     rules: [
-      'Die Elektrolysezelle ist das Herzstueck — hier findet die chemische Reaktion statt.',
+      'Die Elektrolysezelle ist das Herzstück — hier findet die chemische Reaktion statt.',
       'Titanelektroden mit Edelmetallbeschichtung (z.B. Rutheniumoxid) sind Standard.',
       'Der Gleichrichter wandelt Wechselstrom (AC) in Gleichstrom (DC) um.',
       'Wartung: Zelle regelmäßig entkalken (Säurespülung), Salzstand prüfen, Elektroden kontrollieren.',
@@ -182,8 +182,8 @@ const TABS = {
     ],
     steps: [
       {
-        title: '1. Salztank / Solebehaelter',
-        text: 'Hier wird das Kochsalz geloest und die Sole aufbereitet. Bei Side-Stream-Anlagen ist das ein separater Tank (100-500 Liter). Das Salz wird regelmäßig nachgefuellt. Ein Fuellstandssensor meldet, wenn Salz fehlt.'
+        title: '1. Salztank / Solebehälter',
+        text: 'Hier wird das Kochsalz gelöst und die Sole aufbereitet. Bei Side-Stream-Anlagen ist das ein separater Tank (100-500 Liter). Das Salz wird regelmäßig nachgefüllt. Ein Füllstandssensor meldet, wenn Salz fehlt.'
       },
       {
         title: '2. Elektrolysezelle',
@@ -201,21 +201,21 @@ const TABS = {
     examples: [
       {
         title: 'Wartung: Zelle entkalken',
-        given: 'Die Chlorproduktion ist in den letzten Wochen gesunken. Die Zelle laeuft seit 2.000 Stunden ohne Reinigung.',
+        given: 'Die Chlorproduktion ist in den letzten Wochen gesunken. Die Zelle läuft seit 2.000 Stunden ohne Reinigung.',
         question: 'Was muss gemacht werden?',
         steps: [
           ['Diagnose', 'Kalkablagerungen auf den Elektroden verringern die Leistung'],
-          ['Maßnahme', 'Säurespülung: Zelle mit verduennter Salzsäure (ca. 5-10%) spülen'],
-          ['Dauer', 'Ca. 15-30 Minuten einwirken lassen, dann gruendlich mit Wasser nachspülen'],
+          ['Maßnahme', 'Säurespülung: Zelle mit verdünnter Salzsäure (ca. 5-10%) spülen'],
+          ['Dauer', 'Ca. 15-30 Minuten einwirken lassen, dann gründlich mit Wasser nachspülen'],
           ['Intervall', 'Alle 500-2.000 Betriebsstunden, je nach Wasserhärte']
         ]
       },
       {
-        title: 'Vorteile vs. Nachteile abwaegen',
+        title: 'Vorteile vs. Nachteile abwägen',
         given: 'Der Betreiber ueberlegt, ob er auf Elektrolyse umstellen soll.',
         question: 'Was spricht dafür, was dagegen?',
         steps: [
-          ['Vorteil', 'Keine Gefahrstofflagerung, hohe Betriebssicherheit, gleichmaessige Dosierung'],
+          ['Vorteil', 'Keine Gefahrstofflagerung, hohe Betriebssicherheit, gleichmäßige Dosierung'],
           ['Vorteil', 'Kein Gefahrguttransport, weniger Vorschriften für Lagerräume'],
           ['Nachteil', 'Hohe Anschaffungskosten (15.000-50.000 Euro), Stromverbrauch'],
           ['Nachteil', 'Wartung der Zelle nötig, Salzkorrosion an Metallteilen möglich']
@@ -223,7 +223,7 @@ const TABS = {
       },
       {
         title: 'Elektrodenlebensdauer planen',
-        given: 'Die Elektrolysezelle hat 10.000 Betriebsstunden als Lebensdauer. Das Bad laeuft 14 Stunden am Tag.',
+        given: 'Die Elektrolysezelle hat 10.000 Betriebsstunden als Lebensdauer. Das Bad läuft 14 Stunden am Tag.',
         question: 'Wie lange halten die Elektroden?',
         steps: [
           ['Betrieb pro Jahr', '14 h/Tag x 365 Tage = 5.110 Stunden/Jahr'],
@@ -234,16 +234,16 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'Elektroden NIE mechanisch reinigen (keine Buerste, kein Schaber) — nur Säurespülung! Sonst wird die Beschichtung zerstoert.',
+      'Elektroden NIE mechanisch reinigen (keine Bürste, kein Schaber) — nur Säurespülung! Sonst wird die Beschichtung zerstört.',
       'Salzkorrosion ist ein echtes Problem — alle Metallteile in der Nähe der Anlage müssen korrosionsbeständig sein (Edelstahl, Kunststoff).',
       'Betriebsstundenzähler im Auge behalten — wenn die Zelle am Ende ist, sinkt die Chlorproduktion langsam ab.',
-      'Der Gleichrichter braucht trockene Umgebung — Feuchtigkeit und Spritzwasser können ihn zerstoeren.'
+      'Der Gleichrichter braucht trockene Umgebung — Feuchtigkeit und Spritzwasser können ihn zerstören.'
     ],
     quiz: {
       question: 'Wie werden verkalkte Elektrolysezellen gereinigt?',
-      options: ['Mit einer Drahtbuerste mechanisch schrubben', 'Mit verduennter Salzsäure spülen (Säurespülung)', 'Mit Hochdruckreiniger abspritzen'],
+      options: ['Mit einer Drahtbürste mechanisch schrubben', 'Mit verdünnter Salzsäure spülen (Säurespülung)', 'Mit Hochdruckreiniger abspritzen'],
       correctIndex: 1,
-      explanation: 'Elektrolysezellen werden mit verduennter Salzsäure (5-10%) gespült. NIEMALS mechanisch reinigen — das zerstoert die empfindliche Edelmetallbeschichtung der Titanelektroden!'
+      explanation: 'Elektrolysezellen werden mit verdünnter Salzsäure (5-10%) gespült. NIEMALS mechanisch reinigen — das zerstört die empfindliche Edelmetallbeschichtung der Titanelektroden!'
     }
   },
 
@@ -252,12 +252,12 @@ const TABS = {
     chip: 'Praxis',
     title: 'Elektrolyse im Bäderalltag',
     intro:
-      'Im täglichen Betrieb musst du die Elektrolyseanlage ueberwachen und pflegen. Dazu gehoert: Salzgehalt messen, Chlorproduktion kontrollieren und den pH-Wert im Auge behalten. Denn bei der Elektrolyse entsteht Natronlauge als Nebenprodukt — der pH-Wert steigt also ständig. Hier lernst du die wichtigsten Praxis-Tipps.',
+      'Im täglichen Betrieb musst du die Elektrolyseanlage ueberwachen und pflegen. Dazu gehört: Salzgehalt messen, Chlorproduktion kontrollieren und den pH-Wert im Auge behalten. Denn bei der Elektrolyse entsteht Natronlauge als Nebenprodukt — der pH-Wert steigt also ständig. Hier lernst du die wichtigsten Praxis-Tipps.',
     motto: 'Salz prüfen, pH korrigieren, Zelle pflegen — jeden Tag.',
     rules: [
       'Täglich den Salzgehalt im Becken oder Soletank prüfen — zu wenig Salz = zu wenig Chlor.',
       'Der pH-Wert steigt durch NaOH-Bildung bei der Elektrolyse — regelmäßig pH-Senker dosieren.',
-      'Salzgehalt im Becken je nach System: 0,5 g/L (kaum spuerbar) bis 5 g/L (deutlich salzig).',
+      'Salzgehalt im Becken je nach System: 0,5 g/L (kaum spürbar) bis 5 g/L (deutlich salzig).',
       'Betriebsstundenzähler regelmäßig ablesen — rechtzeitig Wartung planen.',
       'Bei Störungen: Zuerst Salzgehalt prüfen, dann Zelle auf Verkalkung checken, dann Gleichrichter.'
     ],
@@ -271,24 +271,24 @@ const TABS = {
         text: 'Bei Elektrolyse steigt der pH ständig (wegen NaOH). Du brauchst deutlich mehr pH-Senker als bei normaler Chlordosierung. Typisch: pH-Korrektur mit Salzsäure oder CO2-Dosierung. Ziel: pH 7,0-7,4.'
       },
       {
-        title: '3. Salzgehalt nachfuellen',
-        text: 'Salz geht durch die Elektrolyse verbraucht (ca. 3-4 kg NaCl pro kg Chlor). Ausserdem geht Salz durch Rückspülung und Frischwasserzufuhr verloren. Regelmäßig nachfuellen — NUR Poolsalz oder reines Siedesalz verwenden, kein Streusalz!'
+        title: '3. Salzgehalt nachfüllen',
+        text: 'Salz geht durch die Elektrolyse verbraucht (ca. 3-4 kg NaCl pro kg Chlor). Ausserdem geht Salz durch Rückspülung und Frischwasserzufuhr verloren. Regelmäßig nachfüllen — NUR Poolsalz oder reines Siedesalz verwenden, kein Streusalz!'
       },
       {
-        title: '4. Typische Probleme loesen',
+        title: '4. Typische Probleme lösen',
         text: 'Zelle verkalkt = weniger Chlor, Säurespülung nötig. Salzgehalt zu niedrig = Anlage geht in Störung. pH driftet hoch = mehr pH-Senker dosieren. Stromkosten zu hoch = Anlage nur bei Bedarf laufen lassen, nicht dauerhaft.'
       }
     ],
     examples: [
       {
         title: 'Morgenroutine mit Elektrolyseanlage',
-        given: 'Du beginnst die Fruehschicht. Anlage zeigt: Salzgehalt 2,8 g/L, Chlor 0,3 mg/L, pH 7,6.',
+        given: 'Du beginnst die Frühschicht. Anlage zeigt: Salzgehalt 2,8 g/L, Chlor 0,3 mg/L, pH 7,6.',
         question: 'Was musst du tun?',
         steps: [
-          ['Salzgehalt', '2,8 g/L — am unteren Rand (Soll: 3-5 g/L). Bald nachfuellen!'],
+          ['Salzgehalt', '2,8 g/L — am unteren Rand (Soll: 3-5 g/L). Bald nachfüllen!'],
           ['Chlor frei', '0,3 mg/L — gerade noch im Sollbereich (0,3-0,6 mg/L)'],
           ['pH-Wert', '7,6 — zu hoch! pH-Senker dosieren (Ziel: 7,0-7,4)'],
-          ['Maßnahme', 'Salz bestellen/nachfuellen, pH-Senker erhöhen, im Betriebsbuch dokumentieren']
+          ['Maßnahme', 'Salz bestellen/nachfüllen, pH-Senker erhöhen, im Betriebsbuch dokumentieren']
         ]
       },
       {
@@ -307,7 +307,7 @@ const TABS = {
         given: 'Ein Schwimmbad wird neu gebaut. Der Planer fragt, welches Desinfektionsverfahren empfohlen wird.',
         question: 'In welchen Fällen ist Elektrolyse die beste Wahl?',
         steps: [
-          ['Neubau', 'Bei Neubau am guenstigsten, weil die Anlage gleich eingeplant wird'],
+          ['Neubau', 'Bei Neubau am günstigsten, weil die Anlage gleich eingeplant wird'],
           ['Sicherheit', 'Wenn Chlorgas zu gefährlich ist (z.B. in der Nähe von Wohnungen)'],
           ['Kein Lager', 'Wenn kein geeigneter Chemikalien-Lagerraum vorhanden ist'],
           ['Sole vorhanden', 'Wenn Sole (z.B. aus einem Solebecken) sowieso vorhanden ist — doppelte Nutzung']
@@ -315,13 +315,13 @@ const TABS = {
       }
     ],
     pitfalls: [
-      'NIEMALS Streusalz oder Jodsalz verwenden — nur reines Siedesalz oder spezielles Poolsalz. Verunreinigungen zerstoeren die Elektroden.',
+      'NIEMALS Streusalz oder Jodsalz verwenden — nur reines Siedesalz oder spezielles Poolsalz. Verunreinigungen zerstören die Elektroden.',
       'Der pH-Wert steigt bei Elektrolyse STAERKER als bei normaler Chlorung — pH-Senker-Verbrauch ist deutlich höher.',
-      'Bei niedrigem Salzgehalt geht die Anlage in Störung und produziert KEIN Chlor mehr — dann ist das Becken ungeschuetzt!',
+      'Bei niedrigem Salzgehalt geht die Anlage in Störung und produziert KEIN Chlor mehr — dann ist das Becken ungeschützt!',
       'Elektrolyse ersetzt NICHT die regelmäßige Wasseraufbereitung — Filtration, Flockung und pH-Korrektur bleiben genauso wichtig.'
     ],
     quiz: {
-      question: 'Die Elektrolyseanlage zeigt Störung. Der Chlorwert sinkt. Was pruefst du ZUERST?',
+      question: 'Die Elektrolyseanlage zeigt Störung. Der Chlorwert sinkt. Was prüfst du ZUERST?',
       options: ['Den Gleichrichter austauschen', 'Den Salzgehalt im Becken/Soletank messen', 'Sofort auf manuelle Chlordosierung umstellen und Techniker rufen'],
       correctIndex: 1,
       explanation: 'Die häufigste Ursache für Störungen ist ein zu niedriger Salzgehalt. Deshalb immer ZUERST den Salzgehalt prüfen. Erst wenn der stimmt, weiter nach Verkalkung oder Gleichrichter-Problemen suchen.'
@@ -338,7 +338,7 @@ const VERFAHRENSVERGLEICH = [
   ['Salz im Becken', 'Ja (3-5 g/L)', 'Nein', 'Nein'],
   ['Sole nötig', 'Nein', 'Ja', 'Ja'],
   ['Chlorprodukt', 'Cl2 im Wasser', 'NaClO', 'NaClO'],
-  ['Komplexitaet', 'Einfach', 'Mittel', 'Hoch']
+  ['Komplexität', 'Einfach', 'Mittel', 'Hoch']
 ];
 
 const KOSTENUEBERSICHT = [
@@ -611,7 +611,7 @@ export default function ElektrolyseDeepDiveView() {
                     Der Pluspol — hier entsteht Chlor (Cl2)
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                    Eselsbruecke: Anode = A = Anfang der Chlorproduktion
+                    Eselsbrücke: Anode = A = Anfang der Chlorproduktion
                   </p>
                 </div>
                 <div className={`rounded-xl border p-3 ${darkMode ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-200 bg-amber-50'}`}>
@@ -622,7 +622,7 @@ export default function ElektrolyseDeepDiveView() {
                     Der Minuspol — hier entsteht Wasserstoff (H2)
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                    Wasserstoff ist brennbar — Entlueftung wichtig!
+                    Wasserstoff ist brennbar — Entlüftung wichtig!
                   </p>
                 </div>
               </div>
@@ -652,7 +652,7 @@ export default function ElektrolyseDeepDiveView() {
                     20-30 g/L im Soletank (konzentriert)
                   </p>
                   <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
-                    Kein Salz im Beckenwasser — Badegaeste merken nichts
+                    Kein Salz im Beckenwasser — Badegäste merken nichts
                   </p>
                 </div>
               </div>
