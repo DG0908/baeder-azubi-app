@@ -7,31 +7,31 @@ const TABS = {
     chip: 'Grundlagen',
     title: 'Was sind Gefahrstoffe?',
     intro:
-      'Im Schwimmbad arbeiten wir täglich mit Stoffen, die gefährlich sein können: Chlor, Säuren, Laugen, Flockungsmittel, Reinigungsmittel. Diese Stoffe heissen Gefahrstoffe. Sie können brennen, explodieren, giftig sein, aetzen oder die Umwelt schaedigen. Die Gefahrstoffverordnung (GefStoffV) und das GHS-System regeln, wie diese Stoffe gekennzeichnet, gelagert und gehandhabt werden müssen. Als FAB arbeitest du regelmäßig mit ihnen — du musst die Regeln kennen und einhalten.',
+      'Im Schwimmbad arbeiten wir täglich mit Stoffen, die gefährlich sein können: Chlor, Säuren, Laugen, Flockungsmittel, Reinigungsmittel. Diese Stoffe heißen Gefahrstoffe. Sie können brennen, explodieren, giftig sein, ätzen oder die Umwelt schädigen. Die Gefahrstoffverordnung (GefStoffV) und das GHS-System regeln, wie diese Stoffe gekennzeichnet, gelagert und gehandhabt werden müssen. Als FAB arbeitest du regelmäßig mit ihnen — du musst die Regeln kennen und einhalten.',
     motto: 'Gefahrstoffe sind keine Ausnahme im Bad — sie sind der Alltag. Kenne sie genau.',
     rules: [
-      'Gefahrstoffe müssen nach GHS (Global Harmonisiertes System) gekennzeichnet sein — mit Piktogrammen, H- und P-Saetzen.',
-      'Für jeden Gefahrstoff muss ein aktuelles Sicherheitsdatenblatt (SDB) vorliegen und zugaenglich sein.',
-      'Gefahrstoffe dürfen NUR in Originalbehae ltern oder ordnungsgemaess beschrifteten Behaeltern aufbewahrt werden.',
-      'Unvertraegliche Stoffe (z.B. Säure und Chlormittel) dürfen NICHT zusammen gelagert werden.',
-      'Alle Mitarbeiter die mit Gefahrstoffen arbeiten müssen unterwiesen sein — mindestens einmal jaehrlich.'
+      'Gefahrstoffe müssen nach GHS (Global Harmonisiertes System) gekennzeichnet sein — mit Piktogrammen, H- und P-Sätzen.',
+      'Für jeden Gefahrstoff muss ein aktuelles Sicherheitsdatenblatt (SDB) vorliegen und zugänglich sein.',
+      'Gefahrstoffe dürfen NUR in Originalbehältern oder ordnungsgemäß beschrifteten Behältern aufbewahrt werden.',
+      'Unverträgliche Stoffe (z.B. Säure und Chlormittel) dürfen NICHT zusammen gelagert werden.',
+      'Alle Mitarbeiter die mit Gefahrstoffen arbeiten müssen unterwiesen sein — mindestens einmal jährlich.'
     ],
     steps: [
       {
         title: '1. Gefahrstoffe erkennen',
-        text: 'Jeder Gefahrstoff hat ein GHS-Etikett mit: Produktname, Piktogramm(e), Signalwort (Achtung oder Gefahr), H-Saetzen (Gefahrenhinweise) und P-Saetzen (Sicherheitshinweise). Fehlt eins davon auf einem Behaelter: Nicht verwenden, sofort melden!'
+        text: 'Jeder Gefahrstoff hat ein GHS-Etikett mit: Produktname, Piktogramm(e), Signalwort (Achtung oder Gefahr), H-Sätzen (Gefahrenhinweise) und P-Sätzen (Sicherheitshinweise). Fehlt eins davon auf einem Behälter: Nicht verwenden, sofort melden!'
       },
       {
         title: '2. Sicherheitsdatenblatt nutzen',
-        text: 'Das SDB hat 16 Abschnitte. Für den Alltag sind am wichtigsten: Abschnitt 2 (Gefahren des Stoffs), Abschnitt 4 (Erste-Hilfe-Maßnahmen), Abschnitt 5 (Brandbekaempfung), Abschnitt 6 (Maßnahmen bei Unfall), Abschnitt 8 (Schutzausruestung). Das SDB muss für jeden Mitarbeiter greifbar sein.'
+        text: 'Das SDB hat 16 Abschnitte. Für den Alltag sind am wichtigsten: Abschnitt 2 (Gefahren des Stoffs), Abschnitt 4 (Erste-Hilfe-Maßnahmen), Abschnitt 5 (Brandbekämpfung), Abschnitt 6 (Maßnahmen bei Unfall), Abschnitt 8 (Schutzausrüstung). Das SDB muss für jeden Mitarbeiter greifbar sein.'
       },
       {
-        title: '3. Persoenliche Schutzausruestung (PSA)',
-        text: 'Die richtige PSA haengt vom Stoff und der Tätigkeit ab. Grundsätzlich bei Gefahrstoffen: Schutzhandschuhe (Material beachten — nicht jeder Handschuh schuetzt vor allem), Schutzbrille oder Vollschutzbrille, bei Aerosolbildung Atemschutz. PSA nur dann wirksam wenn sie korrekt getragen wird!'
+        title: '3. Persönliche Schutzausrüstung (PSA)',
+        text: 'Die richtige PSA hängt vom Stoff und der Tätigkeit ab. Grundsätzlich bei Gefahrstoffen: Schutzhandschuhe (Material beachten — nicht jeder Handschuh schützt vor allem), Schutzbrille oder Vollschutzbrille, bei Aerosolbildung Atemschutz. PSA nur dann wirksam wenn sie korrekt getragen wird!'
       },
       {
         title: '4. Lagerung und Transport',
-        text: 'Gefahrstoffe müssen kuehl, trocken und gut belueftet gelagert werden. Unvertraegliche Stoffe raeumlich trennen (z.B. Säure NICHT neben Chlor). Behaelter geschlossen halten. Beim Transport: keine undichten Behaelter, Behaelter sichern damit sie nicht fallen/kippen. Keine Gefahrstoffe in privaten Fahrzeugen ohne Genehmigung.'
+        text: 'Gefahrstoffe müssen kühl, trocken und gut belüftet gelagert werden. Unverträgliche Stoffe räumlich trennen (z.B. Säure NICHT neben Chlor). Behälter geschlossen halten. Beim Transport: keine undichten Behälter, Behälter sichern damit sie nicht fallen/kippen. Keine Gefahrstoffe in privaten Fahrzeugen ohne Genehmigung.'
       }
     ],
     examples: [
@@ -47,21 +47,21 @@ const TABS = {
         ]
       },
       {
-        title: 'Verschuettete Salzsäure',
-        given: 'Beim Umfuellen von pH-Minus (Salzsäure) wird ein kleiner Behaelter umgekippt. Die Säure laeuft auf den Boden.',
+        title: 'Verschüttete Salzsäure',
+        given: 'Beim Umfüllen von pH-Minus (Salzsäure) wird ein kleiner Behälter umgekippt. Die Säure läuft auf den Boden.',
         question: 'Was ist zu tun?',
         steps: [
-          ['PSA anziehen', 'Sofort Schutzbrille, Handschuhe und Schuerze — auch beim Aufwischen!'],
-          ['Belueftung', 'Fenster und Tueren oeffnen — Sauredaempfe sind giftig'],
-          ['Binden', 'Mit Bindemittel (Kieselgur, Sand) aufnehmen — KEIN Wasser drauf schuetten!'],
+          ['PSA anziehen', 'Sofort Schutzbrille, Handschuhe und Schürze — auch beim Aufwischen!'],
+          ['Belüftung', 'Fenster und Türen öffnen — Säuredämpfe sind giftig'],
+          ['Binden', 'Mit Bindemittel (Kieselgur, Sand) aufnehmen — KEIN Direktwasser auf konzentrierte Säure! Erst nach Aufnahme nachspülen.'],
           ['Entsorgung', 'Als Gefahrstoffabfall entsorgen, Vorfall dokumentieren und melden']
         ]
       }
     ],
     pitfalls: [
-      'Niemals Gefahrstoffe in andere Behaelter umfuellen ohne neue vollständige Beschriftung — Verwechslungen sind lebensgefährlich!',
+      'Niemals Gefahrstoffe in andere Behälter umfüllen ohne neue vollständige Beschriftung — Verwechslungen sind lebensgefährlich!',
       'Säure und Chlor NIEMALS zusammen lagern oder mischen — es entsteht sofort giftiges Chlorgas!',
-      'Schutzhandschuhe aus Latex schuetzen NICHT vor Säuren — das richtige Handschuhmaterial aus dem SDB ablesen.',
+      'Schutzhandschuhe aus Latex schützen NICHT vor Säuren — das richtige Handschuhmaterial aus dem SDB ablesen.',
       'Bei Exposition oder Unfall: Erst eigene Sicherheit, dann Erste Hilfe — ansonsten gibt es zwei Opfer statt einem.'
     ],
     quiz: {
@@ -72,7 +72,7 @@ const TABS = {
         'Weil beide Stoffe dann schneller ablaufen'
       ],
       correctIndex: 1,
-      explanation: 'Salzsäure (HCl) reagiert mit Natriumhypochlorit (NaOCl) zu giftigem Chlorgas (Cl2). Schon geringe Mengen Chlorgas können Atemwege schaedigen. Deshalb: unvertraegliche Stoffe immer raeumlich getrennt lagern!'
+      explanation: 'Salzsäure (HCl) reagiert mit Natriumhypochlorit (NaOCl) zu giftigem Chlorgas (Cl2). Schon geringe Mengen Chlorgas können Atemwege schädigen. Deshalb: unverträgliche Stoffe immer räumlich getrennt lagern!'
     }
   },
 
@@ -81,52 +81,52 @@ const TABS = {
     chip: 'Lagerung',
     title: 'Gefahrstoffe richtig lagern',
     intro:
-      'Falsche Lagerung von Gefahrstoffen ist ein häufiger Grund für Unfälle im Schwimmbad. Stoffe die miteinander reagieren können, müssen getrennt gelagert werden. Lagerpflichten sind in der Gefahrstoffverordnung, der TRGS 510 (Technische Regeln für Gefahrstoffe) und den Herstellerangaben geregelt. Im Schwimmbad sind Chlorprodukte und säurehaltige Mittel die groesste Herausforderung — sie dürfen nicht zusammen gelagert werden.',
+      'Falsche Lagerung von Gefahrstoffen ist ein häufiger Grund für Unfälle im Schwimmbad. Stoffe die miteinander reagieren können, müssen getrennt gelagert werden. Lagerpflichten sind in der Gefahrstoffverordnung, der TRGS 510 (Technische Regeln für Gefahrstoffe) und den Herstellerangaben geregelt. Im Schwimmbad sind Chlorprodukte und säurehaltige Mittel die größte Herausforderung — sie dürfen nicht zusammen gelagert werden.',
     motto: 'Lagere so, dass eine Panne kein Unfall wird.',
     rules: [
-      'Unvertraegliche Stoffe raeumlich trennen: Säuren und Oxidationsmittel (Chlor) mindestens in getrennten Schraenken, besser in getrennten Räumen.',
-      'Lagerraum muss belueftet, kuehl und trocken sein. Kein direktes Sonnenlicht auf Chlorbehaelter.',
-      'Behaelter immer geschlossen halten. Offene Behaelter sind ein Verdunstungs- und Brandrisiko.',
+      'Unverträgliche Stoffe räumlich trennen: Säuren und Oxidationsmittel (Chlor) mindestens in getrennten Schränken, besser in getrennten Räumen.',
+      'Lagerraum muss belüftet, kühl und trocken sein. Kein direktes Sonnenlicht auf Chlorbehälter.',
+      'Behälter immer geschlossen halten. Offene Behälter sind ein Verdunstungs- und Brandrisiko.',
       'Maximale Lagermengen beachten (laut GefStoffV und Betriebsanweisung).',
       'Gefahrstofflager mit Warnschildern kennzeichnen (z.B. GHS-Piktogramme, "Kein Zutritt für Unbefugte").'
     ],
     steps: [
       {
-        title: '1. Unvertraeglichkeiten kennen',
-        text: 'Die wichtigsten Unvertraeglichkeiten im Bad: Chlorprodukte (Oxidationsmittel) + Säuren = Chlorgasbildung. Chlorprodukte + brennbare Stoffe = Brandgefahr. Konzentrierte Säuren + Wasser = starke Wärmeentwicklung. Lösung: Immer im SDB unter "Zu vermeidende Bedingungen" nachschauen.'
+        title: '1. Unverträglichkeiten kennen',
+        text: 'Die wichtigsten Unverträglichkeiten im Bad: Chlorprodukte (Oxidationsmittel) + Säuren = Chlorgasbildung. Chlorprodukte + brennbare Stoffe = Brandgefahr. Konzentrierte Säuren + Wasser = starke Wärmeentwicklung. Lösung: Immer im SDB unter "Zu vermeidende Bedingungen" nachschauen.'
       },
       {
         title: '2. Lagerraum-Anforderungen',
-        text: 'Gefahrstofflager brauchen: Ausreichende Belueftung (mindestens 1-facher Luftwechsel pro Stunde), undurchlaessigen Boden mit Auffahrschwelle (Auffangwanne für Leckagen), Loeschmittel in Reichweite (aber nur geeignete!), kein Zugang für Unbefugte, Erste-Hilfe-Einrichtung in der Nähe.'
+        text: 'Gefahrstofflager brauchen: Ausreichende Belüftung (mindestens 1-facher Luftwechsel pro Stunde), undurchlässigen Boden mit Auffahrschwelle (Auffangwanne für Leckagen), Löschmittel in Reichweite (aber nur geeignete!), kein Zugang für Unbefugte, Erste-Hilfe-Einrichtung in der Nähe.'
       },
       {
         title: '3. Bestandskontrolle',
-        text: 'Regelmäßige Kontrolle: Sind alle Behaelter unbeschaedigt und dicht? Stimmen die Etiketten? Sind Verfallsdaten noch gueltig? Gibt es unbekannte oder falsch etikettierte Behaelter? Gefahrstoffkataster fuehren: Eine Liste aller verwendeten Gefahrstoffe mit Menge, Ort und SDB-Verweis.'
+        text: 'Regelmäßige Kontrolle: Sind alle Behälter unbeschädigt und dicht? Stimmen die Etiketten? Sind Verfallsdaten noch gültig? Gibt es unbekannte oder falsch etikettierte Behälter? Gefahrstoffkataster führen: Eine Liste aller verwendeten Gefahrstoffe mit Menge, Ort und SDB-Verweis.'
       },
       {
         title: '4. Entsorgung',
-        text: 'Gefahrstoffe dürfen nicht einfach in den normalen Muell oder den Abfluss. Reste und abgelaufene Stoffe sind Sonderabfall und müssen durch einen zugelassenen Entsorger abgeholt werden. Im Zweifelsfall Vorgesetzten fragen — nicht selbst entsorgen!'
+        text: 'Gefahrstoffe dürfen nicht einfach in den normalen Müll oder den Abfluss. Reste und abgelaufene Stoffe sind Sonderabfall und müssen durch einen zugelassenen Entsorger abgeholt werden. Im Zweifelsfall Vorgesetzten fragen — nicht selbst entsorgen!'
       }
     ],
     examples: [
       {
         title: 'Lagerraumkontrolle',
-        given: 'Du sollst den Gefahrstofflager kontrollieren. Was pruefst du?',
-        question: 'Checkliste für eine gruendliche Kontrolle:',
+        given: 'Du sollst den Gefahrstofflager kontrollieren. Was prüfst du?',
+        question: 'Checkliste für eine gründliche Kontrolle:',
         steps: [
-          ['Behaelter', 'Alle dicht, unbeschaedigt, korrekt beschriftet?'],
+          ['Behälter', 'Alle dicht, unbeschädigt, korrekt beschriftet?'],
           ['Trennung', 'Chlormittel und Säuren getrennt gelagert?'],
-          ['Lagerraum', 'Belueftung in Ordnung? Boden ohne Leckagen?'],
+          ['Lagerraum', 'Belüftung in Ordnung? Boden ohne Leckagen?'],
           ['Dokumente', 'SDB für alle Stoffe vorhanden und aktuell (max. 3 Jahre alt)?']
         ]
       },
       {
-        title: 'Unbekannter Behaelter',
+        title: 'Unbekannter Behälter',
         given: 'Im Lager steht ein Kanister ohne Etikett. Du weisst nicht was drin ist.',
         question: 'Was tust du?',
         steps: [
-          ['Nicht anfassen', 'Unbekannte Stoffe nie ohne Schutzausruestung anfassen'],
-          ['Sichern', 'Behaelter isolieren, anderen Zutritt verwehren'],
+          ['Nicht anfassen', 'Unbekannte Stoffe nie ohne Schutzausrüstung anfassen'],
+          ['Sichern', 'Behälter isolieren, anderen Zutritt verwehren'],
           ['Melden', 'Sofort Vorgesetzten informieren'],
           ['Entsorgung', 'Fachgerechte Entsorgung veranlassen — kein Selbstversuch!']
         ]
@@ -134,19 +134,19 @@ const TABS = {
     ],
     pitfalls: [
       'Chlorprodukte und Säuren zusammen im selben Schrank ist ein absolutes No-Go — auch kleine Leckagen reichen für Chlorgasbildung.',
-      'Gefahrstoffe im Kuehlschrank mit Lebensmitteln lagern ist verboten und lebensgefährlich.',
-      'Behaelter ohne Etikett sind nicht "irgendwas" — sie sind unbekannte Gefahrstoffe und müssen fachgerecht entsorgt werden.',
-      'Privaten Vorrat anlegen ist verboten — Gefahrstoffe gehoeren nur in die offizielle Lagerung.'
+      'Gefahrstoffe im Kühlschrank mit Lebensmitteln lagern ist verboten und lebensgefährlich.',
+      'Behälter ohne Etikett sind nicht "irgendwas" — sie sind unbekannte Gefahrstoffe und müssen fachgerecht entsorgt werden.',
+      'Privaten Vorrat anlegen ist verboten — Gefahrstoffe gehören nur in die offizielle Lagerung.'
     ],
     quiz: {
       question: 'Was muss ein Gefahrstofflager mindestens haben?',
       options: [
-        'Einen Kuehschrank und gutes Licht',
-        'Ausreichende Belueftung, Auffangwanne, Zugangssicherung und Gefahrstoffkennzeichnung',
+        'Einen Kühlschrank und gutes Licht',
+        'Ausreichende Belüftung, Auffangwanne, Zugangssicherung und Gefahrstoffkennzeichnung',
         'Einen Feuerlöscher direkt neben den Chemikalien'
       ],
       correctIndex: 1,
-      explanation: 'Ein Gefahrstofflager muss: belueftet sein (Daempfe abfuehren), eine Auffangwanne haben (Leckagen auffangen), gesichert sein (kein Unbefugter), und mit GHS-Schildern gekennzeichnet sein. Der Loescher sollte in der Nähe aber nicht direkt neben den Chemikalien sein.'
+      explanation: 'Ein Gefahrstofflager muss: belüftet sein (Dämpfe abführen), eine Auffangwanne haben (Leckagen auffangen), gesichert sein (kein Unbefugter), und mit GHS-Schildern gekennzeichnet sein. Der Löscher sollte in der Nähe aber nicht direkt neben den Chemikalien sein.'
     }
   },
 
@@ -155,31 +155,31 @@ const TABS = {
     chip: 'Notfall & Erste Hilfe',
     title: 'Was tun im Gefahrstoff-Notfall?',
     intro:
-      'Unfälle mit Gefahrstoffen passieren schneller als man denkt — ein umgekippter Behaelter, ein geplatzter Schlauch, ein falsch gemischtes Mittel. Wer weiss was er tun muss, kann Schlimmeres verhindern. Die wichtigsten Grundsaetze: Erst die eigene Sicherheit sichern, dann helfen. Chlorgas, Säuredaempfe und Laugen können in Sekunden gefährliche Konzentrationen erreichen. Rettungskraefte informieren — du musst wissen welche Stoffe beteiligt sind.',
+      'Unfälle mit Gefahrstoffen passieren schneller als man denkt — ein umgekippter Behälter, ein geplatzter Schlauch, ein falsch gemischtes Mittel. Wer weiss was er tun muss, kann Schlimmeres verhindern. Die wichtigsten Grundsätze: Erst die eigene Sicherheit sichern, dann helfen. Chlorgas, Säuredämpfe und Laugen können in Sekunden gefährliche Konzentrationen erreichen. Rettungskräfte informieren — du musst wissen welche Stoffe beteiligt sind.',
     motto: 'Im Notfall: Erst Sicherheit, dann Hilfe — nie umgekehrt.',
     rules: [
       'Eigenschutz geht vor Erste Hilfe — ohne geeignete PSA kein Eingreifen.',
       'Notfallrufnummer 112 bei schweren Unfällen sofort anrufen — Stoff und Menge nennen.',
-      'Giftnotruf: 030 19240 (Berlin) — bei Vergiftung oder Exposition sofort anrufen, SDB bereithalten.',
+      'Giftnotruf: 0228 / 19240 (Bonn — zuständig für NRW). Andere Bundesländer haben eigene Zentralen — siehe Modul „Vergiftungen". SDB beim Anruf bereithalten.',
       'Betroffene Person aus dem Gefahrenbereich bringen — immer mit geeignetem Atemschutz.',
-      'Erste-Hilfe-Maßnahmen laut SDB Abschnitt 4 durchfuehren — bei Augenkontakt mindestens 10-15 Minuten spülen.'
+      'Erste-Hilfe-Maßnahmen laut SDB Abschnitt 4 durchführen — bei Augenkontakt mindestens 10-15 Minuten spülen.'
     ],
     steps: [
       {
         title: '1. Erste Reaktion',
-        text: 'Ruhe bewahren. Eigene Sicherheit prüfen: Habe ich PSA? Wenn nein: erst sichern, dann helfen. Betroffenen ansprechen, Bewusstsein prüfen. Bereich absperren. Fenster und Tueren oeffnen (Belueftung). Andere Personen fernhalten.'
+        text: 'Ruhe bewahren. Eigene Sicherheit prüfen: Habe ich PSA? Wenn nein: erst sichern, dann helfen. Betroffenen ansprechen, Bewusstsein prüfen. Bereich absperren. Fenster und Türen öffnen (Belüftung). Andere Personen fernhalten.'
       },
       {
         title: '2. Augenkontakt mit Gefahrstoff',
-        text: 'Sofort und mindestens 10-15 Minuten mit viel fliessendem Wasser spülen. Kontaktlinsen vorher entfernen wenn möglich. Augenlider offen halten. Dann Arzt oder Augenarzt aufsuchen — auch wenn es sich besser anfuehlt. SDB-Angaben beachten!'
+        text: 'Sofort und mindestens 10-15 Minuten mit viel fliessendem Wasser spülen. Kontaktlinsen vorher entfernen wenn möglich. Augenlider offen halten. Dann Arzt oder Augenarzt aufsuchen — auch wenn es sich besser anfühlt. SDB-Angaben beachten!'
       },
       {
         title: '3. Hautkontakt',
         text: 'Kontaminierte Kleidung sofort ausziehen. Haut mindestens 10 Minuten mit Wasser abspülen. Bei Säuren oder Laugen: immer Arzt aufsuchen, auch bei scheinbar geringer Exposition. Keine Neutralisation versuchen — kann die Verletzung verschlimmern.'
       },
       {
-        title: '4. Einatmen von Daempfen oder Gasen',
-        text: 'Betroffenen sofort an die frische Luft bringen. Bei Bewusstlosigkeit: stabile Seitenlage, Rettungsdienst rufen. Bei Atemstillstand: HLW einleiten. Immer Arzt aufsuchen — Lungenschaeden durch Chlorgas können sich verzoegert zeigen!'
+        title: '4. Einatmen von Dämpfen oder Gasen',
+        text: 'Betroffenen sofort an die frische Luft bringen. Bei Bewusstlosigkeit: stabile Seitenlage, Rettungsdienst rufen. Bei Atemstillstand: HLW einleiten. Immer Arzt aufsuchen — Lungenschäden durch Chlorgas können sich verzögert zeigen!'
       }
     ],
     examples: [
@@ -196,31 +196,31 @@ const TABS = {
       },
       {
         title: 'Kind trinkt Reinigungsmittel',
-        given: 'Ein Kind hat aus einem nicht gesicherten Behaelter mit Chlorreiniger getrunken.',
+        given: 'Ein Kind hat aus einem nicht gesicherten Behälter mit Chlorreiniger getrunken.',
         question: 'Was tust du sofort?',
         steps: [
           ['112 rufen', 'Sofort Notruf — bei Kindern immer schwerwiegend'],
-          ['Giftnotruf', '030 19240 anrufen, Produktname und Menge nennen'],
-          ['Nicht', 'KEIN Erbrechen herbeibeifuehren — aetzende Stoffe verbrennen beim Erbrechen erneut'],
-          ['Wasser', 'Mund mit Wasser aussuepueln lassen (nicht schlucken), Kind beruhigen']
+          ['Giftnotruf', '0228/19240 (NRW: Bonn) anrufen, Produktname und Menge nennen'],
+          ['Nicht', 'KEIN Erbrechen herbeiführen — ätzende Stoffe verätzen beim Erbrechen erneut'],
+          ['Wasser', 'Mund mit Wasser ausspülen lassen (nicht schlucken), Kind beruhigen']
         ]
       }
     ],
     pitfalls: [
-      'Erbrechen bei Säure- oder Laugen-Verschlucken NIEMALS herbeibeifuehren — der Stoff verbrennt erneut beim Hoch- und Herunterkommen.',
+      'Erbrechen bei Säure- oder Laugen-Verschlucken NIEMALS herbeiführen — der Stoff verätzt die Speiseröhre beim Hoch- und Herunterkommen erneut.',
       'Ohne Atemschutz in einen Chlorgasraum gehen = sofort zweites Opfer schaffen.',
-      'Wasser auf Chlorpulver oder konzentrierte Säuren schuetten kann Spritzen oder Daempfe verursachen.',
-      'Kleine Exposition ignorieren — auch geringe Mengen können verzoegert Schaeden an Lunge oder Augen verursachen.'
+      'Wasser auf Chlorpulver oder konzentrierte Säuren schütten kann Spritzen oder Dämpfe verursachen.',
+      'Kleine Exposition ignorieren — auch geringe Mengen können verzögert Schäden an Lunge oder Augen verursachen.'
     ],
     quiz: {
       question: 'Was ist die erste Maßnahme bei Augenkontakt mit einem Gefahrstoff?',
       options: [
         'Sofort zum Arzt fahren ohne Weitere Maßnahmen',
         'Mindestens 10-15 Minuten mit viel fliessendem Wasser spülen, dann Arzt aufsuchen',
-        'Neutralisationsmittel ins Auge geben um den Stoff unschaedlich zu machen'
+        'Neutralisationsmittel ins Auge geben um den Stoff unschädlich zu machen'
       ],
       correctIndex: 1,
-      explanation: 'Bei Augenkontakt sofort und ausdauernd mit viel fliessendem Wasser spülen — mindestens 10-15 Minuten. Neutralisation im Auge ist gefährlich und falsch. Danach immer Arzt aufsuchen, auch wenn das Auge sich besser anfuehlt.'
+      explanation: 'Bei Augenkontakt sofort und ausdauernd mit viel fliessendem Wasser spülen — mindestens 10-15 Minuten. Neutralisation im Auge ist gefährlich und falsch. Danach immer Arzt aufsuchen, auch wenn das Auge sich besser anfühlt.'
     }
   }
 };

@@ -16,7 +16,7 @@ const SIGNS = [
   { id: 'v8', cat: 'verbot', emoji: '📱', name: 'Mobiltelefon verboten', norm: 'DSGVO Art. 6 · §201a StGB · Hausordnung', location: 'Umkleiden, Duschbereich', meaning: 'Mobiltelefone mit Kamerafunktion in Umkleiden und Duschen verboten — Schutz der Privatsphäre und Würde.', action: 'Sofort ansprechen. Bildaufnahmen in Umkleiden sind strafbar (§201a StGB Verletzung des höchstpersönlichen Lebensbereichs).' },
 
   // WARNSCHILDER — gelbes Dreieck, schwarzes Symbol · ASR A1.3 Abschnitt 4.2
-  { id: 'w1', cat: 'warnung', emoji: '🧊', name: 'Rutschgefahr', norm: 'DIN EN ISO 7010 W011 · ASR A1.3', location: 'Beckenrand, Duschen, nasse Flächen', meaning: 'Nasser, rutschiger Boden — Sturzgefahr, besonders für Kinder und ältere Gäste. Häufigste Unfallursache im Schwimmbad.', action: 'Leitkegel aufstellen. Boden abziehen. Rutschhemmenden Belag prüfen (mind. GS/R10 nach DIN 51130).' },
+  { id: 'w1', cat: 'warnung', emoji: '🧊', name: 'Rutschgefahr', norm: 'DIN EN ISO 7010 W011 · ASR A1.3', location: 'Beckenrand, Duschen, nasse Flächen', meaning: 'Nasser, rutschiger Boden — Sturzgefahr, besonders für Kinder und ältere Gäste. Häufigste Unfallursache im Schwimmbad.', action: 'Leitkegel aufstellen. Boden abziehen. Im Barfußbereich Rutschhemmung nach DIN 51097 prüfen — Klassen A (Trockenbereich), B (Wassernähe), C (Beckenrand mit Schräge). Schuhbereiche nach DIN 51130 (R-Klassen) bewerten.' },
   { id: 'w2', cat: 'warnung', emoji: '🌊', name: 'Tiefes Wasser', norm: 'DIN EN ISO 7010 W016 · DIN 19643', location: 'Sprungbecken, tiefer Beckenbereich, Übergang', meaning: 'Das Wasser ist hier tief. Nichtschwimmer und schwache Schwimmer dürfen diesen Bereich nicht betreten — Ertrinkungsgefahr.', action: 'Tiefenangabe muss daneben stehen. Nichtschwimmer ansprechen und in flacheren Bereich leiten.' },
   { id: 'w3', cat: 'warnung', emoji: '☠️', name: 'Chlorgas-Gefahr', norm: 'DIN EN ISO 7010 W016 · GefStoffV · DGUV V 1', location: 'Technikraum, Chlorgasraum, Dosierkammer', meaning: 'Chlorgas (Cl₂) kann auftreten — giftig (GHS06), greift Atemwege und Augen an. Lebensgefahr bei hoher Konzentration!', action: 'Nur mit Atemschutz (Vollmaske) betreten. Gasdetektor prüfen. Bei Alarm: Raum verlassen, andere warnen, 112 rufen.' },
   { id: 'w4', cat: 'warnung', emoji: '⚡', name: 'Elektrische Spannung', norm: 'DIN EN ISO 7010 W012 · DGUV V 3', location: 'Technikräume, Schaltkästen, Pumpenbereiche', meaning: 'Lebensgefährliche elektrische Spannung. Berühren oder unbefugtes Öffnen kann tödlich sein.', action: 'Nur Elektrofachkräfte dürfen diese Bereiche öffnen (DGUV Vorschrift 3). Defekte sofort melden.' },
@@ -176,7 +176,7 @@ const TABS = {
     pitfalls: [
       'GHS-Symbole und das alte orange System sind NICHT dasselbe — das alte System ist abgelöst!',
       'Nur ein Symbol bedeutet nicht "weniger gefährlich" — ein einziger Totenkopf reicht für höchste Vorsicht.',
-      'Sicherheitsdatenblätter müssen AKTUELL sein — veraltete SDB (älter als 3 Jahre) erneuern.',
+      'Sicherheitsdatenblätter müssen AKTUELL sein — bei Änderungen am Stoff oder neuen Erkenntnissen unverzüglich aktualisieren (REACH Art. 31). Eine starre 3-Jahres-Frist gibt es nicht — regelmäßiger Abgleich mit dem Hersteller ist Pflicht.',
       'Gefahrstoffe NIEMALS umfüllen ohne klare Beschriftung des Zielbehälters — Verwechslungen können tödlich sein!',
     ],
     quiz: {
